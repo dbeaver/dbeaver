@@ -327,9 +327,7 @@ public class AISettingsManager {
         ) {
 
             JsonObject obj = context.serialize(src, src.getClass()).getAsJsonObject();
-
             obj.addProperty("type", src.getProviderId());
-
             return obj;
         }
     }

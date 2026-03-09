@@ -24,26 +24,39 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 public class DBAAuthProviderDescriptor extends AbstractDescriptor {
     public static final String EXTENSION_ID = "com.dbeaver.model.ai.authProvider";
     private final ObjectType objectType;
     private final String id;
-    private final String engineId;
+    private final List<String> supportedEngines;
     private final boolean isDefault;
     private final String authTypeName;
 
     protected DBAAuthProviderDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.id = contributorConfig.getAttribute(RegistryConstants.ATTR_ID);
-        this.engineId = contributorConfig.getAttribute("engineID");
+        this.supportedEngines = mapEngines(contributorConfig);
         this.authTypeName = contributorConfig.getAttribute("label");
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         this.isDefault = CommonUtils.toBoolean(contributorConfig.getAttribute("default"), false);
     }
 
+    private static List<String> mapEngines(@NotNull IConfigurationElement contributorConfig) {
+        String engineIDString = contributorConfig.getAttribute("supportedEngines");
+        //split by comma and trim
+        if (engineIDString == null || engineIDString.isEmpty()) {
+            return List.of();
+        }
+        String[] engineIDs = engineIDString.split(",");
+        return Stream.of(engineIDs).map(String::trim).toList();
+    }
+
     @NotNull
-    public String getEngineId() {
-        return engineId;
+    public List<String> getSupportedEngines() {
+        return supportedEngines;
     }
 
     @NotNull

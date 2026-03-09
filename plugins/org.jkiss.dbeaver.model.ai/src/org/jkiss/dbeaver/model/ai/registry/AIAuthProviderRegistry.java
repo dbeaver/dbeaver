@@ -60,7 +60,9 @@ public class AIAuthProviderRegistry {
         for (IConfigurationElement ext : extElements) {
             if ("authProvider".equals(ext.getName())) {
                 DBAAuthProviderDescriptor fd = new DBAAuthProviderDescriptor(ext);
-                authProviderByEngineID.computeIfAbsent(fd.getEngineId(), k -> new ArrayList<>()).add(fd);
+                for (String supportedEngine : fd.getSupportedEngines()) {
+                    authProviderByEngineID.computeIfAbsent(supportedEngine, k -> new ArrayList<>()).add(fd);
+                }
                 authProviderByID.put(fd.getId(), fd);
             }
         }
