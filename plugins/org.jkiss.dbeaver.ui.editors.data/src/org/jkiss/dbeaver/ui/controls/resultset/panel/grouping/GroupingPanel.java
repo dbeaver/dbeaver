@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -25,19 +24,24 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.*;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.descriptor.GroupingActionDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.descriptor.GroupingActionRegistry;
 
 /**
  * RSV grouping panel
  */
 public class GroupingPanel extends ResultSetPanelBase {
+
+    private static final Log log = Log.getLog(GroupingPanel.class);
 
     private static final String PANEL_ID = "results-grouping";
 
@@ -164,36 +168,22 @@ public class GroupingPanel extends ResultSetPanelBase {
         sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         contributionManager.add(sortAction);
         contributionManager.add(new DuplicatesOnlyAction(getGroupingResultsContainer()));
-        contributionManager.add(new PercentFromTotalAction(getGroupingResultsContainer()));
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
         contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new ClearGroupingAction(getGroupingResultsContainer()));
+        contributionManager.add(new ToolbarSeparatorContribution(true));
+        addExtensionActions(contributionManager);
     }
 
-    private class PresentationToggleAction extends Action {
-        private final ResultSetPresentationDescriptor presentationDescriptor;
-
-        public PresentationToggleAction(ResultSetPresentationDescriptor presentationDescriptor) {
-            super(presentationDescriptor.getLabel(), Action.AS_RADIO_BUTTON);
-            this.presentationDescriptor = presentationDescriptor;
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(presentationDescriptor.getIcon()));
-            setToolTipText(presentationDescriptor.getDescription());
-            // Icons turns menu into mess - checkboxes are much better
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-        }
-
-        @Override
-        public boolean isChecked() {
-            return presentationDescriptor.matches(
-                getGroupingResultsContainer().getResultSetController().getActivePresentation().getClass());
-        }
-
-        @Override
-        public void run() {
-            ((ResultSetViewer)getGroupingResultsContainer().getResultSetController()).switchPresentation(presentationDescriptor);
+    private void addExtensionActions(@NotNull IContributionManager contributionManager) {
+        for (GroupingActionDescriptor actionDescriptor : GroupingActionRegistry.getInstance().getActions()) {
+            try {
+                contributionManager.add(actionDescriptor.createAction(getGroupingResultsContainer()));
+            } catch (DBException e) {
+                log.error("Can't create error action '" + actionDescriptor.getLabel() + "'", e);
+            }
         }
     }
-
 }

@@ -16,42 +16,43 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action;
 
-import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 
-public class PercentFromTotalAction extends Action {
-    private final GroupingResultsContainer resultsContainer;
+public class PercentFromTotalAction extends GroupingAction {
 
-    public PercentFromTotalAction(@NotNull GroupingResultsContainer resultsContainer) {
-        super(ResultSetMessages.grouping_panel_show_percent_of_total_tip, Action.AS_CHECK_BOX);
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PERCENT));
-        this.resultsContainer = resultsContainer;
+    public PercentFromTotalAction(
+        @NotNull GroupingResultsContainer groupingResultsContainer,
+        @Nullable String text,
+        @NotNull ImageDescriptor image,
+        int style
+    ) {
+        super(groupingResultsContainer, text, image, style);
     }
 
     @Override
     public boolean isChecked() {
-        DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+        DBPDataSource dataSource = groupingResultsContainer.getDataContainer().getDataSource();
         return dataSource != null && dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
     }
 
     @Override
     public void run() {
-        DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+        DBPDataSource dataSource = groupingResultsContainer.getDataContainer().getDataSource();
         if (dataSource == null) {
             return;
         }
         dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, !isChecked());
         try {
-            resultsContainer.rebuildGrouping();
+            groupingResultsContainer.rebuildGrouping();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 ResultSetMessages.grouping_panel_error_title,

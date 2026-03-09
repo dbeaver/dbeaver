@@ -8,6 +8,8 @@
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.error" name="%extension-point.org.jkiss.dbeaver.resultset.error.name" schema="schema/org.jkiss.dbeaver.resultset.error.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.grouping" name="%extension-point.org.jkiss.dbeaver.resultset.grouping.name"
+                     schema="schema/org.jkiss.dbeaver.resultset.groupin.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsPreferencesInitializer"/>
@@ -175,6 +177,17 @@
             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/buttons/target_error.svg"
             class="org.jkiss.dbeaver.ui.controls.resultset.view.actions.GoToErrorAction"
             order="10"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.grouping">
+        <action
+            label="Percent from total action"
+            description="%grouping_panel_show_percent_of_total_tip"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/percent.svg"
+            class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.PercentFromTotalAction"
+            order="1"
+            style="2"
+        />
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
