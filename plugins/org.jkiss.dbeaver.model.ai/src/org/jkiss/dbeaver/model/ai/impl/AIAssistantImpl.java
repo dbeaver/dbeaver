@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.AIToolboxRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -48,24 +51,27 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected final DBPWorkspace workspace;
 
-    protected final AIEngineRequestFactory requestFactory;
-    protected AISqlFormatter sqlFormatter;
+    private AIEngineRequestFactory requestFactory;
+    private AIToolboxManager toolboxManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
-        this.requestFactory = createRequestFactory();
-        this.sqlFormatter = createSqlFormatter();
     }
 
-    protected AISqlFormatter createSqlFormatter() {
-        try {
-            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
-        } catch (DBException e) {
-            log.error("Error creating SQL formatter", e);
-            return new SimpleSqlFormatterImpl();
+    @NotNull
+    protected AIToolboxManager createToolboxManager() {
+        return new AIToolboxRegistry();
+    }
+
+    @NotNull
+    protected AIEngineRequestFactory getRequestFactory() {
+        if (requestFactory == null) {
+            requestFactory = createRequestFactory();
         }
+        return requestFactory;
     }
 
+    @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
         return new AIEngineRequestFactory(
             new AIDatabaseSnapshotService(),
@@ -120,7 +126,7 @@ public class AIAssistantImpl implements AIAssistant {
                         functionContext.addFunctionCall(functionCall);
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         String stringValue = CommonUtils.toString(result.getValue());
-                        if (result.getType() == AIFunctionResult.FunctionType.ACTION) {
+                        if (result.getType() == AIFunctionType.ACTION) {
                             return new AIAssistantResponse(
                                 AIAssistantResponse.Type.FUNCTION,
                                 stringValue,
@@ -157,6 +163,15 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
+    @Override
+    public AIToolboxManager getToolboxManager() {
+        if (toolboxManager == null) {
+            toolboxManager = createToolboxManager();
+        }
+        return toolboxManager;
+    }
+
+    @NotNull
     public AIEngineRequest buildAiEngineRequest(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
@@ -165,8 +180,9 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
     ) throws DBException {
-        return requestFactory.build(
+        return getRequestFactory().build(
             monitor,
+            this,
             engine,
             engineDescriptor,
             systemGenerator,
@@ -195,12 +211,11 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
-        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
         String functionName = functionCall.getFunctionName();
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = registry.getFunction(functionName);
+        AIFunctionDescriptor function = getToolboxManager().getFunctionById(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
@@ -219,7 +234,7 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return registry.callFunction(context, function, arguments);
+        return function.getToolbox().callFunction(context, function, arguments);
     }
 
     protected void checkAiEnablement() throws DBException {

@@ -20,28 +20,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
-public class AIFunctionResult<T> {
-    public enum FunctionType {
-        INFORMATION,
-        ACTION
-    }
+public class AIFunctionResult {
 
-
-    private final AIFunctionResult.FunctionType type;
-    private final T value;
+    private final AIFunctionType type;
+    private final Object value;
     @Nullable
     private final DBRRunnableWithReturn<?> callback;
 
     public AIFunctionResult(
-        @NotNull AIFunctionResult.FunctionType type,
-        @NotNull T value
+        @NotNull AIFunctionType type,
+        @NotNull Object value
     ) {
         this(type, value, null);
     }
 
     public AIFunctionResult(
-        @NotNull AIFunctionResult.FunctionType type,
-        @NotNull T value,
+        @NotNull AIFunctionType type,
+        @NotNull Object value,
         @Nullable DBRRunnableWithReturn<?> callback
     ) {
         this.type = type;
@@ -50,12 +45,12 @@ public class AIFunctionResult<T> {
     }
 
     @NotNull
-    public AIFunctionResult.FunctionType getType() {
+    public AIFunctionType getType() {
         return type;
     }
 
     @NotNull
-    public T getValue() {
+    public Object getValue() {
         return value;
     }
 

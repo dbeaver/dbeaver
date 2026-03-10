@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.cli.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Reference to AI function.
- * <p>
- * Can be returned in AI responses, signaling that certain AI function was used.
- * This information can be used in UI to render links which trigger some UI actions.
+ * The option does not launch the command line due to the presence of
+ * for example, it may be an external option provided and processed not by DBeaver,
+ * or a dependent option that cannot be executed without additional options
  */
-public record AIFunctionReference(
-    @NotNull AIFunctionDescriptor function,
-    @Nullable String text
-) {
-
+@Target(value = {ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NonExecutableOption {
 }

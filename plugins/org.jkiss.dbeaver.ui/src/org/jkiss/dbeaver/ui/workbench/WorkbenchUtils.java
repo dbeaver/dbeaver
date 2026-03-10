@@ -19,7 +19,11 @@ package org.jkiss.dbeaver.ui.workbench;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.dialogs.PropertyPageContributorManager;
+import org.eclipse.ui.internal.dialogs.RegistryPageContributor;
 import org.jkiss.code.NotNull;
+
+import java.util.*;
 
 public class WorkbenchUtils {
 
@@ -33,6 +37,17 @@ public class WorkbenchUtils {
 
         for (String epp : pageIds) {
             pm.remove(epp);
+        }
+    }
+
+    public static void removePropertyPages(@NotNull String ... pageIds) {
+        PropertyPageContributorManager manager = PropertyPageContributorManager.getManager();
+        List<RegistryPageContributor> applicableContributors = new LinkedList<>((Collection<RegistryPageContributor>) manager.getContributors().stream().findFirst().get());
+        for (RegistryPageContributor applicableContributor : applicableContributors) {
+            Optional<String> first = Arrays.stream(pageIds).filter(it -> it.equals(applicableContributor.getPageId())).findFirst();
+            if  (first.isPresent()) {
+                manager.unregisterContributor(applicableContributor, Object.class.getName());
+            }
         }
     }
 

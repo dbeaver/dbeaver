@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -32,10 +33,12 @@ import picocli.CommandLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
     private static final Log log = Log.getLog(ApplicationCommandLine.class);
@@ -318,12 +321,16 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         if (commandLine == null) {
             return true;
         }
-        var noArgs = commandLine.matchedArgs()
-            .stream().allMatch(CommandLine.Model.ArgSpec::hidden);
 
-        var noOptions = commandLine.matchedOptions()
-            .stream().allMatch(CommandLine.Model.ArgSpec::hidden);
-        return noArgs && noOptions && CommonUtils.isEmpty(commandLine.subcommands());
+        var noOptions = Stream.concat(commandLine.matchedArgs().stream(), commandLine.matchedOptions().stream())
+            .allMatch(argSpec -> {
+                if (argSpec.userObject() instanceof Field field) {
+                    return field.isAnnotationPresent(NonExecutableOption.class);
+                }
+                return false;
+            });
+
+        return noOptions && CommonUtils.isEmpty(commandLine.subcommands());
     }
 
 

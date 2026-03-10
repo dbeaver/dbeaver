@@ -395,8 +395,6 @@
                           desktop="true"/>
                 <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
                           desktop="true"/>
-                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
-                          desktop="true" hidden="true"/>
                 <property id="ssl.cipher.suites" label="Cipher Suites (optional)" description="Specify a comma-separated list of cipher suites" type="string" features="secured,password"/>
             </propertyGroup>
             <propertyGroup label="Additional SSL Settings">
