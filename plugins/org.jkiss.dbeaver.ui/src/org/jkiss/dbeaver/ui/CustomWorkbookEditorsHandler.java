@@ -23,7 +23,6 @@ import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.e4.DBeaverEditorPartUtils;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
@@ -75,11 +74,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
                 if (!(cell.getElement() instanceof EditorReference ref)) {
                     return;
                 }
-
-                DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(ref);
-                if (container != null) {
-                    ConnectionLabelUtils.applyConnectionInfo(cell, container);
-                }
+                ConnectionLabelUtils.applyConnectionInfo(cell, DBeaverEditorPartUtils.getDataSourceContainer(ref));
             }
         });
 

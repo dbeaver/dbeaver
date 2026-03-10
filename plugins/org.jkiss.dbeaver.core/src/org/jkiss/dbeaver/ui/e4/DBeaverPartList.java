@@ -145,10 +145,13 @@ public class DBeaverPartList extends BasicPartList {
         @NotNull
         @Override
         public String getText(@NotNull Object element) {
-            if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
-                return "*" + ((MUILabel) element).getLocalizedLabel();
+            if (!(element instanceof MUILabel label)) {
+                return "";
             }
-            return ((MUILabel) element).getLocalizedLabel();
+            if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
+                return "*" + label.getLocalizedLabel();
+            }
+            return label.getLocalizedLabel();
         }
 
         @Nullable
@@ -185,11 +188,7 @@ public class DBeaverPartList extends BasicPartList {
         @Override
         public void update(@NotNull ViewerCell cell) {
             super.update(cell);
-
-            DBPDataSourceContainer container = resolveContainer(cell.getElement());
-            if (container != null) {
-                ConnectionLabelUtils.applyConnectionInfo(cell, container);
-            }
+            ConnectionLabelUtils.applyConnectionInfo(cell, resolveContainer(cell.getElement()));
         }
 
         @Override

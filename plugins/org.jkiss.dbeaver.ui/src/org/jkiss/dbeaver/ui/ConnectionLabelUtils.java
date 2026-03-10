@@ -51,8 +51,12 @@ public final class ConnectionLabelUtils {
      * <p>
      * Must be called after {@code super.update(cell)} so that the cell text contains
      * the base label and any search-highlight StyleRanges are already set.
+     * Does nothing if {@code container} is null.
      */
-    public static void applyConnectionInfo(@NotNull ViewerCell cell, @NotNull DBPDataSourceContainer container) {
+    public static void applyConnectionInfo(@NotNull ViewerCell cell, @Nullable DBPDataSourceContainer container) {
+        if (container == null) {
+            return;
+        }
         String name = container.getName();
         if (CommonUtils.isEmpty(name)) {
             return;
