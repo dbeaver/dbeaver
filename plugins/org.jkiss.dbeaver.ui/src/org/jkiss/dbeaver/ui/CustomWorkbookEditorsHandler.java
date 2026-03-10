@@ -23,29 +23,12 @@ import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.jkiss.dbeaver.ui.e4.DBeaverEditorPartUtils;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
-    private static final Log log = Log.getLog(CustomWorkbookEditorsHandler.class);
-
-    // FIXME: this is a dirty workaround for UI freeze (dbeaver/pro#6519)
-    // Freeze happens because we may trigger master password dialog in ref.getEditorInput()
-    // We fix it by avoiding UI double entrance.
-    // Note: this flag is separate from DBeaverEditorPartUtils.isResolving (used by the tab
-    // renderer and chevron popup). Both operate on the SWT UI thread exclusively, so
-    // volatile is not needed.
-    private static boolean isResolving;
 
     private String pattern;
-
-    // Caches container lookups for the lifetime of a single Ctrl+E popup session.
-    // Cleared each time the dialog is opened (when setLabelProvider is called)
-    // and when the label provider is disposed.
-    private final Map<EditorReference, DBPDataSourceContainer> containerCache = new HashMap<>();
 
     @Override
     protected ViewerFilter getFilter() {
@@ -61,8 +44,6 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
 
     @Override
     protected void setLabelProvider(TableViewerColumn column) {
-        containerCache.clear();
-
         column.setLabelProvider(new SearchCellLabelProvider() {
             @NotNull
             @Override
@@ -95,16 +76,10 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
                     return;
                 }
 
-                DBPDataSourceContainer container = resolveContainer(ref);
+                DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(ref);
                 if (container != null) {
                     ConnectionLabelUtils.applyConnectionInfo(cell, container);
                 }
-            }
-
-            @Override
-            public void dispose() {
-                containerCache.clear();
-                super.dispose();
             }
         });
 
@@ -119,32 +94,6 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     @NotNull
     private String getFilterText(@NotNull EditorReference ref) {
         String label = getWorkbenchPartReferenceText(ref);
-        return ConnectionLabelUtils.appendConnectionSuffix(label, resolveContainer(ref));
-    }
-
-    @Nullable
-    private DBPDataSourceContainer resolveContainer(@NotNull EditorReference ref) {
-        if (containerCache.containsKey(ref)) {
-            return containerCache.get(ref);
-        }
-        DBPDataSourceContainer container = extractDataSourceContainer(ref);
-        containerCache.put(ref, container);
-        return container;
-    }
-
-    @Nullable
-    private static DBPDataSourceContainer extractDataSourceContainer(@NotNull EditorReference ref) {
-        if (isResolving) {
-            return null;
-        }
-        isResolving = true;
-        try {
-            return ConnectionLabelUtils.getDataSourceContainer(ref);
-        } catch (Exception e) {
-            log.debug("Cannot get editor input for: " + ref.getTitle(), e);
-            return null;
-        } finally {
-            isResolving = false;
-        }
+        return ConnectionLabelUtils.appendConnectionSuffix(label, DBeaverEditorPartUtils.getDataSourceContainer(ref));
     }
 }

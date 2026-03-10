@@ -44,8 +44,6 @@ import org.jkiss.dbeaver.ui.SearchCellLabelProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DBeaverPartList extends BasicPartList {
     private static final Log log = Log.getLog(DBeaverPartList.class);
@@ -120,12 +118,6 @@ public class DBeaverPartList extends BasicPartList {
         private final Font italicFont;
         private final Font italicBoldFont;
 
-        // Caches container lookups for the lifetime of this popup to avoid
-        // redundant calls through the reentrancy-guarded extraction chain.
-        // The popup is short-lived (created on chevron click, destroyed on dismiss),
-        // so cache invalidation is not needed.
-        private final Map<MPart, DBPDataSourceContainer> containerCache = new HashMap<>();
-
         public CellLabelProvider() {
             this.italicFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.ITALIC);
             this.italicBoldFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.BOLD | SWT.ITALIC);
@@ -136,12 +128,7 @@ public class DBeaverPartList extends BasicPartList {
             if (!(element instanceof MPart part)) {
                 return null;
             }
-            if (containerCache.containsKey(part)) {
-                return containerCache.get(part);
-            }
-            DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(part);
-            containerCache.put(part, container);
-            return container;
+            return DBeaverEditorPartUtils.getDataSourceContainer(part);
         }
 
         @NotNull
@@ -209,7 +196,6 @@ public class DBeaverPartList extends BasicPartList {
         public void dispose() {
             italicFont.dispose();
             italicBoldFont.dispose();
-            containerCache.clear();
             super.dispose();
         }
 

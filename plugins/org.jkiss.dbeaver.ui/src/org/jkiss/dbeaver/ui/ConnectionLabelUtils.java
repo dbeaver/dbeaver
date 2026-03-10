@@ -21,19 +21,14 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.utils.CommonUtils;
 
 public final class ConnectionLabelUtils {
 
-    public static final String CONNECTION_SEPARATOR = " \u2014 "; //$NON-NLS-1$
+    public static final String CONNECTION_SEPARATOR = " - "; //$NON-NLS-1$
 
     private ConnectionLabelUtils() {
     }
@@ -51,7 +46,7 @@ public final class ConnectionLabelUtils {
     }
 
     /**
-     * Single entry point: appends the connection name suffix to the current cell text,
+     * Appends the connection name suffix to the current cell text,
      * applies connection background color, and styles the suffix with qualifier color.
      * <p>
      * Must be called after {@code super.update(cell)} so that the cell text contains
@@ -63,7 +58,7 @@ public final class ConnectionLabelUtils {
             return;
         }
 
-        // Append suffix — we know exactly where it starts
+        // Append suffix - we know exactly where it starts
         String suffix = CONNECTION_SEPARATOR + name;
         String baseText = cell.getText();
         int suffixStart = baseText.length();
@@ -89,48 +84,10 @@ public final class ConnectionLabelUtils {
             return;
         }
 
-        // Existing ranges (search highlights) are within [0, suffixStart) — just append
+        // Existing ranges (search highlights) are within [0, suffixStart) - just append
         StyleRange[] result = new StyleRange[existing.length + 1];
         System.arraycopy(existing, 0, result, 0, existing.length);
         result[existing.length] = qualifierRange;
         cell.setStyleRanges(result);
-    }
-
-    /**
-     * Extracts a {@link DBPDataSourceContainer} from an editor reference.
-     * Checks the loaded editor first, then falls back to editor input for lazy-loaded editors.
-     */
-    @Nullable
-    public static DBPDataSourceContainer getDataSourceContainer(@NotNull IEditorReference ref) throws PartInitException {
-        DBPDataSourceContainer container = getDataSourceContainer(ref.getEditor(false));
-        if (container != null) {
-            return container;
-        }
-        IEditorInput input = ref.getEditorInput();
-        if (input instanceof DBPDataSourceContainerProvider provider) {
-            return provider.getDataSourceContainer();
-        }
-        return null;
-    }
-
-    /**
-     * Extracts a {@link DBPDataSourceContainer} from an already-loaded editor.
-     * Checks the editor itself and its input for {@link DBPDataSourceContainerProvider}.
-     */
-    @Nullable
-    public static DBPDataSourceContainer getDataSourceContainer(@Nullable IEditorPart editor) {
-        if (editor instanceof DBPDataSourceContainerProvider provider) {
-            DBPDataSourceContainer container = provider.getDataSourceContainer();
-            if (container != null) {
-                return container;
-            }
-        }
-        if (editor != null) {
-            IEditorInput input = editor.getEditorInput();
-            if (input instanceof DBPDataSourceContainerProvider provider) {
-                return provider.getDataSourceContainer();
-            }
-        }
-        return null;
     }
 }
