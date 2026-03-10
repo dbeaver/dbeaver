@@ -31,7 +31,7 @@ import picocli.CommandLine;
 
 import java.util.*;
 
-@CommandLine.Command(name = "network-handlers", description = "List available database network handlers.")
+@CommandLine.Command(name = "network-handlers", description = "List available database network handlers")
 
 public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
     @NotNull
@@ -78,6 +78,9 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
             }
             String prefix = handler.getPrefix() + ".";
             for (DBPPropertyDescriptor property : handler.getHandlerProperties()) {
+                if (property.isHidden()) {
+                    continue;
+                }
                 String helpText = CLIUtils.getPropertyHelpText(property, prefix);
                 output.append(helpText);
             }
