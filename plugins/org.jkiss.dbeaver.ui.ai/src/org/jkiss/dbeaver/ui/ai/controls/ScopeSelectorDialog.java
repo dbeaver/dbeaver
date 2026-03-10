@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.controls;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -94,8 +95,9 @@ public class ScopeSelectorDialog extends BaseDialog {
         DBNDatabaseNode finalRootNode = rootNode;
         selectorPanel = new DatabaseObjectsSelectorPanel(
             dialogArea,
-            true,
-            this.runnableContext
+            this.runnableContext,
+            SWT.SINGLE | SWT.BORDER | SWT.CHECK,
+            true
         ) {
             @Override
             protected DBPProject getSelectedProject() {

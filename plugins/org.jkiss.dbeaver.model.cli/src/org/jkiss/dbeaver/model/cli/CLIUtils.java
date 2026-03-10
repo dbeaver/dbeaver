@@ -159,10 +159,13 @@ public class CLIUtils {
     public static DBPDataSourceContainer createDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
+        @Nullable DataSourceOptions dataSourceOptions,
         @NotNull DataSourceAuthOptions authOptions,
         boolean temporary
     ) throws CLIException {
+        if (dataSourceOptions == null) {
+            throw new CLIException("datasource options not provided", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        }
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
         if (driver == null) {
             throw new CLIException("Can't find driver '" + driverId + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
@@ -190,7 +193,7 @@ public class CLIUtils {
         @NotNull DBPDataSourceContainer dataSource
     ) throws CLIException {
         String dsName = dataSourceOptions.getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
+        if (CommonUtils.isEmpty(dsName) && CommonUtils.isEmpty(dataSource.getName())) {
             dsName = "Ext: " + dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
                 dsName += " - " + dataSourceOptions.getDbName();
@@ -198,7 +201,7 @@ public class CLIUtils {
                 dsName += " - " + dataSourceOptions.getServer();
             }
         }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
+        if (CommonUtils.isNotEmpty(dsName)) {
             dataSource.setName(dsName);
         }
         if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
@@ -336,30 +339,27 @@ public class CLIUtils {
         @NotNull DBPPropertyDescriptor property,
         @Nullable String namePrefix
     ) {
-        String displayName = property.getDisplayName();
-        String description = property.getDescription();
         var helpText = new StringBuilder();
-
 
         helpText.append("  - ");
         if (CommonUtils.isNotEmpty(namePrefix) && !property.getId().startsWith(namePrefix)) {
             helpText.append(namePrefix);
         }
         helpText.append(property.getId());
-        if (!CommonUtils.equalObjects(displayName, description)) {
-            helpText.append(" (").append(displayName).append(")");
-        }
-        if (CommonUtils.isNotEmpty(description)) {
-            helpText.append(" = ").append(description);
-        }
-        if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
-            Object[] possibleValues = valueListProvider.getPossibleValues(null);
-            if (!ArrayUtils.isEmpty(possibleValues)) {
-                helpText.append(", possible values: ");
-                for (int i = 0; i < possibleValues.length; i++) {
-                    helpText.append(possibleValues[i]);
-                    if (i < possibleValues.length - 1) {
-                        helpText.append(", ");
+        Class<?> dataType = property.getDataType();
+        if (dataType == Boolean.class || dataType == boolean.class) {
+            helpText.append(" = true/false");
+        } else {
+            helpText.append(" = ").append(property.getDisplayName());
+            if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
+                Object[] possibleValues = valueListProvider.getPossibleValues(null);
+                if (!ArrayUtils.isEmpty(possibleValues)) {
+                    helpText.append(", possible values: ");
+                    for (int i = 0; i < possibleValues.length; i++) {
+                        helpText.append(possibleValues[i]);
+                        if (i < possibleValues.length - 1) {
+                            helpText.append(", ");
+                        }
                     }
                 }
             }

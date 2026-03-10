@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.rest.BearerRequestHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.rest.RestServer;
 
 import java.io.ByteArrayOutputStream;
@@ -38,35 +40,50 @@ import java.util.Properties;
 /**
  * DBeaver instance controller.
  */
-public abstract class ApplicationInstanceServer<T extends ApplicationInstanceController> implements
-    ApplicationInstanceController {
-
+public abstract class ApplicationInstanceServer<T extends ApplicationInstanceController>
+    implements ApplicationInstanceController
+{
     private static final Log log = Log.getLog(ApplicationInstanceServer.class);
     private final RestServer<T> server;
     private final FileChannel configFileChannel;
-    private final Class<T> controllerClass;
 
     protected ApplicationInstanceServer(Class<T> controllerClass) throws IOException {
-        this.controllerClass = controllerClass;
+        String password = SecurityUtils.generatePassword(32);
         server = RestServer
             .builder(controllerClass, controllerClass.cast(this))
             .setFilter(address -> address.getAddress().isLoopbackAddress())
             .setLandingPage(GeneralUtils.getProductTitle())
+            .setHandlerFactory(
+                (cls, object, gson, filter, landingPage)
+                    -> new BearerRequestHandler<>(
+                    cls, object, gson, filter, landingPage, password
+                )
+            )
             .create();
 
         configFileChannel = FileChannel.open(
             getConfigPath(),
             StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
         );
+        InstanceServerProperties serverProperties = new InstanceServerProperties(
+            server.getAddress().getPort(),
+            password
+        );
+        serializeProperties(serverProperties);
 
+        log.debug("Starting instance server at http://localhost:" + serverProperties.port());
+    }
+
+    private void serializeProperties(
+        @NotNull InstanceServerProperties serverProperties
+    ) throws IOException {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Properties props = new Properties();
-            props.setProperty(portPropertyName(), String.valueOf(server.getAddress().getPort()));
+            props.setProperty(InstanceServerProperties.PROPERTY_PORT, String.valueOf(serverProperties.port()));
+            props.setProperty(InstanceServerProperties.PROPERTY_PASSWORD, serverProperties.password());
             props.store(os, "DBeaver instance server properties");
             configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
         }
-
-        log.debug("Starting instance server at http://localhost:" + server.getAddress().getPort());
     }
 
 
@@ -81,7 +98,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
 
         StringBuilder td = new StringBuilder();
         for (Map.Entry<Thread, StackTraceElement[]> tde : Thread.getAllStackTraces().entrySet()) {
-            td.append(tde.getKey().getId()).append(" ").append(tde.getKey().getName()).append(":\n");
+            td.append(tde.getKey().threadId()).append(" ").append(tde.getKey().getName()).append(":\n");
             for (StackTraceElement ste : tde.getValue()) {
                 td.append("\t").append(ste.toString()).append("\n");
             }
@@ -161,9 +178,5 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         public boolean isOpenConsole() {
             return openConsole;
         }
-    }
-
-    protected static String portPropertyName() {
-        return "port";
     }
 }

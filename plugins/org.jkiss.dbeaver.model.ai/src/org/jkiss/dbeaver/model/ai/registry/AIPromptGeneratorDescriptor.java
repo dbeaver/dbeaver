@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,8 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final String description;
     private final DBPImage icon;
     private final List<Uses> uses;
+    private final boolean supportsActions;
+    private final boolean supportsUi;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -50,6 +53,8 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         this.uses = Stream.of(config.getChildren("uses"))
             .map(Uses::new)
             .toList();
+        this.supportsActions = CommonUtils.toBoolean(config.getAttribute("supportsActions"), false);
+        this.supportsUi = CommonUtils.toBoolean(config.getAttribute("supportsUi"), false);
     }
 
     @NotNull
@@ -75,6 +80,14 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     @NotNull
     public List<Uses> getUses() {
         return uses;
+    }
+
+    public boolean isSupportsActions() {
+        return supportsActions;
+    }
+
+    public boolean isSupportsUi() {
+        return supportsUi;
     }
 
     @NotNull
