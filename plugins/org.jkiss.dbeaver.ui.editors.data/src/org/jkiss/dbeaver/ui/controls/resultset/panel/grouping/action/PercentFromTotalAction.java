@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action;
 
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,10 +32,9 @@ public class PercentFromTotalAction extends GroupingAction {
     public PercentFromTotalAction(
         @NotNull GroupingResultsContainer groupingResultsContainer,
         @Nullable String text,
-        @NotNull ImageDescriptor image,
-        int style
+        @NotNull ImageDescriptor image
     ) {
-        super(groupingResultsContainer, text, image, style);
+        super(groupingResultsContainer, text, image, IAction.AS_CHECK_BOX);
     }
 
     @Override
