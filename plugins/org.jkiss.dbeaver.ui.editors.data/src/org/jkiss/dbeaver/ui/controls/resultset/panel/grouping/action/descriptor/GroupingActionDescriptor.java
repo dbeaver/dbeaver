@@ -47,7 +47,6 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
 
     private final int order;
 
-    private final int style;
 
     public GroupingActionDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -56,7 +55,6 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
         this.icon = DBeaverIcons.getImageDescriptor(Objects.requireNonNull(iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON))));
         this.action = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
-        this.style = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_STYLE));
     }
 
     @Nullable
@@ -74,9 +72,6 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
         return icon;
     }
 
-    public int getStyle() {
-        return style;
-    }
 
     public int getOrder() {
         return order;
@@ -84,9 +79,7 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
 
     @NotNull
     public GroupingAction createAction(@NotNull GroupingResultsContainer groupingResultsContainer) throws DBException {
-        GroupingAction groupingAction = style > 0
-            ? action.createInstance(GroupingAction.class, groupingResultsContainer, label, icon, style)
-            : action.createInstance(GroupingAction.class, groupingResultsContainer, label, icon);
+        GroupingAction groupingAction = action.createInstance(GroupingAction.class, groupingResultsContainer, label, icon);
 
         groupingAction.setDescription(description);
         return groupingAction;
