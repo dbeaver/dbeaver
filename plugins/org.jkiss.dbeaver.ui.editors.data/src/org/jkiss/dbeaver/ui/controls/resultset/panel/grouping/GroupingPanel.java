@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.*;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.descriptor.GroupingActionDescriptor;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.descriptor.GroupingActionRegistry;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionRegistry;
 
 /**
  * RSV grouping panel

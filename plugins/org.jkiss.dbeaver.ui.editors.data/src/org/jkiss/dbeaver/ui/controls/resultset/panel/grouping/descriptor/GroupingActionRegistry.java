@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.descriptor;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor;
 
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -26,15 +26,15 @@ import java.util.List;
 
 public class GroupingActionRegistry {
 
-    private static final String TAG_ACTION = "action"; //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.grouping"; //$NON-NLS-1$
 
     private static GroupingActionRegistry instance;
 
     private final List<GroupingActionDescriptor> actions;
 
     private GroupingActionRegistry(@NotNull IExtensionRegistry registry) {
-        actions = Arrays.stream(registry.getConfigurationElementsFor(GroupingActionDescriptor.EXTENSION_ID))
-            .filter(element -> TAG_ACTION.equals(element.getName()))
+        actions = Arrays.stream(registry.getConfigurationElementsFor(EXTENSION_ID))
+            .filter(element -> GroupingActionDescriptor.TAG_ACTION.equals(element.getName()))
             .map(GroupingActionDescriptor::new)
             .sorted(Comparator.comparing(GroupingActionDescriptor::getOrder))
             .toList();

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.descriptor;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -32,8 +32,7 @@ import java.util.Objects;
 
 public class GroupingActionDescriptor extends AbstractDescriptor {
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.grouping";
-
+    public static final String TAG_ACTION = "action"; //$NON-NLS-1$
 
     @Nullable
     private final String label;

@@ -34,20 +34,18 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsCon
 import java.util.List;
 import java.util.Objects;
 
-public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionColumn implements UniqueGroupingColumn {
+public class PercentGroupingFunctionColumn extends GroupingFunctionColumn implements TransformerGroupingFunctionColumn {
 
     public static final String PERCENT_FUNCTION_ID = "percent_func";
 
     private static final String FUNCTION_COUNT = "COUNT";
 
-    private final GroupingResultsContainer groupingResultsContainer;
 
     public PercentGroupingFunctionColumn(
         @NotNull DBPDataSource dataSource,
         @NotNull GroupingResultsContainer groupingResultsContainer
     ) {
-        super(getCountFunction(dataSource), dataSource);
-        this.groupingResultsContainer = groupingResultsContainer;
+        super(getCountFunction(dataSource), dataSource, groupingResultsContainer);
     }
 
 
@@ -58,7 +56,7 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
         if (dataSource != null) {
             dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
         }
-        return true;
+        return super.afterDeleteAction();
     }
 
     @Override
@@ -71,6 +69,13 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
     @Override
     public String getId() {
         return PERCENT_FUNCTION_ID;
+    }
+
+    @Override
+    public boolean shouldAddToColumns() {
+        return dataSource.getContainer().getPreferenceStore()
+            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
+        ;
     }
 
     @NotNull

@@ -19,17 +19,25 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 
 public class GroupingFunctionColumn implements GroupingColumn {
 
 
     protected final String sql;
 
+    protected final GroupingResultsContainer groupingResultsContainer;
+
+    protected final DBPDataSource dataSource;
+
     public GroupingFunctionColumn(
         @NotNull String stringFunction,
-        @NotNull DBPDataSource dataSource
+        @NotNull DBPDataSource dataSource,
+        @NotNull GroupingResultsContainer groupingResultsContainer
     ) {
         this.sql = DBUtils.getUnQuotedIdentifier(dataSource, stringFunction);
+        this.dataSource = dataSource;
+        this.groupingResultsContainer = groupingResultsContainer;
     }
 
     @NotNull
@@ -39,7 +47,7 @@ public class GroupingFunctionColumn implements GroupingColumn {
 
     @Override
     public boolean afterDeleteAction() {
-        // do nothing
+        groupingResultsContainer.resetDataFilters();
         return true;
     }
 

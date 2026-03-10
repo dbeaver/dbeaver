@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor;
 
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingColumn;
 
-public interface TransformerGroupingFunctionColumn extends UniqueGroupingColumn {
+public class GroupingColumnDescriptor extends AbstractDescriptor {
+
+    public static final String TAG_COLUMN = "column"; //$NON-NLS-1$
+
+    public GroupingColumnDescriptor(@NotNull IConfigurationElement contributorConfig) {
+        super(contributorConfig);
+    }
 
     @NotNull
-    DBDAttributeTransformer getTransformer();
-
-    boolean shouldAddToColumns();
+    public GroupingColumn getColumn() {
+        return null;
+    }
 }
