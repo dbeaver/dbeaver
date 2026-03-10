@@ -40,8 +40,7 @@ public final class DBeaverEditorPartUtils {
     private static boolean isResolving;
 
     // Weak so that editor refs/parts can be GCed when no longer used. Caches container lookups for Ctrl+E popup and chevron list.
-    private static final WeakHashMap<IEditorReference, DBPDataSourceContainer> editorRefCache = new WeakHashMap<>();
-    private static final WeakHashMap<MPart, DBPDataSourceContainer> partCache = new WeakHashMap<>();
+    private static final WeakHashMap<Object, DBPDataSourceContainer> cache = new WeakHashMap<>();
 
     private DBeaverEditorPartUtils() {
     }
@@ -52,8 +51,8 @@ public final class DBeaverEditorPartUtils {
      */
     @Nullable
     public static DBPDataSourceContainer getDataSourceContainer(@NotNull IEditorReference ref) {
-        if (editorRefCache.containsKey(ref)) {
-            return editorRefCache.get(ref);
+        if (cache.containsKey(ref)) {
+            return cache.get(ref);
         }
         if (isResolving) {
             return null;
@@ -67,7 +66,7 @@ public final class DBeaverEditorPartUtils {
                 log.debug("Cannot get editor input for: " + ref.getTitle(), e);
                 container = null;
             }
-            editorRefCache.put(ref, container);
+            cache.put(ref, container);
             return container;
         } finally {
             isResolving = false;
@@ -79,8 +78,8 @@ public final class DBeaverEditorPartUtils {
         if (part.getTransientData().containsKey(PART_SKIP_KEY)) {
             return null;
         }
-        if (partCache.containsKey(part)) {
-            return partCache.get(part);
+        if (cache.containsKey(part)) {
+            return cache.get(part);
         }
         if (isResolving) {
             return null;
@@ -88,7 +87,7 @@ public final class DBeaverEditorPartUtils {
         isResolving = true;
         try {
             DBPDataSourceContainer container = getDataSourceContainerFromPart(part);
-            partCache.put(part, container);
+            cache.put(part, container);
             return container;
         } finally {
             isResolving = false;
