@@ -23,7 +23,6 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -288,7 +287,7 @@ public class JSONUtils {
     public static <OBJECT_TYPE> OBJECT_TYPE deserializeObject(
         @NotNull Map<String, Object> map,
         @NotNull Class<OBJECT_TYPE> type
-    ) throws DBCException {
+    ) {
         String json = GSON.toJson(map);
         return GSON.fromJson(json, type);
     }
