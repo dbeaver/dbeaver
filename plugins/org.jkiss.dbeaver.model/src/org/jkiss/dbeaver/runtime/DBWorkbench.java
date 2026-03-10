@@ -41,6 +41,7 @@ public class DBWorkbench {
     private static DBPApplicationWorkbench applicationWorkbench;
     private static final List<DBRRunnableWithParam<DBPPlatform>> initHooks = new ArrayList<>();
 
+    @NotNull
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
             try {
@@ -67,10 +68,12 @@ public class DBWorkbench {
         return applicationWorkbench;
     }
 
+    @NotNull
     public static DBPPlatform getPlatform() {
         return getApplicationWorkbench().getPlatform();
     }
 
+    @NotNull
     public static <T extends DBPPlatform> T getPlatform(Class<T> pc) {
         return pc.cast(getPlatform());
     }
@@ -82,6 +85,7 @@ public class DBWorkbench {
         return false;
     }
 
+    @NotNull
     public static DBPPlatformUI getPlatformUI() {
         return getApplicationWorkbench().getPlatformUI();
     }
