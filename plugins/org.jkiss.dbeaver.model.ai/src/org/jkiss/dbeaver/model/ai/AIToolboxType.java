@@ -14,10 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.registry;
+package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.dbeaver.model.ai.AIAgent;
+/**
+ * AI toolbox type.
+ */
+public enum AIToolboxType {
 
-public interface AIAgentDescriptor extends AIAgent {
+    INTERNAL,
+    EXTERNAL
 
 }

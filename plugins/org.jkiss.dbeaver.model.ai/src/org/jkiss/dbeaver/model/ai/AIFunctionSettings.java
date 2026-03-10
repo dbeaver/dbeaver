@@ -29,13 +29,13 @@ import java.util.*;
 public final class AIFunctionSettings {
     @SerializedName("enabled")
     private boolean functionsEnabled = true;
-    private final Map<String, AgentSettings> functions = new LinkedHashMap<>();
+    private final Map<String, ToolboxSettings> functions = new LinkedHashMap<>();
 
     /**
-     * Keeps information about function which were explicitly enabled or disabled for the particular agent.
+     * Keeps information about function which were explicitly enabled or disabled for the particular toolbox.
      * User can modify enabled/disable functions set.
      */
-    public static class AgentSettings {
+    public static class ToolboxSettings {
         @SerializedName("enabled")
         private boolean enabled = true;
         @SerializedName("ef")
@@ -43,12 +43,12 @@ public final class AIFunctionSettings {
         @SerializedName("df")
         private Set<String> disabledFunctions;
 
-        public AgentSettings() {
+        public ToolboxSettings() {
             this.enabledFunctions = new LinkedHashSet<>();
             this.disabledFunctions = new LinkedHashSet<>();
         }
 
-        public AgentSettings(@NotNull AgentSettings src) {
+        public ToolboxSettings(@NotNull ToolboxSettings src) {
             this.enabled = src.enabled;
             this.enabledFunctions = new LinkedHashSet<>(src.enabledFunctions);
             this.disabledFunctions = new LinkedHashSet<>(src.disabledFunctions);
@@ -99,8 +99,8 @@ public final class AIFunctionSettings {
     }
 
     @NotNull
-    public AgentSettings getAgentSettings(@NotNull AIAgent agent) {
-        return functions.computeIfAbsent(agent.getAgentId(), s -> new AgentSettings());
+    public ToolboxSettings getToolboxSettings(@NotNull AIToolbox toolbox) {
+        return functions.computeIfAbsent(toolbox.getToolboxId(), s -> new ToolboxSettings());
     }
 
 }
