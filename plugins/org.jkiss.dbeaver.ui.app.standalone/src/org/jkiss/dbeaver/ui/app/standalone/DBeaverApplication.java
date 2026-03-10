@@ -211,7 +211,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
 
