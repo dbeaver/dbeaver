@@ -375,7 +375,8 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
             <with variable="activePart">
-                <test property="org.jkiss.dbeaver.core.resultset.active"/>
+<!--                Verifying enablement on the early stage may break RSV inside SQL editor. -->
+<!--                <test property="org.jkiss.dbeaver.core.resultset.active"/>-->
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.container">
