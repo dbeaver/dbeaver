@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 
-public interface TransformerGroupingFunctionColumn extends UniqueGroupingColumn {
+public interface TransformerGroupingFunctionColumn extends UniqueGroupingColumn, GroupingFunctionColumn {
 
     @NotNull
     DBDAttributeTransformer getTransformer();

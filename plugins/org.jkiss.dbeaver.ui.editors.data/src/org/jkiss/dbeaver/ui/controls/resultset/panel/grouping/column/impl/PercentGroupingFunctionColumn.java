@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -30,11 +30,12 @@ import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
 
 import java.util.List;
 import java.util.Objects;
 
-public class PercentGroupingFunctionColumn extends GroupingFunctionColumn implements TransformerGroupingFunctionColumn {
+public class PercentGroupingFunctionColumn extends BasicGroupingFunctionColumn implements TransformerGroupingFunctionColumn {
 
     public static final String PERCENT_FUNCTION_ID = "percent_func";
 
@@ -75,7 +76,6 @@ public class PercentGroupingFunctionColumn extends GroupingFunctionColumn implem
     public boolean shouldAddToColumns() {
         return dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        ;
     }
 
     @NotNull

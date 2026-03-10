@@ -18,7 +18,11 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.*;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.UniqueGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.SQLGroupingAttributeGroupingColumn;
 
 import java.util.*;
 

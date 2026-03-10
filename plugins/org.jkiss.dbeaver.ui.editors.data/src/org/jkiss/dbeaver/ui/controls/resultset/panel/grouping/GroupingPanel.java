@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionDescriptor;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionRegistry;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingRegistry;
 
 /**
  * RSV grouping panel
@@ -178,7 +178,7 @@ public class GroupingPanel extends ResultSetPanelBase {
     }
 
     private void addExtensionActions(@NotNull IContributionManager contributionManager) {
-        for (GroupingActionDescriptor actionDescriptor : GroupingActionRegistry.getInstance().getActions()) {
+        for (GroupingActionDescriptor actionDescriptor : GroupingRegistry.getInstance().getActions()) {
             try {
                 contributionManager.add(actionDescriptor.createAction(getGroupingResultsContainer()));
             } catch (DBException e) {

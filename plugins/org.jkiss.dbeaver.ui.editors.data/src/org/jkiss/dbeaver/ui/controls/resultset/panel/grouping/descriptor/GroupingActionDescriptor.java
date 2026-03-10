@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.GroupingAction;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Objects;
 
@@ -44,16 +43,12 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
 
     private final ObjectType action;
 
-    private final int order;
-
-
     public GroupingActionDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = DBeaverIcons.getImageDescriptor(Objects.requireNonNull(iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON))));
         this.action = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
     }
 
     @Nullable
@@ -69,11 +64,6 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
     @NotNull
     public ImageDescriptor getIcon() {
         return icon;
-    }
-
-
-    public int getOrder() {
-        return order;
     }
 
     @NotNull

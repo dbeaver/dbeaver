@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingColumn;
 
-public class GroupingColumnDescriptor extends AbstractDescriptor {
+public abstract class SQLGroupingAttributeGroupingColumn implements GroupingColumn {
 
-    public static final String TAG_COLUMN = "column"; //$NON-NLS-1$
+    private final SQLGroupingAttribute sqlGroupingAttribute;
 
-    public GroupingColumnDescriptor(@NotNull IConfigurationElement contributorConfig) {
-        super(contributorConfig);
+    public SQLGroupingAttributeGroupingColumn(@NotNull SQLGroupingAttribute sqlGroupingAttribute) {
+        this.sqlGroupingAttribute = sqlGroupingAttribute;
     }
 
     @NotNull
-    public GroupingColumn getColumn() {
-        return null;
+    public SQLGroupingAttribute getSqlGroupingAttribute() {
+        return sqlGroupingAttribute;
     }
 }

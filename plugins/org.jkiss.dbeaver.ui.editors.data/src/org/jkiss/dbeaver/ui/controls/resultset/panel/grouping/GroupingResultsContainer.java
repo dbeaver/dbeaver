@@ -33,8 +33,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.PercentGroupingFunctionColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.SQLGroupingAttributeGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.BasicGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.SQLGroupingAttributeGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingRegistry;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.TransformerGroupingFunctionColumnDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
@@ -175,7 +178,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource != null) {
             functions
                 .stream()
-                .map(func -> new GroupingFunctionColumn(func, dataSource))
+                .map(func -> new BasicGroupingFunctionColumn(func, dataSource, this))
                 .forEach(columnsContainer::addFunction);
         }
     }
@@ -204,7 +207,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource == null) {
             throw new DBException("No active datasource");
         }
-        manageSpecialFunctions(dataSource);
+        manageSpecialColumns(dataSource);
         if (columnsContainer.isEmpty()) {
             groupingViewer.showEmptyPresentation();
             return;
@@ -275,21 +278,27 @@ public class GroupingResultsContainer implements IResultSetContainer {
             .toList();
     }
 
-    private void manageSpecialFunctions(@NotNull DBPDataSource dataSource) {
-        boolean shouldPercentFunctionPresent = dataSource.getContainer().getPreferenceStore()
-            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        managePercentFunction(dataSource, shouldPercentFunctionPresent);
+    private void manageSpecialColumns(@NotNull DBPDataSource dataSource) {
+        GroupingRegistry.getInstance()
+            .getTransformedColumns()
+            .forEach(descriptor -> addSpecialColumn(descriptor, dataSource));
+
         if (columnsContainer.getFunctionColumns().isEmpty()) {
             addDefaultFunction();
         }
     }
 
-    private void managePercentFunction(@NotNull DBPDataSource dataSource, boolean shouldPresent) {
-        boolean isPresent = columnsContainer.indexOfFunctionByName(PercentGroupingFunctionColumn.PERCENT_FUNCTION_ID) >= 0;
-        if (shouldPresent && !isPresent) {
-            columnsContainer.addFunction(new PercentGroupingFunctionColumn(dataSource, this));
-        } else if (!shouldPresent && isPresent) {
-            columnsContainer.removeFunctionByName(PercentGroupingFunctionColumn.PERCENT_FUNCTION_ID);
+    private void addSpecialColumn(@NotNull TransformerGroupingFunctionColumnDescriptor descriptor, @NotNull DBPDataSource dataSource) {
+        try {
+            TransformerGroupingFunctionColumn column = descriptor.getColumn(dataSource, this);
+            boolean isPresent = columnsContainer.indexOfFunctionByName(column.getId()) >= 0;
+            if (column.shouldAddToColumns() && !isPresent) {
+                columnsContainer.addFunction(column);
+            } else if (!column.shouldAddToColumns() && isPresent) {
+                columnsContainer.removeFunctionByName(column.getId());
+            }
+        } catch (DBException e) {
+            log.warn("Failed to create column of type: " + descriptor.getColumn(), e);
         }
     }
 
@@ -308,7 +317,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
 
-    private void resetDataFilters() {
+    public void resetDataFilters() {
         groupingViewer.getModel().createDataFilter();
     }
 }
