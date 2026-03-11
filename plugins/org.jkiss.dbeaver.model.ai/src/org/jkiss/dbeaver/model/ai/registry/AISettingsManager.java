@@ -257,7 +257,8 @@ public class AISettingsManager {
         if (saveSecretsAsPlainText()) {
             return createPropertiesLoadGson();
         } else {
-            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder().registerTypeAdapter(DBAAuthProvider.class, new DBAAuthProviderAdapter()).create();
+            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
+                .registerTypeAdapter(DBAAuthProvider.class, new DBAAuthProviderAdapter()).create();
         }
     }
 
@@ -307,9 +308,9 @@ public class AISettingsManager {
 
         @Override
         public DBAAuthProvider<?> deserialize(
-            JsonElement json,
-            Type typeOfT,
-            JsonDeserializationContext context
+            @NotNull JsonElement json,
+            @NotNull Type typeOfT,
+            @NotNull JsonDeserializationContext context
         ) {
             JsonObject obj = json.getAsJsonObject();
             String type = obj.get("type").getAsString();
@@ -321,9 +322,9 @@ public class AISettingsManager {
 
         @Override
         public JsonElement serialize(
-            DBAAuthProvider src,
-            Type typeOfSrc,
-            JsonSerializationContext context
+            @NotNull DBAAuthProvider src,
+            @NotNull Type typeOfSrc,
+            @NotNull JsonSerializationContext context
         ) {
 
             JsonObject obj = context.serialize(src, src.getClass()).getAsJsonObject();
