@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.registry.DBNModelExtenderDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,7 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Lazy node provided by extension point.
  */
-public class DBNNodeExtension extends DBNNode {
+public class DBNNodeExtension extends DBNNode implements DBPHiddenObject {
 
     private final DBNModelExtenderDescriptor extender;
 
@@ -78,6 +79,11 @@ public class DBNNodeExtension extends DBNNode {
         }
 
         return ((DBNNodeExtendable)getParentNode()).resolveTargetNode(this, extension);
+    }
+
+    @Override
+    public boolean isHidden() {
+        return true;
     }
 
     @Override
