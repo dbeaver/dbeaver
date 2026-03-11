@@ -23,7 +23,6 @@ import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.e4.DBeaverEditorPartUtils;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
 
@@ -74,7 +73,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
                 if (!(cell.getElement() instanceof EditorReference ref)) {
                     return;
                 }
-                ConnectionLabelUtils.applyConnectionInfo(cell, DBeaverEditorPartUtils.getDataSourceContainer(ref));
+                ConnectionLabelUtils.applyConnectionInfo(cell, ConnectionLabelUtils.getDataSourceContainer(ref));
             }
         });
 
@@ -89,6 +88,6 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     @NotNull
     private String getFilterText(@NotNull EditorReference ref) {
         String label = getWorkbenchPartReferenceText(ref);
-        return ConnectionLabelUtils.appendConnectionSuffix(label, DBeaverEditorPartUtils.getDataSourceContainer(ref));
+        return ConnectionLabelUtils.appendConnectionSuffix(label, ConnectionLabelUtils.getDataSourceContainer(ref));
     }
 }

@@ -21,9 +21,13 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.utils.CommonUtils;
 
 public final class ConnectionLabelUtils {
@@ -31,6 +35,30 @@ public final class ConnectionLabelUtils {
     public static final String CONNECTION_SEPARATOR = " - "; //$NON-NLS-1$
 
     private ConnectionLabelUtils() {
+    }
+
+    /**
+     * Extracts a {@link DBPDataSourceContainer} from an editor reference.
+     * Tries the editor part first (if already loaded), then falls back to the editor input.
+     */
+    @Nullable
+    public static DBPDataSourceContainer getDataSourceContainer(@NotNull IEditorReference ref) {
+        try {
+            IEditorPart editor = ref.getEditor(false);
+            if (editor instanceof DBPDataSourceContainerProvider provider) {
+                DBPDataSourceContainer container = provider.getDataSourceContainer();
+                if (container != null) {
+                    return container;
+                }
+            }
+            IEditorInput input = editor != null ? editor.getEditorInput() : ref.getEditorInput();
+            if (input instanceof DBPDataSourceContainerProvider provider) {
+                return provider.getDataSourceContainer();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

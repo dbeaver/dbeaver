@@ -27,6 +27,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.ui.ConnectionLabelUtils;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.util.WeakHashMap;
@@ -35,6 +37,7 @@ public final class DBeaverEditorPartUtils {
     private static final Log log = Log.getLog(DBeaverEditorPartUtils.class);
 
     private static final String PART_SKIP_KEY = DBeaverEditorPartUtils.class.getName() + ".skipPart";
+    private static final String PART_INPUT_INITIALIZED = DBeaverEditorPartUtils.class.getName() + ".inputInitialized";
 
     // Avoids UI double entrance (e.g. master password dialog) when resolving editor input. SWT UI thread is single-threaded, so volatile is not needed.
     private static boolean isResolving;
@@ -59,13 +62,7 @@ public final class DBeaverEditorPartUtils {
         }
         isResolving = true;
         try {
-            DBPDataSourceContainer container;
-            try {
-                container = getDataSourceContainerFromRef(ref);
-            } catch (Exception e) {
-                log.debug("Cannot get editor input for: " + ref.getTitle(), e);
-                container = null;
-            }
+            DBPDataSourceContainer container = ConnectionLabelUtils.getDataSourceContainer(ref);
             cache.put(ref, container);
             return container;
         } finally {
@@ -75,6 +72,19 @@ public final class DBeaverEditorPartUtils {
 
     @Nullable
     static DBPDataSourceContainer getDataSourceContainer(@NotNull MPart part) {
+        return getDataSourceContainer(part, null);
+    }
+
+    /**
+     * Extracts a {@link DBPDataSourceContainer} from an {@link MPart}.
+     * <p>
+     * When {@code onDeferredInit} is provided and the editor input has not been loaded yet,
+     * the input initialization is deferred via {@link UIExecutionQueue} to avoid blocking
+     * UI actions (e.g. master password dialog) during paint. The callback is invoked after
+     * initialization completes so the caller can trigger a redraw.
+     */
+    @Nullable
+    static DBPDataSourceContainer getDataSourceContainer(@NotNull MPart part, @Nullable Runnable onDeferredInit) {
         if (part.getTransientData().containsKey(PART_SKIP_KEY)) {
             return null;
         }
@@ -86,8 +96,12 @@ public final class DBeaverEditorPartUtils {
         }
         isResolving = true;
         try {
-            DBPDataSourceContainer container = getDataSourceContainerFromPart(part);
-            cache.put(part, container);
+            DBPDataSourceContainer container = getDataSourceContainerFromPart(part, onDeferredInit);
+            // Do not cache null when deferred init was triggered — the container
+            // will be available on the next call after initialization completes
+            if (container != null || onDeferredInit == null) {
+                cache.put(part, container);
+            }
             return container;
         } finally {
             isResolving = false;
@@ -95,20 +109,7 @@ public final class DBeaverEditorPartUtils {
     }
 
     @Nullable
-    private static DBPDataSourceContainer getDataSourceContainerFromRef(@NotNull IEditorReference ref) throws Exception {
-        DBPDataSourceContainer container = getDataSourceContainer(ref.getEditor(false));
-        if (container != null) {
-            return container;
-        }
-        IEditorInput input = ref.getEditorInput();
-        if (input instanceof DBPDataSourceContainerProvider provider) {
-            return provider.getDataSourceContainer();
-        }
-        return null;
-    }
-
-    @Nullable
-    private static DBPDataSourceContainer getDataSourceContainerFromPart(@NotNull MPart part) {
+    private static DBPDataSourceContainer getDataSourceContainerFromPart(@NotNull MPart part, @Nullable Runnable onDeferredInit) {
         if (part.getObject() instanceof CompatibilityEditor editor) {
             return getDataSourceContainer(editor.getEditor());
         }
@@ -118,6 +119,12 @@ public final class DBeaverEditorPartUtils {
             if (editor != null) {
                 return getDataSourceContainer(editor);
             }
+            // When called from paint context, defer editor input initialization to avoid
+            // blocking UI actions (e.g. master password dialog) during paint
+            if (onDeferredInit != null && !part.getTransientData().containsKey(PART_INPUT_INITIALIZED)) {
+                UIExecutionQueue.queueExec(() -> initializePartInput(part, ref, onDeferredInit));
+                return null;
+            }
             try {
                 return EditorUtils.getInputDataSource(ref.getEditorInput(), false);
             } catch (Exception e) {
@@ -126,6 +133,22 @@ public final class DBeaverEditorPartUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * We initialize editor input in a separate UI call.
+     * Because we cannot do it in paint methods because we may need to trigger
+     * aggressive UI actions (like open dialog for authentication).
+     */
+    private static void initializePartInput(@NotNull MPart part, @NotNull IEditorReference ref, @NotNull Runnable onDeferredInit) {
+        try {
+            ref.getEditorInput();
+        } catch (Exception e) {
+            log.error(e);
+        } finally {
+            part.getTransientData().put(PART_INPUT_INITIALIZED, true);
+            onDeferredInit.run();
+        }
     }
 
     @Nullable
@@ -141,9 +164,7 @@ public final class DBeaverEditorPartUtils {
             if (input instanceof DBPDataSourceContainerProvider provider) {
                 return provider.getDataSourceContainer();
             }
-        }
-        if (editorPart != null) {
-            return EditorUtils.getInputDataSource(editorPart.getEditorInput(), false);
+            return EditorUtils.getInputDataSource(input, false);
         }
         return null;
     }
