@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,12 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Inherited
 public @interface RunWithApplication {
+    @interface Property {
+        String name();
+
+        String value();
+    }
+
     /**
      * Bundle name with application
      */
@@ -48,6 +54,8 @@ public @interface RunWithApplication {
      * Application parameters
      */
     String[] args() default {};
+
+    Property[] properties() default {};
 
     String [] vmArgs() default {};
 

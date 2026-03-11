@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -114,6 +115,9 @@ public class AIPreferencePageConfiguration extends AbstractPrefPage implements I
         Composite composite = UIUtils.createComposite(parent, 1);
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if (getContainer() instanceof IWorkbenchPreferenceContainer) {
+            composite.setData(IWorkbenchPreferenceContainer.class.getName(), getContainer());
+        }
 
         formatterConfigurator.createControl(composite, ddlGenerator, () -> {});
         Composite serviceComposite = UIUtils.createComposite(composite, 2);

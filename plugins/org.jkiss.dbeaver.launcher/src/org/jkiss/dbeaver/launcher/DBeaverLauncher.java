@@ -601,9 +601,6 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-        if (log == null) {
-            openLogFile();
-        }
         try {
             CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
             if (commandLineExecuteResult.shutdown()) {
@@ -761,13 +758,18 @@ public class DBeaverLauncher {
             }
             return new CommandLineExecuteResult(cliMode);
         }
-        Integer serverPort = readDBeaverServerPort(workspacePath);
-        if (debug) {
-            System.out.println("Detected DBeaver server port: " + serverPort);
-        }
-        if (serverPort == null) {
+        InstanceServerProperties properties = readDBeaverServerInfo(workspacePath);
+
+        if (properties == null) {
+            if (debug) {
+                System.out.println("DBeaver server properties not found in workspace: " + workspacePath);
+            }
             return new CommandLineExecuteResult(cliMode);
         }
+        if (debug) {
+            System.out.println("Detected DBeaver server port: " + properties.port());
+        }
+
 
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
         try (
@@ -787,8 +789,9 @@ public class DBeaverLauncher {
                 .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
                 .collect(Collectors.joining(",", "{\"args\":[", "]}"));
             HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/handleCommandLine"))
+                .uri(URI.create("http://localhost:" + properties.port() + "/handleCommandLine"))
                 .header("Content-Type", "application/json")
+                .header(InstanceServerProperties.HEADER_AUTHORIZATION, InstanceServerProperties.BEARER_PREFIX + properties.password())
                 .POST(HttpRequest.BodyPublishers.ofString(json));
             HttpRequest request = builder.build();
             HttpResponse<String> response = client.send(request, stringBodyHandler);
@@ -900,7 +903,7 @@ public class DBeaverLauncher {
         return dbeaverDataDir.resolve(Constants.WORKSPACE6);
     }
 
-    private Integer readDBeaverServerPort(Path workspacePath) {
+    private InstanceServerProperties readDBeaverServerInfo(Path workspacePath) {
         Path dbeaverProperties = workspacePath
             .resolve(Constants.METADATA)
             .resolve(Constants.DBEAVER_INSTANCE_PROPS);
@@ -913,11 +916,21 @@ public class DBeaverLauncher {
         Properties properties = new Properties();
         try (var is = Files.newInputStream(dbeaverProperties)) {
             properties.load(is);
-            String portProperty = properties.getProperty(Constants.PROPERTY_PORT);
+            String portProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PORT);
             if (portProperty == null || portProperty.isBlank()) {
+                if (debug) {
+                    System.out.println("DBeaver server port property not found or blank in properties file: " + dbeaverProperties);
+                }
                 return null;
             }
-            return Integer.valueOf(portProperty);
+            String passwordProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PASSWORD);
+            if (passwordProperty == null || passwordProperty.isBlank()) {
+                if (debug) {
+                    System.out.println("DBeaver server password property not found or blank in properties file: " + dbeaverProperties);
+                }
+                return null;
+            }
+            return new InstanceServerProperties(Integer.parseInt(portProperty), passwordProperty);
         } catch (Exception e) {
             log(e);
             return null;

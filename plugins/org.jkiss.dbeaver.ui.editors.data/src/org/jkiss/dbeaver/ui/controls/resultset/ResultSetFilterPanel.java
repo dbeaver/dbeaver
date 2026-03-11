@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,8 +135,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         gl.marginWidth = 3;
         this.setLayout(gl);
 
-        boolean isDark = UIStyles.isDarkTheme();
-        this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        this.shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
             this.filterComposite = new Composite(this, SWT.NONE);
@@ -897,8 +896,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 e.gc.setBackground(hoverBgColor);
                 e.gc.fillRectangle(e.x, e.y, e.width - 3, panelHeight);
                 e.gc.drawLine(
-                    e.x + e.width - 4, e.y,
-                    e.x + e.width - 4, e.y + e.height);
+                    e.x + e.width - 4, e.y + 2,
+                    e.x + e.width - 4, e.y + e.height - 4);
             } else {
                 e.gc.drawLine(
                     e.x + e.width - 4, e.y + 2,
@@ -913,7 +912,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (activeObjectImage != null) {
                 Image icon = DBeaverIcons.getImage(activeObjectImage);
                 Rectangle iconBounds = icon.getBounds();
-                e.gc.drawImage(icon, 2, 2);
+                e.gc.drawImage(icon, 2, (e.height - iconBounds.height) / 2);
                 textOffset += iconBounds.width + 2;
             }
             int textHeight = e.gc.getFontMetrics().getHeight();
@@ -1160,7 +1159,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         GridData gd = (GridData) filtersText.getLayoutData();
         gd.heightHint = filtersText.getLineHeight() * (filterExpanded ? 5 : 1);
         filtersText.redraw();
-        this.getParent().layout(true);
+        this.getParent().getParent().layout(true);
     }
 
     private abstract class ToolItemPanel extends FilterPanel {

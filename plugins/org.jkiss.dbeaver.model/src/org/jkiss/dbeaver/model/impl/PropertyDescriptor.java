@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private static final String ATTR_ALLOW_CUSTOM_VALUES = "allowCustomValues";
     private static final String ATTR_FEATURES = "features";
     private static final String ATTR_LENGTH = "length";
+    private static final String ATTR_DESKTOP = "desktop";
+    private static final String ATTR_HIDDEN = "hidden";
 
     private static final String VALUE_SPLITTER = ","; //NON-NLS-1
 
@@ -94,6 +96,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private Object[] validValues;
     private boolean allowCustomValues = true;
     private final boolean editable;
+    private final boolean desktop;
+    private final boolean hidden;
     @NotNull
     private final PropertyLength length;
     private String[] features;
@@ -143,6 +147,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.name = name;
         this.description = description;
         this.required = required;
+        this.desktop = false;
+        this.hidden = false;
         this.type = type;
         this.defaultValue = defaultValue;
         this.validValues = validValues;
@@ -161,6 +167,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.description = config.getAttribute(ATTR_DESCRIPTION);
         this.hint = config.getAttribute(ATTR_HINT);
         this.required = CommonUtils.getBoolean(config.getAttribute(ATTR_REQUIRED));
+        this.desktop = CommonUtils.getBoolean(config.getAttribute(ATTR_DESKTOP), false);
+        this.hidden = CommonUtils.getBoolean(config.getAttribute(ATTR_HIDDEN), false);
         String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
             propertyType = PropertyType.t_string;
@@ -210,6 +218,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.description = description;
         this.type = type;
         this.required = required;
+        this.desktop = false;
+        this.hidden = false;
         this.defaultValue = defaultValue;
         this.validValues = validValues;
         this.editable = editable;
@@ -288,6 +298,16 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @Override
     public boolean isRequired() {
         return required;
+    }
+
+    @Override
+    public boolean isDesktop() {
+        return desktop;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return hidden;
     }
 
     @Override

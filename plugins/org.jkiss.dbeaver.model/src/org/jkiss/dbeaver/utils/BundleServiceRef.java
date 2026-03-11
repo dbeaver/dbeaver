@@ -14,27 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.utils;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
-import picocli.CommandLine;
+import org.jkiss.code.Nullable;
 
-import java.util.concurrent.Callable;
+/**
+ * Bundle service instance reference
+ */
+public record BundleServiceRef<T>(
+    @Nullable T service,
+    @Nullable Runnable initializer
+) {
 
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
-    @Override
-    public Void call() throws CLIException {
-        run();
-        return null;
+    public void initializeService() {
+        if (initializer != null) {
+            initializer.run();
+        }
     }
-
-    public abstract void run() throws CLIException;
-
-    @NotNull
-    protected abstract CLIContext context();
 }

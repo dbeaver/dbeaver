@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,6 +212,10 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     @NotNull
     @Override
     public DBIcon getIcon() {
+        // for distributed application driver libraries could not be located locally
+        if (DBWorkbench.isDistributed() && isDistributedDriverLibraryFolder()) {
+            return DBIcon.TREE_FOLDER_ADMIN;
+        }
         Path localFile = getLocalFile();
         if (localFile != null && Files.isDirectory(localFile)) {
             return DBIcon.TREE_FOLDER_ADMIN;
@@ -223,6 +227,24 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
                 default -> DBIcon.TYPE_UNKNOWN;
             };
         }
+    }
+
+    private boolean isDistributedDriverLibraryFolder() {
+        if (driver == null) {
+            return false;
+        }
+        List<DriverFileInfo> fileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
+        if (fileInfos == null || fileInfos.isEmpty()) {
+            log.warn("Driver files are empty for driver %s (%s)".formatted(driver.getId(), getId()));
+            return true;
+        }
+        if (fileInfos.size() > 1) {
+            return true;
+        }
+        // check that there are no file extensions in library, but resolved file has extension
+        String libraryExt = IOUtils.getFileExtension(getLocalFilePath());
+        String resolvedFileExt = IOUtils.getFileExtension(fileInfos.getFirst().getFile());
+        return CommonUtils.isEmpty(libraryExt) && !CommonUtils.isEmpty(resolvedFileExt);
     }
 
     /**

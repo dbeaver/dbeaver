@@ -14,22 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.launcher;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import picocli.CommandLine;
+public record InstanceServerProperties(int port, String password) {
+    public static final String PROPERTY_PORT = "port";
+    public static final String PROPERTY_PASSWORD = "password";
 
-// Base class for first level commands, which use AbstractTopLevelCommand as parent
-public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
-
-    @NotNull
-    public CLIContext context() {
-        return parent.getContext();
-    }
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
 }
