@@ -130,6 +130,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return EnumSet.of(PageCompletionMark.ERROR);
     }
 
+    @Nullable
     protected Tree getPagesTree() {
         return pagesTree;
     }
@@ -388,6 +389,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
+    @Nullable
     public IWizardPage getCurrentPage() {
         TreeItem[] selection = pagesTree.getSelection();
         if (ArrayUtils.isEmpty(selection)) {
@@ -554,14 +556,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     public void updateButtons() {
         Button finishButton = getButton(IDialogConstants.OK_ID);
         if (finishButton != null && !finishButton.isDisposed()) {
-            finishButton.setEnabled(wizard.canFinish());
+            finishButton.setEnabled(shouldFinishButtonBeEnabled());
         }
 
         IWizardPage currentPage = getCurrentPage();
         if (currentPage != null) {
             Button nextButton = getButton(IDialogConstants.NEXT_ID);
             if (nextButton != null) {
-                nextButton.setEnabled(getCurrentPage().isPageComplete() && wizard.getNextPage(currentPage) != null);
+                nextButton.setEnabled(canShowNext(currentPage));
             }
             Button prevButton = getButton(IDialogConstants.BACK_ID);
             if (prevButton != null) {
@@ -569,6 +571,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             }
         }
         updatePageCompleteMark(null);
+    }
+
+    protected boolean shouldFinishButtonBeEnabled() {
+        return wizard.canFinish();
+    }
+
+    protected boolean canShowNext(@NotNull IWizardPage currentPage) {
+        return currentPage.isPageComplete() && wizard.getNextPage(currentPage) != null;
     }
 
     @Override
@@ -798,7 +808,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private void updateSizeForPage(IWizardPage page) {
         if (isAutoLayoutAvailable() &&
             (!(page instanceof  ActiveWizardPage<?> awp) || awp.isAutoResizeEnabled())) {
-            UIUtils.asyncExec(() -> {
+            UIUtils.syncExec(() -> {
                 Point pageCompSize = page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 for (Control parent = page.getControl().getParent(); parent != null; parent = parent.getParent()) {
                     if (parent instanceof SashForm) {
