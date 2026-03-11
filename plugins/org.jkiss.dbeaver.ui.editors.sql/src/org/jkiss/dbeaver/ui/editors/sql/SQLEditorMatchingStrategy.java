@@ -30,6 +30,10 @@ public class SQLEditorMatchingStrategy implements IEditorMatchingStrategy
 
     @Override
     public boolean matches(IEditorReference editorRef, IEditorInput input) {
+        if (editorRef.getEditor(false) == null) {
+            // Because calling getEditorInput maybe a very expensive call (as it may refer to remote FS with auth, etc).
+            return false;
+        }
         try {
             final IEditorInput refInput = editorRef.getEditorInput();
             if (refInput != null) {
