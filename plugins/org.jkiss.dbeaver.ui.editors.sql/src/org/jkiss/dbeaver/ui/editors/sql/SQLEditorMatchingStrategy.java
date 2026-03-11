@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,17 @@ public class SQLEditorMatchingStrategy implements IEditorMatchingStrategy
 
     @Override
     public boolean matches(IEditorReference editorRef, IEditorInput input) {
-        final File inputFile = EditorUtils.getLocalFileFromInput(input);
         try {
             final IEditorInput refInput = editorRef.getEditorInput();
             if (refInput != null) {
-                final File refFile = EditorUtils.getLocalFileFromInput(refInput);
-                if (refFile != null && refFile.equals(inputFile)) {
-                    return true;
+                File refFile = EditorUtils.getLocalFileFromInput(refInput);
+                if (refFile != null) {
+                    File inputFile = EditorUtils.getLocalFileFromInput(input);
+                    return refFile.equals(inputFile);
                 }
             }
         } catch (Exception e) {
-            log.debug("Error getting input from editor ref", e);
+            log.debug("Error getting input from editor ref " + editorRef, e);
             return false;
         }
         return false;
