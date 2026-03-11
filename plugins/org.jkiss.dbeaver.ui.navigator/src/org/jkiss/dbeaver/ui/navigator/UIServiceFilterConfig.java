@@ -40,4 +40,9 @@ public interface UIServiceFilterConfig {
         @NotNull DBXTreeItem itemsMeta,
         @NotNull DBSObjectFilter currentDialogFilter
     ) throws DBException;
+
+    void removeUserFilter(
+        @NotNull DBNDatabaseNode parentNode,
+        @NotNull DBXTreeItem itemsMeta
+    ) throws DBException;
 }

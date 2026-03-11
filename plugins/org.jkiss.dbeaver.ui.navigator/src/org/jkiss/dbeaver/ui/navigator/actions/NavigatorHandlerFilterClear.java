@@ -58,8 +58,11 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
                     parentNode.setNodeFilter(itemsMeta, emptyFilter, true);
                     NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(parentNode));
                 } else {
-                    emptyFilter.setUserFilter(isUserObjectFilter(parentNode, itemsMeta));
-                    uiServiceFilterConfig.setParentNodeFilter(parentNode, itemsMeta, emptyFilter);
+                    if (isUserObjectFilter(parentNode, itemsMeta)) {
+                        uiServiceFilterConfig.removeUserFilter(parentNode, itemsMeta);
+                    } else {
+                        uiServiceFilterConfig.setParentNodeFilter(parentNode, itemsMeta, emptyFilter);
+                    }
                 }
             }
         } catch (DBException e) {
