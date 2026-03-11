@@ -24,18 +24,18 @@ import org.jkiss.dbeaver.model.ai.*;
 import java.util.List;
 import java.util.Map;
 
-public class AIAgentInternalDescriptor implements AIAgentDescriptor {
+public class AIToolboxInternalDescriptor implements AIToolboxDescriptor {
 
     private final AIFunctionInternalRegistry functionRegistry;
 
-    public AIAgentInternalDescriptor() {
+    public AIToolboxInternalDescriptor() {
         this.functionRegistry = new AIFunctionInternalRegistry(this);
     }
 
     @Override
     @NotNull
-    public String getAgentId() {
-        return AIConstants.INTERNAL_AGENT_ID;
+    public String getToolboxId() {
+        return AIConstants.INTERNAL_TOOLBOX_ID;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class AIAgentInternalDescriptor implements AIAgentDescriptor {
     @Nullable
     @Override
     public String getDescription() {
-        return "DBeaver internal AI agent";
+        return "DBeaver internal AI toolbox";
     }
 
     @Override

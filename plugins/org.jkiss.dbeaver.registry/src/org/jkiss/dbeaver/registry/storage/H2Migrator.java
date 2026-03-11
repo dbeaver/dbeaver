@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,51 @@ public class H2Migrator {
         }
     }
 
+    public void migrateDatabaseIfNeededByFiles(@NotNull String dbNameV1, @NotNull String dbNameV2) {
+        String resolvedDbUrl = databaseConfiguration.getResolvedUrl();
+
+        var workspacePaths = new WorkspacePaths(resolvedDbUrl, dbNameV1, dbNameV2);
+
+        boolean hasV1 = workspacePaths.v1Paths.dbDataFile.toFile().exists();
+        boolean hasV2 = workspacePaths.v2Paths.dbDataFile.toFile().exists();
+
+        // the changed config is not written to disk immediately, so it is possible that the database is migrated,
+        // but the config on disk remains old
+        if (workspacePaths.v2Paths.dbDataFile.toFile().exists() &&
+            (resolvedDbUrl.endsWith(dbNameV1) || V1_DRIVER_NAME.equals(databaseConfiguration.getDriver()))
+        ) {
+            updateConfig(workspacePaths);
+            return;
+        }
+
+        if (!hasV1) {
+            log.trace("No v1 database found");
+
+            if (hasV2) {
+                log.trace("v2 database exists — switching config to v2");
+            } else {
+                log.trace("Fresh install — canonicalizing config to v2 name");
+            }
+
+            updateConfig(workspacePaths);
+            return;
+        }
+
+        if (!hasV2) {
+            var oldUrl = databaseConfiguration.getUrl();
+
+            try {
+                log.debug("Starting H2 v1->v2 migration");
+                migrateDatabase(workspacePaths);
+                log.debug("H2 v1->v2 migration was successful");
+            } catch (Exception e) {
+                log.error("Migration H2 v1->v2 failed", e);
+                rollback(workspacePaths, oldUrl, V1_DRIVER_NAME);
+            }
+        }
+
+    }
+
     private void migrateDatabase(@NotNull WorkspacePaths workspacePaths) throws DBException, SQLException, IOException {
         try {
             monitor.beginTask("H2 database v1 -> v2 migration started", 3);
@@ -166,7 +211,7 @@ public class H2Migrator {
         @NotNull String script,
         @NotNull String filePath
     ) throws SQLException {
-        try (var connection = driver.connect(databaseConfiguration.getResolvedUrl(), dbProperties);
+        try (var connection = driver.connect("jdbc:h2:" + toFilePath(databaseConfiguration.getResolvedUrl()), dbProperties);
              var statement = connection.prepareStatement(script)
         ) {
             statement.setString(1, filePath);
@@ -178,22 +223,38 @@ public class H2Migrator {
         }
     }
 
+    protected void updateDatabaseLocation(
+        @NotNull String v1Name,
+        @NotNull String v2Name,
+        @NotNull Path dbDataFile1,
+        @NotNull Path dbDataFile2
+    ) {
+
+        var updatedDbUrl = CommonUtils.replaceLast(
+            databaseConfiguration.getUrl(),
+            v1Name,
+            v2Name
+        );
+
+        if (!updatedDbUrl.equals(databaseConfiguration.getUrl())) {
+            log.debug("Using database file '" + dbDataFile2 + "' instead of '"
+                + dbDataFile1 + "' from config");
+            databaseConfiguration.setUrl(updatedDbUrl);
+        }
+
+    }
+
     private void updateConfig(@NotNull WorkspacePaths workspacePaths) {
         if (!V2_DRIVER_NAME.equals(databaseConfiguration.getDriver())) {
             log.debug("Using database driver '" + V2_DRIVER_NAME + "' instead of '" + V1_DRIVER_NAME + "' from config");
             databaseConfiguration.setDriver(V2_DRIVER_NAME);
         }
-
-        var updatedDbUrl = CommonUtils.replaceLast(
-            databaseConfiguration.getUrl(),
+        updateDatabaseLocation(
             workspacePaths.v1Paths.dbName,
-            workspacePaths.v2Paths.dbName
+            workspacePaths.v2Paths.dbName,
+            workspacePaths.v1Paths.dbDataFile,
+            workspacePaths.v2Paths.dbDataFile
         );
-        if (!updatedDbUrl.equals(databaseConfiguration.getUrl())) {
-            log.debug("Using database file '" + workspacePaths.v2Paths.dbDataFile + "' instead of '"
-                + workspacePaths.v1Paths.dbDataFile + "' from config");
-            databaseConfiguration.setUrl(updatedDbUrl);
-        }
     }
 
     private void removeExportFile(@NotNull WorkspacePaths workspacePaths) {
@@ -222,6 +283,37 @@ public class H2Migrator {
 
     public static boolean isH2Database(InternalDatabaseConfig databaseConfiguration) {
         return databaseConfiguration.getUrl().startsWith("jdbc:h2");
+    }
+
+    @NotNull
+    private static Path toFilePath(@NotNull String url) {
+        if (!url.startsWith("jdbc:h2:")) {
+            throw new IllegalArgumentException("Not H2 URL: " + url);
+        }
+
+        String h2 = url.substring("jdbc:h2:".length());
+
+        if (h2.startsWith("tcp://") || h2.startsWith("ssl://")) {
+
+            int protoIdx = h2.indexOf("://");
+            int pathStart = h2.indexOf('/', protoIdx + 3);
+
+            if (pathStart < 0) {
+                throw new IllegalArgumentException("No file path in URL: " + url);
+            }
+
+            // skip leading slash for "/X:\..."
+            if (pathStart + 2 < h2.length()
+                && Character.isLetter(h2.charAt(pathStart + 1))
+                && h2.charAt(pathStart + 2) == ':') {
+
+                pathStart++;
+            }
+
+            h2 = h2.substring(pathStart);
+        }
+
+        return Paths.get(h2);
     }
 
     private static class WorkspacePaths {
@@ -256,6 +348,12 @@ public class H2Migrator {
             exportFilePath = dbFolderPath.resolve(EXPORT_SCRIPT_FILE_NAME);
         }
 
+        @NotNull
+        private static Path getFolderPath(@NotNull String url) {
+            Path h2 = toFilePath(url);
+            return h2.getParent();
+        }
+
         private String createBackupFileName(Path file) {
             String backupFileName = file.getFileName().toString() + ".backup";
             if (!backupFileName.startsWith(".")) {
@@ -264,11 +362,6 @@ public class H2Migrator {
             return backupFileName;
         }
 
-        @NotNull
-        private static Path getFolderPath(@NotNull String resolvedDbUrl) {
-            var filePath = Paths.get(resolvedDbUrl.substring("jdbc:h2:".length()));
-            return filePath.getParent();
-        }
     }
 
     private static class H2FilesPaths {

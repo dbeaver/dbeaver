@@ -38,12 +38,12 @@ public class AIFunctionInternalRegistry {
 
     private final Map<String, AIFunctionDescriptor> functionsById = new LinkedHashMap<>();
 
-    public AIFunctionInternalRegistry(@NotNull AIAgentInternalDescriptor agentDescriptor) {
+    public AIFunctionInternalRegistry(@NotNull AIToolboxInternalDescriptor toolbox) {
         IConfigurationElement[] extElements = Platform.getExtensionRegistry()
             .getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("function".equals(ext.getName())) {
-                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(agentDescriptor, ext);
+                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(toolbox, ext);
                 functionsById.put(fd.getId(), fd);
             }
         }

@@ -24,12 +24,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * AI agent.
+ * AI toolbox. It is a provider of AI tools (functions).
+ * It may be an internal toolbox or an external MCP server.
  */
-public interface AIAgent {
+public interface AIToolbox {
 
     @NotNull
-    String getAgentId();
+    String getToolboxId();
 
     @NotNull
     String getDisplayName();

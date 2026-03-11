@@ -40,7 +40,7 @@ public class AIConstants {
     public static final String AI_TEMPERATURE_PROPERTY = "temperature";
 
     public static final String AI_MODEL_PLUGIN_ID = "org.jkiss.dbeaver.model.ai";
-    public static final String INTERNAL_AGENT_ID = "internal";
+    public static final String INTERNAL_TOOLBOX_ID = "db";
 
 }
 
