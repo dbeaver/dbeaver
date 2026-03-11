@@ -49,7 +49,6 @@ public class GroupingRegistry {
                 transformedColumns.add(new TransformerGroupingFunctionColumnDescriptor(element));
             default -> log.debug("No corresponding descriptor found for element" + element.getName());
         }
-        ;
     }
 
     @NotNull
