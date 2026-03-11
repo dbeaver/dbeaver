@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,28 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Query manager controller
  */
 public interface QMRegistry {
 
+    @NotNull
     QMMCollector getMetaCollector();
 
+    @NotNull
     QMExecutionHandler getDefaultHandler();
 
+    @NotNull
     QMEventBrowser getEventBrowser(boolean currentSessionOnly);
 
-    void registerHandler(QMExecutionHandler handler);
+    void registerHandler(@NotNull QMExecutionHandler handler);
 
-    void unregisterHandler(QMExecutionHandler handler);
+    void unregisterHandler(@NotNull QMExecutionHandler handler);
 
-    void registerMetaListener(QMMetaListener metaListener);
+    void registerMetaListener(@NotNull QMMetaListener metaListener);
 
-    void unregisterMetaListener(QMMetaListener metaListener);
+    void unregisterMetaListener(@NotNull QMMetaListener metaListener);
 
 }

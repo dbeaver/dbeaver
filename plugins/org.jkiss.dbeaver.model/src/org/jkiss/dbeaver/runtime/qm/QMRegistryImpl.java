@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,14 @@ public class QMRegistryImpl implements QMRegistry {
 
     private static final Log log = Log.getLog(QMRegistryImpl.class);
 
+    private QMLogFileWriter logWriter;
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;
     private final List<QMExecutionHandler> handlers = new ArrayList<>();
     private QMEventBrowser eventBrowser;
     private final DefaultEventBrowser defaultEventBrowser = new DefaultEventBrowser();
 
-    public QMRegistryImpl() {
+    public QMRegistryImpl(boolean useLogWriter) {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class[]{ QMExecutionHandler.class },
@@ -55,10 +56,20 @@ public class QMRegistryImpl implements QMRegistry {
 
         metaHandler = new QMMCollectorImpl();
         registerHandler(metaHandler);
+
+        if (useLogWriter) {
+            this.logWriter = new QMLogFileWriter();
+            this.registerMetaListener(logWriter);
+        }
     }
 
-    public void dispose()
-    {
+    public void dispose() {
+        if (this.logWriter != null) {
+            this.unregisterMetaListener(logWriter);
+            this.logWriter.dispose();
+            this.logWriter = null;
+        }
+
         if (metaHandler != null) {
             unregisterHandler(metaHandler);
             metaHandler.dispose();
@@ -74,17 +85,20 @@ public class QMRegistryImpl implements QMRegistry {
       	defaultHandler = null;
     }
 
+    @NotNull
     @Override
     public QMMCollector getMetaCollector()
     {
         return metaHandler;
     }
 
+    @NotNull
     @Override
     public QMExecutionHandler getDefaultHandler() {
         return defaultHandler;
     }
 
+    @NotNull
     @Override
     public synchronized QMEventBrowser getEventBrowser(boolean currentSessionOnly) {
         if (currentSessionOnly) {
@@ -102,14 +116,14 @@ public class QMRegistryImpl implements QMRegistry {
     }
 
     @Override
-    public void registerHandler(QMExecutionHandler handler) {
+    public void registerHandler(@NotNull QMExecutionHandler handler) {
         synchronized (handlers) {
             handlers.add(handler);
         }
     }
 
     @Override
-    public void unregisterHandler(QMExecutionHandler handler) {
+    public void unregisterHandler(@NotNull QMExecutionHandler handler) {
         synchronized (handlers) {
             if (!handlers.remove(handler)) {
                 log.warn("QM handler '" + handler + "' isn't registered within QM controller");
@@ -118,13 +132,13 @@ public class QMRegistryImpl implements QMRegistry {
     }
 
     @Override
-    public void registerMetaListener(QMMetaListener metaListener)
+    public void registerMetaListener(@NotNull QMMetaListener metaListener)
     {
         metaHandler.addListener(metaListener);
     }
 
     @Override
-    public void unregisterMetaListener(QMMetaListener metaListener)
+    public void unregisterMetaListener(@NotNull QMMetaListener metaListener)
     {
         metaHandler.removeListener(metaListener);
     }
