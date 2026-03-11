@@ -31,7 +31,7 @@ import picocli.CommandLine;
 
 import java.util.*;
 
-@CommandLine.Command(name = "network-handlers", description = "List available database network handlers.")
+@CommandLine.Command(name = "network-handlers", description = "List available database network handlers")
 
 public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
     @NotNull
