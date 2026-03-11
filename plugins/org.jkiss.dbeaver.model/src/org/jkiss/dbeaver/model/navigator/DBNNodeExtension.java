@@ -30,9 +30,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public class DBNNodeExtension extends DBNNode {
 
     private final DBNModelExtenderDescriptor extender;
-    private DBNNode[] children;
 
-    DBNNodeExtension(@NotNull DBNNode parentNode, @NotNull DBNModelExtenderDescriptor extender) {
+    public DBNNodeExtension(@NotNull DBNNode parentNode, @NotNull DBNModelExtenderDescriptor extender) {
         super(parentNode);
         this.extender = extender;
     }
@@ -67,6 +66,20 @@ public class DBNNodeExtension extends DBNNode {
         return extender.getNodeIcon();
     }
 
+    public <T> boolean matchesType(Class<T> nodeType) {
+        return nodeType.getName().equals(this.getNodeType());
+    }
+
+    @Nullable
+    public DBNNode resolveRealNode() {
+        DBNNode extension = createExtension();
+        if (extension == null) {
+            return null;
+        }
+
+        return ((DBNNodeExtendable)getParentNode()).resolveTargetNode(this, extension);
+    }
+
     @Override
     protected boolean allowsChildren() {
         return true;
@@ -75,10 +88,7 @@ public class DBNNodeExtension extends DBNNode {
     @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (children == null && !monitor.isForceCacheUsage()) {
-            children = extender.getInstance().getExtraNodes(getParentNode());
-        }
-        return children;
+        return null;
     }
 
     @NotNull
@@ -90,10 +100,8 @@ public class DBNNodeExtension extends DBNNode {
     }
 
     @Nullable
-    @Override
-    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
-        children = null;
-        return this;
+    public DBNNode createExtension() {
+        return extender.getInstance().createNode(getParentNode());
     }
 
     @NotNull

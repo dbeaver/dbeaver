@@ -29,8 +29,10 @@ public interface DBNNodeExtendable {
     @NotNull
     List<DBNNode> getExtraNodes();
 
-    void addExtraNode(@NotNull DBNNode node, boolean reflect);
+    void addExtraNode(@NotNull DBNNodeExtension node, boolean reflect);
 
     void removeExtraNode(@NotNull DBNNode node);
 
+    @NotNull
+    DBNNode resolveTargetNode(@NotNull DBNNodeExtension sourceNode, @NotNull DBNNode targetNode);
 }

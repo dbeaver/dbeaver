@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNModelExtender;
@@ -76,9 +77,13 @@ public class DBNModelExtenderDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public DBNModelExtender getInstance() throws DBException {
+    public DBNModelExtender getInstance() {
         if (instance == null) {
-            instance = implType.createInstance(DBNModelExtender.class);
+            try {
+                instance = implType.createInstance(DBNModelExtender.class);
+            } catch (DBException e) {
+                throw new DBRuntimeException(e);
+            }
         }
         return instance;
     }
