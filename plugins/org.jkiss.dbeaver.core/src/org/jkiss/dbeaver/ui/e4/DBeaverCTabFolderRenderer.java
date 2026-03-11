@@ -172,10 +172,15 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item, @NotNull MPart part) {
         // Paint-safe: defer editor input initialization to avoid blocking dialogs (e.g. master password) during paint
-        if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref
-            && ref.getEditor(false) == null
-            && !part.getTransientData().containsKey(PART_INPUT_INITIALIZED)) {
-            UIExecutionQueue.queueExec(() -> initializePartInput(item, part, ref));
+        try {
+            if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref
+                && ref.getEditor(false) == null
+                && !part.getTransientData().containsKey(PART_INPUT_INITIALIZED)) {
+                UIExecutionQueue.queueExec(() -> initializePartInput(item, part, ref));
+                return null;
+            }
+        } catch (Exception e) {
+            log.debug("Cannot check editor state for part: " + part.getElementId(), e);
             return null;
         }
         DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(part);
