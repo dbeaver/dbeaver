@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
@@ -61,7 +62,12 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         StringBuilder ddl = new StringBuilder();
 
         if (dbContext.getSchemaGenerationOptions().sendFullDDL()) {
-            String tableDDL = DBStructUtils.generateTableDDL(monitor, table, Map.of(), false);
+            String tableDDL = DBStructUtils.generateTableDDL(
+                monitor,
+                table,
+                Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true),
+                false
+            );
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
             generateCustomDDL(monitor, dbContext, table, useFqn, ddl);

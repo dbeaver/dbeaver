@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -220,10 +219,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return BASE_TABLE_NAME;
     }
 
+    @NotNull
     public DBEPersistAction[] getTableDDL(
-        DBRProgressMonitor monitor,
-        OBJECT_TYPE table,
-        Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE table,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
 
         List<DBEPersistAction> actions = new ArrayList<>();
 
@@ -264,9 +265,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             return actions.toArray(new DBEPersistAction[0]);
         }
 
-        if (table.isPersisted() && isIncludeDropInDDL(table) &&
-            (table.getDataSource() == null ||
-                table.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO))
+        if (table.isPersisted() &&
+            isIncludeDropInDDL(table) &&
+            !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_DROPS)
         ) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
             for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, executionContext, options)) {
