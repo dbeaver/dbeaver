@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.launcher;
 public record InstanceServerProperties(int port, String password) {
     public static final String PROPERTY_PORT = "port";
     public static final String PROPERTY_PASSWORD = "password";
+    public static final String PROPERTY_INSTANCE = "instance";
+    public static final String PROPERTY_STARTED_AT = "startedAt";
 
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String BEARER_PREFIX = "Bearer ";
