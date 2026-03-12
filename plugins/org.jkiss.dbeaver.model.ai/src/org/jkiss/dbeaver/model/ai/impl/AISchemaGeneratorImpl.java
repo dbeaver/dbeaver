@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
@@ -27,9 +28,11 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 public class AISchemaGeneratorImpl implements AISchemaGenerator {
@@ -57,6 +60,24 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     ) throws DBException {
         StringBuilder ddl = new StringBuilder();
 
+        if (dbContext.getSchemaGenerationOptions().sendFullDDL()) {
+            String tableDDL = DBStructUtils.generateTableDDL(monitor, table, Map.of(), false);
+            DBStructUtils.addDDLLine(ddl, tableDDL);
+        } else {
+            generateCustomDDL(monitor, dbContext, table, useFqn, ddl);
+        }
+
+        return ddl.toString();
+    }
+
+    @Nullable
+    private static String generateCustomDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext dbContext,
+        @NotNull DBSTable table,
+        boolean useFqn,
+        @NotNull StringBuilder ddl
+    ) throws DBException {
         String name = useFqn
             ? DBUtils.getObjectFullName(dbContext.getExecutionContext().getDataSource(), table, DBPEvaluationContext.DDL)
             : DBUtils.getQuotedIdentifier(table);
@@ -96,7 +117,8 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             );
         });
 
-        return ddl.append(columnsJoiner).toString();
+        ddl.append(columnsJoiner);
+        return null;
     }
 
     @NotNull

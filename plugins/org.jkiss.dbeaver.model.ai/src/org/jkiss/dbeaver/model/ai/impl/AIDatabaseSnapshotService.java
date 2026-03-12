@@ -144,6 +144,7 @@ public class AIDatabaseSnapshotService {
         }
 
         if (obj instanceof DBSObjectContainer container) {
+            container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
             return appendContainerDDL(monitor, out, container, databaseContext, refreshCache);
         }
 
