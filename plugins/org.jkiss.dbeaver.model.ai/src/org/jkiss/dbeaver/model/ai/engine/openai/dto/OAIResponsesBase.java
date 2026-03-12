@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
 import java.util.Map;
@@ -86,6 +88,21 @@ public abstract class OAIResponsesBase {
     @SerializedName("truncation")
     public String truncation;
 
+    @Nullable
     @SerializedName("usage")
-    public OAIUsage usage;
+    public OAIResponsesUsage usage;
+
+    @Nullable
+    public AIUsage getAIUsage() {
+        if (usage == null) {
+            return null;
+        }
+
+        return new AIUsage(
+            usage.inputTokens(),
+            usage.inputTokensDetails() != null ? usage.inputTokensDetails().cachedTokens() : 0,
+            usage.outputTokens(),
+            usage.outputTokensDetails() != null ? usage.outputTokensDetails().reasoningTokens() : 0
+        );
+    }
 }

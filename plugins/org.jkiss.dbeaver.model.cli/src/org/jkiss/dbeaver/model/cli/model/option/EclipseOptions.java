@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import picocli.CommandLine;
 
 /**
@@ -24,8 +25,10 @@ import picocli.CommandLine;
  */
 public class EclipseOptions {
     // Eclipse options do nothing in our code
+    @NonExecutableOption
     @CommandLine.Option(names = {"-nl"}, arity = "1", description = "Default locale")
     private String nl;
+    @NonExecutableOption
     @CommandLine.Option(names = {"-data"}, arity = "1", description = "Workspace location")
     private String data;
 }

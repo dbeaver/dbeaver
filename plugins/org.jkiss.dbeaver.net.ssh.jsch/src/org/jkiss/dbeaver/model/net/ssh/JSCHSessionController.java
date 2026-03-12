@@ -40,6 +40,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -171,7 +172,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
     private void addIdentityKeyFile(
         @NotNull JSch jsch,
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer dataSource,
+        @Nullable DBPDataSourceContainer dataSource,
         @NotNull Path key,
         @Nullable String password
     ) throws IOException, JSchException {
@@ -190,8 +191,9 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
         if (header.equals("-----BEGIN OPENSSH PRIVATE KEY-----")) {
             log.debug("Attempting to convert an unsupported key into suitable format");
 
+            String id = dataSource != null ? dataSource.getId() : "profile-" + UUID.randomUUID();
             Path dir = DBWorkbench.getPlatform().getTempFolder(monitor, "openssh-pkey");
-            Path tmp = dir.resolve(dataSource.getId() + ".pem");
+            Path tmp = dir.resolve(id + ".pem");
 
             Files.copy(key, tmp, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
 

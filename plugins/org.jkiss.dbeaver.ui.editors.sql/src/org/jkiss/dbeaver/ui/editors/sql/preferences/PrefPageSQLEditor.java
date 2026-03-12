@@ -186,20 +186,20 @@ public class PrefPageSQLEditor extends TargetPrefPage {
             }
         }
 
-        {
+        if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
             Composite linksGroup = UIUtils.createComposite(composite, 1);
 
             UIUtils.createPreferenceLink(
                 linksGroup,
                 "<a>''{0}''</a> " + SQLEditorMessages.pref_page_sql_editor_link_text_editor,
                 PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
-                (IWorkbenchPreferenceContainer) getContainer(), null
+                wpc, null
             );
             UIUtils.createPreferenceLink(
                 linksGroup,
                 SQLEditorMessages.pref_page_sql_editor_link_colors_and_fonts,
                 EditorUtils.COLORS_AND_FONTS_PAGE_ID,
-                (IWorkbenchPreferenceContainer) getContainer(), null
+                wpc, null
             );
         }
         return composite;

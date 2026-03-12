@@ -69,13 +69,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
-    private Button saveAsTaskButton;
     private TaskConfigurationWIzardActionConfigurator<SETTINGS> actionsConfigurator;
 
     private Map<String, Object> variables;
     private boolean promptVariables;
     private DBTTaskContext taskContext;
     @Nullable private DBTTaskFolder currentSelectedTaskFolder;
+    private boolean taskEditorDisabled;
 
     protected TaskConfigurationWizard() {
     }
@@ -183,6 +183,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         }
     }
 
+    public boolean isTaskSaveEnabled() {
+        return !taskEditorDisabled;
+    }
+
     public boolean isNewTaskEditor() {
         return currentTask != null && getProject().getTaskManager().getTaskById(currentTask.getId()) == null;
     }
@@ -286,7 +290,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return true;
     }
 
-    private boolean saveTask() {
+    boolean saveTask() {
         IWizardPage currentPage = getContainer().getCurrentPage();
         // Save current page settings
         if (currentPage instanceof IWizardPageActive) {
@@ -357,6 +361,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (tasksViewDescriptor == null || getContainer().isSelectorMode()) {
             // Do not create save buttons
             UIUtils.createEmptyLabel(parent, hSpan, 1);
+            taskEditorDisabled = true;
         } else {
             Composite panel = new Composite(parent, SWT.NONE);
             panel.setBackground(parent.getBackground());
@@ -378,14 +383,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                     }
                 });
             }
-
-            saveAsTaskButton = UIUtils.createPushButton(
-                panel,
-                null,
-                TaskUIMessages.task_config_wizard_button_save_task,
-                UIIcon.SAVE,
-                SelectionListener.widgetSelectedAdapter(selectionEvent -> saveTask())
-            );
 
             layout.numColumns++;
             Button taskViewButton = UIUtils.createPushButton(
@@ -492,9 +489,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     void enableTaskButtons(boolean enable) {
-        if (saveAsTaskButton != null) {
-            saveAsTaskButton.setEnabled(enable);
-        }
         if (actionsConfigurator != null) {
             actionsConfigurator.enableActions(enable);
         }
@@ -504,9 +498,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public void updateTaskButtons() {
-        if (saveAsTaskButton != null) {
-            saveAsTaskButton.setEnabled(canFinish() && getTaskType() != null);
-        }
         if (actionsConfigurator != null) {
             actionsConfigurator.updateActions();
         }
