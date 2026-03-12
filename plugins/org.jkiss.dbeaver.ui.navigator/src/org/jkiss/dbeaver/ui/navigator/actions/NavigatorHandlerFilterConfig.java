@@ -123,31 +123,22 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         public void configFilterInDialog() throws DBException {
             boolean globalFilter = originalNode.getValueObject() instanceof DBPDataSource;
             String dialogObjectTitle = createDialogTitle(globalFilter);
-            DBSObjectFilter objectFilter = Objects.requireNonNullElseGet(
-                parentNode.getNodeFilter(itemsMeta, true),
-                this::getNewDBSObjectFilter
-            );
-            EditObjectFilterDialog dialog = getDialog(dialogObjectTitle, objectFilter, globalFilter);
-            processDialogResponse(dialog);
-        }
-
-        @NotNull
-        protected DBSObjectFilter getNewDBSObjectFilter() {
-            return new DBSObjectFilter();
-        }
-
-        @NotNull
-        protected EditObjectFilterDialog getDialog(
-            @NotNull String dialogObjectTitle,
-            @NotNull DBSObjectFilter objectFilter,
-            boolean globalFilter
-        ) {
-            return new EditObjectFilterDialog(
+            DBSObjectFilter objectFilter = getObjectFilter();
+            EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                 shell,
                 dsRegistry,
                 dialogObjectTitle,
                 objectFilter,
                 globalFilter
+            );
+            processDialogResponse(dialog);
+        }
+
+        @NotNull
+        protected DBSObjectFilter getObjectFilter() {
+            return Objects.requireNonNullElseGet(
+                parentNode.getNodeFilter(itemsMeta, true),
+                DBSObjectFilter::new
             );
         }
 
@@ -184,9 +175,15 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             DBPDataSourceContainer dataSourceContainer = originalNode.getDataSourceContainer();
             DBSObjectFilter globalFilterForObject = Objects.requireNonNullElseGet(
                 dataSourceContainer.getObjectFilter(childrenClass, null, true),
-                this::getNewDBSObjectFilter
+                DBSObjectFilter::new
             );
-            EditObjectFilterDialog globalFilterDialog = getDialog("All " + originalNode.getNodeTypeLabel(), globalFilterForObject, true);
+            EditObjectFilterDialog globalFilterDialog = new EditObjectFilterDialog(
+                shell,
+                dsRegistry,
+                createDialogTitle(true),
+                globalFilterForObject,
+                true
+            );
             if (globalFilterDialog.open() == IDialogConstants.OK_ID) {
                 // Set global filter
                 dataSourceContainer.setObjectFilter(childrenClass, null, globalFilterDialog.getFilter());
@@ -195,7 +192,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             }
         }
 
-        private String createDialogTitle(boolean globalFilter) {
+        protected String createDialogTitle(boolean globalFilter) {
             String parentName = "?";
             if (originalNode.getValueObject() instanceof DBSObject dbsObject) {
                 parentName = dbsObject.getName();

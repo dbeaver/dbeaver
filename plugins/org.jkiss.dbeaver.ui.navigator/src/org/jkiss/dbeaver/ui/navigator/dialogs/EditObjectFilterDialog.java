@@ -107,7 +107,6 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         setSfGroup(composite);
         redrawFilterRelatedContent();
-        enableFiltersContent();
 
         return composite;
     }
@@ -214,6 +213,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         StringEditorTableUtils.replaceAllStringValues(excludeTable, filter.getExclude(), null);
         namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
         enableButton.setSelection(filter.isEnabled());
+        enableFiltersContent();
     }
 
     private void changeSavedFilter() {
