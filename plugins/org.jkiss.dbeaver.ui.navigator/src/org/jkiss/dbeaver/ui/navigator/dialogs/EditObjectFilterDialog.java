@@ -257,13 +257,17 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     private void saveConfigurations() {
+        saveChangedFilterState();
+        if (shouldSaveFilterInRegistry()) {
+            dsRegistry.updateSavedFilter(filter);
+        }
+    }
+
+    protected void saveChangedFilterState() {
         filter.setEnabled(enableButton.getSelection());
         filter.setInclude(StringEditorTableUtils.collectStringValues(includeTable));
         filter.setExclude(StringEditorTableUtils.collectStringValues(excludeTable));
         filter.setName(namesCombo.getText());
-        if (shouldSaveFilterInRegistry()) {
-            dsRegistry.updateSavedFilter(filter);
-        }
     }
 
     protected boolean shouldSaveFilterInRegistry() {
