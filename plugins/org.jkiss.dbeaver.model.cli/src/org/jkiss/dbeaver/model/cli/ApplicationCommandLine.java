@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
+import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
 import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
-import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
@@ -45,8 +45,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.commandLine";
 
-    protected static final Map<Class<?>, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
-    //transformers for all commands
+    protected static final Map<Class<?>, CLICommandDescriptor> commands = new LinkedHashMap<>();
+    //transformers for top level command
     protected static final List<CLITransformerDescriptor> globalTransformers = new ArrayList<>();
     //transformers for specific command
     protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
@@ -54,11 +54,15 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         IExtensionRegistry er = Platform.getExtensionRegistry();
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
+        Map<Class<?>, CLICommandDescriptor> replacedBy = new LinkedHashMap<>();
         for (IConfigurationElement ext : extElements) {
             if ("parameter".equals(ext.getName())) {
                 try {
-                    CommandLineParameterDescriptor parameter = new CommandLineParameterDescriptor(ext);
-                    customParameters.put(parameter.getImplClass(), parameter);
+                    CLICommandDescriptor parameter = new CLICommandDescriptor(ext);
+                    if (parameter.getReplacedHandler() != null) {
+                        replacedBy.put(parameter.getReplacedHandler(), parameter);
+                    }
+                    commands.put(parameter.getImplClass(), parameter);
                 } catch (Exception e) {
                     log.error("Can't load contributed parameter", e);
                 }
@@ -76,6 +80,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 }
             }
         }
+        replacedBy.keySet().forEach(commands::remove);
     }
 
     protected ApplicationCommandLine() {
@@ -141,20 +146,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             CommandLine.Model.CommandSpec commandForHelp = findCommandForHelp(parseResult);
 
             if (commandForHelp != null) {
-                CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
-                helpSpec.header(GeneralUtils.getProductTitle());
-                try (
-                    var out = new StringWriter();
-                    var print = new PrintWriter(out)
-                ) {
-                    var updatedCmd = new CommandLine(commandForHelp);
-                    updatedCmd.usage(print);
-                    String help = out.toString();
-                    return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
-                } catch (Exception e) {
-                    log.error("Error handling command line: " + e.getMessage());
-                    return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
-                }
+                String help = CLIUtils.getHelpFromCommand(commandForHelp);
+                return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
             }
 
             if (parseResult.isVersionHelpRequested()) {
@@ -162,7 +155,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
             }
 
-            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+            for (CLICommandDescriptor descriptor : commands.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
                 if (cliCommand == null) {
                     continue;
@@ -244,7 +237,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (commandLineIsEmpty(parseResult)) {
                 return new String[0];
             }
-            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+            for (CLICommandDescriptor descriptor : commands.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
                 if (cliCommand == null) {
                     continue;
@@ -263,7 +256,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     }
 
     protected void preprocessCommandLineParameter(
-        @NotNull CommandLineParameterDescriptor descriptor,
+        @NotNull CLICommandDescriptor descriptor,
         @NotNull CommandLine.ParseResult cliCommand,
         @NotNull CLIContextImpl context,
         boolean uiActivated
@@ -283,7 +276,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         ExceptionHandler exceptionHandler = new ExceptionHandler();
         topLevel.setExecutionExceptionHandler(exceptionHandler);
         transformCommand(topLevel.getCommandSpec(), topLevelImp.getClass());
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
+        for (CLICommandDescriptor param : commands.values()) {
             if (param.getImplClass().getAnnotation(CommandLine.Command.class) == null) {
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
                 continue;
