@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     private static final DateTimeFormatter LOG_FILENAME_FORMATTER = DateTimeFormatter
         .ofPattern("'dbeaver_sql_'" + GeneralUtils.DEFAULT_DATE_PATTERN + "'.log'", Locale.ENGLISH);
 
-    private File logFile;
     private boolean enabled;
 
     private Writer logWriter;
@@ -72,8 +71,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
     }
 
-    private synchronized void initLogFile()
-    {
+    private synchronized void initLogFile() {
         final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         enabled = preferences.getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
@@ -94,7 +92,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
                     log.error("Can't create log folder '" + logFolderPath + "'");
                 }
             }
-            logFile = new File(logFolder, LOG_FILENAME_FORMATTER.format(LocalDate.now()));
+            File logFile = new File(logFolder, LOG_FILENAME_FORMATTER.format(LocalDate.now()));
             try {
                 logWriter = new FileWriter(logFile, true);
             } catch (IOException e) {
@@ -165,8 +163,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
         }
     }
 
-    private void writeEvent(StringBuilder buffer, QMMetaEvent event)
-    {
+    private void writeEvent(StringBuilder buffer, QMMetaEvent event) {
         QMMObject object = event.getObject();
         QMEventAction action = event.getAction();
         // Filter
@@ -182,30 +179,31 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
         // Message
         buffer.append("!MESSAGE ");
-        if (object instanceof QMMStatementExecuteInfo) {
-            QMMStatementExecuteInfo executeInfo = (QMMStatementExecuteInfo)object;
-            buffer.append(executeInfo.getQueryString());
-            buffer.append(lineSeparator);
-            buffer.append("!SUBENTRY 1 ");
-            int subSeverity = executeInfo.hasError() ? IStatus.ERROR : severity;
-            appendEntryInfo(buffer, subSeverity, executeInfo.getErrorCode(), object.getCloseTime());
-            buffer.append("!MESSAGE ");
-            if (executeInfo.hasError()) {
-                buffer.append(executeInfo.getErrorMessage());
-            } else {
-                buffer.append("SUCCESS [").append(executeInfo.getUpdateRowCount()).append("]");
+        switch (object) {
+            case QMMStatementExecuteInfo executeInfo -> {
+                buffer.append(executeInfo.getQueryString());
+                buffer.append(lineSeparator);
+                buffer.append("!SUBENTRY 1 ");
+                int subSeverity = executeInfo.hasError() ? IStatus.ERROR : severity;
+                appendEntryInfo(buffer, subSeverity, executeInfo.getErrorCode(), object.getCloseTime());
+                buffer.append("!MESSAGE ");
+                if (executeInfo.hasError()) {
+                    buffer.append(executeInfo.getErrorMessage());
+                } else {
+                    buffer.append("SUCCESS [").append(executeInfo.getUpdateRowCount()).append("]");
+                }
             }
-
-        } else if (object instanceof QMMTransactionInfo) {
-            QMMTransactionInfo transactionInfo = (QMMTransactionInfo) object;
-            if (transactionInfo.isCommitted()) {
-                buffer.append("COMMIT");
-            } else {
-                buffer.append("ROLLBACK");
+            case QMMTransactionInfo transactionInfo -> {
+                if (transactionInfo.isCommitted()) {
+                    buffer.append("COMMIT");
+                } else {
+                    buffer.append("ROLLBACK");
+                }
             }
-        } else if (object instanceof QMMConnectionInfo) {
-            QMMConnectionInfo sessionInfo = (QMMConnectionInfo) object;
-            buffer.append(action).append(" SESSION [").append(sessionInfo.getContainerName()).append("]");
+            case QMMConnectionInfo sessionInfo ->
+                buffer.append(action).append(" SESSION [").append(sessionInfo.getContainerName()).append("]");
+            default -> {
+            }
         }
         buffer.append(lineSeparator);
 
