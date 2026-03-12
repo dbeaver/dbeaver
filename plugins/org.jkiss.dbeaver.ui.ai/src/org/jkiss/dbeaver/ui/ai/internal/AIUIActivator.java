@@ -34,7 +34,7 @@ public class AIUIActivator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        DBRFeatureRegistry.getInstance().registerFeatures(AIFeatures.class);
+        DBRFeatureRegistry.getInstance().registerFeatures(AIUIFeatures.class);
         // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
 

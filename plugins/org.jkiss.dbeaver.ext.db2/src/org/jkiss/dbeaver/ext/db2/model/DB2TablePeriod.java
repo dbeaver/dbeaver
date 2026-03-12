@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +28,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Table Period
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TablePeriod extends DB2Object<DB2Table> {
@@ -44,8 +43,7 @@ public class DB2TablePeriod extends DB2Object<DB2Table> {
     // Constructors
     // -----------------------
 
-    public DB2TablePeriod(DB2Table db2Table, ResultSet dbResult) throws DBException
-    {
+    public DB2TablePeriod(@NotNull DB2Table db2Table, @NotNull ResultSet dbResult) throws DBException {
         super(db2Table, JDBCUtils.safeGetString(dbResult, "PERIODNAME"), true);
 
         DB2DataSource db2DataSource = db2Table.getDataSource();
@@ -59,10 +57,16 @@ public class DB2TablePeriod extends DB2Object<DB2Table> {
 
         // Lookup related objects
         VoidProgressMonitor vpm = new VoidProgressMonitor();
-        beginColumn = db2Table.getAttribute(vpm, beginColumnName);
-        endColumn = db2Table.getAttribute(vpm, endColumnName);
-        historyTableSchema = db2DataSource.getSchema(vpm, historyTabSchemaName.trim());
-        historyTable = historyTableSchema.getTable(vpm, historyTabName);
+        if (beginColumnName != null) {
+            beginColumn = db2Table.getAttribute(vpm, beginColumnName);
+        }
+        if (endColumnName != null) {
+            endColumn = db2Table.getAttribute(vpm, endColumnName);
+        }
+        if (!CommonUtils.isEmptyTrimmed(historyTabSchemaName)) {
+            historyTableSchema = db2DataSource.getSchema(vpm, historyTabSchemaName.trim());
+            historyTable = historyTableSchema.getTable(vpm, historyTabName);
+        }
     }
 
     // -----------------
@@ -72,45 +76,37 @@ public class DB2TablePeriod extends DB2Object<DB2Table> {
     @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return super.getName();
     }
 
     @Property(viewable = true, order = 2)
-    public DB2Table getTable()
-    {
+    public DB2Table getTable() {
         return parent;
     }
 
     @Property(viewable = true, order = 3)
-    public DB2PeriodType getType()
-    {
+    public DB2PeriodType getType() {
         return type;
     }
 
     @Property(viewable = true, order = 10)
-    public DB2TableColumn getBeginColumn()
-    {
+    public DB2TableColumn getBeginColumn() {
         return beginColumn;
     }
 
     @Property(viewable = true, order = 11)
-    public DB2TableColumn getEndColumn()
-    {
+    public DB2TableColumn getEndColumn() {
         return endColumn;
     }
 
     @Property(viewable = true, order = 30)
-    public DB2Schema getHistoryTableSchema()
-    {
+    public DB2Schema getHistoryTableSchema() {
         return historyTableSchema;
     }
 
     @Property(viewable = true, order = 31)
-    public DB2Table getHistoryTable()
-    {
+    public DB2Table getHistoryTable() {
         return historyTable;
     }
-
 }

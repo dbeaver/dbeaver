@@ -112,7 +112,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String DEFAULT_PROJECT_NAME = "General";
 
     private final Path FILE_WITH_WORKSPACES;
-    private final Path WORKSPACE_DIR_CURRENT;
+    private final Path defaultWorkspacePath;
 
     static boolean WORKSPACE_MIGRATED = false;
 
@@ -152,7 +152,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
-        WORKSPACE_DIR_CURRENT = Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
+        defaultWorkspacePath = Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
         FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
@@ -211,7 +211,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
 
@@ -297,7 +297,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
 
-        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
+        if (!isWorkspaceSwitchingAllowed() && !defaultWorkspacePath.equals(defaultHomePath)) {
             log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
                 + GeneralUtils.getProductName() + ".");
             return IApplication.EXIT_OK;
@@ -403,7 +403,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!CommonUtils.isEmpty(lastWorkspace)) {
             try {
                 Path lwPath = Path.of(lastWorkspace);
-                if (!WORKSPACE_DIR_CURRENT.equals(lwPath)) {
+                if (!defaultWorkspacePath.equals(lwPath)) {
                     final URL selectedWorkspaceURL = lwPath.toUri().toURL();
                     instanceLoc.set(selectedWorkspaceURL, true);
                     return true;
@@ -425,7 +425,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @NotNull
     public Path getDefaultWorkingFolder() {
-        return WORKSPACE_DIR_CURRENT;
+        return defaultWorkspacePath;
     }
 
     @NotNull
@@ -440,7 +440,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     public Path getDefaultInstanceLocation() {
-        Path defaultHomePath = WORKSPACE_DIR_CURRENT;
+        Path defaultHomePath = defaultWorkspacePath;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
             try {
@@ -546,7 +546,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
-        Path defaultHomePath = WORKSPACE_DIR_CURRENT;
+        Path defaultHomePath = defaultWorkspacePath;
         try {
             if (!Files.exists(defaultHomePath) || isEmptyFolder(defaultHomePath)) {
                 if (!tryMigrateFromPreviousVersion(defaultHomePath)) {

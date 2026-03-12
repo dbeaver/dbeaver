@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -51,6 +52,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
     private static final String PART_SKIP_KEY = DBeaverCTabFolderRenderer.class.getName() + ".skipPart";
+    private static final String PART_INPUT_INITIALIZED = DBeaverCTabFolderRenderer.class.getName() + ".inputInitialized";
 
     private static final FieldReflection<CTabRendering, Color> tabOutlineColorField;
     private static final FieldReflection<CTabRendering, Color> selectedTabHighlightColorField;
@@ -164,18 +166,18 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item) {
         if (item.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part) {
-            return getConnectionColor(part);
+            return getConnectionColor(item, part);
         }
         for (Control control = item.getParent(); control != null; control = control.getParent()) {
             if (control.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part) {
-                return getConnectionColor(part);
+                return getConnectionColor(item, part);
             }
         }
         return null;
     }
 
     @Nullable
-    private static Color getConnectionColor(@NotNull MPart part) {
+    private static Color getConnectionColor(@NotNull CTabItem item, @NotNull MPart part) {
         if (part.getTransientData().containsKey(PART_SKIP_KEY)) {
             return null;
         }
@@ -197,6 +199,10 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                 if (editor != null) {
                     return getConnectionColor(editor);
                 }
+                if (!part.getTransientData().containsKey(PART_INPUT_INITIALIZED)) {
+                    UIExecutionQueue.queueExec(() -> initializePartInput(item, part, ref));
+                    return null;
+                }
 
                 try {
                     return getConnectionColor(ref.getEditorInput());
@@ -212,6 +218,21 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
             return null;
         } finally {
             isInColor = false;
+        }
+    }
+
+    /**
+     * We initialize editor input in separate UI call.
+     * Because we cannot do it in paint methods because we may need to trigger aggressive UI actions (like open dialog for authentication).
+     */
+    private static void initializePartInput(CTabItem item, @NotNull MPart part, @NotNull IEditorReference ref) {
+        try {
+            ref.getEditorInput();
+        } catch (Exception e) {
+            log.error(e);
+        } finally {
+            part.getTransientData().put(PART_INPUT_INITIALIZED, true);
+            item.getParent().redraw();
         }
     }
 

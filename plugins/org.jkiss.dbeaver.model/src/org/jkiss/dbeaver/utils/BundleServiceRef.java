@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.utils;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import picocli.CommandLine;
+import org.jkiss.code.Nullable;
 
-// Base class for first level commands, which use AbstractTopLevelCommand as parent
-public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
+/**
+ * Bundle service instance reference
+ */
+public record BundleServiceRef<T>(
+    @Nullable T service,
+    @Nullable Runnable initializer
+) {
 
-    @NotNull
-    public CLIContext context() {
-        return parent.getContext();
+    public void initializeService() {
+        if (initializer != null) {
+            initializer.run();
+        }
     }
 }
