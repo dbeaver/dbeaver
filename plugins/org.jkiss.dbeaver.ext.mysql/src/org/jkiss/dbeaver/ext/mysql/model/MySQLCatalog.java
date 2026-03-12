@@ -84,6 +84,9 @@ public class MySQLCatalog implements
     private long dbSize;
 
     private transient String databaseDDL;
+    
+    protected final AdditionalInfo additionalInfo = new AdditionalInfo();
+
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -134,8 +137,6 @@ public class MySQLCatalog implements
         }
     }
 
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
-
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -152,7 +153,7 @@ public class MySQLCatalog implements
         return additionalInfo;
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    protected void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
         if (!isPersisted()) {
             additionalInfo.loaded = true;

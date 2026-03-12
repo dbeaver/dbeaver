@@ -72,9 +72,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             Composite tablesGroup = UIUtils.createTitledComposite(
                 topGroup,
                 DTUIMessages.data_transfer_wizard_final_group_objects,
-                3,
-                GridData.FILL_BOTH,
-                -1);
+                1,
+                GridData.FILL_BOTH);
 
             resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -100,22 +99,19 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
                 leftGroup,
                 DTUIMessages.data_transfer_wizard_final_group_settings_source,
                 1,
-                GridData.FILL_BOTH,
-                -1
-            );
+                GridData.FILL_BOTH);
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             sourceSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).create());
-            sourceSettingsGroup.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(150, 50).create());
+            sourceSettingsGroup.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(130, 50).create());
 
             Composite targetSettingsGroup = UIUtils.createTitledComposite(
                 rightGroup,
                 DTUIMessages.data_transfer_wizard_final_group_settings_target,
                 1,
-                GridData.FILL_BOTH,
-                -1);
+                GridData.FILL_BOTH);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).create());
-            targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(150, 50).create());
+            targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(130, 50).create());
         }
 
         setControl(composite);

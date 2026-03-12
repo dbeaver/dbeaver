@@ -25,6 +25,10 @@
         <command id="org.jkiss.dbeaver.connection.changeCurrentPassword" name="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.name" description="%command.org.jkiss.dbeaver.connection.changeCurrentPassword.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.UIEditorsWorkbenchInitializer" order="2"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/driver_manager.svg"/>
     </extension>

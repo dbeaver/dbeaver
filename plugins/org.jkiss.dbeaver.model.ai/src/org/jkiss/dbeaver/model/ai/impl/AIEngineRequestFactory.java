@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,16 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class AIEngineRequestFactory {
     private static final Log log = Log.getLog(AIEngineRequestFactory.class);
@@ -63,13 +63,14 @@ public class AIEngineRequestFactory {
 
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngine engine,
+        @NotNull AIAssistant assistant,
+        @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor,
-        @NotNull AIPromptGenerator systemPromptGenerator,
+        @NotNull AIPromptGenerator promptGenerator,
         @Nullable AIDatabaseContext databaseContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        String systemPrompt = systemPromptGenerator.build();
+        String systemPrompt = promptGenerator.build(assistant, databaseContext);
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);
@@ -130,44 +131,61 @@ public class AIEngineRequestFactory {
         AIEngineRequest request = new AIEngineRequest(truncated);
         request.setWasPromptTruncated(isContextTruncated);
 
-        determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
+        determineRequestTools(monitor, assistant, engineDescriptor, promptGenerator, request);
 
         return request;
     }
 
     protected void determineRequestTools(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIPromptGenerator systemPromptGenerator,
         @NotNull AIEngineRequest request
     ) {
-        if (!engineDescriptor.isSupportsFunctions() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        if (!engineDescriptor.isSupportsFunctions()
+            || !functionSettings.isFunctionsEnabled()
+            || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
+        ) {
             return;
         }
+
+        AIPromptGeneratorDescriptor prompt = AIPromptGeneratorRegistry.getInstance()
+            .getPromptGenerator(systemPromptGenerator.generatorId());
+        if (prompt == null) {
+            log.error("Prompt '" + systemPromptGenerator.generatorId() + "' not found. Functions were disabled.");
+            return;
+        }
+
         List<AIFunctionDescriptor> functions = new ArrayList<>();
-        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
+        for (AIFunctionDescriptor fd : toolboxManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
             if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
                 functions.add(fd);
             }
         }
 
-        AIPromptGeneratorDescriptor currentPromptGenerator = null;
-        for (AIPromptGeneratorDescriptor promptGeneratorDescriptor : AIPromptGeneratorRegistry.getInstance().getAllPromptGenerator()) {
-            if (systemPromptGenerator.generatorId().equals(promptGeneratorDescriptor.getId())) {
-                currentPromptGenerator = promptGeneratorDescriptor;
-                break;
+        Set<AIFunctionDescriptor> enabledFunctions = new LinkedHashSet<>();
+        for (AIToolbox toolbox : toolboxManager.getAllToolboxes()) {
+            if (!toolbox.isEnabled() || !toolbox.isAccessible()) {
+                continue;
+            }
+            AIFunctionSettings.ToolboxSettings toolboxSettings = functionSettings.getToolboxSettings(toolbox);
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions()) {
+                if (toolboxSettings.isFunctionEnabled(function)) {
+                    enabledFunctions.add(function);
+                }
             }
         }
 
-        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
-
-        List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
+        Set<AIFunctionDescriptor> selectedFunctions = new LinkedHashSet<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->
-            !enabledFunctions.contains(aiFunctionDescriptor.getId())
+            !enabledFunctions.contains(aiFunctionDescriptor)
         );
 
-        Set<String> requiredByDeps = resolveDependencies(selectedFunctions, currentPromptGenerator);
+        Set<String> requiredByDeps = resolveDependencies(selectedFunctions);
 
         if (!requiredByDeps.isEmpty()) {
             for (AIFunctionDescriptor f : functions) {
@@ -177,11 +195,20 @@ public class AIEngineRequestFactory {
             }
         }
 
-        request.setFunctions(selectedFunctions);
+        if (!prompt.isSupportsActions()) {
+            // Filter out actions
+            selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
+        }
+        if (!prompt.isSupportsUi()) {
+            // Filter out ui functions
+            selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
+        }
+
+        request.setFunctions(new ArrayList<>(selectedFunctions));
     }
 
 
-    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
+    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine<?> engine) {
         try {
             return engine.getContextWindowSize(monitor);
         } catch (DBException e) {
@@ -206,18 +233,16 @@ public class AIEngineRequestFactory {
      * Resolves transitive dependencies for the given list of already selected function descriptors.
      */
     @NotNull
-    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected, @Nullable AIPromptGeneratorDescriptor pg) {
+    private static Set<String> resolveDependencies(@NotNull Set<AIFunctionDescriptor> selected) {
         Set<String> result = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
-            collectDependencies(fd.getDependsOn(), result);
-        }
-        if (pg != null) {
-            collectDependencies(pg.getDependsOn(), result);
+            collectDependencies(fd.getToolbox(), fd.getDependsOn(), result);
         }
         return result;
     }
 
     private static void collectDependencies(
+        @NotNull AIToolbox toolbox,
         @NotNull String[] dependencies,
         @NotNull Set<String> result
     ) {
@@ -228,9 +253,9 @@ public class AIEngineRequestFactory {
             if (!result.add(depId)) {
                 continue;
             }
-            AIFunctionDescriptor dep = AIFunctionRegistry.getInstance().getFunction(depId);
+            AIFunctionDescriptor dep = toolbox.getFunctionById(depId);
             if (dep != null) {
-                collectDependencies(dep.getDependsOn(), result);
+                collectDependencies(toolbox, dep.getDependsOn(), result);
             }
         }
     }

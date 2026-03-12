@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -106,11 +107,11 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
             if (RuntimeUtils.isWindows()) {
                 String appData = System.getenv("AppData");
                 if (appData == null) {
-                    appData = System.getProperty("user.home");
+                    appData = System.getProperty(StandardConstants.ENV_USER_HOME);
                 }
                 pgPassPath = appData + "/postgresql/pgpass.conf";
             } else {
-                pgPassPath = System.getProperty("user.home") + "/.pgpass";
+                pgPassPath = System.getProperty(StandardConstants.ENV_USER_HOME) + "/.pgpass";
             }
         }
         Path pgPassFile = Path.of(pgPassPath);

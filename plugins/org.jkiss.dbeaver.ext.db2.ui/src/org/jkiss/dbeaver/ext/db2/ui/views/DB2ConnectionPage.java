@@ -84,9 +84,12 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         };
 
         {
-            Composite addrGroup = UIUtils.createTitledComposite(control, DB2Messages.db2_connection_page_tab_database, 4);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            addrGroup.setLayoutData(gd);
+            Composite addrGroup = UIUtils.createTitledComposite(
+                control,
+                DB2Messages.db2_connection_page_tab_database,
+                4,
+                GridData.FILL_HORIZONTAL
+            );
 
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
@@ -99,7 +102,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
 
             UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
             urlText = new Text(addrGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
             gd.widthHint = 355;

@@ -39,6 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AIPromptUtils {
+    public static final String[] SQL_OUTPUT_FORMATS = {
+        "Place any explanation or comments before the SQL code block.",
+        "Provide the SQL query in a fenced Markdown code block."
+    };
 
     public static int calcSystemPromptLength(@NotNull List<AIMessage> messages) {
         return messages.stream()
@@ -82,9 +86,8 @@ public class AIPromptUtils {
 
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
-        addGeneralRulesInstructions(dataSource, instructions);
         instructions.add("Stick strictly to SQL dialect syntax.");
-        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+        instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
@@ -100,7 +103,8 @@ public class AIPromptUtils {
         return instructions.toArray(new String[0]);
     }
 
-    public static void addGeneralRulesInstructions(@Nullable DBSLogicalDataSource dataSource, @NotNull List<String> instructions) {
+    public static String[] createGeneralRulesInstructions() {
+        List<String> instructions = new ArrayList<>();
         instructions.add("You are the DBeaver AI assistant.");
         instructions.add("Act as a database architect and SQL expert.");
         instructions.add("Rely only on the provided schema information.");
@@ -110,6 +114,7 @@ public class AIPromptUtils {
         } else {
             instructions.add("Use the same language as the user.");
         }
+        return instructions.toArray(new String[0]);
     }
 
     @Nullable

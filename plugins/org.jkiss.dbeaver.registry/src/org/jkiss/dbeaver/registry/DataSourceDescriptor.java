@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -158,7 +159,7 @@ public class DataSourceDescriptor
     private boolean hidden;
 
     @NotNull
-    private DataSourceNavigatorSettings navigatorSettings;
+    private final DataSourceNavigatorSettings navigatorSettings;
     @NotNull
     private DBVModel virtualModel;
     private final boolean manageable;
@@ -399,11 +400,11 @@ public class DataSourceDescriptor
 
     @NotNull
     public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
-        return navigatorSettings;
+        return (DataSourceNavigatorSettings) navigatorSettings.getOriginalSettings();
     }
 
-    public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
-        this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings copyFrom) {
+        getOriginalNavigatorSettings().copyFrom(copyFrom);
     }
 
     @NotNull
@@ -1605,7 +1606,7 @@ public class DataSourceDescriptor
     public void acquire(@NotNull DBPDataSourceTask user) {
         synchronized (users) {
             if (users.contains(user)) {
-                log.warn("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
+                log.debug("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
             } else {
                 users.add(user);
             }
@@ -1617,7 +1618,7 @@ public class DataSourceDescriptor
         synchronized (users) {
             if (!users.remove(user)) {
                 if (!isDisposed()) {
-                    log.warn("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
+                    log.debug("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
                 }
             }
         }
@@ -1885,7 +1886,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
+        setNavigatorSettings(descriptor.navigatorSettings);
     }
 
     @Override

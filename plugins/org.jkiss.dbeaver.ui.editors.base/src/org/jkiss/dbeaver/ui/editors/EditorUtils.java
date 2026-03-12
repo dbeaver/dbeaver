@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Control;
@@ -43,6 +44,11 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.file.FileOpenHandler;
+import org.jkiss.dbeaver.model.file.FileTypeAction;
+import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.model.file.FileTypeHandlerRegistry;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -53,15 +59,18 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
-import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
+import org.jkiss.dbeaver.ui.editors.file.FileActionSelectorDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -156,7 +165,8 @@ public class EditorUtils {
         return null;
     }
 
-    public static IStorage getStorageFromInput(Object element) {
+    @Nullable
+    public static IStorage getStorageFromInput(@Nullable Object element) {
         if (element instanceof IStorageEditorInput sei) {
             try {
                 return sei.getStorage();
@@ -186,7 +196,8 @@ public class EditorUtils {
         return null;
     }
 
-    public static File getLocalFileFromInput(Object element) {
+    @Nullable
+    public static File getLocalFileFromInput(@Nullable Object element) {
         if (element instanceof IEditorInput ei) {
             IFile file = getFileFromInput(ei);
             if (file != null) {
@@ -362,25 +373,25 @@ public class EditorUtils {
         @NotNull IEditorInput editorInput,
         @NotNull DatabaseEditorContext context)
     {
-        if (editorInput instanceof IInMemoryEditorInput) {
-            ((IInMemoryEditorInput) editorInput).setProperty(PROP_EDITOR_CONTEXT, context);
+        if (editorInput instanceof IInMemoryEditorInput inMemoryEditorInput) {
+            inMemoryEditorInput.setProperty(PROP_EDITOR_CONTEXT, context);
             DBCExecutionContext executionContext = context.getExecutionContext();
             if (executionContext != null) {
-                ((IInMemoryEditorInput) editorInput).setProperty(PROP_EXECUTION_CONTEXT, executionContext);
+                inMemoryEditorInput.setProperty(PROP_EXECUTION_CONTEXT, executionContext);
             }
             DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
             if (dataSourceContainer != null) {
-                ((IInMemoryEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
+                inMemoryEditorInput.setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
             }
             if (!isDefaultContextSettings(context)) {
                 if (dataSourceContainer != null) {
-                    ((IInMemoryEditorInput) editorInput).setProperty(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceContainer.getId());
+                    inMemoryEditorInput.setProperty(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceContainer.getId());
                 }
                 String catalogName = getDefaultCatalogName(context);
-                if (catalogName != null) ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
+                if (catalogName != null) inMemoryEditorInput.setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
                 String schemaName = getDefaultSchemaName(context);
                 if (schemaName != null) {
-                    ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
+                    inMemoryEditorInput.setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
                 }
             }
             return;
@@ -473,8 +484,8 @@ public class EditorUtils {
             }
         } else {
             DBSCatalog catalog;
-            if (context.getSelectedObject() instanceof DBSCatalog) {
-                catalog = (DBSCatalog) context.getSelectedObject();
+            if (context.getSelectedObject() instanceof DBSCatalog selectedCatalog) {
+                catalog = selectedCatalog;
             } else {
                 catalog = DBUtils.getParentOfType(DBSCatalog.class, context.getSelectedObject());
             }
@@ -505,28 +516,61 @@ public class EditorUtils {
         return null;
     }
 
-    public static IEditorPart openExternalFileEditor(File file, IWorkbenchWindow window) {
+    @Nullable
+    public static IEditorPart openExternalFileEditor(@NotNull Path path, @NotNull IWorkbenchWindow window) {
         try {
-            IEditorDescriptor desc = getFileEditorDescriptor(file, window);
-            IFileStore fileStore = EFS.getStore(file.toURI());
+            IEditorDescriptor desc = getFileEditorDescriptor(path, window);
+            IFileStore fileStore = EFS.getStore(path.toUri());
             IEditorInput input = new FileStoreEditorInput(fileStore);
             return IDE.openEditor(window.getActivePage(), input, desc.getId());
         } catch (CoreException e) {
-            log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
+            log.error("Can't open editor from path '" + path.toAbsolutePath(), e);
             return null;
         }
     }
 
     @NotNull
-    public static IEditorDescriptor getFileEditorDescriptor(@NotNull File file, @NotNull IWorkbenchWindow window) {
-        IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+    public static Path copyRemoteFileToTempDir(@NotNull Path remotePath) throws DBException {
+        return UIUtils.runWithMonitor(monitor -> {
+            try {
+                Path tempFile = ContentUtils.makeTempFile(
+                    ContentUtils.getLobFolder(monitor, DBWorkbench.getPlatform()),
+                    remotePath.getFileName().toString(),
+                    IOUtils.getFileExtension(remotePath)
+                );
+                try (InputStream is = Files.newInputStream(remotePath)) {
+                    try (OutputStream os = Files.newOutputStream(tempFile)) {
+                        ContentUtils.copyStreams(is, Files.size(remotePath), os, monitor);
+                    }
+                }
+                return tempFile;
+            } catch (IOException e) {
+                throw new DBException("Error copying file", e);
+            }
+        });
+    }
+
+    @NotNull
+    public static IEditorDescriptor getFileEditorDescriptor(@NotNull Path path, @NotNull IWorkbenchWindow window) {
+        String fileName = path.getFileName().toString();
+        IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(fileName);
         if (desc == null) {
-            desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName() + ".txt");
+            desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(fileName + ".txt");
         }
         if (desc == null) {
             desc = window.getWorkbench().getEditorRegistry().findEditor(IEditorRegistry.SYSTEM_EXTERNAL_EDITOR_ID);
         }
         return desc;
+    }
+
+    @Nullable
+    public static IEditorPart openExternalFileEditor(@NotNull File file, @NotNull IWorkbenchWindow window) {
+        return openExternalFileEditor(file.toPath(), window);
+    }
+
+    @NotNull
+    public static IEditorDescriptor getFileEditorDescriptor(@NotNull File file, @NotNull IWorkbenchWindow window) {
+        return getFileEditorDescriptor(file.toPath(), window);
     }
 
     public static boolean isInAutoSaveJob() {
@@ -621,7 +665,7 @@ public class EditorUtils {
         }
         Path[] filePaths = fileNameStream
             .map(Path::of).toArray(Path[]::new);
-        openFileEditors(filePaths, currentContainer, openedFiles, false);
+        openFileEditors(filePaths, currentContainer, openedFiles, false, null);
 
         return openedFiles;
     }
@@ -629,11 +673,12 @@ public class EditorUtils {
     public static boolean openExternalFiles(
         @NotNull Path[] filePaths,
         @Nullable DBPDataSourceContainer currentContainer,
-        boolean databaseOnly
+        boolean databaseOnly,
+        @Nullable DBNPathBase sourceNode
     ) {
         log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
         List<Path> openedFiles = new ArrayList<>();
-        return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly);
+        return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly, sourceNode);
     }
 
     @NotNull
@@ -644,14 +689,14 @@ public class EditorUtils {
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
         for (Path path : fileNames) {
-            if (Files.isDirectory(path)) {
+            if (IOUtils.isLocalPath(path) && Files.isDirectory(path)) {
                 log.error("Can't open directory '" + path + "'");
                 continue;
             }
-            if (Files.exists(path)) {
+            if (!IOUtils.isLocalPath(path) || Files.exists(path)) {
                 String fileExtension = IOUtils.getFileExtension(path);
-                FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
-                    null : FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                fileExtension = fileExtension == null ? "" : fileExtension.toLowerCase();
+                FileTypeHandlerDescriptor handler = FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
                 if (handler != null && databaseOnly && !handler.isDatabaseHandler()) {
                     handler = null;
                 }
@@ -671,12 +716,13 @@ public class EditorUtils {
     ) {
         Map<FileTypeHandlerDescriptor.Extension, List<Path>> filesByExtension = new LinkedHashMap<>();
         for (Path path : fileNames) {
-            if (Files.isDirectory(path)) {
+            if (IOUtils.isLocalPath(path) && Files.isDirectory(path)) {
                 log.error("Can't open directory '" + path + "'");
                 continue;
             }
-            if (Files.exists(path)) {
+            if (!IOUtils.isLocalPath(path) || Files.exists(path)) {
                 String fileExtension = IOUtils.getFileExtension(path);
+                fileExtension = fileExtension == null ? "" : fileExtension.toLowerCase();
                 FileTypeHandlerDescriptor.Extension extension = CommonUtils.isEmpty(fileExtension) ?
                     null : FileTypeHandlerRegistry.getInstance().findExtension(fileExtension);
                 if (extension != null && databaseOnly && !extension.getDescriptor().isDatabaseHandler()) {
@@ -696,34 +742,66 @@ public class EditorUtils {
         @NotNull Path[] fileNames,
         @Nullable DBPDataSourceContainer currentContainer,
         @NotNull List<Path> openedFiles,
-        boolean databaseOnly
+        boolean databaseOnly,
+        @Nullable DBNPathBase sourceNode
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = getHandlerFiles(fileNames, openedFiles, databaseOnly);
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
             FileTypeHandlerDescriptor handler = entry.getKey();
             List<Path> pathList = entry.getValue();
+            boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
 
-            for (Path path : pathList) {
-                if (!IOUtils.isLocalPath(path)) {
-                    if (handler == null || !handler.supportsRemoteFiles()) {
-                        return false;
+            try {
+                for (int i = 0; i < pathList.size(); i++) {
+                    Path path = pathList.get(i);
+                    if (!IOUtils.isLocalPath(path)) {
+                        if (handler == null || Files.isDirectory(path)) {
+                            return false;
+                        } else if (!handler.supportsRemoteFiles()) {
+                            pathList.set(i, copyRemoteFileToTempDir(path));
+                        }
                     }
                 }
-            }
-            if (handler == null) {
-                for (Path path : pathList) {
-                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-                    EditorUtils.openExternalFileEditor(path.toFile(), window);
+
+
+                FileOpenHandler fileOpenHandler = handler.createHandler();
+
+                if (sourceNode != null) {
+                    fileOpenHandler.setSourceNode(sourceNode);
                 }
-            } else {
-                try {
-                    handler.createHandler().openFiles(pathList, Map.of(), currentContainer);
-                } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+
+                Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
+                FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);
+
+                if (selectedAction != null) {
+                    fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
                 }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
             }
         }
         return true;
+    }
+
+
+    @Nullable
+    private static FileTypeAction getFileTypeActionWithDialog(@NotNull Set<FileTypeAction> actions, boolean hasLocalFiles) {
+        List<FileTypeAction> actionList = new ArrayList<>(actions.stream()
+            .sorted()
+            .toList());
+        if (hasLocalFiles) {
+            actionList.remove(FileTypeAction.EXTERNAL_EDITOR);
+        }
+        FileTypeAction selectedAction = null;
+        if (actionList.size() > 1 && UIUtils.getActiveWorkbenchShell() != null) {
+            FileActionSelectorDialog dialog = new FileActionSelectorDialog(UIUtils.getActiveWorkbenchShell(), actionList);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                selectedAction = dialog.getSelectedAction();
+            }
+        } else if (actionList.size() == 1) {
+            selectedAction = actionList.getFirst();
+        }
+        return selectedAction;
     }
 
     public static void activatePartContexts(IWorkbenchPart part) {

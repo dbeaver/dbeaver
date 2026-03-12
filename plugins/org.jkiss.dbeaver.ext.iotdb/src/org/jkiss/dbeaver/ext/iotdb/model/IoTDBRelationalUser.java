@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.iotdb.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,7 +28,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class IoTDBRelationalUser extends IoTDBAbstractUser {
 
@@ -42,7 +45,11 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
         super(dataSource, userName);
 
         try {
-            loadDatabases(monitor);
+            if (dataSource.isTable()) {
+                loadDatabases(monitor);
+            } else {
+                loadTreeDatabasesAndDevices(monitor);
+            }
         } catch (DBException e) {
             log.error("Error loading databases and tables", e);
             throw new DBDatabaseException(e, this.getDataSource());
@@ -74,34 +81,62 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
      */
     public void loadDatabases(DBRProgressMonitor monitor) throws DBException {
         databases = new ArrayList<>();
-        boolean isTree = dataSource.isTree();
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Databases and Tables Info")) {
             String sql = "show databases"; // use this instead of select * from information_schema to prevent permission issues
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String currentDatabase = rs.getString("Database");
-                List<String> currentTables = new ArrayList<>();
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs != null) {
+                        while (rs.next()) {
+                            String currentDatabase = rs.getString("Database");
+                            List<String> currentTables = new ArrayList<>();
 
-                sql = isTree ? ("show devices " + currentDatabase + ".**") : ("show tables in " + currentDatabase);
-                JDBCStatement stmt2 = session.createStatement();
-                JDBCResultSet rs2 = stmt2.executeQuery(sql);
-                if (isTree) {
-                    int prefixLength = currentDatabase.length() + 1;
-                    while (rs2.next()) {
-                        currentTables.add(rs2.getString("Device").substring(prefixLength));
-                    }
-                } else {
-                    while (rs2.next()) {
-                        currentTables.add(rs2.getString("TableName"));
+                            sql = "show tables in " + DBUtils.getQuotedIdentifier(dataSource, currentDatabase, true, true);
+                            try (JDBCStatement stmt2 = session.createStatement()) {
+                                try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
+                                    if (rs2 != null) {
+                                        while (rs2.next()) {
+                                            currentTables.add(rs2.getString("TableName"));
+                                        }
+                                    }
+                                    IoTDBDatabase newDatabase = new IoTDBDatabase(currentDatabase, currentTables);
+                                    databases.add(newDatabase);
+                                }
+                            }
+                        }
                     }
                 }
-                IoTDBDatabase newDatabase = new IoTDBDatabase(currentDatabase, currentTables);
-                databases.add(newDatabase);
             }
         } catch (Exception e) {
             log.error("Error loading databases and tables", e);
+        }
+    }
+
+    /**
+     * Load devices with a single query
+     *
+     * @throws DBException if an error occurs
+     */
+    public void loadTreeDatabasesAndDevices(@NotNull DBRProgressMonitor monitor) throws DBException {
+        databases = new ArrayList<>();
+        Map<String, List<String>> databaseDevicesMap = new HashMap<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Databases and Tables Info")) {
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery("show devices root.** with database")) {
+                    while (rs.next()) {
+                        String currentDatabase = rs.getString("Database");
+                        int prefixLength = currentDatabase.length() + 1;
+                        String currentTableName = rs.getString("Device").substring(prefixLength);
+                        databaseDevicesMap.computeIfAbsent(currentDatabase, ignored -> new ArrayList<>()).add(currentTableName);
+                    }
+                    for (Map.Entry<String, List<String>> entry : databaseDevicesMap.entrySet()) {
+                        IoTDBDatabase newDatabase = new IoTDBDatabase(entry.getKey(), entry.getValue());
+                        databases.add(newDatabase);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error loading databases and tables in tree model", e);
         }
     }
 

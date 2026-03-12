@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.SharedFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -54,7 +55,7 @@ public class SetPartSettingsAction extends SelectionAction {
 
     }
 
-    private IStructuredSelection selection;
+    private final IStructuredSelection selection;
 
     public SetPartSettingsAction(ERDEditorPart part, IStructuredSelection selection) {
         super(part);
@@ -89,7 +90,6 @@ public class SetPartSettingsAction extends SelectionAction {
 
             @Override
             public void execute() {
-                final Shell shell = UIUtils.createCenteredShell(getWorkbenchPart().getSite().getShell());
                 NodePart nodePart = null;
                 boolean hasNotes = false;
                 boolean hasEntities = false;
@@ -105,14 +105,18 @@ public class SetPartSettingsAction extends SelectionAction {
                         }
                     }
                 }
-                PartSettingsDialog settingsDialog = new PartSettingsDialog(shell, nodePart, hasNotes, hasEntities);
+                PartSettingsDialog settingsDialog = new PartSettingsDialog(
+                    nodePart.getEditor().getSite().getShell()    ,
+                    nodePart,
+                    hasNotes,
+                    hasEntities
+                );
                 if (settingsDialog.open() != IDialogConstants.OK_ID) {
                     return;
                 }
                 newSettings = settingsDialog.newSettings;
                 for (Object item : objects) {
-                    if (item instanceof ICustomizablePart) {
-                        ICustomizablePart part = (ICustomizablePart) item;
+                    if (item instanceof ICustomizablePart part) {
                         ViewSettings oldSettings = new ViewSettings();
                         oldSettings.transparency = part.getCustomTransparency();
                         oldSettings.background = part.getCustomBackgroundColor();
@@ -128,8 +132,7 @@ public class SetPartSettingsAction extends SelectionAction {
             @Override
             public void undo() {
                 for (Object item : objects) {
-                    if (item instanceof ICustomizablePart) {
-                        ICustomizablePart colorizedPart = (ICustomizablePart) item;
+                    if (item instanceof ICustomizablePart colorizedPart) {
                         ViewSettings viewSettings = oldSettings.get(colorizedPart);
                         if (viewSettings != null) {
                             setNodeSettings(colorizedPart, viewSettings);
@@ -182,11 +185,17 @@ public class SetPartSettingsAction extends SelectionAction {
             this.entityStyles = entityStyles;
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
 
-            Group settingsGroup = UIUtils.createControlGroup(dialogArea, ERDUIMessages.erd_settings_dialog_group_label, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite settingsGroup = UIUtils.createTitledComposite(
+                dialogArea,
+                ERDUIMessages.erd_settings_dialog_group_label,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             if (noteStyles) {
                 transparentCheckbox = UIUtils.createCheckbox(settingsGroup, ERDUIMessages.erd_settings_checkbox_transparent_label,

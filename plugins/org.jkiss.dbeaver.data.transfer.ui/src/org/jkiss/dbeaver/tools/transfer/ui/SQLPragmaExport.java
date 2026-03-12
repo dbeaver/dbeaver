@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
     private static final Log log = Log.getLog(SQLPragmaExport.class);
 
     public static final String PARAMETER_TYPE = "type";
+    public static final String PARAMETER_INCLUDE_PIPES = "includePipesConfiguration";
 
     private static final String PRODUCER_NODE_ID = "database_producer";
     private static final String CONSUMER_NODE_ID = "stream_consumer";
@@ -59,7 +60,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
         @NotNull Map<String, Object> parameters
     ) throws DBException {
         final String type = JSONUtils.getString(parameters, PARAMETER_TYPE);
-
+        final boolean includePipes = JSONUtils.getBoolean(parameters, PARAMETER_INCLUDE_PIPES, false);
         if (CommonUtils.isEmpty(type)) {
             throw new DBException("`type` attribute is mandatory");
         }
@@ -97,7 +98,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
             final DataTransferWizard wizard = new DataTransferWizard(null, settings, true) {
                 @Override
                 protected boolean includePipesConfigurationPage() {
-                    return false;
+                    return includePipes;
                 }
             };
 
