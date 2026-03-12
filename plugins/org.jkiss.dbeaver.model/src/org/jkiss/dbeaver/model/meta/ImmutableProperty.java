@@ -14,31 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.meta;
 
-package org.jkiss.dbeaver.model.qm;
-
-import org.jkiss.code.NotNull;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Query manager controller
+ * Mark property as immutable
  */
-public interface QMRegistry {
-
-    @NotNull
-    QMMCollector getMetaCollector();
-
-    @NotNull
-    QMExecutionHandler getDefaultHandler();
-
-    @NotNull
-    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
-
-    void registerHandler(@NotNull QMExecutionHandler handler);
-
-    void unregisterHandler(@NotNull QMExecutionHandler handler);
-
-    void registerMetaListener(@NotNull QMMetaListener metaListener);
-
-    void unregisterMetaListener(@NotNull QMMetaListener metaListener);
-
+@Target(value = {ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ImmutableProperty {
 }

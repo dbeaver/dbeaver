@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceAuthOptions;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
@@ -35,11 +35,15 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import picocli.CommandLine;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,6 +55,16 @@ import java.util.Map;
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
     public static final int STRING_FORMAT_PADDING = 3;
+
+    @NotNull
+    public static String normalizeOptionName(@NotNull String name) {
+        if (name.startsWith("--")) {
+            return name.substring(2);
+        } else if (name.startsWith("-")) {
+            return name.substring(1);
+        }
+        return name;
+    }
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
@@ -140,19 +154,16 @@ public class CLIUtils {
     public static DBPDataSourceContainer createTempDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions
+        @Nullable DataSourceOptions dataSourceOptions,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
-        DBPDataSourceContainer tempDatasource = createDataSource(
+        return createDataSource(
             project,
             driverId,
             dataSourceOptions,
-            authOptions,
+            dataSourceUpdaters,
             true
         );
-
-        processDataSourceAuthOptions(tempDatasource, authOptions);
-        return tempDatasource;
     }
 
     @NotNull
@@ -160,7 +171,7 @@ public class CLIUtils {
         @NotNull DBPProject project,
         @NotNull String driverId,
         @Nullable DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters,
         boolean temporary
     ) throws CLIException {
         if (dataSourceOptions == null) {
@@ -177,7 +188,7 @@ public class CLIUtils {
 
         var registry = project.getDataSourceRegistry();
         DBPDataSourceContainer dataSource = registry.createDataSource(driver, connectionConfiguration);
-        updateDataSource(dataSourceOptions, authOptions, dataSource);
+        updateDataSource(dataSource, dataSourceUpdaters);
         dataSource.setTemporary(temporary);
         try {
             registry.addDataSource(dataSource);
@@ -188,28 +199,12 @@ public class CLIUtils {
     }
 
     public static void updateDataSource(
-        @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions,
-        @NotNull DBPDataSourceContainer dataSource
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
-        String dsName = dataSourceOptions.getDatasourceName();
-        if (CommonUtils.isEmpty(dsName) && CommonUtils.isEmpty(dataSource.getName())) {
-            dsName = "Ext: " + dataSource.getDriver().getName();
-            if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
-                dsName += " - " + dataSourceOptions.getDbName();
-            } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
-                dsName += " - " + dataSourceOptions.getServer();
-            }
+        for (DataSourceUpdater dataSourceUpdater : dataSourceUpdaters) {
+            dataSourceUpdater.updateDataSource(dataSource);
         }
-        if (CommonUtils.isNotEmpty(dsName)) {
-            dataSource.setName(dsName);
-        }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
-            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
-            dataSource.setFolder(folder);
-        }
-        dataSource.setSavePassword(dataSourceOptions.isSavePassword());
-        processDataSourceAuthOptions(dataSource, authOptions);
     }
 
 
@@ -369,6 +364,29 @@ public class CLIUtils {
         return helpText.toString();
     }
 
+    public static void collectPropertyHelpDescriptionText(
+        @NotNull DBPPropertyDescriptor property,
+        @NotNull StringBuilder helpText
+    ) {
+        String description = property.getDescription();
+        if (CommonUtils.isEmpty(description)) {
+            return;
+        }
+        helpText.append(description);
+        if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
+            Object[] possibleValues = valueListProvider.getPossibleValues(null);
+            if (!ArrayUtils.isEmpty(possibleValues)) {
+                helpText.append(", possible values: ");
+                for (int i = 0; i < possibleValues.length; i++) {
+                    helpText.append(possibleValues[i]);
+                    if (i < possibleValues.length - 1) {
+                        helpText.append(", ");
+                    }
+                }
+            }
+        }
+    }
+
     @NotNull
     public static String formatAsTable(@NotNull List<Map<String, String>> data) {
         if (data.isEmpty()) {
@@ -403,4 +421,24 @@ public class CLIUtils {
         }
         return sb.toString().trim();
     }
+
+
+    public static String getHelpFromCommand(@NotNull CommandLine.Model.CommandSpec commandForHelp) throws CLIException {
+        CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
+        helpSpec.header(GeneralUtils.getProductTitle());
+        try (
+            var out = new StringWriter();
+            var print = new PrintWriter(out)
+        ) {
+            var updatedCmd = new CommandLine(commandForHelp);
+            updatedCmd.usage(print);
+            return out.toString();
+        } catch (Exception e) {
+            throw new CLIException(
+                "Error generating help message: " + e.getMessage(), e,
+                CLIConstants.EXIT_CODE_ERROR
+            );
+        }
+    }
+
 }
