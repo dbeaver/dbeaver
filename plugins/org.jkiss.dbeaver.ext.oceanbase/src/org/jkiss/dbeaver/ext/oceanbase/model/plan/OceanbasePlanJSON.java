@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -78,7 +79,7 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     }
 
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) || DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
         }
@@ -95,8 +96,9 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
         return "EXPLAIN FORMAT=JSON " + query + ";";
     }
 
+    @NotNull
     @Override
-    public List<OceanbasePlanNodeJSON> getPlanNodes(Map<String, Object> options) {
+    public List<OceanbasePlanNodeJSON> getPlanNodes(@NotNull Map<String, Object> options) {
         return Collections.unmodifiableList(rootNodes);
     }
     

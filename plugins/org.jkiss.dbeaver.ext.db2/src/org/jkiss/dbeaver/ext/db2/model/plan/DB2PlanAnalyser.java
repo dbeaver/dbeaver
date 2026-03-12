@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -64,7 +64,7 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
     }
 
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
             DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
             DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
@@ -92,8 +92,9 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
         return String.format(PT_EXPLAIN, STMT_NO_GEN.get(), query);
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options)
     {
         return listNodes;
     }

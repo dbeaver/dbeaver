@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.hana.model.HANADataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -55,8 +56,9 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
         return "SELECT * FROM SYS.EXPLAIN_PLAN_TABLE";
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -57,7 +58,7 @@ public class TiDBPlainClassic extends MySQLPlanAbstract {
     }
 
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
         }
@@ -74,8 +75,9 @@ public class TiDBPlainClassic extends MySQLPlanAbstract {
         return "EXPLAIN FORMAT = \"brief\" " + query;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 }

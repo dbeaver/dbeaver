@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.impl.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 
@@ -25,7 +26,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
  */
 public abstract class AbstractExecutionPlan implements DBCPlan {
 
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
             return "ms";
         }
