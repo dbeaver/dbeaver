@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
@@ -123,16 +124,10 @@ public class DataSourceOptions implements DataSourceUpdater {
             }
         }
         var registry = dataSource.getRegistry();
-        String finalName = dsName;
-        int index = 0;
-        while (registry.findDataSourceByName(finalName) != null) {
-            index++;
-            finalName = dsName + " " + index;
-        }
-        dataSource.setName(finalName);
+        dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 1));
         if (CommonUtils.isNotEmpty(getFolder())) {
-            DBPDataSourceFolder folder = registry.getFolder(getFolder());
-            dataSource.setFolder(folder);
+            DBPDataSourceFolder registryFolder = registry.getFolder(getFolder());
+            dataSource.setFolder(registryFolder);
         }
         dataSource.setSavePassword(isSavePassword());
     }
