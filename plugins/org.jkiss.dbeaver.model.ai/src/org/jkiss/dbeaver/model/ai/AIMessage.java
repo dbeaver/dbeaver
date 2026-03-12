@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Represents a single AI message
@@ -34,7 +35,7 @@ public class AIMessage {
     @Nullable
     private final String displayMessage;
     @Nullable
-    private final String customResultInfo;
+    private final String functionCallName;
     @NotNull
     private final LocalDateTime time;
     @Nullable
@@ -42,15 +43,15 @@ public class AIMessage {
     @Nullable
     private final AIFunctionResult functionResult;
     @Nullable
-    private final AIMessageMeta meta;
+    private final List<AIMessageMeta> meta;
 
     public AIMessage(
         @NotNull AIMessageType role,
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time,
-        @Nullable AIMessageMeta meta,
-        @Nullable String functionCallID
+        @Nullable List<AIMessageMeta> meta,
+        @Nullable String functionCallName
     ) {
         this.role = role;
         this.content = content;
@@ -59,7 +60,7 @@ public class AIMessage {
         this.meta = meta;
         this.functionCall = null;
         this.functionResult = null;
-        this.customResultInfo = functionCallID;
+        this.functionCallName = functionCallName;
     }
     /**
      * Creates AI message
@@ -69,7 +70,7 @@ public class AIMessage {
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time,
-        @Nullable AIMessageMeta meta
+        @Nullable List<AIMessageMeta> meta
     ) {
         this.role = role;
         this.content = content;
@@ -78,7 +79,7 @@ public class AIMessage {
         this.meta = meta;
         this.functionCall = null;
         this.functionResult = null;
-        this.customResultInfo = null;
+        this.functionCallName = null;
     }
 
     /**
@@ -87,7 +88,7 @@ public class AIMessage {
     private AIMessage(
         @NotNull AIFunctionCall functionCall,
         @NotNull AIFunctionResult result,
-        @Nullable AIMessageMeta meta
+        @Nullable List<AIMessageMeta> meta
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
@@ -96,7 +97,7 @@ public class AIMessage {
         this.functionCall = functionCall;
         this.functionResult = result;
         this.displayMessage = CommonUtils.toString(result.getValue());
-        this.customResultInfo = null;
+        this.functionCallName = null;
     }
 
     @NotNull
@@ -110,7 +111,10 @@ public class AIMessage {
     }
 
     @NotNull
-    public static AIMessage assistantMessage(@NotNull String message, @Nullable AIMessageMeta meta) {
+    public static AIMessage assistantMessage(
+        @NotNull String message,
+        @Nullable List<AIMessageMeta> meta
+    ) {
         return new AIMessage(AIMessageType.ASSISTANT, message, meta);
     }
 
@@ -138,11 +142,15 @@ public class AIMessage {
         return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now(), null);
     }
 
-    public AIMessage(@NotNull AIMessageType role, @NotNull String content, AIMessageMeta meta) {
+    public AIMessage(
+        @NotNull AIMessageType role,
+        @NotNull String content,
+        @Nullable List<AIMessageMeta> meta
+    ) {
         this(role, content, content, LocalDateTime.now(), meta);
     }
 
-    public static AIMessage functionMessage(String id, String payload, AIMessageType type) {
+    public static AIMessage functionMessage(@NotNull String id, @NotNull String payload, @NotNull AIMessageType type) {
         return new AIMessage(
             type,
             payload,
@@ -181,8 +189,8 @@ public class AIMessage {
     }
 
     @Nullable
-    public String getToolUseID() {
-        return customResultInfo;
+    public String getFunctionCallName() {
+        return functionCallName;
     }
 
     @NotNull
@@ -201,7 +209,7 @@ public class AIMessage {
     }
 
     @Nullable
-    public AIMessageMeta getMeta() {
+    public List<AIMessageMeta> getMeta() {
         return meta;
     }
 

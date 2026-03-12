@@ -93,8 +93,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         settingsGroup.setLayout(new GridLayout(1, false));
         settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite addrGroup = UIUtils.createTitledComposite(settingsGroup, HANAMessages.label_connection, 2);
-        addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite addrGroup = UIUtils.createTitledComposite(settingsGroup, HANAMessages.label_connection, 2, GridData.FILL_HORIZONTAL);
 
         UIUtils.createControlLabel(addrGroup, HANAMessages.label_edition);
         editionCombo = new Combo(addrGroup, SWT.DROP_DOWN | SWT.READ_ONLY);

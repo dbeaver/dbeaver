@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -290,7 +290,21 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
     }
 
-    @NotNull
+    @Override
+    public void renameProject(@NotNull DBPProject project, @NotNull String newName) throws DBException {
+        if (project instanceof DesktopProjectImpl projectImpl) {
+            IProject eclipseProject = projectImpl.getEclipseProject();
+            try {
+                project.updateProject(newName, null);
+                IProjectDescription description = eclipseProject.getDescription();
+                description.setName(newName);
+                eclipseProject.move(description, true, null);
+            } catch (CoreException e) {
+                throw new DBException("Error renaming project", e);
+            }
+        }
+    }
+
     @Override
     public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
         IProject project = null;

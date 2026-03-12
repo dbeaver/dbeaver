@@ -39,6 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AIPromptUtils {
+    public static final String[] SQL_OUTPUT_FORMATS = {
+        "Place any explanation or comments before the SQL code block.",
+        "Provide the SQL query in a fenced Markdown code block."
+    };
 
     public static int calcSystemPromptLength(@NotNull List<AIMessage> messages) {
         return messages.stream()
@@ -83,7 +87,7 @@ public class AIPromptUtils {
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
         instructions.add("Stick strictly to SQL dialect syntax.");
-        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+        instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());

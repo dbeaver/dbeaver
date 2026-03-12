@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,15 +32,16 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.file.FileOpenHandler;
+import org.jkiss.dbeaver.model.file.FileTypeAction;
+import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.model.file.FileTypeHandlerRegistry;
 import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
-import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +53,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * Default resource handler
@@ -98,13 +98,9 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 if (!CommonUtils.isEmpty(fileExtension)) {
                     FileTypeHandlerDescriptor fthd = FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
                     if (fthd != null) {
-                        try {
-                            IFileTypeHandler handler = fthd.createHandler();
-                            handler.openFiles(Collections.singletonList(path), Map.of(), null);
-                            return;
-                        } catch (ReflectiveOperationException e) {
-                            throw new DBException("Cannot create file handler", e);
-                        }
+                        FileOpenHandler handler = fthd.createHandler();
+                        handler.openFiles(Collections.singletonList(path), null, FileTypeAction.INTERNAL_EDITOR);
+                        return;
                     }
                 }
             }

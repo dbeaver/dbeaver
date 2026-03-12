@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,55 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 
 public class ClickHouseDateTimeValueHandler extends JDBCDateTimeValueHandler {
+    public static final String CLICKHOUSE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + CLICKHOUSE_TIMESTAMP_FORMAT + "''");
 
     public ClickHouseDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
     }
 
+    @Nullable
     @Override
-    protected boolean isReadDateAsObject() {
-        return true;
+    protected Format getNativeValueFormat(DBSTypedObject type) {
+        return DEFAULT_DATETIME_FORMAT;
+    }
+
+    @Override
+    public void bindValueObject(
+        @NotNull DBCSession session,
+        @NotNull DBCStatement statement,
+        @NotNull DBSTypedObject type,
+        int index,
+        @Nullable Object value
+    ) throws DBCException {
+
+        if (value instanceof Timestamp timestamp) {
+            // ClickHouse DateTime type has no NANOSECONDS part
+            JDBCPreparedStatement dbStat = (JDBCPreparedStatement) statement;
+            try {
+                dbStat.setObject(index + 1, timestamp);
+            } catch (SQLException e) {
+                throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);            }
+        } else {
+            super.bindValueObject(session, statement, type, index, value);
+        }
     }
 
 }

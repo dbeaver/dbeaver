@@ -984,6 +984,14 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
+        <!-- General colors -->
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.accent.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.accent"
+            value="51, 135, 197">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.accent.description</description>
+        </colorDefinition>
 
         <!-- Colors for transactions -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">
@@ -1281,5 +1289,7 @@
     <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
         <fragment apply="always" uri="fragment.e4xmi"/>
     </extension>
-
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.DBeaverCoreWorkbenchInitializer" order="2"/>
+    </extension>
 </plugin>

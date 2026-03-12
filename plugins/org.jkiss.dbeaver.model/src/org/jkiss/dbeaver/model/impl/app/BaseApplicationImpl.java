@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.app;
  */
 public abstract class BaseApplicationImpl extends AbstractApplication {
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    public static final String ECLIPSE_EXIT_DATA = "eclipse.exitdata";
 
     protected BaseApplicationImpl() {
     }

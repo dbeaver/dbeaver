@@ -10,6 +10,7 @@
                 type="tunnel"
                 id="ssh_tunnel"
                 codeName="SSH"
+                prefix="ssh"
                 label="%handler.ssh_tunnel.label"
                 description="%handler.ssh_tunnel.description"
                 desktop="false"
@@ -18,13 +19,15 @@
                 handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl">
             <propertyGroup label="SSH Settings">
                 <property id="host" label="Host" type="string" description="SSH target host name or IP address"/>
-                <property id="port" label="Port" type="string" description="SSH target host port (22 by default)"/>
+                <property id="port" label="Port" type="string" description="SSH target host port (22 by default)" defaultValue="22"/>
 
                 <property id="authType" label="Authentication type" type="string" description="SSH authentication type" validValues="PASSWORD,PUBLIC_KEY,AGENT"/>
 
                 <property id="user" label="User name" type="string" description="SSH target user name"/>
                 <property id="password" label="User password" type="string" description="SSH target user password"/>
-                <property id="keyValue" label="Private key path" type="file" description="SSH private key path" features="multiline,secured,password"/>
+                <property id="keyValue" label="Private key value" type="file" description="SSH private key value"
+                          features="multiline,secured,password"/>
+                <property id="keyPath" label="Private key path" type="string" description="SSH private key path"/>
             </propertyGroup>
             <propertyGroup label="SSH Advanced Settings">
                 <property id="aliveInterval" label="Keep-Alive interval" type="string" description="SSH keep-alive interval"/>

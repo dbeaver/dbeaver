@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
@@ -24,13 +25,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
  */
 public class MySQLTableForeignKeyColumn extends MySQLTableConstraintColumn implements DBSTableForeignKeyColumn
 {
-    private MySQLTableColumn referencedColumn;
+    private final MySQLTableColumn referencedColumn;
 
     public MySQLTableForeignKeyColumn(
         MySQLTableForeignKey constraint,
         MySQLTableColumn tableColumn,
         int ordinalPosition,
-        MySQLTableColumn referencedColumn)
+        @Nullable MySQLTableColumn referencedColumn
+    )
     {
         super(constraint, tableColumn, ordinalPosition);
         this.referencedColumn = referencedColumn;
@@ -38,6 +40,7 @@ public class MySQLTableForeignKeyColumn extends MySQLTableConstraintColumn imple
 
     @Override
     @Property(id = "reference", viewable = true, order = 4)
+    @Nullable
     public MySQLTableColumn getReferencedColumn()
     {
         return referencedColumn;
