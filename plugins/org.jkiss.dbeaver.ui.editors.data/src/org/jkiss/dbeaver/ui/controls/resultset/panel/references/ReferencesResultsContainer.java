@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -50,6 +49,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -93,13 +93,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
         gd.verticalIndent = 3;
         gd.horizontalIndent = 3;
         keySelectorPanel.setLayoutData(gd);
-        //UIUtils.createControlLabel(keySelectorPanel, ResultSetMessages.refs_label);
+
         fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fkCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        fkCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 activeReferenceKey = fkCombo.getSelectedItem();
                 if (activeReferenceKey == null) {
                     return;
@@ -119,18 +117,16 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         }
                     }
                 }
-
             }
-        });
+        ));
+        CSSUtils.setExcludeFromStyling(fkCombo);
 
         UIUtils.createPushButton(
             keySelectorPanel,
             ResultSetMessages.refs_open_target,
             ResultSetMessages.refs_open_target_tip,
             DBIcon.TREE_TABLE,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener.widgetSelectedAdapter(e -> {
                     if (activeReferenceKey == null || activeReferenceKey.targetEntity == null) {
                         return;
                     }
@@ -141,7 +137,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         }
                     });
                 }
-            });
+            ));
 
         {
             Composite viewerContainer = new Composite(mainComposite, SWT.NONE);
@@ -258,10 +254,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
             DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, false);
             if (vEntityOwner != null) {
                 Object activeAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
-                if (activeAssociations instanceof Collection) {
-                    for (Object refKeyMemoMap : (Collection<?>)activeAssociations) {
-                        if (refKeyMemoMap instanceof Map) {
-                            refKeyMemos.add(new ReferenceKeyMemo((Map) refKeyMemoMap));
+                if (activeAssociations instanceof Collection<?> collection) {
+                    for (Object refKeyMemoMap : collection) {
+                        if (refKeyMemoMap instanceof Map map) {
+                            refKeyMemos.add(new ReferenceKeyMemo(map));
                         }
                     }
                 }

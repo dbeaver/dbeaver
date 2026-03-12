@@ -48,7 +48,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
 
     private String selectedEntityName;
 
-    public GenericExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
+    public GenericExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String purpose) {
         super(instance, purpose);
     }
 
@@ -64,7 +64,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return this;
     }
 
-    void determineSelectedEntity(DBRProgressMonitor monitor) {
+    void determineSelectedEntity(@NotNull DBRProgressMonitor monitor) {
         GenericDataSource dataSource = this.getDataSource();
 
         // Get selected entity (catalog or schema)
@@ -135,7 +135,10 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    public void initDefaultsFrom(DBRProgressMonitor monitor, GenericExecutionContext context) throws DBCException {
+    public void initDefaultsFrom(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericExecutionContext context
+    ) throws DBCException {
         GenericCatalog defaultCatalog = context.getDefaultCatalog();
         String entityName = null;
         if (defaultCatalog != null && context.supportsCatalogChange()) {
@@ -194,6 +197,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
+    @Nullable
     @Override
     public GenericCatalog getDefaultCatalog() {
         if (GenericConstants.ENTITY_TYPE_CATALOG.equals(getDataSource().getSelectedEntityType())
@@ -204,6 +208,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return getDataSource().getDefaultCatalog();
     }
 
+    @Nullable
     @Override
     public GenericSchema getDefaultSchema() {
         if (GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType())
@@ -257,11 +262,11 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, GenericCatalog catalog, GenericSchema schema) throws DBCException {
-        if (catalog == null) {
-            log.debug("Null current catalog");
-            return;
-        }
+    public void setDefaultCatalog(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericCatalog catalog,
+        @Nullable GenericSchema schema
+    ) throws DBCException {
         GenericDataSource dataSource = getDataSource();
         GenericCatalog oldSelectedCatalog = getDefaultCatalog();
         DBCTransactionManager txnManager = null;
@@ -308,7 +313,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     @Override
-    public void setDefaultSchema(DBRProgressMonitor monitor, GenericSchema schema) throws DBCException {
+    public void setDefaultSchema(@NotNull DBRProgressMonitor monitor, @Nullable GenericSchema schema) throws DBCException {
         if (schema == null) {
             log.debug("Null current schema");
             return;
@@ -324,7 +329,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         DBUtils.fireObjectSelect(schema, true, this);
     }
 
-    private void setDefaultSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
+    private void setDefaultSchema(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName) throws DBCException {
         GenericDataSource dataSource = getDataSource();
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
             if (dataSource.isSelectedEntityFromAPI()) {
@@ -346,8 +351,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
-
+    public boolean refreshDefaults(@NotNull DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         if (useBootstrapSettings) {
             DBPConnectionBootstrap bootstrap = getBootstrapSettings();
             if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && this.supportsSchemaChange()) {
@@ -375,6 +379,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return false;
     }
 
+    @Nullable
     public GenericObjectContainer getDefaultObject() {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             GenericDataSource dataSource = getDataSource();
@@ -410,6 +415,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return null;
     }
 
+    @Nullable
     public String getDefaultCatalogCached() {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             GenericDataSource dataSource = getDataSource();
@@ -424,6 +430,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return null;
     }
 
+    @Nullable
     public String getDefaultSchemaCached() {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             GenericDataSource dataSource = getDataSource();

@@ -20,10 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.AIToolboxRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -47,24 +51,27 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected final DBPWorkspace workspace;
 
-    protected final AIEngineRequestFactory requestFactory;
-    protected AISqlFormatter sqlFormatter;
+    private AIEngineRequestFactory requestFactory;
+    private AIToolboxManager toolboxManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
-        this.requestFactory = createRequestFactory();
-        this.sqlFormatter = createSqlFormatter();
     }
 
-    protected AISqlFormatter createSqlFormatter() {
-        try {
-            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
-        } catch (DBException e) {
-            log.error("Error creating SQL formatter", e);
-            return new SimpleSqlFormatterImpl();
+    @NotNull
+    protected AIToolboxManager createToolboxManager() {
+        return new AIToolboxRegistry();
+    }
+
+    @NotNull
+    protected AIEngineRequestFactory getRequestFactory() {
+        if (requestFactory == null) {
+            requestFactory = createRequestFactory();
         }
+        return requestFactory;
     }
 
+    @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
         return new AIEngineRequestFactory(
             new AIDatabaseSnapshotService(),
@@ -100,11 +107,15 @@ public class AIAssistantImpl implements AIAssistant {
                 Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
                 int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
+                AIUsage usage = completionResponse.getUsage() != null ?
+                    completionResponse.getUsage() :
+                    new AIUsage(0, 0, 0, 0);
 
                 AIMessageMeta requestMeta = new AIMessageMeta(
+                    AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
                     engine.getProperties().getModel(),
-                    completionResponse.getUsage(),
+                    usage,
                     Duration.between(now, Instant.now()),
                     systemPromptLength
                 );
@@ -115,11 +126,11 @@ public class AIAssistantImpl implements AIAssistant {
                         functionContext.addFunctionCall(functionCall);
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         String stringValue = CommonUtils.toString(result.getValue());
-                        if (result.getType() == AIFunctionResult.FunctionType.ACTION) {
+                        if (result.getType() == AIFunctionType.ACTION) {
                             return new AIAssistantResponse(
                                 AIAssistantResponse.Type.FUNCTION,
                                 stringValue,
-                                requestMeta
+                                List.of(requestMeta)
                             );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
@@ -137,18 +148,27 @@ public class AIAssistantImpl implements AIAssistant {
                         return new AIAssistantResponse(
                             AIAssistantResponse.Type.TEXT,
                             variants.getFirst(),
-                            requestMeta
+                            List.of(requestMeta)
                         );
                     }
                 }
                 return new AIAssistantResponse(
                     AIAssistantResponse.Type.ERROR,
                     AIMessages.ai_empty_engine_response,
-                    requestMeta
+                    List.of(requestMeta)
                 );
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
         }
+    }
+
+    @NotNull
+    @Override
+    public AIToolboxManager getToolboxManager() {
+        if (toolboxManager == null) {
+            toolboxManager = createToolboxManager();
+        }
+        return toolboxManager;
     }
 
     @NotNull
@@ -160,8 +180,9 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
     ) throws DBException {
-        return requestFactory.build(
+        return getRequestFactory().build(
             monitor,
+            this,
             engine,
             engineDescriptor,
             systemGenerator,
@@ -190,12 +211,11 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
-        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
         String functionName = functionCall.getFunctionName();
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = registry.getFunction(functionName);
+        AIFunctionDescriptor function = getToolboxManager().getFunctionById(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
@@ -205,7 +225,16 @@ public class AIAssistantImpl implements AIAssistant {
         if (arguments == null) {
             arguments = Map.of();
         }
-        return registry.callFunction(context, function, arguments);
+        DBPDataSourceContainer container = context.getContext() != null
+            ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
+        AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(
+            container,
+            Map.of(
+                AIBaseFeatures.FUNCTION_NAME, functionCall.getFunctionName(),
+                AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
+            )
+        ));
+        return function.getToolbox().callFunction(context, function, arguments);
     }
 
     protected void checkAiEnablement() throws DBException {

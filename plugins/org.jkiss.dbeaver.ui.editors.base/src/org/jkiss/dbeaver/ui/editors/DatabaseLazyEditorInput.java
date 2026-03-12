@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -290,18 +290,21 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
                 final Integer result = new UITask<Integer>() {
                     @Override
                     protected Integer runTask() {
-                        ConnectionLostDialog clDialog = new ConnectionLostDialog(UIUtils.getActiveWorkbenchShell(), dataSourceContainer, e, "Close");
+                        ConnectionLostDialog clDialog = new ConnectionLostDialog(
+                            UIUtils.getActiveWorkbenchShell(),
+                            dataSourceContainer,
+                            e,
+                            IDialogConstants.ABORT_LABEL
+                        );
                         return clDialog.open();
                     }
                 }.execute();
-                if (result == IDialogConstants.STOP_ID) {
-                    // Close editor
-                    return null;
-                } else if (result == IDialogConstants.RETRY_ID) {
+                if (result == IDialogConstants.RETRY_ID) {
                     connectionStart = System.currentTimeMillis();
                     continue;
                 } else {
-                    return new ErrorEditorInput(GeneralUtils.makeExceptionStatus(e), navigatorModel.getNodeByObject(dataSourceContainer));
+                    // Unload editor
+                    return unloadInput();
                 }
             }
             if (connectionTimeout > 0 && connectionStart + connectionTimeout <= System.currentTimeMillis()) {
@@ -360,7 +363,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
     @NotNull
     @Override
-    public ILazyEditorInput unloadInput() {
+    public DatabaseLazyEditorInput unloadInput() {
         return new DatabaseLazyEditorInput(
             nodePath,
             nodeName,

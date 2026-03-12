@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIContextSettings;
 import org.jkiss.dbeaver.model.ai.AIIcons;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
+import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration;
+import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines;
 
 
 public class AIUIUtils {
@@ -60,10 +62,17 @@ public class AIUIUtils {
     }
 
     public static void showPreferences(@NotNull Shell shell) {
+        showPreferences(shell, false);
+    }
+
+    public static void showPreferences(@NotNull Shell shell, boolean engines) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            return;
+        }
         UIUtils.showPreferencesFor(
             shell,
             AISettingsManager.getInstance().getSettings(),
-            AIPreferencePageMain.PAGE_ID
+            engines ? AIPreferencePageEngines.PAGE_ID : AIPreferencePageConfiguration.PAGE_ID
         );
     }
 }

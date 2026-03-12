@@ -994,7 +994,7 @@ public class DBExecUtils {
         }
         if (checkValidKey) {
             if (rowIdentifier.isIncomplete()) {
-                return "No valid row identifier found";
+                return "No unique key. Row modification is not available.";
             }
         }
         DBSEntity dataContainer = rowIdentifier.getEntity();
