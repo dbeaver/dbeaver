@@ -46,11 +46,13 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
         this.query = query;
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "SELECT * FROM SYS.EXPLAIN_PLAN_TABLE";

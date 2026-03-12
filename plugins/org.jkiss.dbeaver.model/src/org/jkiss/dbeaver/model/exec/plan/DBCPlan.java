@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.exec.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -34,10 +35,19 @@ public interface DBCPlan {
      */
     String OPTION_KEEP_ORIGINAL = "keepOriginal";
 
+    @NotNull
     String getQueryString();
 
+    @NotNull
     String getPlanQueryString() throws DBException;
 
+    @NotNull
+    DBCPlanSourceFormat getPlanSourceDataFormat();
+
+    @Nullable
+    Object getPlanSourceData();
+
+    @Nullable
     Object getPlanFeature(@NotNull String feature);
 
     @NotNull

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -71,6 +72,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         this.configuration = new DBCQueryPlannerConfiguration();
     }
 
+    @Nullable
     @Override
     public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
@@ -82,12 +84,14 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString()
     {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         if (oldQuery) {

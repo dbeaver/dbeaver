@@ -67,11 +67,13 @@ public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 		}
 	}
 	
-	@Override
+	@NotNull
+    @Override
 	public String getQueryString() {
 		return query;
 	}
 
+	@NotNull
 	@Override
 	public String getPlanQueryString() throws DBException {
 		return null;

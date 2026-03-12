@@ -84,11 +84,13 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         }
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() throws DBException {
         return planQuery;

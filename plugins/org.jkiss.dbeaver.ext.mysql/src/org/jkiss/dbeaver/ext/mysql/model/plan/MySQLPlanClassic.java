@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -59,6 +60,7 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
     public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
@@ -67,11 +69,13 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN EXTENDED " + query;

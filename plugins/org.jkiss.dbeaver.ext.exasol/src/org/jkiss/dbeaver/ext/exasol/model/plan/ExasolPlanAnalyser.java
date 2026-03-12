@@ -55,11 +55,13 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
         this.rootNodes = rootNodes;
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "/*snapshot execution*/ SELECT * FROM EXA_USER_PROFILE_LAST_DAY WHERE SESSION_ID = CURRENT_SESSION AND STMT_ID = (select max(stmt_id) from EXA_USER_PROFILE_LAST_DAY where sql_text = ?)";

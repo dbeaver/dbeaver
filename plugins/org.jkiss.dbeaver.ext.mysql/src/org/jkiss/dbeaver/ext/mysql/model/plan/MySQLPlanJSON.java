@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model.plan;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -98,6 +99,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
     public Object getPlanFeature(@NotNull String feature) {
         if (dataSource.isMariaDB()) {
@@ -113,11 +115,13 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN FORMAT=JSON " + query;

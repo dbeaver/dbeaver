@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAbstract;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -57,6 +58,7 @@ public class TiDBPlainClassic extends MySQLPlanAbstract {
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
     public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
@@ -65,11 +67,13 @@ public class TiDBPlainClassic extends MySQLPlanAbstract {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN FORMAT = \"brief\" " + query;

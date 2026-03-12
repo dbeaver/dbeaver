@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -63,6 +64,7 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
         this.planTableSchema = planTableSchema;
     }
 
+    @Nullable
     @Override
     public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
@@ -81,12 +83,14 @@ public class DB2PlanAnalyser extends AbstractExecutionPlan {
     // Standard Getters
     // ----------------
 
+    @NotNull
     @Override
     public String getQueryString()
     {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return String.format(PT_EXPLAIN, STMT_NO_GEN.get(), query);

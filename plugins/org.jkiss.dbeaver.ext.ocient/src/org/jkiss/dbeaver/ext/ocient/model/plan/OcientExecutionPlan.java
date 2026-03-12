@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.ocient.model.plan;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -49,6 +50,7 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
     public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) || DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature)
@@ -58,11 +60,13 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         // Adds "explain json" to front of query with proper spacing

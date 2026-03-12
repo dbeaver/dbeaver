@@ -18,14 +18,29 @@
 package org.jkiss.dbeaver.model.impl.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 
 /**
  * Abstract execution plan
  */
 public abstract class AbstractExecutionPlan implements DBCPlan {
 
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.NONE;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return null;
+    }
+
+    @Nullable
     public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.PLAN_DURATION_MEASURE.equals(feature)) {
             return "ms";
