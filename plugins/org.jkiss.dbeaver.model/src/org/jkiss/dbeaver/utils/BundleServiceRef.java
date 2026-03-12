@@ -14,10 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.registry;
+package org.jkiss.dbeaver.utils;
 
-import org.jkiss.dbeaver.model.ai.AIAgent;
+import org.jkiss.code.Nullable;
 
-public interface AIAgentDescriptor extends AIAgent {
+/**
+ * Bundle service instance reference
+ */
+public record BundleServiceRef<T>(
+    @Nullable T service,
+    @Nullable Runnable initializer
+) {
 
+    public void initializeService() {
+        if (initializer != null) {
+            initializer.run();
+        }
+    }
 }

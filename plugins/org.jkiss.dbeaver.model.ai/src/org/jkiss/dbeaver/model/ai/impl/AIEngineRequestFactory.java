@@ -143,8 +143,8 @@ public class AIEngineRequestFactory {
         @NotNull AIPromptGenerator systemPromptGenerator,
         @NotNull AIEngineRequest request
     ) {
-        AIAgentManager agentManager = assistant.getAgentManager();
-        AIFunctionSettings functionSettings = agentManager.getFunctionSettings();
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         if (!engineDescriptor.isSupportsFunctions()
             || !functionSettings.isFunctionsEnabled()
@@ -161,20 +161,20 @@ public class AIEngineRequestFactory {
         }
 
         List<AIFunctionDescriptor> functions = new ArrayList<>();
-        for (AIFunctionDescriptor fd : agentManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
+        for (AIFunctionDescriptor fd : toolboxManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
             if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
                 functions.add(fd);
             }
         }
 
         Set<AIFunctionDescriptor> enabledFunctions = new LinkedHashSet<>();
-        for (AIAgent agent : agentManager.getAllAgents()) {
-            if (!agent.isEnabled() || !agent.isAccessible()) {
+        for (AIToolbox toolbox : toolboxManager.getAllToolboxes()) {
+            if (!toolbox.isEnabled() || !toolbox.isAccessible()) {
                 continue;
             }
-            AIFunctionSettings.AgentSettings agentSettings = functionSettings.getAgentSettings(agent);
-            for (AIFunctionDescriptor function : agent.getSupportedFunctions()) {
-                if (agentSettings.isFunctionEnabled(function)) {
+            AIFunctionSettings.ToolboxSettings toolboxSettings = functionSettings.getToolboxSettings(toolbox);
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions()) {
+                if (toolboxSettings.isFunctionEnabled(function)) {
                     enabledFunctions.add(function);
                 }
             }
@@ -236,13 +236,13 @@ public class AIEngineRequestFactory {
     private static Set<String> resolveDependencies(@NotNull Set<AIFunctionDescriptor> selected) {
         Set<String> result = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
-            collectDependencies(fd.getAgent(), fd.getDependsOn(), result);
+            collectDependencies(fd.getToolbox(), fd.getDependsOn(), result);
         }
         return result;
     }
 
     private static void collectDependencies(
-        @NotNull AIAgent agent,
+        @NotNull AIToolbox toolbox,
         @NotNull String[] dependencies,
         @NotNull Set<String> result
     ) {
@@ -253,9 +253,9 @@ public class AIEngineRequestFactory {
             if (!result.add(depId)) {
                 continue;
             }
-            AIFunctionDescriptor dep = agent.getFunctionById(depId);
+            AIFunctionDescriptor dep = toolbox.getFunctionById(depId);
             if (dep != null) {
-                collectDependencies(agent, dep.getDependsOn(), result);
+                collectDependencies(toolbox, dep.getDependsOn(), result);
             }
         }
     }

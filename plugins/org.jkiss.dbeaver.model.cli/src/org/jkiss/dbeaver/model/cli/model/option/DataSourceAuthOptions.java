@@ -16,13 +16,18 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.cli.CLIException;
+import org.jkiss.dbeaver.model.cli.CLIUtils;
 import org.jkiss.dbeaver.model.cli.command.ListAuthenticationModelParameterHandler;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import picocli.CommandLine;
 
 import java.util.List;
 
-public class DataSourceAuthOptions {
+public class DataSourceAuthOptions implements DataSourceUpdater {
     @Nullable
     @CommandLine.Option(names = {"-u", "--user"}, arity = "1", description = "Database user name for username/password authentication")
     private String dbUser;
@@ -89,5 +94,10 @@ public class DataSourceAuthOptions {
     @Nullable
     public NetworkHandlerOptions getNetworkHandlerOptions() {
         return networkHandlerOptions;
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+        CLIUtils.processDataSourceAuthOptions(dataSource, this);
     }
 }

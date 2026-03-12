@@ -78,7 +78,7 @@ public class AILegacyTranslator {
 
         try {
             if (!AIUtils.hasValidConfiguration()) {
-                AIUIUtils.showPreferences(editor.getSite().getShell());
+                AIUIUtils.showPreferences(editor.getSite().getShell(), true);
                 return;
             }
 

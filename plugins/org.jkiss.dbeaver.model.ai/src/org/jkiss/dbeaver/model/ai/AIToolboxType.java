@@ -14,31 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.qm;
-
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.model.ai;
 
 /**
- * Query manager controller
+ * AI toolbox type.
  */
-public interface QMRegistry {
+public enum AIToolboxType {
 
-    @NotNull
-    QMMCollector getMetaCollector();
-
-    @NotNull
-    QMExecutionHandler getDefaultHandler();
-
-    @NotNull
-    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
-
-    void registerHandler(@NotNull QMExecutionHandler handler);
-
-    void unregisterHandler(@NotNull QMExecutionHandler handler);
-
-    void registerMetaListener(@NotNull QMMetaListener metaListener);
-
-    void unregisterMetaListener(@NotNull QMMetaListener metaListener);
+    INTERNAL,
+    EXTERNAL
 
 }
