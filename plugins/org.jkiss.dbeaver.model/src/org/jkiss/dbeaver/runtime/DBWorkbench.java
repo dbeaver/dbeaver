@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.impl.app.AbstractApplication;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithParam;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.utils.BundleServiceRef;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class DBWorkbench {
     private static DBPApplicationWorkbench applicationWorkbench;
     private static final List<DBRRunnableWithParam<DBPPlatform>> initHooks = new ArrayList<>();
 
+    @NotNull
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
             try {
@@ -48,10 +50,12 @@ public class DBWorkbench {
             } catch (Exception e) {
                 log.debug("Error checking application instance", e);
             }
-            applicationWorkbench = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+            BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+            applicationWorkbench = workbenchRef.service();
             if (applicationWorkbench == null) {
                 throw new IllegalStateException("Internal error: application workbench is not instantiated");
             }
+            workbenchRef.initializeService();
             DBPPlatform platform = applicationWorkbench.getPlatform();
 
             // Run init hooks
@@ -67,10 +71,12 @@ public class DBWorkbench {
         return applicationWorkbench;
     }
 
+    @NotNull
     public static DBPPlatform getPlatform() {
         return getApplicationWorkbench().getPlatform();
     }
 
+    @NotNull
     public static <T extends DBPPlatform> T getPlatform(Class<T> pc) {
         return pc.cast(getPlatform());
     }
@@ -82,6 +88,7 @@ public class DBWorkbench {
         return false;
     }
 
+    @NotNull
     public static DBPPlatformUI getPlatformUI() {
         return getApplicationWorkbench().getPlatformUI();
     }

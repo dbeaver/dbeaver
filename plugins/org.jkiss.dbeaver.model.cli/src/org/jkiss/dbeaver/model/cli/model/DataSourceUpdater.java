@@ -14,31 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.cli.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.cli.CLIException;
 
-/**
- * Query manager controller
- */
-public interface QMRegistry {
-
-    @NotNull
-    QMMCollector getMetaCollector();
-
-    @NotNull
-    QMExecutionHandler getDefaultHandler();
-
-    @NotNull
-    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
-
-    void registerHandler(@NotNull QMExecutionHandler handler);
-
-    void unregisterHandler(@NotNull QMExecutionHandler handler);
-
-    void registerMetaListener(@NotNull QMMetaListener metaListener);
-
-    void unregisterMetaListener(@NotNull QMMetaListener metaListener);
-
+@FunctionalInterface
+public interface DataSourceUpdater {
+    void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException;
 }
