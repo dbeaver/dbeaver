@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -75,12 +72,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         List<OAIMessage> messages = completionResult.output.stream()
             .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
             .toList();
-        AIUsage usage = new AIUsage(
-            completionResult.usage.inputTokens(),
-            completionResult.usage.inputTokensDetails().cachedTokens(),
-            completionResult.usage.outputTokens(),
-            completionResult.usage.outputTokensDetails().reasoningTokens()
-        );
+        AIUsage usage = completionResult.getAIUsage();
         if (messages.isEmpty()) {
             return new AIEngineResponse(
                 AIMessageType.ASSISTANT,
@@ -151,11 +143,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             for (AIFunctionDescriptor fd : request.getFunctions()) {
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getId();
+                tool.name = fd.getFullId();
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                for (AIFunctionParameter param : fd.getParameters()) {
                     OAIToolParameter tp = new OAIToolParameter();
                     tp.type = param.getType();
                     tp.description = param.getDescription();

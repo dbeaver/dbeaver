@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePolicy;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -33,11 +34,10 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 public class PostgreTablePolicyManager
     extends SQLObjectEditor<PostgreTablePolicy, PostgreTable>
@@ -77,28 +77,11 @@ public class PostgreTablePolicyManager
         @NotNull ObjectCreateCommand command,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        final PostgreTablePolicy policy = command.getObject();
-        final StringJoiner sql = new StringJoiner("\n\t");
-
-        sql.add("CREATE POLICY " + getNameClause(policy));
-        sql.add("AS " + policy.getType());
-        sql.add("FOR " + policy.getEvent());
-
-        if (policy.getRole() != null) {
-            sql.add("TO " + DBUtils.getQuotedIdentifier(policy.getRole()));
-        }
-
-        if (CommonUtils.isNotEmpty(policy.getUsing())) {
-            sql.add("USING (" + policy.getUsing() + ")");
-        }
-
-        if (CommonUtils.isNotEmpty(policy.getCheck())) {
-            sql.add("WITH CHECK (" + policy.getCheck() + ")");
-        }
+        String sql = command.getObject().getObjectDefinitionText(monitor, options);
 
         actions.add(new SQLDatabasePersistAction(
             "Create policy",
-            sql.toString()
+            sql
         ));
     }
 
@@ -110,21 +93,27 @@ public class PostgreTablePolicyManager
         @NotNull ObjectChangeCommand command,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        final PostgreTablePolicy policy = command.getObject();
-        final StringJoiner sql = new StringJoiner("\n\t");
+        PostgreTablePolicy policy = command.getObject();
+        StringBuilder sql = new StringBuilder();
 
-        sql.add("ALTER POLICY " + getNameClause(policy));
+        sql.append("ALTER POLICY ").append(getNameClause(policy));
 
-        if (command.hasProperty("role")) {
-            sql.add("TO " + (policy.getRole() != null ? DBUtils.getQuotedIdentifier(policy.getRole()) : "PUBLIC"));
+        {
+            List<PostgreRole> roles = policy.getRoles();
+            sql.append("\n\tTO ");
+            if (!roles.isEmpty()) {
+                sql.append(roles.stream().map(DBUtils::getQuotedIdentifier).collect(Collectors.joining(",")));
+            } else {
+                sql.append("PUBLIC");
+            }
         }
 
         if (command.hasProperty("using")) {
-            sql.add("USING (" + policy.getUsing() + ")");
+            sql.append("\n\tUSING (").append(policy.getUsing()).append(")");
         }
 
         if (command.hasProperty("check")) {
-            sql.add("WITH CHECK (" + policy.getCheck() + ")");
+            sql.append("\n\tWITH CHECK (").append(policy.getCheck()).append(")");
         }
 
         actions.add(new SQLDatabasePersistAction(

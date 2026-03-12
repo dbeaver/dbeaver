@@ -93,8 +93,12 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createTitledComposite(settingsGroup, AthenaMessages.label_connection, 2);
-            addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Composite addrGroup = UIUtils.createTitledComposite(
+                settingsGroup,
+                AthenaMessages.label_connection,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             awsRegionCombo = UIUtils.createLabelCombo(addrGroup, AthenaMessages.label_region, SWT.DROP_DOWN);
             awsRegionCombo.addModifyListener(textListener);

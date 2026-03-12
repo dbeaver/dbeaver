@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
 
     private static final String WORKSPACE_ID = "workspace-id";
 
+    private static String globalWorkspaceId;
+
     protected final DBPPlatform platform;
     private final Path workspacePath;
     private final SessionContextImpl workspaceAuthContext;
@@ -100,7 +102,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         }
     }
 
-    public static Properties readWorkspaceInfo(Path metadataFolder) {
+    @NotNull
+    public static Properties readWorkspaceInfo(@NotNull Path metadataFolder) {
         Properties props = new Properties();
 
         Path versionFile = metadataFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE);
@@ -133,6 +136,22 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     @Override
     public DBPImage getResourceIcon(DBPAdaptable resourceAdapter) {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Override
+    public void deleteProject(@NotNull DBPProject project) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Override
+    public void renameProject(@NotNull DBPProject project, @NotNull String newName) throws DBException {
+        throw new DBException("Not supported");
     }
 
     @Nullable
@@ -182,13 +201,16 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
 
     @NotNull
     public static String readWorkspaceIdProperty() {
-        // Check workspace ID
-        Path metadataFolder = GeneralUtils.getMetadataFolder();
-        return readWorkspaceId(metadataFolder);
+        if (globalWorkspaceId == null) {
+            // Check workspace ID
+            Path metadataFolder = GeneralUtils.getMetadataFolder();
+            globalWorkspaceId = readWorkspaceId(metadataFolder);
+        }
+        return globalWorkspaceId;
     }
 
     @NotNull
-    public static String readWorkspaceId(Path metadataFolder) {
+    protected static String readWorkspaceId(Path metadataFolder) {
         Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         String workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
         if (CommonUtils.isEmpty(workspaceId)) {

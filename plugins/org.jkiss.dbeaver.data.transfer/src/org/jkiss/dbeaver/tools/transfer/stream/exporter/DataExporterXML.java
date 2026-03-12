@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,6 +170,12 @@ public class DataExporterXML extends StreamExporterAbstract {
     }
 
     private String escapeXmlElementName(String name) {
-        return name.replaceAll("[^\\p{Alpha}\\p{Digit}]+","_");
+        String escapedName = name.replaceAll("[^\\p{Alpha}\\p{Digit}]+", "_");
+        char firstCharacter = escapedName.charAt(0);
+        if (Character.isAlphabetic(firstCharacter) || firstCharacter == '_') {
+            return escapedName;
+        }
+
+        return "_" + escapedName;
     }
 }

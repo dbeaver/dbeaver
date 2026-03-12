@@ -38,7 +38,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClient initialize() throws DBException {
-            return createClient();
+            return createClient(getProperties().getBaseAuthUrl());
         }
 
         @Override
@@ -88,7 +88,8 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         return new AIEngineResponse(
             AIMessageType.ASSISTANT,
             choices,
-            null);
+            chatResponse.getAIUsage()
+        );
     }
 
     @Override
@@ -152,12 +153,12 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         );
     }
 
-    protected CopilotClient createClient() throws DBException {
+    protected CopilotClient createClient(@NotNull String baseAuthUrl) throws DBException {
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("Copilot API token is not set");
         }
 
-        return new CopilotClient();
+        return new CopilotClient(baseAuthUrl);
     }
 }

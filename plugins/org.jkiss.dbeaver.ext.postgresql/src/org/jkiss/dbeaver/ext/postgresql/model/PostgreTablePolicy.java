@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -31,24 +28,26 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * An object describing row-level security policy.
  *
  * @see <a href="5.8. Row Security Policies">https://www.postgresql.org/docs/current/ddl-rowsecurity.html</a>
  */
-public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveableObject {
+public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject {
     private static final Log log = Log.getLog(PostgreTablePolicy.class);
 
     private final PostgreTable table;
     private String name;
-    private PostgreRole role;
+    private final List<PostgreRole> roles = new ArrayList<>();
     private PolicyType type;
     private PolicyEvent event;
     private String using;
@@ -64,9 +63,18 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
 
         this.table = table;
         this.name = JDBCUtils.safeGetString(results, "policyname");
-        this.role = database.getRoleByReference(monitor, new PostgreRoleReference(
-            database, Objects.requireNonNull(JDBCUtils.<String[]>safeGetArray(results, "roles"))[0],null
-        ));
+
+        String[] roleNames = JDBCUtils.<String[]> safeGetArray(results, "roles");
+        if (!ArrayUtils.isEmpty(roleNames)) {
+            for (String roleName : roleNames) {
+                PostgreRole role = database.getRoleByReference(monitor, new PostgreRoleReference(database, roleName, null));
+                if (role == null) {
+                    log.debug("Role '" + roleName + "' not found");
+                    continue;
+                }
+                roles.add(role);
+            }
+        }
         this.type = CommonUtils.valueOf(PolicyType.class, JDBCUtils.safeGetString(results, "permissive"));
         this.event = CommonUtils.valueOf(PolicyEvent.class, JDBCUtils.safeGetString(results, "cmd"));
         this.using = JDBCUtils.safeGetString(results, "qual");
@@ -77,7 +85,6 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
     public PostgreTablePolicy(@NotNull PostgreTable table, @NotNull String name) {
         this.table = table;
         this.name = name;
-        this.role = null;
         this.type = PolicyType.PERMISSIVE;
         this.event = PolicyEvent.ALL;
         this.using = "";
@@ -103,14 +110,17 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
         return null;
     }
 
-    @Nullable
-    @Property(order = 2, viewable = true, editable = true, updatable = true, listProvider = RoleListProvider.class)
-    public PostgreRole getRole() {
-        return role;
+    @NotNull
+    @Property(order = 2, viewable = true, editable = true, listProvider = RoleListProvider.class)
+    public List<PostgreRole> getRoles() {
+        return roles;
     }
 
-    public void setRole(@Nullable PostgreRole role) {
-        this.role = role;
+    public void setRoles(@Nullable List<PostgreRole> roles) {
+        this.roles.clear();
+        if (roles != null) {
+            this.roles.addAll(roles);
+        }
     }
 
     @NotNull
@@ -173,6 +183,33 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
     @Override
     public DBPDataSource getDataSource() {
         return table.getDataSource();
+    }
+
+    @NotNull
+    @Override
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE POLICY ")
+            .append(DBUtils.getQuotedIdentifier(this))
+            .append(" ON ")
+            .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
+            .append("\n AS ").append(type)
+            .append("\n FOR ").append(event);
+
+        if (!roles.isEmpty()) {
+            sql.append("\n TO ");
+            sql.append(roles.stream().map(DBUtils::getQuotedIdentifier).collect(Collectors.joining(",")));
+        }
+
+        if (CommonUtils.isNotEmpty(using)) {
+            sql.append("\n USING (").append(using).append(")");
+        }
+
+        if (CommonUtils.isNotEmpty(check)) {
+            sql.append("\n WITH CHECK (").append(check).append(")");
+        }
+
+        return sql.toString();
     }
 
     public enum PolicyType implements DBPNamedObject {

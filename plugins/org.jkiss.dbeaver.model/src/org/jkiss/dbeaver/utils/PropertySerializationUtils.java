@@ -87,7 +87,15 @@ public class PropertySerializationUtils {
         if (credentials instanceof DBAAuthCredentialsWithComplexProperties complexProperties) {
             complexProperties.updateCredentialsFromComplexProperties(properties);
         }
-        PropertySourceEditable editable = new PropertySourceEditable(credentials, credentials);
+        updateObjectFromProperties(monitor, credentials, properties);
+    }
+
+    public static void updateObjectFromProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Object object,
+        @NotNull Map<String, ?> properties
+    ) {
+        PropertySourceEditable editable = new PropertySourceEditable(object, object);
         editable.collectProperties();
         for (Map.Entry<String, ?> entry : properties.entrySet()) {
             String propId = entry.getKey();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,20 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public static final String PROP_PROJECT_NAME = "name";
     public static final String PROP_PROJECT_DESCRIPTION = "description";
     public static final String PROJECT_FILE = ".project";
+
+    private static final String EMPTY_PROJECT_TEMPLATE = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <projectDescription>
+        <name>${project-name}</name>
+        <comment></comment>
+        <projects>
+        </projects>
+        <buildSpec>
+        </buildSpec>
+        <natures>
+            <nature>org.jkiss.dbeaver.DBeaverNature</nature>
+        </natures>
+        </projectDescription>""";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -460,6 +474,34 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public void refreshProject(DBRProgressMonitor monitor) {
 
+    }
+
+    /**
+     * Replace project name in .project file
+     * @param projectPath path to project folder
+     * @param name project name
+     */
+    public static void updateProjectFile(@NotNull Path projectPath, @NotNull String name) throws IOException {
+        Path projectFile = projectPath.resolve(PROJECT_FILE);
+        if (Files.exists(projectFile)) {
+            String content = Files.readString(projectFile);
+            if (content.contains("<name>") && content.contains("</name>")) {
+                int start = content.indexOf("<name>");
+                int end = content.indexOf("</name>", start);
+                if (start != -1 && end != -1) {
+                    String newContent = content.substring(0, start + 6) + name + content.substring(end);
+                    if (!content.equals(newContent)) {
+                        Files.writeString(projectFile, newContent);
+                    }
+                    return;
+                }
+            }
+        }
+        Files.writeString(projectFile, EMPTY_PROJECT_TEMPLATE.replace("${project-name}", name));
+    }
+
+    public static boolean isHiddenProjectName(@NotNull String name) {
+        return name.startsWith(".");
     }
 
     @Override

@@ -17,9 +17,8 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.fs.DBFPath;
 import picocli.CommandLine;
-
-import java.nio.file.Path;
 
 public class InputFileOption extends AbstractFileOption {
     @Nullable
@@ -31,7 +30,7 @@ public class InputFileOption extends AbstractFileOption {
     private String inputFile;
 
     @Nullable
-    public Path getInputFile() {
+    public DBFPath getInputFile() {
         return getPath(inputFile);
     }
 }
