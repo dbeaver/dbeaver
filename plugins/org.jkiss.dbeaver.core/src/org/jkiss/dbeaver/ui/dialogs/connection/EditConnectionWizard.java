@@ -379,18 +379,21 @@ public class EditConnectionWizard extends ConnectionWizard {
             return;
         }
 
-        if (isPageActive(pageSettings)) {
-            pageSettings.saveSettings(dataSource);
-        }
-        pageGeneral.saveSettings(dataSource);
-        pageInternalParameters.saveSettings(dataSource);
-        pageInit.saveSettings(dataSource);
+        // Broadcast the (potentially copied) data source to all pages first...
         for (IDialogPage page : getPages()) {
             setPageDataSourceElement(dataSource, page);
         }
         for (WizardPrefPage wpp : getPrefPages()) {
             setPageDataSourceElement(dataSource, wpp);
         }
+
+        // ...then persist page settings
+        if (isPageActive(pageSettings)) {
+            pageSettings.saveSettings(dataSource);
+        }
+        pageGeneral.saveSettings(dataSource);
+        pageInternalParameters.saveSettings(dataSource);
+        pageInit.saveSettings(dataSource);
 
         super.savePrefPageSettings();
 

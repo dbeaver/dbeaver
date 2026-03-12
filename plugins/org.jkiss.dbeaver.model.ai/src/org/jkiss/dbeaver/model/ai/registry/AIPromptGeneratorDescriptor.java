@@ -24,10 +24,10 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
@@ -37,18 +37,24 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final ObjectType objectType;
     private final String id;
     private final String label;
+    private final String description;
     private final DBPImage icon;
     private final List<Uses> uses;
+    private final boolean supportsActions;
+    private final boolean supportsUi;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.id = Objects.requireNonNull(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.label = Objects.requireNonNull(config.getAttribute(RegistryConstants.ATTR_LABEL));
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.uses = Stream.of(config.getChildren("uses"))
             .map(Uses::new)
             .toList();
+        this.supportsActions = CommonUtils.toBoolean(config.getAttribute("supportsActions"), false);
+        this.supportsUi = CommonUtils.toBoolean(config.getAttribute("supportsUi"), false);
     }
 
     @NotNull
@@ -66,9 +72,22 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         return label != null ? label : id;
     }
 
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
     @NotNull
     public List<Uses> getUses() {
         return uses;
+    }
+
+    public boolean isSupportsActions() {
+        return supportsActions;
+    }
+
+    public boolean isSupportsUi() {
+        return supportsUi;
     }
 
     @NotNull

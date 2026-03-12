@@ -16,9 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-public class PrefPageConstants {
+public final class PrefPageConstants {
 
     public static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     public static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
     public static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
+
+    public static final String P2_PROVISIONING_PREF_PAGE_ID = "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage";
+    public static final String P2_SITES_PREF_PAGE_ID = "org.eclipse.equinox.internal.p2.ui.sdk.SitesPreferencePage";
+
+    private PrefPageConstants() {
+    }
 }

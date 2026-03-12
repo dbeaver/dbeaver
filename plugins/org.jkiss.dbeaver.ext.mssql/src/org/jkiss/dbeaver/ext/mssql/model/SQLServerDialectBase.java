@@ -416,6 +416,11 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
         return SQLServerConstants.TYPE_VARCHAR + "(max)";
     }
 
+    @Override
+    public String getNClobDataType() {
+        return SQLServerConstants.TYPE_NVARCHAR + "(max)";
+    }
+
     @NotNull
     @Override
     public String getBlobDataType() {
@@ -453,6 +458,11 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     @Override
     public String getNVarCharDataType() {
         return SQLServerConstants.TYPE_NVARCHAR;
+    }
+
+    @Override
+    public String getTextDataType() {
+        return getClobDataType();
     }
 
     @Override

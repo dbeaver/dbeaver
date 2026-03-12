@@ -84,3 +84,14 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
 
     swt-corner-radius: 6;
 }
+
+CTabFolder {
+    swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
+    swt-inner-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_INNER_KEYLINE_COLOR';
+    swt-tab-outline: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTLINE_COLOR';
+
+    swt-unselected-hot-tab-color-background: #161616;
+    swt-selected-tab-highlight: #2b79d7;
+    swt-selected-highlight-top: true;
+    swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100% 100%;
+}

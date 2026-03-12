@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,22 +36,8 @@ import java.util.function.Function;
 /**
  * DBeaverIcons
  */
-public class DBeaverIcons
-{
+public class DBeaverIcons {
     private static final Log log = Log.getLog(DBeaverIcons.class);
-
-    private static final boolean useLegacyOverlay;
-
-    static {
-        boolean hasCachedImageDataProvider;
-        try {
-            Class.forName("org.eclipse.jface.resource.CompositeImageDescriptor$CachedImageDataProvider");
-            hasCachedImageDataProvider = true;
-        } catch (ClassNotFoundException e) {
-            hasCachedImageDataProvider = false;
-        }
-        useLegacyOverlay = !hasCachedImageDataProvider;
-    }
 
     private static class IconDescriptor {
         @NotNull
@@ -82,7 +68,6 @@ public class DBeaverIcons
 
     private static final Map<String, IconDescriptor> imageMap = new HashMap<>();
     private static final Map<String, IconDescriptor> compositeMap = new HashMap<>();
-    private static Image viewMenuImage;
 
     @NotNull
     public static Image getImage(@Nullable DBPImage image) {
@@ -110,32 +95,39 @@ public class DBeaverIcons
 
     @NotNull
     private static IconDescriptor getIconDescriptor(@Nullable DBPImage image, boolean useCache) {
-        if (image == null) {
-            return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
-        } else if (image instanceof DBIconBinary) {
-            return new IconDescriptor(
-                "[" + image.getLocation() + "]",
-                ((DBIconBinary) image).getImage(),
-                ((DBIconBinary) image).getImageDescriptor()
-            );
-        } else if (image instanceof DBIconComposite) {
-            IconDescriptor icon = getIconDescriptor(((DBIconComposite) image).getMain(), useCache);
-            return getCompositeIcon(icon, (DBIconComposite) image, useCache);
-        } else if (image instanceof DBIcon) {
-            IconDescriptor icon = getIconByLocation(image.getLocation());
-            if (icon == null) {
-                log.error("Image '" + image.getLocation() + "' not found");
+        switch (image) {
+            case null -> {
                 return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
-            } else {
-                return icon;
             }
-        } else {
-            log.error("Unexpected image of type " + image.getClass());
-            return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
+            case DBIconBinary ib -> {
+                return new IconDescriptor(
+                    "[" + image.getLocation() + "]",
+                    ib.getImage(),
+                    ib.getImageDescriptor()
+                );
+            }
+            case DBIconComposite ic -> {
+                IconDescriptor icon = getIconDescriptor(ic.getMain(), useCache);
+                return getCompositeIcon(icon, ic, useCache);
+            }
+            case DBIcon ic -> {
+                IconDescriptor icon = getIconByLocation(image.getLocation());
+                if (icon == null) {
+                    log.error("Image '" + image.getLocation() + "' not found");
+                    return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
+                } else {
+                    return icon;
+                }
+            }
+            default -> {
+                log.error("Unexpected image of type " + image.getClass());
+                return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
+            }
         }
     }
 
-    private static IconDescriptor getCompositeIcon(IconDescriptor mainIcon, DBIconComposite image, boolean useCache) {
+    @NotNull
+    private static IconDescriptor getCompositeIcon(@NotNull IconDescriptor mainIcon, @NotNull DBIconComposite image, boolean useCache) {
         if (!image.hasOverlays()) {
             return mainIcon;
         }
@@ -146,30 +138,20 @@ public class DBeaverIcons
             (image.getBottomRight() == null ? "" : image.getBottomRight().getLocation());
         IconDescriptor icon = useCache ? compositeMap.get(compositeId) : null;
         if (icon == null) {
-            Image resultImage;
-            if (useLegacyOverlay) {
-                OverlayImageDescriptorLegacy ovrImage = new OverlayImageDescriptorLegacy(mainIcon.image.getImageData());
-                if (image.getTopLeft() != null)
-                    ovrImage.setTopLeft(accumulateDecorations(image, DBIconComposite::getTopLeft));
-                if (image.getTopRight() != null)
-                    ovrImage.setTopRight(accumulateDecorations(image, DBIconComposite::getTopRight));
-                if (image.getBottomLeft() != null)
-                    ovrImage.setBottomLeft(accumulateDecorations(image, DBIconComposite::getBottomLeft));
-                if (image.getBottomRight() != null)
-                    ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
-                resultImage = ovrImage.createImage();
-            } else {
-                OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
-                if (image.getTopLeft() != null)
-                    ovrImage.setTopLeft(accumulateDecorations(image, DBIconComposite::getTopLeft));
-                if (image.getTopRight() != null)
-                    ovrImage.setTopRight(accumulateDecorations(image, DBIconComposite::getTopRight));
-                if (image.getBottomLeft() != null)
-                    ovrImage.setBottomLeft(accumulateDecorations(image, DBIconComposite::getBottomLeft));
-                if (image.getBottomRight() != null)
-                    ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
-                resultImage = ovrImage.createImage();
+            OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
+            if (image.getTopLeft() != null) {
+                ovrImage.setTopLeft(accumulateDecorations(image, DBIconComposite::getTopLeft));
             }
+            if (image.getTopRight() != null) {
+                ovrImage.setTopRight(accumulateDecorations(image, DBIconComposite::getTopRight));
+            }
+            if (image.getBottomLeft() != null) {
+                ovrImage.setBottomLeft(accumulateDecorations(image, DBIconComposite::getBottomLeft));
+            }
+            if (image.getBottomRight() != null) {
+                ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
+            }
+            Image resultImage = ovrImage.createImage();
             icon = new IconDescriptor(compositeId, resultImage);
             if (useCache) {
                 compositeMap.put(compositeId, icon);
@@ -184,11 +166,11 @@ public class DBeaverIcons
         @NotNull Function<DBIconComposite, DBPImage> map
     ) {
         DBPImage base = image.getMain();
-        if (base instanceof DBIconComposite) {
+        if (base instanceof DBIconComposite ic) {
             List<ImageDescriptor> decorations = new ArrayList<>();
             decorations.add(getImageDescriptor(map.apply(image)));
             do {
-                image = (DBIconComposite) base;
+                image = ic;
                 decorations.add(getImageDescriptor(map.apply(image)));
                 base = image.getMain();
             } while (base instanceof DBIconComposite);
@@ -198,18 +180,14 @@ public class DBeaverIcons
         }
     }
 
-    private static IconDescriptor getIconByLocation(String location) {
+    @Nullable
+    private static IconDescriptor getIconByLocation(@NotNull String location) {
         IconDescriptor icon = imageMap.get(location);
         if (icon == null) {
             try {
                 ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(URI.create(location).toURL());
                 icon = new IconDescriptor(location, imageDescriptor);
-                if (icon.image == null) {
-                    log.warn("Bad image: " + location);
-                    return null;
-                } else {
-                    imageMap.put(location, icon);
-                }
+                imageMap.put(location, icon);
             } catch (Exception e) {
                 log.error(e);
                 return null;
