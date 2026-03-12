@@ -125,7 +125,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         if (forTable != null) {
             ddl.append("AND col.table_name=? ");
         }
-        ddl.append("\nORDER BY schema_name, table_name, ordinal_position");
+        ddl.append("\nORDER BY " + (forTable != null ? "table_name," : "") + "ordinal_position");
         JDBCPreparedStatement dbStat = session.prepareStatement(ddl.toString());
         if (forTable != null) {
             dbStat.setString(1, forTable.getSchema().getName());
