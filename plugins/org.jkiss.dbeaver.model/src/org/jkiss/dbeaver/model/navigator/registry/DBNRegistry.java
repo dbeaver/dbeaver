@@ -76,6 +76,7 @@ public class DBNRegistry {
         }
     }
 
+    @Nullable
     public <T> DBNModelExtender findNodeExtender(@NotNull DBNNode parentNode, @NotNull Class<T> nodeType) {
         for (DBNModelExtenderDescriptor med : modelExtenders) {
             if (parentNode instanceof DBNRoot && !med.isRoot()) {
