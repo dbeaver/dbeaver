@@ -116,19 +116,25 @@ public class DataSourceOptions implements DataSourceUpdater {
             dsName = dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(getDbName())) {
                 dsName += " - " + getDbName();
+            } else if (CommonUtils.isNotEmpty(getHost())) {
+                dsName += " - " + getHost();
             } else if (CommonUtils.isNotEmpty(getServer())) {
                 dsName += " - " + getServer();
             }
         }
-        if (CommonUtils.isNotEmpty(getDatasourceName())) {
-            dataSource.setName(dsName);
+        var registry = dataSource.getRegistry();
+        String finalName = dsName;
+        int index = 0;
+        while (registry.findDataSourceByName(finalName) != null) {
+            index++;
+            finalName = dsName + " " + index;
         }
+        dataSource.setName(finalName);
         if (CommonUtils.isNotEmpty(getFolder())) {
-            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(getFolder());
+            DBPDataSourceFolder folder = registry.getFolder(getFolder());
             dataSource.setFolder(folder);
         }
         dataSource.setSavePassword(isSavePassword());
-
     }
 
 }
