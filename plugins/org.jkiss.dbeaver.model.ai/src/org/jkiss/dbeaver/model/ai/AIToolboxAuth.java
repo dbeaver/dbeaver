@@ -17,34 +17,18 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionCategoryDescriptor;
-import org.jkiss.dbeaver.model.exec.DBCException;
 
-import java.util.List;
+import java.util.Map;
 
 /**
- * AI agent.
+ * AI toolbox with authentication.
  */
-public interface AIAgentManager {
-
-    @Nullable
-    AIAgent getAgent(@NotNull String id);
+public interface AIToolboxAuth {
 
     @NotNull
-    List<AIAgent> getAllAgents();
+    String getUrl();
 
     @NotNull
-    List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose);
+    Map<String, String> getHeaders();
 
-    @Nullable
-    AIFunctionDescriptor getFunctionById(@NotNull String id);
-
-    @NotNull
-    List<AIFunctionCategoryDescriptor> getAllCategories();
-
-    @NotNull
-    AIFunctionSettings getFunctionSettings();
-
-    void saveFunctionSettings() throws DBCException;
 }

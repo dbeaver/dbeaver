@@ -14,14 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.utils;
+
+import org.jkiss.code.Nullable;
 
 /**
- * AI agent type.
+ * Bundle service instance reference
  */
-public enum AIAgentType {
+public record BundleServiceRef<T>(
+    @Nullable T service,
+    @Nullable Runnable initializer
+) {
 
-    INTERNAL,
-    EXTERNAL
-
+    public void initializeService() {
+        if (initializer != null) {
+            initializer.run();
+        }
+    }
 }

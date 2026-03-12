@@ -288,7 +288,7 @@ public class AIDatabaseSnapshotService {
 
         private final StringBuilder sb = new StringBuilder();
         private final int maxChars;
-        private final boolean isTruncated;
+        private boolean isTruncated;
 
         TokenBoundedStringBuilder(int maxTokens, boolean isTruncated) {
             this.maxChars = (maxTokens - SAFE_MARGIN_TOKENS) * DummyTokenCounter.TOKEN_TO_CHAR_RATIO;
@@ -297,6 +297,7 @@ public class AIDatabaseSnapshotService {
 
         boolean append(@NotNull CharSequence chunk) {
             if (sb.length() + chunk.length() > maxChars) {
+                this.isTruncated = true;
                 return false;
             }
             sb.append(chunk);

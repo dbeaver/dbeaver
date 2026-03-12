@@ -47,8 +47,8 @@ public interface AIAssistant {
     ) throws DBException;
 
     /**
-     * Agent manager
+     * Toolbox manager
      */
     @NotNull
-    AIAgentManager getAgentManager();
+    AIToolboxManager getToolboxManager();
 }
