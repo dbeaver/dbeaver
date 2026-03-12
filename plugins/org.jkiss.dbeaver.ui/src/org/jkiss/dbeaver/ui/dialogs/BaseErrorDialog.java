@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class BaseErrorDialog extends BaseDialog {
     private Composite detailPanel;
 
     public BaseErrorDialog(
-        @NotNull Shell parentShell,
+        @Nullable Shell parentShell,
         @Nullable String dialogTitle,
         @Nullable String message,
         @NotNull IStatus status,
@@ -273,7 +273,7 @@ public class BaseErrorDialog extends BaseDialog {
         if (!(t instanceof CoreException) && t != null) {
             // Include low-level exception message
             String message = GeneralUtils.makeStandardErrorMessage(t);
-            if (!Objects.equals(statusMessage, message)) {
+            if (message != null && !Objects.equals(statusMessage, message)) {
                 String sb = NESTING_INDENT.repeat(Math.max(0, nesting))
                     + message.trim()
                     + "\n";

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.internal;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -34,7 +34,7 @@ public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitial
     @Override
     public void initializeDefaultPreferences() {
         // Init default preferences
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        DBPPreferenceStore store = ModelPreferences.getPreferences();
 
         // Navigator
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);

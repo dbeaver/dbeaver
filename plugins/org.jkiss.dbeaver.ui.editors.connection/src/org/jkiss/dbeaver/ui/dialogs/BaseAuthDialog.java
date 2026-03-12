@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
-import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +52,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         this.passwordOnly = passwordOnly;
         this.showSavePassword = showSavePassword &&
             !ApplicationPolicyProvider.getInstance()
-                .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
+                .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
     }
 
 //    @Override
@@ -121,8 +121,9 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         this.description = description;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;
@@ -136,18 +137,11 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         }
 
         {
-            Group credGroup = new Group(addrGroup, SWT.NONE);
-            credGroup.setText(UIConnectionMessages.dialog_connection_auth_group_user_cridentials);
-            gl = new GridLayout(2, false);
-            gl.marginHeight = 5;
-            gl.marginWidth = 5;
-            credGroup.setLayout(gl);
-            gd = new GridData(GridData.FILL_BOTH);
-            credGroup.setLayoutData(gd);
+            Composite credGroup = UIUtils.createTitledComposite(addrGroup, UIConnectionMessages.dialog_connection_auth_group_user_cridentials, 2, GridData.FILL_BOTH);
             if (!passwordOnly) {
                 Label usernameLabel = new Label(credGroup, SWT.NONE);
                 usernameLabel.setText(this.userNameLabel);
-                usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 usernameText = new Text(credGroup, SWT.BORDER);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -162,7 +156,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
 
             Label passwordLabel = new Label(credGroup, SWT.NONE);
             passwordLabel.setText(this.passwordLabel);
-            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             passwordText = new Text(credGroup, SWT.BORDER | SWT.PASSWORD);
             gd = new GridData(GridData.FILL_HORIZONTAL);

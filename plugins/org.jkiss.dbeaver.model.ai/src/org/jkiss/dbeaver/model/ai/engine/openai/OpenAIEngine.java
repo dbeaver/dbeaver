@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -73,19 +71,25 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
         List<OAIMessage> messages = completionResult.output.stream()
             .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
-            .toList();        if (messages.isEmpty()) {
-            return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
+            .toList();
+        AIUsage usage = completionResult.getAIUsage();
+        if (messages.isEmpty()) {
+            return new AIEngineResponse(
+                AIMessageType.ASSISTANT,
+                List.of(AIMessages.ai_empty_engine_response),
+                usage
+            );
         }
         OAIMessage message = messages.getFirst();
         if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
             AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
-            return new AIEngineResponse(fc);
+            return new AIEngineResponse(fc, usage);
         } else {
             List<String> choices = messages.stream()
                 .map(OAIMessage::getFullText)
                 .toList();
 
-            return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
         }
     }
 
@@ -143,7 +147,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                for (AIFunctionParameter param : fd.getParameters()) {
                     OAIToolParameter tp = new OAIToolParameter();
                     tp.type = param.getType();
                     tp.description = param.getDescription();

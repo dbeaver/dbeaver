@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.*;
@@ -101,7 +102,7 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         }
         String pathFromUserHome = split[1];
         String osDependencePath = CommonUtils.makeOsDependencePath(pathFromUserHome);
-        return System.getProperty("user.home") + File.separator + osDependencePath;
+        return System.getProperty(StandardConstants.ENV_USER_HOME) + File.separator + osDependencePath;
     }
 
     @Override
@@ -158,7 +159,7 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         if (RuntimeUtils.isMacOS()) {
             defaultWorkingDirectory = Path.of("Application Support", DataGripConfigXMLConstant.JET_BRAINS_HOME_FOLDER);
         } else if (RuntimeUtils.isLinux()){
-            Path path = Path.of(System.getProperty("user.home"),".config", DataGripConfigXMLConstant.JET_BRAINS_HOME_FOLDER);
+            Path path = Path.of(System.getProperty(StandardConstants.ENV_USER_HOME),".config", DataGripConfigXMLConstant.JET_BRAINS_HOME_FOLDER);
             log.info("Using linux path for import config home directory: " + path);
             return path.toString();
         }

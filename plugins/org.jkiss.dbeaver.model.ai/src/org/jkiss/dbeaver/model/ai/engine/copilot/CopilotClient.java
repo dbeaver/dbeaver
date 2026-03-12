@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,20 +42,27 @@ public class CopilotClient extends AbstractHttpAIClient {
     private static final Log log = Log.getLog(CopilotClient.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Gson GSON = new GsonBuilder()
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    protected static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
 
-    private static final String COPILOT_SESSION_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token";
-    private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
-    private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
     private static final String USER_AGENT = "GithubCopilot/1.155.0";
-    private static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
+    protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
     private static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
+
+    private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
+    private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
+    private static final String COPILOT_SESSION_TOKEN_URL = "/copilot_internal/v2/token";
+
+    private final String baseAuthURL;
+
+    public CopilotClient(@NotNull String authProviderBaseURL) {
+        this.baseAuthURL = authProviderBaseURL;
+    }
 
     /**
      * Request access to the user's account
@@ -64,8 +71,8 @@ public class CopilotClient extends AbstractHttpAIClient {
         DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
-            .header("accept", "application/json")
-            .header("content-type", "application/json")
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(10)) // Set timeout
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(deviceCodeRequest)))
             .build();
@@ -89,8 +96,8 @@ public class CopilotClient extends AbstractHttpAIClient {
         );
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
-            .header("accept", "application/json")
-            .header("content-type", "application/json")
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(5)) // Set timeout
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(accessTokenRequest)))
             .build();
@@ -128,8 +135,8 @@ public class CopilotClient extends AbstractHttpAIClient {
         String accessToken
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(COPILOT_SESSION_TOKEN_URL))
-            .header("authorization", "token " + accessToken)
+            .uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
+            .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken)
             .header("editor-version", EDITOR_VERSION)
             .header("editor-plugin-version", EDITOR_PLUGIN_VERSION)
             .header(HttpConstants.HEADER_USER_AGENT, USER_AGENT)
@@ -150,14 +157,15 @@ public class CopilotClient extends AbstractHttpAIClient {
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
-            .header("Content-type", "application/json")
-            .header("authorization", "Bearer " + token)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
 
-        return GSON.fromJson(client.send(monitor, request), CopilotChatResponse.class);
+        String responseJson = client.send(monitor, request);
+        return GSON.fromJson(responseJson, CopilotChatResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -168,8 +176,8 @@ public class CopilotClient extends AbstractHttpAIClient {
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
-            .header("Content-type", "application/json")
-            .header("authorization", "Bearer " + token)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
@@ -191,6 +199,7 @@ public class CopilotClient extends AbstractHttpAIClient {
                             .map(it -> it.delta().content())
                             .toList();
                         listener.nextChunk(new AIEngineResponseChunk(choices));
+                        listener.usage(chunk.getAIUsage());
                     } catch (Exception e) {
                         listener.error(e);
                     }
@@ -219,8 +228,8 @@ public class CopilotClient extends AbstractHttpAIClient {
     public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
-            .header("Content-type", "application/json")
-            .header("authorization", "Bearer " + token)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .GET()
             .timeout(TIMEOUT)

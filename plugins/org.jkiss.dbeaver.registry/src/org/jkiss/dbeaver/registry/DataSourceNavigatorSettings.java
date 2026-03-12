@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -122,6 +123,8 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     private boolean userSettings;
 
+    private transient DBNBrowseSettings originalSettings;
+
     public DataSourceNavigatorSettings() {
     }
 
@@ -205,6 +208,31 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public void setUserSettings(boolean userSettings) {
         this.userSettings = userSettings;
+    }
+
+    @NotNull
+    public DBNBrowseSettings getOriginalSettings() {
+        return originalSettings == null ? this : originalSettings;
+    }
+
+    public void setOriginalSettings(@Nullable DataSourceNavigatorSettings originalSettings) {
+        this.originalSettings = originalSettings;
+        this.userSettings = true;
+    }
+
+    public void copyFrom(@NotNull DBNBrowseSettings source) {
+        this.showSystemObjects = source.isShowSystemObjects();
+        this.showUtilityObjects = source.isShowUtilityObjects();
+        this.showOnlyEntities = source.isShowOnlyEntities();
+        this.mergeEntities = source.isMergeEntities();
+        this.hideFolders = source.isHideFolders();
+        this.hideSchemas = source.isHideSchemas();
+        this.hideVirtualModel = source.isHideVirtualModel();
+    }
+
+    public void reset() {
+        this.userSettings = false;
+        this.originalSettings = null;
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -85,6 +84,9 @@ public class MySQLCatalog implements
     private long dbSize;
 
     private transient String databaseDDL;
+    
+    protected final AdditionalInfo additionalInfo = new AdditionalInfo();
+
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -135,8 +137,6 @@ public class MySQLCatalog implements
         }
     }
 
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
-
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
@@ -153,7 +153,7 @@ public class MySQLCatalog implements
         return additionalInfo;
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    protected void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
@@ -206,12 +206,6 @@ public class MySQLCatalog implements
     @Override
     public long getStatObjectSize() {
         return dbSize;
-    }
-
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
     }
 
     void setDatabaseSize(long dbSize) {

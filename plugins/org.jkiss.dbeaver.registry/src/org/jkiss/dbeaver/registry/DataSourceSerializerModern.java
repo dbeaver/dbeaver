@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -270,7 +270,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         null,
                         np,
                         configuration,
-                        false);
+                        !configurationManager.isTrusted()
+                    );
                 }
             }
             jsonWriter.endObject();
@@ -291,12 +292,14 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             if (authProfile.isSavePassword()) {
                 JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
             }
-            SecureCredentials credentials = new SecureCredentials(authProfile);
-            if (configurationManager.isSecure()) {
-                savePlainCredentials(jsonWriter, credentials);
-            } else {
-                // Save all auth properties in secure storage
-                saveSecuredCredentials(null, authProfile, null, credentials);
+            if (configurationManager.isTrusted()) {
+                SecureCredentials credentials = new SecureCredentials(authProfile);
+                if (configurationManager.isSecure()) {
+                    savePlainCredentials(jsonWriter, credentials);
+                } else {
+                    // Save all auth properties in secure storage
+                    saveSecuredCredentials(null, authProfile, null, credentials);
+                }
             }
             jsonWriter.endObject();
         }
@@ -835,16 +838,25 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        Map<String, String> userSettings = settingsProvider == null ?
-            null :
-            settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+        Map<String, String> userSettings = null;
+        if (settingsProvider != null) {
+            try {
+                userSettings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+            } catch (Exception e) {
+                log.warn("Error reading user datasource settings", e);
+            }
+        }
+
+        dataSource.getNavigatorSettings().reset();
 
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
-            dataSource.getNavigatorSettings().setUserSettings(true);
+            DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
+            dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
         }
@@ -1107,7 +1119,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
-        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getNavigatorSettings());
+        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getOriginalNavigatorSettings());
 
         if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 
@@ -1137,15 +1149,18 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
             if (dataSource.getProject().isUseSecretStorage()) {
                 // should be stored in secrets
-            } else if (configurationManager.isSecure()) {
-                // Secure manager == save to buffer
-                savePlainCredentials(json, new SecureCredentials(dataSource));
-            } else {
-                saveSecuredCredentials(
-                    dataSource,
-                    null,
-                    null,
-                    new SecureCredentials(dataSource));
+            } else if (configurationManager.isTrusted()) {
+                if (configurationManager.isSecure()) {
+                    // Secure manager == save to buffer
+                    savePlainCredentials(json, new SecureCredentials(dataSource));
+                } else {
+                    saveSecuredCredentials(
+                        dataSource,
+                        null,
+                        null,
+                        new SecureCredentials(dataSource)
+                    );
+                }
             }
 
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -1212,7 +1227,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                                 dataSource,
                                 null,
                                 configuration,
-                                profileConfig != null);
+                                profileConfig != null && !configurationManager.isTrusted()
+                            );
                         }
                     }
                     json.endObject();
@@ -1312,8 +1328,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBWNetworkProfile profile,
         @NotNull DBWHandlerConfiguration configuration,
-        boolean referenceOnly) throws IOException
-    {
+        boolean referenceOnly
+    ) throws IOException {
         json.name(CommonUtils.notEmpty(configuration.getId()));
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
@@ -1330,17 +1346,20 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 DBPProject project = dataSource != null ?
                     dataSource.getProject() : (profile != null ? profile.getProject() : null);
 
-                if (configurationManager.isSecure() ||
-                    (project != null && project.isUseSecretStorage() && profile == null && dataSource.isSharedCredentials())) {
-                    // For secured projects save only shared credentials
-                    // Others are stored in secret storage
-                    savePlainCredentials(json, credentials);
-                } else {
-                    saveSecuredCredentials(
-                        dataSource,
-                        profile,
-                        "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
-                        credentials);
+                if (configurationManager.isTrusted()) {
+                    if (configurationManager.isSecure() ||
+                        (project != null && project.isUseSecretStorage() && profile == null && dataSource.isSharedCredentials())) {
+                        // For secured projects save only shared credentials
+                        // Others are stored in secret storage
+                        savePlainCredentials(json, credentials);
+                    } else {
+                        saveSecuredCredentials(
+                            dataSource,
+                            profile,
+                            "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
+                            credentials
+                        );
+                    }
                 }
             }
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties(), true);

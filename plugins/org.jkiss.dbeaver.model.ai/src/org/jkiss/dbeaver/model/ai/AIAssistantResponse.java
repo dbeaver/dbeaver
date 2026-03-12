@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,17 @@ public class AIAssistantResponse {
 
     private final Type type;
     private final Object result;
+    private final List<AIMessageMeta> meta;
     private List<AIFunctionReference> functionsRefs;
 
-    public AIAssistantResponse(@NotNull Type type, @NotNull Object result) {
+    public AIAssistantResponse(
+        @NotNull Type type,
+        @NotNull Object result,
+        @NotNull List<AIMessageMeta> meta
+    ) {
         this.type = type;
         this.result = result;
+        this.meta = meta;
     }
 
     @NotNull
@@ -57,6 +63,11 @@ public class AIAssistantResponse {
 
     public String getText() {
         return CommonUtils.toString(result);
+    }
+
+    @NotNull
+    public List<AIMessageMeta> getMeta() {
+        return meta;
     }
 
     @Nullable

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class HexPreferencesManager {
         composite.setLayout(new GridLayout(1, true));
 
         {
-            Group fontGroup = UIUtils.createControlGroup(composite, BinaryEditorMessages.editor_binary_hex_froup_font_selection, 3, GridData.FILL_HORIZONTAL, 0);
+            Composite fontGroup = UIUtils.createTitledComposite(composite, BinaryEditorMessages.editor_binary_hex_froup_font_selection, 3, GridData.FILL_HORIZONTAL);
 
             Label label = UIUtils.createControlLabel(fontGroup, BinaryEditorMessages.editor_binary_hex_label_available_fix_width_fonts);
             GridData gridData = new GridData();
@@ -209,8 +209,11 @@ public class HexPreferencesManager {
         }
 
         {
-            Group cmpByteSettings = UIUtils.createControlGroup(
-                composite, BinaryEditorMessages.editor_cmp_byte_settings_label, 2, GridData.FILL_HORIZONTAL, 0
+            Composite cmpByteSettings = UIUtils.createTitledComposite(
+                composite,
+                BinaryEditorMessages.editor_cmp_byte_settings_label,
+                2,
+                GridData.FILL_HORIZONTAL
             );
             UIUtils.createControlLabel(cmpByteSettings, BinaryEditorMessages.editor_byte_settings_width_label);
             cmbByteWidth = new Combo(cmpByteSettings, SWT.BORDER);

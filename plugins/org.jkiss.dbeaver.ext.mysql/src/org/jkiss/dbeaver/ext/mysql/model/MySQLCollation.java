@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,14 @@ import java.sql.SQLException;
  */
 public class MySQLCollation extends MySQLInformation {
 
-    private MySQLCharset charset;
+    private final MySQLCharset charset;
     private int id;
     private String name;
     private boolean isDefault;
     private boolean isCompiled;
     private int sortLength;
 
-    public MySQLCollation(MySQLCharset charset, ResultSet dbResult)
+    public MySQLCollation(@NotNull MySQLCharset charset, ResultSet dbResult)
         throws SQLException
     {
         super(charset.getDataSource());
@@ -56,6 +56,7 @@ public class MySQLCollation extends MySQLInformation {
         this.sortLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SORT_LENGTH);
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public MySQLCharset getCharset()
     {
