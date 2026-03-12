@@ -14,31 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.utils;
 
-package org.jkiss.dbeaver.model.qm;
-
-import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
- * Query manager controller
+ * Bundle service instance reference
  */
-public interface QMRegistry {
+public record BundleServiceRef<T>(
+    @Nullable T service,
+    @Nullable Runnable initializer
+) {
 
-    @NotNull
-    QMMCollector getMetaCollector();
-
-    @NotNull
-    QMExecutionHandler getDefaultHandler();
-
-    @NotNull
-    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
-
-    void registerHandler(@NotNull QMExecutionHandler handler);
-
-    void unregisterHandler(@NotNull QMExecutionHandler handler);
-
-    void registerMetaListener(@NotNull QMMetaListener metaListener);
-
-    void unregisterMetaListener(@NotNull QMMetaListener metaListener);
-
+    public void initializeService() {
+        if (initializer != null) {
+            initializer.run();
+        }
+    }
 }

@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -907,30 +907,87 @@ public class DBeaverLauncher {
         Path dbeaverProperties = workspacePath
             .resolve(Constants.METADATA)
             .resolve(Constants.DBEAVER_INSTANCE_PROPS);
+
         if (Files.notExists(dbeaverProperties)) {
             if (debug) {
                 System.out.println("DBeaver properties file not found: " + dbeaverProperties);
             }
             return null;
         }
+
         Properties properties = new Properties();
         try (var is = Files.newInputStream(dbeaverProperties)) {
             properties.load(is);
-            String portProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PORT);
-            if (portProperty == null || portProperty.isBlank()) {
-                if (debug) {
-                    System.out.println("DBeaver server port property not found or blank in properties file: " + dbeaverProperties);
+
+            String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
+            String suffixPort = "." + InstanceServerProperties.PROPERTY_PORT;
+
+            List<Long> pids = properties.stringPropertyNames().stream()
+                .filter(key -> key.startsWith(prefix) && key.endsWith(suffixPort))
+                .map(key -> key.substring(prefix.length(), key.length() - suffixPort.length()))
+                .map(pidText -> {
+                    try {
+                        return Long.parseLong(pidText);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .sorted(Comparator.reverseOrder())
+                .toList();
+
+            for (Long pid : pids) {
+                ProcessHandle handle = ProcessHandle.of(pid).orElse(null);
+                if (handle == null) {
+                    continue;
                 }
-                return null;
-            }
-            String passwordProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PASSWORD);
-            if (passwordProperty == null || passwordProperty.isBlank()) {
-                if (debug) {
-                    System.out.println("DBeaver server password property not found or blank in properties file: " + dbeaverProperties);
+
+                String base = InstanceServerProperties.PROPERTY_INSTANCE + "." + pid;
+                String portProperty = properties.getProperty(base + "." + InstanceServerProperties.PROPERTY_PORT);
+                String passwordProperty = properties.getProperty(base + "." + InstanceServerProperties.PROPERTY_PASSWORD);
+                String startedAtProperty = properties.getProperty(base + "." + InstanceServerProperties.PROPERTY_STARTED_AT);
+
+                if (portProperty == null || portProperty.isBlank()) {
+                    continue;
                 }
-                return null;
+                if (passwordProperty == null || passwordProperty.isBlank()) {
+                    continue;
+                }
+
+                int port;
+                try {
+                    port = Integer.parseInt(portProperty);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                long startedAt;
+                try {
+                    startedAt = startedAtProperty == null || startedAtProperty.isBlank()
+                        ? 0L
+                        : Long.parseLong(startedAtProperty);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                long actualStartedAt = handle.info()
+                    .startInstant()
+                    .map(java.time.Instant::toEpochMilli)
+                    .orElse(-1L);
+
+                boolean alive = startedAt <= 0 || (actualStartedAt > 0 && actualStartedAt == startedAt);
+                if (!alive) {
+                    continue;
+                }
+
+                return new InstanceServerProperties(port, passwordProperty);
             }
-            return new InstanceServerProperties(Integer.parseInt(portProperty), passwordProperty);
+
+            if (debug) {
+                System.out.println("DBeaver server properties not found in workspace: " + workspacePath);
+            }
+
+            return null;
         } catch (Exception e) {
             log(e);
             return null;
