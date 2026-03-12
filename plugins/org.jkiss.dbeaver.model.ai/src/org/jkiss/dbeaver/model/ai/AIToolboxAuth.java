@@ -14,27 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
-import picocli.CommandLine;
 
-import java.util.concurrent.Callable;
+import java.util.Map;
 
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
-    @Override
-    public Void call() throws CLIException {
-        run();
-        return null;
-    }
-
-    public abstract void run() throws CLIException;
+/**
+ * AI toolbox with authentication.
+ */
+public interface AIToolboxAuth {
 
     @NotNull
-    protected abstract CLIContext context();
+    String getUrl();
+
+    @NotNull
+    Map<String, String> getHeaders();
+
 }

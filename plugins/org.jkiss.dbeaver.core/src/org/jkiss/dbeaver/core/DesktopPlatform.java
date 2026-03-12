@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DesktopNavigatorModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
@@ -39,8 +38,6 @@ import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
-import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
-import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
@@ -60,8 +57,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private static volatile boolean isClosing = false;
 
     private DBPWorkspaceDesktop workspace;
-    private QMRegistryImpl queryManager;
-    private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
     private volatile boolean workbenchStarted;
 
@@ -109,11 +104,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 
-        QMUtils.initApplication(this);
-        this.queryManager = new QMRegistryImpl();
-
-        this.qmLogWriter = new QMLogFileWriter();
-        this.queryManager.registerMetaListener(qmLogWriter);
+        QMUtils.initPlatform(true);
 
         super.initialize();
 
@@ -147,15 +138,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             workspace = null;
         }
 
-        if (this.qmLogWriter != null) {
-            this.queryManager.unregisterMetaListener(qmLogWriter);
-            this.qmLogWriter.dispose();
-            this.qmLogWriter = null;
-        }
-        if (this.queryManager != null) {
-            this.queryManager.dispose();
-            //queryManager = null;
-        }
+        QMUtils.disposePlatform();
         DataSourceProviderRegistry.dispose();
 
         if (isStandalone() && workspace != null && !application.isExclusiveMode()) {
@@ -192,11 +175,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @Override
     public DBPApplicationDesktop getApplication() {
         return (DBPApplicationDesktop) BaseApplicationImpl.getInstance();
-    }
-
-    @NotNull
-    public QMRegistry getQueryManager() {
-        return queryManager;
     }
 
     @NotNull

@@ -145,6 +145,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
             null :
             getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);
+
     }
 
     @Override
@@ -559,6 +560,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     public boolean isRequired()
     {
         return propInfo.required();
+    }
+
+    @Override
+    public boolean isDesktop() {
+        return propInfo.desktop();
     }
 
     @Override

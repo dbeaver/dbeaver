@@ -191,7 +191,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
                     HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, p -> {
                         HintProviderInfo pi = new HintProviderInfo(p);
                         ValueHintProviderDescriptor providerDescriptor = hintRegistry.getDescriptorByInstance(provider);
-                        pi.enabled = contextConfiguration.isHintEnabled(providerDescriptor);
+                        pi.enabled = providerDescriptor != null && contextConfiguration.isHintEnabled(providerDescriptor);
                         return pi;
                     });
                     providerInfo.attributes.add(attr);

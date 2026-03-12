@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.internal;
+package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Data editor features
+ * Mark property as immutable
  */
-public interface AIFeatures {
-
-    DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Show AI popup");
-    DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Generate AI proposal");
+@Target(value = {ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ImmutableProperty {
 }
