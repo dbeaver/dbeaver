@@ -14,14 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.launcher;
+package org.jkiss.dbeaver.model.meta;
 
-public record InstanceServerProperties(int port, String password) {
-    public static final String PROPERTY_PORT = "port";
-    public static final String PROPERTY_PASSWORD = "password";
-    public static final String PROPERTY_INSTANCE = "instance";
-    public static final String PROPERTY_STARTED_AT = "startedAt";
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public static final String HEADER_AUTHORIZATION = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer ";
+/**
+ * Mark property as immutable
+ */
+@Target(value = {ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ImmutableProperty {
 }

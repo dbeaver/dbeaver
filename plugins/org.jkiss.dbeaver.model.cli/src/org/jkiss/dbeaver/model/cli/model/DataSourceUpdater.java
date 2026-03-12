@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.launcher;
+package org.jkiss.dbeaver.model.cli.model;
 
-public record InstanceServerProperties(int port, String password) {
-    public static final String PROPERTY_PORT = "port";
-    public static final String PROPERTY_PASSWORD = "password";
-    public static final String PROPERTY_INSTANCE = "instance";
-    public static final String PROPERTY_STARTED_AT = "startedAt";
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.cli.CLIException;
 
-    public static final String HEADER_AUTHORIZATION = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer ";
+@FunctionalInterface
+public interface DataSourceUpdater {
+    void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException;
 }
