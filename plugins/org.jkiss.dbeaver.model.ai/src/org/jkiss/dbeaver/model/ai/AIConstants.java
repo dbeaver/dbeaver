@@ -21,12 +21,23 @@ package org.jkiss.dbeaver.model.ai;
  */
 public class AIConstants {
 
+    // Misc
+
     public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
     public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
-    public static final String AI_SEND_TYPE_INFO = "ai.completion.sendType";
-    public static final String AI_SEND_DESCRIPTION = "ai.completion.description";
+
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
     public static final String AI_RESPONSE_LANGUAGE = "ai.language";
+
+    // Metadata send default properties
+
+    public static final String AI_SEND_FOREIGN_KEYS = "ai.useForeignKeys";
+    public static final String AI_SEND_CONSTRAINTS = "ai.useConstraints";
+    public static final String AI_SEND_INDEXES = "ai.useIndexes";
+    public static final String AI_SEND_TYPE_INFO = "ai.completion.sendType";
+    public static final String AI_SEND_DESCRIPTION = "ai.completion.description";
+
+    // Confirmations
 
     public static final String AI_CONFIRM_SQL = "ai.confirmation.sql";
     public static final String AI_CONFIRM_DML = "ai.confirmation.dml";
@@ -35,12 +46,17 @@ public class AIConstants {
     public static final String AI_JOIN_RULE = "ai.joinRule";
     public static final int DEFAULT_CONTEXT_WINDOW_SIZE = 16384;
 
+    // Engine settings
+
     public static final String AI_MODEL_PROPERTY = "model";
     public static final String AI_CONTEXT_SIZE_PROPERTY = "contextWindowSize";
     public static final String AI_TEMPERATURE_PROPERTY = "temperature";
 
     public static final String AI_MODEL_PLUGIN_ID = "org.jkiss.dbeaver.model.ai";
+
+    // Toolbox
     public static final String INTERNAL_TOOLBOX_ID = "db";
+
 
 }
 

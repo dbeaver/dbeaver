@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -97,8 +96,11 @@ public class AIEngineRequestFactory {
         String dbSnapshot = "";
         boolean isContextTruncated = false;
         if (databaseContext != null && dbSnapshotTokenBudget > 0) {
-            AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
-            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
+                monitor,
+                databaseContext,
+                dbSnapshotTokenBudget
+            );
             if (dbSnapshotBuilder != null) {
                 dbSnapshot = dbSnapshotBuilder.toString();
                 isContextTruncated = dbSnapshotBuilder.isTruncated();
@@ -216,17 +218,6 @@ public class AIEngineRequestFactory {
                 AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, e);
             return AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE;
         }
-    }
-
-    protected AISchemaGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
-        DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
-
-        return AISchemaGenerationOptions.builder()
-            .withMaxDbSnapshotTokens(dbSnapshotTokenBudget)
-            .withSendObjectComment(prefs.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
-            .withSendColumnTypes(prefs.getBoolean(AIConstants.AI_SEND_TYPE_INFO))
-            .build();
-
     }
 
     /**
