@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.utils.CommonUtils;
@@ -107,6 +108,17 @@ public class DataSourceOptions implements DataSourceUpdater {
 
     public boolean isSavePassword() {
         return savePassword;
+    }
+
+    public void validate() throws CLIException {
+        if (CommonUtils.isNotEmpty(url)
+            && (CommonUtils.isNotEmpty(host) || port != null || CommonUtils.isNotEmpty(server) || CommonUtils.isNotEmpty(dbName))
+        ) {
+            throw new CLIException(
+                "Parameters --host, --port, --server and --database cannot be used with --url together",
+                CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
+            );
+        }
     }
 
     @Override
