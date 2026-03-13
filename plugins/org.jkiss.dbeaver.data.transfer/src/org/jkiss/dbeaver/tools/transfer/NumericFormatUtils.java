@@ -22,7 +22,10 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.ParsePosition;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,8 +33,14 @@ import java.util.Map;
 public final class NumericFormatUtils {
     public static final String PROP_DECIMAL_SEPARATOR = "decimalSeparator";
     public static final String PROP_GROUPING_SEPARATOR = "groupingSeparator";
-    private static final int EXPONENT_NOT_FOUND = -1;
-    private static final int EXPONENT_INVALID = -2;
+
+    // DecimalFormat patterns require an explicit upper bound for optional fraction digits.
+    private static final int MAX_FRACTION_DIGITS = 31;
+    private static final String OPTIONAL_FRACTION = "#".repeat(MAX_FRACTION_DIGITS);
+    private static final String DECIMAL_PATTERN_NO_GROUPING = "0." + OPTIONAL_FRACTION;
+    private static final String DECIMAL_PATTERN_GROUPING = "#,##0." + OPTIONAL_FRACTION;
+    private static final String SCIENTIFIC_PATTERN_NO_GROUPING = "0." + OPTIONAL_FRACTION + "E0";
+    private static final String SCIENTIFIC_PATTERN_GROUPING = "#,##0." + OPTIONAL_FRACTION + "E0";
 
     private NumericFormatUtils() {
     }
@@ -84,9 +93,6 @@ public final class NumericFormatUtils {
         char decimalSeparator,
         char groupingSeparator
     ) {
-        if (decimalSeparator == Character.MIN_VALUE && groupingSeparator == Character.MIN_VALUE) {
-            return;
-        }
         for (int i = 0; i < Math.min(line.length, streamColumns.size()); i++) {
             if (streamColumns.get(i).getDataKind() == DBPDataKind.NUMERIC && line[i] != null) {
                 String normalizedValue = normalizeNumberValue(line[i], decimalSeparator, groupingSeparator);
@@ -95,173 +101,73 @@ public final class NumericFormatUtils {
         }
     }
 
-    // Normalizes locale-formatted numeric text to Java-parsable form; returns null for invalid input.
     @Nullable
     public static String normalizeNumberValue(@NotNull String value, char decimalSeparator, char groupingSeparator) {
-        String normalizedInput = value.trim();
-        if (normalizedInput.isEmpty()) {
+        String trimmedValue = value.trim();
+        if (trimmedValue.isEmpty()) {
             return null;
         }
-        int exponentPos = findExponentPos(normalizedInput, decimalSeparator, groupingSeparator);
-        if (exponentPos == EXPONENT_INVALID) {
+
+        boolean scientific = containsExponent(trimmedValue, decimalSeparator, groupingSeparator);
+        BigDecimal parsedValue = parseBigDecimal(trimmedValue, decimalSeparator, groupingSeparator, scientific);
+        if (parsedValue == null) {
             return null;
         }
-        if (exponentPos >= 0) {
-            return normalizeExponentNumber(
-                normalizedInput,
-                exponentPos,
-                decimalSeparator,
-                groupingSeparator
-            );
+
+        return scientific ? parsedValue.toString() : parsedValue.toPlainString();
+    }
+
+    private static boolean containsExponent(String value, char decimalSeparator, char groupingSeparator) {
+        if (decimalSeparator == 'e' || decimalSeparator == 'E' || groupingSeparator == 'e' || groupingSeparator == 'E') {
+            return false;
         }
-        return normalizeMantissa(normalizedInput, decimalSeparator, groupingSeparator);
+        return value.indexOf('e') >= 0 || value.indexOf('E') >= 0;
     }
 
     @Nullable
-    private static String normalizeExponentNumber(
+    private static BigDecimal parseBigDecimal(
         @NotNull String value,
-        int exponentPos,
         char decimalSeparator,
-        char groupingSeparator
+        char groupingSeparator,
+        boolean scientific
     ) {
-        String mantissa = value.substring(0, exponentPos);
-        String exponent = value.substring(exponentPos + 1);
-        if (!isValidExponent(exponent)) {
+        String normalizedValue = scientific ? value.replace('e', 'E') : value;
+        DecimalFormat format = createFormat(scientific, decimalSeparator, groupingSeparator);
+        ParsePosition position = new ParsePosition(0);
+        Number parsedNumber = format.parse(normalizedValue, position);
+
+        if (position.getIndex() != normalizedValue.length() || !(parsedNumber instanceof BigDecimal bigDecimal)) {
             return null;
         }
-        String normalizedMantissa = normalizeMantissa(mantissa, decimalSeparator, groupingSeparator);
-        if (normalizedMantissa == null) {
-            return null;
-        }
-        return normalizedMantissa + value.charAt(exponentPos) + exponent;
+
+        return bigDecimal;
     }
 
-    @Nullable
-    private static String normalizeMantissa(@NotNull String value, char decimalSeparator, char groupingSeparator) {
-        String normalizedValue = value;
-        // Reject mixed style: dot/comma must be configured as decimal or grouping separators
-        // if present in value.
-        if (decimalSeparator != '.' && groupingSeparator != '.' && normalizedValue.indexOf('.') >= 0) {
-            return null;
-        }
-        if (decimalSeparator != ',' && groupingSeparator != ',' && normalizedValue.indexOf(',') >= 0) {
-            return null;
-        }
-        if (groupingSeparator != Character.MIN_VALUE && groupingSeparator != decimalSeparator) {
-            if (normalizedValue.indexOf(groupingSeparator) >= 0) {
-                normalizedValue = stripGroupingSeparator(normalizedValue, decimalSeparator, groupingSeparator);
-                if (normalizedValue == null) {
-                    return null;
-                }
-            }
-        }
+    @NotNull
+    private static DecimalFormat createFormat(boolean scientific, char decimalSeparator, char groupingSeparator) {
+        boolean groupingEnabled = groupingSeparator != Character.MIN_VALUE;
+        String pattern = scientific
+            ? (groupingEnabled ? SCIENTIFIC_PATTERN_GROUPING : SCIENTIFIC_PATTERN_NO_GROUPING)
+            : (groupingEnabled ? DECIMAL_PATTERN_GROUPING : DECIMAL_PATTERN_NO_GROUPING);
+
+        DecimalFormat format = new DecimalFormat(pattern, createSymbols(decimalSeparator, groupingSeparator));
+        format.setParseBigDecimal(true);
+        format.setGroupingUsed(groupingEnabled);
+        return format;
+    }
+
+    @NotNull
+    private static DecimalFormatSymbols createSymbols(char decimalSeparator, char groupingSeparator) {
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.ROOT);
+
         if (decimalSeparator != Character.MIN_VALUE) {
-            int decimalIndex = normalizedValue.indexOf(decimalSeparator);
-            if (decimalIndex >= 0) {
-                if (decimalIndex + 1 >= normalizedValue.length()) {
-                    return null;
-                }
-                for (int i = decimalIndex + 1; i < normalizedValue.length(); i++) {
-                    if (!Character.isDigit(normalizedValue.charAt(i))) {
-                        return null;
-                    }
-                }
-            }
+            symbols.setDecimalSeparator(decimalSeparator);
         }
-        if (decimalSeparator == '.' || normalizedValue.indexOf(decimalSeparator) < 0) {
-            return normalizedValue;
-        }
-        if (normalizedValue.indexOf('.') >= 0) {
-            return null;
-        }
-        return normalizedValue.replace(decimalSeparator, '.');
-    }
 
-    /*
-     * Return value semantics:
-     * - [0..n]: position of the single exponent marker (e/E)
-     * - EXPONENT_NOT_FOUND: no exponent marker, or e/E is used as configured separator
-     * - EXPONENT_INVALID: multiple exponent markers were found
-     */
-    private static int findExponentPos(@NotNull String value, char decimalSeparator, char groupingSeparator) {
-        if (isExponentMarker(decimalSeparator) || isExponentMarker(groupingSeparator)) {
-            return EXPONENT_NOT_FOUND;
+        if (groupingSeparator != Character.MIN_VALUE) {
+            symbols.setGroupingSeparator(groupingSeparator);
         }
-        int exponentPos = EXPONENT_NOT_FOUND;
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if (isExponentMarker(ch)) {
-                if (exponentPos != EXPONENT_NOT_FOUND) {
-                    return EXPONENT_INVALID;
-                }
-                exponentPos = i;
-            }
-        }
-        return exponentPos;
-    }
 
-    private static boolean isExponentMarker(char ch) {
-        return ch == 'e' || ch == 'E';
-    }
-
-    private static boolean isValidExponent(@NotNull String exponent) {
-        if (exponent.isEmpty()) {
-            return false;
-        }
-        int i = 0;
-        char first = exponent.charAt(0);
-        if (first == '+' || first == '-') {
-            i = 1;
-        }
-        if (i == exponent.length()) {
-            return false;
-        }
-        for (; i < exponent.length(); i++) {
-            if (!Character.isDigit(exponent.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Strips grouping separators only when they appear in integer part with valid grouping layout.
-    @Nullable
-    private static String stripGroupingSeparator(@NotNull String value, char decimalSeparator, char groupingSeparator) {
-        int decimalIndex = value.indexOf(decimalSeparator);
-        if (decimalIndex >= 0 && value.lastIndexOf(groupingSeparator) > decimalIndex) {
-            return null;
-        }
-        if (!hasValidGroupingLayout(value, decimalSeparator, groupingSeparator)) {
-            return null;
-        }
-        return value.replace(String.valueOf(groupingSeparator), "");
-    }
-
-    // Returns true if integer-part grouping is valid:
-    // groups are 3 digits from right to left, with a leftmost group of 1..3 digits.
-    private static boolean hasValidGroupingLayout(@NotNull String value, char decimalSeparator, char groupingSeparator) {
-        int start = value.startsWith("+") || value.startsWith("-") ? 1 : 0;
-        int decimalIndex = value.indexOf(decimalSeparator);
-        int integerEnd = decimalIndex >= 0 ? decimalIndex : value.length();
-        int digitsInGroup = 0;
-        boolean sawGrouping = false;
-        for (int i = integerEnd - 1; i >= start; i--) {
-            char ch = value.charAt(i);
-            if (Character.isDigit(ch)) {
-                digitsInGroup++;
-            } else if (ch == groupingSeparator) {
-                sawGrouping = true;
-                if (digitsInGroup != 3) {
-                    return false;
-                }
-                digitsInGroup = 0;
-            } else {
-                return false;
-            }
-        }
-        if (!sawGrouping) {
-            return true;
-        }
-        return digitsInGroup >= 1 && digitsInGroup <= 3;
+        return symbols;
     }
 }

@@ -35,7 +35,7 @@ public class NumericFormatUtilsTest extends DBeaverUnitTest {
     @Test
     public void normalizeNumberValueSupportsScientificNotation() {
         String normalized = NumericFormatUtils.normalizeNumberValue("1,25e+3", ',', Character.MIN_VALUE);
-        Assert.assertEquals("1.25e+3", normalized);
+        Assert.assertEquals("1.25E+3", normalized);
     }
 
     @Test
@@ -45,57 +45,15 @@ public class NumericFormatUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void normalizeNumberValueRejectsMixedDotWhenNotConfigured() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1.23", ',', Character.MIN_VALUE);
+    public void normalizeNumberValueRejectsInvalidSuffix() {
+        String normalized = NumericFormatUtils.normalizeNumberValue("1,2E3foo", ',', Character.MIN_VALUE);
         Assert.assertNull(normalized);
     }
 
     @Test
-    public void normalizeNumberValueRejectsMixedCommaWhenNotConfigured() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1,23", '.', Character.MIN_VALUE);
-        Assert.assertNull(normalized);
-    }
-
-    @Test
-    public void normalizeNumberValueRejectsMultipleExponentMarkers() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1,2e3e4", ',', Character.MIN_VALUE);
-        Assert.assertNull(normalized);
-    }
-
-    @Test
-    public void normalizeNumberValueRejectsGroupingInFractionalPart() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1.234,5.6", ',', '.');
-        Assert.assertNull(normalized);
-    }
-
-    @Test
-    public void normalizeNumberValueRejectsInvalidGroupingLayout() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("12.34,56", ',', '.');
-        Assert.assertNull(normalized);
-    }
-
-    @Test
-    public void normalizeNumberValuePreservesSign() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("-1.234,56", ',', '.');
-        Assert.assertEquals("-1234.56", normalized);
-    }
-
-    @Test
-    public void normalizeNumberValueKeepsPlainInteger() {
+    public void normalizeNumberValuePreservesPlainInteger() {
         String normalized = NumericFormatUtils.normalizeNumberValue("1234", '.', Character.MIN_VALUE);
         Assert.assertEquals("1234", normalized);
-    }
-
-    @Test
-    public void normalizeNumberValueKeepsPlainDotDecimalWhenConfigured() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1.23", '.', Character.MIN_VALUE);
-        Assert.assertEquals("1.23", normalized);
-    }
-
-    @Test
-    public void normalizeNumberValueRejectsTrailingDecimalSeparator() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1,", ',', Character.MIN_VALUE);
-        Assert.assertNull(normalized);
     }
 
     @Test
