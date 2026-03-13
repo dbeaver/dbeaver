@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.cli.CLIContextImpl;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -41,6 +42,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private static final Log log = Log.getLog(DBeaverTopLevelCommand.class);
 
     // Eclipse cmd for desktop
+    @NonExecutableOption
     @CommandLine.Option(
         names = {NOSPASH_OPTION},
         description = "Hide splash screen on start",

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.ui.internal.Workbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -75,7 +76,9 @@ public class UIExecutionQueue {
             nextJob = execQueue.removeFirst();
         }
         try {
-            nextJob.run();
+            if (!Workbench.getInstance().isClosing()) {
+                nextJob.run();
+            }
         } finally {
             synchronized (execQueue) {
                 nextJob = null;
