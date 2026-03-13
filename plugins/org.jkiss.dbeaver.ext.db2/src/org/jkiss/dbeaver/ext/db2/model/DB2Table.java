@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,8 +251,9 @@ public class DB2Table extends DB2TableBase
         return tableTriggerCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
-    public Collection<DB2TablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TablePartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         // TODO DF: beurk: Consequences of "Integrated cache" that can not be created in class def= NPE with managers
         if (partitionCache == null) {

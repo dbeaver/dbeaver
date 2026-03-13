@@ -16,10 +16,16 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.cli.CLIException;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
-public class DataSourceOptions {
+public class DataSourceOptions implements DataSourceUpdater {
     @Nullable
     @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
     private String host;
@@ -102,4 +108,27 @@ public class DataSourceOptions {
     public boolean isSavePassword() {
         return savePassword;
     }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+        String dsName = getDatasourceName();
+        if (CommonUtils.isEmpty(dsName)) {
+            dsName = dataSource.getDriver().getName();
+            if (CommonUtils.isNotEmpty(getDbName())) {
+                dsName += " - " + getDbName();
+            } else if (CommonUtils.isNotEmpty(getServer())) {
+                dsName += " - " + getServer();
+            }
+        }
+        if (CommonUtils.isNotEmpty(getDatasourceName())) {
+            dataSource.setName(dsName);
+        }
+        if (CommonUtils.isNotEmpty(getFolder())) {
+            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(getFolder());
+            dataSource.setFolder(folder);
+        }
+        dataSource.setSavePassword(isSavePassword());
+
+    }
+
 }
