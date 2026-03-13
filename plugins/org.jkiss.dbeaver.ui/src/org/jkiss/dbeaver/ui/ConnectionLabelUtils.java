@@ -26,11 +26,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.utils.CommonUtils;
 
 public final class ConnectionLabelUtils {
+
+    private static final Log log = Log.getLog(ConnectionLabelUtils.class);
 
     public static final String CONNECTION_SEPARATOR = " - "; //$NON-NLS-1$
 
@@ -57,6 +60,7 @@ public final class ConnectionLabelUtils {
             }
             return null;
         } catch (Exception e) {
+            log.debug("Cannot get editor input for: " + ref.getTitle(), e);
             return null;
         }
     }
