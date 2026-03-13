@@ -14,19 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct.rdb;
+package org.jkiss.dbeaver.model.ai.utils;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.code.Nullable;
 
-import java.util.Collection;
-
-/**
- * Table which contains partitions.
- */
-public interface DBSPartitionContainer {
-
-    @NotNull
-    Collection<? extends DBSTablePartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException;
+public record JsonSchemaType(
+    @NotNull String type,
+    @Nullable String description,
+    @Nullable String[] validValues,
+    @Nullable String defaultValue
+) {
 }
