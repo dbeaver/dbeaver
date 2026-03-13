@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct.rdb;
+package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Collection;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Table which contains partitions.
+ * Mark property as immutable
  */
-public interface DBSPartitionContainer {
-
-    @NotNull
-    Collection<? extends DBSTablePartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException;
+@Target(value = {ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ImmutableProperty {
 }

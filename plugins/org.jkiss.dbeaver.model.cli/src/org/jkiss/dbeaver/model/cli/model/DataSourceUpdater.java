@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct.rdb;
+package org.jkiss.dbeaver.model.cli.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.cli.CLIException;
 
-import java.util.Collection;
-
-/**
- * Table which contains partitions.
- */
-public interface DBSPartitionContainer {
-
-    @NotNull
-    Collection<? extends DBSTablePartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException;
+@FunctionalInterface
+public interface DataSourceUpdater {
+    void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException;
 }
