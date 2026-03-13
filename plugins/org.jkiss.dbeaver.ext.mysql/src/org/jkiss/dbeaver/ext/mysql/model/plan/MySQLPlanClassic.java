@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,16 +38,19 @@ import java.util.Map;
  */
 public class MySQLPlanClassic extends MySQLPlanAbstract {
 
-    private List<MySQLPlanNodePlain> rootNodes;
+    private CachedResultSet rawResultSet;
+    private final List<MySQLPlanNodePlain> rootNodes;
 
-    public MySQLPlanClassic(JDBCSession session, String query) throws DBCException {
+    public MySQLPlanClassic(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                rawResultSet = new CachedResultSet(dbResult.getMetaData());
                 List<MySQLPlanNodePlain> nodes = new ArrayList<>();
                 while (dbResult.next()) {
                     MySQLPlanNodePlain node = new MySQLPlanNodePlain(null, dbResult);
                     nodes.add(node);
+                    rawResultSet.addRow(dbResult);
                 }
 
                 rootNodes = nodes;
@@ -79,6 +84,18 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN EXTENDED " + query;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.RESULT_SET;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return rawResultSet;
     }
 
     @NotNull

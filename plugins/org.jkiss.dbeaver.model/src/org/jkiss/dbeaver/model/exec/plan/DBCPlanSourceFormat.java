@@ -22,10 +22,10 @@ package org.jkiss.dbeaver.model.exec.plan;
  */
 public enum DBCPlanSourceFormat {
 
-    NONE,
-    TEXT,
-    JSON,
-    XML,
-    RESULT_SET
+    NONE, // N/A
+    TEXT, // string form
+    JSON, // string form
+    XML, // string form
+    RESULT_SET // CachedResultSet
 
 }

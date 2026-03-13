@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
@@ -53,8 +54,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
 
     private boolean oldQuery;
     private boolean verbose;
-    private String query;
-    private DBCQueryPlannerConfiguration configuration;
+    private final String query;
+    private final DBCQueryPlannerConfiguration configuration;
+    private String planText;
     private List<DBCPlanNode> rootNodes;
 
     public PostgreExecutionPlan(boolean oldQuery, boolean verbose, String query, DBCQueryPlannerConfiguration configuration)
@@ -128,6 +130,18 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
 
     @NotNull
     @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return oldQuery? DBCPlanSourceFormat.TEXT : DBCPlanSourceFormat.XML;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planText;
+    }
+
+    @NotNull
+    @Override
     public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options)
     {
         return rootNodes;
@@ -154,10 +168,12 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                             }
                         }
                         parsePlanText(session, planLines);
+                        planText = String.join("\n", planLines);
                     } else {
                         if (dbResult.next()) {
                             SQLXML planXML = dbResult.getSQLXML(1);
                             parsePlanXML(session, planXML);
+                            planText = planXML.getString();
                         }
                     }
                 } catch (XMLException e) {

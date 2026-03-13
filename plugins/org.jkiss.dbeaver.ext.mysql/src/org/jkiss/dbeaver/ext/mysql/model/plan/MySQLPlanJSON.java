@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -46,6 +47,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
     private static final Gson gson = new Gson();
 
     private List<MySQLPlanNodeJSON> rootNodes;
+    private String jsonPlan;
 
     public MySQLPlanJSON(JDBCSession session, String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
@@ -54,7 +56,7 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
                 List<MySQLPlanNodeJSON> nodes = new ArrayList<>();
 
                 dbResult.next();
-                String jsonPlan = dbResult.getString(1);
+                jsonPlan = dbResult.getString(1);
 
                 JsonObject planObject = gson.fromJson(jsonPlan, JsonObject.class);
                 JsonObject queryBlock = planObject.getAsJsonObject("query_block");
@@ -97,6 +99,18 @@ public class MySQLPlanJSON extends MySQLPlanAbstract {
     public MySQLPlanJSON(MySQLDataSource dataSource, String query, List<MySQLPlanNodeJSON> rootNodes) {
         super(dataSource, query);
         this.rootNodes = rootNodes;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.JSON;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return jsonPlan;
     }
 
     @Nullable
