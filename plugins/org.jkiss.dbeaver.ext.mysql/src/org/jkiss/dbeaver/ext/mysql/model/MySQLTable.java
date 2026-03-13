@@ -188,16 +188,16 @@ public class MySQLTable extends MySQLTableBase
     @Nullable
     private String enableReferentialIntegrityStatement;
 
-    public MySQLTable(MySQLCatalog catalog)
+    public MySQLTable(@NotNull MySQLCatalog catalog)
     {
         super(catalog);
     }
 
     // Copy constructor
-    public MySQLTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
+    public MySQLTable(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog catalog, @NotNull DBSEntity source) throws DBException {
         super(monitor, catalog, source);
-        if (source instanceof MySQLTable) {
-            AdditionalInfo sourceAI = ((MySQLTable)source).getAdditionalInfo(monitor);
+        if (source instanceof MySQLTable mt) {
+            AdditionalInfo sourceAI = mt.getAdditionalInfo(monitor);
             additionalInfo.loaded = true;
             additionalInfo.description = sourceAI.description;
             additionalInfo.charset = sourceAI.charset;
@@ -206,18 +206,18 @@ public class MySQLTable extends MySQLTableBase
             additionalInfo.partitioned = sourceAI.partitioned;
 
             // Copy triggers
-            for (MySQLTrigger srcTrigger : ((MySQLTable) source).getTriggers(monitor)) {
+            for (MySQLTrigger srcTrigger : CommonUtils.safeCollection(mt.getTriggers(monitor))) {
                 MySQLTrigger trigger = new MySQLTrigger(catalog, this, srcTrigger);
                 getContainer().triggerCache.cacheObject(trigger);
             }
             // Copy partitions
-            for (MySQLPartition partition : ((MySQLTable)source).partitionCache.getCachedObjects()) {
+            for (MySQLPartition partition : mt.partitionCache.getCachedObjects()) {
                 partitionCache.cacheObject(new MySQLPartition(monitor, this, partition, source));
             }
         }
-        if (source instanceof DBSTable) {
+        if (source instanceof DBSTable dbsTable) {
             // Copy indexes
-            for (DBSTableIndex srcIndex : CommonUtils.safeCollection(((DBSTable)source).getIndexes(monitor))) {
+            for (DBSTableIndex srcIndex : CommonUtils.safeCollection(dbsTable.getIndexes(monitor))) {
                 if (srcIndex instanceof MySQLTableIndex && srcIndex.isPrimary()) {
                     // Skip primary key index (it will be created implicitly)
                     continue;
@@ -268,7 +268,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     public boolean hasStatistics() {
-        return additionalInfo.loaded == true;
+        return additionalInfo.loaded;
     }
 
     @Override
@@ -369,12 +369,14 @@ public class MySQLTable extends MySQLTableBase
         return foreignKeys.getCachedObjects();
     }
 
-    public MySQLTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName)
+    @Nullable
+    public MySQLTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, @NotNull String fkName)
         throws DBException
     {
         return DBUtils.findObject(getAssociations(monitor), fkName);
     }
 
+    @NotNull
     public DBSObjectCache<MySQLTable, MySQLTableForeignKey> getForeignKeyCache()
     {
         return foreignKeys;
@@ -394,15 +396,15 @@ public class MySQLTable extends MySQLTableBase
         return triggers;
     }
 
+    @NotNull
     @Association
-    public Collection<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
+    public Collection<MySQLPartition> getPartitions(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return partitionCache.getAllObjects(monitor, this);
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
-    {
+    private void loadAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBCException {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
@@ -742,8 +744,7 @@ public class MySQLTable extends MySQLTableBase
         }
 
         @Override
-        protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-        {
+        protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
             String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
             if (CommonUtils.isEmpty(partitionName) && CommonUtils.isEmpty(subPartitionName)) {
