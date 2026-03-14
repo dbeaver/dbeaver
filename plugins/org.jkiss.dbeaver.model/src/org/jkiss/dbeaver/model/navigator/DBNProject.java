@@ -243,6 +243,9 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             extraNodes = new ArrayList<>();
         }
         extraNodes.add(node);
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            node.resolveRealNode();
+        }
         if (reflect) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
         }
