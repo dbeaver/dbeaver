@@ -120,11 +120,6 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    public boolean allowsOpen() {
-        return true;
-    }
-
-    @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNProject.class) {
             return adapter.cast(this);
@@ -230,8 +225,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     @Nullable
     public <T> T getExtraNode(@NotNull Class<T> nodeType) {
         if (extraNodes != null) {
-            for (int i = 0; i < extraNodes.size(); i++) {
-                DBNNode node = extraNodes.get(i);
+            for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {
                     return nodeType.cast(node);
                 } else if (node instanceof DBNNodeExtension nodeExtension && nodeExtension.matchesType(nodeType)) {
