@@ -166,9 +166,41 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(OAIMessage::new)
-            .toList();
+        List<OAIMessage> result = new ArrayList<>(messages.size());
+        String currentToolCallId = null;
+        for (int i = 0; i < messages.size(); i++) {
+            AIMessage message = messages.get(i);
+
+            if (message.getFunctionCall() != null) {
+                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
+                boolean hasFunctionOutput = i + 1 < messages.size() && messages.get(i + 1).getFunctionCallName() != null;
+                if (hasFunctionOutput && !CommonUtils.isEmpty(functionCallMessage.callId)) {
+                    currentToolCallId = functionCallMessage.callId;
+                    result.add(functionCallMessage);
+                } else {
+                    // OpenAI Responses API requires matching function_call_output for each function_call.
+                    // Keep orphan function calls in history as regular assistant messages.
+                    AIMessage plainMessage = new AIMessage(
+                        message.getRole(),
+                        message.getContent(),
+                        message.getRawDisplayMessage(),
+                        message.getTime(),
+                        message.getMeta()
+                    );
+                    result.add(OAIMessageFactory.fromAIMessage(plainMessage));
+                    currentToolCallId = null;
+                }
+            } else if (message.getFunctionCallName() != null && !CommonUtils.isEmpty(currentToolCallId)) {
+                result.add(OAIMessageFactory.fromAIMessage(message, currentToolCallId));
+                currentToolCallId = null;
+            } else {
+                result.add(OAIMessageFactory.fromAIMessage(message));
+                if (message.getFunctionCallName() == null) {
+                    currentToolCallId = null;
+                }
+            }
+        }
+        return result;
     }
 
     @NotNull
