@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,16 +36,20 @@ import java.util.List;
 import java.util.Map;
 
 public class TiDBPlainClassic extends MySQLPlanAbstract {
-    private List<TiDBPlanNodePlain> rootNodes;
+    private final List<TiDBPlanNodePlain> rootNodes;
+    private CachedResultSet planResults;
 
     public TiDBPlainClassic(JDBCSession session, String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
+        String planQueryString = getPlanQueryString();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(planQueryString)) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                planResults = new CachedResultSet(planQueryString, dbResult.getMetaData());
                 List<TiDBPlanNodePlain> nodes = new ArrayList<>();
                 while (dbResult.next()) {
                     TiDBPlanNodePlain node = new TiDBPlanNodePlain(null, dbResult);
                     nodes.add(node);
+                    planResults.addRow(dbResult);
                 }
 
                 rootNodes = nodes;
@@ -77,6 +83,18 @@ public class TiDBPlainClassic extends MySQLPlanAbstract {
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN FORMAT = \"brief\" " + query;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.RESULT_SET;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planResults;
     }
 
     @NotNull

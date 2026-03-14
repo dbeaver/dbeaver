@@ -21,13 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.IntKeyMap;
 import org.jkiss.utils.SecurityUtils;
@@ -48,22 +49,16 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
 
     private OracleDataSource dataSource;
     private JDBCSession session;
-    private String query;
-    private Object savedQueryId;
+    private final String query;
     private List<OraclePlanNode> rootNodes;
     private String planStmtId;
     private String planTableName;
+    private CachedResultSet planResults;
 
     OracleExecutionPlan(OracleDataSource dataSource, JDBCSession session, String query) {
         this.dataSource = dataSource;
         this.session = session;
         this.query = query;
-    }
-
-    OracleExecutionPlan(OracleDataSource dataSource, JDBCSession session, Object savedQueryId) {
-        this.dataSource = dataSource;
-        this.session = session;
-        this.savedQueryId = savedQueryId;
     }
 
     public OracleExecutionPlan(String query, List<OraclePlanNode> nodes) {
@@ -114,6 +109,18 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
 
     @NotNull
     @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.RESULT_SET;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planResults;
+    }
+
+    @NotNull
+    @Override
     public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
@@ -154,16 +161,13 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
                 dbStat.close();
             }
 
-            // Read explained plan
-            dbStat = session.prepareStatement(
-                "SELECT * FROM " + planTableName +
-                    " WHERE STATEMENT_ID=? ORDER BY ID");
-            readPlanNodes(dbStat);
+            readPlanNodes();
 
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
+/*
 
     public void readHistoric() throws DBException {
         try {
@@ -177,11 +181,15 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
+*/
 
-    private void readPlanNodes(JDBCPreparedStatement dbStat) throws SQLException {
-        try {
+    private void readPlanNodes() throws SQLException {
+        String planSQL = "SELECT * FROM " + planTableName +
+            " WHERE STATEMENT_ID=? ORDER BY ID";
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(planSQL)) {
             dbStat.setString(1, planStmtId);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                planResults = new CachedResultSet(planSQL, dbResult.getMetaData());
                 rootNodes = new ArrayList<>();
                 IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
                 while (dbResult.next()) {
@@ -190,10 +198,9 @@ public class OracleExecutionPlan extends AbstractExecutionPlan {
                     if (node.getParent() == null) {
                         rootNodes.add(node);
                     }
+                    planResults.addRow(dbResult);
                 }
             }
-        } finally {
-            dbStat.close();
         }
 
         // Update costs

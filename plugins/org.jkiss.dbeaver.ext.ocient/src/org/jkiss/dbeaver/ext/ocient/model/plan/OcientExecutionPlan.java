@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
@@ -36,10 +37,11 @@ import java.util.Map;
 
 public class OcientExecutionPlan extends AbstractExecutionPlan {
 
-    private String query;
+    private final String query;
     private List<OcientPlanNodeJson> rootNodes;
 
     private static final Gson gson = new Gson();
+    private String planJson;
 
     public OcientExecutionPlan(String query) {
         this.query = query;
@@ -75,14 +77,26 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
 
     @NotNull
     @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.JSON;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planJson;
+    }
+
+    @NotNull
+    @Override
     public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 
     public void explain(DBCSession session) throws DBCException {
-        String explainString = getExplainString(session);
+        planJson = getExplainString(session);
 
-        JsonObject planObject = gson.fromJson(explainString, JsonObject.class);
+        JsonObject planObject = gson.fromJson(planJson, JsonObject.class);
         JsonObject planRoot = planObject.getAsJsonObject("rootNode");
         JsonObject planHeader = planObject.getAsJsonObject("header");
         rootNodes = new ArrayList<>();

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.exasol.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -25,7 +26,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
@@ -40,9 +43,10 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
 
     private static final Log LOG = Log.getLog(ExasolPlanAnalyser.class);
 
-    private ExasolDataSource dataSource;
-    private String query;
+    private final ExasolDataSource dataSource;
+    private final String query;
     private List<ExasolPlanNode> rootNodes;
+    private CachedResultSet planResults;
 
     ExasolPlanAnalyser(ExasolDataSource dataSource, String query) {
         this.dataSource = dataSource;
@@ -100,12 +104,15 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
             connection.commit();
 
             //retrieve execute info
-            try (JDBCPreparedStatement stmt = connection.prepareStatement(getPlanQueryString())) {
+            String planQueryString = getPlanQueryString();
+            try (JDBCPreparedStatement stmt = connection.prepareStatement(planQueryString)) {
 	            stmt.setString(1, query);
 	            try (JDBCResultSet dbResult = stmt.executeQuery()) {
+                    planResults = new CachedResultSet(planQueryString, dbResult.getMetaData());
 		            while (dbResult.next()) {
 		                ExasolPlanNode node = new ExasolPlanNode(null, dbResult);
 		                rootNodes.add(node);
+                        planResults.addRow(dbResult);
 		            }
 	            }
             }
@@ -123,6 +130,18 @@ public class ExasolPlanAnalyser extends AbstractExecutionPlan {
                 LOG.error("Error closing plan analyser", e);
             }
         }
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.RESULT_SET;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planResults;
     }
 
     public ExasolDataSource getDataSource() {

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,8 +44,9 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     
     private final List<OceanbasePlanNodeJSON> rootNodes;
     
-    private OceanbaseMySQLDataSource dataSource;
-    private String query;
+    private final OceanbaseMySQLDataSource dataSource;
+    private final String query;
+    private String planJson;
 
     OceanbasePlanJSON(JDBCSession session, String query) throws DBCException {
         this.dataSource = (OceanbaseMySQLDataSource) session.getDataSource();
@@ -53,9 +55,9 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 List<OceanbasePlanNodeJSON> nodes = new ArrayList<>();
                 dbResult.next();
-                String jsonPlan = dbResult.getString(1);
+                planJson = dbResult.getString(1);
 
-                JsonObject planObject = gson.fromJson(jsonPlan, JsonObject.class);
+                JsonObject planObject = gson.fromJson(planJson, JsonObject.class);
                 JsonObject queryBlock = planObject.getAsJsonObject();
 
                 OceanbasePlanNodeJSON rootNode = new OceanbasePlanNodeJSON(null, "select", queryBlock);
@@ -98,6 +100,18 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN FORMAT=JSON " + query + ";";
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.JSON;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planJson;
     }
 
     @NotNull
