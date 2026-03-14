@@ -35,17 +35,24 @@ public class CachedResultSet {
 
     private final String[] columnNames;
     protected final List<Object[]> rows = new ArrayList<>();
+    private final String query;
 
-    public CachedResultSet(@NotNull String[] columnNames) {
+    public CachedResultSet(@NotNull String query, @NotNull String[] columnNames) {
+        this.query = query;
         this.columnNames = columnNames;
     }
 
-    public CachedResultSet(@NotNull ResultSetMetaData rsMeta) throws SQLException {
+    public CachedResultSet(@NotNull String query, @NotNull ResultSetMetaData rsMeta) throws SQLException {
+        this.query = query;
         int columnCount = rsMeta.getColumnCount();
         this.columnNames = new String[columnCount];
         for (int i = 0; i < columnCount; i++) {
             columnNames[i] = rsMeta.getColumnName(i + 1);
         }
+    }
+
+    public String getQuery() {
+        return query;
     }
 
     public void addRow(@NotNull Object[] row) {

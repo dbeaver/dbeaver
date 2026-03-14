@@ -43,9 +43,10 @@ public class MySQLPlanClassic extends MySQLPlanAbstract {
 
     public MySQLPlanClassic(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
+        String planQueryString = getPlanQueryString();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(planQueryString)) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                rawResultSet = new CachedResultSet(dbResult.getMetaData());
+                rawResultSet = new CachedResultSet(planQueryString, dbResult.getMetaData());
                 List<MySQLPlanNodePlain> nodes = new ArrayList<>();
                 while (dbResult.next()) {
                     MySQLPlanNodePlain node = new MySQLPlanNodePlain(null, dbResult);

@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,20 +32,19 @@ import java.util.Map;
 
 public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
-    private List<CubridPlanNode> rootNodes = new ArrayList<>();
-    private String query;
-    private String plan;
+    private final List<CubridPlanNode> rootNodes = new ArrayList<>();
+    private final String query;
+    private final String planText;
 
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
             throws DBCException {
         this.query = query;
         try {
-            plan = CubridStatementProxy.getQueryplan(
-                            session.getOriginal().createStatement(), query);
+            planText = CubridStatementProxy.getQueryplan(session.getOriginal().createStatement(), query);
             List<CubridPlanNode> tempNode = new ArrayList<>();
             CubridPlanNode parent = new CubridPlanNode();
             long totalCost = 0;
-            for (String fullText : plan.split("(?=Join graph segments)")) {
+            for (String fullText : planText.split("(?=Join graph segments)")) {
                 if (CommonUtils.isNotEmpty(fullText)) {
                     CubridPlanNode node = new CubridPlanNode(fullText);
                     totalCost = totalCost + node.getCost();
@@ -76,6 +77,18 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() {
-        return plan;
+        return planText;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.TEXT;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planText;
     }
 }
