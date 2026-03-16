@@ -49,7 +49,8 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
 
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems) {
-        DBPDataSourceContainer dsContainer = AbstractDataSourceHandler.getDataSourceContainerFromPart(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
+        DBPDataSourceContainer dsContainer = AbstractDataSourceHandler.getDataSourceContainerFromPart(UIUtils.getActiveWorkbenchWindow()
+            .getActivePage().getActivePart());
         if (dsContainer == null) {
             return;
         }
@@ -66,11 +67,10 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             if (preset == DataSourceNavigatorSettings.PRESET_SIMPLE || preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
                 continue;
             }
-            boolean checked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
-            if (checked) {
-                presetChecked = checked;
-            }
-            customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, preset, checked));
+            presetChecked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
+        }
+        if (!presetChecked) {
+            customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, DataSourceNavigatorSettings.PRESET_FULL, false));
         }
         customizeViewMenu.add(new UseSettingsCustomAction(dsContainer, !presetChecked));
         customizeViewMenu.add(new Separator());
@@ -108,8 +108,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                 if (UIUtils.confirmAction(
                     UIUtils.getActiveWorkbenchShell(),
                     CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName()) ))
-                {
+                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName()))) {
                     DataSourceHandler.reconnectDataSource(null, dsContainer);
                 }
             }
@@ -130,7 +129,11 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         private final DataSourceNavigatorSettings.Preset preset;
 
         UseSettingsPresetAction(DBPDataSourceContainer dsContainer, DataSourceNavigatorSettings.Preset preset, boolean checked) {
-            super(dsContainer, preset == DataSourceNavigatorSettings.PRESET_SIMPLE ? RegistryMessages.navigator_settings_switch_to_simple_mode : preset.getName(), AS_RADIO_BUTTON);
+            super(dsContainer,
+                preset == DataSourceNavigatorSettings.PRESET_SIMPLE ? RegistryMessages.navigator_settings_switch_to_simple_mode
+                    : preset.getName(),
+                AS_RADIO_BUTTON
+            );
             this.preset = preset;
             setToolTipText(preset.getDescription());
             setChecked(checked);
