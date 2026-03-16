@@ -20,11 +20,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.AIMetaTypes;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageFactory;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionRequest;
@@ -102,7 +102,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
 
         OAIResponsesResponse oaiResponse = new OAIResponsesResponse();
         oaiResponse.output = chatCompletionResult.getChoices().stream().map(
-            c -> new OAIMessage(
+            c -> OAIMessageFactory.fromAIMessage(
                 new AIMessage(
                     AIMessageType.ASSISTANT,
                     c.getMessage().getContent(),
