@@ -38,7 +38,7 @@ public interface AIToolboxManager {
     List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose);
 
     @Nullable
-    AIFunctionDescriptor getFunctionById(@NotNull String id);
+    AIFunctionDescriptor getFunctionByFullId(@NotNull String id);
 
     @NotNull
     List<AIFunctionCategoryDescriptor> getAllCategories();

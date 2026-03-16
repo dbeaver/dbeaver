@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,13 +63,14 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         this.reuseStatement = reuseStatement;
     }
 
+    @NotNull
     @Override
-    public void add(@NotNull Object[] attributeValues) throws DBCException
-    {
+    public DBSDataManipulator.ExecuteBatch add(@NotNull Object[] attributeValues) throws DBCException {
         if (!ArrayUtils.isEmpty(attributes) && ArrayUtils.isEmpty(attributeValues)) {
             throw new DBCException("Bad attribute values: " + Arrays.toString(attributeValues));
         }
         values.add(attributeValues);
+        return this;
     }
 
     @NotNull
