@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
  * Not all engines have multiple credentials providers, but if an engine supports multiple providers, it should use this interface to retrieve credentials.
  *
  */
-public interface DBACredentialsProvider<CREDENTIALS> {
+public interface DBAAICredentialsProvider<CREDENTIALS> {
 
     /**
      * Returns the unique ID of the credentials provider. This ID is used to identify the provider and should be unique across all providers.

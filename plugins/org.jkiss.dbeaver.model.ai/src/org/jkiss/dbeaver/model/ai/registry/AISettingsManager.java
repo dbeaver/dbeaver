@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
-import org.jkiss.dbeaver.model.ai.engine.DBACredentialsProvider;
+import org.jkiss.dbeaver.model.ai.engine.DBAAICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -248,7 +248,7 @@ public class AISettingsManager {
     private static Gson createPropertiesLoadGson() {
         return new GsonBuilder()
             .setStrictness(Strictness.LENIENT)
-            .registerTypeAdapter(DBACredentialsProvider.class, new DBAAuthProviderAdapter())
+            .registerTypeAdapter(DBAAICredentialsProvider.class, new DBAAuthProviderAdapter())
             .create();
     }
 
@@ -258,7 +258,7 @@ public class AISettingsManager {
             return createPropertiesLoadGson();
         } else {
             return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-                .registerTypeAdapter(DBACredentialsProvider.class, new DBAAuthProviderAdapter()).create();
+                .registerTypeAdapter(DBAAICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
         }
     }
 
@@ -304,10 +304,10 @@ public class AISettingsManager {
         }
     }
 
-    static class DBAAuthProviderAdapter implements JsonDeserializer<DBACredentialsProvider<?>>, JsonSerializer<DBACredentialsProvider<?>> {
+    static class DBAAuthProviderAdapter implements JsonDeserializer<DBAAICredentialsProvider<?>>, JsonSerializer<DBAAICredentialsProvider<?>> {
 
         @Override
-        public DBACredentialsProvider<?> deserialize(
+        public DBAAICredentialsProvider<?> deserialize(
             @NotNull JsonElement json,
             @NotNull Type typeOfT,
             @NotNull JsonDeserializationContext context
@@ -315,6 +315,7 @@ public class AISettingsManager {
             JsonObject obj = json.getAsJsonObject();
             String type = obj.get("type").getAsString();
             DBACredentialsProviderDescriptor authProviderByID = AICredentialsProviderRegistry.getInstance().getCredentialsProviderByID(type);
+            obj.remove("type");
             Class<?> providerClass = authProviderByID.getProviderClass();
             return context.deserialize(json, providerClass);
         }
@@ -322,7 +323,7 @@ public class AISettingsManager {
 
         @Override
         public JsonElement serialize(
-            @NotNull DBACredentialsProvider src,
+            @NotNull DBAAICredentialsProvider src,
             @NotNull Type typeOfSrc,
             @NotNull JsonSerializationContext context
         ) {

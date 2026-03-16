@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.DBACredentialsProvider;
+import org.jkiss.dbeaver.model.ai.engine.DBAAICredentialsProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -79,8 +79,8 @@ public class DBACredentialsProviderDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public DBACredentialsProvider<?> createProviderInstance() throws Exception {
-        return objectType.createInstance(DBACredentialsProvider.class);
+    public DBAAICredentialsProvider<?> createProviderInstance() throws Exception {
+        return objectType.createInstance(DBAAICredentialsProvider.class);
     }
 
     @Nullable
