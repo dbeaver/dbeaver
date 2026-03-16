@@ -3,7 +3,7 @@
 <schema targetNamespace="com.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="com.dbeaver.model.ai" id="com.dbeaver.model.ai.authProvider" name="AI Auth Providers"/>
+         <meta.schema plugin="com.dbeaver.model.ai" id="com.dbeaver.model.ai.credentialsProvider" name="AI Auth Providers"/>
       </appInfo>
       <documentation>
          AI Auth Providers extension point schema
@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="authProvider" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="credentialsProvider" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
       </complexType>
    </element>

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.DBAAuthProvider;
+import org.jkiss.dbeaver.model.ai.engine.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -27,15 +27,15 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class DBAAuthProviderDescriptor extends AbstractDescriptor {
-    public static final String EXTENSION_ID = "com.dbeaver.model.ai.authProvider";
+public class DBACredentialsProviderDescriptor extends AbstractDescriptor {
+    public static final String EXTENSION_ID = "com.dbeaver.model.ai.credentialsProvider";
     private final ObjectType objectType;
     private final String id;
     private final List<String> supportedEngines;
     private final boolean isDefault;
     private final String authTypeName;
 
-    protected DBAAuthProviderDescriptor(@NotNull IConfigurationElement contributorConfig) {
+    protected DBACredentialsProviderDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.id = contributorConfig.getAttribute(RegistryConstants.ATTR_ID);
         this.supportedEngines = mapEngines(contributorConfig);
@@ -79,8 +79,8 @@ public class DBAAuthProviderDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public DBAAuthProvider<?> createProviderInstance() throws Exception {
-        return objectType.createInstance(DBAAuthProvider.class);
+    public DBACredentialsProvider<?> createProviderInstance() throws Exception {
+        return objectType.createInstance(DBACredentialsProvider.class);
     }
 
     @Nullable

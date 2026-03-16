@@ -25,24 +25,24 @@ import org.jkiss.dbeaver.Log;
 
 import java.util.*;
 
-public class AIAuthProviderRegistry {
+public class AICredentialsProviderRegistry {
 
-    private static final Log log = Log.getLog(AIAuthProviderRegistry.class);
-    private static AIAuthProviderRegistry instance;
-    private final Map<String, List<DBAAuthProviderDescriptor>> authProviderByEngineID = new LinkedHashMap<>();
-    private final Map<String, DBAAuthProviderDescriptor> authProviderByID = new HashMap<>();
+    private static final Log log = Log.getLog(AICredentialsProviderRegistry.class);
+    private static AICredentialsProviderRegistry instance;
+    private final Map<String, List<DBACredentialsProviderDescriptor>> authProviderByEngineID = new LinkedHashMap<>();
+    private final Map<String, DBACredentialsProviderDescriptor> authProviderByID = new HashMap<>();
 
-    public static synchronized AIAuthProviderRegistry getInstance() {
+    public static synchronized AICredentialsProviderRegistry getInstance() {
         if (instance == null) {
-            instance = new AIAuthProviderRegistry(Platform.getExtensionRegistry());
+            instance = new AICredentialsProviderRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
 
     @NotNull
-    public List<DBAAuthProviderDescriptor> getEngineAuthProviders(@NotNull String engineID) {
-        List<DBAAuthProviderDescriptor> descriptors = authProviderByEngineID.get(engineID);
+    public List<DBACredentialsProviderDescriptor> getEngineCredentialsProviders(@NotNull String engineID) {
+        List<DBACredentialsProviderDescriptor> descriptors = authProviderByEngineID.get(engineID);
         if (descriptors == null || descriptors.isEmpty()) {
             return List.of();
         }
@@ -50,16 +50,16 @@ public class AIAuthProviderRegistry {
     }
 
     @Nullable
-    public DBAAuthProviderDescriptor getAuthProviderByID(@NotNull String id) {
+    public DBACredentialsProviderDescriptor getCredentialsProviderByID(@NotNull String id) {
         return authProviderByID.get(id);
     }
 
-    private AIAuthProviderRegistry(@NotNull IExtensionRegistry registry) {
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DBAAuthProviderDescriptor.EXTENSION_ID);
+    private AICredentialsProviderRegistry(@NotNull IExtensionRegistry registry) {
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DBACredentialsProviderDescriptor.EXTENSION_ID);
 
         for (IConfigurationElement ext : extElements) {
-            if ("authProvider".equals(ext.getName())) {
-                DBAAuthProviderDescriptor fd = new DBAAuthProviderDescriptor(ext);
+            if ("credentialsProvider".equals(ext.getName())) {
+                DBACredentialsProviderDescriptor fd = new DBACredentialsProviderDescriptor(ext);
                 for (String supportedEngine : fd.getSupportedEngines()) {
                     authProviderByEngineID.computeIfAbsent(supportedEngine, k -> new ArrayList<>()).add(fd);
                 }
