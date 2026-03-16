@@ -358,7 +358,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
             if (
                 // Avoid adding app bundles to bundle start list,
-                // because they will be started by application launcher and may have specific start level
+                // We already have a specificied app to run
                 bundleFile.contains(".app.")
                     && !bundleFile.contains(appBundleName)
                     && !bundleFile.contains("org.eclipse")
