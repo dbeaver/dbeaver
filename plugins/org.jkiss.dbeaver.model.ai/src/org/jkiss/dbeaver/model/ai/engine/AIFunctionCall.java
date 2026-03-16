@@ -46,7 +46,11 @@ public class AIFunctionCall {
     public AIFunctionCall() {
     }
 
-    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments, @Nullable Map<String, String> messageMetadata) {
+    public AIFunctionCall(
+        @NotNull String functionName,
+        @Nullable Map<String, Object> arguments,
+        @Nullable Map<String, String> messageMetadata
+    ) {
         this.functionName = functionName;
         this.arguments = arguments;
         this.messageMetadata = messageMetadata;
@@ -75,12 +79,12 @@ public class AIFunctionCall {
     }
 
     @Nullable
-    public Map<String, String> getAdditionalProperties() {
+    public Map<String, String> getMessageMetadata() {
         return messageMetadata;
     }
 
-    public void setMessageMetadata(@NotNull Map<String, String> additionalProperties) {
-        this.messageMetadata = Map.copyOf(additionalProperties);
+    public void setMessageMetadata(@NotNull Map<String, String> messageMetadata) {
+        this.messageMetadata = Map.copyOf(messageMetadata);
     }
 
     @Nullable
