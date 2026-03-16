@@ -78,13 +78,8 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
         super(IInstanceController.class);
     }
 
-    @Nullable
+    @NotNull
     public static DBeaverInstanceServer createServer() throws IOException {
-        if (createClient() != null) {
-            log.debug("Can't start instance server because other instance is already running");
-            return null;
-        }
-
         return new DBeaverInstanceServer();
     }
 
@@ -131,7 +126,6 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
         }
 
         Properties properties = new Properties();
-
         try (Reader reader = Files.newBufferedReader(path)) {
             properties.load(reader);
         } catch (IOException e) {
@@ -139,8 +133,10 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             return null;
         }
 
-        String port = properties.getProperty(InstanceServerProperties.PROPERTY_PORT);
-        String password = properties.getProperty(InstanceServerProperties.PROPERTY_PASSWORD);
+        long pid = ProcessHandle.current().pid();
+        String port = properties.getProperty(InstanceServerProperties.portKey(pid));
+        String password = properties.getProperty(InstanceServerProperties.passwordKey(pid));
+        String startedAt = properties.getProperty(InstanceServerProperties.startedAtKey(pid), "0");
 
         if (CommonUtils.isEmptyTrimmed(port)) {
             log.error("No port specified for the instance controller to connect to");
@@ -150,7 +146,13 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             log.error("No password specified for the instance controller to connect to");
             return null;
         }
-        return new InstanceServerProperties(Integer.parseInt(port), password);
+
+        try {
+            return new InstanceServerProperties(Integer.parseInt(port), password, Long.parseLong(startedAt));
+        } catch (NumberFormatException e) {
+            log.error("Invalid instance controller configuration: " + e.getMessage());
+            return null;
+        }
     }
 
     /**

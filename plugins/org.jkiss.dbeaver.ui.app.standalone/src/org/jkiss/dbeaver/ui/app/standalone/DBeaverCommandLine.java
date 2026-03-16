@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
 import org.jkiss.dbeaver.model.cli.CLIContextImpl;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
-import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
+import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
 import org.jkiss.dbeaver.ui.app.standalone.cli.DBeaverMixin;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import picocli.CommandLine;
@@ -64,7 +64,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
 
     @Override
     protected void preprocessCommandLineParameter(
-        @NotNull CommandLineParameterDescriptor descriptor,
+        @NotNull CLICommandDescriptor descriptor,
         @NotNull CommandLine.ParseResult cliCommand,
         @NotNull CLIContextImpl context,
         boolean uiActivated

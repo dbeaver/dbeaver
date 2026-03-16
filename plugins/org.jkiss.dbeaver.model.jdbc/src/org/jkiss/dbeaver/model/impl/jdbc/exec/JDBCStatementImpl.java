@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,8 +273,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         return result;
     }
 
-    protected SQLException handleExecuteError(Throwable ex) {
-        executeError = ex;
+    @NotNull
+    protected SQLException handleExecuteError(@NotNull Throwable ex) {
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
             try {
                 if (!connection.isClosed() && !connection.getAutoCommit()) {
@@ -284,8 +284,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
                 log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
-        if (ex instanceof SQLException) {
-            return (SQLException) ex;
+        if (ex instanceof SQLException sqlException) {
+            return sqlException;
         } else {
             return new SQLException(ModelMessages.model_jdbc_exception_internal_jdbc_driver_error, ex);
         }
