@@ -113,7 +113,10 @@ public class DataSourceOptions implements DataSourceUpdater {
     @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
         String dsName = getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
+        var registry = dataSource.getRegistry();
+        if (CommonUtils.isNotEmpty(dsName)) {
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        } else if (CommonUtils.isEmpty(dataSource.getName()) || dataSource.getName().equals("?")) {
             dsName = dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(getDbName())) {
                 dsName += " - " + getDbName();
@@ -122,9 +125,8 @@ public class DataSourceOptions implements DataSourceUpdater {
             } else if (CommonUtils.isNotEmpty(getServer())) {
                 dsName += " - " + getServer();
             }
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
         }
-        var registry = dataSource.getRegistry();
-        dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 1));
         if (CommonUtils.isNotEmpty(getFolder())) {
             DBPDataSourceFolder registryFolder = registry.getFolder(getFolder());
             dataSource.setFolder(registryFolder);
