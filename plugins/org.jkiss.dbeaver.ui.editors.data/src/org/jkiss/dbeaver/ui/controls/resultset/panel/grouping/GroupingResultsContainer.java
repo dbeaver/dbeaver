@@ -303,7 +303,9 @@ public class GroupingResultsContainer implements IResultSetContainer {
             } catch (DBException e) {
                 log.warn("Cant add column for action with preference key: " + groupingActionDescriptor.getPreferenceKey(), e);
             }
-
+            if (columnsContainer.getFunctionColumns().isEmpty()) {
+                addDefaultFunction();
+            }
         }
     }
 
