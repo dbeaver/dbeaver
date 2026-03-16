@@ -210,6 +210,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
         </editor>
         <editor
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.SchedulerJobLogEditor"
