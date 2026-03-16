@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.UniqueGroupingColumn;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 public abstract class TransformerGroupingFunctionColumn extends BasicGroupingFunctionColumn
     implements UniqueGroupingColumn {
@@ -34,6 +35,7 @@ public abstract class TransformerGroupingFunctionColumn extends BasicGroupingFun
     ) {
         super(dataSource, groupingResultsContainer);
         this.preferenceKey = preferenceKey;
+        PrefUtils.setDefaultPreferenceValue(dataSource.getContainer().getPreferenceStore(), preferenceKey, defaultPreferenceValue());
     }
 
     @NotNull
@@ -58,5 +60,9 @@ public abstract class TransformerGroupingFunctionColumn extends BasicGroupingFun
     public boolean afterDeleteAction() {
         dataSource.getContainer().getPreferenceStore().setValue(preferenceKey, false);
         return super.afterDeleteAction();
+    }
+
+    protected boolean defaultPreferenceValue() {
+        return false;
     }
 }

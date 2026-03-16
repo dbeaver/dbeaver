@@ -65,7 +65,7 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
         @NotNull GroupingResultsContainer groupingResultsContainer
     )
     throws DBException {
-        return column.createInstance(TransformerGroupingFunctionColumn.class, dataSource, groupingResultsContainer);
+        return column.createInstance(TransformerGroupingFunctionColumn.class, dataSource, groupingResultsContainer, preferenceKey);
     }
 
     @NotNull

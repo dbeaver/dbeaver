@@ -294,11 +294,14 @@ public class GroupingResultsContainer implements IResultSetContainer {
         for (GroupingActionDescriptor groupingActionDescriptor : GroupingRegistry.getInstance().getGroupingDescriptors()) {
             try {
                 TransformerGroupingFunctionColumn column = groupingActionDescriptor.createColumn(dataSource, this);
-                if (column.isAddToColumns()) {
+                boolean isAlreadyPresent = columnsContainer.indexOfFunctionById(column.getId()) >= 0;
+                if (column.isAddToColumns() && !isAlreadyPresent) {
                     columnsContainer.addFunction(column);
+                } else if (!column.isAddToColumns() && isAlreadyPresent) {
+                    columnsContainer.removeFunctionById(column.getId());
                 }
             } catch (DBException e) {
-                log.warn("Cant add column for action with preference key: " + groupingActionDescriptor.getPreferenceKey());
+                log.warn("Cant add column for action with preference key: " + groupingActionDescriptor.getPreferenceKey(), e);
             }
 
         }

@@ -40,16 +40,20 @@ public class GroupingColumnsContainer {
     }
 
     public void addFunction(@NotNull GroupingFunctionColumn functionColumn) {
-        if (!(functionColumn instanceof UniqueGroupingColumn uniqueColumn) || isUniqueFunctionByName(uniqueColumn)) {
+        if (!(functionColumn instanceof UniqueGroupingColumn uniqueColumn) || isUniqueFunctionById(uniqueColumn)) {
             groupFunctions.add(functionColumn);
         }
     }
 
+    public boolean removeFunctionById(@NotNull String name) {
+        int index = indexOfFunctionById(name);
+        return index >= 0 && groupFunctions.remove(index).afterDeleteAction();
+    }
 
-    private int indexOfFunctionByName(@NotNull String name) {
+    public int indexOfFunctionById(@NotNull String id) {
         for (int i = 0; i < groupFunctions.size(); i++) {
             if (groupFunctions.get(i) instanceof UniqueGroupingColumn uniqueGroupingColumn
-                && name.equals(uniqueGroupingColumn.getId())) {
+                && id.equals(uniqueGroupingColumn.getId())) {
                 return i;
             }
         }
@@ -163,8 +167,8 @@ public class GroupingColumnsContainer {
         }
     }
 
-    private boolean isUniqueFunctionByName(@NotNull UniqueGroupingColumn uniqueColumn) {
-        return indexOfFunctionByName(uniqueColumn.getId()) < 0;
+    private boolean isUniqueFunctionById(@NotNull UniqueGroupingColumn uniqueColumn) {
+        return indexOfFunctionById(uniqueColumn.getId()) < 0;
     }
 
     private boolean removeColumn(int index) {
