@@ -135,7 +135,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (showDefaults && CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {
-                objectName = object.getClass().getName() + "@" + object.hashCode(); //$NON-NLS-1$
+                if (!object.isPersisted()) {
+                    objectName = ""; //$NON-NLS-1$
+                } else {
+                    objectName = "...?"; //$NON-NLS-1$
+                }
             }
         }
         return objectName;

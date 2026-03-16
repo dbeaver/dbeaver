@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
@@ -65,6 +66,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 
 /**
@@ -162,6 +164,24 @@ public class DBExecUtils {
         }
 
         return DBPErrorAssistant.ErrorType.NORMAL;
+    }
+
+    public static boolean isExecutionCanceled(@Nullable DBPDataSource dataSource, @NotNull Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof InterruptedException ||
+                t instanceof DBInterruptedException ||
+                t instanceof ClosedByInterruptException) {
+                return true;
+            }
+            if (dataSource != null &&
+                discoverErrorType(dataSource, t) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -814,6 +814,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
     {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
+            if (SQLState.SQL_HY008.getCode().equals(sqlState)) {
+                return ErrorType.EXECUTION_CANCELED;
+            }
             if (SQLState.SQL_08000.getCode().equals(sqlState) ||
                     SQLState.SQL_08003.getCode().equals(sqlState) ||
                     SQLState.SQL_08006.getCode().equals(sqlState) ||
