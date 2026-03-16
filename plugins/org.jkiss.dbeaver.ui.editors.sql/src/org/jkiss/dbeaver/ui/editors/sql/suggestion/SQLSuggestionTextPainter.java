@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,11 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -44,6 +46,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
     private HintContent activeHint;
     private IPositionUpdater updater;
     private boolean standaloneOperation = false;
+    private int nextLineVerticalIndentLine = -1;
 
     public SQLSuggestionTextPainter(ITextViewer viewer) {
         this.viewerComponent = viewer;
@@ -121,6 +124,8 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         }
         if (clearContent) {
             removeHint();
+        } else {
+            clearHintVerticalIndent();
         }
         StyledText textWidget = getTextWidget();
         textWidget.removePaintListener(this);
@@ -140,6 +145,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
 
     @Override
     public void dispose() {
+        clearHintVerticalIndent();
         StyledText textWidget = getTextWidget();
         textWidget.removePaintListener(this);
         textWidget.removeLineBackgroundListener(this);
@@ -200,8 +206,12 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         if (!hasContentToShow()) {
             return;
         }
-        insertTextAtCursor(activeHint.getContent());
-        removeHint();
+        String content = activeHint.content();
+        int position = activeHint.position();
+        clearHintVerticalIndent();
+        activeHint = HintContent.initialize(position, "");
+        getTextWidget().redraw();
+        insertTextAtCursor(content);
     }
 
     public boolean hasContentToShow() {
@@ -209,18 +219,18 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
     }
 
     public int getCurrentPosition() {
-        return activeHint != null ? activeHint.getPosition() : -1;
+        return activeHint != null ? activeHint.position() : -1;
     }
 
     private void drawHintContent(GC gc) {
         configureGraphicsContext(gc);
-        int position = activeHint.getPosition();
+        int position = activeHint.position();
         String[] textLines = activeHint.getTextLines();
         if (textLines.length > 0) {
             TextRenderingUtils.drawFirstLine(textLines[0], gc, getTextWidget(), position, this.suggestionBackground);
             configureGraphicsContext(gc);
             if (textLines.length > 1) {
-                TextRenderingUtils.drawNextLines(textLines[1], gc, getTextWidget(), position);
+                TextRenderingUtils.drawNextLines(activeHint.getContinuationText(), gc, getTextWidget(), position);
             }
         }
         resetState();
@@ -233,21 +243,25 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
             fragment = fragment.substring(wordPrefix.length());
         }
         activeHint = HintContent.initialize(cursorPosition, fragment);
+        updateHintVerticalIndent();
         getTextWidget().redraw();
     }
 
 
     private void executeRemove() {
-        activeHint = HintContent.initialize(activeHint.getPosition(), "");
+        clearHintVerticalIndent();
+        activeHint = HintContent.initialize(activeHint.position(), "");
         getTextWidget().redraw();
     }
 
     private void insertTextAtCursor(String text) {
         try {
             IDocument document = viewerComponent.getDocument();
-            int modelPosition = TextRenderingUtils.widgetOffset2ModelOffset(viewerComponent, activeHint.getPosition());
+            int modelPosition = TextRenderingUtils.widgetOffset2ModelOffset(viewerComponent, activeHint.position());
             document.replace(modelPosition, 0, text);
-            getTextWidget().setCaretOffset(activeHint.getPosition() + text.length());
+            int newModelPosition = modelPosition + text.length();
+            int newWidgetPosition = TextRenderingUtils.modelOffset2WidgetOffset(viewerComponent, newModelPosition);
+            getTextWidget().setCaretOffset(Math.max(0, newWidgetPosition));
         } catch (BadLocationException e) {
             log.debug("Exception trying to insert AI suggestion", e);
         }
@@ -291,33 +305,86 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         return viewerComponent.getTextWidget();
     }
 
-    private static class HintContent {
-        private final int position;
-        private final String content;
+    private void updateHintVerticalIndent() {
+        clearHintVerticalIndent();
+        if (activeHint == null || activeHint.getContinuationLineCount() == 0) {
+            return;
+        }
 
-        private HintContent(int position, String content) {
+        StyledText widget = getTextWidget();
+        if (widget == null || widget.isDisposed()) {
+            return;
+        }
+
+        int lineCount = widget.getLineCount();
+        if (lineCount <= 1) {
+            return;
+        }
+
+        int maxOffset = Math.max(0, widget.getCharCount() - 1);
+        int anchorOffset = Math.max(0, Math.min(activeHint.position(), maxOffset));
+        int anchorLine = widget.getLineAtOffset(anchorOffset);
+        int nextLine = anchorLine + 1;
+        if (nextLine >= lineCount) {
+            return;
+        }
+
+        int extraHeight = widget.getLineHeight() * activeHint.getContinuationLineCount();
+        if (extraHeight <= 0) {
+            return;
+        }
+
+        widget.setLineVerticalIndent(nextLine, extraHeight);
+        nextLineVerticalIndentLine = nextLine;
+    }
+
+    private void clearHintVerticalIndent() {
+        StyledText widget = getTextWidget();
+        if (widget == null || widget.isDisposed()) {
+            nextLineVerticalIndentLine = -1;
+            return;
+        }
+        if (nextLineVerticalIndentLine >= 0 && nextLineVerticalIndentLine < widget.getLineCount()) {
+            widget.setLineVerticalIndent(nextLineVerticalIndentLine, 0);
+        }
+        nextLineVerticalIndentLine = -1;
+    }
+
+    private record HintContent(int position, String content) {
+        private HintContent(int position, @Nullable String content) {
             this.position = position;
             this.content = content == null ? "" : content;
         }
 
-        static HintContent initialize(int position, String content) {
+        static HintContent initialize(int position, @Nullable String content) {
             return new HintContent(position, content);
-        }
-
-        int getPosition() {
-            return position;
-        }
-
-        String getContent() {
-            return content;
         }
 
         boolean isEmpty() {
             return content.isEmpty();
         }
 
+        @NotNull
         String[] getTextLines() {
-            return content.split("\\R", 2);
+            String[] lines = content.split("\\R", -1);
+            int size = lines.length;
+            while (size > 0 && lines[size - 1].isEmpty()) {
+                size--;
+            }
+            return size == lines.length ? lines : Arrays.copyOf(lines, size);
+        }
+
+        @NotNull
+        String getContinuationText() {
+            String[] lines = getTextLines();
+            if (lines.length <= 1) {
+                return "";
+            }
+            return String.join("\n", Arrays.copyOfRange(lines, 1, lines.length));
+        }
+
+        int getContinuationLineCount() {
+            return Math.max(0, getTextLines().length - 1);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
-import org.jkiss.utils.CommonUtils;
 
 public class TextRenderingUtils {
 
@@ -172,26 +171,19 @@ public class TextRenderingUtils {
             : widgetOffset;
     }
 
-    public static String removeOverlap(String originalText, String suggestion) {
-        if (CommonUtils.isEmpty(suggestion) || CommonUtils.isEmpty(originalText)) {
-            return suggestion;
-        }
-
-        String endOfOriginal = originalText.length() <= 20 ?
-            originalText : originalText.substring(originalText.length() - 20);
-
-        endOfOriginal = endOfOriginal.replaceAll("\\s+", " ").toLowerCase();
-        String cleanSuggestion = suggestion.replaceAll("\\s+", " ");
-
-        for (int length = Math.min(endOfOriginal.length(), cleanSuggestion.length()); length > 0; length--) {
-            if (endOfOriginal.length() >= length) {
-                String endSubstring = endOfOriginal.substring(endOfOriginal.length() - length);
-                if (cleanSuggestion.toLowerCase().startsWith(endSubstring)) {
-                    return cleanSuggestion.substring(length).trim();
-                }
-            }
-        }
-
-        return suggestion;
+    /**
+     * Converts a model offset to a corresponding widget offset in the text viewer.
+     *
+     * @param viewer      the text viewer from which the model offset is taken
+     * @param modelOffset the offset in the model
+     * @return the corresponding widget offset in the viewer
+     */
+    public static int modelOffset2WidgetOffset(
+        ITextViewer viewer,
+        int modelOffset
+    ) {
+        return viewer instanceof ITextViewerExtension5 ext5
+            ? ext5.modelOffset2WidgetOffset(modelOffset)
+            : modelOffset;
     }
 }
