@@ -358,7 +358,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
             if (
                 //TODO research why app bundles skipped
-                bundleFile.contains(".app")
+                bundleFile.contains(".app.")
                     && !bundleFile.contains(appBundleName)
                     && !bundleFile.contains("org.eclipse")
                     && forceDependencies.stream().noneMatch(bundleFile::contains)
@@ -429,7 +429,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                         testBundle = bundle;
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
-                        //log.error(e);
+                        log.error(e);
                     }
                     log.debug("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {
