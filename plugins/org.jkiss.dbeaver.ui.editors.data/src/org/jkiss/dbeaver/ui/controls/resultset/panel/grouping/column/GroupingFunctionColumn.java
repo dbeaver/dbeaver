@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
 import org.jkiss.code.NotNull;
 
+/**
+ * GroupingFunction column. Column represents some grouping action
+ */
 public interface GroupingFunctionColumn extends GroupingColumn {
 
     @NotNull

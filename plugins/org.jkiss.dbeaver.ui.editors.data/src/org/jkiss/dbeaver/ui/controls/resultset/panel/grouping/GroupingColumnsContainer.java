@@ -20,9 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.UniqueGroupingColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.SQLGroupingAttributeGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.TransformerGroupingFunctionColumn;
 
 import java.util.*;
 
@@ -45,12 +45,8 @@ public class GroupingColumnsContainer {
         }
     }
 
-    public boolean removeFunctionByName(@NotNull String name) {
-        int index = indexOfFunctionByName(name);
-        return index >= 0 && groupFunctions.remove(index).afterDeleteAction();
-    }
 
-    public int indexOfFunctionByName(@NotNull String name) {
+    private int indexOfFunctionByName(@NotNull String name) {
         for (int i = 0; i < groupFunctions.size(); i++) {
             if (groupFunctions.get(i) instanceof UniqueGroupingColumn uniqueGroupingColumn
                 && name.equals(uniqueGroupingColumn.getId())) {

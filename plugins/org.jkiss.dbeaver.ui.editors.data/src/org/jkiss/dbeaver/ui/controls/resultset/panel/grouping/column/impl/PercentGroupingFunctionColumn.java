@@ -27,61 +27,34 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.impl.data.transformers.PercentOfTotalGroupingAttributeTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
 
 import java.util.List;
 import java.util.Objects;
 
-public class PercentGroupingFunctionColumn extends BasicGroupingFunctionColumn implements TransformerGroupingFunctionColumn {
+public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionColumn {
 
-    public static final String PERCENT_FUNCTION_ID = "percent_func";
 
     private static final String FUNCTION_COUNT = "COUNT";
 
-
     public PercentGroupingFunctionColumn(
         @NotNull DBPDataSource dataSource,
-        @NotNull GroupingResultsContainer groupingResultsContainer
+        @NotNull GroupingResultsContainer groupingResultsContainer,
+        @NotNull String preferenceKey
     ) {
-        super(getCountFunction(dataSource), dataSource, groupingResultsContainer);
-    }
-
-
-    @Override
-    public boolean afterDeleteAction() {
-        GroupingDataContainer dataContainer = groupingResultsContainer.getDataContainer();
-        DBPDataSource dataSource = dataContainer.getDataSource();
-        if (dataSource != null) {
-            dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
-        }
-        return super.afterDeleteAction();
-    }
-
-    @Override
-    public boolean isShowToUser() {
-        return false;
-    }
-
-
-    @NotNull
-    @Override
-    public String getId() {
-        return PERCENT_FUNCTION_ID;
-    }
-
-    @Override
-    public boolean shouldAddToColumns() {
-        return dataSource.getContainer().getPreferenceStore()
-            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
+        super(dataSource, groupingResultsContainer, preferenceKey);
     }
 
     @NotNull
     @Override
     public DBDAttributeTransformer getTransformer() {
         return new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount);
+    }
+
+    @NotNull
+    @Override
+    public String getSql() {
+        return FUNCTION_COUNT + "(" + dataSource.getSQLDialect().getDefaultGroupAttribute() + ")";
     }
 
     private long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -110,9 +83,5 @@ public class PercentGroupingFunctionColumn extends BasicGroupingFunctionColumn i
         DBDDataFilter newFilter = new DBDDataFilter(attributeConstraints);
         newFilter.setWhere(dataFilter.getWhere());
         return newFilter;
-    }
-
-    private static String getCountFunction(@NotNull DBPDataSource dataSource) {
-        return FUNCTION_COUNT + "(" + dataSource.getSQLDialect().getDefaultGroupAttribute() + ")";
     }
 }

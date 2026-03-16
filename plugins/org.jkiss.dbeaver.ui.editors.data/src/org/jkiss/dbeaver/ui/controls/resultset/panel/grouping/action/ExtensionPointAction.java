@@ -23,25 +23,29 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 
-public class PercentFromTotalAction extends GroupingAction {
+public class ExtensionPointAction extends GroupingAction {
 
-    public PercentFromTotalAction(
+    @NotNull
+    private final String preferenceKey;
+
+    public ExtensionPointAction(
         @NotNull GroupingResultsContainer groupingResultsContainer,
+        @NotNull String preferenceKey,
         @Nullable String text,
         @NotNull ImageDescriptor image
     ) {
         super(groupingResultsContainer, text, image, IAction.AS_CHECK_BOX);
+        this.preferenceKey = preferenceKey;
     }
 
     @Override
     public boolean isChecked() {
         DBPDataSource dataSource = groupingResultsContainer.getDataContainer().getDataSource();
         return dataSource != null && dataSource.getContainer().getPreferenceStore()
-            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
+            .getBoolean(preferenceKey);
     }
 
     @Override
@@ -50,7 +54,7 @@ public class PercentFromTotalAction extends GroupingAction {
         if (dataSource == null) {
             return;
         }
-        dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, !isChecked());
+        dataSource.getContainer().getPreferenceStore().setValue(preferenceKey, !isChecked());
         try {
             groupingResultsContainer.rebuildGrouping();
         } catch (DBException e) {

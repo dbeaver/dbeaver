@@ -72,10 +72,10 @@ public class RegistryConstants {
     public static final String ATTR_PROVIDER = "provider"; //$NON-NLS-1$
     public static final String ATTR_COMMENT = "comment"; //$NON-NLS-1$
     public static final String ATTR_ORDER = "order"; //$NON-NLS-1$
-    public static final String ATTR_STYLE = "style";
     public static final String ATTR_ENABLED = "enabled"; //$NON-NLS-1$
     public static final String ATTR_DRIVER = "driver"; //$NON-NLS-1$
     public static final String ATTR_BUNDLE = "bundle"; //$NON-NLS-1$
+    public static final String ATTR_PREFERENCE_KEY = "preferenceKey"; //$NON-NLS-1$
 
     public static final String ATTR_CODE = "code"; //$NON-NLS-1$
     public static final String ATTR_LABEL = "label"; //$NON-NLS-1$

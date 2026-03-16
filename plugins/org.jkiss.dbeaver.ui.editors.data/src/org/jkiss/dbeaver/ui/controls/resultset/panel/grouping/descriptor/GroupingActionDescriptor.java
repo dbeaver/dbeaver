@@ -21,17 +21,23 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.ExtensionPointAction;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.GroupingAction;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.TransformerGroupingFunctionColumn;
 
 import java.util.Objects;
 
 public class GroupingActionDescriptor extends AbstractDescriptor {
 
     public static final String TAG_ACTION = "action"; //$NON-NLS-1$
+
+    @NotNull
+    private final String preferenceKey;
 
     @Nullable
     private final String label;
@@ -41,37 +47,36 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
 
     private final ImageDescriptor icon;
 
-    private final ObjectType action;
+    @NotNull
+    private final ObjectType column;
 
     public GroupingActionDescriptor(@NotNull IConfigurationElement config) {
         super(config);
+        this.column = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = DBeaverIcons.getImageDescriptor(Objects.requireNonNull(iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON))));
-        this.action = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-    }
-
-    @Nullable
-    public String getLabel() {
-        return label;
-    }
-
-    @Nullable
-    public String getDescription() {
-        return description;
+        this.preferenceKey = config.getAttribute(RegistryConstants.ATTR_PREFERENCE_KEY);
     }
 
     @NotNull
-    public ImageDescriptor getIcon() {
-        return icon;
+    public TransformerGroupingFunctionColumn createColumn(
+        @NotNull DBPDataSource dataSource,
+        @NotNull GroupingResultsContainer groupingResultsContainer
+    )
+    throws DBException {
+        return column.createInstance(TransformerGroupingFunctionColumn.class, dataSource, groupingResultsContainer);
     }
 
     @NotNull
-    public GroupingAction createAction(@NotNull GroupingResultsContainer groupingResultsContainer) throws DBException {
-        GroupingAction groupingAction = action.createInstance(GroupingAction.class, groupingResultsContainer, label, icon);
-
+    public GroupingAction createAction(@NotNull GroupingResultsContainer groupingResultsContainer) {
+        GroupingAction groupingAction = new ExtensionPointAction(groupingResultsContainer, preferenceKey, label, icon);
         groupingAction.setDescription(description);
         return groupingAction;
     }
 
+    @NotNull
+    public String getPreferenceKey() {
+        return preferenceKey;
+    }
 }

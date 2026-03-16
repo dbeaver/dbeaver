@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,11 +34,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.BasicGroupingFunctionColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.SQLGroupingAttributeGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.TransformerGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingRegistry;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.TransformerGroupingFunctionColumnDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
@@ -178,9 +179,20 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource != null) {
             functions
                 .stream()
-                .map(func -> new BasicGroupingFunctionColumn(func, dataSource, this))
+                .map(func -> createBasicColumn(dataSource, func))
                 .forEach(columnsContainer::addFunction);
         }
+    }
+
+    @NotNull
+    private BasicGroupingFunctionColumn createBasicColumn(@NotNull DBPDataSource dataSource, @NotNull String function) {
+        return new BasicGroupingFunctionColumn(dataSource, this) {
+            @NotNull
+            @Override
+            public String getSql() {
+                return DBUtils.getUnQuotedIdentifier(dataSource, function);
+            }
+        };
     }
 
     public void clearGrouping() {
@@ -279,26 +291,16 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     private void manageSpecialColumns(@NotNull DBPDataSource dataSource) {
-        GroupingRegistry.getInstance()
-            .getTransformedColumns()
-            .forEach(descriptor -> addSpecialColumn(descriptor, dataSource));
-
-        if (columnsContainer.getFunctionColumns().isEmpty()) {
-            addDefaultFunction();
-        }
-    }
-
-    private void addSpecialColumn(@NotNull TransformerGroupingFunctionColumnDescriptor descriptor, @NotNull DBPDataSource dataSource) {
-        try {
-            TransformerGroupingFunctionColumn column = descriptor.getColumn(dataSource, this);
-            boolean isPresent = columnsContainer.indexOfFunctionByName(column.getId()) >= 0;
-            if (column.shouldAddToColumns() && !isPresent) {
-                columnsContainer.addFunction(column);
-            } else if (!column.shouldAddToColumns() && isPresent) {
-                columnsContainer.removeFunctionByName(column.getId());
+        for (GroupingActionDescriptor groupingActionDescriptor : GroupingRegistry.getInstance().getGroupingDescriptors()) {
+            try {
+                TransformerGroupingFunctionColumn column = groupingActionDescriptor.createColumn(dataSource, this);
+                if (column.isAddToColumns()) {
+                    columnsContainer.addFunction(column);
+                }
+            } catch (DBException e) {
+                log.warn("Cant add column for action with preference key: " + groupingActionDescriptor.getPreferenceKey());
             }
-        } catch (DBException e) {
-            log.warn("Failed to create column of type: " + descriptor.getColumn(), e);
+
         }
     }
 

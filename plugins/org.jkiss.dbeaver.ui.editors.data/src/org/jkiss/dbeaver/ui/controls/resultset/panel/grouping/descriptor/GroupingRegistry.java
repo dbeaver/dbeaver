@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -34,21 +33,14 @@ public class GroupingRegistry {
 
     private static GroupingRegistry instance;
 
-    private final List<GroupingActionDescriptor> actions = new ArrayList<>();
+    private final List<GroupingActionDescriptor> groupingDescriptors;
 
-    private final List<TransformerGroupingFunctionColumnDescriptor> transformedColumns = new ArrayList<>();
 
     private GroupingRegistry(@NotNull IExtensionRegistry registry) {
-        Arrays.stream(registry.getConfigurationElementsFor(EXTENSION_ID)).forEach(this::processElement);
-    }
-
-    private void processElement(@NotNull IConfigurationElement element) {
-        switch (element.getName()) {
-            case GroupingActionDescriptor.TAG_ACTION -> actions.add(new GroupingActionDescriptor(element));
-            case TransformerGroupingFunctionColumnDescriptor.TAG_COLUMN ->
-                transformedColumns.add(new TransformerGroupingFunctionColumnDescriptor(element));
-            default -> log.debug("No corresponding descriptor found for element" + element.getName());
-        }
+        groupingDescriptors = Arrays.stream(registry.getConfigurationElementsFor(EXTENSION_ID))
+            .filter(element -> GroupingActionDescriptor.TAG_ACTION.equals(element.getName()))
+            .map(GroupingActionDescriptor::new)
+            .toList();
     }
 
     @NotNull
@@ -60,12 +52,7 @@ public class GroupingRegistry {
     }
 
     @NotNull
-    public List<GroupingActionDescriptor> getActions() {
-        return actions;
-    }
-
-    @NotNull
-    public List<TransformerGroupingFunctionColumnDescriptor> getTransformedColumns() {
-        return transformedColumns;
+    public List<GroupingActionDescriptor> getGroupingDescriptors() {
+        return new ArrayList<>(groupingDescriptors);
     }
 }

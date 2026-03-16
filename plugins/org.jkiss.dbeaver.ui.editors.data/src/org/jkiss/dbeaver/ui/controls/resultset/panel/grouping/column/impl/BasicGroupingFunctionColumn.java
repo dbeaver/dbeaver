@@ -18,33 +18,21 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
 
-public class BasicGroupingFunctionColumn implements GroupingFunctionColumn {
-
-
-    protected final String sql;
+public abstract class BasicGroupingFunctionColumn implements GroupingFunctionColumn {
 
     protected final GroupingResultsContainer groupingResultsContainer;
 
     protected final DBPDataSource dataSource;
 
     public BasicGroupingFunctionColumn(
-        @NotNull String stringFunction,
         @NotNull DBPDataSource dataSource,
         @NotNull GroupingResultsContainer groupingResultsContainer
     ) {
-        this.sql = DBUtils.getUnQuotedIdentifier(dataSource, stringFunction);
         this.dataSource = dataSource;
         this.groupingResultsContainer = groupingResultsContainer;
-    }
-
-    @NotNull
-    @Override
-    public String getSql() {
-        return sql;
     }
 
     @Override

@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.*;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionDescriptor;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingRegistry;
 
 /**
@@ -178,12 +177,10 @@ public class GroupingPanel extends ResultSetPanelBase {
     }
 
     private void addExtensionActions(@NotNull IContributionManager contributionManager) {
-        for (GroupingActionDescriptor actionDescriptor : GroupingRegistry.getInstance().getActions()) {
-            try {
-                contributionManager.add(actionDescriptor.createAction(getGroupingResultsContainer()));
-            } catch (DBException e) {
-                log.error("Can't create error action '" + actionDescriptor.getLabel() + "'", e);
-            }
-        }
+        GroupingRegistry.getInstance()
+            .getGroupingDescriptors()
+            .stream()
+            .map(d -> d.createAction(getGroupingResultsContainer()))
+            .forEach(contributionManager::add);
     }
 }
