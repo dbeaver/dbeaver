@@ -83,7 +83,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
         final char decimalSeparator = NumericFormatUtils.getDecimalSeparator(processorProperties);
-        final char groupingSeparator = NumericFormatUtils.getGroupingSeparator(processorProperties, decimalSeparator);
+        final Character groupingSeparator = NumericFormatUtils.getGroupingSeparator(processorProperties, decimalSeparator);
 
         try (Reader reader = openStreamReader(inputStream, processorProperties, true)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
@@ -222,7 +222,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         boolean trimWhitespaces = CommonUtils.getBoolean(properties.get(PROP_TRIM_WHITESPACES), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
         char decimalSeparator = NumericFormatUtils.getDecimalSeparator(properties);
-        char groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
+        Character groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
         List<StreamDataImporterColumnInfo> streamColumns = entityMapping.getStreamColumns();
 
         DBCExecutionContext context = streamDataSource.getDefaultInstance().getDefaultContext(monitor, false);

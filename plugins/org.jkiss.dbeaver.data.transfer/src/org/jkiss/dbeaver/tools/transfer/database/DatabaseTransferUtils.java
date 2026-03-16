@@ -592,20 +592,20 @@ public class DatabaseTransferUtils {
     /**
      * Kept for backward compatibility. Uses '.' as the default decimal separator.
      *
-     * @deprecated use {@link #getDataType(String, char, char)} to explicitly control decimal
+     * @deprecated use {@link #getDataType(String, char, Character)} to explicitly control decimal
      * and grouping separators.
      */
     @Deprecated
     @NotNull
     public static Pair<DBPDataKind, String> getDataType(@Nullable String value) {
-        return getDataType(value, '.', Character.MIN_VALUE);
+        return getDataType(value, '.', null);
     }
 
     @NotNull
     public static Pair<DBPDataKind, String> getDataType(
         @Nullable String value,
         char decimalSeparator,
-        char groupingSeparator
+        @Nullable Character groupingSeparator
     ) {
         String trimmedValue = value == null ? null : value.trim();
         if (CommonUtils.isEmpty(trimmedValue)) {
@@ -637,7 +637,7 @@ public class DatabaseTransferUtils {
     private static Pair<DBPDataKind, String> tryClassifyNumber(
         @NotNull String value,
         char decimalSeparator,
-        char groupingSeparator
+        @Nullable Character groupingSeparator
     ) {
         Pair<DBPDataKind, String> wholeNumberType = tryClassifyWholeNumber(value);
         if (wholeNumberType != null) {

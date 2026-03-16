@@ -34,25 +34,25 @@ public class NumericFormatUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void normalizeNumberValueSupportsScientificNotation() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1,25e+3", ',', Character.MIN_VALUE);
+        String normalized = NumericFormatUtils.normalizeNumberValue("1,25e+3", ',', null);
         Assert.assertEquals("1.25E+3", normalized);
     }
 
     @Test
     public void normalizeNumberValueRejectsInvalidFraction() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1,2a", ',', Character.MIN_VALUE);
+        String normalized = NumericFormatUtils.normalizeNumberValue("1,2a", ',', null);
         Assert.assertNull(normalized);
     }
 
     @Test
     public void normalizeNumberValueRejectsInvalidSuffix() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1,2E3foo", ',', Character.MIN_VALUE);
+        String normalized = NumericFormatUtils.normalizeNumberValue("1,2E3foo", ',', null);
         Assert.assertNull(normalized);
     }
 
     @Test
     public void normalizeNumberValuePreservesPlainInteger() {
-        String normalized = NumericFormatUtils.normalizeNumberValue("1234", '.', Character.MIN_VALUE);
+        String normalized = NumericFormatUtils.normalizeNumberValue("1234", '.', null);
         Assert.assertEquals("1234", normalized);
     }
 
@@ -70,10 +70,10 @@ public class NumericFormatUtilsTest extends DBeaverUnitTest {
 
             Map<String, Object> properties = new HashMap<>();
             char decimalSeparator = NumericFormatUtils.getDecimalSeparator(properties);
-            char groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
+            Character groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
 
             Assert.assertEquals(',', decimalSeparator);
-            Assert.assertEquals('.', groupingSeparator);
+            Assert.assertEquals(Character.valueOf('.'), groupingSeparator);
         } finally {
             Locale.setDefault(previousLocale);
         }
@@ -87,10 +87,10 @@ public class NumericFormatUtilsTest extends DBeaverUnitTest {
 
             Map<String, Object> properties = new HashMap<>();
             char decimalSeparator = NumericFormatUtils.getDecimalSeparator(properties);
-            char groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
+            Character groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
 
             Assert.assertEquals('.', decimalSeparator);
-            Assert.assertEquals(',', groupingSeparator);
+            Assert.assertEquals(Character.valueOf(','), groupingSeparator);
         } finally {
             Locale.setDefault(previousLocale);
         }
@@ -99,16 +99,16 @@ public class NumericFormatUtilsTest extends DBeaverUnitTest {
     @Test
     public void groupingSeparatorDisabledWhenEqualToDecimalSeparator() {
         char decimalSeparator = ',';
-        char groupingSeparator = NumericFormatUtils.getGroupingSeparator(
+        Character groupingSeparator = NumericFormatUtils.getGroupingSeparator(
             Map.of(NumericFormatUtils.PROP_GROUPING_SEPARATOR, ","),
             decimalSeparator
         );
-        Assert.assertEquals(Character.MIN_VALUE, groupingSeparator);
+        Assert.assertNull(groupingSeparator);
     }
 
     @Test
-    public void toPropertyValueReturnsEmptyStringForMinValue() {
-        Assert.assertEquals("", NumericFormatUtils.toPropertyValue(Character.MIN_VALUE));
+    public void toPropertyValueReturnsEmptyStringForNull() {
+        Assert.assertEquals("", NumericFormatUtils.toPropertyValue(null));
         Assert.assertEquals(",", NumericFormatUtils.toPropertyValue(','));
     }
 }

@@ -315,8 +315,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         return false;
     }
 
-    private boolean hasStoredPropertyValue(Map<String, Object> processorProperties, String propertyId) {
-        return processorProperties != null && processorProperties.containsKey(propertyId);
+    private boolean hasStoredPropertyValue(@NotNull Map<String, Object> processorProperties, @NotNull String propertyId) {
+        return processorProperties.containsKey(propertyId);
     }
 
     @NotNull

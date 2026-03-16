@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.utils.CommonUtils;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.List;
 import java.util.Locale;
@@ -34,137 +34,150 @@ public final class NumericFormatUtils {
     public static final String PROP_DECIMAL_SEPARATOR = "decimalSeparator";
     public static final String PROP_GROUPING_SEPARATOR = "groupingSeparator";
 
-    // DecimalFormat patterns require an explicit upper bound for optional fraction digits.
-    private static final int MAX_FRACTION_DIGITS = 31;
-    private static final String OPTIONAL_FRACTION = "#".repeat(MAX_FRACTION_DIGITS);
-    private static final String DECIMAL_PATTERN_NO_GROUPING = "0." + OPTIONAL_FRACTION;
-    private static final String DECIMAL_PATTERN_GROUPING = "#,##0." + OPTIONAL_FRACTION;
-    private static final String SCIENTIFIC_PATTERN_NO_GROUPING = "0." + OPTIONAL_FRACTION + "E0";
-    private static final String SCIENTIFIC_PATTERN_GROUPING = "#,##0." + OPTIONAL_FRACTION + "E0";
-
     private NumericFormatUtils() {
     }
 
-    public static char getDecimalSeparator(Map<String, Object> processorProperties) {
+    public static char getDecimalSeparator(@NotNull Map<String, Object> processorProperties) {
         if (processorProperties.containsKey(PROP_DECIMAL_SEPARATOR)) {
             String decimalSeparator = CommonUtils.toString(processorProperties.get(PROP_DECIMAL_SEPARATOR)).trim();
-            return CommonUtils.isEmpty(decimalSeparator) ? Character.MIN_VALUE : decimalSeparator.charAt(0);
+            if (!CommonUtils.isEmpty(decimalSeparator)) {
+                return decimalSeparator.charAt(0);
+            }
         }
         return getLocaleDecimalSeparator();
     }
 
-    public static char getGroupingSeparator(Map<String, Object> processorProperties, char decimalSeparator) {
-        if (processorProperties.containsKey(PROP_GROUPING_SEPARATOR)) {
-            String groupingSeparator = CommonUtils.toString(processorProperties.get(PROP_GROUPING_SEPARATOR)).trim();
-            if (CommonUtils.isEmpty(groupingSeparator)) {
-                return Character.MIN_VALUE;
-            }
-            char grouping = groupingSeparator.charAt(0);
-            return grouping == decimalSeparator ? Character.MIN_VALUE : grouping;
+    /**
+     * Resolves the grouping separator from processor settings.
+     * Returns the configured separator, falls back to the locale default when the setting is absent,
+     * or {@code null} when the setting is blank or matches the decimal separator.
+     */
+    @Nullable
+    public static Character getGroupingSeparator(@NotNull Map<String, Object> processorProperties, char decimalSeparator) {
+        if (!processorProperties.containsKey(PROP_GROUPING_SEPARATOR)) {
+            return getLocaleGroupingSeparator(decimalSeparator);
         }
-        return getLocaleGroupingSeparator(decimalSeparator);
+        String groupingSeparator = CommonUtils.toString(processorProperties.get(PROP_GROUPING_SEPARATOR)).trim();
+        if (CommonUtils.isEmpty(groupingSeparator)) {
+            return null;
+        }
+        char grouping = groupingSeparator.charAt(0);
+        return grouping == decimalSeparator ? null : grouping;
     }
 
     public static char getLocaleDecimalSeparator() {
-        try {
-            return DecimalFormatSymbols.getInstance(Locale.getDefault()).getDecimalSeparator();
-        } catch (Exception ignored) {
-            return '.';
-        }
+        return DecimalFormatSymbols.getInstance(Locale.getDefault()).getDecimalSeparator();
     }
 
-    public static char getLocaleGroupingSeparator(char decimalSeparator) {
-        final char groupingSeparator;
-        try {
-            groupingSeparator = DecimalFormatSymbols.getInstance(Locale.getDefault()).getGroupingSeparator();
-        } catch (Exception ignored) {
-            return Character.MIN_VALUE;
-        }
-        return groupingSeparator == decimalSeparator ? Character.MIN_VALUE : groupingSeparator;
+    @Nullable
+    public static Character getLocaleGroupingSeparator(char decimalSeparator) {
+        char groupingSeparator = DecimalFormatSymbols.getInstance(Locale.getDefault()).getGroupingSeparator();
+        return groupingSeparator == decimalSeparator ? null : groupingSeparator;
     }
 
-    public static String toPropertyValue(char separator) {
-        return separator == Character.MIN_VALUE ? "" : String.valueOf(separator);
+    public static String toPropertyValue(@Nullable Character separator) {
+        return separator == null ? "" : String.valueOf(separator);
     }
 
     public static void normalizeNumericValues(
-        String[] line,
-        List<StreamDataImporterColumnInfo> streamColumns,
+        @NotNull String[] line,
+        @NotNull List<StreamDataImporterColumnInfo> streamColumns,
         char decimalSeparator,
-        char groupingSeparator
+        @Nullable Character groupingSeparator
     ) {
+        DecimalFormat format = createFormat(decimalSeparator, groupingSeparator);
+        ParsePosition position = new ParsePosition(0);
         for (int i = 0; i < Math.min(line.length, streamColumns.size()); i++) {
             if (streamColumns.get(i).getDataKind() == DBPDataKind.NUMERIC && line[i] != null) {
-                String normalizedValue = normalizeNumberValue(line[i], decimalSeparator, groupingSeparator);
+                String normalizedValue = normalizeNumberValue(
+                    line[i],
+                    decimalSeparator,
+                    groupingSeparator,
+                    format,
+                    position
+                );
                 line[i] = normalizedValue == null ? line[i] : normalizedValue;
             }
         }
     }
 
+    /**
+     * Validates and normalizes a localized numeric string.
+     * Trims surrounding whitespace, parses the value using the provided decimal
+     * and grouping separators, and returns a normalized representation that uses
+     * Java numeric syntax.
+     *
+     * @param value input string expected to represent a number
+     * @param decimalSeparator decimal separator accepted in the input
+     * @param groupingSeparator grouping separator accepted in the input, or {@code null} if grouping is disabled
+     * @return normalized numeric string, or {@code null} if the input is blank or cannot be parsed fully
+     */
     @Nullable
-    public static String normalizeNumberValue(@NotNull String value, char decimalSeparator, char groupingSeparator) {
+    public static String normalizeNumberValue(@NotNull String value, char decimalSeparator, @Nullable Character groupingSeparator) {
+        DecimalFormat format = createFormat(decimalSeparator, groupingSeparator);
+        ParsePosition position = new ParsePosition(0);
+        return normalizeNumberValue(value, decimalSeparator, groupingSeparator, format, position);
+    }
+
+    @Nullable
+    private static String normalizeNumberValue(
+        @NotNull String value,
+        char decimalSeparator,
+        @Nullable Character groupingSeparator,
+        @NotNull DecimalFormat format,
+        @NotNull ParsePosition position
+    ) {
         String trimmedValue = value.trim();
         if (trimmedValue.isEmpty()) {
             return null;
         }
 
         boolean scientific = containsExponent(trimmedValue, decimalSeparator, groupingSeparator);
-        BigDecimal parsedValue = parseBigDecimal(trimmedValue, decimalSeparator, groupingSeparator, scientific);
-        if (parsedValue == null) {
+        String normalizedValue = scientific ? trimmedValue.replace('e', 'E') : trimmedValue;
+        position.setIndex(0);
+        position.setErrorIndex(-1);
+        Number parsedNumber = format.parse(normalizedValue, position);
+        if (parsedNumber == null || position.getIndex() != normalizedValue.length()) {
             return null;
         }
 
-        return scientific ? parsedValue.toString() : parsedValue.toPlainString();
+        int exponentIndex = scientific ? normalizedValue.indexOf('E') : -1;
+        String numberPart = exponentIndex >= 0 ? normalizedValue.substring(0, exponentIndex) : normalizedValue;
+        String exponentPart = exponentIndex >= 0 ? normalizedValue.substring(exponentIndex) : "";
+
+        if (groupingSeparator != null) {
+            numberPart = numberPart.replace(String.valueOf(groupingSeparator), "");
+        }
+        if (decimalSeparator != '.') {
+            numberPart = numberPart.replace(decimalSeparator, '.');
+        }
+        return numberPart + exponentPart;
     }
 
-    private static boolean containsExponent(String value, char decimalSeparator, char groupingSeparator) {
-        if (decimalSeparator == 'e' || decimalSeparator == 'E' || groupingSeparator == 'e' || groupingSeparator == 'E') {
+    private static boolean containsExponent(@NotNull String value, char decimalSeparator, @Nullable Character groupingSeparator) {
+        if (decimalSeparator == 'e' || decimalSeparator == 'E') {
+            return false;
+        }
+        if (groupingSeparator != null && (groupingSeparator == 'e' || groupingSeparator == 'E')) {
             return false;
         }
         return value.indexOf('e') >= 0 || value.indexOf('E') >= 0;
     }
 
-    @Nullable
-    private static BigDecimal parseBigDecimal(
-        @NotNull String value,
-        char decimalSeparator,
-        char groupingSeparator,
-        boolean scientific
-    ) {
-        String normalizedValue = scientific ? value.replace('e', 'E') : value;
-        DecimalFormat format = createFormat(scientific, decimalSeparator, groupingSeparator);
-        ParsePosition position = new ParsePosition(0);
-        Number parsedNumber = format.parse(normalizedValue, position);
-
-        if (position.getIndex() != normalizedValue.length() || !(parsedNumber instanceof BigDecimal bigDecimal)) {
-            return null;
-        }
-
-        return bigDecimal;
-    }
-
     @NotNull
-    private static DecimalFormat createFormat(boolean scientific, char decimalSeparator, char groupingSeparator) {
-        boolean groupingEnabled = groupingSeparator != Character.MIN_VALUE;
-        String pattern = scientific
-            ? (groupingEnabled ? SCIENTIFIC_PATTERN_GROUPING : SCIENTIFIC_PATTERN_NO_GROUPING)
-            : (groupingEnabled ? DECIMAL_PATTERN_GROUPING : DECIMAL_PATTERN_NO_GROUPING);
-
-        DecimalFormat format = new DecimalFormat(pattern, createSymbols(decimalSeparator, groupingSeparator));
-        format.setParseBigDecimal(true);
+    private static DecimalFormat createFormat(char decimalSeparator, @Nullable Character groupingSeparator) {
+        boolean groupingEnabled = groupingSeparator != null;
+        DecimalFormat format = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ROOT);
+        format.setDecimalFormatSymbols(createSymbols(decimalSeparator, groupingSeparator));
         format.setGroupingUsed(groupingEnabled);
         return format;
     }
 
     @NotNull
-    private static DecimalFormatSymbols createSymbols(char decimalSeparator, char groupingSeparator) {
+    private static DecimalFormatSymbols createSymbols(char decimalSeparator, @Nullable Character groupingSeparator) {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.ROOT);
-
-        if (decimalSeparator != Character.MIN_VALUE) {
-            symbols.setDecimalSeparator(decimalSeparator);
-        }
-
-        if (groupingSeparator != Character.MIN_VALUE) {
+        symbols.setDecimalSeparator(decimalSeparator);
+        if (groupingSeparator != null) {
             symbols.setGroupingSeparator(groupingSeparator);
         }
 
