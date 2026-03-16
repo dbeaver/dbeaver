@@ -165,7 +165,8 @@ public class EditorUtils {
         return null;
     }
 
-    public static IStorage getStorageFromInput(Object element) {
+    @Nullable
+    public static IStorage getStorageFromInput(@Nullable Object element) {
         if (element instanceof IStorageEditorInput sei) {
             try {
                 return sei.getStorage();
@@ -195,7 +196,8 @@ public class EditorUtils {
         return null;
     }
 
-    public static File getLocalFileFromInput(Object element) {
+    @Nullable
+    public static File getLocalFileFromInput(@Nullable Object element) {
         if (element instanceof IEditorInput ei) {
             IFile file = getFileFromInput(ei);
             if (file != null) {

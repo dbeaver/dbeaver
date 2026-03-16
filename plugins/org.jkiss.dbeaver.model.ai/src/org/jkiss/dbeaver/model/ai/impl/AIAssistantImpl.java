@@ -215,7 +215,7 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = getToolboxManager().getFunctionById(functionName);
+        AIFunctionDescriptor function = getToolboxManager().getFunctionByFullId(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
