@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.IOException;
@@ -69,7 +70,7 @@ public class CompareReportRenderer {
         xml.startElement("html");
         xml.startElement("head");
         xml.startElement("meta");
-        xml.addAttribute("http-equiv", "Content-type");
+        xml.addAttribute("http-equiv", HttpConstants.HEADER_CONTENT_TYPE);
         xml.addAttribute("content", "text/html; charset=utf-8");
         xml.endElement();
         xml.startElement("title");

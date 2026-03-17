@@ -16,10 +16,17 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.cli.CLIException;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
+import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
-public class DataSourceOptions {
+public class DataSourceOptions implements DataSourceUpdater {
     @Nullable
     @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
     private String host;
@@ -32,7 +39,7 @@ public class DataSourceOptions {
     private String server;
 
     @Nullable
-    @CommandLine.Option(names = {"--jdbc-url"}, arity = "1", description = "Database jdbc url")
+    @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
     private String url;
 
     @Nullable
@@ -102,4 +109,29 @@ public class DataSourceOptions {
     public boolean isSavePassword() {
         return savePassword;
     }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+        String dsName = getDatasourceName();
+        var registry = dataSource.getRegistry();
+        if (CommonUtils.isNotEmpty(dsName)) {
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        } else if (CommonUtils.isEmpty(dataSource.getName()) || dataSource.getName().equals("?")) {
+            dsName = dataSource.getDriver().getName();
+            if (CommonUtils.isNotEmpty(getDbName())) {
+                dsName += " - " + getDbName();
+            } else if (CommonUtils.isNotEmpty(getHost())) {
+                dsName += " - " + getHost();
+            } else if (CommonUtils.isNotEmpty(getServer())) {
+                dsName += " - " + getServer();
+            }
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        }
+        if (CommonUtils.isNotEmpty(getFolder())) {
+            DBPDataSourceFolder registryFolder = registry.getFolder(getFolder());
+            dataSource.setFolder(registryFolder);
+        }
+        dataSource.setSavePassword(isSavePassword());
+    }
+
 }

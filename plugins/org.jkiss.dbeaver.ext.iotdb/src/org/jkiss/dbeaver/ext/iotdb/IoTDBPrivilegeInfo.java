@@ -40,7 +40,7 @@ public class IoTDBPrivilegeInfo {
 
     public static String[] treeSeriesPrivileges = {"READ_DATA", "WRITE_DATA", "READ_SCHEMA", "WRITE_SCHEMA"};
 
-    public static String[] tableGlobalPrivileges = {"MAINTAIN", "MANAGE_ROLE", "MANAGE_USER"};
+    public static String[] tableGlobalPrivileges = {"MANAGE_ROLE", "MANAGE_USER"};
 
     public static String[] tableDatabasePrivileges = {"ALTER", "CREATE", "DELETE", "DROP", "INSERT", "SELECT"};
 }

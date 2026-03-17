@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
@@ -56,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
@@ -64,6 +66,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 
 /**
@@ -161,6 +164,24 @@ public class DBExecUtils {
         }
 
         return DBPErrorAssistant.ErrorType.NORMAL;
+    }
+
+    public static boolean isExecutionCanceled(@Nullable DBPDataSource dataSource, @NotNull Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof InterruptedException ||
+                t instanceof DBInterruptedException ||
+                t instanceof ClosedByInterruptException) {
+                return true;
+            }
+            if (dataSource != null &&
+                discoverErrorType(dataSource, t) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     /**
@@ -993,7 +1014,7 @@ public class DBExecUtils {
         }
         if (checkValidKey) {
             if (rowIdentifier.isIncomplete()) {
-                return "No valid row identifier found";
+                return "No unique key. Row modification is not available.";
             }
         }
         DBSEntity dataContainer = rowIdentifier.getEntity();
@@ -1088,4 +1109,22 @@ public class DBExecUtils {
         }
         return false;
     }
+
+    public static <CONTEXT extends AbstractExecutionContext<?,?>> CONTEXT tryOpenContext(
+        @NotNull CONTEXT executionContext,
+        @NotNull DBRRunnableWithParam<CONTEXT> runnable
+    ) throws DBException {
+        try {
+            runnable.run(executionContext);
+        } catch (Exception e) {
+            try {
+                executionContext.close();
+            } catch (Exception ex) {
+                log.debug("Error while closing just opened context");
+            }
+            throw e;
+        }
+        return executionContext;
+    }
+
 }

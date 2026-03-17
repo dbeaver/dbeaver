@@ -22,8 +22,9 @@ import org.jkiss.code.Nullable;
 import java.time.Duration;
 
 public record AIMessageMeta(
+    @NotNull String type,
     @NotNull String engineId,
-    @NotNull String modelId,
+    @Nullable String modelId,
     @Nullable AIUsage usage,
     @NotNull Duration timeSpent,
     int systemPromptLength

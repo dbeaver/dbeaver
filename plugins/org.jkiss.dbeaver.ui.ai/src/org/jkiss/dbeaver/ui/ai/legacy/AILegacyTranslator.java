@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
-import org.jkiss.dbeaver.ui.ai.internal.AIFeatures;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +57,7 @@ public class AILegacyTranslator {
 
     public void performAiTranslation(ExecutionEvent event) {
         // CE legacy popup
-        AIFeatures.SQL_AI_POPUP.use();
+        AIUIFeatures.SQL_AI_POPUP.use();
 
         if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             return;
@@ -78,7 +78,7 @@ public class AILegacyTranslator {
 
         try {
             if (!AIUtils.hasValidConfiguration()) {
-                AIUIUtils.showPreferences(editor.getSite().getShell());
+                AIUIUtils.showPreferences(editor.getSite().getShell(), true);
                 return;
             }
 
@@ -135,7 +135,7 @@ public class AILegacyTranslator {
             return;
         }
 
-        AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
+        AIUIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", dataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "scope", popup.getScope().name()
         ));
@@ -159,17 +159,20 @@ public class AILegacyTranslator {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                AIDatabaseContext dbContext = new AIDatabaseContext.Builder(dataSource)
+                AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(dataSource)
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
-                    .setExecutionContext(executionContext)
-                    .build();
+                    .setExecutionContext(executionContext);
 
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
                 AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
 
-                AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
+                AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
+                contextBuilder = sysPromptBuilder.configureDatabaseContext(contextBuilder);
+
                 AIMessage userMessage = AIMessage.userMessage(userInput);
+
+                AIDatabaseContext dbContext = contextBuilder.build();
                 AIAssistantResponse result = aiAssistant.generateText(
                     monitor,
                     dbContext,

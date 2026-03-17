@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.dialogs.*;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.preference.IPreferencePageContainer;
@@ -129,6 +130,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return EnumSet.of(PageCompletionMark.ERROR);
     }
 
+    @Nullable
     protected Tree getPagesTree() {
         return pagesTree;
     }
@@ -387,6 +389,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
+    @Nullable
     public IWizardPage getCurrentPage() {
         TreeItem[] selection = pagesTree.getSelection();
         if (ArrayUtils.isEmpty(selection)) {
@@ -518,18 +521,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         @NotNull IWizardPage currentPage,
         @NotNull Predicate<PageCompletionMark> canShowMark
     ) {
-        DBPImage itemImage;
         if (page == currentPage) {
-            itemImage = canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.RS_FORWARD : null;
-        } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
-            itemImage = canShowMark.test(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
+            return canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.RS_FORWARD : null;
+        } else if (page.getControl() == null) {
+            return canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.DOTS_BUTTON : null;
+        } else if (page instanceof IWizardPage wizardPage) {
+            if (wizardPage.isPageComplete()) {
+                return canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
+            } else {
+                return canShowMark.test(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
+            }
         } else {
-            itemImage = canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
+            return null;
         }
-        if (itemImage == null && canShowMark.test(PageCompletionMark.COMPLETE)) {
-            itemImage = UIIcon.DOTS_BUTTON;
-        }
-        return itemImage;
     }
 
     @Nullable
@@ -552,14 +556,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     public void updateButtons() {
         Button finishButton = getButton(IDialogConstants.OK_ID);
         if (finishButton != null && !finishButton.isDisposed()) {
-            finishButton.setEnabled(wizard.canFinish());
+            finishButton.setEnabled(shouldFinishButtonBeEnabled());
         }
 
         IWizardPage currentPage = getCurrentPage();
         if (currentPage != null) {
             Button nextButton = getButton(IDialogConstants.NEXT_ID);
             if (nextButton != null) {
-                nextButton.setEnabled(getCurrentPage().isPageComplete() && wizard.getNextPage(currentPage) != null);
+                nextButton.setEnabled(canShowNext(currentPage));
             }
             Button prevButton = getButton(IDialogConstants.BACK_ID);
             if (prevButton != null) {
@@ -567,6 +571,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             }
         }
         updatePageCompleteMark(null);
+    }
+
+    protected boolean shouldFinishButtonBeEnabled() {
+        return wizard.canFinish();
+    }
+
+    protected boolean canShowNext(@NotNull IWizardPage currentPage) {
+        return currentPage.isPageComplete() && wizard.getNextPage(currentPage) != null;
     }
 
     @Override
@@ -660,10 +672,58 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
+    @NotNull
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
-            getShell().getDefaultButton() == null);
+    protected Control createButtonBar(@NotNull Composite parent) {
+        var composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+        composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        composite.setFont(parent.getFont());
+
+        var leftButtonsComposite = createButtonBarComposite(composite, SWT.LEAD);
+        var rightButtonsComposite = createButtonBarComposite(composite, SWT.TRAIL);
+
+        createButtonsForLeftButtonBar(leftButtonsComposite);
+        createButtonsForButtonBar(rightButtonsComposite);
+
+        if (leftButtonsComposite.getChildren().length == 0) {
+            ((GridLayout) composite.getLayout()).numColumns -= 1;
+            leftButtonsComposite.dispose();
+        }
+
+        if (rightButtonsComposite.getChildren().length == 0) {
+            ((GridLayout) composite.getLayout()).numColumns -= 1;
+            rightButtonsComposite.dispose();
+        }
+
+        return composite;
+    }
+
+    @NotNull
+    protected Composite createButtonBarComposite(@NotNull Composite parent, int alignment) {
+        GridLayout layout = new GridLayout(0, true);
+        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
+        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
+        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
+
+        GridData data = new GridData(alignment, SWT.CENTER, true, false);
+
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(layout);
+        composite.setLayoutData(data);
+        composite.setFont(parent.getFont());
+
+        return composite;
+    }
+
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        // do nothing by default
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, finishButtonLabel, getShell().getDefaultButton() == null);
         createButton(parent, IDialogConstants.CANCEL_ID, closeButtonLabel, false);
     }
 
@@ -748,7 +808,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private void updateSizeForPage(IWizardPage page) {
         if (isAutoLayoutAvailable() &&
             (!(page instanceof  ActiveWizardPage<?> awp) || awp.isAutoResizeEnabled())) {
-            UIUtils.asyncExec(() -> {
+            UIUtils.syncExec(() -> {
                 Point pageCompSize = page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 for (Control parent = page.getControl().getParent(); parent != null; parent = parent.getParent()) {
                     if (parent instanceof SashForm) {

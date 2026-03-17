@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_checkbox_split_files_tip;
     public static String data_transfer_wizard_output_checkbox_new_connection;
     public static String data_transfer_wizard_output_checkbox_select_row_count;
+    public static String data_transfer_wizard_output_checkbox_fetched_rows_only;
     public static String data_transfer_wizard_output_checkbox_selected_columns_only;
     public static String data_transfer_wizard_output_checkbox_selected_rows_only;
     public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
@@ -130,6 +131,7 @@ public class DTMessages extends NLS {
     public static String sql_script_task_page_settings_option_ignore_errors;
     public static String sql_script_task_page_settings_option_dump_results;
     public static String sql_script_task_page_settings_option_auto_commit;
+    public static String sql_script_task_page_settings_option_auto_commit_tip;
     public static String database_consumer_settings_option_use_transactions;
     public static String database_consumer_settings_option_commit_after;
     public static String database_consumer_settings_option_use_multi_insert;

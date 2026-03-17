@@ -22,7 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
@@ -81,7 +80,9 @@ public class OpenAIClient extends AbstractHttpAIClient {
         } catch (JsonSyntaxException e) {
             throw new DBException("Error parsing function call arguments", e);
         }
-        return new AIFunctionCall(message.name, arguments);
+        Map<String, String> metadata = CommonUtils.isEmpty(message.callId) ? null :
+            Map.of(OpenAIConstants.TOOL_RESULT_CALL_ID, message.callId);
+        return new AIFunctionCall(message.name, arguments, metadata);
     }
 
     @NotNull
@@ -198,14 +199,7 @@ public class OpenAIClient extends AbstractHttpAIClient {
                 try {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                        listener.usage(
-                            new AIUsage(
-                                chunk.response.usage.inputTokens(),
-                                chunk.response.usage.inputTokensDetails().cachedTokens(),
-                                chunk.response.usage.outputTokens(),
-                                chunk.response.usage.outputTokensDetails().reasoningTokens()
-                            )
-                        );
+                        listener.usage(chunk.response.getAIUsage());
                     } else {
 
                         if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
