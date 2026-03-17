@@ -39,6 +39,7 @@ public class ExtensionPointAction extends GroupingAction {
         if (groupingDescriptor.getIcon() != null) {
             setImageDescriptor(DBeaverIcons.getImageDescriptor(groupingDescriptor.getIcon()));
         }
+        setToolTipText(groupingDescriptor.getDescription());
         this.preferenceKey = groupingDescriptor.getPreferenceKey();
     }
 
@@ -61,7 +62,7 @@ public class ExtensionPointAction extends GroupingAction {
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 ResultSetMessages.grouping_panel_error_title,
-                ResultSetMessages.grouping_panel_error_show_percent_of_total_message,
+                ResultSetMessages.grouping_panel_error_extension_point_action_message,
                 e
             );
         }
