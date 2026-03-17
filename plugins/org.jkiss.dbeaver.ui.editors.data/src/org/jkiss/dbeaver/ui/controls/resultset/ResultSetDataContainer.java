@@ -48,10 +48,10 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     private final IResultSetController controller;
     private final DBSDataContainer dataContainer;
     private final ResultSetModel model;
-    private ResultSetDataContainerOptions options;
+    private final ResultSetDataContainerOptions options;
     private boolean filterAttributes;
 
-    public ResultSetDataContainer(IResultSetController controller, ResultSetDataContainerOptions options) {
+    public ResultSetDataContainer(@NotNull IResultSetController controller, @NotNull ResultSetDataContainerOptions options) {
         this.controller = controller;
         this.dataContainer = controller.getDataContainer();
         this.model = controller.getModel();
@@ -80,10 +80,6 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT, FEATURE_DATA_READ_FETCHED};
     }
 
-    public ResultSetDataContainerOptions getOptions() {
-        return options;
-    }
-
     @NotNull
     @Override
     public DBCStatistics readData(
@@ -102,7 +98,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
         filterAttributes = selectedColumnsOnly;
 
-        if (fetchedRowsOnly || selectedRowsOnly || selectedColumnsOnly) {
+        if ((fetchedRowsOnly || selectedRowsOnly || selectedColumnsOnly) && (dataFilter == null || !dataFilter.hasConditions())) {
             long startTime = System.currentTimeMillis();
             DBCStatistics statistics = new DBCStatistics();
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
@@ -128,7 +124,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     }
 
     private boolean proceedFetchedRowsOnly(long flags) {
-        return (flags & DBSDataContainer.FLAG_USE_FETCHED_ROWS) != 0;
+        return (flags & DBSDataContainer.FLAG_USE_FETCHED_ROWS) != 0 || options.isForceFetchedRowsOnly();
     }
 
     private boolean proceedSelectedColumnsOnly(long flags) {
