@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.internal.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -65,13 +66,14 @@ public class NavigatorExtensionsRegistry {
         nodeActions.clear();
     }
 
-    public List<INavigatorNodeActionHandler> getNodeActions(INavigatorModelView view, DBNNode node) {
+    @NotNull
+    public List<INavigatorNodeActionHandler> getNodeActions(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         return nodeActions.stream()
             .filter(nad -> (
                 nad.appliesTo(node) ||
                     (node instanceof DBNDatabaseNode dbNode
                         && nad.appliesTo(dbNode.getObject())))
-                        && nad.getHandler().isEnabledFor(view, node))
+                        && (nad.isAlwaysEnabled() || nad.getHandler().isEnabledFor(view, node)))
             .map(NavigatorNodeActionDescriptor::getHandler)
             .collect(Collectors.toList());
     }

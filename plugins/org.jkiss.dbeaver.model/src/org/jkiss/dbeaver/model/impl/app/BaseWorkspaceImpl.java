@@ -62,6 +62,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
 
     private static final String WORKSPACE_ID = "workspace-id";
 
+    private static String globalWorkspaceId;
+
     protected final DBPPlatform platform;
     private final Path workspacePath;
     private final SessionContextImpl workspaceAuthContext;
@@ -100,7 +102,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         }
     }
 
-    public static Properties readWorkspaceInfo(Path metadataFolder) {
+    @NotNull
+    public static Properties readWorkspaceInfo(@NotNull Path metadataFolder) {
         Properties props = new Properties();
 
         Path versionFile = metadataFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE);
@@ -122,6 +125,39 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         } catch (Exception e) {
             log.error(e);
         }
+    }
+
+    public static Path getWorkspaceConfigFolder(DBPWorkspace workspace) {
+        Path configFolder = workspace.getAbsolutePath();
+        if (!Files.exists(configFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE))) {
+            configFolder = workspace.getMetadataFolder();
+        }
+        return configFolder;
+    }
+
+    @Nullable
+    public String getActiveProjectName() {
+        Properties props = readWorkspaceInfo(getWorkspaceConfigFolder(this));
+        String activeProjectName = props.getProperty(PROP_PROJECT_ACTIVE);
+        if (CommonUtils.isEmpty(activeProjectName)) {
+            activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        }
+        return activeProjectName;
+    }
+
+    public void setActiveProjectName(@Nullable String projectName) {
+        updateWorkspaceProperties(getWorkspaceConfigFolder(this), projectName);
+        platform.getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, CommonUtils.notEmpty(projectName));
+    }
+
+    private void updateWorkspaceProperties(@NotNull Path configFolder, @Nullable String projectName) {
+        Properties props = readWorkspaceInfo(configFolder);
+        if (CommonUtils.isEmpty(projectName)) {
+            props.remove(PROP_PROJECT_ACTIVE);
+        } else {
+            props.setProperty(PROP_PROJECT_ACTIVE, projectName);
+        }
+        writeWorkspaceInfo(configFolder, props);
     }
 
     @Override
@@ -198,13 +234,16 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
 
     @NotNull
     public static String readWorkspaceIdProperty() {
-        // Check workspace ID
-        Path metadataFolder = GeneralUtils.getMetadataFolder();
-        return readWorkspaceId(metadataFolder);
+        if (globalWorkspaceId == null) {
+            // Check workspace ID
+            Path metadataFolder = GeneralUtils.getMetadataFolder();
+            globalWorkspaceId = readWorkspaceId(metadataFolder);
+        }
+        return globalWorkspaceId;
     }
 
     @NotNull
-    public static String readWorkspaceId(Path metadataFolder) {
+    protected static String readWorkspaceId(Path metadataFolder) {
         Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         String workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
         if (CommonUtils.isEmpty(workspaceId)) {

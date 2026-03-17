@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.hana.model.HANADataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -24,7 +26,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
@@ -34,29 +38,33 @@ import java.util.Map;
 
 public class HANAPlanAnalyser extends AbstractExecutionPlan {
 
-    private static final Log LOG = Log.getLog(HANAPlanAnalyser.class);
+    private static final Log log = Log.getLog(HANAPlanAnalyser.class);
 
-    private HANADataSource dataSource;
-    private String query;
+    private final HANADataSource dataSource;
+    private final String query;
     private List<HANAPlanNode> rootNodes;
+    private CachedResultSet planResults;
 
     public HANAPlanAnalyser(HANADataSource dataSource, String query) {
         this.dataSource = dataSource;
         this.query = query;
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "SELECT * FROM SYS.EXPLAIN_PLAN_TABLE";
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 
@@ -71,10 +79,12 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
                 connection.setAutoCommit(false);
 
             JDBCUtils.executeSQL(connection, "DELETE FROM SYS.EXPLAIN_PLAN_TABLE");
-            JDBCUtils.executeSQL(connection, "EXPLAIN PLAN FOR "+query);
+            JDBCUtils.executeSQL(connection, "EXPLAIN PLAN FOR "+ query);
 
-            try (JDBCPreparedStatement stmt = connection.prepareStatement(getPlanQueryString())) {
+            String planQueryString = getPlanQueryString();
+            try (JDBCPreparedStatement stmt = connection.prepareStatement(planQueryString)) {
                 try (JDBCResultSet dbResult = stmt.executeQuery()) {
+                    planResults = new CachedResultSet(planQueryString, dbResult.getMetaData());
                     while (dbResult.next()) {
                         HANAPlanNode node = new HANAPlanNode(dbResult);
                         for (HANAPlanNode parent : allNodes) {
@@ -84,6 +94,7 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
                             }
                         }
                         allNodes.add(node);
+                        planResults.addRow(dbResult);
                     }
                 }
             }
@@ -102,7 +113,7 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
                 if (oldAutoCommit)
                     connection.setAutoCommit(true);
             } catch (SQLException e) {
-                LOG.error("Error closing plan analyser", e);
+                log.error("Error closing plan analyser", e);
             }
         }
     }
@@ -111,5 +122,15 @@ public class HANAPlanAnalyser extends AbstractExecutionPlan {
         return this.dataSource;
     }
 
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.RESULT_SET;
+    }
 
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planResults;
+    }
 }

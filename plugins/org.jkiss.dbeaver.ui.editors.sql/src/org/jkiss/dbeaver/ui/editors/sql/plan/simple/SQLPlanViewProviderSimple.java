@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
@@ -30,20 +31,26 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
 public class SQLPlanViewProviderSimple extends SQLPlanSaveProvider {
 
 
+    @NotNull
     @Override
-    public Viewer createPlanViewer(IWorkbenchPart workbenchPart, Composite parent) {
+    public Viewer createPlanViewer(@NotNull IWorkbenchPart workbenchPart, @NotNull Composite parent) {
         SQLPlanTreeViewer treeViewer = new SQLPlanTreeViewer(workbenchPart, parent);
         return treeViewer;
     }
 
     @Override
-    public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {        
+    public void visualizeQueryPlan(@NotNull Viewer viewer, @NotNull SQLQuery query, @NotNull DBCPlan plan) {
         fillPlan(query,plan);
         showPlan(viewer,query, plan);
     }
 
     @Override
-    public void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan) {
+    public void contributeActions(
+        @NotNull Viewer viewer,
+        @NotNull IContributionManager contributionManager,
+        @NotNull SQLQuery lastQuery,
+        @NotNull DBCPlan lastPlan
+    ) {
         super.contributeActions(viewer, contributionManager, lastQuery, lastPlan);
 
         SQLPlanTreeViewer treeViewer = (SQLPlanTreeViewer) viewer;

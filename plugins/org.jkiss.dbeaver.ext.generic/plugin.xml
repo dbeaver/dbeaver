@@ -389,13 +389,13 @@
                     sampleURL="jdbc:IRIS://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/iris/"
-                    description="InterSystems IRIS."
+                    description="InterSystems IRIS"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
-                    <file type="jar" path="maven:/com.intersystems:intersystems-jdbc:RELEASE" bundle="!drivers.intersystem"/>
+                    <file type="jar" path="maven:/com.intersystems:intersystems-jdbc:RELEASE[3.10.5]" bundle="!drivers.intersystems"/>
                     <file type="license" path="licenses/external/mit.txt"/>
-                    <file type="jar" path="drivers/intersystem" bundle="drivers.intersystem"/>
+                    <file type="jar" path="drivers/intersystems" bundle="drivers.intersystems"/>
                 </driver>
                 <driver
                     id="ingres"

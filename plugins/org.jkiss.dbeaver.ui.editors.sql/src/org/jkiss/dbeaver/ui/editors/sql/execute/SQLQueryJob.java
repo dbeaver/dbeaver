@@ -524,6 +524,7 @@ public class SQLQueryJob extends DataSourceJob {
 
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
+        boolean executionCanceled = false;
 
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
@@ -629,11 +630,16 @@ public class SQLQueryJob extends DataSourceJob {
             }
         }
         catch (Throwable ex) {
-            if (!(ex instanceof DBException)) {
+            if (DBExecUtils.isExecutionCanceled(dataSource, ex) || monitor.isCanceled()) {
+                executionCanceled = true;
+            } else if (!(ex instanceof DBException)) {
                 log.error("Unexpected error while processing SQL", ex);
+                curResult.setError(ex);
+                lastError = ex;
+            } else {
+                curResult.setError(ex);
+                lastError = ex;
             }
-            curResult.setError(ex);
-            lastError = ex;
         }
         finally {
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
@@ -643,6 +649,10 @@ public class SQLQueryJob extends DataSourceJob {
             }
 
             monitor.done();
+        }
+
+        if (executionCanceled) {
+            return false;
         }
 
         lastGoodQuery = originalQuery;
@@ -754,6 +764,9 @@ public class SQLQueryJob extends DataSourceJob {
                                 try {
                                     hasResultSet = fetchQueryData(session, resultSet, curResult, curResult.addExecuteResult(true), dataReceiver, true);
                                 } catch (DBCException e) {
+                                    if (DBExecUtils.isExecutionCanceled(session.getDataSource(), e) || monitor.isCanceled()) {
+                                        throw e;
+                                    }
                                     if (rowsFetched == 0) {
                                         throw e;
                                     } else {
