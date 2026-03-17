@@ -75,7 +75,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         UIPanelBuilder.build(composite, pb -> pb
             .margins(0, 0)
             .row(rb -> rb
-                .group("Extraction", buildExtractionPanel())));
+                .titledPanel("Extraction", buildExtractionPanel())));
 
         if (getWizard().getCurrentTask() != null) {
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
@@ -111,8 +111,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         return pb -> pb
             .row(rb -> rb
-                .radioButton("Query the database", bb -> bb.selected(queryDatabase))
-                .radioButton("Use fetched rows", bb -> bb.selected(useFetchedData)))
+                .radioButton("Query the database", queryDatabase)
+                .radioButton("Use fetched rows", useFetchedData))
             .row(rb -> rb
                 .panel(buildQueryDatabasePanel(queryDatabase))
                 .panel(buildUseFetchedRowsPanel(useFetchedData)))
@@ -141,24 +141,24 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         return pb -> pb
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
+                .checkBox("Selected rows only", selectedRowsOnly))
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
+                .checkBox("Selected columns only", selectedColumnsOnly));
     }
 
     @NotNull
     private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
         return rb -> rb
-            .expandableGroup("Advanced", false, pb -> pb
+            .expandablePanel("Advanced", false, pb -> pb
                 .align(UIAlignX.FILL).grow()
                 .accept(buildAdvancedPanel(queryDatabase)));
     }
 
     @NotNull
     private Consumer<UIPanelBuilder> buildAdvancedPanel(@NotNull UIObservable<Boolean> queryDatabase) {
-        var canChangeThreads = UIObservable.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
-        var canChangeSegment = UIObservable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
+        var canChangeThreads = UIObservables.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
+        var canChangeSegment = UIObservables.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
 
         return pb -> pb
             .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
