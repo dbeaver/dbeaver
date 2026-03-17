@@ -19,15 +19,12 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class GroupingRegistry {
-
-    private static Log log = Log.getLog(GroupingRegistry.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.grouping"; //$NON-NLS-1$
 

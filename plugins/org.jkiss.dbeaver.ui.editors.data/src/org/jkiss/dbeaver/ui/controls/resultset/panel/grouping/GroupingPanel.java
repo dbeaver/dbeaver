@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
@@ -40,7 +39,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingR
  */
 public class GroupingPanel extends ResultSetPanelBase {
 
-    private static final Log log = Log.getLog(GroupingPanel.class);
 
     private static final String PANEL_ID = "results-grouping";
 
@@ -72,7 +70,7 @@ public class GroupingPanel extends ResultSetPanelBase {
                 refresh(true);
             }
         };
-        //this.presentation.getController().addListener(ownerListener);
+        // this.presentation.getController().addListener(ownerListener);
 
         return groupingPlaceholder;
     }
@@ -94,7 +92,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
                 @Override
                 public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                    //updateControls();
+                    // updateControls();
                 }
             };
             groupingViewer.addListener(groupingResultsListener);
@@ -102,6 +100,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
         return resultsContainer;
     }
+
     @Override
     public boolean isDirty() {
         return !getGroupingResultsContainer().getGroupAttributes().isEmpty();
@@ -134,7 +133,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
     @Override
     public void setFocus() {
-        //resultsContainer.getResultSetController().getControl().setFocus();
+        // resultsContainer.getResultSetController().getControl().setFocus();
     }
 
     @Override
