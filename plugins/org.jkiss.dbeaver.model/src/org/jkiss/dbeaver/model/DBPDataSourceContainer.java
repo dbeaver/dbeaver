@@ -325,6 +325,18 @@ public interface DBPDataSourceContainer extends
     @Nullable
     <T> T getExtension(@NotNull String name);
 
+    // WARNING: This method is referenced in plugin.xml to check extensions dynamically
+    default boolean hasExtension(@NotNull String name) {
+        Object extension = getExtension(name);
+        if (extension == null) {
+            return false;
+        } else if (extension instanceof Collection<?> col) {
+            return !col.isEmpty();
+        } else {
+            return !extension.toString().isEmpty();
+        }
+    }
+
     void setExtension(@NotNull String name, @Nullable Object value);
 
     void dispose();

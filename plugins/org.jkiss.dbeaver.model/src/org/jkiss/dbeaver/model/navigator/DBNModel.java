@@ -397,6 +397,9 @@ public class DBNModel {
         }
 
         if (currentLevel == nodePath.pathItems.size() - 1) {
+            if (detectedNode instanceof DBNNodeExtension nodeExtension) {
+                return nodeExtension.resolveRealNode();
+            }
             return detectedNode;
         } else {
             return findNodeByPath(monitor, detectedNode, nodePath, currentLevel + 1);

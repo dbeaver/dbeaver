@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 
 import java.util.Map;
 
@@ -97,15 +98,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
                 dataSource.setFolder(dsTpl.getFolder());
             }
             // Generate new name
-            String origName = dsTpl.getName();
-            String newName = origName;
-            for (int i = 0; ; i++) {
-                if (registry.findDataSourceByName(newName) == null) {
-                    break;
-                }
-                newName = origName + " " + (i + 1);
-            }
-            dataSource.setName(newName);
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsTpl.getName(), 1));
             registry.addDataSource(dataSource);
         } else {
             UIUtils.asyncExec(() -> NewConnectionDialog.openNewConnectionDialog(UIUtils.getActiveWorkbenchWindow()));
