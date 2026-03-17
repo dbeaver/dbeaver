@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.firebird.model.plan;
+package org.jkiss.dbeaver.ext.h2.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
@@ -31,32 +31,24 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Build firebird plan tree based on textual plan information returned by getPlan.
- *
- * @author tomashorak@post.cz
- */
-public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
-    private JDBCSession session;
-    private String query;
-    private List<FireBirdPlanNode> rootNodes;
+public class H2ExecutionPlan extends AbstractExecutionPlan {
+    private final String query;
     private String planText;
 
-    public FireBirdPlanAnalyser(JDBCSession session, String query) {
-        this.session = session;
+    public H2ExecutionPlan(@NotNull String query) {
         this.query = query;
     }
 
-    public void explain() throws DBException {
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(getQueryString());
-            // Read explained plan
-            try {
-                planText = FireBirdUtils.getPlan(dbStat);
-                FireBirdPlanBuilder builder = new FireBirdPlanBuilder(planText);
-                rootNodes = builder.Build(session);
-            } finally {
-                dbStat.close();
+    /**
+     * Retrieves execution plan for the given query.
+     */
+    public void explain(@NotNull DBCSession session) throws DBCException {
+        final JDBCSession connection = (JDBCSession) session;
+        try (JDBCStatement stmt = connection.createStatement()) {
+            try (JDBCResultSet dbResults = stmt.executeQuery(getPlanQueryString())) {
+                if (dbResults.next()) {
+                    planText = dbResults.getString(1);
+                }
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
@@ -71,8 +63,8 @@ public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
 
     @NotNull
     @Override
-    public String getPlanQueryString() throws DBException {
-        return "";
+    public String getPlanQueryString() {
+        return "EXPLAIN " + query;
     }
 
     @NotNull
@@ -90,7 +82,6 @@ public class FireBirdPlanAnalyser extends AbstractExecutionPlan {
     @NotNull
     @Override
     public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
-        return rootNodes;
+        return List.of();
     }
-
 }

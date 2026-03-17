@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -33,12 +35,22 @@ public interface DBCPlan {
      */
     String OPTION_KEEP_ORIGINAL = "keepOriginal";
 
+    @NotNull
     String getQueryString();
 
+    @NotNull
     String getPlanQueryString() throws DBException;
 
-    Object getPlanFeature(String feature);
+    @NotNull
+    DBCPlanSourceFormat getPlanSourceDataFormat();
 
-    List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options);
+    @Nullable
+    Object getPlanSourceData();
+
+    @Nullable
+    Object getPlanFeature(@NotNull String feature);
+
+    @NotNull
+    List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options);
 
 }
