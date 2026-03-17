@@ -127,6 +127,39 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         }
     }
 
+    public static Path getWorkspaceConfigFolder(DBPWorkspace workspace) {
+        Path configFolder = workspace.getAbsolutePath();
+        if (!Files.exists(configFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE))) {
+            configFolder = workspace.getMetadataFolder();
+        }
+        return configFolder;
+    }
+
+    @Nullable
+    public String getActiveProjectName() {
+        Properties props = readWorkspaceInfo(getWorkspaceConfigFolder(this));
+        String activeProjectName = props.getProperty(PROP_PROJECT_ACTIVE);
+        if (CommonUtils.isEmpty(activeProjectName)) {
+            activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        }
+        return activeProjectName;
+    }
+
+    public void setActiveProjectName(@Nullable String projectName) {
+        updateWorkspaceProperties(getWorkspaceConfigFolder(this), projectName);
+        platform.getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, CommonUtils.notEmpty(projectName));
+    }
+
+    private void updateWorkspaceProperties(@NotNull Path configFolder, @Nullable String projectName) {
+        Properties props = readWorkspaceInfo(configFolder);
+        if (CommonUtils.isEmpty(projectName)) {
+            props.remove(PROP_PROJECT_ACTIVE);
+        } else {
+            props.setProperty(PROP_PROJECT_ACTIVE, projectName);
+        }
+        writeWorkspaceInfo(configFolder, props);
+    }
+
     @Override
     public void dispose() {
         DBVModel.checkGlobalCacheIsEmpty();

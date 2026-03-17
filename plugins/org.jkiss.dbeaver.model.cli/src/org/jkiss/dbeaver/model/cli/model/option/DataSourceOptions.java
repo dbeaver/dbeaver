@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
@@ -112,23 +113,25 @@ public class DataSourceOptions implements DataSourceUpdater {
     @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
         String dsName = getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
+        var registry = dataSource.getRegistry();
+        if (CommonUtils.isNotEmpty(dsName)) {
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        } else if (CommonUtils.isEmpty(dataSource.getName()) || dataSource.getName().equals("?")) {
             dsName = dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(getDbName())) {
                 dsName += " - " + getDbName();
+            } else if (CommonUtils.isNotEmpty(getHost())) {
+                dsName += " - " + getHost();
             } else if (CommonUtils.isNotEmpty(getServer())) {
                 dsName += " - " + getServer();
             }
-        }
-        if (CommonUtils.isNotEmpty(getDatasourceName())) {
-            dataSource.setName(dsName);
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
         }
         if (CommonUtils.isNotEmpty(getFolder())) {
-            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(getFolder());
-            dataSource.setFolder(folder);
+            DBPDataSourceFolder registryFolder = registry.getFolder(getFolder());
+            dataSource.setFolder(registryFolder);
         }
         dataSource.setSavePassword(isSavePassword());
-
     }
 
 }
