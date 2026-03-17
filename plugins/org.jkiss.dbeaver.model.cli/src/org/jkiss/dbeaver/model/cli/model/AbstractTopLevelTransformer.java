@@ -17,11 +17,24 @@
 package org.jkiss.dbeaver.model.cli.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.cli.CLIContext;
-import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
+import picocli.CommandLine;
 
-public interface CommandLineAuthenticator {
-    void authenticate(@Nullable AuthenticateOptions options, @NotNull CLIContext context) throws DBException;
+public abstract class AbstractTopLevelTransformer implements CommandLine.IModelTransformer {
+    private boolean initialized = false;
+
+    @Override
+    public CommandLine.Model.CommandSpec transform(CommandLine.Model.CommandSpec commandSpec) {
+        if (initialized) {
+            return commandSpec;
+        }
+        Object mixinObj = getMixin();
+        CommandLine.Model.CommandSpec mixin = CommandLine.Model.CommandSpec.forAnnotatedObject(mixinObj);
+        commandSpec.addMixin(mixinObj.getClass().getSimpleName(), mixin);
+
+        initialized = true;
+        return commandSpec;
+    }
+
+    @NotNull
+    protected abstract Object getMixin();
 }

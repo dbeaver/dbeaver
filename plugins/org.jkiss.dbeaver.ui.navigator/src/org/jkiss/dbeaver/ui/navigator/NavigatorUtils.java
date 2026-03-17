@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -440,6 +441,7 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
+            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -471,6 +473,7 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
+                    nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
                 }
             }
             // Save folders
@@ -481,12 +484,17 @@ public class NavigatorUtils {
                 targetNode.setNodeFilter(
                     nodeMeta,
                     entry.getValue(),
-                    false);
+                    false
+                );
                 changedContainers.add(targetNode.getDataSourceContainer());
             }
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
-                ds.persistConfiguration();
+                if (isSaveAsCurrentUserFilterOnly) {
+                    UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
+                } else {
+                    ds.persistConfiguration();
+                }
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
