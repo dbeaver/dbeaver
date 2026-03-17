@@ -37,11 +37,9 @@ public abstract class GroupingAction extends Action {
     public GroupingAction(
         @NotNull GroupingResultsContainer groupingResultsContainer,
         @Nullable String text,
-        @NotNull ImageDescriptor image,
         int style
     ) {
         super(text, style);
-        setImageDescriptor(image);
         this.groupingResultsContainer = groupingResultsContainer;
     }
 }

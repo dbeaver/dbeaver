@@ -17,20 +17,17 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.ExtensionPointAction;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.GroupingAction;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.TransformerGroupingFunctionColumn;
-
-import java.util.Objects;
 
 public class GroupingActionDescriptor extends AbstractDescriptor {
 
@@ -45,7 +42,8 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
     @Nullable
     private final String description;
 
-    private final ImageDescriptor icon;
+    @Nullable
+    private final DBPImage icon;
 
     @NotNull
     private final ObjectType columnObjectType;
@@ -55,7 +53,7 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
         this.columnObjectType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.icon = DBeaverIcons.getImageDescriptor(Objects.requireNonNull(iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON))));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.preferenceKey = config.getAttribute(RegistryConstants.ATTR_PREFERENCE_KEY);
     }
 
@@ -74,9 +72,22 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
 
     @NotNull
     public GroupingAction createAction(@NotNull GroupingResultsContainer groupingResultsContainer) {
-        GroupingAction groupingAction = new ExtensionPointAction(groupingResultsContainer, preferenceKey, label, icon);
-        groupingAction.setDescription(description);
-        return groupingAction;
+        return new ExtensionPointAction(groupingResultsContainer, this);
+    }
+
+    @Nullable
+    public String getLabel() {
+        return label;
+    }
+
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    @Nullable
+    public DBPImage getIcon() {
+        return icon;
     }
 
     @NotNull
