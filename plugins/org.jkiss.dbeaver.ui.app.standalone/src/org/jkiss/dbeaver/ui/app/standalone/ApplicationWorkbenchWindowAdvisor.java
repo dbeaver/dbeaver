@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,10 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         }
     };
 
-    public ApplicationWorkbenchWindowAdvisor(ApplicationWorkbenchAdvisor advisor, IWorkbenchWindowConfigurer configurer) {
+    public ApplicationWorkbenchWindowAdvisor(
+        @NotNull ApplicationWorkbenchAdvisor advisor,
+        @NotNull IWorkbenchWindowConfigurer configurer
+    ) {
         super(advisor, configurer);
 
         if (DBeaverApplication.WORKSPACE_MIGRATED) {
@@ -88,7 +91,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     private void refreshProjects() {
-
         // Refresh all projects
         for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
             try {
@@ -117,8 +119,9 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         super.dispose();
     }
 
+    @NotNull
     @Override
-    public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer) {
+    public ActionBarAdvisor createActionBarAdvisor(@NotNull IActionBarConfigurer configurer) {
         log.debug("Create actions");
         return new ApplicationActionBarAdvisor(configurer);
     }
@@ -164,7 +167,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     /**
      * Hooks the listeners needed on the window
      */
-    private void hookTitleUpdateListeners(IWorkbenchWindowConfigurer configurer) {
+    private void hookTitleUpdateListeners(@NotNull IWorkbenchWindowConfigurer configurer) {
         // hook up the listeners to update the window title
         configurer.getWindow().addPageListener(new IPageListener() {
             @Override
@@ -316,31 +319,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         } catch (Throwable e) {
             log.warn(e);
         }
-        if (isRunWorkbenchInitializers()) {
-            // Open New Connection wizard
-                initWorkbenchWindows();
-        }
-
-        UIUtils.asyncExec(() -> {
-            // FIXME: dirty hack of standard commands handle (e.g. CTRL+C)
-            // Re-activate active part to trigger keybindings refresh for it
-            IWorkbenchPage activePage = getWindowConfigurer().getWindow().getActivePage();
-            IWorkbenchPart activePart = activePage.getActivePart();
-            if (activePart != null) {
-                for (IViewReference viewReference : activePage.getViewReferences()) {
-                    IViewPart view = viewReference.getView(false);
-                    if (view != null && view != activePart) {
-                        activePage.activate(view);
-                        activePage.activate(activePart);
-                        break;
-                    }
-                }
-            }
-        });
-    }
-
-    protected boolean isRunWorkbenchInitializers() {
-        return true;
+        initWorkbenchWindows();
     }
 
     @Override

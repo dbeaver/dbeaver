@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -213,14 +214,8 @@ public class DBFUtils {
         }
         DBPDataSourceContainer dsContainer = registry.createDataSource(connectionId, driver, configuration);
         dsContainer.setExtension(DBConstants.PROP_ORIGINAL_FILE_PATH, configuration.getDatabaseName());
-        int conNameSuffix = 1;
         connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
-        String finalConnectionName = connectionName;
-        while (registry.findDataSourceByName(finalConnectionName) != null) {
-            conNameSuffix++;
-            finalConnectionName = connectionName + " " + conNameSuffix;
-        }
-        dsContainer.setName(finalConnectionName);
+        dsContainer.setName(DataSourceUtils.generateUniqueDataSourceName(registry, connectionName, 1));
         dsContainer.setTemporary(true);
         DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
         dsContainer.setFolder(folder);
