@@ -29,20 +29,12 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPartReference;
-import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.Field;
@@ -51,8 +43,6 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
-    private static final String PART_SKIP_KEY = DBeaverCTabFolderRenderer.class.getName() + ".skipPart";
-    private static final String PART_INPUT_INITIALIZED = DBeaverCTabFolderRenderer.class.getName() + ".inputInitialized";
 
     private static final FieldReflection<CTabRendering, Color> tabOutlineColorField;
     private static final FieldReflection<CTabRendering, Color> selectedTabHighlightColorField;
@@ -62,7 +52,6 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
     private static final FieldReflection<CTabFolderRenderer, Integer> curveWidth;
     private static final FieldReflection<CTabFolderRenderer, Integer> curveIndent;
-    private static volatile boolean isInColor;
 
     static {
         tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
@@ -178,83 +167,11 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item, @NotNull MPart part) {
-        if (part.getTransientData().containsKey(PART_SKIP_KEY)) {
-            return null;
-        }
-        if (isInColor) {
-            // FIXME: this is a dirty workaround for UI freeze (dbeaver/pro#6519)
-            // Freeze happens because we may trigger master password dialog in ref.getEditorInput()
-            // We fix it by avoiding UI double entrance
-            return null;
-        }
-        isInColor = true;
-        try {
-            if (part.getObject() instanceof CompatibilityEditor editor) {
-                return getConnectionColor(editor.getEditor());
-            }
-
-            // See org.eclipse.ui.internal.WorkbenchPartReference.WorkbenchPartReference
-            if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref) {
-                IEditorPart editor = ref.getEditor(false);
-                if (editor != null) {
-                    return getConnectionColor(editor);
-                }
-                if (!part.getTransientData().containsKey(PART_INPUT_INITIALIZED)) {
-                    UIExecutionQueue.queueExec(() -> initializePartInput(item, part, ref));
-                    return null;
-                }
-
-                try {
-                    return getConnectionColor(ref.getEditorInput());
-                } catch (Exception e) {
-                    // If for whatever reason we failed to retrieve the editor input with an exception,
-                    // it's likely to happen again. To avoid such scenarios, we set this key so it will
-                    // cause all future calls for this part to return early.
-                    part.getTransientData().put(PART_SKIP_KEY, Boolean.TRUE);
-                    log.debug("Cannot get editor input for part: " + part.getElementId(), e);
-                }
-            }
-
-            return null;
-        } finally {
-            isInColor = false;
-        }
-    }
-
-    /**
-     * We initialize editor input in separate UI call.
-     * Because we cannot do it in paint methods because we may need to trigger aggressive UI actions (like open dialog for authentication).
-     */
-    private static void initializePartInput(CTabItem item, @NotNull MPart part, @NotNull IEditorReference ref) {
-        try {
-            ref.getEditorInput();
-        } catch (Exception e) {
-            log.error(e);
-        } finally {
-            part.getTransientData().put(PART_INPUT_INITIALIZED, true);
-            item.getParent().redraw();
-        }
-    }
-
-    @Nullable
-    private static Color getConnectionColor(@NotNull IEditorPart editorPart) {
-        if (editorPart instanceof DBPDataSourceContainerProvider provider) {
-            DBPDataSourceContainer container = provider.getDataSourceContainer();
-            if (container != null) {
-                return UIUtils.getConnectionColor(container.getConnectionConfiguration());
-            }
-        }
-
-        return getConnectionColor(editorPart.getEditorInput());
-    }
-
-    @Nullable
-    private static Color getConnectionColor(@NotNull IEditorInput editorInput) {
-        DBPDataSourceContainer container = EditorUtils.getInputDataSource(editorInput, false);
+        DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(
+            part, () -> item.getParent().redraw());
         if (container != null) {
             return UIUtils.getConnectionColor(container.getConnectionConfiguration());
         }
-
         return null;
     }
 

@@ -37,7 +37,6 @@ import org.jkiss.utils.CommonUtils;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -121,11 +120,6 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    public boolean allowsOpen() {
-        return true;
-    }
-
-    @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNProject.class) {
             return adapter.cast(this);
@@ -205,7 +199,8 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return null;
     }
 
-    public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+    @Nullable
+    public DBNNode findResource(@NotNull DBRProgressMonitor monitor, @NotNull Path path) throws DBException {
         Path relativePath = getProject().getAbsolutePath().relativize(path);
 
         DBNNode resNode = this;
@@ -227,24 +222,30 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return extraNodes;
     }
 
-    public <T> T getExtraNode(Class<T> nodeType) {
+    @Nullable
+    public <T> T getExtraNode(@NotNull Class<T> nodeType) {
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {
                     return nodeType.cast(node);
+                } else if (node instanceof DBNNodeExtension nodeExtension && nodeExtension.matchesType(nodeType)) {
+                    return nodeType.cast(nodeExtension.resolveRealNode());
                 }
             }
         }
+        log.error("Cannot determine model extender for type '" + nodeType + "'");
         return null;
     }
 
     @Override
-    public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
+    public void addExtraNode(@NotNull DBNNodeExtension node, boolean reflect) {
         if (extraNodes == null) {
             extraNodes = new ArrayList<>();
         }
         extraNodes.add(node);
-        extraNodes.sort(Comparator.comparing(DBNNode::getNodeDisplayName));
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            node.resolveRealNode();
+        }
         if (reflect) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
         }
@@ -255,6 +256,17 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         if (extraNodes != null && extraNodes.remove(node)) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
+    }
+
+    @NotNull
+    @Override
+    public DBNNode resolveTargetNode(@NotNull DBNNodeExtension sourceNode, @NotNull DBNNode targetNode) {
+        int index = extraNodes.indexOf(sourceNode);
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Source extension node '" + sourceNode + "' not found in '" + this + "'");
+        }
+        extraNodes.set(index, targetNode);
+        return targetNode;
     }
 
     @Override
