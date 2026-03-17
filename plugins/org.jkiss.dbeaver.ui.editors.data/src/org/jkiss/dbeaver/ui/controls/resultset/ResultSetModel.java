@@ -1163,7 +1163,7 @@ public class ResultSetModel implements DBDResultSetModel {
                     }
                     Object cell1 = getCellValue(new ResultSetCellLocation(binding, row1));
                     Object cell2 = getCellValue(new ResultSetCellLocation(binding, row2));
-                    Comparator<Object> comparator = columnElement.getValueHandler().getComparator();
+                    Comparator<Object> comparator = binding.getValueHandler().getComparator();
                     if (comparator != null) {
                         result = comparator.compare(cell1, cell2);
                     } else if (cell1 instanceof String && cell2 instanceof String) {
