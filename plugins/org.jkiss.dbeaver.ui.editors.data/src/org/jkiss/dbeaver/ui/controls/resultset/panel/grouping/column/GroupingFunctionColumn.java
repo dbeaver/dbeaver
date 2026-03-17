@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 public interface GroupingFunctionColumn extends GroupingColumn {
 
     @NotNull
-    String getSql();
+    String getColumnExpression();
 
     boolean isShowToUser();
 }

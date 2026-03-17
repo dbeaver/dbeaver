@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -48,11 +48,11 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
     private final ImageDescriptor icon;
 
     @NotNull
-    private final ObjectType column;
+    private final ObjectType columnObjectType;
 
     public GroupingActionDescriptor(@NotNull IConfigurationElement config) {
         super(config);
-        this.column = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.columnObjectType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = DBeaverIcons.getImageDescriptor(Objects.requireNonNull(iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON))));
@@ -63,9 +63,13 @@ public class GroupingActionDescriptor extends AbstractDescriptor {
     public TransformerGroupingFunctionColumn createColumn(
         @NotNull DBPDataSource dataSource,
         @NotNull GroupingResultsContainer groupingResultsContainer
-    )
-    throws DBException {
-        return column.createInstance(TransformerGroupingFunctionColumn.class, dataSource, groupingResultsContainer, preferenceKey);
+    ) throws DBException {
+        return columnObjectType.createInstance(
+            TransformerGroupingFunctionColumn.class,
+            dataSource,
+            groupingResultsContainer,
+            preferenceKey
+        );
     }
 
     @NotNull

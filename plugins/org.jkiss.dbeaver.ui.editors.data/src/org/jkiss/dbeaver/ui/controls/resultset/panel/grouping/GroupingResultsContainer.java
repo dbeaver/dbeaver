@@ -37,8 +37,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFun
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.BasicGroupingFunctionColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.SQLGroupingAttributeGroupingColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.TransformerGroupingFunctionColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingActionDescriptor;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.descriptor.GroupingRegistry;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingActionDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
@@ -103,7 +103,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return columnsContainer.getFunctionColumns()
             .stream()
             .filter(GroupingFunctionColumn::isShowToUser)
-            .map(GroupingFunctionColumn::getSql)
+            .map(GroupingFunctionColumn::getColumnExpression)
             .toList();
     }
 
@@ -189,7 +189,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return new BasicGroupingFunctionColumn(dataSource, this) {
             @NotNull
             @Override
-            public String getSql() {
+            public String getColumnExpression() {
                 return DBUtils.getUnQuotedIdentifier(dataSource, function);
             }
         };
@@ -286,7 +286,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         columnsContainer.bindTransformers();
         return columnsContainer.getFunctionColumns()
             .stream()
-            .map(GroupingFunctionColumn::getSql)
+            .map(GroupingFunctionColumn::getColumnExpression)
             .toList();
     }
 

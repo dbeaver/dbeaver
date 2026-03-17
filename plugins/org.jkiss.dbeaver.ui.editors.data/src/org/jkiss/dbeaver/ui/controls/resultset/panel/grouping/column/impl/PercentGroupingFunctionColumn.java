@@ -53,7 +53,7 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
 
     @NotNull
     @Override
-    public String getSql() {
+    public String getColumnExpression() {
         return FUNCTION_COUNT + "(" + dataSource.getSQLDialect().getDefaultGroupAttribute() + ")";
     }
 
