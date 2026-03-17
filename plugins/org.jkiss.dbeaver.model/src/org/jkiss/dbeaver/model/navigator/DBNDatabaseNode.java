@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (showDefaults && CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {
-                objectName = object.getClass().getName() + "@" + object.hashCode(); //$NON-NLS-1$
+                if (!object.isPersisted()) {
+                    objectName = ""; //$NON-NLS-1$
+                } else {
+                    objectName = "...?"; //$NON-NLS-1$
+                }
             }
         }
         return objectName;

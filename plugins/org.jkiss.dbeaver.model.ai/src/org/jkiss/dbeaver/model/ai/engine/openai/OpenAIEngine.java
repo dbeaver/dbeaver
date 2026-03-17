@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -146,11 +143,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             for (AIFunctionDescriptor fd : request.getFunctions()) {
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getId();
+                tool.name = fd.getFullId();
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                for (AIFunctionParameter param : fd.getParameters()) {
                     OAIToolParameter tp = new OAIToolParameter();
                     tp.type = param.getType();
                     tp.description = param.getDescription();
@@ -169,9 +166,41 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(OAIMessage::new)
-            .toList();
+        List<OAIMessage> result = new ArrayList<>(messages.size());
+        String currentToolCallId = null;
+        for (int i = 0; i < messages.size(); i++) {
+            AIMessage message = messages.get(i);
+
+            if (message.getFunctionCall() != null) {
+                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
+                boolean hasFunctionOutput = i + 1 < messages.size() && messages.get(i + 1).getFunctionCallName() != null;
+                if (hasFunctionOutput && !CommonUtils.isEmpty(functionCallMessage.callId)) {
+                    currentToolCallId = functionCallMessage.callId;
+                    result.add(functionCallMessage);
+                } else {
+                    // OpenAI Responses API requires matching function_call_output for each function_call.
+                    // Keep orphan function calls in history as regular assistant messages.
+                    AIMessage plainMessage = new AIMessage(
+                        message.getRole(),
+                        message.getContent(),
+                        message.getRawDisplayMessage(),
+                        message.getTime(),
+                        message.getMeta()
+                    );
+                    result.add(OAIMessageFactory.fromAIMessage(plainMessage));
+                    currentToolCallId = null;
+                }
+            } else if (message.getFunctionCallName() != null && !CommonUtils.isEmpty(currentToolCallId)) {
+                result.add(OAIMessageFactory.fromAIMessage(message, currentToolCallId));
+                currentToolCallId = null;
+            } else {
+                result.add(OAIMessageFactory.fromAIMessage(message));
+                if (message.getFunctionCallName() == null) {
+                    currentToolCallId = null;
+                }
+            }
+        }
+        return result;
     }
 
     @NotNull

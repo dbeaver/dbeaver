@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.cli.CLIException;
+import org.jkiss.dbeaver.model.cli.CLIUtils;
+import org.jkiss.dbeaver.model.cli.command.ListAuthenticationModelParameterHandler;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import picocli.CommandLine;
 
 import java.util.List;
 
-public class DataSourceAuthOptions {
+public class DataSourceAuthOptions implements DataSourceUpdater {
     @Nullable
     @CommandLine.Option(names = {"-u", "--user"}, arity = "1", description = "Database user name for username/password authentication")
     private String dbUser;
@@ -32,14 +38,16 @@ public class DataSourceAuthOptions {
 
     @Nullable
     @CommandLine.Option(
-        names = {"--auth-param"},
+        names = {"-auth", "--auth-property"},
         arity = "1",
-        description = "Authentication parameter in the form 'name=value'. May be specified multiple times")
+        description = "Authentication property in the form 'name=value'. May be specified multiple times. "
+            + "See '" + ListAuthenticationModelParameterHandler.COMMAND_NAME + "' command for details"
+    )
     private List<String> authParams;
 
     @Nullable
     @CommandLine.Option(
-        names = {"--provider-param"},
+        names = {"-ext", "--extended-property"},
         arity = "1",
         description = "Database provider parameter in the form 'name=value'. May be specified multiple times"
     )
@@ -47,7 +55,7 @@ public class DataSourceAuthOptions {
 
     @Nullable
     @CommandLine.Option(
-        names = {"--connection-param"},
+        names = {"-prop", "--property"},
         arity = "1",
         description = "Database connection parameter in the form 'name=value'. May be specified multiple times"
     )
@@ -86,5 +94,10 @@ public class DataSourceAuthOptions {
     @Nullable
     public NetworkHandlerOptions getNetworkHandlerOptions() {
         return networkHandlerOptions;
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+        CLIUtils.processDataSourceAuthOptions(dataSource, this);
     }
 }

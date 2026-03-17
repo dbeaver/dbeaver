@@ -182,10 +182,8 @@ public class UIUtils {
     }
 
     public static void createLabelSeparator(@NotNull Composite toolBar, int style, int span) {
-        //Label label = new Label(toolBar, SWT.SEPARATOR | style);
-        //label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
         Canvas canvas = new Canvas(toolBar, SWT.NONE);
-        GridData gd = new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL);
+        GridData gd;
         if (style == SWT.HORIZONTAL) {
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 1;
@@ -306,9 +304,9 @@ public class UIUtils {
                     sbWidth = sbWidth + table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
-                    float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
+                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
                     for (TableColumn tc : columns) {
-                        tc.setWidth((int) (tc.getWidth() + extraSpace));
+                        tc.setWidth(tc.getWidth() + extraSpace);
                     }
                 }
             }
@@ -623,6 +621,22 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
+    /**
+     * Scales the font size of the provided font by the specified modifier.
+     *
+     * @param normalFont the original font to be scaled; must not be null
+     * @param modifier the scaling factor by which the font size will be multiplied
+     * @return a new Font instance with the scaled size, based on the original font
+     */
+    @NotNull
+    public static Font scaleFontSize(@NotNull Font normalFont, double modifier) {
+        FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setHeight((int) Math.round(fd.getHeight() * modifier));
+        }
+        return new Font(normalFont.getDevice(), data);
+    }
+
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
         Group group = new Group(parent, SWT.NONE);
         group.setText(label);
@@ -676,6 +690,19 @@ public class UIUtils {
         int widthHint,
         int hSpan
     ) {
+        return createTitledComposite(parent, label, null, columns, layoutStyle, widthHint, hSpan);
+
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        @Nullable String tooltip,
+        int columns,
+        int layoutStyle,
+        int widthHint,
+        int hSpan
+    ) {
         Composite composite = UIUtils.createComposite(parent, 1);
         {
             GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -690,6 +717,9 @@ public class UIUtils {
 
         Label titleLabel = new Label(composite, SWT.NONE);
         titleLabel.setText(label);
+        if (CommonUtils.isNotEmpty(tooltip)) {
+            titleLabel.setToolTipText(tooltip);
+        }
         if (PlatformUI.isWorkbenchRunning()) {
             titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
         }
@@ -699,19 +729,15 @@ public class UIUtils {
                 e.gc.drawLine(0, e.height - 1, e.width, e.height - 1);
             });
         }
-        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        if (parent.getLayout() instanceof GridLayout pgl) {
-            //lgd.horizontalSpan = pgl.numColumns;
-        }
-        titleLabel.setLayoutData(lgd);
+        titleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        Composite group = new Composite(composite, SWT.NONE);
         GridLayout layout = new GridLayout(columns, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.marginTop = 0;
         layout.marginLeft = 7;
         layout.marginBottom = 3;
+        Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -722,6 +748,15 @@ public class UIUtils {
         Control[] children = titledComposite.getChildren();
         if (children.length > 0 && children[0] instanceof Label label) {
             label.setText(title);
+            return;
+        }
+        log.error("Composite is not titled!");
+    }
+
+    public static void updateTitledCompositeTooltip(@NotNull Composite titledComposite, @NotNull String tooltip) {
+        Control[] children = titledComposite.getChildren();
+        if (children.length > 0 && children[0] instanceof Label label) {
+            label.setToolTipText(tooltip);
             return;
         }
         log.error("Composite is not titled!");
@@ -1124,7 +1159,7 @@ public class UIUtils {
     public static Integer getTextInteger(Text text) {
         String str = text.getText();
         str = str.trim();
-        if (str.length() == 0) {
+        if (str.isEmpty()) {
             return null;
         }
         try {
@@ -1279,6 +1314,7 @@ public class UIUtils {
                     for (String alias : charset.aliases()) {
                         if (alias.equalsIgnoreCase(curCharset)) {
                             defIndex = index;
+                            break;
                         }
                     }
                 }
@@ -1452,7 +1488,7 @@ public class UIUtils {
     public static Button createRadioButton(
         @NotNull Composite parent,
         @Nullable String label,
-        @NotNull Object data,
+        @Nullable Object data,
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.RADIO);
@@ -1460,7 +1496,9 @@ public class UIUtils {
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
         }
-        button.setData(data);
+        if (data != null) {
+            button.setData(data);
+        }
         return button;
     }
 
@@ -1618,51 +1656,6 @@ public class UIUtils {
             section = parent.addNewSection(sectionId);
         }
         return section;
-    }
-
-    public static void putSectionValueWithType(IDialogSettings dialogSettings, @NotNull String key, Object value) {
-        if (value == null) {
-            dialogSettings.put(key, ((String) null));
-            return;
-        }
-
-        if (value instanceof Double) {
-            dialogSettings.put(key, (Double) value);
-        } else if (value instanceof Float) {
-            dialogSettings.put(key, (Float) value);
-        } else if (value instanceof Integer) {
-            dialogSettings.put(key, (Integer) value);
-        } else if (value instanceof Long) {
-            dialogSettings.put(key, (Long) value);
-        } else if (value instanceof String) {
-            dialogSettings.put(key, (String) value);
-        } else if (value instanceof Boolean) {
-            dialogSettings.put(key, (Boolean) value);
-        } else {
-            // do nothing
-        }
-        dialogSettings.put(key + "_type", value.getClass().getSimpleName());
-    }
-
-    public static Object getSectionValueWithType(IDialogSettings dialogSettings, @NotNull String key) {
-        String type = dialogSettings.get(key + "_type");
-        if (type != null) {
-            switch (type) {
-                case "Double":
-                    return dialogSettings.getDouble(key);
-                case "Float":
-                    return dialogSettings.getFloat(key);
-                case "Integer":
-                    return dialogSettings.getInt(key);
-                case "Long":
-                    return dialogSettings.getLong(key);
-                case "String":
-                    return dialogSettings.get(key);
-                case "Boolean":
-                    return dialogSettings.getBoolean(key);
-            }
-        }
-        return dialogSettings.get(key);
     }
 
     @Nullable
@@ -2011,11 +2004,14 @@ public class UIUtils {
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressService(final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+    public static void runInProgressService(
+        @NotNull DBRRunnableWithProgress runnable
+    ) throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
-    public static <T> T runWithMonitor(final DBRRunnableWithReturn<T> runnable) throws DBException {
+    @Nullable
+    public static <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
         Object[] result = new Object[1];
         try {
             getDefaultRunnableContext().run(true, true, monitor -> {
@@ -2485,12 +2481,7 @@ public class UIUtils {
             return;
         }
         if (widget instanceof Combo || widget instanceof CCombo) {
-            widget.addListener(SWT.Selection, new TypedListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    onFocusLost.run();
-                }
-            }));
+            widget.addListener(SWT.Selection, event -> onFocusLost.run());
         } else {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
@@ -2767,13 +2758,4 @@ public class UIUtils {
         setWidgetWidthHint(widget, 150);
     }
 
-    /**
-     * Makes the background of the specified control mimic the background of another control
-     */
-    public static void mimicControlBackground(@NotNull Composite control, @NotNull Control otherControl) {
-        control.addPaintListener(e -> {
-            e.gc.setBackground(otherControl.getBackground());
-            e.gc.fillRectangle(control.getClientArea());
-        });
-    }
 }

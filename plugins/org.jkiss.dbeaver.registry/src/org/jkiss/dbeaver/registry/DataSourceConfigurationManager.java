@@ -35,6 +35,13 @@ public interface DataSourceConfigurationManager {
 
     boolean isSecure();
 
+    /**
+     * Indicates that configuration manager is trusted and can store sensitive data
+     */
+    default boolean isTrusted() {
+        return true;
+    }
+
     List<DBPDataSourceConfigurationStorage> getConfigurationStorages();
 
     /**

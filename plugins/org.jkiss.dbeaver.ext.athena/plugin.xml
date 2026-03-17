@@ -32,14 +32,40 @@
                         databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
                         categories="sql,aws"
                         singleConnection="true">
-                    <replace provider="athena" driver="aws_athena_jdbc_simba"/>
-                    <replace provider="generic" driver="aws_athena_42"/>
 
                     <file type="jar" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.7.0/athena-jdbc-3.7.0-lean-jar-and-separate-dependencies-jars.zip" bundle="!drivers.athena"/>
                     <file type="license" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.7.0/LICENSE.txt" bundle="!drivers.athena"/>
 
                     <file type="jar" path="drivers/athena" bundle="drivers.athena"/>
                     <file type="license" path="drivers/athena/LICENSE.txt" bundle="drivers.athena"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+                <driver
+                    id="aws_athena_jdbc_legacy"
+                    label="Athena (Legacy)"
+                    icon="icons/athena_icon.svg"
+                    iconBig="icons/athena_icon_big.svg"
+                    class="com.simba.athena.jdbc.Driver"
+                    sampleURL="jdbc:athena://AWSRegion={region};"
+                    defaultPort="444"
+                    customEndpoint="true"
+                    description="Legacy Athena driver. Relies on AWS SDK 1.x. Use it only if you are experiencing issues with the new driver."
+                    category="AWS"
+                    webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
+                    propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
+                    databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
+                    categories="sql,aws"
+                    singleConnection="true">
+                    <replace provider="generic" driver="aws_athena_42"/>
+                    <replace provider="athena" driver="aws_athena_jdbc_simba"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar"/>
+                    <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/docs/LICENSE.txt"/>
+                    <file type="jar" path="drivers/athena-legacy" bundle="drivers.athena"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>

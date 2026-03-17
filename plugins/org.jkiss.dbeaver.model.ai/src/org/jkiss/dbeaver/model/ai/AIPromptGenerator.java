@@ -29,5 +29,11 @@ public interface AIPromptGenerator {
     String generatorId();
 
     @NotNull
-    String build(@Nullable AIDatabaseContext context);
+    String build(@NotNull AIAssistant assistant, @Nullable AIDatabaseContext context);
+
+    @NotNull
+    default AIDatabaseContext.Builder configureDatabaseContext(@NotNull AIDatabaseContext.Builder contextBuilder) {
+        return contextBuilder;
+    }
+
 }

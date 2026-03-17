@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.cli.CLIContextImpl;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -41,6 +42,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private static final Log log = Log.getLog(DBeaverTopLevelCommand.class);
 
     // Eclipse cmd for desktop
+    @NonExecutableOption
     @CommandLine.Option(
         names = {NOSPASH_OPTION},
         description = "Hide splash screen on start",
@@ -64,11 +66,12 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private List<String> filesToOpen;
 
     // open files via double-click or "Open with DBeaver"
-    @CommandLine.Parameters(index = "0", arity = "0..*", description = "Open files", hidden = true)
+    @CommandLine.Parameters(index = "0", arity = "0..*", description = "Open files")
     private List<String> filesToOpenParams;
 
 
-    @CommandLine.Option(names = {"-con", "-connect"}, arity = "1", split = ",", description = "Connects to a specified database")
+    @CommandLine.Option(names = {"-con", "-connect", "-ds-spec", "--datasource-specification"}, arity = "1", split = ",",
+        description = "Connects to a specified database")
     private List<String> connectionSpecs;
 
     @CommandLine.Option(names = {"-disconnectAll"}, description = "Disconnect from all databases")
@@ -118,7 +121,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
         }
 
         if (instanceController == null) {
-            log.debug("Can't process commands because no running instance is present");
+            log.trace("Can't process commands because no running instance is present");
             context.setPostAction(CLIProcessResult.PostAction.START_INSTANCE);
             return;
         }

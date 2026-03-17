@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.maven.versioning.ArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
+import org.jkiss.dbeaver.registry.maven.versioning.InvalidVersionSpecificationException;
 import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
@@ -401,13 +403,19 @@ public class MavenArtifact implements IMavenIdentifier
                     if (versionRef.startsWith("{") && versionRef.endsWith("}")) {
                         // Regex - find most recent version matching this pattern
                         String regex = versionRef.substring(1, versionRef.length() - 1);
-                    try {
+                        try {
                             Pattern versionPattern = Pattern.compile(regex);
                             List<String> versions = new ArrayList<>(allVersions);
                             versions.removeIf(s -> !versionPattern.matcher(s).matches());
                             versionInfo = VersionUtils.findLatestVersion(versions);
                         } catch (Exception e) {
                             throw new IOException("Bad version pattern: " + regex);
+                        }
+                    } else if (versionRef.startsWith("(") || versionRef.startsWith("[")) {
+                        try {
+                            versionInfo = findBestSuitableVersion(versionRef, allVersions);
+                        } catch (InvalidVersionSpecificationException e) {
+                            throw new IOException("Bad version range: " + versionRef);
                         }
                     } else {
                         versionInfo = getVersionFromSpec(versionRef);
@@ -440,6 +448,21 @@ public class MavenArtifact implements IMavenIdentifier
         }
 
         return localVersion;
+    }
+
+    @Nullable
+    private static String findBestSuitableVersion(@NotNull String versionRef, @NotNull List<String> allVersions) throws InvalidVersionSpecificationException {
+        VersionRange range = VersionRange.createFromVersionSpec(versionRef);
+        ArtifactVersion best = null;
+        for (String version : allVersions) {
+            DefaultArtifactVersion candidate = new DefaultArtifactVersion(version);
+            if (range.containsVersion(candidate)) {
+                if (best == null || candidate.compareTo(best) > 0) {
+                    best = candidate;
+                }
+            }
+        }
+        return best != null ? best.toString() : null;
     }
 
     public static boolean versionMatches(String version, String versionSpec) {

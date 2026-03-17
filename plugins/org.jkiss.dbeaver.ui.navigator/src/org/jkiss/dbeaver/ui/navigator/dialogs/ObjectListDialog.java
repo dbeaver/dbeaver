@@ -125,15 +125,16 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         objectList.setLayoutData(gd);
         objectList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            if (selection.isEmpty()) {
+                return;
+            }
             selectedObjects.clear();
             selectedObjects.addAll(selection.toList());
-            if (!isModeless()) {
-                enableButton(IDialogConstants.OK_ID, !selectedObjects.isEmpty());
-            }
+            updateButtons();
         });
         objectList.setDoubleClickHandler(event -> {
-            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
-                okPressed();
+            if (isDialogComplete()) {
+                UIUtils.asyncExec(this::okPressed);
             }
         });
 
@@ -142,6 +143,14 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         closeOnFocusLost(objectList.getItemsViewer().getControl(), objectList.getSearchTextControl());
 
         return group;
+    }
+
+    protected boolean isDialogComplete() {
+        return !selectedObjects.isEmpty();
+    }
+
+    protected void updateButtons() {
+        enableButton(IDialogConstants.OK_ID, isDialogComplete());
     }
 
     @NotNull
@@ -189,13 +198,14 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         return ctl;
     }
 
+    @NotNull
     public List<T> getSelectedObjects()
     {
         return selectedObjects;
     }
 
-    public T getSelectedObject()
-    {
+    @Nullable
+    public T getSelectedObject() {
         return selectedObjects.isEmpty() ? null : selectedObjects.getFirst();
     }
 
@@ -305,6 +315,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
                 getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
             }
             handleObjectsLoaded(items, append);
+            updateButtons();
         }
 
         @Override
@@ -339,19 +350,19 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
             @Override
             public Font getFont(Object element) {
-                if (selectedObjects.contains(element) || DBNUtils.isDefaultElement(element)) {
-                    if (boldFont == null) {
-                        boldFont = UIUtils.makeBoldFont(group.getFont());
-                        group.addDisposeListener(e -> boldFont.dispose());
+                if (element instanceof DBSWrapper wrapper && objectColumn.isNameColumn(wrapper.getObject())) {
+                    if (DBNUtils.isDefaultElement(element)) {
+                        return BaseThemeSettings.instance.treeAndTableFontBold;
+                    } else if (selectedObjects.contains(element)) {
+                        return BaseThemeSettings.instance.treeAndTableFontItalic;
                     }
-                    return boldFont;
                 }
                 return null;
             }
         }
     }
 
-    protected  void handleObjectsLoaded(Collection<T> items, boolean append) {
+    protected  void handleObjectsLoaded(@NotNull Collection<T> items, boolean append) {
         // Just a listener
     }
 }

@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceAuthOptions;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
@@ -35,11 +35,15 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import picocli.CommandLine;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +54,17 @@ import java.util.Map;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
+    public static final int STRING_FORMAT_PADDING = 3;
+
+    @NotNull
+    public static String normalizeOptionName(@NotNull String name) {
+        if (name.startsWith("--")) {
+            return name.substring(2);
+        } else if (name.startsWith("-")) {
+            return name.substring(1);
+        }
+        return name;
+    }
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
@@ -139,29 +154,29 @@ public class CLIUtils {
     public static DBPDataSourceContainer createTempDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions
+        @Nullable DataSourceOptions dataSourceOptions,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
-        DBPDataSourceContainer tempDatasource = createDataSource(
+        return createDataSource(
             project,
             driverId,
             dataSourceOptions,
-            authOptions,
+            dataSourceUpdaters,
             true
         );
-
-        processDataSourceAuthOptions(tempDatasource, authOptions);
-        return tempDatasource;
     }
 
     @NotNull
     public static DBPDataSourceContainer createDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions,
+        @Nullable DataSourceOptions dataSourceOptions,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters,
         boolean temporary
     ) throws CLIException {
+        if (dataSourceOptions == null) {
+            throw new CLIException("datasource options not provided", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        }
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
         if (driver == null) {
             throw new CLIException("Can't find driver '" + driverId + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
@@ -173,7 +188,7 @@ public class CLIUtils {
 
         var registry = project.getDataSourceRegistry();
         DBPDataSourceContainer dataSource = registry.createDataSource(driver, connectionConfiguration);
-        updateDataSource(dataSourceOptions, authOptions, dataSource);
+        updateDataSource(dataSource, dataSourceUpdaters);
         dataSource.setTemporary(temporary);
         try {
             registry.addDataSource(dataSource);
@@ -184,28 +199,12 @@ public class CLIUtils {
     }
 
     public static void updateDataSource(
-        @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions,
-        @NotNull DBPDataSourceContainer dataSource
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
-        String dsName = dataSourceOptions.getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
-            dsName = "Ext: " + dataSource.getDriver().getName();
-            if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
-                dsName += " - " + dataSourceOptions.getDbName();
-            } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
-                dsName += " - " + dataSourceOptions.getServer();
-            }
+        for (DataSourceUpdater dataSourceUpdater : dataSourceUpdaters) {
+            dataSourceUpdater.updateDataSource(dataSource);
         }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
-            dataSource.setName(dsName);
-        }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
-            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
-            dataSource.setFolder(folder);
-        }
-        dataSource.setSavePassword(dataSourceOptions.isSavePassword());
-        processDataSourceAuthOptions(dataSource, authOptions);
     }
 
 
@@ -335,22 +334,45 @@ public class CLIUtils {
         @NotNull DBPPropertyDescriptor property,
         @Nullable String namePrefix
     ) {
-        String displayName = property.getDisplayName();
-        String description = property.getDescription();
         var helpText = new StringBuilder();
-
 
         helpText.append("  - ");
         if (CommonUtils.isNotEmpty(namePrefix) && !property.getId().startsWith(namePrefix)) {
             helpText.append(namePrefix);
         }
         helpText.append(property.getId());
-        if (!CommonUtils.equalObjects(displayName, description)) {
-            helpText.append(" (").append(displayName).append(")");
+        Class<?> dataType = property.getDataType();
+        if (dataType == Boolean.class || dataType == boolean.class) {
+            helpText.append(" = true/false");
+        } else {
+            helpText.append(" = ").append(property.getDisplayName());
+            if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
+                Object[] possibleValues = valueListProvider.getPossibleValues(null);
+                if (!ArrayUtils.isEmpty(possibleValues)) {
+                    helpText.append(", possible values: ");
+                    for (int i = 0; i < possibleValues.length; i++) {
+                        helpText.append(possibleValues[i]);
+                        if (i < possibleValues.length - 1) {
+                            helpText.append(", ");
+                        }
+                    }
+                }
+            }
         }
-        if (CommonUtils.isNotEmpty(description)) {
-            helpText.append(" = ").append(description);
+        helpText.append("\n");
+
+        return helpText.toString();
+    }
+
+    public static void collectPropertyHelpDescriptionText(
+        @NotNull DBPPropertyDescriptor property,
+        @NotNull StringBuilder helpText
+    ) {
+        String description = property.getDescription();
+        if (CommonUtils.isEmpty(description)) {
+            return;
         }
+        helpText.append(description);
         if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
             Object[] possibleValues = valueListProvider.getPossibleValues(null);
             if (!ArrayUtils.isEmpty(possibleValues)) {
@@ -363,9 +385,6 @@ public class CLIUtils {
                 }
             }
         }
-        helpText.append("\n");
-
-        return helpText.toString();
     }
 
     @NotNull
@@ -379,23 +398,47 @@ public class CLIUtils {
         }
         for (Map<String, String> row : data) {
             for (Map.Entry<String, String> entry : row.entrySet()) {
-                columnWidths.put(entry.getKey(), Math.max(columnWidths.get(entry.getKey()), entry.getValue().length()));
+                String value = entry.getValue();
+                columnWidths.put(entry.getKey(), Math.max(columnWidths.get(entry.getKey()), value == null ? 0 : value.length()));
             }
         }
 
         StringBuilder sb = new StringBuilder();
         // header
         for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
-            sb.append(String.format("%-" + (entry.getValue() + 3) + "s", entry.getKey()));
+            sb.append(String.format("%-" + (entry.getValue() + STRING_FORMAT_PADDING) + "s", entry.getKey()));
         }
         sb.append("\n");
         // rows
         for (Map<String, String> row : data) {
             for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
-                sb.append(String.format("%-" + (entry.getValue() + 3) + "s", row.get(entry.getKey())));
+                sb.append(String.format(
+                    "%-" + (entry.getValue() + STRING_FORMAT_PADDING) + "s",
+                    CommonUtils.notNull(row.get(entry.getKey()), "")
+                ));
             }
             sb.append("\n");
         }
         return sb.toString().trim();
     }
+
+
+    public static String getHelpFromCommand(@NotNull CommandLine.Model.CommandSpec commandForHelp) throws CLIException {
+        CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
+        helpSpec.header(GeneralUtils.getProductTitle());
+        try (
+            var out = new StringWriter();
+            var print = new PrintWriter(out)
+        ) {
+            var updatedCmd = new CommandLine(commandForHelp);
+            updatedCmd.usage(print);
+            return out.toString();
+        } catch (Exception e) {
+            throw new CLIException(
+                "Error generating help message: " + e.getMessage(), e,
+                CLIConstants.EXIT_CODE_ERROR
+            );
+        }
+    }
+
 }

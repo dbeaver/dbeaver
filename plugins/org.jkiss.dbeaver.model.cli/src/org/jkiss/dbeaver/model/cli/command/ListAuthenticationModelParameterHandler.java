@@ -36,9 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CommandLine.Command(name = "auth-models", description = "List available database authentication models")
-public class ListAuthenticationModelParameterHandler extends AbstractRootCommandLineParameterHandler {
-
+@CommandLine.Command(name = ListAuthenticationModelParameterHandler.COMMAND_NAME, description = "List available database authentication models")
+public class ListAuthenticationModelParameterHandler extends CLIAbstractSubcommand {
+    public static final String COMMAND_NAME = "auth-models";
     @CommandLine.Mixin
     protected ProjectOption projectOption;
 
@@ -122,30 +122,11 @@ public class ListAuthenticationModelParameterHandler extends AbstractRootCommand
             PropertyCollector propertyCollector = new PropertyCollector(credentials, true);
             propertyCollector.collectProperties();
             for (DBPPropertyDescriptor property : propertyCollector.getProperties()) {
-                String helpText = getHelpText(property);
+                String helpText = CLIUtils.getPropertyHelpText(property);
                 outBuilder.append(helpText);
             }
             outBuilder.append("\n");
         }
         return outBuilder.toString();
-    }
-
-    private static @NotNull String getHelpText(DBPPropertyDescriptor property) {
-        String displayName = property.getDisplayName();
-        String description = property.getDescription();
-        String helpText;
-        if (CommonUtils.equalObjects(displayName, description) || CommonUtils.isEmpty(description)) {
-            helpText = "  - %s = %s%n".formatted(
-                property.getId(),
-                CommonUtils.notEmpty(displayName)
-            );
-        } else {
-            helpText = "  - %s (%s) = %s%n".formatted(
-                property.getId(),
-                property.getDisplayName(),
-                property.getDescription()
-            );
-        }
-        return helpText;
     }
 }
