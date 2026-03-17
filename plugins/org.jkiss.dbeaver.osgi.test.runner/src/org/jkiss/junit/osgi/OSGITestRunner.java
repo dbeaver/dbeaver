@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     private Set<String> forceDependencies;
     private String[] args;
     private Object runnerProxy = null;
+    private String[] vmArgs;
+    private RunWithApplication.Property[] frameworkProperties;
 
     public OSGITestRunner(
         @NotNull Class<? extends IAsyncApplication> testClass
@@ -131,6 +133,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             this.appRegistryName = annotation.registryName();
             this.appBundleName = annotation.bundleName();
             this.args = annotation.args();
+            this.vmArgs = annotation.vmArgs();
+            this.frameworkProperties = annotation.properties();
             this.forceDependencies = Arrays.stream(annotation.forceDependencies()).collect(Collectors.toSet());
 
         } else {
@@ -246,6 +250,13 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     private void startFramework() throws Exception {
+        if (vmArgs != null && vmArgs.length > 1 && vmArgs.length % 2 == 0) {
+            for (int i = 0; i < vmArgs.length; i += 2) {
+                String key = vmArgs[i];
+                String value = vmArgs[i + 1];
+                System.setProperty(key, value);
+            }
+        }
         framework.init();
         // Start the OSGi framework
         BundleContext context = framework.getBundleContext();
@@ -320,6 +331,10 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             config.put("org.osgi.framework.debug.loader", "true");
             config.put("org.osgi.framework.debug.resolver", "true");
         }
+        for (RunWithApplication.Property frameworkProperty : frameworkProperties) {
+            config.put(frameworkProperty.name(), frameworkProperty.value());
+        }
+
         // Enable boot delegation, to avoid class loading issues for some classes
         config.put("osgi.compatibility.bootdelegation", "true");
         FrameworkFactory frameworkFactory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
@@ -342,8 +357,9 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         // Install all bundles from the directory
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
             if (
-                //TODO research why app bundles skipped
-                bundleFile.contains(".app")
+                // Avoid adding app bundles to bundle start list,
+                // We already have a specificied app to run
+                bundleFile.contains(".app.")
                     && !bundleFile.contains(appBundleName)
                     && !bundleFile.contains("org.eclipse")
                     && forceDependencies.stream().noneMatch(bundleFile::contains)
@@ -414,7 +430,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                         testBundle = bundle;
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
-                        //log.error(e);
+                        log.error(e);
                     }
                     log.debug("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {

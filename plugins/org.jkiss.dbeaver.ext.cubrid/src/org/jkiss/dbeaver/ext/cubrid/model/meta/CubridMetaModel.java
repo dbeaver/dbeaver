@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,7 +228,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return table;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
             @NotNull GenericStructContainer container,
@@ -341,7 +341,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws DBException {
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-        return new CubridTrigger(table, name, description, dbResult);
+        return new CubridTrigger(container, (CubridTable) table, name, description, dbResult);
     }
 
     @NotNull
@@ -369,10 +369,13 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
         String tableName = JDBCUtils.safeGetString(dbResult, "target_class_name");
-        String owner = JDBCUtils.safeGetString(dbResult, "target_owner_name");
+        String targerOwner = JDBCUtils.safeGetString(dbResult, "target_owner_name");
         DBRProgressMonitor monitor = dbResult.getSession().getProgressMonitor();
-        CubridTable cubridTable = (CubridTable) container.getDataSource().findTable(monitor, null, owner, tableName);
-        return new CubridTrigger(cubridTable, name, description, dbResult);
+        CubridTable table = null;
+        if (tableName != null) {
+            table = (CubridTable) container.getDataSource().findTable(monitor, null, targerOwner, tableName);
+        }
+        return new CubridTrigger(container, table, name, description, dbResult);
     }
 
     @Override

@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="25.3.1.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="26.0.1.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -10,7 +10,7 @@
 
     <launcherArgs>
         <programArgs></programArgs>
-        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib -nosplash</programArgsMac>
+        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
@@ -64,7 +64,7 @@
         <url>https://dbeaver.io/about/</url>
         <text>
             DBeaver - Universal Database Manager
-            Copyright (C) 2010-2025 DBeaver Corp and others
+            Copyright (C) 2010-2026 DBeaver Corp and others
 
             Licensed under the Apache License, Version 2.0 (the "License");
             you may not use this file except in compliance with the License.

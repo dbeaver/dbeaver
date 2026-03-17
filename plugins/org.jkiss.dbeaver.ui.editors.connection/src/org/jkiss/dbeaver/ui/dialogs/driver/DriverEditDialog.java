@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -335,10 +335,18 @@ public class DriverEditDialog extends HelpEnabledDialog {
             threadSafeCheck.setEnabled(false);
         }
 
-        Group infoGroup = UIUtils.createControlGroup(propsGroup, UIConnectionMessages.dialog_edit_driver_description, 4, -1, -1);
+        Composite groupWrapper = UIUtils.createComposite(propsGroup, 1);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 4;
-        infoGroup.setLayoutData(gd);
+        groupWrapper.setLayoutData(gd);
+        Composite infoGroup = UIUtils.createTitledComposite(
+            groupWrapper,
+            UIConnectionMessages.dialog_edit_driver_description,
+            4,
+            GridData.FILL_HORIZONTAL,
+            SWT.DEFAULT
+        );
+        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Text idText = UIUtils.createLabelText(
             infoGroup,
@@ -561,14 +569,14 @@ public class DriverEditDialog extends HelpEnabledDialog {
         });
         deleteButton.setEnabled(false);
 
-        UIUtils.createHorizontalLine(libsControlGroup);
+        UIUtils.createLabelSeparator(libsControlGroup, SWT.HORIZONTAL);
 
         if (!DBWorkbench.isDistributed()) {
             updateVersionButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     driver.setDriverLibraries(libraries);
-                    driver.getDefaultDriverLoader().updateFiles();
+                    driver.getDefaultDriverLoader().updateFiles(true);
                     changeLibContent();
                 }
             });

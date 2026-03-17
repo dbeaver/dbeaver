@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (showDefaults && CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {
-                objectName = object.getClass().getName() + "@" + object.hashCode(); //$NON-NLS-1$
+                if (!object.isPersisted()) {
+                    objectName = ""; //$NON-NLS-1$
+                } else {
+                    objectName = "...?"; //$NON-NLS-1$
+                }
             }
         }
         return objectName;
@@ -807,17 +811,20 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
-            Object valueObject = getValueObject();
-            DBSObject parentObject = null;
-            if (valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)) {
-                parentObject = dbsObject;
-            }
-            return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
+            return dataSource.getObjectFilter(childrenClass, getFilterObject(), firstMatch);
         }
         return null;
     }
 
-    public boolean setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
+    @Nullable
+    public DBSObject getFilterObject() {
+        Object valueObject = getValueObject();
+        return valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)
+            ? dbsObject : null;
+    }
+
+
+    public boolean setNodeFilter(DBXTreeItem meta, @Nullable DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {

@@ -389,13 +389,13 @@
                     sampleURL="jdbc:IRIS://{host}:{port}/{database}"
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/iris/"
-                    description="InterSystems IRIS."
+                    description="InterSystems IRIS"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,object">
 <!--                    <replace provider="generic" driver="cache"/>-->
-                    <file type="jar" path="maven:/com.intersystems:intersystems-jdbc:RELEASE" bundle="!drivers.intersystem"/>
+                    <file type="jar" path="maven:/com.intersystems:intersystems-jdbc:RELEASE[3.10.5]" bundle="!drivers.intersystems"/>
                     <file type="license" path="licenses/external/mit.txt"/>
-                    <file type="jar" path="drivers/intersystem" bundle="drivers.intersystem"/>
+                    <file type="jar" path="drivers/intersystems" bundle="drivers.intersystems"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -415,26 +415,7 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
-                <!-- DuckDB -->
-                <driver
-                        id="duckdb_jdbc"
-                        label="DuckDB"
-                        icon="icons/duckdb_icon.png"
-                        iconBig="icons/duckdb_icon_big.png"
-                        class="org.duckdb.DuckDBDriver"
-                        sampleURL="jdbc:duckdb:{file}"
-                        defaultPort=""
-                        webURL="https://duckdb.org/docs/api/java"
-                        embedded="true"
-                        anonymous="true"
-                        description="DuckDB JDBC driver"
-                        supportedConfigurationTypes="MANUAL,URL"
-                        categories="sql,embedded">
-                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
-                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
-                    <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
-                </driver>
-
+                <driver id="duckdb_jdbc"/>
                 <!-- Teradata -->
                 <driver
                     id="teradata"
@@ -794,6 +775,8 @@
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
                     <parameter name="identifier-quotes" value="`:`"/>
+                    <property  name="varcharAsString" value="true"/>
+                    <property  name="conmode" value="1"/>
                 </driver>
 
                 <!-- TDengine Cloud -->
@@ -1290,16 +1273,17 @@
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
-                <!-- Salesforce Data Cloud (Legacy) -->
+                <!-- Salesforce Data 360 (Legacy) -->
                 <driver
                         id="salesforce_datacloud_jdbc"
-                        label="Salesforce Data Cloud (Legacy)"
+                        label="Salesforce Data 360 (Legacy)"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
-                        icon="icons/salesforce_icon.png"
-                        iconBig="icons/salesforce_icon_big.png"
+                        icon="icons/salesforce_icon.svg"
+                        iconBig="icons/salesforce_icon_big.svg"
+                        logoImage="icons/salesforce_logo.svg"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Legacy Salesforce Data Cloud JDBC driver"
+                        description="Legacy Salesforce Data 360 JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
@@ -1309,16 +1293,17 @@
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
-                <!-- Salesforce Data Cloud -->
+                <!-- Salesforce Data 360 -->
                 <driver
                         id="salesforce_datacloud"
-                        label="Salesforce Data Cloud"
+                        label="Salesforce Data 360"
                         class="com.salesforce.datacloud.jdbc.DataCloudJDBCDriver"
-                        icon="icons/salesforce_icon.png"
-                        iconBig="icons/salesforce_icon_big.png"
+                        icon="icons/salesforce_icon.svg"
+                        iconBig="icons/salesforce_icon_big.svg"
+                        logoImage="icons/salesforce_logo.svg"
                         sampleURL="jdbc:salesforce-datacloud://{database}"
                         defaultDatabase="login.salesforce.com"
-                        description="Salesforce Data Cloud JDBC driver"
+                        description="Salesforce Data 360 JDBC driver"
                         webURL="https://github.com/forcedotcom/datacloud-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
@@ -1327,6 +1312,8 @@
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA"/>
+                    <parameter name="active-entity-type" value="schema"/>
                 </driver>
 
                 <!-- Teiid -->

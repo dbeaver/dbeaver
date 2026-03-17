@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,8 @@ public class OracleConstants {
     public static final String PROP_INTERNAL_LOGON = DBConstants.INTERNAL_PROP_PREFIX + "internal-logon@";
     public static final String PROP_TNS_PATH = DBConstants.INTERNAL_PROP_PREFIX + "tns-path@";
     public static final String PROP_AUTH_LOGON_AS = "oracle.logon-as";
+    public static final String PROP_SET_OS_USER = "oracle.set-os-user"; //$NON-NLS-1$
+    public static final String CONN_PROP_SESSION_OS_USER = "v$session.osuser"; //$NON-NLS-1$
 
     public static final String PROP_SESSION_LANGUAGE = DBConstants.INTERNAL_PROP_PREFIX + "session-language@";
     public static final String PROP_SESSION_TERRITORY = DBConstants.INTERNAL_PROP_PREFIX + "session-territory@";
@@ -132,6 +134,7 @@ public class OracleConstants {
     public static final String TYPE_NAME_ROWID = "ROWID";
     public static final String TYPE_NAME_VARCHAR2 = "VARCHAR2";
     public static final String TYPE_CLOB = "CLOB";
+    public static final String TYPE_NCLOB = "NCLOB";
     public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_NUMBER = "NUMBER";
     public static final String TYPE_DECIMAL = "DECIMAL";

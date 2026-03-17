@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -844,6 +845,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
+    @Nullable
+    protected Font getObjectFont(OBJECT_TYPE item) {
+        return null;
+    }
+
     protected boolean isNewObject(OBJECT_TYPE objectValue) {
         return false;
     }
@@ -1172,6 +1178,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return null;
             }
             return getObjectForeground((OBJECT_TYPE) element);
+        }
+
+        @Override
+        public Font getFont(Object element) {
+            if (element instanceof ObjectsGroupingWrapper) {
+                return null;
+            }
+            return getObjectFont((OBJECT_TYPE) element);
         }
 
         @Override
@@ -1663,8 +1677,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     (bounds.width - ext.width) / 2,
                     (bounds.height - ext.height) / 2);
                 new AbstractUIJob("Progress painter") {
+                    @NotNull
                     @Override
-                    protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+                    protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
                         if (ObjectListControl.this.isLoading()) {
                             tickCount++;
                             getControl().redraw();

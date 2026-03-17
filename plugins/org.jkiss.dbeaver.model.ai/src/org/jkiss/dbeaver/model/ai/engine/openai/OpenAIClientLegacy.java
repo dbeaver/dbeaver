@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.AIMetaTypes;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageFactory;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionRequest;
@@ -33,7 +35,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 
 public class OpenAIClientLegacy extends OpenAIClient {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -41,7 +45,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
 
     public OpenAIClientLegacy(
         @NotNull String baseUrl,
-        @NotNull List<OpenAIClient.HttpRequestFilter> requestFilters
+        @NotNull List<HttpRequestFilter> requestFilters
     ) {
         super(baseUrl, requestFilters);
     }
@@ -60,6 +64,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
         @NotNull DBRProgressMonitor monitor,
         @NotNull OAIResponsesRequest completionRequest
     ) throws DBException {
+        Instant now = Instant.now();
         ChatCompletionRequest chatRequest = new ChatCompletionRequest();
         chatRequest.setMessages(completionRequest.input.stream().map(om -> new ChatMessage(
             om.role,
@@ -80,14 +85,30 @@ public class OpenAIClientLegacy extends OpenAIClient {
         HttpRequest modifiedRequest = applyFilters(request);
         String response = client.send(monitor, modifiedRequest);
         ChatCompletionResult chatCompletionResult = GSON.fromJson(response, ChatCompletionResult.class);
+
+        int systemPromptLength = completionRequest.input.stream()
+            .filter(it -> it.role.toLowerCase(Locale.ROOT).equals("system"))
+            .mapToInt(it -> it.content.getFirst().text.length())
+            .sum();
+
+        AIMessageMeta messageMeta = new AIMessageMeta(
+            AIMetaTypes.PROMPT,
+            OpenAIConstants.OPENAI_ENGINE,
+            completionRequest.model,
+            chatCompletionResult.getAIUsage(),
+            Duration.between(now, Instant.now()),
+            systemPromptLength
+        );
+
         OAIResponsesResponse oaiResponse = new OAIResponsesResponse();
         oaiResponse.output = chatCompletionResult.getChoices().stream().map(
-            c -> new OAIMessage(
+            c -> OAIMessageFactory.fromAIMessage(
                 new AIMessage(
                     AIMessageType.ASSISTANT,
-                    c.getMessage().getContent())
+                    c.getMessage().getContent(),
+                    List.of(messageMeta)
+                )
             )).toList();
         return oaiResponse;
     }
-
 }

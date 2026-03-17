@@ -38,6 +38,7 @@ public class WSEventController {
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
     protected final List<WSEvent> eventsPool = new ArrayList<>();
     private boolean forceSkipEvents = false;
+    private CBEventCheckJob eventCheckJob;
 
     public WSEventController() {
 
@@ -67,7 +68,15 @@ public class WSEventController {
      * Add cb event to the event pool
      */
     public void scheduleCheckJob() {
-        new CBEventCheckJob().schedule();
+        eventCheckJob = new CBEventCheckJob();
+        eventCheckJob.schedule();
+    }
+
+    public void stop() {
+        if (eventCheckJob != null) {
+            eventCheckJob.cancel();
+            eventCheckJob = null;
+        }
     }
 
     /**

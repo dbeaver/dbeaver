@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 
@@ -28,9 +29,15 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
  */
 public interface SQLPlanViewProvider {
 
-    Viewer createPlanViewer(IWorkbenchPart workbenchPart, Composite parent);
+    @NotNull
+    Viewer createPlanViewer(@NotNull IWorkbenchPart workbenchPart, @NotNull Composite parent);
 
-    void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan);
+    void visualizeQueryPlan(@NotNull Viewer viewer, @NotNull SQLQuery query, @NotNull DBCPlan plan);
 
-    void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan);
+    void contributeActions(
+        @NotNull Viewer viewer,
+        @NotNull IContributionManager contributionManager,
+        @NotNull SQLQuery lastQuery,
+        @NotNull DBCPlan lastPlan
+    );
 }

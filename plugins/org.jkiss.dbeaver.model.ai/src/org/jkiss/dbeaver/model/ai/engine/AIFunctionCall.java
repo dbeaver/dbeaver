@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 
 import java.util.Map;
 
@@ -27,24 +27,40 @@ import java.util.Map;
  * AI function call info
  */
 public class AIFunctionCall {
-    @NotNull
+    @Nullable
     private String functionName;
-    @NotNull
+    @Nullable
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
     @Nullable
     private AIFunctionDescriptor function;
 
+    /**
+     * Properties received from AI engine. Can be required to pass down for further messages
+     * Example: Anthropic requires passing tool_use_id for function results to work properly
+     */
+    @Nullable
+    private Map<String, String> messageMetadata;
+
     public AIFunctionCall() {
     }
 
-    public AIFunctionCall(@NotNull String functionName, @NotNull Map<String, Object> arguments) {
+    public AIFunctionCall(
+        @NotNull String functionName,
+        @Nullable Map<String, Object> arguments,
+        @Nullable Map<String, String> messageMetadata
+    ) {
         this.functionName = functionName;
         this.arguments = arguments;
+        this.messageMetadata = messageMetadata;
     }
 
-    @NotNull
+    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
+        this(functionName, arguments, null);
+    }
+
+    @Nullable
     public String getFunctionName() {
         return functionName;
     }
@@ -53,13 +69,22 @@ public class AIFunctionCall {
         this.functionName = functionName;
     }
 
-    @NotNull
+    @Nullable
     public Map<String, Object> getArguments() {
         return arguments;
     }
 
     public void setArguments(@NotNull Map<String, Object> arguments) {
         this.arguments = arguments;
+    }
+
+    @Nullable
+    public Map<String, String> getMessageMetadata() {
+        return messageMetadata;
+    }
+
+    public void setMessageMetadata(@NotNull Map<String, String> messageMetadata) {
+        this.messageMetadata = Map.copyOf(messageMetadata);
     }
 
     @Nullable
@@ -84,5 +109,6 @@ public class AIFunctionCall {
     public String toString() {
         return functionName + "(" + arguments + ")";
     }
+
 
 }
