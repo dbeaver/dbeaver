@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+package org.jkiss.dbeaver.model.exec.plan;
 
-public interface AISchemaGenerator {
-    String generateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AIDatabaseContext dbContext,
-        @NotNull DBSEntity entity,
-        boolean useFqn
-    ) throws DBException;
+/**
+ * Execution plan source data format
+ */
+public enum DBCPlanSourceFormat {
+
+    NONE, // N/A
+    TEXT, // string form
+    JSON, // string form
+    XML, // string form
+    RESULT_SET // CachedResultSet
+
 }
