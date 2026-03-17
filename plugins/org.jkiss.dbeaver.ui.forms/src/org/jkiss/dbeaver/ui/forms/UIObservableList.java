@@ -16,31 +16,33 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-@SuppressWarnings("CheckStyle")
-record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class<T> type) implements UIObservable<T> {
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * A list whose changes can be observed.
+ *
+ * @param <E> the type of elements in this list
+ */
+public sealed interface UIObservableList<E> extends List<E> permits UIObservableListImpl {
     @NotNull
-    static <T> UIObservableImpl<T> of(@Nullable T value, @NotNull Class<T> type) {
-        return new UIObservableImpl<>(new WritableValue<>(value, type), type);
-    }
-
-    @Override
-    public T get() {
-        return delegate.getValue();
-    }
-
-    @Override
-    public void set(T value) {
-        delegate.setValue(value);
+    static <E> UIObservableList<E> of(@NotNull Class<E> type) {
+        return UIObservableListImpl.of(List.of(), type);
     }
 
     @NotNull
-    @Override
-    public Class<T> type() {
-        return type;
+    @SuppressWarnings("unchecked")
+    static <E> UIObservableList<E> copyOf(@NotNull Collection<? extends E> c, @NotNull Class<E> type) {
+        return UIObservableListImpl.of((Collection<E>) c, type);
     }
+
+    /**
+     * Gets the type of this list's elements.
+     *
+     * @return the type of the value
+     */
+    @NotNull
+    Class<E> type();
 }

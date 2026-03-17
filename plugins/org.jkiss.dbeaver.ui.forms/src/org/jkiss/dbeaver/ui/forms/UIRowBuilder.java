@@ -26,7 +26,6 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * The builder for a row inside a panel.
@@ -47,17 +46,42 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder group(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
+    UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);
+    UIRowBuilder titledPanel(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder label(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler);
+    UIRowBuilder scrolledPanel(boolean horizontal, boolean vertical, @NotNull Consumer<? super UIPanelBuilder> handler);
+
+    @NotNull
+    UIRowBuilder label(@NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler);
+
+    @NotNull
+    default UIRowBuilder label(@NotNull UIObservable<String> text) {
+        return label(lb -> lb.text(text));
+    }
 
     @NotNull
     default UIRowBuilder label(@NotNull String text) {
-        return label(text, identityConsumer());
+        return label(UIObservable.of(text));
+    }
+
+    @NotNull
+    UIRowBuilder link(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<SelectionEvent> onSelect,
+        @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler
+    );
+
+    @NotNull
+    default UIRowBuilder link(@NotNull UIObservable<String> text, @NotNull Consumer<SelectionEvent> onSelect) {
+        return link(text, onSelect, identityConsumer());
+    }
+
+    @NotNull
+    default UIRowBuilder link(@NotNull String text, @NotNull Consumer<SelectionEvent> onSelect) {
+        return link(UIObservable.of(text), onSelect);
     }
 
     @NotNull
@@ -79,7 +103,17 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
 
     @NotNull
+    default UIRowBuilder radioButton(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
+        return radioButton(text, bb -> bb.selected(selected));
+    }
+
+    @NotNull
     UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
+        return checkBox(text, bb -> bb.selected(selected));
+    }
 
     @NotNull
     <T> UIRowBuilder textField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler);
@@ -122,11 +156,38 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
 
     @NotNull
     <T> UIRowBuilder comboBox(
-        @NotNull List<? extends T> items,
+        @NotNull UIObservableList<? extends T> items,
         @NotNull UIObservable<T> binding,
         @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     );
+
+    @NotNull
+    default <T> UIRowBuilder comboBox(
+        @NotNull UIObservableList<? extends T> items,
+        @NotNull UIObservable<T> binding,
+        @NotNull Function<? super T, String> converter
+    ) {
+        return comboBox(items, binding, converter, identityConsumer());
+    }
+
+    @NotNull
+    default <T> UIRowBuilder comboBox(
+        @NotNull List<? extends T> items,
+        @NotNull UIObservable<T> binding,
+        @NotNull Function<? super T, String> converter,
+        @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
+    ) {
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Collection doesn't have any elements");
+        }
+        return comboBox(
+            UIObservableList.copyOf(items, binding.type()),
+            binding,
+            converter,
+            handler
+        );
+    }
 
     @NotNull
     default <T> UIRowBuilder comboBox(
@@ -151,11 +212,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     ) {
-        var items = Stream.of(binding.type().getEnumConstants())
-            .map(value -> (T) value)
-            .toList();
-
-        return comboBox(items, binding, converter, handler);
+        return comboBox(
+            List.of(binding.type().getEnumConstants()),
+            binding,
+            converter,
+            handler
+        );
     }
 
     @NotNull

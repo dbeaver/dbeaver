@@ -409,7 +409,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                             getShell(),
-                            getWizard().getDataSourceRegistry(),
+                            Objects.requireNonNull(getWizard().getDataSourceRegistry()),
                             filterInfo.title,
                             filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
                             true);

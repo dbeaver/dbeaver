@@ -41,8 +41,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * ClientHomesPanel
@@ -128,7 +128,6 @@ public class ClientHomesPanel extends Composite {
             GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL,
             0
         );
-        ((GridData) (infoGroup.getLayoutData())).minimumWidth = 300;
         idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
         pathText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);
         nameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
