@@ -293,6 +293,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                 }
             } else if (!isInLiteral) {
                 DBSObject rootObject = null;
+                List<DBSObject> rootObjects = null;
                 if (queryType == SQLCompletionRequest.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Part of column name
                     // Try to get from active object
@@ -321,26 +322,36 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
                     }
                     if (tableAlias == null && !CommonUtils.isEmpty(wordPart)) {
-                        // May be an incomplete table alias. Try to find such table
-                        rootObject = getTableFromAlias(sc, wordPart);
-                        if (rootObject != null) {
-                            // Found alias - no proposals
-                            searchFinished = true;
-                            return;
+                        // May be an incomplete table alias or column name prefix.
+                        // Instead of stopping here, fall through to show columns from all tables.
+                        // This fixes the case where wordPart matches a table name (e.g. "mem" matches "MEM_Head")
+                        // but the user is actually trying to type a column name like "memo_no".
+                    }
+                    if (tableAlias == null) {
+                        // Use root dataSource (not sc) to resolve fully-qualified table names
+                        // (e.g. db_backoffice.dbo.MEM_Head) that may belong to a different catalog
+                        // than the currently active database (sc). This mirrors what the emptyWord
+                        // branch does at line 222.
+                        rootObjects = getTableListFromAlias((DBSObjectContainer) dataSource, null);
+                    } else {
+                        // Use root dataSource (not sc) to resolve cross-database aliases
+                        rootObject = getTableFromAlias((DBSObjectContainer) dataSource, tableAlias);
+                        if (rootObject == null) {
+                            // Maybe alias is a table name
+                            String[] allNames = SQLUtils.splitFullIdentifier(
+                                tableAlias,
+                                sqlDialect.getCatalogSeparator(),
+                                sqlDialect.getIdentifierQuoteStrings(),
+                                false);
+                            rootObject = SQLSearchUtils.findObjectByFQN(monitor, (DBSObjectContainer) dataSource, request, Arrays.asList(allNames));
                         }
                     }
-                    rootObject = getTableFromAlias(sc, tableAlias);
-                    if (rootObject == null && tableAlias != null) {
-                        // Maybe alias ss a table name
-                        String[] allNames = SQLUtils.splitFullIdentifier(
-                            tableAlias,
-                            sqlDialect.getCatalogSeparator(),
-                            sqlDialect.getIdentifierQuoteStrings(),
-                            false);
-                        rootObject = SQLSearchUtils.findObjectByFQN(monitor, sc, request, Arrays.asList(allNames));
-                    }
                 }
-                if (rootObject != null) {
+                if (rootObjects != null && !rootObjects.isEmpty()) {
+                    for (DBSObject obj : rootObjects) {
+                        makeProposalsFromChildren(obj, wordPart, false, parameters);
+                    }
+                } else if (rootObject != null) {
                     makeProposalsFromChildren(rootObject, wordPart, false, parameters);
                 } else {
                     // Get root object or objects from active database (if any)
