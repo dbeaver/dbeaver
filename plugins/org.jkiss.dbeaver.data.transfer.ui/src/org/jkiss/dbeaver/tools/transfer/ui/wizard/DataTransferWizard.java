@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.widgets.Composite;
@@ -48,6 +49,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
+import org.jkiss.dbeaver.tools.transfer.ui.dialog.DataTransferConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
@@ -561,13 +563,13 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
 
         if (settings.getProducer() != null) {
-            config.put("producer", settings.getProducer().getId());
+            config.put(DTConstants.PROP_PRODUCER_TYPE, settings.getProducer().getId());
         }
         if (settings.getConsumer() != null) {
-            config.put("consumer", settings.getConsumer().getId());
+            config.put(DTConstants.PROP_CONSUMER_TYPE, settings.getConsumer().getId());
         }
         if (settings.getProcessor() != null) {
-            config.put("processor", settings.getProcessor().getId());
+            config.put(DTConstants.PROP_PROCESSOR_TYPE, settings.getProcessor().getId());
         }
 
         String property = System.getProperty(CLI_ARG_DEBUG_DISABLE_DT_SETTINGS_SAVE); // Turn off processor settings save. For Testing only. Use it after vmargs -Ddbeaver.debug.disable-data-transfer-settings-save=true
@@ -592,14 +594,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     for (Map.Entry<String, Object> prop : props.entrySet()) {
                         propNames.append(prop.getKey()).append(',');
                     }
-                    procSettings.put("@propNames", propNames.toString());
+                    procSettings.put(DTConstants.PROP_NAME, propNames.toString());
                     for (Map.Entry<String, Object> prop : props.entrySet()) {
                         procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                     }
                 }
                 processorsSection.put(procDescriptor.getFullId(), procSettings);
             }
-            config.put("processors", processorsSection);
+            config.put(DTConstants.PROP_PROCESSORS_LIST, processorsSection);
         }
 
         return config;
@@ -666,17 +668,19 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
         @Nullable Collection<IDataTransferProducer<?>> producers,
-        @Nullable Collection<IDataTransferConsumer<?,?>> consumers)
-    {
-        openWizard(workbenchWindow, producers, consumers, null);
+        @Nullable Collection<IDataTransferConsumer<?, ?>> consumers,
+        boolean includePipesConfigurationPage
+    ) {
+        openWizard(workbenchWindow, producers, consumers, StructuredSelection.EMPTY, includePipesConfigurationPage);
     }
 
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
         @Nullable Collection<IDataTransferProducer<?>> producers,
         @Nullable Collection<IDataTransferConsumer<?,?>> consumers,
-        @Nullable IStructuredSelection selection)
-    {
+        @NotNull IStructuredSelection selection,
+        boolean includePipesConfigurationPage
+    ) {
         DataTransferSettings settings = new DataTransferSettings(
             producers,
             consumers,
@@ -687,8 +691,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             false,
             false);
 
-        DataTransferWizard wizard = new DataTransferWizard(null, settings, true);
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
+        DataTransferWizard wizard = new DataTransferWizard(null, settings, true) {
+            @Override
+            protected boolean includePipesConfigurationPage() {
+                return includePipesConfigurationPage;
+            }
+        };
+
+        TaskConfigurationWizardDialog dialog = new DataTransferConfigurationWizardDialog(workbenchWindow, wizard, selection);
         dialog.open();
     }
 

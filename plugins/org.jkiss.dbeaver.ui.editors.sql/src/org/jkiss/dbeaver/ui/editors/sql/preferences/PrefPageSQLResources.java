@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageSQLResources
  */
-public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.resources"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(PrefPageSQLResources.class);
@@ -65,6 +64,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
+    private Button autoAttachConnectionsToScriptsCheck;
     private Text scriptTitlePattern;
     private Text scriptFileNamePattern;
     private Spinner bigScriptFileSizeBoundarySpinner;
@@ -91,7 +91,12 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // Resources
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite scriptsGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_resources,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             if (this.isStandaloneApp) {
                 deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -113,6 +118,13 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 SQLEditorMessages.pref_page_sql_editor_checkbox_create_script_folders_tip,
                 store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS),
                 2);
+            autoAttachConnectionsToScriptsCheck = UIUtils.createCheckbox(
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection_tip,
+                store.getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS),
+                2
+            );
             scriptTitlePattern = UIUtils.createLabelText(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_title_pattern,
@@ -163,8 +175,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // New Script template
         {
-            Composite group = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_new_script_template_group, 1, GridData.FILL_BOTH, 0);
-            ((GridData) group.getLayoutData()).horizontalSpan = 2;
+            Composite group = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_new_script_template_group, 1, GridData.FILL_BOTH);
 
             sqlTemplateEnabledCheckbox = UIUtils.createCheckbox(
                 group,
@@ -212,14 +223,13 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
             expander.setText(SQLEditorMessages.sql_editor_prefs_script_advanced_settings);
 
-            Composite connGroup = UIUtils.createControlGroup(
+            Composite connGroup = UIUtils.createTitledComposite(
                 expander,
                 SQLEditorMessages.pref_page_sql_editor_group_connection_association,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
-            expander.setClient(connGroup);
+            expander.setClient(connGroup.getParent());
             Label tipLabel = new Label(connGroup, SWT.WRAP);
             tipLabel.setText(SQLEditorMessages.pref_page_sql_editor_checkbox_bind_connection_hint);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -296,6 +306,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             deleteEmptyCombo.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
         }
         autoFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
+        autoAttachConnectionsToScriptsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS));
         connectionFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
         scriptFileNamePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
@@ -344,6 +355,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
         }
         store.setValue(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+        store.setValue(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS, autoAttachConnectionsToScriptsCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         store.setValue(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN, scriptFileNamePattern.getText());

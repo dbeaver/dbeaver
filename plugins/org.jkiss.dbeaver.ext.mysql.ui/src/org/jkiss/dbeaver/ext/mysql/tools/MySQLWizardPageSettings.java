@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLNativeCredentialsSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
@@ -47,7 +46,12 @@ abstract class MySQLWizardPageSettings<WIZARD extends AbstractNativeToolWizard> 
     {
         final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
         if (connectionInfo != null) {
-            Group securityGroup = UIUtils.createControlGroup(parent, MySQLUIMessages.tools_db_export_wizard_page_settings_security_group, 3, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite securityGroup = UIUtils.createTitledComposite(
+                parent,
+                MySQLUIMessages.tools_db_export_wizard_page_settings_security_group,
+                3,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             Label infoLabel = new Label(securityGroup, SWT.NONE);
             infoLabel.setText(NLS.bind(MySQLUIMessages.tools_db_export_wizard_page_settings_security_label_info, connectionInfo.getUserName()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);

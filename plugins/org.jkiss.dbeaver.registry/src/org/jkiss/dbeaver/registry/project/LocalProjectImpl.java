@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import java.util.Collection;
 
 public class LocalProjectImpl extends BaseProjectImpl {
     @NotNull
-    protected final Path projectPath;
+    protected Path projectPath;
 
     public LocalProjectImpl(
         @NotNull DBPWorkspace workspace,
@@ -131,5 +131,9 @@ public class LocalProjectImpl extends BaseProjectImpl {
     @Override
     protected DBPDataSourceRegistry createDataSourceRegistry() {
         return new DataSourceRegistry<>(this);
+    }
+
+    public void setAbsolutePath(@NotNull Path projectPath) {
+        this.projectPath = projectPath;
     }
 }

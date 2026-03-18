@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -397,7 +396,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return;
             }
             Class<?> nodeItemClass = node.getObject().getClass();
-            if (nodeItemClass == DataSourceDescriptor.class) {
+            if (DBPDataSourceContainer.class.isAssignableFrom(nodeItemClass)) {
                 // Use interface instead of implementation.
                 // Otherwise ClassNotFoundException may happen
                 nodeItemClass = DBPDataSourceContainer.class;
@@ -414,7 +413,12 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                         UIIcon.SQL_NEW_CONNECTION : node.getNodeIconDefault();
                     createActions.add(
                         makeCreateContributionItem(
-                            site, nodeItemClass.getName(), node.getNodeTypeLabel(), nodeIcon, false));
+                            site,
+                            nodeItemClass.getName(),
+                            node.getNodeTypeLabel(),
+                            nodeIcon,
+                            false
+                        ));
                 }
             }
 
@@ -487,8 +491,12 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     }
 
     private static IContributionItem makeCreateContributionItem(
-        @Nullable IWorkbenchPartSite site, String objectType, String objectTypeName, DBPImage objectIcon, boolean isFolder)
-    {
+        @Nullable IWorkbenchPartSite site,
+        @NotNull String objectType,
+        @NotNull String objectTypeName,
+        @Nullable DBPImage objectIcon,
+        boolean isFolder
+    ) {
         if (site == null) {
             return DUMMY_CONTRIBUTION_ITEM;
         }

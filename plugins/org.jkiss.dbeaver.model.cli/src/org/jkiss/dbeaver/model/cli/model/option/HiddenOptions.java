@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import picocli.CommandLine;
 
 /**
@@ -25,39 +26,51 @@ import picocli.CommandLine;
 public class HiddenOptions {
     public static final String PRODUCT_OPTION = "-product";
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-cli-mode"}, hidden = true)
     private boolean cliMode;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-consoleLog"}, hidden = true)
     private boolean consoleLog;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-registryMultiLanguage"}, hidden = true)
     private boolean registryMultiLanguage;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {PRODUCT_OPTION}, arity = "1", hidden = true)
     private String product;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-dev"}, arity = "1", hidden = true)
     private String dev;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-os"}, arity = "1", hidden = true)
     private String os;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-ws"}, arity = "1", hidden = true)
     private String ws;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-arch"}, arity = "1", hidden = true)
     private String arch;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-eclipse.keyring"}, arity = "1", hidden = true)
     private String eclipseKeyring;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-launcher"}, arity = "1", hidden = true)
     private String launcher;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-showsplash"}, hidden = true)
     private boolean showSplash;
 
+    @NonExecutableOption
     @CommandLine.Option(names = {"-debug"}, hidden = true)
     private boolean debug;
 }

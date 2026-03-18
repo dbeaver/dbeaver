@@ -44,9 +44,11 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -192,7 +194,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     Map<String, Object> properties = new HashMap<>();
                     // Default values from wizard
                     IDialogSettings dtSettings = DataTransferWizard.getWizardDialogSettings();
-                    IDialogSettings procListSection = dtSettings.getSection("processors");
+                    IDialogSettings procListSection = dtSettings.getSection(DTConstants.PROP_PROCESSORS_LIST);
                     IDialogSettings procSettings = null;
                     if (procListSection != null) {
                         procSettings = procListSection.getSection("stream_consumer:" + processor.getId());
@@ -220,8 +222,14 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producerSettings.setQueryRowCount(false);
                     // disable OpenNewconnection by default (#6432)
                     producerSettings.setOpenNewConnections(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+
+                    boolean selectedRowsOnly = !CommonUtils.isEmpty(options.getSelectedRows());
+                    boolean selectedColumnsOnly = !CommonUtils.isEmpty(options.getSelectedColumns());
+                    if (selectedRowsOnly || selectedColumnsOnly) {
+                        producerSettings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly));
+                    } else {
+                        producerSettings.setFetchedRowsPolicy(null);
+                    }
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 

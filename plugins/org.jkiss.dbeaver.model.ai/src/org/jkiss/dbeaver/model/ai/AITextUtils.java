@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public class AITextUtils {
 
     private static final Pattern MARKDOWN_LINK_PARSER = Pattern.compile("\\[([^]]+)]\\(([^)]+)\\)");
     private static final Pattern URL_PARSER = Pattern.compile("\\b(https?://|ftp://)[^\\s<>\"{}|\\\\^`\\[\\]]+");
+    public static final String CODE_BLOCK_MARK = "```";
 
     private AITextUtils() {
         // prevents instantiation
@@ -61,7 +62,7 @@ public class AITextUtils {
 
     /**
      * Extracts the contents of the first Markdown code block in the input.
-     * If the code ends with a semicolon, it’s removed.
+     * If the code ends with a semicolon, it's removed.
      *
      * @param markdown the full Markdown string
      * @return the inner code without trailing semicolon, or an empty string if none found
@@ -116,7 +117,12 @@ public class AITextUtils {
         String codeBlockTag = null;
 
         for (String line : text.lines().toArray(String[]::new)) {
-            if (line.startsWith("```")) {
+            int markIndex = line.indexOf(CODE_BLOCK_MARK);
+            if (markIndex >= 0) {
+                if (markIndex > 0) {
+                    String tail = line.substring(0, markIndex);
+                    buffer.append(tail.trim());
+                }
                 // Add pending chunk
                 if (!buffer.isEmpty()) {
                     if (codeBlockTag != null) {
@@ -133,7 +139,7 @@ public class AITextUtils {
                 if (codeBlockTag != null) {
                     codeBlockTag = null;
                 } else {
-                    codeBlockTag = line.substring(3);
+                    codeBlockTag = line.substring(markIndex + 3);
                 }
 
                 continue;
@@ -252,7 +258,7 @@ public class AITextUtils {
         try {
             return loadCheckedEntitiesById(monitor, dataSource.getContainer().getProject(), ids);
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
             return List.of();
         } finally {
             monitor.done();
@@ -268,9 +274,13 @@ public class AITextUtils {
         final List<DBSObject> output = new ArrayList<>();
 
         for (String id : ids) {
-            DBSObject object = DBUtils.findObjectById(monitor, project, id);
-            if (object != null) {
-                output.add(object);
+            try {
+                DBSObject object = DBUtils.findObjectById(monitor, project, id);
+                if (object != null) {
+                    output.add(object);
+                }
+            } catch (DBException e) {
+                log.debug("Error loading object '" + id + "': " + e.getMessage());
             }
             monitor.worked(1);
         }

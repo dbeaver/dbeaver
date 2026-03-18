@@ -1039,7 +1039,7 @@ public class PostgreUtils {
         int lastPos = -1;
         for (int i = divPos + 1; i < url.length(); i++) {
             char c = url.charAt(i);
-            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
+            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.' && c != '-') {
                 lastPos = i;
                 break;
             }

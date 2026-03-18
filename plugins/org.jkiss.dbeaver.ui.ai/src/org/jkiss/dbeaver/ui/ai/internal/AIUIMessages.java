@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,8 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_ai_connection_test_connection_success_message;
     public static String gpt_preference_page_ai_connection_test_connection_error_title;
     public static String gpt_preference_page_ai_connection_test_connection_error_message;
+
+    public static String gpt_preference_page_prompts_hint;
 
     public static String confirm_meta_transfer_usage_title;
     public static String confirm_meta_transfer_usage_message;

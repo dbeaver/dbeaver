@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.ext.h2.plan.H2QueryPlanner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -45,8 +47,7 @@ import java.util.Optional;
 /**
  * H2MetaModel
  */
-public class H2MetaModel extends GenericMetaModel
-{
+public class H2MetaModel extends GenericMetaModel {
     public H2MetaModel() {
         super();
     }
@@ -54,7 +55,16 @@ public class H2MetaModel extends GenericMetaModel
     @NotNull
     @Override
     public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        return new H2DataSource(monitor, container, new H2MetaModel());
+        return new H2DataSource(monitor, container);
+    }
+
+    @Override
+    public GenericSchema createSchemaImpl(
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog,
+        @NotNull String schemaName
+    ) {
+        return new H2Schema(dataSource, catalog, schemaName);
     }
 
     @Override
@@ -62,8 +72,14 @@ public class H2MetaModel extends GenericMetaModel
         return schema.getName().equals("INFORMATION_SCHEMA");
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult
+    ) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
         }
@@ -303,4 +319,11 @@ public class H2MetaModel extends GenericMetaModel
             }
         }
     }
+
+    @Nullable
+    @Override
+    public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
+        return new H2QueryPlanner((H2DataSource) dataSource);
+    }
+
 }
