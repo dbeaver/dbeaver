@@ -81,7 +81,6 @@ public class SQLServerDataSource
     private volatile transient boolean hasStatistics;
     private final boolean isBabelfish;
     private boolean isSynapseDatabase;
-    private volatile boolean expiredPasswordHandled;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -302,9 +301,7 @@ public class SQLServerDataSource
         } catch (DBCException e) {
             if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
                 && isPasswordExpired(e)
-                && !expiredPasswordHandled
-                && updateExpiredPassword()) {
-                expiredPasswordHandled = true;
+                && updateExpiredPassword(monitor)) {
                 return super.openConnection(monitor, context, purpose);
             }
             throw e;
@@ -343,7 +340,7 @@ public class SQLServerDataSource
      * The MSSQL JDBC driver does not support changing expired passwords during login,
      * so we connect as an administrator and execute ALTER LOGIN to change the password.
      */
-    private boolean updateExpiredPassword() {
+    private boolean updateExpiredPassword(@NotNull DBRProgressMonitor monitor) {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
         }
@@ -374,7 +371,17 @@ public class SQLServerDataSource
 
         // Step 3: Connect as admin and change the password on the server
         try {
-            changePasswordViaAdmin(connectionInfo, adminInfo, passwordInfo.getNewPassword());
+            Driver driverInstance = getDriverInstance(monitor);
+            String url = getConnectionURL(connectionInfo);
+            SQLServerLoginPasswordManager passwordManager = new SQLServerLoginPasswordManager(this);
+            passwordManager.changeExpiredPassword(
+                url,
+                driverInstance,
+                connectionInfo,
+                adminInfo.getUserName(),
+                CommonUtils.notEmpty(adminInfo.getUserPassword()),
+                connectionInfo.getUserName(),
+                passwordInfo.getNewPassword());
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
                 SQLServerMessages.password_change_error_title,
@@ -387,46 +394,6 @@ public class SQLServerDataSource
         connectionInfo.setUserPassword(passwordInfo.getNewPassword());
         getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
         return true;
-    }
-
-    private void changePasswordViaAdmin(
-        @NotNull DBPConnectionConfiguration connectionInfo,
-        @NotNull DBPAuthInfo adminInfo,
-        @NotNull String newPassword
-    ) throws DBException {
-        String url = getConnectionURL(connectionInfo);
-        Properties adminProps = new Properties();
-        adminProps.put("user", adminInfo.getUserName());
-        adminProps.put("password", CommonUtils.notEmpty(adminInfo.getUserPassword()));
-        // Copy trust/encrypt settings from the connection configuration
-        String trustCert = connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE);
-        if (CommonUtils.getBoolean(trustCert, false)) {
-            adminProps.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
-        }
-        adminProps.put("encrypt", "false");
-        adminProps.put("integratedSecurity", "false");
-
-        try {
-            Driver driverInstance = getDriverInstance(new VoidProgressMonitor());
-            try (Connection adminConn = driverInstance.connect(url, adminProps)) {
-                if (adminConn == null) {
-                    throw new DBException("Failed to establish admin connection");
-                }
-                String sql = "ALTER LOGIN " + DBUtils.getQuotedIdentifier(this, connectionInfo.getUserName())
-                    + " WITH PASSWORD = " + quoteSqlString(newPassword);
-                try (java.sql.Statement stmt = adminConn.createStatement()) {
-                    stmt.execute(sql);
-                }
-            }
-        } catch (DBException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new DBException("Failed to change password via admin connection", e);
-        }
-    }
-
-    private static String quoteSqlString(@NotNull String value) {
-        return "N'" + value.replace("'", "''") + "'";
     }
 
     @Override

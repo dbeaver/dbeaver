@@ -22,14 +22,19 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
 
@@ -50,8 +55,63 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
         }
     }
 
+    /**
+     * Changes an expired password on the server by connecting with admin credentials
+     * and executing ALTER LOGIN. This is necessary because the MSSQL JDBC driver does not
+     * support changing expired passwords during login (no newPassword connection property),
+     * and SQL Server completely blocks connections from users with expired passwords.
+     */
+    void changeExpiredPassword(
+        @NotNull String connectionUrl,
+        @NotNull Driver driverInstance,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String adminUser,
+        @NotNull String adminPassword,
+        @NotNull String loginName,
+        @NotNull String newPassword
+    ) throws DBException {
+        Properties adminProps = new Properties();
+        adminProps.put("user", adminUser);
+        adminProps.put("password", CommonUtils.notEmpty(adminPassword));
+        adminProps.put("integratedSecurity", "false");
+
+        // Mirror the encrypt/SSL logic from SQLServerDataSource.getAllConnectionProperties:
+        // If trust certificate is enabled, set it for the admin connection too
+        boolean trustCertificate = CommonUtils.getBoolean(
+            connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE),
+            false);
+        if (trustCertificate) {
+            adminProps.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
+        }
+
+        // If SSL handler is configured, use encrypt=true; otherwise default to false (same as main connection)
+        DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(SQLServerConstants.HANDLER_SSL);
+        if (sslConfig != null && sslConfig.isEnabled()) {
+            adminProps.put("encrypt", "true");
+        } else {
+            adminProps.put("encrypt", "false");
+        }
+
+        try (Connection adminConn = driverInstance.connect(connectionUrl, adminProps)) {
+            if (adminConn == null) {
+                throw new DBException("Failed to establish admin connection");
+            }
+            String sql = "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, loginName)
+                + " WITH PASSWORD = " + SQLUtils.quoteString(dataSource, newPassword);
+            try (java.sql.Statement stmt = adminConn.createStatement()) {
+                stmt.execute(sql);
+            }
+        } catch (DBException e) {
+            throw e;
+        } catch (SQLException e) {
+            throw new DBCException(getPasswordPolicyErrorMessage(e), e);
+        } catch (Exception e) {
+            throw new DBException("Failed to change password via admin connection", e);
+        }
+    }
+
     @NotNull
-    private static String getPasswordPolicyErrorMessage(@NotNull SQLException e) {
+    static String getPasswordPolicyErrorMessage(@NotNull SQLException e) {
         String detail = switch (e.getErrorCode()) {
             case SQLServerConstants.EC_PASSWORD_TOO_SHORT -> ": password is too short";
             case SQLServerConstants.EC_PASSWORD_TOO_LONG -> ": password is too long";
