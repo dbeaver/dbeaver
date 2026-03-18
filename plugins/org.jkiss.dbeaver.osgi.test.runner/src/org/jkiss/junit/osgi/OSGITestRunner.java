@@ -430,7 +430,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                         testBundle = bundle;
                     } catch (ClassNotFoundException e) {
                         // ignore, expected
-                        log.error(e);
+                        //log.error(e);
                     }
                     log.debug("Started bundle: " + bundle.getSymbolicName());
                 } catch (BundleException e) {

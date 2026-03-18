@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public class DBSObjectFilter {
     private List<String> exclude;
     private boolean caseSensitive;
 
+    private transient boolean isUserFilter;
     private transient List<Object> includePatterns = null;
     private transient List<Object> excludePatterns = null;
 
@@ -60,6 +61,7 @@ public class DBSObjectFilter {
             this.include = filter.include == null ? null : new ArrayList<>(filter.include);
             this.exclude = filter.exclude == null ? null : new ArrayList<>(filter.exclude);
             this.caseSensitive = filter.caseSensitive;
+            this.isUserFilter = filter.isUserFilter;
         }
     }
 
@@ -129,7 +131,7 @@ public class DBSObjectFilter {
         this.excludePatterns = null;
     }
 
-    public void setExclude(List<String> exclude) {
+    public void setExclude(@Nullable List<String> exclude) {
         this.exclude = exclude;
         this.excludePatterns = null;
     }
@@ -252,6 +254,14 @@ public class DBSObjectFilter {
         }
     }
 
+    public boolean isUserFilter() {
+        return isUserFilter;
+    }
+
+    public void setUserFilter(boolean userFilter) {
+        isUserFilter = userFilter;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof DBSObjectFilter)) {
@@ -263,7 +273,8 @@ public class DBSObjectFilter {
             CommonUtils.equalObjects(description, source.description) &&
             enabled == source.enabled &&
             CommonUtils.equalObjects(include, source.include) &&
-            CommonUtils.equalObjects(exclude, source.exclude);
+            CommonUtils.equalObjects(exclude, source.exclude) &&
+            isUserFilter == source.isUserFilter;
     }
 
     @Override
@@ -272,6 +283,7 @@ public class DBSObjectFilter {
             CommonUtils.hashCode(description) +
             (enabled ? 1 : 0) +
             CommonUtils.hashCode(include) +
-            CommonUtils.hashCode(exclude);
+            CommonUtils.hashCode(exclude) +
+            (isUserFilter ? 1 : 0);
     }
 }

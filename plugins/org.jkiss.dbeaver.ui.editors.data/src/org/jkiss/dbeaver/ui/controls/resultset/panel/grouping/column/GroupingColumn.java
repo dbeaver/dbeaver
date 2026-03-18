@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.cli.CLIContext;
-import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
-
-public interface CommandLineAuthenticator {
-    void authenticate(@Nullable AuthenticateOptions options, @NotNull CLIContext context) throws DBException;
+/**
+ * represents grouping column of any type
+ */
+public interface GroupingColumn {
+    boolean afterDeleteAction();
 }
