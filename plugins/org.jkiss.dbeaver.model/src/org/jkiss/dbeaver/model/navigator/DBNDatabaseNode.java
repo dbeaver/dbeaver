@@ -811,17 +811,20 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
-            Object valueObject = getValueObject();
-            DBSObject parentObject = null;
-            if (valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)) {
-                parentObject = dbsObject;
-            }
-            return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
+            return dataSource.getObjectFilter(childrenClass, getFilterObject(), firstMatch);
         }
         return null;
     }
 
-    public boolean setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
+    @Nullable
+    public DBSObject getFilterObject() {
+        Object valueObject = getValueObject();
+        return valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)
+            ? dbsObject : null;
+    }
+
+
+    public boolean setNodeFilter(DBXTreeItem meta, @Nullable DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {

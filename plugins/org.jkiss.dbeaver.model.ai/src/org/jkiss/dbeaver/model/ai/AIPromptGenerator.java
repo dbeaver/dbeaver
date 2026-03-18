@@ -30,4 +30,10 @@ public interface AIPromptGenerator {
 
     @NotNull
     String build(@NotNull AIAssistant assistant, @Nullable AIDatabaseContext context);
+
+    @NotNull
+    default AIDatabaseContext.Builder configureDatabaseContext(@NotNull AIDatabaseContext.Builder contextBuilder) {
+        return contextBuilder;
+    }
+
 }

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +20,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -58,6 +58,8 @@ public class DB2PlanStatement {
     private final Double totalCost;
     private final String statementText;
     private final Integer queryDegree;
+    private CachedResultSet streamsRS;
+    private CachedResultSet operatorRS;
 
     // ------------
     // Constructors
@@ -145,10 +147,12 @@ public class DB2PlanStatement {
             }
         }
 
+        String operatorsSQL = String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID");
         try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
-            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID"))) {
+            operatorsSQL)) {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
+                operatorRS = new CachedResultSet(operatorsSQL, res.getMetaData());
                 DB2PlanOperator db2PlanOperator;
                 while (res.next()) {
                     db2PlanOperator = new DB2PlanOperator(session, res, this, planTableSchema);
@@ -156,16 +160,20 @@ public class DB2PlanStatement {
                     if (rootNode == null || db2PlanOperator.getOperatorType() == DB2PlanOperatorType.RETURN) {
                         rootNode = db2PlanOperator;
                     }
+                    operatorRS.addRow(res);
                 }
             }
         }
 
+        String streamsSQL = String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC");
         try (JDBCPreparedStatement sqlStmt = session.prepareStatement(
-            String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC"))) {
+            streamsSQL)) {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
+                streamsRS = new CachedResultSet(streamsSQL, res.getMetaData());
                 while (res.next()) {
                     listStreams.add(new DB2PlanStream(res, this));
+                    streamsRS.addRow(res);
                 }
             }
         }
@@ -238,4 +246,11 @@ public class DB2PlanStatement {
         return sourceVersion;
     }
 
+    public CachedResultSet getStreamsRS() {
+        return streamsRS;
+    }
+
+    public CachedResultSet getOperatorRS() {
+        return operatorRS;
+    }
 }
