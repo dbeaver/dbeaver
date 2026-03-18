@@ -52,7 +52,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         this.viewerComponent = viewer;
         this.currentState = RenderState.IDLE;
         this.lockObject = new Semaphore(1);
-        this.activeHint = HintContent.initialize(0, "");
+        this.activeHint = HintContent.of(0, null);
         UIUtils.asyncExec(() -> ((ITextViewerExtension2) viewerComponent).addPainter(this));
     }
 
@@ -209,7 +209,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         String content = activeHint.content();
         int position = activeHint.position();
         clearHintVerticalIndent();
-        activeHint = HintContent.initialize(position, "");
+        activeHint = HintContent.of(position, null);
         getTextWidget().redraw();
         insertTextAtCursor(content);
     }
@@ -242,7 +242,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         if (!wordPrefix.isEmpty() && fragment.toLowerCase().startsWith(wordPrefix.toLowerCase())) {
             fragment = fragment.substring(wordPrefix.length());
         }
-        activeHint = HintContent.initialize(cursorPosition, fragment);
+        activeHint = HintContent.of(cursorPosition, fragment);
         updateHintVerticalIndent();
         getTextWidget().redraw();
     }
@@ -250,7 +250,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
 
     private void executeRemove() {
         clearHintVerticalIndent();
-        activeHint = HintContent.initialize(activeHint.position(), "");
+        activeHint = HintContent.of(activeHint.position(), null);
         getTextWidget().redraw();
     }
 
@@ -350,14 +350,10 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         nextLineVerticalIndentLine = -1;
     }
 
-    private record HintContent(int position, String content) {
-        private HintContent(int position, @Nullable String content) {
-            this.position = position;
-            this.content = content == null ? "" : content;
-        }
+    private record HintContent(int position, @NotNull String content) {
 
-        static HintContent initialize(int position, @Nullable String content) {
-            return new HintContent(position, content);
+        static HintContent of(int position, @Nullable String content) {
+            return new HintContent(position, content == null ? "" : content);
         }
 
         boolean isEmpty() {

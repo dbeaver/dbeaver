@@ -47,7 +47,7 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
-    protected static final int MAX_FUNCTION_CALLS = 5;
+    protected static final int MAX_FUNCTION_CALLS = 10;
 
     protected final DBPWorkspace workspace;
 

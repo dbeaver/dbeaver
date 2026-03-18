@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
 
 public class TextRenderingUtils {
 
@@ -163,7 +164,7 @@ public class TextRenderingUtils {
      * @return the corresponding model offset in the viewer
      */
     public static int widgetOffset2ModelOffset(
-        ITextViewer viewer,
+        @NotNull ITextViewer viewer,
         int widgetOffset
     ) {
         return viewer instanceof ITextViewerExtension5 ext5
@@ -179,7 +180,7 @@ public class TextRenderingUtils {
      * @return the corresponding widget offset in the viewer
      */
     public static int modelOffset2WidgetOffset(
-        ITextViewer viewer,
+        @NotNull ITextViewer viewer,
         int modelOffset
     ) {
         return viewer instanceof ITextViewerExtension5 ext5
