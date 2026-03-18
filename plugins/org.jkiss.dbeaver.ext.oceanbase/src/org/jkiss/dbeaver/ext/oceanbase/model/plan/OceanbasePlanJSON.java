@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,8 +44,9 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
     
     private final List<OceanbasePlanNodeJSON> rootNodes;
     
-    private OceanbaseMySQLDataSource dataSource;
-    private String query;
+    private final OceanbaseMySQLDataSource dataSource;
+    private final String query;
+    private String planJson;
 
     OceanbasePlanJSON(JDBCSession session, String query) throws DBCException {
         this.dataSource = (OceanbaseMySQLDataSource) session.getDataSource();
@@ -51,9 +55,9 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 List<OceanbasePlanNodeJSON> nodes = new ArrayList<>();
                 dbResult.next();
-                String jsonPlan = dbResult.getString(1);
+                planJson = dbResult.getString(1);
 
-                JsonObject planObject = gson.fromJson(jsonPlan, JsonObject.class);
+                JsonObject planObject = gson.fromJson(planJson, JsonObject.class);
                 JsonObject queryBlock = planObject.getAsJsonObject();
 
                 OceanbasePlanNodeJSON rootNode = new OceanbasePlanNodeJSON(null, "select", queryBlock);
@@ -77,26 +81,42 @@ public class OceanbasePlanJSON extends AbstractExecutionPlan {
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) || DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
         }
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN FORMAT=JSON " + query + ";";
     }
 
+    @NotNull
     @Override
-    public List<OceanbasePlanNodeJSON> getPlanNodes(Map<String, Object> options) {
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.JSON;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planJson;
+    }
+
+    @NotNull
+    @Override
+    public List<OceanbasePlanNodeJSON> getPlanNodes(@NotNull Map<String, Object> options) {
         return Collections.unmodifiableList(rootNodes);
     }
     

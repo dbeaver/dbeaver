@@ -14,6 +14,7 @@
         <command id="org.jkiss.dbeaver.test.showNotification" name="Show notification" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.showIcons" name="Show icons" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.showForms" name="Show forms" categoryId="org.jkiss.dbeaver.test"/>
+        <command id="org.jkiss.dbeaver.test.showColors" name="Show colors" categoryId="org.jkiss.dbeaver.test"/>
         <command id="org.jkiss.dbeaver.test.showAuthCodeDialog" name="Show auth code dialog" categoryId="org.jkiss.dbeaver.test"/>
 
     </extension>
@@ -47,6 +48,7 @@
         <handler commandId="org.jkiss.dbeaver.test.showNotification" class="org.jkiss.dbeaver.ui.app.devtools.handlers.ShowNotificationHandler"/>
         <handler commandId="org.jkiss.dbeaver.test.showIcons" class="org.jkiss.dbeaver.ui.app.devtools.handlers.ShowIconsHandler"/>
         <handler commandId="org.jkiss.dbeaver.test.showForms" class="org.jkiss.dbeaver.ui.app.devtools.handlers.ShowFormsHandler"/>
+        <handler commandId="org.jkiss.dbeaver.test.showColors" class="org.jkiss.dbeaver.ui.app.devtools.handlers.ShowColorsHandler"/>
    </extension>
 
    <extension point="org.eclipse.ui.menus">
@@ -69,6 +71,7 @@
                 <command commandId="org.jkiss.dbeaver.test.showNotification"/>
                 <command commandId="org.jkiss.dbeaver.test.showIcons"/>
                 <command commandId="org.jkiss.dbeaver.test.showForms"/>
+                <command commandId="org.jkiss.dbeaver.test.showColors"/>
             </menu>
        </menuContribution>
    </extension>

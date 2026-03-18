@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
@@ -53,7 +52,7 @@ public class AIDatabaseSnapshotService {
     public TokenBoundedStringBuilder createDbSnapshot(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext aiDatabaseContext,
-        @NotNull AISchemaGenerationOptions options
+        int tokenBudget
     ) throws DBException {
         schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
 
@@ -64,22 +63,16 @@ public class AIDatabaseSnapshotService {
         Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
-        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), false);
+        var prompt = new TokenBoundedStringBuilder(tokenBudget, false);
 
-        if (appendContext(monitor, aiDatabaseContext, options, prompt, true)) {
-            return prompt;
-        }
-
-        // --- fall-back -----------------------------------------------------
-        AISchemaGenerationOptions fallback = buildFallbackOptions(options);
-        if (options.equals(fallback)) {        // nothing else we can exclude
+        if (appendContext(monitor, aiDatabaseContext, prompt, true)) {
             return prompt;
         }
 
         log.debug("Context description is too long, generating partial description");
 
-        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), true);
-        appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
+        var partialPrompt = new TokenBoundedStringBuilder(tokenBudget, true);
+        appendContext(monitor, aiDatabaseContext, partialPrompt, false);
         return partialPrompt;
     }
 
@@ -89,7 +82,6 @@ public class AIDatabaseSnapshotService {
     private boolean appendContext(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext ctx,
-        @NotNull AISchemaGenerationOptions options,
         @NotNull TokenBoundedStringBuilder out,
         boolean refreshCache
     ) throws DBException {
@@ -105,8 +97,7 @@ public class AIDatabaseSnapshotService {
                     monitor,
                     out,
                     entity,
-                    ctx.getExecutionContext(),
-                    options,
+                    ctx,
                     requiresFqn(entity, ctx.getExecutionContext()),
                     refreshCache
                 )) {
@@ -120,8 +111,7 @@ public class AIDatabaseSnapshotService {
             monitor,
             out,
             ctx.getScopeObject(),
-            ctx.getExecutionContext(),
-            options,
+            ctx,
             false,
             refreshCache
         );
@@ -131,8 +121,7 @@ public class AIDatabaseSnapshotService {
         @NotNull DBRProgressMonitor monitor,
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObject obj,
-        @Nullable DBCExecutionContext execCtx,
-        @NotNull AISchemaGenerationOptions options,
+        @NotNull AIDatabaseContext databaseContext,
         boolean useFqn,
         boolean refreshCache
     ) throws DBException {
@@ -146,7 +135,7 @@ public class AIDatabaseSnapshotService {
 
         if (obj instanceof DBSEntity entity) {
             try {
-                String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
+                String ddl = schemaGenerator.generateSchema(monitor, databaseContext, entity, useFqn) + "\n";
                 return out.append(ddl);
             } catch (DBException e) {
                 log.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
@@ -155,7 +144,8 @@ public class AIDatabaseSnapshotService {
         }
 
         if (obj instanceof DBSObjectContainer container) {
-            return appendContainerDDL(monitor, out, container, execCtx, options, refreshCache);
+            container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+            return appendContainerDDL(monitor, out, container, databaseContext, refreshCache);
         }
 
         return true;    // nothing to append for other object types
@@ -165,8 +155,7 @@ public class AIDatabaseSnapshotService {
         @NotNull DBRProgressMonitor monitor,
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObjectContainer container,
-        @Nullable DBCExecutionContext execCtx,
-        @NotNull AISchemaGenerationOptions options,
+        @NotNull AIDatabaseContext dbContext,
         boolean refreshCache
     ) {
         if (refreshCache) {
@@ -194,9 +183,8 @@ public class AIDatabaseSnapshotService {
                         monitor,
                         out,
                         child,
-                        execCtx,
-                        options,
-                        requiresFqn(child, execCtx),
+                        dbContext,
+                        requiresFqn(child, dbContext.getExecutionContext()),
                         refreshCache
                     )) {
                         log.debug("Object description is too long, truncated at: " + child.getName());
@@ -229,15 +217,6 @@ public class AIDatabaseSnapshotService {
         DBCExecutionContextDefaults<?, ?> def = ctx.getContextDefaults();
         return parent != null
             && !(parent.equals(def.getDefaultCatalog()) || parent.equals(def.getDefaultSchema()));
-    }
-
-    private static AISchemaGenerationOptions buildFallbackOptions(AISchemaGenerationOptions original) {
-        return original.toBuilder()
-            .withSendObjectComment(false)
-            .withSendColumnTypes(false)
-            .withSendForeignKeys(false)
-            .withSendConstraints(false)
-            .build();
     }
 
     /**

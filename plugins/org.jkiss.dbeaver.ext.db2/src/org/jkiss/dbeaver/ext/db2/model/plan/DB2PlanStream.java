@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,38 +16,38 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2 EXPLAIN_STREAM table
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2PlanStream {
 
-    private DB2PlanStatement db2Statement;
+    private final DB2PlanStatement db2Statement;
 
-    private Integer streamId;
+    private final Integer streamId;
 
-    private DB2PlanNodeType sourceType;
-    private Integer sourceId;
+    private final DB2PlanNodeType sourceType;
+    private final Integer sourceId;
 
-    private DB2PlanNodeType targetType;
-    private Integer targetId;
+    private final DB2PlanNodeType targetType;
+    private final Integer targetId;
 
-    private String objectSchema;
-    private String objectName;
+    private final String objectSchema;
+    private final String objectName;
 
-    private Double streamCount;
+    private final Double streamCount;
 
     // ------------
     // Constructors
     // ------------
 
-    public DB2PlanStream(JDBCResultSet dbResult, DB2PlanStatement db2Statement)
-    {
+    public DB2PlanStream(@NotNull JDBCResultSet dbResult, @NotNull DB2PlanStatement db2Statement) {
         this.db2Statement = db2Statement;
 
         this.streamId = JDBCUtils.safeGetInteger(dbResult, "STREAM_ID");
@@ -61,8 +60,7 @@ public class DB2PlanStream {
         this.streamCount = JDBCUtils.safeGetDouble(dbResult, "STREAM_COUNT");
     }
 
-    public String getSourceName()
-    {
+    public String getSourceName() {
         if (sourceType.equals(DB2PlanNodeType.O)) {
             // Operator
             return DB2PlanOperator.buildName(sourceId);
@@ -72,8 +70,7 @@ public class DB2PlanStream {
         }
     }
 
-    public String getTargetName()
-    {
+    public String getTargetName() {
         if (targetType.equals(DB2PlanNodeType.O)) {
             // Operator
             return DB2PlanOperator.buildName(targetId);
@@ -87,48 +84,39 @@ public class DB2PlanStream {
     // Standard Getters
     // ----------------
 
-    public Integer getStreamId()
-    {
+    public Integer getStreamId() {
         return streamId;
     }
 
-    public DB2PlanNodeType getSourceType()
-    {
+    public DB2PlanNodeType getSourceType() {
         return sourceType;
     }
 
-    public Integer getSourceId()
-    {
+    public Integer getSourceId() {
         return sourceId;
     }
 
-    public DB2PlanNodeType getTargetType()
-    {
+    public DB2PlanNodeType getTargetType() {
         return targetType;
     }
 
-    public Integer getTargetId()
-    {
+    public Integer getTargetId() {
         return targetId;
     }
 
-    public String getObjectSchema()
-    {
+    public String getObjectSchema() {
         return objectSchema;
     }
 
-    public String getObjectName()
-    {
+    public String getObjectName() {
         return objectName;
     }
 
-    public DB2PlanStatement getDb2Statement()
-    {
+    public DB2PlanStatement getDb2Statement() {
         return db2Statement;
     }
 
-    public Double getStreamCount()
-    {
+    public Double getStreamCount() {
         return streamCount;
     }
 

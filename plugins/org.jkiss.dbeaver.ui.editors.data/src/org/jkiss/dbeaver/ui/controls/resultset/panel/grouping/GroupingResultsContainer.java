@@ -24,21 +24,26 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
-import org.jkiss.dbeaver.model.impl.data.transformers.PercentOfTotalGroupingAttributeTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.BasicGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.SQLGroupingAttributeGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.TransformerGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingActionDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class GroupingResultsContainer implements IResultSetContainer {
@@ -50,21 +55,20 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private final IResultSetPresentation presentation;
     private final GroupingDataContainer dataContainer;
     private final ResultSetViewer groupingViewer;
-    private final List<SQLGroupingAttribute> groupAttributes = new ArrayList<>();
-    private final List<String> groupFunctions = new ArrayList<>();
-    private final AtomicReference<DBDDataFilter> currentFiler = new AtomicReference<>();
+    private final GroupingColumnsContainer columnsContainer;
+    private final AtomicReference<DBDDataFilter> currentFilter = new AtomicReference<>();
 
-    public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
+    public GroupingResultsContainer(Composite parent, @NotNull IResultSetPresentation presentation) {
         this.presentation = presentation;
         this.dataContainer = new GroupingDataContainer(presentation.getController());
         this.groupingViewer = new ResultSetViewer(parent, presentation.getController().getSite(), this) {
             @Override
             public void refreshWithFilter(DBDDataFilter filter) {
-                currentFiler.set(filter);
+                currentFilter.set(filter);
                 super.refreshWithFilter(filter);
             }
         };
-
+        this.columnsContainer = new GroupingColumnsContainer(dataContainer);
         initDefaultSettings();
     }
 
@@ -76,30 +80,40 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     private void initDefaultSettings() {
-        this.groupAttributes.clear();
-        this.groupFunctions.clear();
-        addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
+        columnsContainer.clear();
+        addDefaultFunction();
     }
 
+    private void addDefaultFunction() {
+        addGroupingFunctions(List.of(getDefaultFunction()));
+    }
+
+    @NotNull
     public IResultSetPresentation getOwnerPresentation() {
         return presentation;
     }
 
+    @NotNull
     public List<SQLGroupingAttribute> getGroupAttributes() {
-        return groupAttributes;
+        return columnsContainer.getSqlAttributes();
     }
 
-    public List<String> getGroupFunctions() {
-        return groupFunctions;
+    @NotNull
+    public List<String> getUserDefinedGroupFunctions() {
+        return columnsContainer.getFunctionColumns()
+            .stream()
+            .filter(GroupingFunctionColumn::isShowToUser)
+            .map(GroupingFunctionColumn::getColumnExpression)
+            .toList();
     }
 
     @Nullable
     @Override
     public DBPProject getProject() {
         DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer == null || dataContainer.getDataSource() == null
-            ? null
-            : dataContainer.getDataSource().getContainer().getProject();
+        return dataContainer.getDataSource() != null
+            ? dataContainer.getDataSource().getContainer().getProject()
+            : null;
     }
 
     @Nullable
@@ -116,7 +130,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     @NotNull
     @Override
-    public DBSDataContainer getDataContainer() {
+    public GroupingDataContainer getDataContainer() {
         return this.dataContainer;
     }
 
@@ -141,57 +155,44 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return presentation.getController().getContainer();
     }
 
-    void clearGroupingAttributes() {
-        groupAttributes.clear();
+    void addGroupingAttributes(@NotNull List<SQLGroupingAttribute> attributes) {
+        attributes
+            .stream()
+            .map(this::toAttributeGroupColumn)
+            .forEach(columnsContainer::addAttribute);
     }
 
-    void addGroupingAttributes(List<SQLGroupingAttribute> attributes) {
-        for (SQLGroupingAttribute attr : attributes) {
-            if (!groupAttributes.contains(attr)) {
-                groupAttributes.add(attr);
+    @NotNull
+    private SQLGroupingAttributeGroupingColumn toAttributeGroupColumn(@NotNull SQLGroupingAttribute attribute) {
+        return new SQLGroupingAttributeGroupingColumn(attribute) {
+            @Override
+            public boolean afterDeleteAction() {
+                resetDataFilters();
+                return true;
             }
-        }
+        };
     }
 
-    public boolean removeGroupingAttribute(List<SQLGroupingAttribute> attributes) {
-        boolean changed = false;
-        for (SQLGroupingAttribute attr : attributes) {
-            if (groupAttributes.contains(attr)) {
-                groupAttributes.remove(attr);
-                changed = true;
-            }
-        }
-        if (changed) {
-            resetDataFilters();
-        }
-        return changed;
-    }
 
-    public void addGroupingFunctions(List<String> functions) {
-        for (String func : functions) {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            if (dataSource != null) {
-                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                if (!groupFunctions.contains(func)) {
-                    groupFunctions.add(func);
-                }
-            }
-        }
-    }
-
-    public boolean removeGroupingFunction(List<String> attributes) {
-        boolean changed = false;
+    public void addGroupingFunctions(@NotNull List<String> functions) {
         DBPDataSource dataSource = getDataContainer().getDataSource();
         if (dataSource != null) {
-            for (String func : attributes) {
-                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                if (groupFunctions.contains(func)) {
-                    groupFunctions.remove(func);
-                    changed = true;
-                }
-            }
+            functions
+                .stream()
+                .map(func -> createBasicColumn(dataSource, func))
+                .forEach(columnsContainer::addFunction);
         }
-        return changed;
+    }
+
+    @NotNull
+    private BasicGroupingFunctionColumn createBasicColumn(@NotNull DBPDataSource dataSource, @NotNull String function) {
+        return new BasicGroupingFunctionColumn(dataSource, this) {
+            @NotNull
+            @Override
+            public String getColumnExpression() {
+                return DBUtils.getUnQuotedIdentifier(dataSource, function);
+            }
+        };
     }
 
     public void clearGrouping() {
@@ -202,17 +203,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupingViewer.resetHistory();
         dataContainer.setGroupingQuery(null);
         dataContainer.setGroupingAttributes(null);
-        dataContainer.removeAttributeTransformer();
         if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
             groupingViewer.showEmptyPresentation();
         }
     }
 
     public void rebuildGrouping() throws DBException {
-        if (groupAttributes.isEmpty() || groupFunctions.isEmpty()) {
-            groupingViewer.showEmptyPresentation();
-            return;
-        }
         DBCStatistics statistics = presentation.getController().getModel().getStatistics();
         if (statistics == null) {
             throw new DBException("No main query - can't perform grouping");
@@ -223,6 +219,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource == null) {
             throw new DBException("No active datasource");
         }
+        manageSpecialColumns(dataSource);
+        if (columnsContainer.isEmpty()) {
+            groupingViewer.showEmptyPresentation();
+            return;
+        }
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, presentation.getController().getPreferenceStore());
@@ -231,13 +232,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         DBDDataFilter dataFilter = getDataFilter();
 
+        List<SQLGroupingAttribute> groupAttributes = getGroupAttributes();
+        List<String> groupFunctions = getTransformerBindFunctions();
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(
             dataSource,
             dbsDataContainer,
             dialect,
             syntaxManager,
             groupAttributes,
-            getGroupFunctionsWithExtraColumns(dataSource),
+            groupFunctions,
             isShowDuplicatesOnly
         );
         dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
@@ -268,8 +271,42 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupingViewer.setDataFilter(dataFilter, true);
     }
 
-    public void removePercentColumn() {
-        dataContainer.removeAttributeTransformer();
+    @Nullable
+    public DBDDataFilter getCurrentFilter() {
+        return currentFilter.get();
+    }
+
+    @NotNull
+    public GroupingColumnsContainer getColumnsContainer() {
+        return columnsContainer;
+    }
+
+    @NotNull
+    private List<String> getTransformerBindFunctions() {
+        columnsContainer.bindTransformers();
+        return columnsContainer.getFunctionColumns()
+            .stream()
+            .map(GroupingFunctionColumn::getColumnExpression)
+            .toList();
+    }
+
+    private void manageSpecialColumns(@NotNull DBPDataSource dataSource) {
+        for (GroupingActionDescriptor groupingActionDescriptor : GroupingRegistry.getInstance().getGroupingDescriptors()) {
+            try {
+                TransformerGroupingFunctionColumn column = groupingActionDescriptor.createColumn(dataSource, this);
+                boolean isAlreadyPresent = columnsContainer.indexOfFunctionById(column.getId()) >= 0;
+                if (column.isAddToColumns() && !isAlreadyPresent) {
+                    columnsContainer.addFunction(column);
+                } else if (!column.isAddToColumns() && isAlreadyPresent) {
+                    columnsContainer.removeFunctionById(column.getId());
+                }
+            } catch (DBException e) {
+                log.warn("Cant add column for action with preference key: " + groupingActionDescriptor.getPreferenceKey(), e);
+            }
+            if (columnsContainer.getFunctionColumns().isEmpty()) {
+                addDefaultFunction();
+            }
+        }
     }
 
     @NotNull
@@ -280,63 +317,14 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     void setGrouping(List<SQLGroupingAttribute> attributes, List<String> functions) {
-        groupAttributes.clear();
+        columnsContainer.clear();
         addGroupingAttributes(attributes);
-
-        groupFunctions.clear();
         addGroupingFunctions(functions);
-
         resetDataFilters();
     }
 
-    private List<String> getGroupFunctionsWithExtraColumns(@NotNull DBPDataSource dataSource) {
-        boolean isShowTotalPercentColumn = dataSource.getContainer().getPreferenceStore()
-            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        return isShowTotalPercentColumn ?
-            addPercentageColumn()
-            : getGroupFunctions();
-    }
 
-    private List<String> addPercentageColumn() {
-        List<String> allGroupFunctions = new ArrayList<>(getGroupFunctions());
-        String function = getDefaultFunction();
-        allGroupFunctions.add(function);
-        int percentFunctionOrderInStatement = getGroupAttributes().size() + allGroupFunctions.size() - 1;
-        dataContainer.setAttributeTransformer(
-            percentFunctionOrderInStatement,
-            new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount)
-        );
-        return allGroupFunctions;
-    }
-
-    private long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return DBUtils.readRowCount(
-            monitor,
-            groupingViewer.getExecutionContext(),
-            presentation.getController().getDataContainer(),
-            filterExcludingGroupingColumns(),
-            groupingViewer
-        );
-    }
-
-    @Nullable
-    private DBDDataFilter filterExcludingGroupingColumns() {
-        DBDDataFilter dataFilter = currentFiler.get();
-        if (dataFilter == null) {
-            return null;
-        }
-        List<DBDAttributeConstraint> attributeConstraints = groupAttributes.stream()
-            .map(ga -> ga instanceof SQLGroupingAttribute.BoundAttribute boundAttribute
-                ? boundAttribute.getBindingName()
-                : ga.getDisplayName())
-            .map(dataFilter::getConstraint)
-            .filter(Objects::nonNull).toList();
-        DBDDataFilter newFilter = new DBDDataFilter(attributeConstraints);
-        newFilter.setWhere(dataFilter.getWhere());
-        return newFilter;
-    }
-
-    private void resetDataFilters() {
+    public void resetDataFilters() {
         groupingViewer.getModel().createDataFilter();
     }
 }

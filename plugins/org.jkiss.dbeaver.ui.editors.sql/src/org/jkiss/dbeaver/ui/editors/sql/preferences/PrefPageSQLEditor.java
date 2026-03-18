@@ -105,8 +105,14 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 10);
 
         {
-            Composite connectionsGroup = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            ((GridData) connectionsGroup.getLayoutData()).horizontalSpan = 2;
+            Composite connectionsGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_connections,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0,
+                2
+            );
             editorSeparateConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(connectionsGroup, 3),
                 SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
@@ -136,8 +142,14 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Composite layoutGroup = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-            ((GridData) layoutGroup.getLayoutData()).horizontalSpan = 2;
+            Composite layoutGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_result_view,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0,
+                2
+            );
 
             closeTabOnErrorCheck = UIUtils.createCheckbox(
                 layoutGroup,
@@ -177,9 +189,9 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                     SQLEditorMessages.pref_page_sql_editor_group_presentations,
                     1,
                     GridData.VERTICAL_ALIGN_BEGINNING,
-                    0
+                    0,
+                    2
                 );
-                ((GridData) group.getLayoutData()).horizontalSpan = 2;
                 presentationToggles.forEach(toggle ->
                     toggle.button = UIUtils.createCheckbox(group, toggle.descriptor.getPrefLabel(), toggle.descriptor.getPrefTip(), true, 1)
                 );

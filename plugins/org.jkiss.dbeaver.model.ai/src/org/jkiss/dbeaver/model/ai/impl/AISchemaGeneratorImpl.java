@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 public class AISchemaGeneratorImpl implements AISchemaGenerator {
@@ -38,13 +41,12 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     @Override
     public String generateSchema(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext dbContext,
         @NotNull DBSEntity entity,
-        @Nullable DBCExecutionContext ctx,
-        @NotNull AISchemaGenerationOptions options,
         boolean useFqn
     ) throws DBException {
         if (entity instanceof DBSTable table) {
-            return describeTable(monitor, table, ctx, options, useFqn);
+            return describeTable(monitor, dbContext, table, useFqn);
         } else {
             return "";
         }
@@ -53,18 +55,41 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     @NotNull
     public String describeTable(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext dbContext,
         @NotNull DBSTable table,
-        @Nullable DBCExecutionContext ctx,
-        @NotNull AISchemaGenerationOptions options,
         boolean useFqn
     ) throws DBException {
         StringBuilder ddl = new StringBuilder();
 
-        String name = useFqn && ctx != null
-            ? DBUtils.getObjectFullName(ctx.getDataSource(), table, DBPEvaluationContext.DDL)
+        if (dbContext.getSchemaGenerationOptions().sendFullDDL()) {
+            String tableDDL = DBStructUtils.generateTableDDL(
+                monitor,
+                table,
+                Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true),
+                false
+            );
+            DBStructUtils.addDDLLine(ddl, tableDDL);
+        } else {
+            generateCustomDDL(monitor, dbContext, table, useFqn, ddl);
+        }
+
+        return ddl.toString();
+    }
+
+    @Nullable
+    private static String generateCustomDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext dbContext,
+        @NotNull DBSTable table,
+        boolean useFqn,
+        @NotNull StringBuilder ddl
+    ) throws DBException {
+        String name = useFqn
+            ? DBUtils.getObjectFullName(dbContext.getExecutionContext().getDataSource(), table, DBPEvaluationContext.DDL)
             : DBUtils.getQuotedIdentifier(table);
 
-        if (options.sendObjectComment()) {
+        AISchemaGenerationOptions sgOptions = dbContext.getSchemaGenerationOptions();
+        if (sgOptions.sendObjectComment()) {
             String tableDescription = describe(table);
             if (!tableDescription.isBlank()) {
                 ddl.append(tableDescription).append("\n");
@@ -93,12 +118,13 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
 
             columnsJoiner.add(
                 DBUtils.getQuotedIdentifier(attr)
-                    + (options.sendColumnTypes() ? " " + attr.getTypeName() : "")
-                    + (options.sendObjectComment() && !describe(attr).isBlank() ? describe(attr) : "")
+                    + (sgOptions.sendColumnTypes() ? " " + attr.getTypeName() : "")
+                    + (sgOptions.sendObjectComment() && !describe(attr).isBlank() ? describe(attr) : "")
             );
         });
 
-        return ddl.append(columnsJoiner).toString();
+        ddl.append(columnsJoiner);
+        return null;
     }
 
     @NotNull

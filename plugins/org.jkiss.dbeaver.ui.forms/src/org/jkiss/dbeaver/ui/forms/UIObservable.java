@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.observable.value.ComputedValue;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * A value whose changes can be observed.
@@ -81,17 +80,17 @@ public sealed interface UIObservable<T> permits UIObservableImpl {
 
     @NotNull
     static <T> UIObservable<T> of(@Nullable T value, @NotNull Class<T> type) {
-        return new UIObservableImpl<>(value, type);
+        return UIObservableImpl.of(value, type);
     }
 
     @NotNull
-    static UIObservable<Boolean> predicate(@NotNull Supplier<Boolean> supplier) {
-        return computed(supplier, Boolean.class);
+    default UIObservable<T> map(@NotNull Function<? super T, ? extends T> mapper) {
+        return map(mapper, type());
     }
 
     @NotNull
-    static <T> UIObservable<T> computed(@NotNull Supplier<T> supplier, @NotNull Class<T> type) {
-        return new UIObservableImpl<>(ComputedValue.create(supplier), type);
+    default <R> UIObservable<R> map(@NotNull Function<? super T, ? extends R> mapper, @NotNull Class<R> type) {
+        return UIObservables.computed(() -> mapper.apply(get()), type);
     }
 
     /**
