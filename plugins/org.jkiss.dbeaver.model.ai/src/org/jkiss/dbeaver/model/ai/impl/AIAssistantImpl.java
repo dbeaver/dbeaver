@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -215,16 +216,20 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = getToolboxManager().getFunctionById(functionName);
+        AIFunctionDescriptor function = getToolboxManager().getFunctionByFullId(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         functionCall.setFunction(function);
-        log.debug("Call AI function '" + function.getId() + "'");
         Map<String, Object> arguments = functionCall.getArguments();
         if (arguments == null) {
             arguments = Map.of();
         }
+        log.debug("Call AI function " + function.getId() + "(" +
+            arguments.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining(",")) +
+            ")");
         DBPDataSourceContainer container = context.getContext() != null
             ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
         AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(

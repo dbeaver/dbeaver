@@ -86,6 +86,7 @@ public class MySQLCatalog implements
     private transient String databaseDDL;
     
     protected final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private boolean tableAdditionalInfoCached;
 
 
     public static class AdditionalInfo {
@@ -427,6 +428,10 @@ public class MySQLCatalog implements
     {
         monitor.subTask("Cache tables");
         getTableCache().getAllObjects(monitor, this);
+        if ((scope & STRUCT_ENTITIES) != 0) {
+            indexCache.getAllObjects(monitor, this);
+            cacheTablesAdditionalInfo(monitor);
+        }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
             getTableCache().loadChildren(monitor, this, null);
@@ -437,6 +442,31 @@ public class MySQLCatalog implements
             if (getDataSource().supportsCheckConstraints()) {
                 checkConstraintCache.getAllObjects(monitor, this);
             }
+        }
+    }
+
+    private void cacheTablesAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (this.tableAdditionalInfoCached) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load database tables status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(this))) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String tableName = JDBCUtils.safeGetString(dbResult, "Name");
+                        MySQLTableBase table = getTableCache().getCachedObject(tableName);
+                        if (table instanceof MySQLTable t) {
+                            t.fetchAdditionalInfo(dbResult);
+                        }
+                    }
+                    additionalInfo.loaded = true;
+                }
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        } finally {
+            this.tableAdditionalInfoCached = true;
         }
     }
 
@@ -508,6 +538,7 @@ public class MySQLCatalog implements
         throws DBException
     {
         hasStatistics = false;
+        tableAdditionalInfoCached = false;
         databaseDDL = null;
         getTableCache().clearCache();
         indexCache.clearCache();

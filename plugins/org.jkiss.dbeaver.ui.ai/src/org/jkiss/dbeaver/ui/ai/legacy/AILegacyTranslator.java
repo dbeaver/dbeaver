@@ -159,17 +159,20 @@ public class AILegacyTranslator {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                AIDatabaseContext dbContext = new AIDatabaseContext.Builder(dataSource)
+                AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(dataSource)
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
-                    .setExecutionContext(executionContext)
-                    .build();
+                    .setExecutionContext(executionContext);
 
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
                 AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
 
                 AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
+                contextBuilder = sysPromptBuilder.configureDatabaseContext(contextBuilder);
+
                 AIMessage userMessage = AIMessage.userMessage(userInput);
+
+                AIDatabaseContext dbContext = contextBuilder.build();
                 AIAssistantResponse result = aiAssistant.generateText(
                     monitor,
                     dbContext,

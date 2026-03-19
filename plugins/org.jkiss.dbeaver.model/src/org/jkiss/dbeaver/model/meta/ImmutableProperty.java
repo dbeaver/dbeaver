@@ -14,14 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model;
+package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.cli.CLIContext;
-import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface CommandLineAuthenticator {
-    void authenticate(@Nullable AuthenticateOptions options, @NotNull CLIContext context) throws DBException;
+/**
+ * Mark property as immutable
+ */
+@Target(value = {ElementType.METHOD, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ImmutableProperty {
 }

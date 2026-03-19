@@ -131,8 +131,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -523,6 +523,17 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private boolean updateDataSourceContainer() {
+        DBPDataSourceContainer inputDataSource =
+            DBWorkbench.getPlatform()
+                .getPreferenceStore()
+                .getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS)
+                ? defineContainer()
+                : null;
+        return setDataSourceContainer(inputDataSource);
+    }
+
+    @Nullable
+    private DBPDataSourceContainer defineContainer() {
         DBPDataSourceContainer inputDataSource = null;
         if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
@@ -538,7 +549,7 @@ public class SQLEditor extends SQLEditorBase implements
                 inputDataSource = dsp.getDataSourceContainer();
             }
         }
-        return setDataSourceContainer(inputDataSource);
+        return inputDataSource;
     }
 
     private void updateExecutionContext(Runnable onSuccess) {

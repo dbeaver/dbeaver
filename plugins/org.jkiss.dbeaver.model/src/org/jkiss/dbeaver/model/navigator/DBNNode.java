@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -290,7 +290,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             if (!pathBuilder.isEmpty()) {
                 pathBuilder.insert(0, '/');
             }
-            String nodeId = DBNUtils.encodeNodePath(currentNode.getNodeId());
+            String nodeId = currentNode.getNodeId();
+            nodeId = DBNUtils.encodeNodePath(nodeId);
             pathBuilder.insert(0, nodeId);
             if (currentNode instanceof DBNLocalFolder folder) {
                 // FIXME: When traversing to root, nested folders are skipped. This is a workaround so that we don't skip them.

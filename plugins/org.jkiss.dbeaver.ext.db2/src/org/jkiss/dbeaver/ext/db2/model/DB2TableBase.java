@@ -139,9 +139,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     // -----------------
     @Override
     @Association
-    public Collection<DB2Index> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        return monitor == null ? tableIndexCache.getCachedObjects() : tableIndexCache.getAllObjects(monitor, this);
+    public Collection<DB2Index> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return tableIndexCache.getAllObjects(monitor, this);
     }
 
     // -----------------

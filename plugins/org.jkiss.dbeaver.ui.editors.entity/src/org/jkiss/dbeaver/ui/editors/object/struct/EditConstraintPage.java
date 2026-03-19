@@ -119,7 +119,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
         columnsGroup.setVisible(!custom);
         ((GridData) columnsGroup.getLayoutData()).exclude = custom;
         expressionGroup.setVisible(custom);
-        ((GridData) expressionGroup.getLayoutData()).exclude = !custom;
+        ((GridData) expressionGroup.getParent().getLayoutData()).exclude = !custom;
         columnsGroup.getParent().layout();
     }
 

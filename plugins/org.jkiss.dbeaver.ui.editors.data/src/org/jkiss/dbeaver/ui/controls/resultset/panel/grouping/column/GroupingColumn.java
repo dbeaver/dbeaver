@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model.option;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
-import org.jkiss.code.Nullable;
-import picocli.CommandLine;
-
-public class AuthenticateOptions {
-    @Nullable
-    @CommandLine.Option(names = {"-token", "--access-token"}, arity = "1", description = "Access token", required = false)
-    private String accessToken;
-
-
-    @Nullable
-    public String getAccessToken() {
-        return accessToken;
-    }
+/**
+ * represents grouping column of any type
+ */
+public interface GroupingColumn {
+    boolean afterDeleteAction();
 }
