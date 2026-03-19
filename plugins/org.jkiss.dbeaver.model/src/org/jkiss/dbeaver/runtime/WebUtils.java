@@ -50,11 +50,6 @@ public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
     private static final int MAX_RETRY_COUNT = 10;
     private static final int DEFAULT_HTTP_TIMEOUT_MS = 10000;
-    /** System property for HTTP timeout in seconds (e.g. 60). Used when preference store is not available. */
-    public static final String PROP_HTTP_REQUEST_TIMEOUT_SECONDS = "dbeaver.http.request.timeout"; //$NON-NLS-1$
-    /** Environment variable for HTTP timeout in seconds (e.g. 60). */
-    public static final String ENV_HTTP_REQUEST_TIMEOUT_SECONDS = "DBEAVER_HTTP_REQUEST_TIMEOUT"; //$NON-NLS-1$
-
     @NotNull
     public static URLConnection openConnection(String urlString, String referrer) throws IOException {
         return openConnection(urlString, null, referrer);

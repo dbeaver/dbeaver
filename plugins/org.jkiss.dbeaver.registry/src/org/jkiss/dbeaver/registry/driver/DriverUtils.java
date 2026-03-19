@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -61,14 +60,19 @@ public class DriverUtils {
 
     public static final String ZIP_EXTRACT_DIR = "zip-cache";
 
+    /** System property for the driver download timeout in seconds (e.g. {@code -Ddbeaver.driver.download.timeout=60}). */
+    public static final String PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS = "dbeaver.driver.download.timeout"; //$NON-NLS-1$
+    /** Environment variable for the driver download timeout in seconds (e.g. {@code DBEAVER_DRIVER_DOWNLOAD_TIMEOUT=60}). */
+    public static final String ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS = "DBEAVER_DRIVER_DOWNLOAD_TIMEOUT"; //$NON-NLS-1$
+
     /**
      * Returns the HTTP timeout to use when downloading driver files or fetching driver metadata.
-     * Checks, in order: the {@value WebUtils#PROP_HTTP_REQUEST_TIMEOUT_SECONDS} system property,
-     * the {@value WebUtils#ENV_HTTP_REQUEST_TIMEOUT_SECONDS} environment variable,
+     * Checks, in order: the {@value #PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS} system property,
+     * the {@value #ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS} environment variable,
      * and the {@link ModelPreferences#UI_DRIVERS_UPDATE_TIMEOUT} user preference.
      */
     public static Duration getDownloadTimeout() {
-        String prop = System.getProperty(WebUtils.PROP_HTTP_REQUEST_TIMEOUT_SECONDS);
+        String prop = System.getProperty(PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS);
         if (prop != null && !prop.isEmpty()) {
             try {
                 int seconds = Integer.parseInt(prop.trim());
@@ -76,10 +80,10 @@ public class DriverUtils {
                     return Duration.ofSeconds(seconds);
                 }
             } catch (NumberFormatException e) {
-                log.warn("Invalid value for system property " + WebUtils.PROP_HTTP_REQUEST_TIMEOUT_SECONDS + ": " + prop, e);
+                log.warn("Invalid value for system property " + PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS + ": " + prop, e);
             }
         }
-        String env = System.getenv(WebUtils.ENV_HTTP_REQUEST_TIMEOUT_SECONDS);
+        String env = System.getenv(ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS);
         if (env != null && !env.isEmpty()) {
             try {
                 int seconds = Integer.parseInt(env.trim());
@@ -87,7 +91,7 @@ public class DriverUtils {
                     return Duration.ofSeconds(seconds);
                 }
             } catch (NumberFormatException e) {
-                log.warn("Invalid value for environment variable " + WebUtils.ENV_HTTP_REQUEST_TIMEOUT_SECONDS + ": " + env, e);
+                log.warn("Invalid value for environment variable " + ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS + ": " + env, e);
             }
         }
         try {
@@ -98,7 +102,7 @@ public class DriverUtils {
         } catch (Exception ignored) {
             // preferences not yet initialized
         }
-        return Duration.ofSeconds(10);
+        return Duration.ofMillis(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT_DEFAULT_MS);
     }
 
     public static boolean matchesBundle(IConfigurationElement config) {
