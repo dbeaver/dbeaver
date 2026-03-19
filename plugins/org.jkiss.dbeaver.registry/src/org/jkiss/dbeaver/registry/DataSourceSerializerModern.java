@@ -884,11 +884,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     ) {
         // Preferences
         DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
-        Map<String, String> preferenceProperties = preferenceStore.getProperties();
-        preferenceProperties.clear();
-        preferenceProperties.putAll(
-            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-        );
+        preferenceStore.clear();
+        Map<String, String> customProperties = JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES);
+        customProperties.forEach(preferenceStore::setValue);
 
         if (userSettings != null) {
             userSettings.entrySet().stream()

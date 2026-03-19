@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -97,7 +97,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
     @Override
     public void setValue(@NotNull String name, @Nullable String value) {
         if (value == null) {
-            getProperties().remove(name);
+            setToDefault(name);
             return;
         }
         super.setValue(name, value);
@@ -105,18 +105,9 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
 
     @Override
     public Map<String, String> getProperties() {
-        Map<String, String> properties = super.getProperties();
-        properties.putAll(userSettings);
+        Map<String, String> properties1 = super.getProperties();
+        Map<String, String> properties = new HashMap<>(properties1);
+         properties.putAll(userSettings);
         return properties;
-    }
-
-    @Override
-    public String[] preferenceNames() {
-        String[] preferenceNames = super.preferenceNames();
-        return Arrays.stream(preferenceNames)
-            // User settings are not stored in the datasource's, so we need to filter them out from the list of preferences
-            .filter(name -> !userSettings.containsKey(name))
-            .toList()
-            .toArray(new String[0]);
     }
 }
