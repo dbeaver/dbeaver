@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -84,10 +85,36 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
             adminProps.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
         }
 
-        // If SSL handler is configured, use encrypt=true; otherwise default to false (same as main connection)
+        // If SSL handler is configured, use encrypt=true and copy SSL properties; otherwise default to encrypt=false
         DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             adminProps.put("encrypt", "true");
+
+            // Copy trustStore settings (mirrors SQLServerDataSource.initSSL logic)
+            String keystoreFileProp;
+            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+                keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
+            } else {
+                keystoreFileProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE);
+            }
+            if (!CommonUtils.isEmpty(keystoreFileProp)) {
+                adminProps.put("trustStore", keystoreFileProp);
+            }
+
+            String keystorePasswordProp;
+            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+                keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
+            } else {
+                keystorePasswordProp = sslConfig.getPassword();
+            }
+            if (!CommonUtils.isEmpty(keystorePasswordProp)) {
+                adminProps.put("trustStorePassword", keystorePasswordProp);
+            }
+
+            String hostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
+            if (!CommonUtils.isEmpty(hostnameProp)) {
+                adminProps.put("hostNameInCertificate", hostnameProp);
+            }
         } else {
             adminProps.put("encrypt", "false");
         }

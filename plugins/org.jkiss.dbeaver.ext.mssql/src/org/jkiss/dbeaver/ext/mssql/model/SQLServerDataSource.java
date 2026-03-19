@@ -60,6 +60,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 public class SQLServerDataSource
@@ -81,6 +82,7 @@ public class SQLServerDataSource
     private volatile transient boolean hasStatistics;
     private final boolean isBabelfish;
     private boolean isSynapseDatabase;
+    private boolean expiredPasswordChanged;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -297,11 +299,15 @@ public class SQLServerDataSource
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
         try {
-            return super.openConnection(monitor, context, purpose);
+            Connection connection = super.openConnection(monitor, context, purpose);
+            expiredPasswordChanged = false;
+            return connection;
         } catch (DBCException e) {
             if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
+                && !expiredPasswordChanged
                 && isPasswordExpired(e)
                 && updateExpiredPassword(monitor)) {
+                expiredPasswordChanged = true;
                 return super.openConnection(monitor, context, purpose);
             }
             throw e;
@@ -323,7 +329,7 @@ public class SQLServerDataSource
                 if (sqle.getErrorCode() == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED) {
                     String message = sqle.getMessage();
                     if (message != null) {
-                        String lower = message.toLowerCase();
+                        String lower = message.toLowerCase(Locale.ROOT);
                         if (lower.contains("password")
                             && (lower.contains("expired") || lower.contains("must be changed"))) {
                             return true;
@@ -365,7 +371,9 @@ public class SQLServerDataSource
             null,
             false,
             false);
-        if (adminInfo == null || CommonUtils.isEmpty(adminInfo.getUserName())) {
+        if (adminInfo == null
+            || CommonUtils.isEmpty(adminInfo.getUserName())
+            || CommonUtils.isEmpty(adminInfo.getUserPassword())) {
             return false;
         }
 
@@ -393,6 +401,7 @@ public class SQLServerDataSource
         // Step 4: Update local credentials so the retry uses the new password
         connectionInfo.setUserPassword(passwordInfo.getNewPassword());
         getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        getContainer().persistConfiguration();
         return true;
     }
 
