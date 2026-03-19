@@ -264,6 +264,8 @@ public final class ModelPreferences
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
     public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
     public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
+    /** HTTP read/connect timeout in milliseconds (for driver downloads, update check, etc.). Overridable via system property {@code dbeaver.http.request.timeout} or env {@code DBEAVER_HTTP_REQUEST_TIMEOUT} (seconds). */
+    public static final String UI_HTTP_REQUEST_TIMEOUT = "ui.http.request.timeout"; //$NON-NLS-1$
     public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
     public static final String UI_DRIVERS_GLOBAL_LIBRARIES = "ui.drivers.global.libraries"; //$NON-NLS-1$
     public static final String UI_MAVEN_REPOSITORIES = "ui.maven.repositories"; //$NON-NLS-1$
@@ -401,6 +403,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_USER, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PASSWORD, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_HTTP_REQUEST_TIMEOUT, 10000);
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, true);
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");

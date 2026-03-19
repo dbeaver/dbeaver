@@ -542,6 +542,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_network_expert_debug_net_tip;
     public static String pref_page_network_expert_restart_prompt_title;
     public static String pref_page_network_expert_restart_prompt_message;
+    public static String pref_page_network_expert_http_request_timeout_label;
+    public static String pref_page_network_expert_http_request_timeout_tip;
 
     public static String pref_page_connection_label_default_settings;
 

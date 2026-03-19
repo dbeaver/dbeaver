@@ -48,6 +48,45 @@ import java.util.Map;
 public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
     private static final int MAX_RETRY_COUNT = 10;
+    private static final int DEFAULT_HTTP_TIMEOUT_MS = 10000;
+    /** System property for HTTP timeout in seconds (e.g. 60). Used when preference store is not available. */
+    public static final String PROP_HTTP_REQUEST_TIMEOUT_SECONDS = "dbeaver.http.request.timeout"; //$NON-NLS-1$
+    /** Environment variable for HTTP timeout in seconds (e.g. 60). */
+    public static final String ENV_HTTP_REQUEST_TIMEOUT_SECONDS = "DBEAVER_HTTP_REQUEST_TIMEOUT"; //$NON-NLS-1$
+
+    public static int getDefaultHttpRequestTimeoutMs() {
+        String prop = System.getProperty(PROP_HTTP_REQUEST_TIMEOUT_SECONDS);
+        if (prop != null && !prop.isEmpty()) {
+            try {
+                int seconds = Integer.parseInt(prop.trim());
+                if (seconds > 0) {
+                    return seconds * 1000;
+                }
+            } catch (NumberFormatException ignored) {
+                // use fallback
+            }
+        }
+        String env = System.getenv(ENV_HTTP_REQUEST_TIMEOUT_SECONDS);
+        if (env != null && !env.isEmpty()) {
+            try {
+                int seconds = Integer.parseInt(env.trim());
+                if (seconds > 0) {
+                    return seconds * 1000;
+                }
+            } catch (NumberFormatException ignored) {
+                // use fallback
+            }
+        }
+        try {
+            int ms = ModelPreferences.getPreferences().getInt(ModelPreferences.UI_HTTP_REQUEST_TIMEOUT);
+            if (ms > 0) {
+                return ms;
+            }
+        } catch (Exception ignored) {
+            // preferences not yet initialized
+        }
+        return DEFAULT_HTTP_TIMEOUT_MS;
+    }
 
     @NotNull
     public static URLConnection openConnection(String urlString, String referrer) throws IOException {
@@ -61,7 +100,12 @@ public class WebUtils {
 
     @NotNull
     public static URLConnection openConnection(DBRProgressMonitor monitor, String urlString, DBPAuthInfo authInfo, String referrer) throws IOException {
-        return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, 10000, null);
+        return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, DEFAULT_HTTP_TIMEOUT_MS, null);
+    }
+
+    @NotNull
+    public static URLConnection openConnection(DBRProgressMonitor monitor, String urlString, DBPAuthInfo authInfo, String referrer, int timeout) throws IOException {
+        return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, timeout, null);
     }
 
     /**
@@ -74,7 +118,7 @@ public class WebUtils {
      */
     @NotNull
     private static URLConnection openURLConnection(String urlString, DBPAuthInfo authInfo, String referrer, int retryNumber) throws IOException {
-        return openURLConnection(urlString, authInfo, referrer, "GET", retryNumber, 10000, null);
+        return openURLConnection(urlString, authInfo, referrer, "GET", retryNumber, DEFAULT_HTTP_TIMEOUT_MS, null);
     }
     public static URLConnection openURLConnection(
         String urlString,
@@ -198,7 +242,7 @@ public class WebUtils {
         OutputStream outputStream,
         DBPAuthInfo authInfo
     ) throws IOException, InterruptedException {
-        final URLConnection connection = openConnection(externalURL, authInfo, null);
+        final URLConnection connection = openConnection(monitor, externalURL, authInfo, null, getDefaultHttpRequestTimeoutMs());
         final int contentLength = connection.getContentLength();
         final byte[] buffer = new byte[8192 * 4];
         final NumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<<< HEAD:plugins/org.jkiss.dbeaver.model.ai/src/org/jkiss/dbeaver/model/ai/AIConfirmation.java
 package org.jkiss.dbeaver.model.ai;
 
 import java.util.UUID;
@@ -31,4 +32,20 @@ public abstract class AIConfirmation {
     }
 
     abstract String getMessage();
+========
+
+package org.jkiss.dbeaver.model.exec.plan;
+
+/**
+ * Execution plan source data format
+ */
+public enum DBCPlanSourceFormat {
+
+    NONE, // N/A
+    TEXT, // string form
+    JSON, // string form
+    XML, // string form
+    RESULT_SET // CachedResultSet
+
+>>>>>>>> 9a0b97bb94 (#40537 web request timeouts configuration):plugins/org.jkiss.dbeaver.model/src/org/jkiss/dbeaver/model/exec/plan/DBCPlanSourceFormat.java
 }
