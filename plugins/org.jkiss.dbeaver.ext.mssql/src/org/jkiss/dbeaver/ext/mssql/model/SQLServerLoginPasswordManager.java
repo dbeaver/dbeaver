@@ -71,53 +71,7 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
         @NotNull String loginName,
         @NotNull String newPassword
     ) throws DBException {
-        Properties adminProps = new Properties();
-        adminProps.put("user", adminUser);
-        adminProps.put("password", CommonUtils.notEmpty(adminPassword));
-        adminProps.put("integratedSecurity", "false");
-
-        // Mirror the encrypt/SSL logic from SQLServerDataSource.getAllConnectionProperties:
-        // If trust certificate is enabled, set it for the admin connection too
-        boolean trustCertificate = CommonUtils.getBoolean(
-            connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE),
-            false);
-        if (trustCertificate) {
-            adminProps.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
-        }
-
-        // If SSL handler is configured, use encrypt=true and copy SSL properties; otherwise default to encrypt=false
-        DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(SQLServerConstants.HANDLER_SSL);
-        if (sslConfig != null && sslConfig.isEnabled()) {
-            adminProps.put("encrypt", "true");
-
-            // Copy trustStore settings (mirrors SQLServerDataSource.initSSL logic)
-            String keystoreFileProp;
-            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-                keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
-            } else {
-                keystoreFileProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE);
-            }
-            if (!CommonUtils.isEmpty(keystoreFileProp)) {
-                adminProps.put("trustStore", keystoreFileProp);
-            }
-
-            String keystorePasswordProp;
-            if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-                keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
-            } else {
-                keystorePasswordProp = sslConfig.getPassword();
-            }
-            if (!CommonUtils.isEmpty(keystorePasswordProp)) {
-                adminProps.put("trustStorePassword", keystorePasswordProp);
-            }
-
-            String hostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
-            if (!CommonUtils.isEmpty(hostnameProp)) {
-                adminProps.put("hostNameInCertificate", hostnameProp);
-            }
-        } else {
-            adminProps.put("encrypt", "false");
-        }
+        Properties adminProps = buildAdminConnectionProperties(connectionInfo, adminUser, adminPassword);
 
         try (Connection adminConn = driverInstance.connect(connectionUrl, adminProps)) {
             if (adminConn == null) {
@@ -134,6 +88,64 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
             throw new DBCException(getPasswordPolicyErrorMessage(e), e);
         } catch (Exception e) {
             throw new DBException("Failed to change password via admin connection", e);
+        }
+    }
+
+    @NotNull
+    private static Properties buildAdminConnectionProperties(
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String adminUser,
+        @NotNull String adminPassword
+    ) {
+        Properties adminProps = new Properties();
+        adminProps.put("user", adminUser);
+        adminProps.put("password", CommonUtils.notEmpty(adminPassword));
+        adminProps.put("integratedSecurity", "false");
+
+        boolean trustCertificate = CommonUtils.getBoolean(
+            connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE),
+            false);
+        if (trustCertificate) {
+            adminProps.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
+        }
+
+        configureSSLProperties(adminProps, connectionInfo);
+        return adminProps;
+    }
+
+    private static void configureSSLProperties(
+        @NotNull Properties adminProps,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(SQLServerConstants.HANDLER_SSL);
+        if (sslConfig == null || !sslConfig.isEnabled()) {
+            adminProps.put("encrypt", "false");
+            return;
+        }
+
+        adminProps.put("encrypt", "true");
+
+        // Copy trustStore settings (mirrors SQLServerDataSource.initSSL logic)
+        final String keystoreFileProp;
+        final String keystorePasswordProp;
+        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+            // Backward compatibility
+            keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
+            keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
+        } else {
+            keystoreFileProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE);
+            keystorePasswordProp = sslConfig.getPassword();
+        }
+        if (!CommonUtils.isEmpty(keystoreFileProp)) {
+            adminProps.put("trustStore", keystoreFileProp);
+        }
+        if (!CommonUtils.isEmpty(keystorePasswordProp)) {
+            adminProps.put("trustStorePassword", keystorePasswordProp);
+        }
+
+        String hostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
+        if (!CommonUtils.isEmpty(hostnameProp)) {
+            adminProps.put("hostNameInCertificate", hostnameProp);
         }
     }
 

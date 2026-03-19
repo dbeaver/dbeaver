@@ -82,7 +82,6 @@ public class SQLServerDataSource
     private volatile transient boolean hasStatistics;
     private final boolean isBabelfish;
     private boolean isSynapseDatabase;
-    private boolean expiredPasswordChanged;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -299,15 +298,11 @@ public class SQLServerDataSource
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
         try {
-            Connection connection = super.openConnection(monitor, context, purpose);
-            expiredPasswordChanged = false;
-            return connection;
+            return super.openConnection(monitor, context, purpose);
         } catch (DBCException e) {
             if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
-                && !expiredPasswordChanged
                 && isPasswordExpired(e)
                 && updateExpiredPassword(monitor)) {
-                expiredPasswordChanged = true;
                 return super.openConnection(monitor, context, purpose);
             }
             throw e;
