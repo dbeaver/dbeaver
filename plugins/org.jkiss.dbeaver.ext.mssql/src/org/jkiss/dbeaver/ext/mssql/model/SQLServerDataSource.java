@@ -396,7 +396,9 @@ public class SQLServerDataSource
         // Step 4: Update local credentials so the retry uses the new password
         connectionInfo.setUserPassword(passwordInfo.getNewPassword());
         getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
-        getContainer().persistConfiguration();
+        if (!getContainer().isTemporary()) {
+            getContainer().persistConfiguration();
+        }
         return true;
     }
 
