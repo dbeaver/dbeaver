@@ -162,7 +162,8 @@ public class NativeClientDistributionDescriptor {
                         taskName,
                         externalURL,
                         targetFile.toPath(),
-                        null);
+                        null,
+                        DriverUtils.getDownloadTimeout());
                 } catch (IOException e) {
                     log.debug("Error downloading file '" + fileName + "'", e);
                     throw new DBException("Error downloading file '" + fileName + "': " + e.getMessage());

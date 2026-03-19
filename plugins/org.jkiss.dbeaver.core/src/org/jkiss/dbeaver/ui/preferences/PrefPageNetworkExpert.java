@@ -37,7 +37,6 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
     private Combo prefIpStackCombo;
     private Combo prefIpAddressesCombo;
     private Button debugNetworkConnectionsCheck;
-    private Spinner httpRequestTimeoutSpinner;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -97,18 +96,6 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
 
         UIUtils.createInfoLabel(composite, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart, SWT.NONE, 2);
 
-        new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
-
-        httpRequestTimeoutSpinner = UIUtils.createLabelSpinner(
-            composite,
-            CoreMessages.pref_page_network_expert_http_request_timeout_label,
-            CoreMessages.pref_page_network_expert_http_request_timeout_tip,
-            Math.max(1, ModelPreferences.getPreferences().getInt(ModelPreferences.UI_HTTP_REQUEST_TIMEOUT) / 1000),
-            1,
-            300
-        );
-
         return composite;
     }
 
@@ -137,9 +124,6 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
             }
         }
 
-        // HTTP timeout takes effect immediately — no restart required
-        store.setValue(ModelPreferences.UI_HTTP_REQUEST_TIMEOUT, httpRequestTimeoutSpinner.getSelection() * 1000);
-
         return super.performOk();
     }
 
@@ -148,7 +132,6 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
         prefIpStackCombo.select(ModelPreferences.IPType.AUTO.ordinal());
         prefIpAddressesCombo.select(ModelPreferences.IPType.AUTO.ordinal());
         debugNetworkConnectionsCheck.setSelection(false);
-        httpRequestTimeoutSpinner.setSelection(Math.max(1, ModelPreferences.getPreferences().getDefaultInt(ModelPreferences.UI_HTTP_REQUEST_TIMEOUT) / 1000));
         super.performDefaults();
     }
 }

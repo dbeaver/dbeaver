@@ -257,7 +257,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         final Path tempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, "driver-files");
         final Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localFile.toString()));
 
-        WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor));
+        WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor), DriverUtils.getDownloadTimeout());
         this.fileCRC = DriverUtils.calculateFileCRC(tempFile);
         if (DBWorkbench.isDistributed()) {
             // save driver library file using file controller

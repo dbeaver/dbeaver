@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -278,7 +279,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             return;
         }
         String pomURL = getRemotePOMLocation();
-        try (InputStream is = WebUtils.openConnection(monitor, pomURL, artifact.getRepository().getAuthInfo(), null, WebUtils.getDefaultHttpRequestTimeoutMs()).getInputStream()) {
+        try (InputStream is = WebUtils.openConnection(
+            monitor, pomURL, artifact.getRepository().getAuthInfo(), null, DriverUtils.getDownloadTimeout()
+        ).getInputStream()) {
             Path folder = localPOM.getParent();
             if (Files.notExists(folder)) {
                 try {

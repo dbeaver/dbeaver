@@ -284,6 +284,9 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_ui_general_spinner_proxy_port;
     public static String pref_page_ui_general_label_proxy_user;
     public static String pref_page_ui_general_label_proxy_password;
+    public static String pref_page_drivers_group_network_settings;
+    public static String pref_page_drivers_network_download_timeout_label;
+    public static String pref_page_drivers_network_download_timeout_tip;
     public static String pref_page_drivers_group_location;
 
     public static String dialog_connection_driver_project;

@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -41,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -57,6 +60,46 @@ public class DriverUtils {
     private static final Log log = Log.getLog(DriverUtils.class);
 
     public static final String ZIP_EXTRACT_DIR = "zip-cache";
+
+    /**
+     * Returns the HTTP timeout to use when downloading driver files or fetching driver metadata.
+     * Checks, in order: the {@value WebUtils#PROP_HTTP_REQUEST_TIMEOUT_SECONDS} system property,
+     * the {@value WebUtils#ENV_HTTP_REQUEST_TIMEOUT_SECONDS} environment variable,
+     * and the {@link ModelPreferences#UI_DRIVERS_UPDATE_TIMEOUT} user preference.
+     */
+    public static Duration getDownloadTimeout() {
+        String prop = System.getProperty(WebUtils.PROP_HTTP_REQUEST_TIMEOUT_SECONDS);
+        if (prop != null && !prop.isEmpty()) {
+            try {
+                int seconds = Integer.parseInt(prop.trim());
+                if (seconds > 0) {
+                    return Duration.ofSeconds(seconds);
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Invalid value for system property " + WebUtils.PROP_HTTP_REQUEST_TIMEOUT_SECONDS + ": " + prop, e);
+            }
+        }
+        String env = System.getenv(WebUtils.ENV_HTTP_REQUEST_TIMEOUT_SECONDS);
+        if (env != null && !env.isEmpty()) {
+            try {
+                int seconds = Integer.parseInt(env.trim());
+                if (seconds > 0) {
+                    return Duration.ofSeconds(seconds);
+                }
+            } catch (NumberFormatException e) {
+                log.warn("Invalid value for environment variable " + WebUtils.ENV_HTTP_REQUEST_TIMEOUT_SECONDS + ": " + env, e);
+            }
+        }
+        try {
+            int ms = ModelPreferences.getPreferences().getInt(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT);
+            if (ms > 0) {
+                return Duration.ofMillis(ms);
+            }
+        } catch (Exception ignored) {
+            // preferences not yet initialized
+        }
+        return Duration.ofSeconds(10);
+    }
 
     public static boolean matchesBundle(IConfigurationElement config) {
         // Check bundle

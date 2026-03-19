@@ -61,6 +61,8 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     private Text proxyUserText;
     private Text proxyPasswordText;
 
+    private Spinner httpRequestTimeoutSpinner;
+
     private Text customDriversHome;
 
     @Override
@@ -113,6 +115,24 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                 UIConnectionMessages.pref_page_ui_general_label_proxy_user,
                 null);
             proxyPasswordText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_password, null, SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
+        }
+
+        {
+            Composite networkSettings = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_drivers_group_network_settings,
+                2,
+                GridData.FILL_HORIZONTAL,
+                300
+            );
+            httpRequestTimeoutSpinner = UIUtils.createLabelSpinner(
+                networkSettings,
+                UIConnectionMessages.pref_page_drivers_network_download_timeout_label,
+                UIConnectionMessages.pref_page_drivers_network_download_timeout_tip,
+                Math.max(1, store.getInt(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT) / 1000),
+                1,
+                300
+            );
         }
 
         {
@@ -205,6 +225,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         proxyPortSpinner.setSelection(store.getDefaultInt(ModelPreferences.UI_PROXY_PORT));
         proxyUserText.setText(store.getDefaultString(ModelPreferences.UI_PROXY_USER));
         proxyPasswordText.setText("");
+        httpRequestTimeoutSpinner.setSelection(Math.max(1, store.getDefaultInt(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT) / 1000));
         customDriversHome.setText(store.getDefaultString(ModelPreferences.UI_DRIVERS_HOME));
 
         sourceList.removeAll();
@@ -227,6 +248,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         store.setValue(ModelPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
         store.setValue(ModelPreferences.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(ModelPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
+        store.setValue(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT, httpRequestTimeoutSpinner.getSelection() * 1000);
         store.setValue(ModelPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
 
         {

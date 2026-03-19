@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.registry.maven.versioning.ArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.versioning.InvalidVersionSpecificationException;
 import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
@@ -110,13 +111,17 @@ public class MavenArtifact implements IMavenIdentifier
         metadataPath += MAVEN_METADATA_XML;
         monitor.subTask("Load metadata " + this);
 
-        try (InputStream mdStream = WebUtils.openConnection(monitor, metadataPath, getRepository().getAuthInfo(), null, WebUtils.getDefaultHttpRequestTimeoutMs()).getInputStream()) {
+        try (InputStream mdStream = WebUtils.openConnection(
+            monitor, metadataPath, getRepository().getAuthInfo(), null, DriverUtils.getDownloadTimeout()
+        ).getInputStream()) {
             parseMetadata(mdStream);
         } catch (XMLException e) {
             log.warn("Error parsing artifact metadata", e);
         } catch (IOException e) {
             // Metadata xml not found. It happens in rare cases. Let's try to get directory listing
-            try (InputStream dirStream = WebUtils.openConnection(monitor, getBaseArtifactURL(), getRepository().getAuthInfo(), null, WebUtils.getDefaultHttpRequestTimeoutMs()).getInputStream()) {
+            try (InputStream dirStream = WebUtils.openConnection(
+                monitor, getBaseArtifactURL(), getRepository().getAuthInfo(), null, DriverUtils.getDownloadTimeout()
+            ).getInputStream()) {
                 parseDirectory(dirStream);
             } catch (XMLException e1) {
                 log.warn("Error parsing artifact directory", e);
