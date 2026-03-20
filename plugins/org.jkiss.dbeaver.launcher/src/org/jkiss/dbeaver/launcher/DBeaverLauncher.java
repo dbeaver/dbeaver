@@ -589,9 +589,7 @@ public class DBeaverLauncher {
         checkCompatibleWindowsVersion();
 
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
-        // Disable Eclipse proxy service activation
-        // We do it in
-        System.setProperty("org.eclipse.net.core.enableProxyService", "false");
+        disableDefaultProxyServiceActivation();
         commands = args;
         String[] passThruArgs = processCommandLine(args);
         if (debug) {
@@ -678,6 +676,14 @@ public class DBeaverLauncher {
             System.out.println("Invoking parameters: " + Arrays.toString(passThruArgs));
         }
         invokeFramework(passThruArgs, bootPath);
+    }
+
+    /**
+     * Disable Eclipse proxy service activation
+     * We do it in {@link org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication#activateProxyService}
+     */
+    private static void disableDefaultProxyServiceActivation() {
+        System.setProperty("org.eclipse.net.core.enableProxyService", "false");
     }
 
     // Verifies that args has any non-standard parameters
