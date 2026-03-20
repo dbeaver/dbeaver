@@ -193,10 +193,10 @@ public class CubridUser extends GenericSchema
             String showDataType = null;
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
-            String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
+            String escapedColumnName = columnName.replace("'", "''");
+            String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = '" + escapedColumnName + "'";
             sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-                dbStat.setString(1, columnName);
                 try (JDBCResultSet result = dbStat.executeQuery()) {
                     if (result.next()) {
                         showDataType = JDBCUtils.safeGetString(result, "Type");
