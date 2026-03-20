@@ -65,6 +65,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private List<DBVEntityForeignKey> entityForeignKeys;
     private List<DBVEntityAttribute> entityAttributes;
     private List<DBVColorOverride> colorOverrides;
+    @Nullable
+    private DBVGroupRowStriping groupRowStriping;
 
     public DBVEntity(@NotNull DBVContainer container, @NotNull String name, String descriptionColumnNames) {
         this.container = container;
@@ -132,6 +134,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
         } else {
             this.colorOverrides = null;
+        }
+        if (src.groupRowStriping != null) {
+            this.groupRowStriping = new DBVGroupRowStriping(src.groupRowStriping);
+        } else {
+            this.groupRowStriping = null;
         }
         super.copyFrom(src);
     }
@@ -205,6 +212,28 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 curColor.addAttributeValue(strValue);
             }
             addColorOverride(curColor);
+        }
+        Map<String, Object> grsMap = JSONUtils.getObjectOrNull(map, "group-row-striping");
+        if (grsMap != null && !grsMap.isEmpty()) {
+            DBVGroupRowStriping grs = new DBVGroupRowStriping();
+            grs.setEnabled(JSONUtils.getBoolean(grsMap, "enabled"));
+            grs.setSortByGroupColumns(JSONUtils.getBoolean(grsMap, "sort-by-group-columns"));
+            String bg1 = JSONUtils.getString(grsMap, "background1");
+            String bg2 = JSONUtils.getString(grsMap, "background2");
+            if (!CommonUtils.isEmpty(bg1)) {
+                grs.setBackgroundColor1(bg1);
+            }
+            if (!CommonUtils.isEmpty(bg2)) {
+                grs.setBackgroundColor2(bg2);
+            }
+            List<String> cols = new ArrayList<>();
+            for (String col : JSONUtils.deserializeStringList(grsMap, "columns")) {
+                if (!CommonUtils.isEmpty(col)) {
+                    cols.add(col);
+                }
+            }
+            grs.setColumnNames(cols);
+            groupRowStriping = grs;
         }
         loadPropertiesFrom(map, "properties");
     }
@@ -676,6 +705,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         colorOverrides.clear();
     }
 
+    @Nullable
+    public DBVGroupRowStriping getGroupRowStriping() {
+        return groupRowStriping;
+    }
+
+    public void setGroupRowStriping(@Nullable DBVGroupRowStriping groupRowStriping) {
+        this.groupRowStriping = groupRowStriping;
+    }
+
     @Override
     public boolean hasValuableData() {
         if (!CommonUtils.isEmpty(descriptionColumnNames) ||
@@ -683,6 +721,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             !CommonUtils.isEmpty(entityForeignKeys) ||
             !CommonUtils.isEmpty(colorOverrides))
         {
+            return true;
+        }
+        if (groupRowStriping != null && groupRowStriping.hasValuableData()) {
             return true;
         }
         if (!CommonUtils.isEmpty(entityConstraints)) {

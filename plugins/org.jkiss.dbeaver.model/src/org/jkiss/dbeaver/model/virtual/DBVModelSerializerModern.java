@@ -178,6 +178,25 @@ class DBVModelSerializerModern implements DBVModelSerializer {
             json.endArray();
         }
 
+        DBVGroupRowStriping grs = entity.getGroupRowStriping();
+        if (grs != null && grs.hasValuableData()) {
+            json.name("group-row-striping");
+            json.beginObject();
+            JSONUtils.field(json, "enabled", true);
+            if (grs.isSortByGroupColumns()) {
+                JSONUtils.field(json, "sort-by-group-columns", true);
+            }
+            JSONUtils.field(json, "background1", grs.getBackgroundColor1());
+            JSONUtils.field(json, "background2", grs.getBackgroundColor2());
+            json.name("columns");
+            json.beginArray();
+            for (String col : grs.getColumnNames()) {
+                json.value(col);
+            }
+            json.endArray();
+            json.endObject();
+        }
+
         json.endObject();
     }
 

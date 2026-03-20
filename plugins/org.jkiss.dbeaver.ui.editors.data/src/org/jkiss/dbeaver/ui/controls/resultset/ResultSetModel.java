@@ -35,7 +35,9 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVGroupRowStriping;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.model.virtual.GroupRowStripingUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -377,6 +379,12 @@ public class ResultSetModel implements DBDResultSetModel {
     @Nullable
     private DBSDataContainer getDataContainer() {
         return executionSource == null ? null : executionSource.getDataContainer();
+    }
+
+    @Nullable
+    private DBVEntity resolveVirtualEntity() {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer == null ? null : DBVUtils.getVirtualEntity(dataContainer, false);
     }
 
     public boolean isEmpty() {
@@ -766,6 +774,7 @@ public class ResultSetModel implements DBDResultSetModel {
         if (reset) {
             updateRowColors(true, curRows);
         }
+        applyGroupRowStripingForEntity(virtualEntity, false);
     }
 
     public void updateColorMapping(boolean reset) {
@@ -783,6 +792,7 @@ public class ResultSetModel implements DBDResultSetModel {
         if (reset) {
             updateRowColors(true, curRows);
         }
+        applyGroupRowStripingForEntity(virtualEntity, false);
     }
 
     private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
@@ -891,9 +901,140 @@ public class ResultSetModel implements DBDResultSetModel {
         }
         curRows.addAll(newRows);
 
-        updateRowColors(resetOldRows, newRows);
+        DBVEntity virtualEntity = resolveVirtualEntity();
+        // When group striping is active, all rows must be re-colored from scratch
+        // because stripe parity depends on the full row sequence from index 0.
+        if (virtualEntity != null && isGroupRowStripingActive(virtualEntity.getGroupRowStriping())) {
+            updateRowColors(true, curRows);
+        } else {
+            updateRowColors(resetOldRows, newRows);
+        }
+        applyGroupRowStripingForEntity(virtualEntity, true);
 
         refreshHintsInfo(monitor, newRows, resetOldRows);
+    }
+
+    private static boolean isGroupRowStripingActive(@Nullable DBVGroupRowStriping striping) {
+        return striping != null && striping.hasValuableData();
+    }
+
+    private void applyGroupRowStripingForEntity(@Nullable DBVEntity virtualEntity, boolean applyGroupColumnSort) {
+        if (CommonUtils.isEmpty(curRows) || virtualEntity == null) {
+            return;
+        }
+        DBVGroupRowStriping striping = virtualEntity.getGroupRowStriping();
+        if (!isGroupRowStripingActive(striping)) {
+            return;
+        }
+        List<DBDAttributeBinding> groupBindings = resolveGroupBindings(striping);
+        if (groupBindings == null) {
+            return;
+        }
+        sortRowsForGroupStripingIfNeeded(applyGroupColumnSort, striping, groupBindings);
+        int[] stripes = GroupRowStripingUtils.computeStripeIndices(collectGroupKeys(groupBindings));
+        applyStripeBackgrounds(stripes, striping);
+    }
+
+    @Nullable
+    private List<DBDAttributeBinding> resolveGroupBindings(@NotNull DBVGroupRowStriping striping) {
+        List<DBDAttributeBinding> groupBindings = new ArrayList<>(striping.getColumnNames().size());
+        for (String name : striping.getColumnNames()) {
+            DBDAttributeBinding binding = DBUtils.findObject(attributes, name);
+            if (binding == null) {
+                log.debug("Group row striping: attribute '" + name + "' not in result set, striping skipped");
+                return null;
+            }
+            groupBindings.add(binding);
+        }
+        return groupBindings;
+    }
+
+    private void sortRowsForGroupStripingIfNeeded(
+        boolean applyGroupColumnSort,
+        @NotNull DBVGroupRowStriping striping,
+        @NotNull List<DBDAttributeBinding> groupBindings
+    ) {
+        if (!applyGroupColumnSort || !striping.isSortByGroupColumns()) {
+            return;
+        }
+        curRows.sort((r1, r2) -> compareRowsForGroupStriping(r1, r2, groupBindings));
+        for (int i = 0; i < curRows.size(); i++) {
+            curRows.get(i).setVisualNumber(i);
+        }
+    }
+
+    @NotNull
+    private List<Object[]> collectGroupKeys(@NotNull List<DBDAttributeBinding> groupBindings) {
+        List<Object[]> keys = new ArrayList<>(curRows.size());
+        for (ResultSetRow row : curRows) {
+            Object[] key = new Object[groupBindings.size()];
+            for (int i = 0; i < groupBindings.size(); i++) {
+                key[i] = getCellValue(new ResultSetCellLocation(groupBindings.get(i), row));
+            }
+            keys.add(key);
+        }
+        return keys;
+    }
+
+    private void applyStripeBackgrounds(@NotNull int[] stripes, @NotNull DBVGroupRowStriping striping) {
+        Color colorA = CommonUtils.isEmpty(striping.getBackgroundColor1()) ? null : UIUtils.getSharedColor(striping.getBackgroundColor1());
+        Color colorB = CommonUtils.isEmpty(striping.getBackgroundColor2()) ? null : UIUtils.getSharedColor(striping.getBackgroundColor2());
+        if (colorA == null || colorB == null) {
+            return;
+        }
+        for (int i = 0; i < curRows.size(); i++) {
+            ResultSetRow row = curRows.get(i);
+            ResultSetRow.ColorInfo colorInfo = row.colorInfo;
+            if (colorInfo != null && colorInfo.rowBackground != null) {
+                continue;
+            }
+            Color stripeColor = stripes[i] == 0 ? colorA : colorB;
+            if (colorInfo == null) {
+                colorInfo = new ResultSetRow.ColorInfo();
+                row.colorInfo = colorInfo;
+            }
+            colorInfo.rowBackground = stripeColor;
+        }
+    }
+
+    private int compareRowsForGroupStriping(
+        @NotNull ResultSetRow r1,
+        @NotNull ResultSetRow r2,
+        @NotNull List<DBDAttributeBinding> groupBindings
+    ) {
+        for (DBDAttributeBinding binding : groupBindings) {
+            Object v1 = getCellValue(new ResultSetCellLocation(binding, r1));
+            Object v2 = getCellValue(new ResultSetCellLocation(binding, r2));
+            int cmp = compareCellValues(binding, v1, v2);
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return Integer.compare(r1.getRowNumber(), r2.getRowNumber());
+    }
+
+    private static int compareCellValues(
+        @NotNull DBDAttributeBinding binding,
+        @Nullable Object v1,
+        @Nullable Object v2
+    ) {
+        if (v1 == null && v2 == null) {
+            return 0;
+        }
+        if (v1 == null) {
+            return -1;
+        }
+        if (v2 == null) {
+            return 1;
+        }
+        Comparator<Object> comparator = binding.getValueHandler().getComparator();
+        if (comparator != null) {
+            return comparator.compare(v1, v2);
+        }
+        if (v1 instanceof String && v2 instanceof String) {
+            return ((String) v1).compareToIgnoreCase((String) v2);
+        }
+        return DBUtils.compareDataValues(v1, v2);
     }
 
     void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<? extends DBDValueRow> newRows, boolean cleanupOldCache) {
@@ -1184,6 +1325,11 @@ public class ResultSetModel implements DBDResultSetModel {
         }
         for (int i = 0; i < curRows.size(); i++) {
             curRows.get(i).setVisualNumber(i);
+        }
+        DBVEntity entityAfterOrder = resolveVirtualEntity();
+        if (entityAfterOrder != null && isGroupRowStripingActive(entityAfterOrder.getGroupRowStriping())) {
+            updateRowColors(true, curRows);
+            applyGroupRowStripingForEntity(entityAfterOrder, false);
         }
     }
 
