@@ -108,7 +108,7 @@
 
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
-                    <property id="supports-catalog-selection" label="Driver can change default catalog" description="Driver does support catalog change" type="boolean" required="false" defaultValue="true"/>;
+                    <property id="supports-catalog-selection" label="Driver can change default catalog" description="Driver does support catalog change" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-schema-selection" label="Driver can change default schema" description="Driver does support schema change" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-table-constraints" label="Driver supports constraints" description="Driver supports table constraints (primary keys)" type="boolean" required="false" defaultValue="true"/>
@@ -175,7 +175,7 @@
 
             <drivers managable="true">
 
-                <!-- Real drivers -->
+                
 
                 <driver
                     id="sap_maxdb"
@@ -398,6 +398,36 @@
                     <file type="jar" path="drivers/intersystems" bundle="drivers.intersystems"/>
                 </driver>
                 <driver
+                    id="duckdb"
+                    label="DuckDB"
+                    class="org.duckdb.DuckDBDriver"
+                    sampleURL="jdbc:duckdb:{file}"
+                    description="DuckDB JDBC driver"
+                    webURL="https://duckdb.org/"
+                    categories="sql,embedded">
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE"/>
+                </driver>
+               <driver
+    id="manticore"
+    label="Manticore Search"
+    icon="icons/manticore_icon.png"
+    iconBig="icons/manticore_icon_big.png"
+    class="com.mysql.cj.jdbc.Driver"
+    sampleURL="jdbc:mysql://{host}:{port}/"
+    defaultPort="9306"
+    webURL="https://manticoresearch.com/"
+    description="Manticore Search - Open Source database for search"
+    supportedConfigurationTypes="MANUAL,URL"
+    categories="sql">
+    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.0.33]"/>
+    <parameter name="supports-scroll" value="true"/>
+    <parameter name="omit-catalog" value="true"/>
+    <parameter name="supports-schema-selection" value="false"/>
+    <parameter name="supports-catalog-selection" value="false"/>
+</driver>
+
+
+                    <driver
                     id="ingres"
                     label="Ingres"
                     class="com.ingres.jdbc.IngresDriver"
@@ -415,7 +445,7 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
-                <driver id="duckdb_jdbc"/>
+
                 <!-- Teradata -->
                 <driver
                     id="teradata"
@@ -1721,6 +1751,22 @@
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="generic" parent="basic" class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect" label="Generic" description="Dialect based on JDBC API information." icon="#database_icon_default" hidden="true">
         </dialect>
+<dialect
+    id="manticore"
+    parent="generic"
+    class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect"
+    label="Manticore Search"
+    description="Manticore Search SQL dialect"
+    icon="#database_icon_default">
+</dialect>
+
     </extension>
 
+</extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="duckdb-maven-repo" name="DuckDB Repository" url="https://repo1.maven.org/maven2/" order="25">
+            <scope group="org.duckdb"/>
+        </repository>
+    </extension>
 </plugin>
