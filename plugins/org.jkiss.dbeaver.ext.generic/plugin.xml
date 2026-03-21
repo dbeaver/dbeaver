@@ -410,6 +410,7 @@
                <driver
     id="manticore"
     label="Manticore Search"
+dialect="manticore"
     icon="icons/manticore_icon.png"
     iconBig="icons/manticore_icon_big.png"
     class="com.mysql.cj.jdbc.Driver"
@@ -1754,12 +1755,10 @@
 <dialect
     id="manticore"
     parent="generic"
-    class="org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect"
+    class="org.jkiss.dbeaver.ext.generic.model.ManticoreSQLDialect"
     label="Manticore Search"
-    description="Manticore Search SQL dialect"
-    icon="#database_icon_default">
+    description="Manticore Search SQL dialect (no table aliases in SELECT)">
 </dialect>
-
     </extension>
 
 </extension>
