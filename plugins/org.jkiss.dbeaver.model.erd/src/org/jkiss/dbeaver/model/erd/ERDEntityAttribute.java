@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.DBPObjectWithLazyDescription;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -132,8 +133,11 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
             if (!CommonUtils.isEmpty(entityAttribute.getDefaultValue())) {
                 attrMap.put("defaultValue", entityAttribute.getDefaultValue());
             }
-            if (!CommonUtils.isEmpty(entityAttribute.getDescription())) {
-                attrMap.put("description", entityAttribute.getDescription());
+            String description = entityAttribute instanceof DBPObjectWithLazyDescription
+                ? ((DBPObjectWithLazyDescription) entityAttribute).getDescription(context.getMonitor())
+                : entityAttribute.getDescription();
+            if (!CommonUtils.isEmpty(description)) {
+                attrMap.put("description", description);
             }
         }
         if (this.isChecked()) {

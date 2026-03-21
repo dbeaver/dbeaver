@@ -190,7 +190,7 @@ public class ERDEntity extends ERDElement<DBSEntity> {
             attributes.clear();
         }
         try {
-            diagram.getContentProvider().fillEntityFromObject(new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
+            diagram.getContentProvider().fillEntityFromObject(diagram.getMonitor() != null ? diagram.getMonitor() : new VoidProgressMonitor(), diagram, Collections.emptyList(), this);
         } catch (DBCException e) {
             log.debug("Can't reload attributes", e);
         }
