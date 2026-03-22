@@ -747,7 +747,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
             @Override
-            protected void setSelectedNode(DBNDatabaseNode node) {
+            protected void setSelectedNode(@NotNull DBNDatabaseNode node) {
                 ownerContainerNode = node;
                 if (ownerContainerNode == null) {
                     setContainerInfo(null);
