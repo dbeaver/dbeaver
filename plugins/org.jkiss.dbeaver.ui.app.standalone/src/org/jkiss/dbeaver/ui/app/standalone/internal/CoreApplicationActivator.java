@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone.internal;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -30,6 +31,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
@@ -44,6 +46,40 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
 
+        trackBundleActivation(context);
+        configureNotifications();
+
+        plugin = this;
+    }
+
+    private static void configureNotifications() {
+        // Set notifications handler
+        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
+            @Override
+            public void sendNotification(
+                @NotNull DBPDataSource dataSource,
+                @NotNull String id,
+                @NotNull String text,
+                @Nullable DBPMessageType messageType,
+                @Nullable Runnable feedback
+            ) {
+                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
+            }
+
+            @Override
+            public void sendNotification(
+                @NotNull String id,
+                @NotNull String title,
+                @NotNull String text,
+                @Nullable DBPMessageType messageType,
+                @Nullable Runnable feedback
+            ) {
+                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
+            }
+        });
+    }
+
+    private static void trackBundleActivation(@NotNull BundleContext context) {
         // Add bundle load logger
         if (!Log.isQuietMode()) {
             Set<String> activatedBundles = new HashSet<>();
@@ -52,34 +88,20 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 Bundle bundle = event.getBundle();
                 if (event.getType() == BundleEvent.STARTED) {
                     if (bundle.getState() == Bundle.ACTIVE) {
-                        message = "> Start " + OsgiUtils.getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                        message = "> Start " + OsgiUtils.getBundleName(bundle) +
+                            " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                         activatedBundles.add(bundle.getSymbolicName());
                     }
                 } else if (event.getType() == BundleEvent.STOPPING) {
-                    if (activatedBundles.remove(bundle.getSymbolicName())) {
-                        //message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
-                    }
+                    activatedBundles.remove(bundle.getSymbolicName());
+                    //message = "< Stop " + getBundleName(bundle) +
+                    // " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                 }
                 if (message != null) {
                     System.err.println(message);
                 }
             }, null);
         }
-
-        // Set notifications handler
-        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
-            @Override
-            public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
-            }
-
-            @Override
-            public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
-            }
-        });
-
-        plugin = this;
     }
 
     @Override
@@ -90,7 +112,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
 
     @NotNull
     public static CoreApplicationActivator getDefault() {
-        return plugin;
+        return Objects.requireNonNull(plugin, "Core UI plugin was not started");
     }
 
 }

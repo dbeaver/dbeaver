@@ -47,7 +47,6 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -262,14 +261,15 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void preStartup() {
         super.preStartup();
 
+        // Activate proxy
+        activateProxyService(CoreApplicationActivator.getDefault().getBundle().getBundleContext());
+
+        // Track stats
         {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put("startTime", DBWorkbench.getPlatform().getApplication().getApplicationStartTime());
             CoreFeatures.APP_OPEN.use(params);
         }
-
-        // Activate proxy
-        activateProxyService(CoreApplicationActivator.getDefault().getBundle().getBundleContext());
     }
 
     @Override
@@ -292,13 +292,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(true);
         }
-    }
-
-    protected boolean isPropertyChangeRequiresRestart(String property) {
-        return
-            property.equals(DBeaverPreferences.LOGS_DEBUG_ENABLED) ||
-            property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
-            property.equals(ModelPreferences.PLATFORM_LANGUAGE);
     }
 
     private void filterPreferencePages() {
