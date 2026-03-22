@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 
-import org.eclipse.core.internal.net.ProxyManager;
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
@@ -71,9 +69,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 
 import java.io.*;
@@ -81,7 +76,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -138,8 +132,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private boolean resetUserPreferencesOnRestart, resetWorkspaceConfigurationOnRestart;
     private long lastUserActivityTime = -1;
-
-    private static ServiceRegistration<IProxyService> proxyService;
 
     public DBeaverApplication() {
         this(BasePlatformImpl.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
@@ -226,8 +218,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         // Register core components
         initializeApplicationServices();
-        // Configure proxy
-        activateProxyService(context);
 
         final Runtime runtime = Runtime.getRuntime();
 
@@ -397,7 +387,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             isReadOnlyField.set(instanceLoc, true);
         } catch (Throwable e) {
             // ignore
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 
@@ -456,7 +446,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 defaultHomePath = RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL());
             } catch (IOException e) {
                 System.err.println("Unable to resolve workspace location " + instanceLoc);
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
         }
         return defaultHomePath;
@@ -513,22 +503,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
     }
-
-    private static void activateProxyService(@NotNull IApplicationContext context) {
-        try {
-            ProxyManager proxyManager = (ProxyManager) ProxyManager
-                .getProxyManager();
-            proxyManager.initialize();
-            Bundle brandingBundle = context.getBrandingBundle();
-            if (brandingBundle != null) {
-                BundleContext bundleContext = brandingBundle.getBundleContext();
-                proxyService = bundleContext.registerService(IProxyService.class, proxyManager, new Hashtable<>());
-            }
-        } catch (Throwable e) {
-            log.debug("Proxy service activation has failed", e);
-        }
-    }
-
 
     private Display getDisplay() {
         if (display == null) {
@@ -661,11 +635,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Override
     public void stop() {
-        if (proxyService != null) {
-            proxyService.unregister();
-            proxyService = null;
-        }
-
         final IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench == null)
             return;
