@@ -681,7 +681,7 @@ public class DBeaverLauncher {
 
     /**
      * Disable Eclipse proxy service activation
-     * We do it in {@link org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication#activateProxyService}
+     * We do it in {@link org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator#activateProxyService}
      */
     private static void disableDefaultProxyServiceActivation() {
         if (System.getProperty(PROP_ECLIPSE_NET_PROXY_ENABLE) == null) {
