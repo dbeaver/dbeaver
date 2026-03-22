@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
+import org.eclipse.core.internal.net.ProxyManager;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -80,13 +82,15 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -186,6 +190,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
+    private static ServiceRegistration<IProxyService> proxyService;
+
     private final OpenEventProcessor processor;
 
     private final SystemEventListener systemSleepListener = new SystemSleepListener() {
@@ -261,6 +267,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             params.put("startTime", DBWorkbench.getPlatform().getApplication().getApplicationStartTime());
             CoreFeatures.APP_OPEN.use(params);
         }
+
+        // Activate proxy
+        activateProxyService(CoreApplicationActivator.getDefault().getBundle().getBundleContext());
     }
 
     @Override
@@ -381,6 +390,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(false);
+        }
+
+        if (proxyService != null) {
+            proxyService.unregister();
+            proxyService = null;
         }
     }
 
@@ -532,6 +546,18 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setToDefault(PROP_PERSPECTIVE_VERSION);
         store.setToDefault(PROP_WORKBENCH_VERSION);
+    }
+
+    private static void activateProxyService(@NotNull BundleContext context) {
+        // It may require master password and already initialized platform
+        try {
+            ProxyManager proxyManager = (ProxyManager) ProxyManager
+                .getProxyManager();
+            proxyManager.initialize();
+            proxyService = context.registerService(IProxyService.class, proxyManager, new Hashtable<>());
+        } catch (Throwable e) {
+            log.debug("Proxy service activation has failed", e);
+        }
     }
 
     /**
