@@ -59,6 +59,7 @@ import javax.swing.*;
  */
 public class DBeaverLauncher {
 
+    public static final String PROP_ECLIPSE_NET_PROXY_ENABLE = "org.eclipse.net.core.enableProxyService";
     /**
      * Indicates whether this instance is running in debug mode.
      */
@@ -683,7 +684,9 @@ public class DBeaverLauncher {
      * We do it in {@link org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication#activateProxyService}
      */
     private static void disableDefaultProxyServiceActivation() {
-        System.setProperty("org.eclipse.net.core.enableProxyService", "false");
+        if (System.getProperty(PROP_ECLIPSE_NET_PROXY_ENABLE) == null) {
+            System.setProperty(PROP_ECLIPSE_NET_PROXY_ENABLE, Boolean.FALSE.toString());
+        }
     }
 
     // Verifies that args has any non-standard parameters
