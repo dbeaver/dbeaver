@@ -307,11 +307,13 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return exec;
     }
 
-    public void markExecutionCanceled(@NotNull DBCStatement statement, @Nullable Throwable error) {
-        QMMStatementExecuteInfo exec = getExecution(statement);
-        if (exec != null) {
-            markExecutionCanceled(exec, error);
+    @Nullable
+    public QMMStatementExecuteInfo execution(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        QMMStatementExecuteInfo execution = getExecution(statement);
+        if (execution != null) {
+            markExecutionCanceled(execution, error);
         }
+        return execution;
     }
 
     private boolean isExecutionCanceled(@NotNull DBCStatement statement, @Nullable Throwable error) {
@@ -339,7 +341,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         }
         return "Query execution was cancelled by user";
     }
-    
+
     public QMMProjectInfo getProjectInfo() {
         return projectInfo;
     }

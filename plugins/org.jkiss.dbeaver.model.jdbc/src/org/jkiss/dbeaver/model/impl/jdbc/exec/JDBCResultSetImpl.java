@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.impl.AbstractResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTrace;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -192,11 +190,8 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.next();
         }
         catch (SQLException e) {
-            if (!disableLogging && DBExecUtils.isExecutionCanceled(session.getDataSource(), e)) {
-                QMMConnectionInfo connectionInfo = QMUtils.getCurrentConnection(session.getExecutionContext());
-                if (connectionInfo != null) {
-                    connectionInfo.markExecutionCanceled(statement, e);
-                }
+            if (!disableLogging) {
+                QMUtils.getDefaultHandler().handleFetchError(this, e);
             }
             throw new DBCException(e, session.getExecutionContext());
         }
