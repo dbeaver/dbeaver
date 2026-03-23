@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.ocient.model.plan;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.sql.SQLException;
@@ -34,10 +37,11 @@ import java.util.Map;
 
 public class OcientExecutionPlan extends AbstractExecutionPlan {
 
-    private String query;
+    private final String query;
     private List<OcientPlanNodeJson> rootNodes;
 
     private static final Gson gson = new Gson();
+    private String planJson;
 
     public OcientExecutionPlan(String query) {
         this.query = query;
@@ -48,8 +52,9 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
         this.rootNodes = rootNodes;
     }
 
+    @Nullable
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) || DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature)
             || DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
             return true;
@@ -57,26 +62,41 @@ public class OcientExecutionPlan extends AbstractExecutionPlan {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         // Adds "explain json" to front of query with proper spacing
         return "explain json " + query;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.JSON;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planJson;
+    }
+
+    @NotNull
+    @Override
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 
     public void explain(DBCSession session) throws DBCException {
-        String explainString = getExplainString(session);
+        planJson = getExplainString(session);
 
-        JsonObject planObject = gson.fromJson(explainString, JsonObject.class);
+        JsonObject planObject = gson.fromJson(planJson, JsonObject.class);
         JsonObject planRoot = planObject.getAsJsonObject("rootNode");
         JsonObject planHeader = planObject.getAsJsonObject("header");
         rootNodes = new ArrayList<>();

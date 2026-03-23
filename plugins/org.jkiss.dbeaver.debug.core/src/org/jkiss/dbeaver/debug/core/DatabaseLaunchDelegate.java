@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +22,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGControllerFactory;
@@ -37,13 +37,17 @@ import java.util.Map;
 public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     @Override
-    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
-            throws CoreException {
+    public void launch(
+        ILaunchConfiguration configuration,
+        String mode,
+        ILaunch launch,
+        IProgressMonitor monitor
+    ) throws CoreException {
         DBPDataSourceContainer datasourceDescriptor = DebugUtils.getDataSourceContainer(configuration);
         DBGController controller = createController(datasourceDescriptor, configuration.getAttributes());
         if (controller == null) {
-            String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);
-            throw new CoreException(DebugUtils.newErrorStatus(message));
+            throw new CoreException(DebugUtils.newErrorStatus(
+                "Unable to find debug controller for datasource " + datasourceDescriptor.getId()));
         }
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
@@ -51,7 +55,10 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
         launch.addDebugTarget(target);
     }
 
-    protected DBGController createController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> attributes) throws CoreException {
+    protected DBGController createController(
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @NotNull Map<String, Object> attributes
+    ) throws CoreException {
         try {
             DBGControllerFactory controllerFactory = GeneralUtils.adapt(dataSourceContainer, DBGControllerFactory.class);
             if (controllerFactory != null) {
@@ -65,11 +72,16 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
         }
     }
 
-    protected DatabaseProcess createProcess(ILaunch launch, String name) {
+    @NotNull
+    protected DatabaseProcess createProcess(@NotNull ILaunch launch, @NotNull String name) {
         return new DatabaseProcess(launch, name);
     }
 
-    protected DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
+    protected DatabaseDebugTarget createDebugTarget(
+        @NotNull ILaunch launch,
+        @NotNull DBGController controller,
+        @NotNull DatabaseProcess process
+    ) {
         return new DatabaseDebugTarget(DBGConstants.MODEL_IDENTIFIER_DATABASE, launch, process, controller);
     }
 

@@ -25,7 +25,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -41,8 +40,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -121,8 +118,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         this.activeProject = project;
 
         if (!CommonUtils.equalObjects(oldActiveProject, project)) {
-            platform.getPreferenceStore().setValue(
-                PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
+            setActiveProjectName(project.getName());
 
             fireActiveProjectChange(oldActiveProject, this.activeProject);
         }
@@ -191,7 +187,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     protected void loadWorkspaceProjects() throws DBException {
-        String activeProjectName = getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        String activeProjectName = getActiveProjectName();
 
         IWorkspaceRoot root = getEclipseWorkspace().getRoot();
         IProject[] allProjects = root.getProjects();
@@ -365,11 +361,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         // Try to read workspace config from workspace root and from metadata
         // Metedata is the default path but we keep backward compatibility
         // and read from workspace if config exists
-        Path workspaceConfigPath = getAbsolutePath();
-        if (!Files.exists(workspaceConfigPath.resolve(DBConstants.WORKSPACE_PROPS_FILE))) {
-            workspaceConfigPath = getMetadataFolder();
-        }
-        return readWorkspaceId(workspaceConfigPath);
+        return readWorkspaceId(getWorkspaceConfigFolder(this));
     }
 
     public boolean isAdmin() {
