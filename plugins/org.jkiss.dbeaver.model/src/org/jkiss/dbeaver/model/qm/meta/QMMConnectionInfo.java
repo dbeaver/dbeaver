@@ -325,18 +325,21 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
 
     @NotNull
     private String getCancelMessage(@Nullable Throwable error) {
-        for (Throwable current = error; current != null; current = current.getCause()) {
+        Throwable current = error;
+        while (current != null) {
             if (CommonUtils.isNotEmpty(current.getMessage()) &&
                 !CommonUtils.equalObjects(current.getMessage(), ModelMessages.model_jdbc_exception_internal_jdbc_driver_error)) {
                 return current.getMessage();
             }
-            if (current.getCause() == current) {
+            Throwable cause = current.getCause();
+            if (cause == current) {
                 break;
             }
+            current = cause;
         }
         return "Query execution was cancelled by user";
     }
-
+    
     public QMMProjectInfo getProjectInfo() {
         return projectInfo;
     }
