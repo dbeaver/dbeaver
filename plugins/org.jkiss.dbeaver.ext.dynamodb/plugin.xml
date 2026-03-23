@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.dynamodb.DynamoDBDataSourceProvider"
+                description="%datasource.dynamodb.description"
+                id="dynamodb"
+                label="Amazon DynamoDB"
+                icon="icons/dynamodb.png"
+                dialect="dynamodb"
+                categories="nosql">
+
+            <tree path="dynamodb" label="DynamoDB data source"
+                  icon="icons/dynamodb.png">
+                <folder type="org.jkiss.dbeaver.ext.dynamodb.model.DynamoDBTable"
+                        label="Tables" icon="#folder_table" description="DynamoDB Tables">
+                    <items label="Table" path="table" property="tables"
+                           icon="#table">
+                        <folder type="org.jkiss.dbeaver.ext.dynamodb.model.DynamoDBAttribute"
+                                label="Attributes" icon="#columns" description="Table attributes">
+                            <items label="Attribute" path="attribute"
+                                   property="attributes" icon="#column"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.dynamodb.model.DynamoDBIndex"
+                                label="Indexes" icon="#indexes" description="GSI and LSI indexes">
+                            <items label="Index" path="index"
+                                   property="indexes" icon="#index"/>
+                        </folder>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.dynamodb.model.DynamoDBGlobalTable"
+                        label="Global Tables" icon="#folder_table" description="DynamoDB Global Tables">
+                    <items label="Global Table" path="globalTable" property="globalTables"
+                           icon="#table"/>
+                </folder>
+            </tree>
+
+            <drivers managable="false">
+                <driver
+                        id="aws_dynamodb"
+                        label="Amazon DynamoDB"
+                        icon="icons/dynamodb.png"
+                        iconBig="icons/dynamodb_big.png"
+                        class="org.jkiss.dbeaver.ext.dynamodb.DynamoDBDataSourceProvider"
+                        sampleURL="dynamodb://{host}"
+                        description="%driver.dynamodb.description"
+                        category="AWS"
+                        categories="nosql,aws"
+                        webURL="https://aws.amazon.com/dynamodb/"
+                        embedded="true"
+                        singleConnection="true">
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                </driver>
+
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="region" label="AWS Region" type="string"
+                                  defaultValue="us-east-1"/>
+                        <property id="endpoint" label="Custom Endpoint" type="string"
+                                  description="Custom endpoint URL (for DynamoDB Local or LocalStack)"/>
+                    </propertyGroup>
+                </provider-properties>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="dynamodb"
+                 class="org.jkiss.dbeaver.ext.dynamodb.model.DynamoDBSQLDialect"
+                 label="DynamoDB PartiQL"
+                 description="PartiQL for Amazon DynamoDB"
+                 icon="icons/dynamodb.png"/>
+    </extension>
+
+</plugin>

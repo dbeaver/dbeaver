@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.dynamodb.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="dynamodb"
+                label="%dynamodb.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.dynamodb.ui.views.DynamoDBConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.dynamodb/icons/dynamodb.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.dynamodb.dataSourceEditorView"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                dataSource="dynamodb"
+                label="%dynamodb.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.dynamodb.ui.views.DynamoDBConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.dynamodb/icons/dynamodb.png">
+        </view>
+    </extension>
+
+</plugin>

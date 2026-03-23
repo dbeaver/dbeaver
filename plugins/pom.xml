@@ -47,6 +47,7 @@
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.dameng</module>
         <module>org.jkiss.dbeaver.ext.duckdb</module>
+        <module>org.jkiss.dbeaver.ext.dynamodb</module>
         <module>org.jkiss.dbeaver.ext.exasol</module>
         <module>org.jkiss.dbeaver.ext.firebird</module>
         <module>org.jkiss.dbeaver.ext.gbase8s</module>
@@ -116,6 +117,7 @@
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
                 <module>org.jkiss.dbeaver.ext.duckdb.ui</module>
+                <module>org.jkiss.dbeaver.ext.dynamodb.ui</module>
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>
                 <module>org.jkiss.dbeaver.ext.iotdb.ui</module>

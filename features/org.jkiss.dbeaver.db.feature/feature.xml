@@ -24,6 +24,7 @@
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.duckdb" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.dynamodb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.gbase8s" version="0.0.0" />
