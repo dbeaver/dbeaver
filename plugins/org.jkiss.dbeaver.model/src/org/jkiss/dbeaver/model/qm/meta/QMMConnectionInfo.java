@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -275,6 +276,9 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         QMMStatementExecuteInfo exec = getExecution(statement);
         if (exec != null) {
             exec.close(rowCount, error);
+            if (isExecutionCanceled(statement, error)) {
+                markExecutionCanceled(exec, error);
+            }
         }
         return exec;
     }
@@ -296,8 +300,41 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec != null) {
             exec.endFetch(rowCount);
+            if (exec.getErrorMessage() == null && isExecutionCanceled(resultSet.getSourceStatement(), null)) {
+                markExecutionCanceled(exec, null);
+            }
         }
         return exec;
+    }
+
+    public void markExecutionCanceled(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        QMMStatementExecuteInfo exec = getExecution(statement);
+        if (exec != null) {
+            markExecutionCanceled(exec, error);
+        }
+    }
+
+    private boolean isExecutionCanceled(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        return statement.getSession().getProgressMonitor().isCanceled() ||
+            error != null && DBExecUtils.isExecutionCanceled(statement.getSession().getDataSource(), error);
+    }
+
+    private void markExecutionCanceled(@NotNull QMMStatementExecuteInfo exec, @Nullable Throwable error) {
+        exec.setError(exec.getErrorCode(), getCancelMessage(error));
+    }
+
+    @NotNull
+    private String getCancelMessage(@Nullable Throwable error) {
+        for (Throwable current = error; current != null; current = current.getCause()) {
+            if (CommonUtils.isNotEmpty(current.getMessage()) &&
+                !CommonUtils.equalObjects(current.getMessage(), ModelMessages.model_jdbc_exception_internal_jdbc_driver_error)) {
+                return current.getMessage();
+            }
+            if (current.getCause() == current) {
+                break;
+            }
+        }
+        return "Query execution was cancelled by user";
     }
 
     public QMMProjectInfo getProjectInfo() {
