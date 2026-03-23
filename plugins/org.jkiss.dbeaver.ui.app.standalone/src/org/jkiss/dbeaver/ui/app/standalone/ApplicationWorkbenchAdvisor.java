@@ -88,6 +88,7 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
+import java.net.Authenticator;
 import java.util.List;
 import java.util.*;
 
@@ -544,10 +545,16 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private static void activateProxyService(@NotNull BundleContext context) {
         // It may require master password and already initialized platform
         try {
+            // Save default auth settings. They may be provided by Git or any other extension
+            // Proxy manager resets them to system default which is wrong
+            Authenticator currentAuthenticator = Authenticator.getDefault();
             ProxyManager proxyManager = (ProxyManager) ProxyManager
                 .getProxyManager();
             proxyManager.initialize();
             proxyService = context.registerService(IProxyService.class, proxyManager, new Hashtable<>());
+            if (currentAuthenticator != null) {
+                Authenticator.setDefault(currentAuthenticator);
+            }
         } catch (Throwable e) {
             log.debug("Proxy service activation has failed", e);
         }
