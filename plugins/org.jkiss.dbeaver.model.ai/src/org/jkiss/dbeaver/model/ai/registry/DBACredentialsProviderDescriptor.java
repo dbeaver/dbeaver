@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class DBACredentialsProviderDescriptor extends AbstractDescriptor {
-    public static final String EXTENSION_ID = "com.dbeaver.model.ai.credentialsProvider";
+    public static final String EXTENSION_ID = "com.dbeaver.ai.credentialsProvider";
     private final ObjectType objectType;
     private final String id;
     private final List<String> supportedEngines;
