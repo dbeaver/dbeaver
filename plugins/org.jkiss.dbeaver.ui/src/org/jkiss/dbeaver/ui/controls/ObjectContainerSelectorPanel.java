@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -319,7 +320,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         moveHistoryItemToBeginning(item);
     }
 
-    protected abstract void setSelectedNode(DBNDatabaseNode node);
+    protected abstract void setSelectedNode(@NotNull DBNDatabaseNode node);
 
     @Nullable
     protected abstract DBNNode getSelectedNode();
