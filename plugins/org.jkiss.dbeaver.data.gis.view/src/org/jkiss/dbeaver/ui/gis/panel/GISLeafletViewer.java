@@ -111,7 +111,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private boolean flipCoordinates = false;
     private final Composite composite;
 
-    private GISLeafletHttpServer server;
+    private GISLeafletHttpServer.Handle server;
 
     public GISLeafletViewer(
         @NotNull Composite parent,
@@ -226,7 +226,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         preferences.addPropertyChangeListener(this);
 
         try {
-            server = new GISLeafletHttpServer();
+            server = GISLeafletHttpServer.acquire();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
                 "GIS Viewer initialization error",
