@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.forms;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
@@ -26,23 +27,27 @@ import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
     permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.LabelBuilderImpl,
-    UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
+    UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
+    private UIObservable<Font> font;
     private String tooltip;
 
     int alignX = SWT.BEGINNING;
@@ -62,6 +67,13 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     @Override
     public B enabled(@NotNull UIObservable<Boolean> binding) {
         enabled = binding;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B font(@NotNull UIObservable<Font> value) {
+        font = value;
         return builder();
     }
 
@@ -151,6 +163,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             var binding = UIObservables.and(row != null ? row.enabled : null, enabled);
             context.bindValue(WidgetProperties.enabled().observe(control), delegate(binding));
         }
+        if (font != null) {
+            context.bindValue(WidgetProperties.font().observe(control), delegate(font));
+        }
         if (tooltip != null) {
             control.setToolTipText(tooltip);
         }
@@ -167,19 +182,71 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         return ((UIObservableImpl<T>) observable).delegate();
     }
 
-    static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
-        private final String text;
-        private final int style;
+    @NotNull
+    private static <E> IObservableList<E> delegate(@NotNull UIObservableList<E> observable) {
+        return ((UIObservableListImpl<E>) observable).delegate();
+    }
 
-        LabelBuilderImpl(@NotNull String text, int style) {
+    static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
+        private UIObservable<String> text;
+        private UIObservable<DBIcon> image;
+
+        @NotNull
+        @Override
+        public LabelBuilder text(@Nullable UIObservable<String> text) {
             this.text = text;
-            this.style = style;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        public LabelBuilder image(@Nullable UIObservable<DBIcon> image) {
+            this.image = image;
+            return this;
         }
 
         @NotNull
         @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return UIControlFactory.createLabel(parent, style, text);
+            return UIControlFactory.createLabel(parent, SWT.NONE);
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Label control, @Nullable UIRowBuilderImpl row) {
+            super.bind(context, control, row);
+            if (text != null) {
+                context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+            }
+            if (image != null) {
+                var observable = image.map(DBeaverIcons::getImage, Image.class);
+                context.bindValue(WidgetProperties.image().observe(control), UIControlBuilderImpl.delegate(observable));
+            }
+        }
+    }
+
+    static final class LinkBuilderImpl extends UIControlBuilderImpl<LinkBuilder, Link> implements LinkBuilder {
+        private final UIObservable<String> text;
+        private final Consumer<SelectionEvent> onSelect;
+        private final int style;
+
+        LinkBuilderImpl(@NotNull UIObservable<String> text, @NotNull Consumer<SelectionEvent> onSelect, int style) {
+            this.text = text;
+            this.onSelect = onSelect;
+            this.style = style;
+        }
+
+        @NotNull
+        @Override
+        protected Link create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            Link link = UIControlFactory.createLink(parent, style);
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
+            return link;
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Link control, @Nullable UIRowBuilderImpl row) {
+            super.bind(context, control, row);
+            context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
         }
     }
 
@@ -295,20 +362,20 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class ComboBuilderImpl<T> extends UIControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
+        private final UIObservableList<? extends T> items;
         private final UIObservable<T> binding;
         private final Function<? super T, String> converter;
-        private final List<? extends T> items;
         private final int style;
 
         public ComboBuilderImpl(
+            @NotNull UIObservableList<? extends T> items,
             @NotNull UIObservable<T> binding,
             @NotNull Function<? super T, String> converter,
-            @NotNull List<? extends T> items,
             int style
         ) {
+            this.items = items;
             this.binding = binding;
             this.converter = converter;
-            this.items = List.copyOf(items);
             this.style = style;
         }
 
@@ -319,6 +386,15 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             for (T item : items) {
                 combo.add(converter.apply(item));
             }
+            UIControlBuilderImpl.delegate(items).addListChangeListener(event -> {
+                // NOTE: Could possibly be optimized to reflect just the changed elements
+                var selection = combo.getText();
+                combo.removeAll();
+                for (T item : items) {
+                    combo.add(converter.apply(item));
+                }
+                combo.setText(selection);
+            });
             return combo;
         }
 
