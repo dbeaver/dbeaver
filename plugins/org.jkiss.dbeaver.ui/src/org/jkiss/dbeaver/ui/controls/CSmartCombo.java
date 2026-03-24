@@ -153,7 +153,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             this.arrow.addListener(arrowEvent, this.listener);
         }
 
-        UIUtils.asyncExec(() -> layout(true, true));
+        UIUtils.asyncExec(() -> {
+            if (!isDisposed()) {
+                layout(true, true);
+            }
+        });
     }
 
     public void setTableFilter(@Nullable TableFilter<ITEM_TYPE> tableFilter) {
