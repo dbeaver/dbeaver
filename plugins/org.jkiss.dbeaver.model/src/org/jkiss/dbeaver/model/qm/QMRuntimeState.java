@@ -17,6 +17,9 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+/**
+ * Stores session-scoped Query Manager runtime state.
+ */
 public interface QMRuntimeState {
     boolean isQueryManagerUnavailable();
 

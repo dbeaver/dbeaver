@@ -17,20 +17,25 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
+/**
+ * Indicates that QMDB is unavailable for the current session.
+ */
 public class QMDBUnavailableException extends DBException {
+
     public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
 
     public QMDBUnavailableException() {
         super(DEFAULT_MESSAGE);
     }
 
-    public QMDBUnavailableException(String message) {
+    public QMDBUnavailableException(@NotNull String message) {
         super(message);
     }
 
-    public QMDBUnavailableException(String message, Throwable cause) {
+    public QMDBUnavailableException(@NotNull String message, @NotNull Throwable cause) {
         super(message, cause);
     }
 }

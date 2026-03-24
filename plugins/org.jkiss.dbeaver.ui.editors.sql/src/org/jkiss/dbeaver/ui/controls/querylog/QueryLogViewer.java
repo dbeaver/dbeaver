@@ -123,7 +123,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
-    private static abstract class LogColumn {
+    private abstract static class LogColumn {
         private final String id;
         private final String title;
         private final String toolTip;
@@ -336,7 +336,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         COLUMN_CONTEXT,
     };
 
-    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection, boolean currentSessionOnly) {
+    public QueryLogViewer(
+        @NotNull Composite parent,
+        @NotNull IWorkbenchPartSite site,
+        @Nullable QMEventFilter filter,
+        boolean showConnection,
+        boolean currentSessionOnly
+    ) {
+
         super();
 
         this.site = site;
@@ -1258,6 +1265,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             this.criteria = criteria;
         }
 
+        @NotNull
         @Override
         public QueryHistoryLoadResult evaluate(
             @NotNull DBRProgressMonitor monitor
@@ -1306,7 +1314,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private class EvenHistoryReadVisualizer extends ProgressLoaderVisualizer<QueryHistoryLoadResult> {
-        EvenHistoryReadVisualizer(EventHistoryReadService loadingService) {
+        EvenHistoryReadVisualizer(@NotNull EventHistoryReadService loadingService) {
             super(loadingService, logTable);
         }
 
