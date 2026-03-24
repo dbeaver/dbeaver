@@ -104,6 +104,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         "Query Manager was disabled for this session because the managed QMDB service could not be started.";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
+    private final IWorkbenchPartSite site;
+    private final Text searchText;
+    private final Table logTable;
+    private final List<ColumnDescriptor> columns = new ArrayList<>();
+    private final LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
+
+    private QMEventFilter defaultFilter = new DefaultEventFilter();
+    private QMEventFilter filter;
+    private QMEventCriteria criteria;
+    private boolean useDefaultFilter = true;
+    private final boolean currentSessionOnly;
+    private boolean qmdbUnavailableDialogShown;
+
+    private DragSource dndSource;
+
+    private volatile boolean reloadInProgress = false;
+
+    private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
+
     private static abstract class LogColumn {
         private final String id;
         private final String title;
@@ -316,25 +335,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         COLUMN_DATA_SOURCE,
         COLUMN_CONTEXT,
     };
-
-    private final IWorkbenchPartSite site;
-    private final Text searchText;
-    private final Table logTable;
-    private final List<ColumnDescriptor> columns = new ArrayList<>();
-    private final LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
-
-    private QMEventFilter defaultFilter = new DefaultEventFilter();
-    private QMEventFilter filter;
-    private QMEventCriteria criteria;
-    private boolean useDefaultFilter = true;
-    private final boolean currentSessionOnly;
-    private boolean qmdbUnavailableDialogShown;
-
-    private DragSource dndSource;
-
-    private volatile boolean reloadInProgress = false;
-
-    private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
     public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection, boolean currentSessionOnly) {
         super();
