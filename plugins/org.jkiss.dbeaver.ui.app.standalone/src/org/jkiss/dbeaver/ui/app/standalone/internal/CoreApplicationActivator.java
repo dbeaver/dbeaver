@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,32 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
-import org.eclipse.osgi.internal.framework.BundleContextImpl;
-import org.eclipse.osgi.internal.framework.EquinoxContainer;
-import org.eclipse.osgi.internal.hookregistry.ClassLoaderHook;
-import org.eclipse.osgi.internal.hookregistry.HookRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.OsgiUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
-
-    // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.app.standalone";
-
-    private static final boolean PATCH_ECLIPSE_CLASSES = false;
-
 
     // The shared instance
     private static CoreApplicationActivator plugin;
@@ -50,13 +43,43 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     }
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
 
-        if (PATCH_ECLIPSE_CLASSES) {
-            activateHooks(context);
-        }
+        trackBundleActivation(context);
+        configureNotifications();
 
+        plugin = this;
+    }
+
+    private static void configureNotifications() {
+        // Set notifications handler
+        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
+            @Override
+            public void sendNotification(
+                @NotNull DBPDataSource dataSource,
+                @NotNull String id,
+                @NotNull String text,
+                @Nullable DBPMessageType messageType,
+                @Nullable Runnable feedback
+            ) {
+                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
+            }
+
+            @Override
+            public void sendNotification(
+                @NotNull String id,
+                @NotNull String title,
+                @NotNull String text,
+                @Nullable DBPMessageType messageType,
+                @Nullable Runnable feedback
+            ) {
+                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
+            }
+        });
+    }
+
+    private static void trackBundleActivation(@NotNull BundleContext context) {
         // Add bundle load logger
         if (!Log.isQuietMode()) {
             Set<String> activatedBundles = new HashSet<>();
@@ -65,69 +88,31 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 Bundle bundle = event.getBundle();
                 if (event.getType() == BundleEvent.STARTED) {
                     if (bundle.getState() == Bundle.ACTIVE) {
-                        message = "> Start " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                        message = "> Start " + OsgiUtils.getBundleName(bundle) +
+                            " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                         activatedBundles.add(bundle.getSymbolicName());
                     }
                 } else if (event.getType() == BundleEvent.STOPPING) {
-                    if (activatedBundles.remove(bundle.getSymbolicName())) {
-                        //message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
-                    }
+                    activatedBundles.remove(bundle.getSymbolicName());
+                    //message = "< Stop " + getBundleName(bundle) +
+                    // " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                 }
                 if (message != null) {
                     System.err.println(message);
                 }
             }, null);
-            //context.addBundleListener(new BundleLoadListener());
-        }
-
-        // Set notifications handler
-        DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
-            @Override
-            public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
-            }
-
-            @Override
-            public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
-                NotificationUtils.sendNotification(id, title, text, messageType, feedback);
-            }
-        });
-
-        plugin = this;
-    }
-
-    private static String getBundleName(Bundle bundle) {
-        String bundleName = bundle.getHeaders().get("Bundle-Name");
-        if (CommonUtils.isEmpty(bundleName)) {
-            bundleName = bundle.getSymbolicName();
-        }
-        return bundleName;
-    }
-
-    private void activateHooks(BundleContext context) {
-        EquinoxContainer container = ((BundleContextImpl)context).getContainer();
-        HookRegistry registry = container.getConfiguration().getHookRegistry();
-        List<ClassLoaderHook> hooks = new ArrayList<>(registry.getClassLoaderHooks());
-        hooks.add(new PatchClassLoaderHook());
-        List<ClassLoaderHook> newHooks = Collections.unmodifiableList(hooks);
-
-        try {
-            Field hooksField = registry.getClass().getDeclaredField("classLoaderHooksRO");
-            hooksField.setAccessible(true);
-            hooksField.set(registry, newHooks);
-        } catch (Throwable e) {
-            getLog().error("Error initializing class loader hook", e);
         }
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@NotNull BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
     }
 
+    @NotNull
     public static CoreApplicationActivator getDefault() {
-        return plugin;
+        return Objects.requireNonNull(plugin, "Core UI plugin was not started");
     }
 
 }
