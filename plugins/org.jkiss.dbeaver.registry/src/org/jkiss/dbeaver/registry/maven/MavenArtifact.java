@@ -111,17 +111,29 @@ public class MavenArtifact implements IMavenIdentifier
         metadataPath += MAVEN_METADATA_XML;
         monitor.subTask("Load metadata " + this);
 
-        try (InputStream mdStream = WebUtils.openConnection(
-            monitor, metadataPath, getRepository().getAuthInfo(), null, DriverUtils.getDownloadTimeout()
-        ).getInputStream()) {
+        try (
+            InputStream mdStream = WebUtils.openConnection(
+                monitor,
+                metadataPath,
+                getRepository().getAuthInfo(),
+                null,
+                DriverUtils.getDownloadTimeout()
+            ).getInputStream()
+        ) {
             parseMetadata(mdStream);
         } catch (XMLException e) {
             log.warn("Error parsing artifact metadata", e);
         } catch (IOException e) {
             // Metadata xml not found. It happens in rare cases. Let's try to get directory listing
-            try (InputStream dirStream = WebUtils.openConnection(
-                monitor, getBaseArtifactURL(), getRepository().getAuthInfo(), null, DriverUtils.getDownloadTimeout()
-            ).getInputStream()) {
+            try (
+                InputStream dirStream = WebUtils.openConnection(
+                    monitor,
+                    getBaseArtifactURL(),
+                    getRepository().getAuthInfo(),
+                    null,
+                    DriverUtils.getDownloadTimeout()
+                ).getInputStream()
+            ) {
                 parseDirectory(dirStream);
             } catch (XMLException e1) {
                 log.warn("Error parsing artifact directory", e);

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -94,15 +95,11 @@ public class DriverUtils {
                 log.warn("Invalid value for environment variable " + ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS + ": " + env, e);
             }
         }
-        try {
-            int ms = ModelPreferences.getPreferences().getInt(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT);
-            if (ms > 0) {
-                return Duration.ofMillis(ms);
-            }
-        } catch (Exception ignored) {
-            // preferences not yet initialized
+        int ms = ModelPreferences.getPreferences().getInt(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT);
+        if (ms > 0) {
+            return Duration.ofMillis(ms);
         }
-        return Duration.ofMillis(ModelPreferences.UI_DRIVERS_UPDATE_TIMEOUT_DEFAULT_MS);
+        return Duration.ofMillis(WebUtils.DEFAULT_HTTP_TIMEOUT_MS);
     }
 
     public static boolean matchesBundle(IConfigurationElement config) {

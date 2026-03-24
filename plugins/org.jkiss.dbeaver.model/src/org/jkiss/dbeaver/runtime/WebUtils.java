@@ -49,34 +49,39 @@ import java.util.Map;
 public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
     private static final int MAX_RETRY_COUNT = 10;
-    private static final int DEFAULT_HTTP_TIMEOUT_MS = 10000;
+    public static final int DEFAULT_HTTP_TIMEOUT_MS = 10000;
+
     @NotNull
-    public static URLConnection openConnection(String urlString, String referrer) throws IOException {
+    public static URLConnection openConnection(@NotNull String urlString, @Nullable String referrer) throws IOException {
         return openConnection(urlString, null, referrer);
     }
 
     @NotNull
-    public static URLConnection openConnection(String urlString, DBPAuthInfo authInfo, String referrer) throws IOException {
+    public static URLConnection openConnection(
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer
+    ) throws IOException {
         return openURLConnection(urlString, authInfo, referrer, 1);
     }
 
     @NotNull
     public static URLConnection openConnection(
-        DBRProgressMonitor monitor,
-        String urlString,
-        DBPAuthInfo authInfo,
-        String referrer
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer
     ) throws IOException {
         return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, DEFAULT_HTTP_TIMEOUT_MS, null);
     }
 
     @NotNull
     public static URLConnection openConnection(
-        DBRProgressMonitor monitor,
-        String urlString,
-        DBPAuthInfo authInfo,
-        String referrer,
-        Duration timeout
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer,
+        @NotNull Duration timeout
     ) throws IOException {
         return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, (int) timeout.toMillis(), null);
     }
@@ -197,21 +202,21 @@ public class WebUtils {
 
     public static long downloadRemoteFile(
         @NotNull DBRProgressMonitor monitor,
-        String taskName,
-        String externalURL,
-        Path localFile,
-        DBPAuthInfo authInfo
+        @NotNull String taskName,
+        @NotNull String externalURL,
+        @NotNull Path localFile,
+        @Nullable DBPAuthInfo authInfo
     ) throws IOException, InterruptedException {
         return downloadRemoteFile(monitor, taskName, externalURL, localFile, authInfo, Duration.ofMillis(DEFAULT_HTTP_TIMEOUT_MS));
     }
 
     public static long downloadRemoteFile(
         @NotNull DBRProgressMonitor monitor,
-        String taskName,
-        String externalURL,
-        Path localFile,
-        DBPAuthInfo authInfo,
-        Duration timeout
+        @NotNull String taskName,
+        @NotNull String externalURL,
+        @NotNull Path localFile,
+        @Nullable DBPAuthInfo authInfo,
+        @NotNull Duration timeout
     ) throws IOException, InterruptedException {
         monitor.subTask("Download file '" + externalURL + "'");
         try (final OutputStream outputStream = Files.newOutputStream(localFile)) {
@@ -221,21 +226,21 @@ public class WebUtils {
 
     public static long downloadRemoteFile(
         @NotNull DBRProgressMonitor monitor,
-        String taskName,
-        String externalURL,
-        OutputStream outputStream,
-        DBPAuthInfo authInfo
+        @NotNull String taskName,
+        @NotNull String externalURL,
+        @NotNull OutputStream outputStream,
+        @Nullable DBPAuthInfo authInfo
     ) throws IOException, InterruptedException {
         return downloadRemoteFile(monitor, taskName, externalURL, outputStream, authInfo, Duration.ofMillis(DEFAULT_HTTP_TIMEOUT_MS));
     }
 
     public static long downloadRemoteFile(
         @NotNull DBRProgressMonitor monitor,
-        String taskName,
-        String externalURL,
-        OutputStream outputStream,
-        DBPAuthInfo authInfo,
-        Duration timeout
+        @NotNull String taskName,
+        @NotNull String externalURL,
+        @NotNull OutputStream outputStream,
+        @Nullable DBPAuthInfo authInfo,
+        @NotNull Duration timeout
     ) throws IOException, InterruptedException {
         final URLConnection connection = openConnection(monitor, externalURL, authInfo, null, timeout);
         final int contentLength = connection.getContentLength();

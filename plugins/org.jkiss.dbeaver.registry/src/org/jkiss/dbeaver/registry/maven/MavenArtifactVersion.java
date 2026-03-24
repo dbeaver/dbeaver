@@ -279,9 +279,15 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             return;
         }
         String pomURL = getRemotePOMLocation();
-        try (InputStream is = WebUtils.openConnection(
-            monitor, pomURL, artifact.getRepository().getAuthInfo(), null, DriverUtils.getDownloadTimeout()
-        ).getInputStream()) {
+        try (
+            InputStream is = WebUtils.openConnection(
+                monitor,
+                pomURL,
+                artifact.getRepository().getAuthInfo(),
+                null,
+                DriverUtils.getDownloadTimeout()
+            ).getInputStream()
+        ) {
             Path folder = localPOM.getParent();
             if (Files.notExists(folder)) {
                 try {

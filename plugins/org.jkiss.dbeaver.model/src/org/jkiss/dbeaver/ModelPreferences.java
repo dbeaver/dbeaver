@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
@@ -264,8 +265,6 @@ public final class ModelPreferences
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
     public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
     public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
-    /** Default value for {@link #UI_DRIVERS_UPDATE_TIMEOUT} in milliseconds. */
-    public static final int UI_DRIVERS_UPDATE_TIMEOUT_DEFAULT_MS = 10000;
     /** Preference key for the HTTP read/connect timeout (in milliseconds) used when downloading driver files and fetching driver metadata. Overridable via {@code DriverUtils.PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS} or {@code DriverUtils.ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS}. */
     public static final String UI_DRIVERS_UPDATE_TIMEOUT = "ui.http.request.timeout"; //$NON-NLS-1$
     public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
@@ -405,7 +404,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_USER, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PASSWORD, "");
-        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_UPDATE_TIMEOUT, UI_DRIVERS_UPDATE_TIMEOUT_DEFAULT_MS);
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_UPDATE_TIMEOUT, WebUtils.DEFAULT_HTTP_TIMEOUT_MS);
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, true);
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");
