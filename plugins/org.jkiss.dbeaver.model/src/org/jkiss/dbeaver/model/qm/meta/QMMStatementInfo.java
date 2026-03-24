@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,11 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         super.close();
-        reference = null;
+        if (reference != null) {
+            reference = null;
+        }
     }
 
     @Override
@@ -60,8 +61,12 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Nullable
-    DBCStatement getReference() {
+    public DBCStatement getReference() {
         return reference;
+    }
+
+    public String getReferenceText() {
+        return reference != null ? reference.getQueryString() : "N/A";
     }
 
     @NotNull
@@ -80,9 +85,8 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    public String toString()
-    {
-        return "STATEMENT";
+    public String toString() {
+        return "STATEMENT " + getReferenceText();
     }
 
 }

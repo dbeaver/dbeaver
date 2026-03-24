@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLPragmaHandlerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -89,8 +90,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob
-{
+public class SQLQueryJob extends DataSourceJob {
     private static final Log log = Log.getLog(SQLQueryJob.class);
 
     public static final Object STATS_RESULTS = new Object();
@@ -161,6 +161,11 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
+    @Override
+    public String toString() {
+        return "SQLQueryJob (" + queries + ")";
+    }
+
     public void setFetchResultSets(boolean fetchResultSets)
     {
         this.fetchResultSets = fetchResultSets;
@@ -202,8 +207,9 @@ public class SQLQueryJob extends DataSourceJob
         this.fetchFlags = fetchFlags;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
+    protected IStatus run(@NotNull DBRProgressMonitor monitor)
     {
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
@@ -428,6 +434,10 @@ public class SQLQueryJob extends DataSourceJob
         }
         if (element instanceof SQLControlCommand controlCommand) {
             try {
+                SQLCommandHandlerDescriptor descriptor = SQLCommandsRegistry.getInstance().getCommandHandler(controlCommand.getCommandId());
+                if (descriptor != null && descriptor.isInteractive()) {
+                    controlCommand.setData(listener);
+                }
                 SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
                 if (controlResult.getTransformed() != null) {
                     element = controlResult.getTransformed();
@@ -514,6 +524,7 @@ public class SQLQueryJob extends DataSourceJob
 
         long startTime = System.currentTimeMillis();
         boolean startQueryAlerted = false;
+        boolean executionCanceled = false;
 
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
@@ -619,11 +630,16 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
         catch (Throwable ex) {
-            if (!(ex instanceof DBException)) {
+            if (DBExecUtils.isExecutionCanceled(dataSource, ex) || monitor.isCanceled()) {
+                executionCanceled = true;
+            } else if (!(ex instanceof DBException)) {
                 log.error("Unexpected error while processing SQL", ex);
+                curResult.setError(ex);
+                lastError = ex;
+            } else {
+                curResult.setError(ex);
+                lastError = ex;
             }
-            curResult.setError(ex);
-            lastError = ex;
         }
         finally {
             curResult.setQueryTime(System.currentTimeMillis() - startTime);
@@ -633,6 +649,10 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             monitor.done();
+        }
+
+        if (executionCanceled) {
+            return false;
         }
 
         lastGoodQuery = originalQuery;
@@ -744,6 +764,9 @@ public class SQLQueryJob extends DataSourceJob
                                 try {
                                     hasResultSet = fetchQueryData(session, resultSet, curResult, curResult.addExecuteResult(true), dataReceiver, true);
                                 } catch (DBCException e) {
+                                    if (DBExecUtils.isExecutionCanceled(session.getDataSource(), e) || monitor.isCanceled()) {
+                                        throw e;
+                                    }
                                     if (rowsFetched == 0) {
                                         throw e;
                                     } else {

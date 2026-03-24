@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponse;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
@@ -31,13 +32,13 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Set;
 
-public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
+public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
 
-    private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
+    protected final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected CopilotClient initialize() {
-            return new CopilotClient();
+        protected CopilotClient initialize() throws DBException {
+            return createClient(getProperties().getBaseAuthUrl());
         }
 
         @Override
@@ -47,7 +48,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     };
     private CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine(@NotNull CopilotProperties properties) {
+    public CopilotCompletionEngine(@NotNull P properties) {
         super(properties);
     }
 
@@ -55,8 +56,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         return client.getInstance().loadModels(monitor, requestSessionToken(monitor).token()).stream()
-            .map(model -> CopilotModels.KNOWN_MODELS.getOrDefault(
-                model.id(),
+            .map(model -> CopilotModels.getModelByName(model.id()).orElse(
                 new AIModel(model.id(), null, Set.of())
             ))
             .toList();
@@ -78,16 +78,20 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             .withN(1)
             .build();
 
-        List<String> choices = client.getInstance().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
+        CopilotChatResponse chatResponse = client.getInstance().chat(monitor, requestSessionToken(monitor).token(), chatRequest);
+        List<String> choices = chatResponse
             .choices()
             .stream()
             .map(it -> it.message().content())
             .toList();
 
-        return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+        return new AIEngineResponse(
+            AIMessageType.ASSISTANT,
+            choices,
+            chatResponse.getAIUsage()
+        );
     }
 
-    @NotNull
     @Override
     public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
@@ -129,7 +133,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     }
 
     @NotNull
-    private CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
+    protected CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sessionToken != null) {
             return sessionToken;
         }
@@ -147,5 +151,14 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             properties.getModel(),
             OpenAIConstants.DEFAULT_MODEL
         );
+    }
+
+    protected CopilotClient createClient(@NotNull String baseAuthUrl) throws DBException {
+        String token = properties.getToken();
+        if (token == null || token.isEmpty()) {
+            throw new DBException("Copilot API token is not set");
+        }
+
+        return new CopilotClient(baseAuthUrl);
     }
 }

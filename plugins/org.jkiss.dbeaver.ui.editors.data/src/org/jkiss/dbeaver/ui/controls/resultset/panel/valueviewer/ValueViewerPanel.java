@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -90,7 +89,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             if (previewController == null && viewPlaceholder.getChildren().length == 0) {
                 e.gc.setForeground(UIStyles.getDefaultTextForeground());
                 String hidePanelCmd = ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_TOGGLE_PANELS,
+                    IResultSetCommands.CMD_TOGGLE_PANELS,
                     ValueViewerPanel.this.presentation.getController().getSite(),
                     true);
 
@@ -278,7 +277,6 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
             if (valueEditor == null || valueEditor.getControl() == null) {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
-                placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
                 placeholder.addPaintListener(e -> {
                     Rectangle bounds = placeholder.getBounds();
                     String message = "No editor for [" + previewController.getValueType().getTypeName() + "]";

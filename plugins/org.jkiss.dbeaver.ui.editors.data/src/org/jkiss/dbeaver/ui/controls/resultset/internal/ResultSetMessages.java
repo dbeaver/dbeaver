@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -344,14 +344,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_use_sql_tip;
     public static String pref_page_database_resultsets_label_order_mode;
     public static String pref_page_database_resultsets_label_order_mode_tip;
-    public static String pref_page_database_resultsets_label_order_mode_smart;
-    public static String pref_page_database_resultsets_label_order_mode_always_client;
-    public static String pref_page_database_resultsets_label_order_mode_always_server;
     public static String pref_page_database_resultsets_label_order_policy;
     public static String pref_page_database_resultsets_label_order_policy_tip;
-    public static String pref_page_database_resultsets_label_order_policy_default;
-    public static String pref_page_database_resultsets_label_order_policy_primary_key_asc;
-    public static String pref_page_database_resultsets_label_order_policy_primary_key_desc;
     public static String pref_page_database_resultsets_label_fetch_size;
     public static String pref_page_database_resultsets_label_read_metadata;
     public static String pref_page_database_resultsets_label_read_references;
@@ -432,12 +426,20 @@ public class ResultSetMessages extends NLS {
 
     public static String error_part_button_go_to_error;
 
+    public static String grouping_panel_show_percent_of_total_tip;
     public static String grouping_panel_sorting_action_unsorted;
-    public static String grouping_panel_sorting_action_decending;
+    public static String grouping_panel_sorting_action_descending;
     public static String grouping_panel_sorting_action_ascending;
     public static String grouping_panel_error_title;
     public static String grouping_panel_error_change_sort_message;
     public static String grouping_panel_error_change_duplicate_presentation_message;
+    public static String grouping_panel_error_change_grouping_settings_message;
+    public static String grouping_panel_error_change_grouping_query_message;
+    public static String grouping_panel_error_extension_point_action_message;
+    public static String grouping_panel_function_panel_title;
+    public static String grouping_panel_function_panel_custom_label;
+    public static String grouping_panel_column_panel_title;
+    public static String grouping_panel_column_panel_custom_label;
 
     public static String refs_label;
     public static String refs_no_refs_text;

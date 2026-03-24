@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.internal.net.ProxyManager;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.preference.IPreferenceNode;
-import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
@@ -49,7 +47,6 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -79,14 +76,19 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
+import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
+import java.net.Authenticator;
 import java.util.List;
 import java.util.*;
 
@@ -100,35 +102,31 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private static final String PERSPECTIVE_ID = DBeaverPerspective.PERSPECTIVE_ID;
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
-    protected static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
-    protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
-    private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
-
     @Deprecated(since = "25.1.5")
     private static final String PROP_PERSPECTIVE_VERSION = "dbeaver.perspectiveVersion"; //$NON-NLS-1$
     @Deprecated(since = "25.1.5")
     private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
 
     private static final String[] EXCLUDE_PREF_PAGES = {
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Perspectives",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Perspectives",
         //"org.eclipse.ui.preferencePages.FileEditors",
-        WORKBENCH_PREF_PAGE_ID + "/" + APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
         "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
         "org.eclipse.jsch.ui.SSHPreferences",
 
-        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
-        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID,
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
 
-        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
+        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID,
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -136,16 +134,17 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     // Move to UI
     private static final String[] UI_PREF_PAGES = {
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors", //"File Associations"
+        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID + "/" + PrefPageConstants.P2_SITES_PREF_PAGE_ID,
     };
 
     // Move to Editors
     private static final String[] EDITORS_PREF_PAGES = {
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
+            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.GeneralTextEditor"
     };
 
     // Move to General
@@ -155,11 +154,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     // Move to Connections
     private static final String[] NETWORK_PREF_PAGES = {
-        WORKBENCH_PREF_PAGE_ID + "/" + "org.eclipse.ui.net.NetPreferences",    // Network Connections
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + "org.eclipse.ui.net.NetPreferences",    // Network Connections
     };
 
 
-    private static final Set<String> fontPrefIdsToHide = Set.of(
+    private static final Set<String> FONT_PREFERENCES_TO_HIDE = Set.of(
         UIFonts.Eclipse.TEXT_EDITOR_BLOCK_SELECTION_FONT,
         UIFonts.Eclipse.TEXT_FONT,
         UIFonts.Eclipse.CONSOLE_FONT,
@@ -191,6 +190,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
+    private static ServiceRegistration<IProxyService> proxyService;
+
     private final OpenEventProcessor processor;
 
     private final SystemEventListener systemSleepListener = new SystemSleepListener() {
@@ -261,6 +262,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void preStartup() {
         super.preStartup();
 
+        // Activate proxy
+        activateProxyService(CoreApplicationActivator.getDefault().getBundle().getBundleContext());
+
+        // Track stats
         {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put("startTime", DBWorkbench.getPlatform().getApplication().getApplicationStartTime());
@@ -290,47 +295,21 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
     }
 
-    @Override
-    public IAdaptable getDefaultPageInput() {
-        return ResourcesPlugin.getWorkspace().getRoot();
-    }
-
-    protected boolean isPropertyChangeRequiresRestart(String property) {
-        return
-            property.equals(DBeaverPreferences.LOGS_DEBUG_ENABLED) ||
-            property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
-            property.equals(ModelPreferences.PLATFORM_LANGUAGE);
-    }
-    
-    
     private void filterPreferencePages() {
         // Remove unneeded pref pages and override font preferences page
-        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
-        
-        FontPreferenceOverrides.hideFontPrefs(pm, fontPrefIdsToHide);
-        
-        patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
-        patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
-        patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
-        patchPreferencePages(pm, NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
+        FontPreferenceOverrides.hideFontPrefs(FONT_PREFERENCES_TO_HIDE);
 
-        for (String epp : getExcludedPreferencePageIds()) {
-            pm.remove(epp);
-        }
+        WorkbenchUtils.movePreferencePages(EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
+        WorkbenchUtils.movePreferencePages(UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
+        WorkbenchUtils.movePreferencePages(GENERAL_PREF_PAGES, PrefPageConstants.WORKBENCH_PREF_PAGE_ID);
+        WorkbenchUtils.movePreferencePages(NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
+
+        WorkbenchUtils.removePreferencePages(getExcludedPreferencePageIds());
     }
 
     @NotNull
     protected String[] getExcludedPreferencePageIds() {
         return EXCLUDE_PREF_PAGES;
-    }
-
-    protected void patchPreferencePages(PreferenceManager pm, String[] preferencePages, String preferencePageId) {
-        for (String pageId : preferencePages)  {
-            IPreferenceNode uiPage = pm.remove(pageId);
-            if (uiPage != null) {
-                pm.addTo(preferencePageId, uiPage);
-            }
-        }
     }
 
     protected boolean isWizardAllowed(String wizardId) {
@@ -405,6 +384,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(false);
+        }
+
+        if (proxyService != null) {
+            proxyService.unregister();
+            proxyService = null;
         }
     }
 
@@ -556,6 +540,24 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setToDefault(PROP_PERSPECTIVE_VERSION);
         store.setToDefault(PROP_WORKBENCH_VERSION);
+    }
+
+    private static void activateProxyService(@NotNull BundleContext context) {
+        // It may require master password and already initialized platform
+        try {
+            // Save default auth settings. They may be provided by Git or any other extension
+            // Proxy manager resets them to system default which is wrong
+            Authenticator currentAuthenticator = Authenticator.getDefault();
+            ProxyManager proxyManager = (ProxyManager) ProxyManager
+                .getProxyManager();
+            proxyManager.initialize();
+            proxyService = context.registerService(IProxyService.class, proxyManager, new Hashtable<>());
+            if (currentAuthenticator != null) {
+                Authenticator.setDefault(currentAuthenticator);
+            }
+        } catch (Throwable e) {
+            log.debug("Proxy service activation has failed", e);
+        }
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,19 +50,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     private long maxRows = -1;
     private final boolean disableLogging;
 
-    public static JDBCResultSet makeResultSet(
-        @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
-        @NotNull ResultSet original,
-        boolean disableLogging
-    ) throws SQLException {
-        return session.getDataSource().getJdbcFactory().createResultSet(
-            session, statement, original, disableLogging);
-    }
-
     protected JDBCResultSetImpl(
         @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
+        @NotNull JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) {
@@ -82,6 +72,20 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         if (JDBCTrace.isApiTraceEnabled()) {
             JDBCTrace.dumpResultSetOpen(this.original);
         }
+    }
+
+    @NotNull
+    public static JDBCResultSet makeResultSet(
+        @NotNull JDBCSession session,
+        @Nullable JDBCStatement statement,
+        @NotNull ResultSet original,
+        boolean disableLogging
+    ) throws SQLException {
+        if (statement == null) {
+            statement = new JDBCFakeStatementImpl(session, null, disableLogging);
+        }
+        return session.getDataSource().getJdbcFactory().createResultSet(
+            session, statement, original, disableLogging);
     }
 /*
 

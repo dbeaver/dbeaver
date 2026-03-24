@@ -40,6 +40,7 @@ public class ApplicationPolicyProvider implements DBPPolicyProvider {
     public static final String POLICY_DATA_COPY = "policy.data.copy.disabled"; //$NON-NLS-1$
     public static final String POLICY_DATA_EDIT = "policy.data.edit.disabled"; //$NON-NLS-1$
     public static final String POLICY_SQL_EXECUTION = "policy.sql.execution.disabled"; //$NON-NLS-1$
+    public static final String POLICY_CREDENTIALS_EDIT = "connection.credentials.save.restricted"; //$NON-NLS-1$
 
     private static ApplicationPolicyProvider instance = new ApplicationPolicyProvider();
 
@@ -91,13 +92,18 @@ public class ApplicationPolicyProvider implements DBPPolicyProvider {
             return value;
         }
 
-        value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
-        if (value != null) {
-            return value;
-        }
+        try {
+            value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
+            if (value != null) {
+                return value;
+            }
 
-        value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
-        return value;
+            value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
+            return value;
+        } catch (Throwable e) {
+            log.error("Error reading Windows registry", e);
+            return null;
+        }
     }
 
     @Nullable

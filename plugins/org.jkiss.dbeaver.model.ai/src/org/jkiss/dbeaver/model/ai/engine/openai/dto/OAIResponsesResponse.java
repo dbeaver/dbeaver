@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import java.util.List;
-import java.util.Map;
 
 public class OAIResponsesResponse extends OAIResponsesBase {
-
     public List<OAIMessage> output;
-    public Map<String, Object> usage;
 }

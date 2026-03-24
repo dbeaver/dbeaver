@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -47,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -238,46 +240,52 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @NotNull SQLServerObject object) throws DBException {
-        SQLServerDataSource dataSource = database.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+    @NotNull
+    public static String extractSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerObject object
+    ) throws DBException {
+        SQLServerDataSource dataSource = object.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = ?")) {
-                dbStat.setLong(1, object.getObjectId());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1));
-                    }
-                    return sql.toString();
-                }
-            }
+            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object, false);
+            return doRequestObjectDefinition(session, sqlQuery);
         } catch (SQLException e) {
-            throw new DBDatabaseException(e, dataSource);
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code fallback to default function")) {
+                String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object, true);
+                return doRequestObjectDefinition(session, sqlQuery);
+            } catch (SQLException secondException) {
+                throw new DBDatabaseException(secondException, dataSource);
+            }
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerSchema schema, @NotNull  String objectName) throws DBException {
-        SQLServerDataSource dataSource = schema.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
-                sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
-            }
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1));
-                    }
-                    return sql.toString();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, dataSource);
-        }
+    /**
+     * Generates SQL for selecting the Transact-SQL source text of the definition of a specified object.
+     * After call to DB might return NULL on error or if a caller does not have permission to view the object definition.
+     *
+     * @param object to get definition
+     * @param useDefaultFunction if true will always fall back to default function
+     * @return select function with single string column containing object definition
+     */
+    @NotNull
+    public static String selectObjectDefinitionDescriptionSQL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerObject object,
+        boolean useDefaultFunction
+    ) {
+        long objectId = object.getObjectId();
+        Optional<SQLServerDatabase> database = Optional.ofNullable(object.getDatabase());
+        SQLServerDataSource dataSource = database.map(SQLServerDatabase::getDataSource).orElseGet(object::getDataSource);
+        String systemSchema = getSystemSchemaFQN(
+            dataSource,
+            database.map(SQLServerDatabase::getName).orElse(null),
+            SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA
+        );
+
+        return !useDefaultFunction
+            && (dataSource.isDataWarehouseServer(monitor) || isDriverAzure(dataSource.getContainer().getDriver()))
+            ? "SELECT OBJECT_DEFINITION(%d)".formatted(objectId)
+            : "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
     }
 
     public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
@@ -341,6 +349,7 @@ public class SQLServerUtils {
         }
         return ddl;
     }
+
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
         var pattern = Pattern.compile("(CREATE\\s+OR\\s+ALTER|\\w+)");
@@ -473,5 +482,19 @@ public class SQLServerUtils {
             return matcher.group(1);
         }
         return null;
+    }
+
+    @NotNull
+    private static String doRequestObjectDefinition(@NotNull JDBCSession session, @NotNull String sqlQuery)
+    throws DBCException, SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                StringBuilder sql = new StringBuilder();
+                while (dbResult.nextRow()) {
+                    sql.append(dbResult.getString(1));
+                }
+                return sql.toString();
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -173,14 +174,6 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         }
         final DBPDataSourceRegistry dataSourceRegistry = NavigatorUtils.getSelectedProject().getDataSourceRegistry();
 
-        String name = connectionInfo.getAlias();
-        for (int i = 0; ; i++) {
-            if (dataSourceRegistry.findDataSourceByName(name) == null) {
-                break;
-            }
-            name = connectionInfo.getAlias() + " " + (i + 1);
-        }
-
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
         config.setProperties(connectionInfo.getProperties());
         config.setProviderProperties(connectionInfo.getProviderProperties());
@@ -207,7 +200,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             connectionInfo.getDriver(),
             config
         );
-        dataSource.setName(name);
+        dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(dataSourceRegistry, connectionInfo.getAlias(), 2));
         dataSource.setSavePassword(!CommonUtils.isEmpty(config.getUserPassword()));
         dataSource.setFolder(importData.getDataSourceFolder());
         try {

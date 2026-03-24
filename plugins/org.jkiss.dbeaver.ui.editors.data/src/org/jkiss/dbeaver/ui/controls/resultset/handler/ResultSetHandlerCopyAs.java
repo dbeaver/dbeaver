@@ -31,6 +31,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -136,8 +138,9 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                 setSystem(false);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Copy data as", 3);
                 try {
                     monitor.subTask("Init");
@@ -184,8 +187,14 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     }
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+
+                    boolean selectedRowsOnly = !CommonUtils.isEmpty(options.getSelectedRows());
+                    boolean selectedColumnsOnly = !CommonUtils.isEmpty(options.getSelectedColumns());
+                    if (selectedRowsOnly || selectedColumnsOnly) {
+                        producerSettings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly));
+                    } else {
+                        producerSettings.setFetchedRowsPolicy(null);
+                    }
 
                     monitor.worked(1);
                     monitor.subTask("Export data");
@@ -263,8 +272,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
         IWorkbenchPartSite site = viewer.getSite();
         copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_COPY_COLUMN_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_COPY_ROW_NAMES));
         // Add copy commands for different formats
         copyAsMenu.add(new Separator());
 

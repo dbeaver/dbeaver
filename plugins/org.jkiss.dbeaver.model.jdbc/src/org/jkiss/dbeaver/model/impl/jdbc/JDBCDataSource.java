@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.api.verification.FileSystemAccessVerifyer;
 import org.jkiss.api.verification.ObjectWithVerification;
@@ -74,8 +73,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         DBSObject,
         DBSObjectContainer,
         DBSInstanceContainer,
-        DBCQueryTransformProvider,
-        IAdaptable
+        DBCQueryTransformProvider
 {
     private static final Log log = Log.getLog(JDBCDataSource.class);
 
@@ -816,6 +814,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
     {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
+            if (SQLState.SQL_HY008.getCode().equals(sqlState)) {
+                return ErrorType.EXECUTION_CANCELED;
+            }
             if (SQLState.SQL_08000.getCode().equals(sqlState) ||
                     SQLState.SQL_08003.getCode().equals(sqlState) ||
                     SQLState.SQL_08006.getCode().equals(sqlState) ||
@@ -858,7 +859,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
             return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
         } else if (adapter == DBCQueryTransformProvider.class) {

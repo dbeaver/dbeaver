@@ -8,6 +8,8 @@
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.error" name="%extension-point.org.jkiss.dbeaver.resultset.error.name" schema="schema/org.jkiss.dbeaver.resultset.error.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.grouping" name="Grouping panel column extensions"
+                     schema="schema/org.jkiss.dbeaver.resultset.groupin.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsPreferencesInitializer"/>
@@ -177,6 +179,16 @@
             order="10"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.resultset.grouping">
+        <action
+            preferenceKey="resultset.grouping.showPercentOfTotal"
+            label="%panel.grouping.column.percent.label"
+            description="%panel.grouping.column.percent.tip"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/percent.svg"
+            class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.impl.PercentGroupingFunctionColumn"
+        />
+    </extension>
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
                 id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
@@ -201,25 +213,6 @@
             icon="#association">
             <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" if="object.dataSource.container.driver.supportsVirtualKeys() &amp;&amp; !object.dataSource.container.navigatorSettings.isHideVirtualModel()"/>
         </editor>
-    </extension>
-
-    <!-- SQL Generators -->
-    <extension point="org.jkiss.dbeaver.sqlGenerator">
-        <generator id="dataSelect" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectFromData" label="SELECT .. WHERE .. =" description="SELECT from table" order="1">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
-        </generator>
-        <generator id="dataSelectMany" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorSelectManyFromData" label="SELECT .. WHERE .. IN" description="SELECT from table IN" order="2">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
-        </generator>
-        <generator id="dataInsert" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorInsertFromData" label="INSERT" description="INSERT into table" order="3">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
-        </generator>
-        <generator id="dataUpdate" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorUpdateFromData" label="UPDATE" description="UPDATE table" order="4">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
-        </generator>
-        <generator id="dataDeleteByUniqueKey" class="org.jkiss.dbeaver.ui.controls.resultset.generator.SQLGeneratorDeleteFromData" label="DELETE by Unique Key" description="DELETE from table" order="5">
-            <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
-        </generator>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -394,7 +387,8 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
             <with variable="activePart">
-                <test property="org.jkiss.dbeaver.core.resultset.active"/>
+<!--                Verifying enablement on the early stage may break RSV inside SQL editor. -->
+<!--                <test property="org.jkiss.dbeaver.core.resultset.active"/>-->
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.container">

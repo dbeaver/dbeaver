@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public class WSEventController {
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
     protected final List<WSEvent> eventsPool = new ArrayList<>();
     private boolean forceSkipEvents = false;
+    private CBEventCheckJob eventCheckJob;
 
     public WSEventController() {
 
@@ -67,7 +68,15 @@ public class WSEventController {
      * Add cb event to the event pool
      */
     public void scheduleCheckJob() {
-        new CBEventCheckJob().schedule();
+        eventCheckJob = new CBEventCheckJob();
+        eventCheckJob.schedule();
+    }
+
+    public void stop() {
+        if (eventCheckJob != null) {
+            eventCheckJob.cancel();
+            eventCheckJob = null;
+        }
     }
 
     /**
@@ -87,8 +96,9 @@ public class WSEventController {
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             List<WSEvent> events;
 
             synchronized (eventsPool) {

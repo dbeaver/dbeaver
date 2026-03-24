@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
@@ -135,14 +137,18 @@ public class ResultSetModel implements DBDResultSetModel {
         return hintContext;
     }
 
+    @Nullable
     @Override
-    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+    public String getReadOnlyStatus(@Nullable DBPDataSourceContainer dataSourceContainer) {
         if (isUpdateInProgress()) {
             return "Update in progress";
         }
         String containerReadOnlyStatus = DBExecUtils.getResultSetReadOnlyStatus(dataSourceContainer);
         if (containerReadOnlyStatus != null) {
             return containerReadOnlyStatus;
+        }
+        if (dataSourceContainer == null) {
+            return null;
         }
         if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
             return "No unique key defined";
@@ -198,6 +204,7 @@ public class ResultSetModel implements DBDResultSetModel {
      * @return single source entity
      */
     @Nullable
+    @Override
     public DBSEntity getSingleSource() {
         return singleSourceEntity;
     }
@@ -207,8 +214,8 @@ public class ResultSetModel implements DBDResultSetModel {
         for (ResultSetRow row : curRows) {
             if (row.getState() != ResultSetRow.STATE_NORMAL) {
                 changesCount++;
-            } else if (row.changes != null) {
-                changesCount += row.changes.size();
+            } else if (row.isChanged()) {
+                changesCount += row.getChangesCount();
             }
         }
     }
@@ -217,8 +224,8 @@ public class ResultSetModel implements DBDResultSetModel {
         return documentAttribute;
     }
 
-    @Override
     @NotNull
+    @Override
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
     }
@@ -243,6 +250,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @NotNull
+    @Override
     public List<DBDAttributeBinding> getVisibleAttributes() {
         return visibleAttributes;
     }
@@ -409,11 +417,13 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+    @Override
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) {
         return getCellValue(attribute, row, null, false);
     }
 
     @Nullable
+    @Override
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
@@ -460,11 +470,8 @@ public class ResultSetModel implements DBDResultSetModel {
         if (row.getState() != ResultSetRow.STATE_NORMAL) {
             updateChanges = false;
         }
-        if (updateChanges && row.changes == null) {
-            row.changes = new HashMap<>();
-        }
 
-        Object oldHistoricValue = updateChanges ? row.changes.get(topAttribute) : null;
+        boolean isOldHistoricValueAbsent = !row.isChanged(attr);
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
 
@@ -478,7 +485,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         if (currentValue instanceof DBDValue) {
             // It is complex
-            if (updateChanges && oldHistoricValue == null) {
+            if (updateChanges && isOldHistoricValueAbsent) {
                 // Save original to history and create a copy
                 if (currentValue instanceof DBDValueCloneable vc) {
                     try {
@@ -489,16 +496,16 @@ public class ResultSetModel implements DBDResultSetModel {
                 } else {
                     log.debug("Cannot copy complex value. Undo is not possible!");
                 }
-                row.changes.put(topAttribute, currentValue);
+                row.addChange(topAttribute, currentValue);
             }
         } else {
-            if (updateChanges && oldHistoricValue == null) {
-                row.changes.put(topAttribute, currentValue);
+            if (updateChanges && isOldHistoricValueAbsent) {
+                row.addChange(topAttribute, currentValue);
             }
         }
         if (updateChanges && attr != topAttribute) {
             // Save reference on top attribute
-            row.changes.put(attr, topAttribute);
+            row.addChange(attr, topAttribute);
         }
 
         if (value instanceof DBDValue) {
@@ -526,19 +533,14 @@ public class ResultSetModel implements DBDResultSetModel {
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
-        } else if (row.changes != null && row.changes.containsKey(attr)) {
+        } else if (row.isChanged(attr)) {
             DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
             try {
-                Object origValue = row.changes.get(attr);
+                Object origValue = row.getChange(attr);
                 if (origValue instanceof DBDAttributeBinding refAttr) {
-                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
-                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
-                        if (changedValues.next().getValue() == origValue) {
-                            changedValues.remove();
-                        }
-                    }
+                    // We reset top attribute value
                     attr = refAttr;
-                    origValue = row.changes.get(attr);
+                    origValue = row.getChange(attr);
                     rowIndexes = null;
                 }
                 updateCellValue(
@@ -550,11 +552,9 @@ public class ResultSetModel implements DBDResultSetModel {
             } catch (DBException e) {
                 log.error(e);
             }
-            row.resetChange(attr);
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
-                changesCount--;
-            }
+            row.clearChange(attr);
         }
+        refreshChangeCount();
     }
 
     boolean isDynamicMetadata() {
@@ -633,7 +633,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         this.metadataDynamic =
             this.attributes.length > 0 &&
-            this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
+                this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
 
         {
             // Detect document attribute
@@ -676,8 +676,8 @@ public class ResultSetModel implements DBDResultSetModel {
         }
         return
             CommonUtils.equalObjects(ent1.getCatalogName(), ent2.getCatalogName()) &&
-            CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
-            CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
+                CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
+                CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
     }
 
     void resetMetaData() {
@@ -751,7 +751,7 @@ public class ResultSetModel implements DBDResultSetModel {
                 DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
                 if (binding != null) {
                     List<AttributeColorSettings> cmList =
-                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                        colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
                     cmList.add(new AttributeColorSettings(co));
                 } else {
                     log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
@@ -810,8 +810,14 @@ public class ResultSetModel implements DBDResultSetModel {
                                 double value = DBExecUtils.makeNumericValue(cellValue);
                                 if (value >= minValue && value <= maxValue) {
                                     if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
-                                            RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                            background = UIUtils.getSharedColor(bgRowRGB);
+                                        RGB bgRowRGB = ResultSetUtils.makeGradientValue(
+                                            acs.colorBackground.getRGB(),
+                                            acs.colorBackground2.getRGB(),
+                                            minValue,
+                                            maxValue,
+                                            value
+                                        );
+                                        background = UIUtils.getSharedColor(bgRowRGB);
 
                                         // FIXME: coloring value before and after range. Maybe we need an option for this.
                                         /* else if (value < minValue) {
@@ -952,6 +958,7 @@ public class ResultSetModel implements DBDResultSetModel {
     boolean deleteRow(@NotNull ResultSetRow row) {
         if (row.getState() == ResultSetRow.STATE_ADDED) {
             cleanupRow(row);
+            changesCount--;
             return true;
         } else {
             // Mark row as deleted
@@ -1160,9 +1167,9 @@ public class ResultSetModel implements DBDResultSetModel {
                     if (comparator != null) {
                         result = comparator.compare(cell1, cell2);
                     } else if (cell1 instanceof String && cell2 instanceof String) {
-                    	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
+                        result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
                     } else {
-                    	result = DBUtils.compareDataValues(cell1, cell2);
+                        result = DBUtils.compareDataValues(cell1, cell2);
                     }
 
                     if (co.isOrderDescending()) {

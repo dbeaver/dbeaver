@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -34,12 +33,18 @@ import java.util.Properties;
 /**
  * Oracle database native auth model.
  */
-public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<OracleDatabaseNativeCredentials> {
 
     public static final String ID = "oracle_native";
 
     @Override
-    public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull AuthModelDatabaseNativeCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
+    public Object initAuthentication(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull OracleDatabaseNativeCredentials credentials,
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull Properties connProperties
+    ) throws DBException {
         String userName = configuration.getUserName();
         if (!CommonUtils.isEmpty(userName) && !userName.contains(" AS ")) {
             String role = configuration.getAuthProperty(OracleConstants.PROP_AUTH_LOGON_AS);
@@ -55,6 +60,15 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
             }
         }
 
+        boolean setOsUser = CommonUtils.getBoolean(
+            configuration.getProviderProperty(OracleConstants.PROP_SET_OS_USER),
+            false
+        );
+        if (setOsUser) {
+            String formattedUsername = userName.toUpperCase().split(" AS ")[0];
+            connProperties.setProperty(OracleConstants.CONN_PROP_SESSION_OS_USER, formattedUsername);
+        }
+
         credentials.setUserName(userName);
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
@@ -64,4 +78,9 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
         super.endAuthentication(dataSource, configuration, connProperties);
     }
 
+    @NotNull
+    @Override
+    public OracleDatabaseNativeCredentials createCredentials() {
+        return new OracleDatabaseNativeCredentials();
+    }
 }

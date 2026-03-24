@@ -19,7 +19,8 @@
             label="Github Copilot"
             class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
-            supportsFunctions="true"/>
+            supportsFunctions="true"
+            fallbacks="copilot-pro"/>
     </extension>
 
     <extension point="com.dbeaver.ai.assistant">
@@ -30,7 +31,7 @@
     </extension>
 
     <extension point="com.dbeaver.ai.prompt">
-        <prompt id="sql" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql"/>
+        <prompt id="sql" label="SQL query generation" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql" description="Generates SQL query by user description in a natural language." supportsActions="true" supportsUi="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

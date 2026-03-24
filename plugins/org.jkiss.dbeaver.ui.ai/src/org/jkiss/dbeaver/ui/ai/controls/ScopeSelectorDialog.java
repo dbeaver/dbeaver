@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.controls;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -68,8 +69,9 @@ public class ScopeSelectorDialog extends BaseDialog {
         return UIUtils.getSettingsSection(AIUIActivator.getDefault().getDialogSettings(), DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
 
         DBPProject project = dataSourceContainer.getProject();
@@ -80,7 +82,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         // too node is the default database (cross database queries are not supported in this cases)
         DBNDatabaseNode rootNode = navigatorModel.getNodeByObject(dataSourceContainer);
         DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults != null) {
+        if (contextDefaults != null && false) {
             DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
             if (defaultCatalog instanceof DBSInstance) {
                 DBNDatabaseNode catalogNode = navigatorModel.getNodeByObject(new VoidProgressMonitor(), defaultCatalog, false);
@@ -93,8 +95,9 @@ public class ScopeSelectorDialog extends BaseDialog {
         DBNDatabaseNode finalRootNode = rootNode;
         selectorPanel = new DatabaseObjectsSelectorPanel(
             dialogArea,
-            true,
-            this.runnableContext
+            this.runnableContext,
+            SWT.SINGLE | SWT.BORDER | SWT.CHECK,
+            true
         ) {
             @Override
             protected DBPProject getSelectedProject() {

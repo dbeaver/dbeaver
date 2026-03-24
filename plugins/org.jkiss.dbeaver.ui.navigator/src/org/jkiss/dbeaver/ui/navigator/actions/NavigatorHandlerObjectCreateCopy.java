@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,17 +109,18 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                         }
                     } else {
                         for (DBNNode nodeObject : cbNodes) {
-                            if (curNode instanceof DBNResource && ((DBNResource) curNode).supportsPaste(nodeObject)) {
+                            if (nodeObject instanceof DBNDatabaseNode otherNode) {
+                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, otherNode);
+                            } else if (curNode instanceof DBNResource currentResource) {
                                 try {
-                                    ((DBNResource) curNode).pasteNodes(List.of(nodeObject));
+                                    UIUtils.runWithMonitor(monitor -> {
+                                        pastNodeToResource(monitor, currentResource, nodeObject);
+                                        return null;
+                                    });
                                 } catch (DBException e) {
                                     DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste node '" + nodeObject.getName() + "'", e);
                                     failedToPasteResources.add(nodeObject.getName());
                                 }
-                            } else if (nodeObject instanceof DBNDatabaseNode) {
-                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
-                            } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                                pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
                             } else {
                                 log.error("Paste is not supported for " + curNode);
                             }
@@ -168,6 +169,19 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         }
 
         return null;
+    }
+
+    private void pastNodeToResource(@NotNull DBRProgressMonitor monitor, @NotNull DBNResource currentNode, @NotNull DBNNode nodeToPaste)
+    throws DBException {
+        if (currentNode.supportsPaste(nodeToPaste)) {
+            currentNode.pasteNodes(List.of(nodeToPaste));
+        } else if (nodeToPaste instanceof DBNResource fromResource) {
+            pasteResource(fromResource, currentNode);
+        } else if (currentNode.supportsDrop(nodeToPaste)) {
+            currentNode.dropNodes(monitor, List.of(nodeToPaste));
+        } else {
+            log.error("Paste or drop is not supported for " + currentNode);
+        }
     }
 
     private void pasteResource(DBNResource resourceNode, DBNResource toFolder) {

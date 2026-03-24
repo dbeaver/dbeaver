@@ -92,14 +92,17 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     ) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
-        if (settings.isCleanFirst()) {
-            cmd.add("--clean");
-        }
-        if (settings.isNoOwner()) {
-            cmd.add("--no-owner");
-        }
-        if (settings.isCreateDatabase()) {
-            cmd.add("--create");
+        // only supported by pg_restore
+        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
+            if (settings.isCleanFirst()) {
+                cmd.add("--clean");
+            }
+            if (settings.isNoOwner()) {
+                cmd.add("--no-owner");
+            }
+            if (settings.isCreateDatabase()) {
+                cmd.add("--create");
+            }
         }
     }
 
@@ -117,10 +120,17 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             cmd.add("--format=" + settings.getFormat().getId());
         }
         cmd.add("--dbname=" + settings.getRestoreInfo().getDatabase()); // database name here can be used without quotes
-        if (!isUseStreamTransfer(settings.getInputFile()) ||
-            settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY
-        ) {
-            cmd.add(settings.getInputFile());
+
+        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
+            if (!isUseStreamTransfer(settings.getInputFile())) {
+                cmd.add("--file=" + settings.getInputFile());
+            }
+        } else {
+            if (!isUseStreamTransfer(settings.getInputFile()) ||
+                settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY
+            ) {
+                cmd.add(settings.getInputFile());
+            }
         }
 
         return cmd;

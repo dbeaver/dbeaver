@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.plan.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
@@ -287,7 +288,11 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             DBPDataSource dataSource = executionContext.getDataSource();
             planner = GeneralUtils.adapt(dataSource, DBCQueryPlanner.class);
         } else {
-            planner = null;
+            DBWorkbench.getPlatformUI().showError(
+                ModelMessages.error_not_connected_to_database,
+                ModelMessages.error_not_connected_to_database
+            );
+            return;
         }
 
         if (planner == null) {

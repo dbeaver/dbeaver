@@ -1,7 +1,7 @@
 
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class DatabricksExecutionContext extends GenericExecutionContext {
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericCatalog catalog,
         @Nullable GenericSchema schema
-    ) throws DBCException {
+    ) {
         try {
             super.setDefaultCatalog(monitor, catalog, schema);
             activeCatalogName = catalog.getName();
@@ -70,7 +70,7 @@ public class DatabricksExecutionContext extends GenericExecutionContext {
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+    public boolean refreshDefaults(@NotNull DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         boolean isRefreshed = super.refreshDefaults(monitor, useBootstrapSettings);
 
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query current catalog")) {

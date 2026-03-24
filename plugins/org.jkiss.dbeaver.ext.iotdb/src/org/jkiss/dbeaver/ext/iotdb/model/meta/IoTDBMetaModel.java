@@ -59,10 +59,12 @@ public class IoTDBMetaModel extends GenericMetaModel {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree")) {
             String sql = String.format("show devices %s", device);
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                isAligned = (rs.getString("IsAligned")).equals("true");
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs != null && rs.next()) {
+                        isAligned = "true".equals(rs.getString("IsAligned"));
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("Error executing sql", e);
@@ -70,10 +72,14 @@ public class IoTDBMetaModel extends GenericMetaModel {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree")) {
             String sql = String.format("show timeseries %s.**", device);
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                ddl.append("delete timeseries ").append(rs.getString("Timeseries")).append(";\n");
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs != null) {
+                        while (rs.next()) {
+                            ddl.append("delete timeseries ").append(rs.getString("Timeseries")).append(";\n");
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             log.error("Error executing sql", e);
@@ -83,25 +89,29 @@ public class IoTDBMetaModel extends GenericMetaModel {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree")) {
             String sql = String.format("show timeseries %s.**", device);
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            if (isAligned) {
-                String prefix = device + ".";
-                ddl.append("create aligned timeseries ").append(device).append("(");
-                while (rs.next()) {
-                    String timeseries = rs.getString("Timeseries").replaceFirst("^" + prefix, "");
-                    ddl.append(timeseries).append(" ");
-                    ddl.append(rs.getString("DataType")).append(" ");
-                    ddl.append("encoding=").append(rs.getString("Encoding")).append(" ");
-                    ddl.append("compressor=").append(rs.getString("Compression")).append(", ");
-                }
-                ddl.setLength(ddl.length() - 2);
-                ddl.append(");\n");
-            } else {
-                while (rs.next()) {
-                    ddl.append("create timeseries ").append(rs.getString("Timeseries"));
-                    ddl.append(" with datatype=").append(rs.getString("DataType"));
-                    ddl.append(", encoding=").append(rs.getString("Encoding")).append(";\n");
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs != null) {
+                        if (isAligned) {
+                            String prefix = device + ".";
+                            ddl.append("create aligned timeseries ").append(device).append("(");
+                            while (rs.next()) {
+                                String timeseries = rs.getString("Timeseries").replaceFirst("^" + prefix, "");
+                                ddl.append(timeseries).append(" ");
+                                ddl.append(rs.getString("DataType")).append(" ");
+                                ddl.append("encoding=").append(rs.getString("Encoding")).append(" ");
+                                ddl.append("compressor=").append(rs.getString("Compression")).append(", ");
+                            }
+                            ddl.setLength(ddl.length() - 2);
+                            ddl.append(");\n");
+                        } else {
+                            while (rs.next()) {
+                                ddl.append("create timeseries ").append(rs.getString("Timeseries"));
+                                ddl.append(" with datatype=").append(rs.getString("DataType"));
+                                ddl.append(", encoding=").append(rs.getString("Encoding")).append(";\n");
+                            }
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

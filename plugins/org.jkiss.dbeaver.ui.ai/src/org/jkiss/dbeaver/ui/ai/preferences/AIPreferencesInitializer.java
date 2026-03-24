@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         // OpenAI default
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.GPT_MODEL, OpenAIModels.DEFAULT_MODEL);
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.AI_TEMPERATURE, 0.0f);
-        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_LOG_QUERY, false);
+        PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.AI_LOG_QUERY, false);
 
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_SQL, AIQueryConfirmationRule.EXECUTE.name());
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_DML, AIQueryConfirmationRule.CONFIRM.name());

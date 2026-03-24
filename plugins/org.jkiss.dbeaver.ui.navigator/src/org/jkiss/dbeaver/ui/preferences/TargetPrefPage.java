@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
  * TargetPrefPage
  */
 public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
-    static final Log log = Log.getLog(TargetPrefPage.class);
+    protected static final Log log = Log.getLog(TargetPrefPage.class);
 
     private IAdaptable element;
     private DBPDataSourceContainer dataSourceContainer;
@@ -184,8 +184,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
         }
 
-        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
+//        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+//        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
+        UIUtils.createLabelSeparator(parent, SWT.HORIZONTAL);
 
         createPreferenceHeader(parent);
 

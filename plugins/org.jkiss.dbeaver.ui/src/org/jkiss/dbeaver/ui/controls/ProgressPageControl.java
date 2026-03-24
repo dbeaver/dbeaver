@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -357,6 +358,9 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         if (searchText != null) {
             return;
         }
+        if (searchControlsComposite.isDisposed()) {
+            return;
+        }
         hideControls(false);
         ((GridLayout) searchControlsComposite.getLayout()).numColumns = 2;
 
@@ -412,33 +416,34 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
             });
 
-            //ToolBar searchTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
-            if (searchToolbarManager == null) {
-                searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                    PlatformUI.getWorkbench(),
-                    IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
-                    null,
-                    UIIcon.ARROW_UP
-                ));
-                searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                    PlatformUI.getWorkbench(),
-                    IWorkbenchActionDefinitionIds.FIND_NEXT,
-                    null,
-                    UIIcon.ARROW_DOWN
-                ));
-                searchToolbarManager.add(new Action(
-                    UIMessages.controls_progress_page_action_close,
-                    UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)
-                ) {
-                    @Override
-                    public void run() {
-                        cancelSearch(true);
-                    }
-                });
+            if (!UIUtils.isInDialog(getShell())) {
+                if (searchToolbarManager == null) {
+                    searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+                    searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                        PlatformUI.getWorkbench(),
+                        IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
+                        null,
+                        UIIcon.ARROW_UP
+                    ));
+                    searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                        PlatformUI.getWorkbench(),
+                        IWorkbenchActionDefinitionIds.FIND_NEXT,
+                        null,
+                        UIIcon.ARROW_DOWN
+                    ));
+                    searchToolbarManager.add(new Action(
+                        UIMessages.controls_progress_page_action_close,
+                        UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)
+                    ) {
+                        @Override
+                        public void run() {
+                            cancelSearch(true);
+                        }
+                    });
+                }
+                searchToolbarManager.createControl(searchControlsComposite);
+                defaultBackgroundColor = searchText.getBackground();
             }
-            searchToolbarManager.createControl(searchControlsComposite);
-            defaultBackgroundColor = searchText.getBackground();
             searchControlsComposite.getParent().layout();
         } finally {
             searchControlsComposite.getParent().setRedraw(true);
@@ -528,7 +533,10 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         if (hide) {
             hideControls(true);
         } else {
-            getProgressControl().searchText.setBackground(getProgressControl().defaultBackgroundColor);
+            ProgressPageControl progressControl = getProgressControl();
+            if (!progressControl.isDisposed()) {
+                progressControl.searchText.setBackground(progressControl.defaultBackgroundColor);
+            }
         }
     }
 
@@ -566,7 +574,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor) {
             return new ProxyProgressMonitor(monitor) {
                 @Override
-                public void beginTask(final String name, int totalWork) {
+                public void beginTask(@NotNull final String name, int totalWork) {
                     super.beginTask(name, totalWork);
                     curStatus = name;
                     synchronized (tasksRunning) {
@@ -588,7 +596,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
 
                 @Override
-                public void subTask(String name) {
+                public void subTask(@NotNull String name) {
                     super.subTask(name);
                     curStatus = name;
                 }

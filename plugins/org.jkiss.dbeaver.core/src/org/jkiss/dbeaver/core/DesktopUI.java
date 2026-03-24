@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,8 +110,9 @@ public class DesktopUI extends ConsoleUserInterface {
     // This method is called during startup thru @ComponentReference in workbench
     public void initialize() {
         new AbstractJob("Workbench listener") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
                     UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
@@ -166,7 +167,7 @@ public class DesktopUI extends ConsoleUserInterface {
             // Display the dialog
             StandardErrorDialog dialog = new StandardErrorDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                Objects.requireNonNull(title, "Error"),
+                CommonUtils.notNull(title, "Error"),
                 message,
                 status,
                 IStatus.ERROR);
@@ -540,8 +541,9 @@ public class DesktopUI extends ConsoleUserInterface {
         @NotNull DBRRunnableWithResult<Future<T>> runnable
     ) {
         final AbstractJob job = new AbstractJob(operationDescription) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                 try {
                     UIExecutionQueue.blockQueue();
@@ -649,12 +651,12 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @NotNull
     @Override
-    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+    public <RESULT> Job createLoadingService(@NotNull ILoadService<RESULT> loadingService, @NotNull ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
     }
 
     @Override
-    public void copyTextToClipboard(String text, boolean htmlFormat) {
+    public void copyTextToClipboard(@NotNull String text, boolean htmlFormat) {
         if (CommonUtils.isEmpty(text)) {
             return;
         }
@@ -676,7 +678,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeShellProgram(String shellCommand) {
+    public void executeShellProgram(@NotNull String shellCommand) {
         UIUtils.asyncExec(() -> ShellUtils.launchProgram(shellCommand));
     }
 

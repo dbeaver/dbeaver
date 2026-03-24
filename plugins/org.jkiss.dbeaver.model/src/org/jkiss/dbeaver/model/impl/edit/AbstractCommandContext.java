@@ -61,6 +61,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         this.atomic = atomic;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext()
     {
@@ -340,8 +341,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             List<DBECommand<?>> result = new ArrayList<>();
             for (int i = commands.size() - 1; i >= 0; i--) {
                 CommandInfo cmd = commands.get(i);
-                while (cmd.prevInBatch != null) {
-                    cmd = cmd.prevInBatch;
+                while (cmd.linkedCommand != null) {
+                    cmd = cmd.linkedCommand;
                     i--;
                 }
                 if (!cmd.command.isUndoable()) {
@@ -375,8 +376,24 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
     @Override
     public void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute) {
+        addCommand(command, reflector, execute, null);
+    }
+
+    @Override
+    public void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute, @Nullable DBECommand<?> linkedCommand) {
         synchronized (commands) {
-            commands.add(new CommandInfo(command, reflector));
+
+            CommandInfo newCommand = new CommandInfo(command, reflector);
+            if (linkedCommand != null) {
+                for (CommandInfo cmd : commands) {
+                    if (cmd.command == linkedCommand) {
+                        newCommand.linkedCommand = cmd;
+                        break;
+                    }
+                }
+            }
+
+            commands.add(newCommand);
 
             clearUndidCommands();
             clearCommandQueues();
@@ -463,8 +480,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         synchronized (commands) {
             if (!commands.isEmpty()) {
                 CommandInfo cmd = commands.get(commands.size() - 1);
-                while (cmd.prevInBatch != null) {
-                    cmd = cmd.prevInBatch;
+                while (cmd.linkedCommand != null) {
+                    cmd = cmd.linkedCommand;
                 }
                 if (cmd.command.isUndoable()) {
                     return cmd.command;
@@ -480,8 +497,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         synchronized (commands) {
             if (!undidCommands.isEmpty()) {
                 CommandInfo cmd = undidCommands.getLast();
-                while (cmd.prevInBatch != null) {
-                    cmd = cmd.prevInBatch;
+                while (cmd.linkedCommand != null) {
+                    cmd = cmd.linkedCommand;
                 }
                 return cmd.command;
             }
@@ -505,7 +522,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                 commands.remove(lastCommand);
                 undidCommands.add(lastCommand);
                 processedCommands.add(lastCommand);
-                lastCommand = lastCommand.prevInBatch;
+                lastCommand = lastCommand.linkedCommand;
             }
             clearCommandQueues();
             getCommandQueues();
@@ -531,7 +548,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             CommandInfo commandInfo = null;
             // Redo batch
             while (!undidCommands.isEmpty() &&
-                (commandInfo == null || undidCommands.getLast().prevInBatch == commandInfo))
+                (commandInfo == null || undidCommands.getLast().linkedCommand == commandInfo))
             {
                 commandInfo = undidCommands.removeLast();
                 commands.add(commandInfo);
@@ -722,7 +739,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         final DBECommandReflector<?, DBECommand<?>> reflector;
         List<PersistInfo> persistActions;
         CommandInfo mergedBy = null;
-        CommandInfo prevInBatch = null;
+        CommandInfo linkedCommand = null;
         boolean executed = false;
 
         CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector) {

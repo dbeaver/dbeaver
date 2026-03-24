@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -70,20 +68,28 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request
     ) throws DBException {
         OAIResponsesResponse completionResult = complete(monitor, request);
-        List<OAIMessage> messages = completionResult.output;
+        // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
+        List<OAIMessage> messages = completionResult.output.stream()
+            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+            .toList();
+        AIUsage usage = completionResult.getAIUsage();
         if (messages.isEmpty()) {
-            return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
+            return new AIEngineResponse(
+                AIMessageType.ASSISTANT,
+                List.of(AIMessages.ai_empty_engine_response),
+                usage
+            );
         }
         OAIMessage message = messages.getFirst();
         if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
             AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
-            return new AIEngineResponse(fc);
+            return new AIEngineResponse(fc, usage);
         } else {
             List<String> choices = messages.stream()
                 .map(OAIMessage::getFullText)
                 .toList();
 
-            return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
         }
     }
 
@@ -137,11 +143,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             for (AIFunctionDescriptor fd : request.getFunctions()) {
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getId();
+                tool.name = fd.getFullId();
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                for (AIFunctionParameter param : fd.getParameters()) {
                     OAIToolParameter tp = new OAIToolParameter();
                     tp.type = param.getType();
                     tp.description = param.getDescription();
@@ -160,9 +166,41 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(OAIMessage::new)
-            .toList();
+        List<OAIMessage> result = new ArrayList<>(messages.size());
+        String currentToolCallId = null;
+        for (int i = 0; i < messages.size(); i++) {
+            AIMessage message = messages.get(i);
+
+            if (message.getFunctionCall() != null) {
+                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
+                boolean hasFunctionOutput = i + 1 < messages.size() && messages.get(i + 1).getFunctionCallName() != null;
+                if (hasFunctionOutput && !CommonUtils.isEmpty(functionCallMessage.callId)) {
+                    currentToolCallId = functionCallMessage.callId;
+                    result.add(functionCallMessage);
+                } else {
+                    // OpenAI Responses API requires matching function_call_output for each function_call.
+                    // Keep orphan function calls in history as regular assistant messages.
+                    AIMessage plainMessage = new AIMessage(
+                        message.getRole(),
+                        message.getContent(),
+                        message.getRawDisplayMessage(),
+                        message.getTime(),
+                        message.getMeta()
+                    );
+                    result.add(OAIMessageFactory.fromAIMessage(plainMessage));
+                    currentToolCallId = null;
+                }
+            } else if (message.getFunctionCallName() != null && !CommonUtils.isEmpty(currentToolCallId)) {
+                result.add(OAIMessageFactory.fromAIMessage(message, currentToolCallId));
+                currentToolCallId = null;
+            } else {
+                result.add(OAIMessageFactory.fromAIMessage(message));
+                if (message.getFunctionCallName() == null) {
+                    currentToolCallId = null;
+                }
+            }
+        }
+        return result;
     }
 
     @NotNull

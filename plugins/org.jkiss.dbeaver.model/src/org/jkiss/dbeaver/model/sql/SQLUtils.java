@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -649,8 +649,8 @@ public final class SQLUtils {
         DBPDataKind dataKind = attribute.getDataKind();
         switch (dataKind) {
             case CONTENT:
-                if (value instanceof DBDContent) {
-                    String contentType = ((DBDContent) value).getContentType();
+                if (value instanceof DBDContent contentValue) {
+                    String contentType = contentValue.getContentType();
                     if (contentType != null && !contentType.startsWith("text")) {
                         return strValue;
                     }
@@ -658,7 +658,7 @@ public final class SQLUtils {
                 // Text content. Fall down
             case STRING:
             case ROWID:
-                if (sqlDialect != null) {
+                if (!sqlDialect.isQuotedString(strValue)) {
                     return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
@@ -1286,5 +1286,44 @@ public final class SQLUtils {
             parts.add(cur.toString().trim());
         }
         return parts;
+    }
+
+    public static void addMultiStatementDDL(
+        @NotNull SQLDialect sqlDialect,
+        @NotNull StringBuilder sql,
+        @Nullable String ddl
+    ) {
+        if (CommonUtils.isEmpty(ddl)) {
+            return;
+        }
+
+        String[] lines = ddl.trim().split("\\r?\\n");
+        boolean hasStatements = false;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (CommonUtils.isEmpty(trimmed)) {
+                continue;
+            }
+
+            hasStatements = true;
+            boolean hasDelimiter = false;
+            for (String scriptDelimiter : sqlDialect.getScriptDelimiters()) {
+                if (trimmed.endsWith(scriptDelimiter)) {
+                    hasDelimiter = true;
+                    break;
+                }
+            }
+            sql.append(trimmed);
+            if (!hasDelimiter) {
+                sql.append(getDefaultScriptDelimiter(sqlDialect));
+            }
+
+            sql.append("\n");
+        }
+
+        if (hasStatements) {
+            sql.append("\n");
+        }
     }
 }

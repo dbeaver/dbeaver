@@ -88,13 +88,14 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
 
     @Override
     protected void addObjectModifyActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actionList,
-        @NotNull ObjectChangeCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        createOrReplaceViewQuery(actionList, command);
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull ObjectChangeCommand command,
+            @NotNull Map<String, Object> options) {
+        if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
+            createOrReplaceViewQuery(actionList, command);
+        }
     }
 
     private void createOrReplaceViewQuery(

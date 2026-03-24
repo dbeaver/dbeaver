@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.AIToolboxRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -31,8 +35,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -44,24 +52,27 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected final DBPWorkspace workspace;
 
-    protected final AIEngineRequestFactory requestFactory;
-    protected AISqlFormatter sqlFormatter;
+    private AIEngineRequestFactory requestFactory;
+    private AIToolboxManager toolboxManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
-        this.requestFactory = createRequestFactory();
-        this.sqlFormatter = createSqlFormatter();
     }
 
-    protected AISqlFormatter createSqlFormatter() {
-        try {
-            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
-        } catch (DBException e) {
-            log.error("Error creating SQL formatter", e);
-            return new SimpleSqlFormatterImpl();
+    @NotNull
+    protected AIToolboxManager createToolboxManager() {
+        return new AIToolboxRegistry();
+    }
+
+    @NotNull
+    protected AIEngineRequestFactory getRequestFactory() {
+        if (requestFactory == null) {
+            requestFactory = createRequestFactory();
         }
+        return requestFactory;
     }
 
+    @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
         return new AIEngineRequestFactory(
             new AIDatabaseSnapshotService(),
@@ -92,8 +103,23 @@ public class AIAssistantImpl implements AIAssistant {
             AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
+
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
+                Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
+                int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
+                AIUsage usage = completionResponse.getUsage() != null ?
+                    completionResponse.getUsage() :
+                    new AIUsage(0, 0, 0, 0);
+
+                AIMessageMeta requestMeta = new AIMessageMeta(
+                    AIMetaTypes.PROMPT,
+                    engineDescriptor.getId(),
+                    engine.getProperties().getModel(),
+                    usage,
+                    Duration.between(now, Instant.now()),
+                    systemPromptLength
+                );
 
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
                     AIFunctionCall functionCall = completionResponse.getFunctionCall();
@@ -101,11 +127,15 @@ public class AIAssistantImpl implements AIAssistant {
                         functionContext.addFunctionCall(functionCall);
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         String stringValue = CommonUtils.toString(result.getValue());
-                        if (result.getType() == AIFunctionResult.FunctionType.ACTION) {
-                            return new AIAssistantResponse(AIAssistantResponse.Type.FUNCTION, stringValue);
+                        if (result.getType() == AIFunctionType.ACTION) {
+                            return new AIAssistantResponse(
+                                AIAssistantResponse.Type.FUNCTION,
+                                stringValue,
+                                List.of(requestMeta)
+                            );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
-                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue));
+                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue, null));
                             AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
@@ -116,13 +146,30 @@ public class AIAssistantImpl implements AIAssistant {
                 } else {
                     List<String> variants = completionResponse.getVariants();
                     if (variants != null && !variants.isEmpty()) {
-                        return new AIAssistantResponse(AIAssistantResponse.Type.TEXT, variants.getFirst());
+                        return new AIAssistantResponse(
+                            AIAssistantResponse.Type.TEXT,
+                            variants.getFirst(),
+                            List.of(requestMeta)
+                        );
                     }
                 }
-                return new AIAssistantResponse(AIAssistantResponse.Type.ERROR, AIMessages.ai_empty_engine_response);
+                return new AIAssistantResponse(
+                    AIAssistantResponse.Type.ERROR,
+                    AIMessages.ai_empty_engine_response,
+                    List.of(requestMeta)
+                );
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
         }
+    }
+
+    @NotNull
+    @Override
+    public AIToolboxManager getToolboxManager() {
+        if (toolboxManager == null) {
+            toolboxManager = createToolboxManager();
+        }
+        return toolboxManager;
     }
 
     @NotNull
@@ -134,8 +181,9 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
     ) throws DBException {
-        return requestFactory.build(
+        return getRequestFactory().build(
             monitor,
+            this,
             engine,
             engineDescriptor,
             systemGenerator,
@@ -164,14 +212,34 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
-        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
         String functionName = functionCall.getFunctionName();
-        AIFunctionDescriptor function = registry.getFunction(functionName);
+        if (CommonUtils.isEmpty(functionName)) {
+            throw new DBCMessageException("Function name not specified");
+        }
+        AIFunctionDescriptor function = getToolboxManager().getFunctionByFullId(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         functionCall.setFunction(function);
-        return registry.callFunction(context, function, functionCall.getArguments());
+        Map<String, Object> arguments = functionCall.getArguments();
+        if (arguments == null) {
+            arguments = Map.of();
+        }
+        log.debug("Call AI function " + function.getId() + "(" +
+            arguments.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining(",")) +
+            ")");
+        DBPDataSourceContainer container = context.getContext() != null
+            ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
+        AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(
+            container,
+            Map.of(
+                AIBaseFeatures.FUNCTION_NAME, functionCall.getFunctionName(),
+                AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
+            )
+        ));
+        return function.getToolbox().callFunction(context, function, arguments);
     }
 
     protected void checkAiEnablement() throws DBException {
@@ -238,14 +306,19 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected boolean isLoggingEnabled() throws DBException {
-        AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
-        if (activeEngineConfiguration == null) {
-            log.warn("No active AI engine configuration found");
+    protected boolean isLoggingEnabled() {
+        try {
+            AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
+            if (activeEngineConfiguration == null) {
+                log.warn("No active AI engine configuration found");
+                return false;
+            }
+
+            return activeEngineConfiguration.isLoggingEnabled();
+        } catch (DBException e) {
+            log.debug("Error getting AI configuration: " + e.getMessage());
             return false;
         }
-
-        return activeEngineConfiguration.isLoggingEnabled();
     }
 
     @Nullable
@@ -259,8 +332,14 @@ public class AIAssistantImpl implements AIAssistant {
         return settingsManager.getSettings().getEngineConfiguration(activeEngine);
     }
 
-
     protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
+        return callWithRetry(null, supplier);
+    }
+
+    protected static <T> T callWithRetry(
+        @Nullable AIEngineResponseConsumer listener,
+        @NotNull ThrowableSupplier<T, DBException> supplier
+    ) throws DBException {
         int retry = 0;
         while (retry < MANY_REQUESTS_RETRIES) {
             try {
@@ -272,6 +351,10 @@ public class AIAssistantImpl implements AIAssistant {
                     RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
                 }
             }
+        }
+        DBException dbException = new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
+        if (listener != null) {
+            listener.error(dbException);
         }
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }

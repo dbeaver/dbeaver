@@ -36,8 +36,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -240,10 +241,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @NotNull
     @Override
-    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+    public <RESULT> Job createLoadingService(@NotNull ILoadService<RESULT> loadingService, @NotNull ILoadVisualizer<RESULT> visualizer) {
         return new AbstractJob(loadingService.getServiceName()) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     RESULT result = loadingService.evaluate(monitor);
                     visualizer.completeLoading(result);
@@ -258,14 +260,14 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void copyTextToClipboard(String text, boolean htmlFormat) {
+    public void copyTextToClipboard(@NotNull String text, boolean htmlFormat) {
         // do nothing
     }
 
     @Override
-    public void executeShellProgram(String shellCommand) {
-        File filePath = new File(shellCommand);
-        if (filePath.exists() && filePath.isDirectory()) {
+    public void executeShellProgram(@NotNull String shellCommand) {
+        Path filePath = Path.of(shellCommand);
+        if (Files.exists(filePath) && Files.isDirectory(filePath)) {
             System.out.println("Open directory '" + shellCommand + "'");
             return;
         }
