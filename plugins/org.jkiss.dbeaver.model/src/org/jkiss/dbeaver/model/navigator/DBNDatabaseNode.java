@@ -97,7 +97,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @NotNull
     @Override
     public String getNodeDisplayName() {
-        return getPlainNodeName(false, true);
+        return CommonUtils.notNull(getPlainNodeName(false, true), "");
     }
 
     /**
@@ -106,6 +106,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
      * @param useSimpleName do not append any qualifiers to the name. Usually sued for functions like rename
      * @param showDefaults  return some default value if actual name is empty. otherwise returns null
      */
+    @Nullable
     public String getPlainNodeName(boolean useSimpleName, boolean showDefaults) {
         DBSObject object = getObject();
         if (object == null) {
@@ -122,7 +123,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             {
                 objectName = object.getParentObject().getName() + "." + object.getName();
             } else {
-                if (object instanceof DBSEntity && object.getDataSource().getContainer().getNavigatorSettings().isMergeEntities()) {
+                DBPDataSource dataSource = object.getDataSource();
+                if (object instanceof DBSEntity && dataSource != null &&
+                    dataSource.getContainer().getNavigatorSettings().isMergeEntities()
+                ) {
                     objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
                 } else {
                     objectName = object.getName();

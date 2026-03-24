@@ -269,6 +269,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void lockActionsByFocus(Control lockedBy);
 
+    @NotNull
     IResultSetSelection getSelection();
 
     void addListener(IResultSetListener listener);
