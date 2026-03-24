@@ -22,20 +22,14 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
 
@@ -53,99 +47,6 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
                 " OLD_PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException(getPasswordPolicyErrorMessage(e), e);
-        }
-    }
-
-    /**
-     * Changes an expired password on the server by connecting with admin credentials
-     * and executing ALTER LOGIN. This is necessary because the MSSQL JDBC driver does not
-     * support changing expired passwords during login (no newPassword connection property),
-     * and SQL Server completely blocks connections from users with expired passwords.
-     */
-    void changeExpiredPassword(
-        @NotNull String connectionUrl,
-        @NotNull Driver driverInstance,
-        @NotNull DBPConnectionConfiguration connectionInfo,
-        @NotNull String adminUser,
-        @NotNull String adminPassword,
-        @NotNull String loginName,
-        @NotNull String newPassword
-    ) throws DBException {
-        Properties adminProps = buildAdminConnectionProperties(connectionInfo, adminUser, adminPassword);
-
-        try (Connection adminConn = driverInstance.connect(connectionUrl, adminProps)) {
-            if (adminConn == null) {
-                throw new DBException("Failed to establish admin connection");
-            }
-            String sql = "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, loginName)
-                + " WITH PASSWORD = " + SQLUtils.quoteString(dataSource, newPassword);
-            try (java.sql.Statement stmt = adminConn.createStatement()) {
-                stmt.execute(sql);
-            }
-        } catch (DBException e) {
-            throw e;
-        } catch (SQLException e) {
-            throw new DBCException(getPasswordPolicyErrorMessage(e), e);
-        } catch (Exception e) {
-            throw new DBException("Failed to change password via admin connection", e);
-        }
-    }
-
-    @NotNull
-    private static Properties buildAdminConnectionProperties(
-        @NotNull DBPConnectionConfiguration connectionInfo,
-        @NotNull String adminUser,
-        @NotNull String adminPassword
-    ) {
-        Properties adminProps = new Properties();
-        adminProps.put("user", adminUser);
-        adminProps.put("password", CommonUtils.notEmpty(adminPassword));
-        adminProps.put("integratedSecurity", "false");
-
-        boolean trustCertificate = CommonUtils.getBoolean(
-            connectionInfo.getProviderProperty(SQLServerConstants.PROP_SSL_TRUST_SERVER_CERTIFICATE),
-            false);
-        if (trustCertificate) {
-            adminProps.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
-        }
-
-        configureSSLProperties(adminProps, connectionInfo);
-        return adminProps;
-    }
-
-    private static void configureSSLProperties(
-        @NotNull Properties adminProps,
-        @NotNull DBPConnectionConfiguration connectionInfo
-    ) {
-        DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(SQLServerConstants.HANDLER_SSL);
-        if (sslConfig == null || !sslConfig.isEnabled()) {
-            adminProps.put("encrypt", "false");
-            return;
-        }
-
-        adminProps.put("encrypt", "true");
-
-        // Copy trustStore settings (mirrors SQLServerDataSource.initSSL logic)
-        final String keystoreFileProp;
-        final String keystorePasswordProp;
-        if (CommonUtils.isEmpty(sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
-            // Backward compatibility
-            keystoreFileProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE);
-            keystorePasswordProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_PASSWORD);
-        } else {
-            keystoreFileProp = sslConfig.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE);
-            keystorePasswordProp = sslConfig.getPassword();
-        }
-        if (!CommonUtils.isEmpty(keystoreFileProp)) {
-            adminProps.put("trustStore", keystoreFileProp);
-        }
-        if (!CommonUtils.isEmpty(keystorePasswordProp)) {
-            adminProps.put("trustStorePassword", keystorePasswordProp);
-        }
-
-        String hostnameProp = sslConfig.getStringProperty(SQLServerConstants.PROP_SSL_KEYSTORE_HOSTNAME);
-        if (!CommonUtils.isEmpty(hostnameProp)) {
-            adminProps.put("hostNameInCertificate", hostnameProp);
         }
     }
 

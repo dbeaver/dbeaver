@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
-import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
@@ -56,7 +55,6 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -302,7 +300,7 @@ public class SQLServerDataSource
         } catch (DBCException e) {
             if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
                 && isPasswordExpired(e)
-                && updateExpiredPassword(monitor)) {
+                && updateExpiredPassword()) {
                 return super.openConnection(monitor, context, purpose);
             }
             throw e;
@@ -337,17 +335,17 @@ public class SQLServerDataSource
     }
 
     /**
-     * Handles expired password by changing it on the server via an admin connection.
+     * Prompts the user to enter a new password after detecting an expired password.
      * The MSSQL JDBC driver does not support changing expired passwords during login,
-     * so we connect as an administrator and execute ALTER LOGIN to change the password.
+     * so the user must change the password externally (via SSMS, sqlcmd, or a DBA)
+     * and then enter the new password here so DBeaver can update stored credentials.
      */
-    private boolean updateExpiredPassword(@NotNull DBRProgressMonitor monitor) {
+    private boolean updateExpiredPassword() {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
         }
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
 
-        // Step 1: Ask user for a new password
         DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
             SQLServerMessages.password_expired_prompt,
             connectionInfo.getUserName(),
@@ -358,42 +356,6 @@ public class SQLServerDataSource
             return false;
         }
 
-        // Step 2: Ask for admin credentials to execute ALTER LOGIN on the server
-        DBPAuthInfo adminInfo = DBWorkbench.getPlatformUI().promptUserCredentials(
-            SQLServerMessages.password_expired_admin_prompt,
-            null,
-            null,
-            null,
-            false,
-            false);
-        if (adminInfo == null
-            || CommonUtils.isEmpty(adminInfo.getUserName())
-            || CommonUtils.isEmpty(adminInfo.getUserPassword())) {
-            return false;
-        }
-
-        // Step 3: Connect as admin and change the password on the server
-        try {
-            Driver driverInstance = getDriverInstance(monitor);
-            String url = getConnectionURL(connectionInfo);
-            SQLServerLoginPasswordManager passwordManager = new SQLServerLoginPasswordManager(this);
-            passwordManager.changeExpiredPassword(
-                url,
-                driverInstance,
-                connectionInfo,
-                adminInfo.getUserName(),
-                CommonUtils.notEmpty(adminInfo.getUserPassword()),
-                connectionInfo.getUserName(),
-                passwordInfo.getNewPassword());
-        } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(
-                SQLServerMessages.password_change_error_title,
-                SQLServerMessages.password_change_error_message,
-                e);
-            return false;
-        }
-
-        // Step 4: Update local credentials so the retry uses the new password
         connectionInfo.setUserPassword(passwordInfo.getNewPassword());
         getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
         if (!getContainer().isTemporary()) {
