@@ -15,18 +15,33 @@
     <profiles>
         <profile>
             <id>product-dbeaver-ce</id>
+            <activation>
+                <property>
+                    <name>build.all-artifacts</name>
+                </property>
+            </activation>
             <modules>
                 <module>community</module>
             </modules>
         </profile>
         <profile>
             <id>product-dbeaver-eclipse-ce</id>
+            <activation>
+                <property>
+                    <name>build.all-artifacts</name>
+                </property>
+            </activation>
             <modules>
                 <module>repositories</module>
             </modules>
         </profile>
         <profile>
             <id>product-dbeaver-ce-msstore</id>
+            <activation>
+                <property>
+                    <name>build.all-artifacts</name>
+                </property>
+            </activation>
             <modules>
                 <module>appstore</module>
             </modules>
