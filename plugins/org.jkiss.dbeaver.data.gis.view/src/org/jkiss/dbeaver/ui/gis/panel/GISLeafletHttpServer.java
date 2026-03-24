@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
  * A simple server that serves the GIS viewer's HTML and related resources.
  */
 final class GISLeafletHttpServer {
-    public static final class Handle implements AutoCloseable {
+    static final class Handle implements AutoCloseable {
         private final UUID uuid;
         private final GISLeafletHttpServer server;
 
@@ -50,7 +50,7 @@ final class GISLeafletHttpServer {
          * @return the local URL for this handle
          */
         @NotNull
-        public String getUrl() {
+        String getUrl() {
             return server.getUrl() + '/' + uuid;
         }
 
@@ -60,7 +60,7 @@ final class GISLeafletHttpServer {
          * @param index the HTML content to serve
          * @see #getUrl()
          */
-        public void setIndex(@NotNull String index) {
+        void setIndex(@NotNull String index) {
             server.index.put(uuid, index);
         }
 
@@ -93,7 +93,7 @@ final class GISLeafletHttpServer {
     }
 
     @NotNull
-    public static Handle acquire() throws IOException {
+    static Handle acquire() throws IOException {
         synchronized (lock) {
             if (instance == null) {
                 instance = new GISLeafletHttpServer();
