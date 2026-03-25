@@ -450,6 +450,15 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public boolean supportsAlterHasColumn() {
-        return true;
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public String getColumnCharsetModifier(@NotNull ColumnCharset charset) {
+        if (charset == ColumnCharset.ASCII) {
+            return "CHARACTER SET latin1";
+        }
+        return null;
     }
 }
