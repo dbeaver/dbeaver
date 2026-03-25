@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
@@ -315,6 +316,10 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
+        if (monitor.isForceCacheUsage()) {
+            getContainer().uniqueKeyCache.getObjects(
+                new VoidProgressMonitor(), getContainer(), this);
+        }
         List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);

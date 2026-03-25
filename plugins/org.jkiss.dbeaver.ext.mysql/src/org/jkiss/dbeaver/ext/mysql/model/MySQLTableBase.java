@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -122,6 +123,10 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     public MySQLTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
+        if (monitor.isForceCacheUsage()) {
+            getContainer().getTableCache().getChild(
+                new VoidProgressMonitor(), getContainer(), this, attributeName);
+        }
         return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
