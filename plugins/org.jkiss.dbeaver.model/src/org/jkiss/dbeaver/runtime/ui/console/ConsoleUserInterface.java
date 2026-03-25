@@ -172,11 +172,13 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
+    @Nullable
     public String promptProperty(@NotNull String prompt, String defValue) {
         return null;
     }
 
     @Override
+    @Nullable
     public String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue) {
         return null;
     }

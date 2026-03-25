@@ -448,11 +448,13 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
+    @Nullable
     public String promptProperty(@NotNull String prompt, @Nullable String defValue) {
         return promptProperty(s -> new EnterNameDialog(s, prompt, defValue));
     }
 
     @Override
+    @Nullable
     public String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue) {
         return promptProperty(s -> new EnterNameDialog(s, prompt, defValue) {
             @NotNull
@@ -463,6 +465,7 @@ public class DesktopUI extends ConsoleUserInterface {
         });
     }
 
+    @Nullable
     private String promptProperty(@NotNull Function<Shell, EnterNameDialog> dialogFactory) {
         return new UITask<String>() {
             @Override
