@@ -58,6 +58,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         "ALGORITHM",
         "REPAIR",
         "ENGINE",
+        "MANUAL",
         "STRAIGHT_JOIN"
     };
 

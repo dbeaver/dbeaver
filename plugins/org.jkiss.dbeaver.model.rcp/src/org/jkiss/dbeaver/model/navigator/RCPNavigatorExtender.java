@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class RCPNavigatorExtender implements DBNModelExtender {
 
     @Nullable
     @Override
-    public DBNNode[] getExtraNodes(@NotNull DBNNode parentNode) {
+    public DBNNode createNode(@NotNull DBNNode parentNode) {
         if (parentNode instanceof DBNProject) {
             if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
                 return null;
@@ -44,7 +44,7 @@ public class RCPNavigatorExtender implements DBNModelExtender {
             };
             resourceListener = new DBFResourceListener(fsNode);
             EFSNIOMonitor.addListener(resourceListener);
-            return new DBNNode[]{ fsNode };
+            return fsNode;
         }
         return null;
     }

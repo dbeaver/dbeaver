@@ -66,17 +66,22 @@ public class FormsDialog extends TrayDialog {
     ) {
         CTabItem item = new CTabItem(folder, SWT.NONE);
         item.setText(text);
-        item.setControl(UIPanelBuilder.build(folder, handler));
+        item.setControl(UIPanelBuilder.build(
+            folder, pb -> {
+                pb.margins(5, 5);
+                handler.accept(pb);
+            }
+        ));
     }
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildShowcasePanel() {
         return pb -> pb
-            .row(rb -> rb.group("Panel", buildPanelPanel()))
-            .row(rb -> rb.group("Text", buildTextPanel()))
-            .row(rb -> rb.group("Combo", buildComboPanel()))
-            .row(rb -> rb.group("Check", buildCheckPanel()))
-            .row(rb -> rb.group("Buttons", buildButtonPanel()));
+            .row(rb -> rb.titledPanel("Panel", buildPanelPanel()))
+            .row(rb -> rb.titledPanel("Text", buildTextPanel()))
+            .row(rb -> rb.titledPanel("Combo", buildComboPanel()))
+            .row(rb -> rb.titledPanel("Check", buildCheckPanel()))
+            .row(rb -> rb.titledPanel("Buttons", buildButtonPanel()));
     }
 
     @NotNull
@@ -102,12 +107,20 @@ public class FormsDialog extends TrayDialog {
                 .indent(pb2 -> pb2
                     .row("Indented row", rb -> rb.label("A doubly indented label"))))
             .row(rb -> rb
-                .group("A named group", pb1 -> pb1
-                    .row(rb1 -> rb1.label("A group label"))))
+                .titledPanel("A named panel", pb1 -> pb1
+                    .row(rb1 -> rb1.label("A panel label"))))
             .row(rb -> rb
-                .expandableGroup("An expandable group", true, pb1 -> pb1
+                .expandablePanel("An expandable panel", true, pb1 -> pb1
                     .align(UIAlignX.FILL)
-                    .row(rb1 -> rb1.label("An expandable group label"))));
+                    .row(rb1 -> rb1.label("An expandable panel label"))))
+            .row(rb -> rb
+                .titledPanel("A scrolled panel", pb1 -> pb1
+                    .row(rb1 -> rb1.scrolledPanel(true, true, pb2 -> pb2
+                        .hint(50, 50)
+                        .row(rb2 -> rb2.label("Label10").label("Label11").label("Label12").label("Label13"))
+                        .row(rb2 -> rb2.label("Label20").label("Label21").label("Label22").label("Label23"))
+                        .row(rb2 -> rb2.label("Label30").label("Label31").label("Label32").label("Label33"))
+                        .row(rb2 -> rb2.label("Label40").label("Label41").label("Label42").label("Label43"))))));
         // @formatter:on
     }
 
@@ -209,16 +222,14 @@ public class FormsDialog extends TrayDialog {
         Consumer<UIPanelBuilder> completion = pb -> pb
             .row(rb -> rb.checkBox("Include source in query comment", UIRowBuilder.identityConsumer()))
             .row(rb -> rb.checkBox("Format SQL query", UIRowBuilder.identityConsumer()))
-            .row(rb -> rb
-                .label("Table join rule:")
-                .comboBox(List.of("Default"), UIObservable.of("Default")))
+            .row("Table join rule", rb -> rb.comboBox(List.of("Default"), UIObservable.of("Default")))
             .row(rb -> rb.checkBox("Execute SQL immediately", UIRowBuilder.identityConsumer()))
             .row(rb -> rb.checkBox("Enable AI query suggestion", UIRowBuilder.identityConsumer()));
 
         Consumer<UIPanelBuilder> execution = pb -> pb
-            .row("Select:", rb -> rb.comboBox(List.of("Execute immediately"), UIObservable.of("Execute immediately")))
-            .row("Modify:", rb -> rb.comboBox(List.of("Show confirmation"), UIObservable.of("Show confirmation")))
-            .row("Schema:", rb -> rb.comboBox(List.of("Show confirmation"), UIObservable.of("Show confirmation")));
+            .row("Select", rb -> rb.comboBox(List.of("Execute immediately"), UIObservable.of("Execute immediately")))
+            .row("Modify", rb -> rb.comboBox(List.of("Show confirmation"), UIObservable.of("Show confirmation")))
+            .row("Schema", rb -> rb.comboBox(List.of("Show confirmation"), UIObservable.of("Show confirmation")));
 
         Consumer<UIPanelBuilder> structure = pb -> pb
             .row(rb -> rb.checkBox("Send column data type information", UIRowBuilder.identityConsumer()))
@@ -227,10 +238,10 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb.checkBox("Send unique and primary keys information", UIRowBuilder.identityConsumer()));
 
         return pb -> pb
-            .row(rb -> rb.group("General", general))
-            .row(rb -> rb.group("Completion", completion))
-            .row(rb -> rb.group("Execution", execution))
-            .row(rb -> rb.group("Send database structure", structure));
+            .row(rb -> rb.titledPanel("General", general))
+            .row(rb -> rb.titledPanel("Completion", completion))
+            .row(rb -> rb.titledPanel("Execution", execution))
+            .row(rb -> rb.titledPanel("Send database structure", structure));
     }
 
     @NotNull
@@ -244,15 +255,13 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb.checkBox("Always run in background", UIRowBuilder.identityConsumer()))
             .row(rb -> rb.checkBox("Keep next/previous editor, view and perspectives dialog open", UIRowBuilder.identityConsumer()))
             .row(rb -> rb.checkBox("Show heap status", UIRowBuilder.identityConsumer()))
-            .row(rb -> rb
-                .label("Initial maximum number of elements shown in views:")
+            .row("Initial maximum number of elements shown in views", rb -> rb
                 .intTextField(maximumElementsShown, tb -> tb.align(UIAlignX.FILL)))
             .row(rb -> rb.checkBox("Rename resource inline if available", UIRowBuilder.identityConsumer()))
-            .row(rb -> rb
-                .label("Workbench save interval (in minutes):")
+            .row("Workbench save interval (in minutes)", rb -> rb
                 .intTextField(workbenchSaveInterval, tb -> tb.align(UIAlignX.FILL)))
             .row(rb -> rb
-                .group("Open mode", pb1 -> pb1
+                .titledPanel("Open mode", pb1 -> pb1
                     .row(rb1 -> rb1.radioButton("Double click", UIRowBuilder.identityConsumer()))
                     .row(rb1 -> rb1.radioButton("Single click", bb -> bb
                         .selected(checked)))

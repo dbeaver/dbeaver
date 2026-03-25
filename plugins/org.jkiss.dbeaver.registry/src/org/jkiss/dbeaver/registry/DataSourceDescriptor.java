@@ -637,7 +637,12 @@ public class DataSourceDescriptor
             }
         }
 
-        updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+        updateObjectFilter(type.getName(), toObjectID(parentObject), filter);
+    }
+
+    @Nullable
+    protected String toObjectID(@Nullable DBSObject parentObject) {
+        return parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject);
     }
 
     @Nullable
@@ -651,11 +656,11 @@ public class DataSourceDescriptor
         this.clientApplicationName = applicationName;
     }
 
-    void clearFilters() {
+    protected void clearFilters() {
         filterMap.clear();
     }
 
-    void updateObjectFilter(String typeName, @Nullable String objectID, DBSObjectFilter filter) {
+    protected void updateObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
             filterMapping = new FilterMapping(typeName);

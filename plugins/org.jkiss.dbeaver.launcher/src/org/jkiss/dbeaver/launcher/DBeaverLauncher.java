@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -59,6 +59,7 @@ import javax.swing.*;
  */
 public class DBeaverLauncher {
 
+    public static final String PROP_ECLIPSE_NET_PROXY_ENABLE = "org.eclipse.net.core.enableProxyService";
     /**
      * Indicates whether this instance is running in debug mode.
      */
@@ -589,6 +590,7 @@ public class DBeaverLauncher {
         checkCompatibleWindowsVersion();
 
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
+        disableDefaultProxyServiceActivation();
         commands = args;
         String[] passThruArgs = processCommandLine(args);
         if (debug) {
@@ -675,6 +677,16 @@ public class DBeaverLauncher {
             System.out.println("Invoking parameters: " + Arrays.toString(passThruArgs));
         }
         invokeFramework(passThruArgs, bootPath);
+    }
+
+    /**
+     * Disable Eclipse proxy service activation
+     * We do it in {@link org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator#activateProxyService}
+     */
+    private static void disableDefaultProxyServiceActivation() {
+        if (System.getProperty(PROP_ECLIPSE_NET_PROXY_ENABLE) == null) {
+            System.setProperty(PROP_ECLIPSE_NET_PROXY_ENABLE, Boolean.FALSE.toString());
+        }
     }
 
     // Verifies that args has any non-standard parameters
