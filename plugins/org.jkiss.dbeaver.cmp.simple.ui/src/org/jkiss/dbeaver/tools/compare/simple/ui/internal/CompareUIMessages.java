@@ -37,6 +37,8 @@ public class CompareUIMessages extends NLS {
     public static String compare_objects_page_settings_checkbox_compare_properties;
     public static String compare_objects_page_settings_checkbox_compare_structure;
     public static String compare_objects_page_settings_checkbox_scripts;
+    public static String compare_objects_page_settings_checkbox_refresh_metadata;
+    public static String compare_objects_page_settings_checkbox_refresh_metadata_tooltip;
     public static String compare_objects_page_checkbox_show_only_differences;
     public static String compare_objects_page_report_settings;
 

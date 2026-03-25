@@ -57,6 +57,7 @@ public class CompareObjectsExecutor {
     private final List<CompareReportLine> reportLines = new ArrayList<>();
     private int reportDepth = 0;
     private CompareReportLine lastLine;
+    private final Set<DBNDatabaseNode> refreshedNodes = Collections.newSetFromMap(new IdentityHashMap<>());
 
     private void reportObjectsCompareBegin(List<DBNDatabaseNode> objects)
     {
@@ -161,6 +162,7 @@ public class CompareObjectsExecutor {
     {
         reportLines.clear();
         lastLine = null;
+        refreshedNodes.clear();
 
         compareNodes(monitor, nodes);
         return new CompareReport(rootNodes, reportLines);
@@ -169,6 +171,7 @@ public class CompareObjectsExecutor {
     private void compareNodes(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
         throws DBException, InterruptedException
     {
+        refreshNodesIfRequested(monitor, nodes);
         reportObjectsCompareBegin(nodes);
 
         try {
@@ -182,6 +185,23 @@ public class CompareObjectsExecutor {
             }
         } finally {
             reportObjectsCompareEnd();
+        }
+    }
+
+    private void refreshNodesIfRequested(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
+        throws DBException, InterruptedException
+    {
+        if (!settings.isRefreshMetadata()) {
+            return;
+        }
+        for (DBNDatabaseNode node : nodes) {
+            if (node == null || !refreshedNodes.add(node)) {
+                continue;
+            }
+            if (monitor.isCanceled()) {
+                throw new InterruptedException();
+            }
+            node.refreshNode(monitor, this);
         }
     }
 
