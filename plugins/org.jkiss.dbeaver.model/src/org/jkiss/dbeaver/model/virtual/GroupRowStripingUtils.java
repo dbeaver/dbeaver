@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Alternating row backgrounds by consecutive runs of equal composite keys (#40259).
+ * Alternating row backgrounds by consecutive runs of equal composite keys.
  */
 public final class GroupRowStripingUtils {
 

@@ -20,8 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVGroupRowStriping;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -46,16 +46,12 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Configure alternating row backgrounds by consecutive equal values in one or more columns (#40259).
+ * Configure alternating row backgrounds by consecutive equal values in one or more columns.
  */
 public class GroupRowStripingDialog extends BaseDialog {
-    private static final int DEFAULT_STRIPE_BLEND_PERCENT = 12;
 
-    @NotNull
     private final ResultSetViewer resultSetViewer;
-    @NotNull
     private final DBVEntity vEntitySrc;
-    @NotNull
     private final DBVEntity vEntity;
 
     private Button enableCheck;
@@ -64,10 +60,10 @@ public class GroupRowStripingDialog extends BaseDialog {
     private Button sortByGroupCheck;
     private ColorSelector colorSelector1;
     private ColorSelector colorSelector2;
-    private Button btnAdd;
-    private Button btnRemove;
-    private Button btnUp;
-    private Button btnDown;
+    private Button addButton;
+    private Button removeButton;
+    private Button upButton;
+    private Button downButton;
 
     public GroupRowStripingDialog(@NotNull ResultSetViewer resultSetViewer, @NotNull DBVEntity vEntity) {
         super(resultSetViewer.getControl().getShell(), ResultSetMessages.dialog_group_row_striping_title, UIIcon.PALETTE);
@@ -82,12 +78,7 @@ public class GroupRowStripingDialog extends BaseDialog {
         ((GridLayout) composite.getLayout()).numColumns = 1;
 
         enableCheck = UIUtils.createCheckbox(composite, ResultSetMessages.dialog_group_row_striping_enable, false);
-        enableCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateEnableState();
-            }
-        });
+        enableCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateEnableState()));
 
         UIUtils.createControlLabel(composite, ResultSetMessages.dialog_group_row_striping_columns_label);
         columnList = new List(composite, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL);
@@ -103,34 +94,14 @@ public class GroupRowStripingDialog extends BaseDialog {
         comboGd.widthHint = 200;
         attributeCombo.setLayoutData(comboGd);
 
-        btnAdd = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_add, null,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    addSelectedColumn();
-                }
-            });
-        btnRemove = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_remove, null,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    removeSelectedColumn();
-                }
-            });
-        btnUp = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_up, null,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    moveColumn(-1);
-                }
-            });
-        btnDown = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_down, null,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    moveColumn(1);
-                }
-            });
+        addButton = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_add, null,
+            SelectionListener.widgetSelectedAdapter(e -> addSelectedColumn()));
+        removeButton = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_remove, null,
+            SelectionListener.widgetSelectedAdapter(e -> removeSelectedColumn()));
+        upButton = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_up, null,
+            SelectionListener.widgetSelectedAdapter(e -> moveColumn(-1)));
+        downButton = UIUtils.createPushButton(buttonRow, ResultSetMessages.dialog_group_row_striping_down, null,
+            SelectionListener.widgetSelectedAdapter(e -> moveColumn(1)));
 
         sortByGroupCheck = UIUtils.createCheckbox(
             composite,
@@ -157,8 +128,10 @@ public class GroupRowStripingDialog extends BaseDialog {
     private void loadFromEntity() {
         columnList.removeAll();
         DBVGroupRowStriping grs = vEntity.getGroupRowStriping();
-        RGB defaultRgb = resultSetViewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND).getRGB();
-        RGB alternateRgb = makeAlternateStripeDefault(defaultRgb);
+        RGB defaultRgb = resultSetViewer.getControl().getBackground().getRGB();
+        RGB alternateRgb = ResultSetThemeSettings.instance.backgroundOdd != null
+            ? ResultSetThemeSettings.instance.backgroundOdd.getRGB()
+            : defaultRgb;
         if (grs == null || !grs.isEnabled() || CommonUtils.isEmpty(grs.getColumnNames())) {
             enableCheck.setSelection(false);
             sortByGroupCheck.setSelection(false);
@@ -173,12 +146,6 @@ public class GroupRowStripingDialog extends BaseDialog {
         }
         colorSelector1.setColorValue(parseRgb(grs.getBackgroundColor1(), defaultRgb));
         colorSelector2.setColorValue(parseRgb(grs.getBackgroundColor2(), alternateRgb));
-    }
-
-    @NotNull
-    private static RGB makeAlternateStripeDefault(@NotNull RGB base) {
-        RGB blend = UIUtils.isDark(base) ? new RGB(255, 255, 255) : new RGB(0, 0, 0);
-        return UIUtils.blend(base, blend, DEFAULT_STRIPE_BLEND_PERCENT);
     }
 
     private static RGB parseRgb(String s, RGB fallback) {
@@ -215,10 +182,10 @@ public class GroupRowStripingDialog extends BaseDialog {
         sortByGroupCheck.setEnabled(on);
         colorSelector1.setEnabled(on);
         colorSelector2.setEnabled(on);
-        btnAdd.setEnabled(on);
-        btnRemove.setEnabled(on);
-        btnUp.setEnabled(on);
-        btnDown.setEnabled(on);
+        addButton.setEnabled(on);
+        removeButton.setEnabled(on);
+        upButton.setEnabled(on);
+        downButton.setEnabled(on);
     }
 
     private void addSelectedColumn() {
@@ -275,15 +242,7 @@ public class GroupRowStripingDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        if (enableCheck.getSelection() && columnList.getItemCount() == 0) {
-            UIUtils.showMessageBox(
-                getShell(),
-                ResultSetMessages.dialog_group_row_striping_validation_title,
-                ResultSetMessages.dialog_group_row_striping_validation_columns,
-                SWT.ICON_WARNING);
-            return;
-        }
-        if (enableCheck.getSelection()) {
+        if (enableCheck.getSelection() && columnList.getItemCount() > 0) {
             DBVGroupRowStriping grs = new DBVGroupRowStriping();
             grs.setEnabled(true);
             grs.setSortByGroupColumns(sortByGroupCheck.getSelection());

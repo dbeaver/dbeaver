@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
 /**
- * Opens group row striping settings (#40259).
+ * Opens group row striping settings.
  */
 public class GroupRowStripingAction extends Action {
 

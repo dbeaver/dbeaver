@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.virtual;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -77,16 +76,41 @@ public class GroupRowStripingUtilsTest {
 
     @Test
     public void computeStripeIndicesAppendSegmentFirstRowContinuesParityFromPriorKey() {
-        List<Object[]> first = new ArrayList<>();
-        first.add(new Object[]{"X"});
-        first.add(new Object[]{"Y"});
+        List<Object[]> first = Arrays.asList(
+            new Object[]{"X"},
+            new Object[]{"Y"}
+        );
         int[] s1 = GroupRowStripingUtils.computeStripeIndices(first);
         Assert.assertArrayEquals(new int[]{0, 1}, s1);
 
-        List<Object[]> second = new ArrayList<>(first);
-        second.add(new Object[]{"Y"});
-        second.add(new Object[]{"Z"});
+        List<Object[]> second = Arrays.asList(
+            new Object[]{"X"},
+            new Object[]{"Y"},
+            new Object[]{"Y"},
+            new Object[]{"Z"}
+        );
         int[] s2 = GroupRowStripingUtils.computeStripeIndices(second);
         Assert.assertArrayEquals(new int[]{0, 1, 1, 0}, s2);
+    }
+
+    @Test
+    public void computeStripeIndicesThreeDistinctValues() {
+        List<Object[]> keys = Arrays.asList(
+            new Object[]{"A"},
+            new Object[]{"B"},
+            new Object[]{"C"}
+        );
+        Assert.assertArrayEquals(new int[]{0, 1, 0}, GroupRowStripingUtils.computeStripeIndices(keys));
+    }
+
+    @Test
+    public void computeStripeIndicesRepeatedFirstValueAfterOthers() {
+        List<Object[]> keys = Arrays.asList(
+            new Object[]{"A"},
+            new Object[]{"B"},
+            new Object[]{"C"},
+            new Object[]{"A"}
+        );
+        Assert.assertArrayEquals(new int[]{0, 1, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
     }
 }

@@ -25,13 +25,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Persists result set group row striping (#40259).
+ * Persists result set group row striping.
  */
 public class DBVGroupRowStriping {
 
+    static final String JSON_KEY = "group-row-striping";
+
     private boolean enabled;
     @NotNull
-    private List<String> columnNames = new ArrayList<>();
+    private final List<String> columnNames = new ArrayList<>();
     @Nullable
     private String backgroundColor1;
     @Nullable
@@ -43,7 +45,7 @@ public class DBVGroupRowStriping {
 
     public DBVGroupRowStriping(@NotNull DBVGroupRowStriping source) {
         this.enabled = source.enabled;
-        this.columnNames = new ArrayList<>(source.columnNames);
+        this.columnNames.addAll(source.columnNames);
         this.backgroundColor1 = source.backgroundColor1;
         this.backgroundColor2 = source.backgroundColor2;
         this.sortByGroupColumns = source.sortByGroupColumns;
@@ -63,7 +65,8 @@ public class DBVGroupRowStriping {
     }
 
     public void setColumnNames(@NotNull List<String> columnNames) {
-        this.columnNames = new ArrayList<>(columnNames);
+        this.columnNames.clear();
+        this.columnNames.addAll(columnNames);
     }
 
     @Nullable

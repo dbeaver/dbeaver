@@ -213,28 +213,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
             addColorOverride(curColor);
         }
-        Map<String, Object> grsMap = JSONUtils.getObjectOrNull(map, "group-row-striping");
-        if (grsMap != null && !grsMap.isEmpty()) {
-            DBVGroupRowStriping grs = new DBVGroupRowStriping();
-            grs.setEnabled(JSONUtils.getBoolean(grsMap, "enabled"));
-            grs.setSortByGroupColumns(JSONUtils.getBoolean(grsMap, "sort-by-group-columns"));
-            String bg1 = JSONUtils.getString(grsMap, "background1");
-            String bg2 = JSONUtils.getString(grsMap, "background2");
-            if (!CommonUtils.isEmpty(bg1)) {
-                grs.setBackgroundColor1(bg1);
-            }
-            if (!CommonUtils.isEmpty(bg2)) {
-                grs.setBackgroundColor2(bg2);
-            }
-            List<String> cols = new ArrayList<>();
-            for (String col : JSONUtils.deserializeStringList(grsMap, "columns")) {
-                if (!CommonUtils.isEmpty(col)) {
-                    cols.add(col);
-                }
-            }
-            grs.setColumnNames(cols);
-            groupRowStriping = grs;
-        }
+        loadGroupRowStriping(map);
         loadPropertiesFrom(map, "properties");
     }
 
@@ -703,6 +682,32 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return;
         }
         colorOverrides.clear();
+    }
+
+    private void loadGroupRowStriping(@NotNull Map<String, Object> map) {
+        Map<String, Object> grsMap = JSONUtils.getObjectOrNull(map, DBVGroupRowStriping.JSON_KEY);
+        if (grsMap == null || grsMap.isEmpty()) {
+            return;
+        }
+        DBVGroupRowStriping grs = new DBVGroupRowStriping();
+        grs.setEnabled(JSONUtils.getBoolean(grsMap, "enabled"));
+        grs.setSortByGroupColumns(JSONUtils.getBoolean(grsMap, "sort-by-group-columns"));
+        String bg1 = JSONUtils.getString(grsMap, "background1");
+        String bg2 = JSONUtils.getString(grsMap, "background2");
+        if (!CommonUtils.isEmpty(bg1)) {
+            grs.setBackgroundColor1(bg1);
+        }
+        if (!CommonUtils.isEmpty(bg2)) {
+            grs.setBackgroundColor2(bg2);
+        }
+        List<String> cols = new ArrayList<>();
+        for (String col : JSONUtils.deserializeStringList(grsMap, "columns")) {
+            if (!CommonUtils.isEmpty(col)) {
+                cols.add(col);
+            }
+        }
+        grs.setColumnNames(cols);
+        groupRowStriping = grs;
     }
 
     @Nullable
