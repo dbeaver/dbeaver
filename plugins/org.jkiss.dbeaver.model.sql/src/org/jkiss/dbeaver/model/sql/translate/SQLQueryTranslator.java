@@ -303,16 +303,17 @@ public class SQLQueryTranslator implements SQLTranslator {
                     }
                     case "ASCII" -> {
                         cd.getColumnSpecs().remove(columnSpec);
-                        if ("mysql".equals(targetDialect.getDialectId())) {
-                            cd.getColumnSpecs().add("CHARACTER");
-                            cd.getColumnSpecs().add("SET");
-                            cd.getColumnSpecs().add("latin1");
+                        if (extendedDialect != null) {
+                            String charsetModifier = extendedDialect.getColumnCharsetModifier(ColumnCharset.ASCII);
+                            if (!CommonUtils.isEmpty(charsetModifier)) {
+                                cd.getColumnSpecs().addAll(CommonUtils.splitString(charsetModifier, ' '));
+                            }
                         }
                         defChanged = true;
                     }
                     default -> {
+                        //no action
                     }
-                    //no action
                 }
             }
         }
