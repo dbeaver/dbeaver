@@ -58,9 +58,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         userRoleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN);
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 20;
-        userRoleCombo.setLayoutData(gd);
+        userRoleCombo.setLayoutData(makeAuthControlLayoutData(parent));
         userRoleCombo.select(0);
         userRoleCombo.addModifyListener(textListener);
 
@@ -77,8 +75,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         freshAuthTypeCombo.add("snowflake"); //$NON-NLS-1$
         freshAuthTypeCombo.add("externalbrowser"); //$NON-NLS-1$
 
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        freshAuthTypeCombo.setLayoutData(gd);
+        freshAuthTypeCombo.setLayoutData(makeAuthControlLayoutData(parent));
         freshAuthTypeCombo.addModifyListener(textListener);
         return freshAuthTypeCombo;
     }
