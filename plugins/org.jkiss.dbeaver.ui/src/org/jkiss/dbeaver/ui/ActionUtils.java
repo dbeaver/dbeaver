@@ -57,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -116,6 +117,35 @@ public class ActionUtils {
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image) {
         return makeCommandContribution(serviceLocator, commandId, name, image, null, false);
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(@NotNull String text) {
+        return new ActionContributionItem(new EmptyAction(text));
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull Consumer<Event> callback
+    ) {
+        return new ActionContributionItem(new Action(text) {
+            @Override
+            public void runWithEvent(@NotNull Event event) {
+                callback.accept(event);
+            }
+        });
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull DBPImage image,
+        @NotNull Consumer<Event> callback
+    ) {
+        var item = makeContribution(text, callback);
+        item.getAction().setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
+        return item;
     }
 
     public static ContributionItem makeActionContribution(
