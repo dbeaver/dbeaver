@@ -121,4 +121,10 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     default String getColumnCharsetModifier(@NotNull ColumnCharset charset) {
         return null;
     }
+
+    enum ColumnCharset {
+        NONE,
+        ASCII,
+        UTF8
+    }
 }

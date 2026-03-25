@@ -304,7 +304,9 @@ public class SQLQueryTranslator implements SQLTranslator {
                     case "ASCII" -> {
                         cd.getColumnSpecs().remove(columnSpec);
                         if (extendedDialect != null) {
-                            String charsetModifier = extendedDialect.getColumnCharsetModifier(ColumnCharset.ASCII);
+                            String charsetModifier = extendedDialect.getColumnCharsetModifier(
+                                SQLDialectDDLExtension.ColumnCharset.ASCII
+                            );
                             if (!CommonUtils.isEmpty(charsetModifier)) {
                                 cd.getColumnSpecs().addAll(CommonUtils.splitString(charsetModifier, ' '));
                             }
