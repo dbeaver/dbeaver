@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.translate;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
@@ -25,6 +26,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -133,7 +135,7 @@ public class SQLQueryTranslator implements SQLTranslator {
         @NotNull Statement statement
     ) {
 
-        List<SQLScriptElement> extraQueries = null;
+        List<SQLScriptElement> extraQueries = new ArrayList<>();
         List<SQLScriptElement> postExtraQueries = new ArrayList<>();
 
         boolean defChanged = false;
@@ -153,47 +155,7 @@ public class SQLQueryTranslator implements SQLTranslator {
             var columnDefinitions = createTable.getColumnDefinitions();
             for (ColumnDefinition cd : columnDefinitions) {
                 defChanged |= translateColumnDataType(cd, extendedDialect, targetDialect);
-
-                if (!CommonUtils.isEmpty(cd.getColumnSpecs())) {
-                    for (String columnSpec : new ArrayList<>(cd.getColumnSpecs())) {
-                        switch (columnSpec.toUpperCase(Locale.ENGLISH)) {
-                            case "AUTO_INCREMENT":
-                            case "IDENTITY":
-                                if (!targetDialect.supportsColumnAutoIncrement()) {
-                                    String schemaName = createTable.getTable().getSchemaName();
-                                    String sequenceWithoutSchemaName = CommonUtils.escapeIdentifier(createTable.getTable().getName()) +
-                                        "_" + CommonUtils.escapeIdentifier(cd.getColumnName());
-                                    String sequenceName = schemaName == null ? sequenceWithoutSchemaName :
-                                        schemaName + "." + sequenceWithoutSchemaName;
-
-                                    cd.getColumnSpecs().remove(columnSpec);
-                                    cd.getColumnSpecs().add("DEFAULT");
-                                    cd.getColumnSpecs().add("NEXTVAL('" + sequenceName + "')");
-                                    defChanged = true;
-
-                                    String createSeqQuery = "CREATE SEQUENCE " + sequenceName;
-
-                                    if (extraQueries == null) {
-                                        extraQueries = new ArrayList<>();
-                                    }
-                                    extraQueries.add(new SQLQuery(null, createSeqQuery));
-
-                                    String linkSeqWithTable =
-                                        "ALTER SEQUENCE " + sequenceName + " OWNED BY " + createTable.getTable()
-                                            .getFullyQualifiedName() + "." + cd.getColumnName();
-                                    postExtraQueries.add(new SQLQuery(null, linkSeqWithTable));
-                                } else if (extendedDialect != null) {
-                                    int indexOf = cd.getColumnSpecs().indexOf(columnSpec);
-                                    defChanged = true;
-                                    cd.getColumnSpecs().set(indexOf, extendedDialect.getAutoIncrementKeyword());
-                                }
-                                break;
-                            default:
-                                //no action
-                                break;
-                        }
-                    }
-                }
+                defChanged |= translateColumnSpecs(createTable.getTable(), cd, targetDialect, extendedDialect, extraQueries, postExtraQueries);
             }
             if (extendedDialect != null &&
                 !extendedDialect.supportsNoActionIndex() &&
@@ -236,13 +198,10 @@ public class SQLQueryTranslator implements SQLTranslator {
 
             query.setText(newQueryText);
 
-            if (extraQueries == null) {
-                extraQueries = new ArrayList<>();
-            }
             extraQueries.add(query);
             extraQueries.addAll(postExtraQueries);
         }
-        if (extraQueries == null) {
+        if (extraQueries.isEmpty()) {
             return Collections.singletonList(query);
         }
         return extraQueries;
@@ -300,6 +259,69 @@ public class SQLQueryTranslator implements SQLTranslator {
             return true;
         }
         return false;
+    }
+
+    private boolean translateColumnSpecs(
+        @Nullable Table table,
+        @NotNull ColumnDefinition cd,
+        @NotNull SQLDialect targetDialect,
+        @Nullable SQLDialectDDLExtension extendedDialect,
+        @NotNull List<SQLScriptElement> extraQueries,
+        @NotNull List<SQLScriptElement> postExtraQueries
+    ) {
+        boolean defChanged = false;
+        if (!CommonUtils.isEmpty(cd.getColumnSpecs())) {
+            for (String columnSpec : new ArrayList<>(cd.getColumnSpecs())) {
+                switch (columnSpec.toUpperCase(Locale.ENGLISH)) {
+                    case "AUTO_INCREMENT", "IDENTITY" -> {
+                        if (!targetDialect.supportsColumnAutoIncrement()) {
+                            if (table != null) {
+                                String schemaName = table.getSchemaName();
+                                String sequenceWithoutSchemaName = CommonUtils.escapeIdentifier(table.getName()) +
+                                    "_" + CommonUtils.escapeIdentifier(cd.getColumnName());
+                                String sequenceName = schemaName == null ? sequenceWithoutSchemaName :
+                                    schemaName + "." + sequenceWithoutSchemaName;
+
+                                cd.getColumnSpecs().remove(columnSpec);
+                                cd.getColumnSpecs().add("DEFAULT");
+                                cd.getColumnSpecs().add("NEXTVAL('" + sequenceName + "')");
+                                defChanged = true;
+
+                                String createSeqQuery = "CREATE SEQUENCE " + sequenceName;
+                                extraQueries.add(new SQLQuery(null, createSeqQuery));
+
+                                String linkSeqWithTable =
+                                    "ALTER SEQUENCE " + sequenceName + " OWNED BY " + table.getFullyQualifiedName() + "."
+                                        + cd.getColumnName();
+                                postExtraQueries.add(new SQLQuery(null, linkSeqWithTable));
+                            }
+                        } else if (extendedDialect != null) {
+                            int indexOf = cd.getColumnSpecs().indexOf(columnSpec);
+                            defChanged = true;
+                            cd.getColumnSpecs().set(indexOf, extendedDialect.getAutoIncrementKeyword());
+                        }
+                    }
+                    case "ASCII" -> {
+                        int index = cd.getColumnSpecs().indexOf(columnSpec);
+                        if (index != -1) {
+                            cd.getColumnSpecs().remove(index);
+                            if (extendedDialect != null) {
+                                String charsetModifier
+                                    = extendedDialect.getColumnCharsetModifier(SQLDialectDDLExtension.ColumnCharset.ASCII);
+                                if (!CommonUtils.isEmpty(charsetModifier)) {
+                                    cd.getColumnSpecs().addAll(index, CommonUtils.splitString(charsetModifier, ' '));
+                                }
+                            }
+                            defChanged = true;
+                        }
+                    }
+                    default -> {
+                    }
+                    //no action
+                }
+            }
+        }
+        return defChanged;
     }
 
     /**
