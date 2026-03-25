@@ -27,6 +27,7 @@ import java.util.Map;
  * AI function call info
  */
 public class AIFunctionCall {
+
     @NotNull
     private String functionName;
     @Nullable
@@ -34,7 +35,7 @@ public class AIFunctionCall {
     @Nullable
     private String hint;
     @Nullable
-    private AIFunctionDescriptor function;
+    private transient AIFunctionDescriptor function;
 
     /**
      * Properties received from AI engine. Can be required to pass down for further messages
@@ -63,6 +64,9 @@ public class AIFunctionCall {
 
     @NotNull
     public String getFunctionName() {
+        if (function != null) {
+            return function.getFullId();
+        }
         return functionName;
     }
 

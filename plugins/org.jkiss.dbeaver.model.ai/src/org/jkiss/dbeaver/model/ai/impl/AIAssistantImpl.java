@@ -214,11 +214,16 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = getToolboxManager().getFunctionByFullId(functionName);
+        AIFunctionDescriptor function = functionCall.getFunction();
+        if (function == null) {
+            function = getToolboxManager().getFunctionByFullId(functionName);
+            if (function != null) {
+                functionCall.setFunction(function);
+            }
+        }
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
-        functionCall.setFunction(function);
         Map<String, Object> arguments = functionCall.getArguments();
         if (arguments == null) {
             arguments = Map.of();
