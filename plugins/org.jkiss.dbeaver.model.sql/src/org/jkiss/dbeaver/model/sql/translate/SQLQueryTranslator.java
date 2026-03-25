@@ -302,20 +302,22 @@ public class SQLQueryTranslator implements SQLTranslator {
                         }
                     }
                     case "ASCII" -> {
-                        cd.getColumnSpecs().remove(columnSpec);
-                        if (extendedDialect != null) {
-                            String charsetModifier = extendedDialect.getColumnCharsetModifier(
-                                SQLDialectDDLExtension.ColumnCharset.ASCII
-                            );
-                            if (!CommonUtils.isEmpty(charsetModifier)) {
-                                cd.getColumnSpecs().addAll(CommonUtils.splitString(charsetModifier, ' '));
+                        int index = cd.getColumnSpecs().indexOf(columnSpec);
+                        if (index != -1) {
+                            cd.getColumnSpecs().remove(index);
+                            if (extendedDialect != null) {
+                                String charsetModifier
+                                    = extendedDialect.getColumnCharsetModifier(SQLDialectDDLExtension.ColumnCharset.ASCII);
+                                if (!CommonUtils.isEmpty(charsetModifier)) {
+                                    cd.getColumnSpecs().addAll(index, CommonUtils.splitString(charsetModifier, ' '));
+                                }
                             }
+                            defChanged = true;
                         }
-                        defChanged = true;
                     }
                     default -> {
-                        //no action
                     }
+                    //no action
                 }
             }
         }
