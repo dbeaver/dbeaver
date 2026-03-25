@@ -32,6 +32,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * DatabaseNavigatorContentProvider
@@ -156,7 +157,29 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
         );
 
         boolean searchBarIsActive = isSearchBarActive(children);
-        if (parent.isFiltered() || maxFetchSize < children.length) {
+
+        // When the search bar is active, pre-filter children before applying pagination.
+        // Without this, matching items can be hidden behind "More..." nodes in large lists
+        // because the SWT PatternFilter runs after pagination truncation.
+        DBNNode[] displayChildren = children;
+        if (searchBarIsActive && navigatorTree != null) {
+            String filterText = navigatorTree.getFilterText();
+            if (filterText != null) {
+                List<DBNNode> filtered = new ArrayList<>();
+                for (DBNNode child : children) {
+                    String name = child.getName();
+                    if (name != null && name.toLowerCase(Locale.ROOT).contains(filterText)) {
+                        filtered.add(child);
+                        if (filtered.size() >= maxFetchSize) {
+                            break;
+                        }
+                    }
+                }
+                displayChildren = filtered.toArray(new DBNNode[0]);
+            }
+        }
+
+        if (parent.isFiltered() || maxFetchSize < displayChildren.length) {
             final List<Object> nodes = new ArrayList<>(maxFetchSize);
 
             if (parent.isFiltered()) {
@@ -167,20 +190,20 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
                 }
             }
 
-            if (maxFetchSize < children.length) {
-                nodes.addAll(List.of(children).subList(0, maxFetchSize));
-                nodes.add(new TreeNodeLazyExpander(parent, children, maxFetchSize));
+            if (maxFetchSize < displayChildren.length) {
+                nodes.addAll(List.of(displayChildren).subList(0, maxFetchSize));
+                nodes.add(new TreeNodeLazyExpander(parent, displayChildren, maxFetchSize));
             } else {
-                nodes.addAll(List.of(children));
+                nodes.addAll(List.of(displayChildren));
             }
 
             return nodes.toArray();
-        } else if (children.length == 0) {
+        } else if (displayChildren.length == 0) {
             return EMPTY_CHILDREN;
         } else if (searchBarIsActive) {
             final List<Object> nodes = new ArrayList<>();
             nodes.add(new TreeNodeSearch(parent));
-            nodes.addAll(List.of(children));
+            nodes.addAll(List.of(displayChildren));
             return nodes.toArray();
         } else {
             return children;

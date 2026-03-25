@@ -68,6 +68,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class DatabaseNavigatorTree extends Composite implements INavigatorListener {
@@ -422,6 +423,25 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public boolean isMatchingNeeded(@NotNull Object element) {
         return treeFilter != null && treeFilter.isMatchingNeeded(element);
+    }
+
+    /**
+     * Returns the current filter text in lowercase for fast pre-filtering,
+     * or null if the filter is empty.
+     */
+    @Nullable
+    public String getFilterText() {
+        Display display = Display.getCurrent();
+        if (display == null) {
+            return null;
+        }
+        if (filterControl != null && !filterControl.isDisposed()) {
+            String text = filterControl.getText();
+            if (text != null && !text.isEmpty()) {
+                return text.trim().toLowerCase(Locale.ROOT);
+            }
+        }
+        return null;
     }
 
     public void resetFilter() {
