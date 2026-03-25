@@ -137,7 +137,13 @@ public interface DBPPlatformUI {
      * Ask user to enter some property value
      */
     @Nullable
-    String promptProperty(String prompt, String defValue);
+    String promptProperty(@NotNull String prompt, @Nullable String defValue);
+
+    /**
+     * Ask user to enter some property value
+     */
+    @Nullable
+    String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue);
 
     /**
      * Ask user to accept license agreement
