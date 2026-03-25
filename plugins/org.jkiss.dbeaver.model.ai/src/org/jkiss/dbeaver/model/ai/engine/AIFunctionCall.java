@@ -27,7 +27,7 @@ import java.util.Map;
  * AI function call info
  */
 public class AIFunctionCall {
-    @Nullable
+    @NotNull
     private String functionName;
     @Nullable
     private Map<String, Object> arguments;
@@ -44,6 +44,7 @@ public class AIFunctionCall {
     private Map<String, String> messageMetadata;
 
     public AIFunctionCall() {
+        functionName = "";
     }
 
     public AIFunctionCall(
@@ -60,7 +61,7 @@ public class AIFunctionCall {
         this(functionName, arguments, null);
     }
 
-    @Nullable
+    @NotNull
     public String getFunctionName() {
         return functionName;
     }

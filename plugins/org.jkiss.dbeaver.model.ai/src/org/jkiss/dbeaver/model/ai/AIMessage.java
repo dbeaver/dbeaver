@@ -44,6 +44,7 @@ public class AIMessage {
     private final AIFunctionResult functionResult;
     @Nullable
     private final List<AIMessageMeta> meta;
+    private final Throwable error;
 
     public AIMessage(
         @NotNull AIMessageType role,
@@ -51,7 +52,8 @@ public class AIMessage {
         @Nullable String displayMessage,
         @NotNull LocalDateTime time,
         @Nullable List<AIMessageMeta> meta,
-        @Nullable String functionCallName
+        @Nullable String functionCallName,
+        @Nullable Throwable error
     ) {
         this.role = role;
         this.content = content;
@@ -61,6 +63,7 @@ public class AIMessage {
         this.functionCall = null;
         this.functionResult = null;
         this.functionCallName = functionCallName;
+        this.error = error;
     }
     /**
      * Creates AI message
@@ -80,6 +83,7 @@ public class AIMessage {
         this.functionCall = null;
         this.functionResult = null;
         this.functionCallName = null;
+        this.error = null;
     }
 
     /**
@@ -92,12 +96,26 @@ public class AIMessage {
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
-        this.content = CommonUtils.toString(result.getValue()) + " was completed";
+        String strResult = CommonUtils.toString(result.getValue());
+        this.content = functionCall.getFunctionName() + " was completed. " +
+            (CommonUtils.isEmpty(strResult) ? "Empty result" : "Result: " + strResult);
         this.time = LocalDateTime.now();
         this.functionCall = functionCall;
         this.functionResult = result;
-        this.displayMessage = CommonUtils.toString(result.getValue());
+        this.displayMessage = strResult;
         this.functionCallName = null;
+        this.error = null;
+    }
+
+    public AIMessage(@NotNull Throwable error) {
+        this(
+            AIMessageType.ERROR,
+            CommonUtils.getAllExceptionMessages(error),
+            CommonUtils.getAllExceptionMessages(error),
+            LocalDateTime.now(),
+            null,
+            null,
+            error);
     }
 
     @NotNull
@@ -130,11 +148,7 @@ public class AIMessage {
 
     @NotNull
     public static AIMessage errorMessage(@NotNull Throwable throwable) {
-        return new AIMessage(
-            AIMessageType.ERROR,
-            CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"),
-            null
-        );
+        return new AIMessage(throwable);
     }
 
     @NotNull
@@ -157,7 +171,8 @@ public class AIMessage {
             null,
             LocalDateTime.now(),
             null,
-            id
+            id,
+            null
         );
     }
 
@@ -211,6 +226,11 @@ public class AIMessage {
     @Nullable
     public List<AIMessageMeta> getMeta() {
         return meta;
+    }
+
+    @Nullable
+    public Throwable getError() {
+        return error;
     }
 
     public AIMessage withContent(String newContent) {
