@@ -93,9 +93,9 @@ public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelSnowflakeC
 
     @Nullable
     protected String getAuthenticator(
-        DBPDataSource dataSource,
-        AuthModelDatabaseNativeCredentials credentials,
-        DBPConnectionConfiguration configuration
+        @NotNull DBPDataSource dataSource,
+        @NotNull AuthModelDatabaseNativeCredentials credentials,
+        @NotNull DBPConnectionConfiguration configuration
     ) {
         return configuration.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
     }

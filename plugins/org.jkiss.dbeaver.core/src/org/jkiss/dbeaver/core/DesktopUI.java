@@ -469,6 +469,7 @@ public class DesktopUI extends ConsoleUserInterface {
     private String promptProperty(@NotNull Function<Shell, EnterNameDialog> dialogFactory) {
         return new UITask<String>() {
             @Override
+            @Nullable
             public String runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
                 final EnterNameDialog dialog = dialogFactory.apply(shell);

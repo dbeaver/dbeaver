@@ -38,8 +38,7 @@ public class EnterNameDialog extends Dialog {
     protected Text propNameText;
     private String result;
 
-    public EnterNameDialog(@NotNull Shell parentShell, @NotNull String propertyName, @Nullable String propertyValue)
-    {
+    public EnterNameDialog(@NotNull Shell parentShell, @NotNull String propertyName, @Nullable String propertyValue) {
         super(parentShell);
         this.propertyName = propertyName;
         this.propertyValue = propertyValue;
