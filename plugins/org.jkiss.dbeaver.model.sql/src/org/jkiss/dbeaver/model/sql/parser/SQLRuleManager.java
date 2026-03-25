@@ -173,7 +173,11 @@ public class SQLRuleManager {
             boolean hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(identifierQuoteStrings)) {
                 for (String[] quotes : identifierQuoteStrings) {
-                    rules.add(new MultiLineRule(quotes[0], quotes[1], quotedToken, escapeChar, breaksOnEOF));
+                    // Do not use string escape character for identifier quotes.
+                    // Identifiers (e.g. backticks in MySQL) use doubling for escaping, not backslash.
+                    // Using backslash causes the rule to consume past the closing quote,
+                    // breaking bracket tracking and statement delimiter detection.
+                    rules.add(new MultiLineRule(quotes[0], quotes[1], quotedToken, (char) 0, breaksOnEOF));
                     if (quotes[1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quotes[0].equals(quotes[1])) {
                         hasDoubleQuoteRule = true;
                     }
