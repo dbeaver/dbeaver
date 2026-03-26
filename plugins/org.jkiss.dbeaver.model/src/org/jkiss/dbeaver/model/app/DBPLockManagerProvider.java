@@ -22,6 +22,9 @@ import org.jkiss.dbeaver.model.fs.lock.LockManager;
 
 import java.nio.file.Path;
 
+/**
+ * Provides application-specific lock managers.
+ */
 public interface DBPLockManagerProvider {
 
     @NotNull
