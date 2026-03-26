@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -71,7 +70,7 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
     public OracleSchema getDefaultSchema() {
         try {
             return activeSchemaName == null ? null : getDataSource().getSchema(
-                new LocalCacheProgressMonitor(new VoidProgressMonitor()), activeSchemaName);
+                new VoidProgressMonitor(), activeSchemaName);
         } catch (Exception e) {
             log.error(e);
             return null;
