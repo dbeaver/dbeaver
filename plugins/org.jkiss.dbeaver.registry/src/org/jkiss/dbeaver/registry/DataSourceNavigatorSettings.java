@@ -61,7 +61,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         RegistryMessages.navigator_settings_preset_simple_view_name,
         RegistryMessages.navigator_settings_preset_simple_view_description
     );
-    public static final Preset PRESET_FULL = new Preset(
+    public static final Preset PRESET_ADVANCED = new Preset(
         "advanced",
         RegistryMessages.navigator_settings_preset_advanced_view_name,
         RegistryMessages.navigator_settings_preset_advanced_view_description
@@ -106,10 +106,10 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         PRESET_SIMPLE.settings.setHideFolders(true);
         PRESET_SIMPLE.settings.setHideVirtualModel(true);
 
-        PRESET_FULL.settings.setShowSystemObjects(true);
+        PRESET_ADVANCED.settings.setShowSystemObjects(true);
 
         PRESETS.put(PRESET_SIMPLE.name, PRESET_SIMPLE);
-        PRESETS.put(PRESET_FULL.name, PRESET_FULL);
+        PRESETS.put(PRESET_ADVANCED.name, PRESET_ADVANCED);
         PRESETS.put(PRESET_CUSTOM.name, PRESET_CUSTOM);
     }
 
