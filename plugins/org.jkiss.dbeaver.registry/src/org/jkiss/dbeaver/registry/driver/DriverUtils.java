@@ -72,6 +72,7 @@ public class DriverUtils {
      * the {@value #ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS} environment variable,
      * and the {@link ModelPreferences#UI_DRIVERS_UPDATE_TIMEOUT} user preference.
      */
+    @NotNull
     public static Duration getDownloadTimeout() {
         String prop = System.getProperty(PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS);
         if (prop != null && !prop.isEmpty()) {
