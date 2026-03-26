@@ -80,7 +80,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
         connectionNamePattern = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
+        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings();
     }
 
     @NotNull
