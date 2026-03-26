@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,14 @@ public enum SQLServerAuthentication {
     NTLM("NTLM", "NTLM authentication", true, true, true, SQLServerAuthModelNTLM.ID),
     AD_PASSWORD(SQLServerMessages.authentication_ad_password_title, SQLServerMessages.authentication_ad_password_description, false, true, true, SQLServerAuthModelADPassword.ID),
     AD_MSI(SQLServerMessages.authentication_ad_msi_title, SQLServerMessages.authentication_ad_msi_description, false, true, false, SQLServerAuthModelMSI.ID),
-    AD_INTERACTIVE(SQLServerMessages.authentication_ad_interactive_title, SQLServerMessages.authentication_ad_interactive_description, false, true, false, SQLServerAuthModelMFA.ID),
+    AD_INTERACTIVE(
+        SQLServerMessages.authentication_ad_interactive_title,
+        SQLServerMessages.authentication_ad_interactive_description,
+        false,
+        true,
+        false,
+        SQLServerAuthModelPRO.ID
+    ),
     AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, false, SQLServerAuthModelADIntegrated.ID),
     OTHER(SQLServerMessages.authentication_other_title, SQLServerMessages.authentication_other_description, true, true, true, SQLServerAuthModelCustom.ID)
     ;

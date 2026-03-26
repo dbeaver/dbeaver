@@ -628,7 +628,7 @@
                 desktop="true"
                 label="Active Directory - MFA"
                 description="Interactive authentication flow (multi-factor authentication)"
-                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMFA">
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelPRO">
             <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
         </authModel>
         <authModel
