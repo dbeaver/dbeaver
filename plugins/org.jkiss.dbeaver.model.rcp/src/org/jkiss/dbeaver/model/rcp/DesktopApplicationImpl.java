@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.fs.lock.LockManager;
 import org.jkiss.dbeaver.model.fs.lock.local.LocalFileLockManager;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.nio.file.Path;
 
@@ -62,6 +63,12 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
     @Override
     public LockManager createLockManager(@NotNull Path metadataFolder) throws DBException {
         return new LocalFileLockManager(metadataFolder);
+    }
+
+    @NotNull
+    @Override
+    public LockManager createLockManager() throws DBException {
+        return new LocalFileLockManager(GeneralUtils.getMetadataFolder());
     }
 
     // Dirty fix of pro#6833

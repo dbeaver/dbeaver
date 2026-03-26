@@ -25,6 +25,9 @@ import java.nio.file.Path;
 public interface DBPLockManagerProvider {
 
     @NotNull
+    LockManager createLockManager() throws DBException;
+
+    @NotNull
     LockManager createLockManager(@NotNull Path metadataFolder) throws DBException;
 
 }
