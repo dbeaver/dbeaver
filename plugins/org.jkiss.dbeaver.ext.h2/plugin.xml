@@ -80,7 +80,7 @@
                 </driver>
                 <driver
                         id="h2_embedded_v2"
-                        label="H2 Embedded V.2"
+                        label="H2 Embedded V.2.1"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
@@ -88,7 +88,7 @@
                         sampleURL="jdbc:h2:{file}"
                         webURL="https://www.h2database.com/"
                         embedded="true"
-                        description="H2 Embedded V.2"
+                        description="H2 Embedded V.2.1"
                         categories="sql,embedded"
                         dialect="h2">
 
@@ -119,7 +119,7 @@
                     dialect="h2">
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v2.4"/>
-                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2.3"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2.4"/>
 
                     <file type="jar" path="drivers/h2_v2.4" bundle="drivers.h2_v2.4"/>
                     <file type="license" path="drivers/h2_v2.4/LICENSE.txt" bundle="drivers.h2_v2.4"/>
@@ -145,7 +145,7 @@
                     dialect="h2">
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v2.4"/>
-                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2.3"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2.4"/>
 
                     <file type="jar" path="drivers/h2_v2.4" bundle="drivers.h2_v2.4"/>
                     <file type="license" path="drivers/h2_v2.4/LICENSE.txt" bundle="drivers.h2_v2.4"/>
