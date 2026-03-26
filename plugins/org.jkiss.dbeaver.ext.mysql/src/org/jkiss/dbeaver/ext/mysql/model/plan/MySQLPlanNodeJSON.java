@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,12 +104,14 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         );
     }
 
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -183,11 +185,13 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
 
+    @Nullable
     @Override
     public MySQLPlanNodeJSON getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<MySQLPlanNodeJSON> getNested() {
         return nested;
