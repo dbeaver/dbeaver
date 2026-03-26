@@ -625,7 +625,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
 
-                    // in TE all resolve is inside dataSource
+                    // in TE all secrets must be resolved by dataSource itself
                     if (!DBWorkbench.isDistributed()) {
                         final SecureCredentials creds = configurationManager.isSecure() ?
                             readPlainCredentials(cfgObject) :
