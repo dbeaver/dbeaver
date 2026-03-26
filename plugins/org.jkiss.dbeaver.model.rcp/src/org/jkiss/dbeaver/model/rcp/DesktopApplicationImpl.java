@@ -19,15 +19,21 @@ package org.jkiss.dbeaver.model.rcp;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPLockManagerProvider;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.fs.lock.LockManager;
+import org.jkiss.dbeaver.model.fs.lock.local.LocalFileLockManager;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
+
+import java.nio.file.Path;
 
 /**
  * DesktopApplicationImpl
  */
-public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
+public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop, DBPLockManagerProvider {
 
     public static final String WORKSPACE_PLUGINS_FOLDER = ".plugins";
     public static final String CORE_RUNTIME_PLUGIN_ID = "org.eclipse.core.runtime";
@@ -50,6 +56,12 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
     @Override
     public boolean isEnvironmentVariablesAccessible() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public LockManager createLockManager(@NotNull Path metadataFolder) throws DBException {
+        return new LocalFileLockManager(metadataFolder);
     }
 
     // Dirty fix of pro#6833
