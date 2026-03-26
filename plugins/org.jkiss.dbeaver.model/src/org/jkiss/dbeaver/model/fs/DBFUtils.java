@@ -44,6 +44,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Virtual file system utils
@@ -57,6 +58,8 @@ public class DBFUtils {
     private static volatile Boolean SUPPORT_MULTI_FS = null;
 
     private static final Map<FileSystem, String> fileSystemIdCache = new IdentityHashMap<>();
+
+    private static final Map<String, FileSystem> externalFileSystemBySchema = new ConcurrentHashMap<>();
 
     public static boolean supportsMultiFileSystems(@NotNull DBPProject project) {
         if (SUPPORT_MULTI_FS == null) {
@@ -240,43 +243,20 @@ public class DBFUtils {
         }
     }
 
-
-    /**
-     * @deprecated Use {@link #getDBFPathFromURI(String)} instead.
-     */
-    @Deprecated
     @Nullable
     public static Path getPathFromURI(@NotNull String fileUriString) throws DBException {
-        DBFPath dbfPath = getDBFPathFromURI(fileUriString);
-
-        if (dbfPath == null) {
-            return null;
-        }
-
-        // IMPORTANT:
-        // The underlying FileSystem is intentionally NOT closed here.
-        // Its lifecycle is bound to the application runtime.
-        return dbfPath.path();
-    }
-
-
-    @Nullable
-    public static DBFPath getDBFPathFromURI(@NotNull String fileUriString) throws DBException {
         if (IOUtils.isLocalFile(fileUriString)) {
-            Path path = Path.of(fileUriString).toAbsolutePath();
-            return DBFPath.create(path);
+            return Path.of(fileUriString).toAbsolutePath();
         }
 
         URI fileUri = URI.create(fileUriString);
         if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
-            Path path = Path.of(fileUriString).toAbsolutePath();
-            return DBFPath.create(path);
+            return Path.of(fileUriString).toAbsolutePath();
         }
         FileSystem defaultFs = FileSystems.getDefault();
         if (defaultFs.provider().getScheme().equals(fileUri.getScheme())) {
             // default filesystem
-            Path path = defaultFs.provider().getPath(fileUri);
-            return DBFPath.create(path);
+            return defaultFs.provider().getPath(fileUri);
         } else {
             var externalFsProvider =
                 FileSystemProviderRegistry.getInstance().getFileSystemProviderBySchema(fileUri.getScheme());
@@ -290,14 +270,19 @@ public class DBFUtils {
             ClassLoader fsClassloader = fileSystemProvider.getClass().getClassLoader();
             Map<String, ?> env = fileSystemProvider.prepareEnv(System.getenv());
             try {
-                FileSystem externalFileSystem = FileSystems.newFileSystem(
-                    fileUri,
-                    env,
-                    fsClassloader
-                );
-
+                FileSystem externalFileSystem;
+                if (externalFileSystemBySchema.containsKey(fileUri.getScheme())) {
+                    externalFileSystem = externalFileSystemBySchema.get(fileUri.getScheme());
+                } else {
+                    externalFileSystem = FileSystems.newFileSystem(
+                        fileUri,
+                        env,
+                        fsClassloader
+                    );
+                    externalFileSystemBySchema.put(fileUri.getScheme(), externalFileSystem);
+                }
                 Path path = externalFileSystem.provider().getPath(fileUri);
-                return DBFPath.createExclusive(path);
+                return path;
             } catch (Exception e) {
                 log.error("Failed to initialize path: " + fileUri, e);
             }

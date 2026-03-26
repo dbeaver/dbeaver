@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
@@ -54,33 +57,59 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         if (dsContainer == null) {
             return;
         }
-        if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(dsContainer.getNavigatorSettings())) {
-            menuItems.add(new ActionContributionItem(new SwitchToAdvancedModeAction(dsContainer)));
-            return;
-        }
 
-        boolean presetChecked = false;
         MenuManager customizeViewMenu = new MenuManager(RegistryMessages.navigator_settings_customize_view);
         customizeViewMenu.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
-        customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, DataSourceNavigatorSettings.PRESET_SIMPLE, false));
-        for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
-            if (preset == DataSourceNavigatorSettings.PRESET_SIMPLE || preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
-                continue;
+        addPresetSettings(customizeViewMenu, dsContainer);
+        addSystemObjects(customizeViewMenu, dsContainer);
+        addAdditionalSettings(customizeViewMenu, dsContainer);
+        menuItems.add(customizeViewMenu);
+    }
+
+    private void addPresetSettings(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
+        DBNBrowseSettings chosenSettings = dsContainer.getNavigatorSettings();
+
+        if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(chosenSettings)) {
+            customizeViewMenu.add(new UseSettingsPresetAction(
+                dsContainer,
+                RegistryMessages.navigator_settings_switch_to_advanced_mode,
+                DataSourceNavigatorSettings.PRESET_ADVANCED,
+                false
+            ));
+        } else {
+            customizeViewMenu.add(new UseSettingsPresetAction(
+                dsContainer,
+                RegistryMessages.navigator_settings_switch_to_simple_mode,
+                DataSourceNavigatorSettings.PRESET_SIMPLE,
+                false
+            ));
+            boolean presetChecked = false;
+            for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
+                if (preset == DataSourceNavigatorSettings.PRESET_CUSTOM
+                    || preset == DataSourceNavigatorSettings.PRESET_SIMPLE) {
+                    continue;
+                }
+                boolean isChecked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
+                if (isChecked) {
+                    presetChecked = true;
+                }
+                customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, preset.getName(), preset, isChecked));
             }
-            presetChecked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
+            customizeViewMenu.add(new UseSettingsCustomAction(dsContainer, !presetChecked));
         }
-        if (!presetChecked) {
-            customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, DataSourceNavigatorSettings.PRESET_FULL, false));
-        }
-        customizeViewMenu.add(new UseSettingsCustomAction(dsContainer, !presetChecked));
         customizeViewMenu.add(new Separator());
+    }
+
+    private void addSystemObjects(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
         customizeViewMenu.add(new ShowSystemObjectsAction(dsContainer));
         customizeViewMenu.add(new Separator());
+    }
+
+    private void addAdditionalSettings(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
         customizeViewMenu.add(new ShowHostNameAction(dsContainer));
         customizeViewMenu.add(new ShowObjectsDescriptionAction(dsContainer));
         customizeViewMenu.add(new ShowStatisticsAction(dsContainer));
         customizeViewMenu.add(new ShowStatusIconsAction(dsContainer));
-        menuItems.add(customizeViewMenu);
     }
 
     private abstract static class SettingsAction extends Action {
@@ -128,12 +157,13 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
     private static class UseSettingsPresetAction extends SettingsAction {
         private final DataSourceNavigatorSettings.Preset preset;
 
-        UseSettingsPresetAction(DBPDataSourceContainer dsContainer, DataSourceNavigatorSettings.Preset preset, boolean checked) {
-            super(dsContainer,
-                preset == DataSourceNavigatorSettings.PRESET_SIMPLE ? RegistryMessages.navigator_settings_switch_to_simple_mode
-                    : preset.getName(),
-                AS_RADIO_BUTTON
-            );
+        UseSettingsPresetAction(
+            @NotNull DBPDataSourceContainer dsContainer,
+            @NotNull String label,
+            @NotNull DataSourceNavigatorSettings.Preset preset,
+            boolean checked
+        ) {
+            super(dsContainer, label, AS_RADIO_BUTTON);
             this.preset = preset;
             setToolTipText(preset.getDescription());
             setChecked(checked);
@@ -144,19 +174,6 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             if (isChecked()) {
                 updateSettings(preset.getSettings());
             }
-        }
-    }
-
-    private static class SwitchToAdvancedModeAction extends SettingsAction {
-        SwitchToAdvancedModeAction(@NotNull DBPDataSourceContainer dsContainer) {
-            super(dsContainer, RegistryMessages.navigator_settings_switch_to_advanced_mode, AS_PUSH_BUTTON);
-            setToolTipText(RegistryMessages.navigator_settings_switch_to_advanced_mode_description);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
-        }
-
-        @Override
-        public void run() {
-            updateSettings(DataSourceNavigatorSettings.PRESET_FULL.getSettings());
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,15 @@ import java.util.List;
  */
 public interface DataSourceConfigurationManager {
 
+    /**
+     * Indicates that configuration manager is read only and will not be used for real data saving.
+     */
     boolean isReadOnly();
 
+    /**
+     * Indicates that configuration manager is trusted and credentials and other secret stored as plain text,
+     * otherwise it will be stored in secret controller.
+     */
     boolean isSecure();
 
     /**
