@@ -61,6 +61,7 @@ public class AIMessage {
         this.functionResult = null;
         this.error = error;
     }
+
     /**
      * Creates AI message
      */
