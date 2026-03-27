@@ -313,11 +313,11 @@ public class AISettingsManager {
             @NotNull JsonDeserializationContext context
         ) {
             JsonObject obj = json.getAsJsonObject();
-            String type = obj.get("type").getAsString();
-            DBACredentialsProviderDescriptor authProviderByID = AICredentialsProviderRegistry.getInstance().getCredentialsProviderByID(type);
-            obj.remove("type");
+            String type = obj.get("type").getAsString(); //NON-NLS-1
+            DBACredentialsProviderDescriptor authProviderByID = AICredentialsProviderRegistry.getInstance()
+                .getCredentialsProviderByID(type);
             Class<?> providerClass = authProviderByID.getProviderClass();
-            return context.deserialize(json, providerClass);
+            return context.deserialize(obj.getAsJsonObject("data"), providerClass); //NON-NLS-1
         }
 
 
@@ -328,8 +328,9 @@ public class AISettingsManager {
             @NotNull JsonSerializationContext context
         ) {
 
-            JsonObject obj = context.serialize(src, src.getClass()).getAsJsonObject();
-            obj.addProperty("type", src.getProviderId());
+            JsonObject obj = new JsonObject();
+            obj.add("data", context.serialize(src, src.getClass())); //NON-NLS-1
+            obj.addProperty("type", src.getProviderId()); //NON-NLS-1
             return obj;
         }
     }
