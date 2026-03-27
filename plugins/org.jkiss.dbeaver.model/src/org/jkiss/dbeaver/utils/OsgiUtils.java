@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.wiring.BundleRevision;
@@ -137,5 +138,13 @@ public final class OsgiUtils {
         } catch (Exception e) {
             throw new IOException("Cannot resolve bundle path: " + bundle, e);
         }
+    }
+
+    public static String getBundleName(@NotNull Bundle bundle) {
+        String bundleName = bundle.getHeaders().get("Bundle-Name");
+        if (CommonUtils.isEmpty(bundleName)) {
+            bundleName = bundle.getSymbolicName();
+        }
+        return bundleName;
     }
 }

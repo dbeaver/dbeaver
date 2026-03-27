@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
@@ -388,7 +387,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             isReadOnlyField.set(instanceLoc, true);
         } catch (Throwable e) {
             // ignore
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 
@@ -447,7 +446,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 defaultHomePath = RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL());
             } catch (IOException e) {
                 System.err.println("Unable to resolve workspace location " + instanceLoc);
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
         }
         return defaultHomePath;
@@ -493,9 +492,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             System.setProperty("javax.net.debug", "all");
         }
 
-        // Configure proxy
-        activateProxyService();
-
         // Policy
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
             try {
@@ -507,15 +503,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
     }
-
-    private static void activateProxyService() {
-        try {
-            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
-        } catch (Throwable e) {
-            log.debug("Proxy service not found");
-        }
-    }
-
 
     private Display getDisplay() {
         if (display == null) {

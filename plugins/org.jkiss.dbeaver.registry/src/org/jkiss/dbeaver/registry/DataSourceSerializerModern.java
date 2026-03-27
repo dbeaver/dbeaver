@@ -248,7 +248,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             configurationManager,
             configurationStorage.getStorageName(),
             jsonString,
-            registry.getProject().isEncryptedProject());
+            //don't encrypt data for read only configuration manager
+            registry.getProject().isEncryptedProject() && !configurationManager.isReadOnly()
+        );
 
         if (!configurationManager.isSecure()) {
             saveSecureCredentialsFile(configurationManager, configurationStorage);

@@ -168,9 +168,6 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         children.add(new DBNProjectDatabases(this, dataSourceRegistry));
         addProjectNodes(monitor, children);
 
-        if (!CommonUtils.isEmpty(extraNodes)) {
-            children.addAll(extraNodes);
-        }
         filterChildren(children);
         return children.toArray(DBNNode[]::new);
     }
@@ -315,6 +312,20 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBNNode[] childNodes = getRegularChildNodes(monitor);
+        if (!CommonUtils.isEmpty(extraNodes)) {
+            DBNNode[] result = new DBNNode[childNodes.length + extraNodes.size()];
+            System.arraycopy(childNodes, 0, result, 0, childNodes.length);
+            for (int i = 0; i < extraNodes.size(); i++) {
+                result[childNodes.length + i] = extraNodes.get(i);
+            }
+            return result;
+        }
+        return childNodes;
+    }
+
+    @NotNull
+    private DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children != null) {
             return children;
         }
