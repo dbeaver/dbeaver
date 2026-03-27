@@ -40,7 +40,11 @@ public class WinStoreEnvPathMapper implements IEnvironmentPathMapper {
             : Path.of(USER_HOME_PATH_STRING, "AppData", "Local");
         
         realVirtualizedRoot = localAppDataPath.resolve("Packages")
-            .resolve(WINDOWS_APP_LOCAL_DATA_PACKAGE).resolve("LocalCache").resolve("Roaming");
+            .resolve(localAppFullId()).resolve("LocalCache").resolve("Roaming");
+    }
+
+    protected String localAppFullId() {
+        return WINDOWS_APP_LOCAL_DATA_PACKAGE;
     }
 
     @Override
