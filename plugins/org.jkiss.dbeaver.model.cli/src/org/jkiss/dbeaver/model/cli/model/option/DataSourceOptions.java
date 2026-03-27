@@ -28,27 +28,34 @@ import picocli.CommandLine;
 
 public class DataSourceOptions implements DataSourceUpdater {
     @Nullable
-    @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
-    private String host;
+    @CommandLine.ArgGroup(exclusive = true)
+    private ConnectionOptions connectionOptions;
 
-    @Nullable
-    @CommandLine.Option(names = {"--database"}, arity = "1", description = "Database name")
-    private String dbName;
-    @Nullable
-    @CommandLine.Option(names = {"--server"}, arity = "1", description = "Database server")
-    private String server;
+    private static class ConnectionOptions {
+        @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
+        private String url;
 
-    @Nullable
-    @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
-    private String url;
+        @CommandLine.ArgGroup(exclusive = false)
+        private ConnectionDetails connectionDetails;
+    }
+
+    private static class ConnectionDetails {
+        @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
+        private String host;
+
+        @CommandLine.Option(names = {"--database"}, arity = "1", description = "Database name")
+        private String dbName;
+
+        @CommandLine.Option(names = {"--server"}, arity = "1", description = "Database server")
+        private String server;
+
+        @CommandLine.Option(names = {"--port"}, arity = "1", description = "Database port")
+        private Integer port;
+    }
 
     @Nullable
     @CommandLine.Option(names = {"--auth-model"}, arity = "1", description = "Database auth model")
     private String authModel;
-
-    @Nullable
-    @CommandLine.Option(names = {"--port"}, arity = "1", description = "Database port")
-    private Integer port;
 
     @Nullable
     @CommandLine.Option(names = {"--folder"}, arity = "1", description = "Connection folder")
@@ -78,27 +85,42 @@ public class DataSourceOptions implements DataSourceUpdater {
 
     @Nullable
     public String getHost() {
-        return host;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.host;
+        }
+        return null;
     }
 
     @Nullable
     public Integer getPort() {
-        return port;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.port;
+        }
+        return null;
     }
 
     @Nullable
     public String getServer() {
-        return server;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.server;
+        }
+        return null;
     }
 
     @Nullable
     public String getUrl() {
-        return url;
+        if (connectionOptions != null) {
+            return connectionOptions.url;
+        }
+        return null;
     }
 
     @Nullable
     public String getDbName() {
-        return dbName;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.dbName;
+        }
+        return null;
     }
 
     @Nullable
