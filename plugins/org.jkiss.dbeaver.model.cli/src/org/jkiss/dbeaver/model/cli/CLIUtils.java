@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.fs.DBFPath;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -68,27 +67,24 @@ public class CLIUtils {
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
-
         if (filesOptions == null) {
             return tryReadFromSystemIn();
         }
 
-        DBFPath inputFile = filesOptions.getInputFile();
+        Path inputFile = filesOptions.getInputFile();
         if (inputFile == null) {
             return tryReadFromSystemIn();
         }
 
-        try (inputFile) {
-            Path path = inputFile.path();
-            if (Files.notExists(path)) {
+        try {
+            if (Files.notExists(inputFile)) {
                 throw new CLIException(
                     "Input file does not exist: " + inputFile,
                     CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
                 );
             }
 
-            return Files.readString(path);
-
+            return Files.readString(inputFile);
         } catch (IOException e) {
             throw new CLIException(
                 "Error reading GQL from input file: " + inputFile,

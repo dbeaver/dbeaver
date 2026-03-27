@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServiceRegistry {
     private static final Log log = Log.getLog(ServiceRegistry.class);
@@ -44,6 +41,7 @@ public class ServiceRegistry {
         private final ObjectType impl;
         private final boolean headless;
         private final boolean singleton;
+        private final int priority;
         private Object instance;
 
         ServiceDescriptor(IConfigurationElement config) {
@@ -52,6 +50,11 @@ public class ServiceRegistry {
             impl = new ObjectType(config.getAttribute("class"));
             this.headless = CommonUtils.toBoolean(config.getAttribute("headless"));
             this.singleton = CommonUtils.toBoolean(config.getAttribute("singleton"), true);
+            this.priority = CommonUtils.toInt(config.getAttribute("priority"), 0);
+        }
+
+        public int getPriority() {
+            return priority;
         }
     }
 
@@ -78,6 +81,7 @@ public class ServiceRegistry {
         List<ServiceDescriptor> descriptors = services.get(serviceType.getName());
         if (!CommonUtils.isEmpty(descriptors)) {
             boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+            descriptors.sort(Comparator.comparingInt(ServiceDescriptor::getPriority).reversed());
             for (ServiceDescriptor descriptor : descriptors) {
                 if (descriptors.size() > 1 && headlessMode != descriptor.headless) {
                     continue;
