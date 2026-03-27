@@ -32,6 +32,7 @@ public class AICredentialsProviderRegistry {
     private final Map<String, List<DBACredentialsProviderDescriptor>> authProviderByEngineID = new LinkedHashMap<>();
     private final Map<String, DBACredentialsProviderDescriptor> authProviderByID = new HashMap<>();
 
+    @NotNull
     public static synchronized AICredentialsProviderRegistry getInstance() {
         if (instance == null) {
             instance = new AICredentialsProviderRegistry(Platform.getExtensionRegistry());

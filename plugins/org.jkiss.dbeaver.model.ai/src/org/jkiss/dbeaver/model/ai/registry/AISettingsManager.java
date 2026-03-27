@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
-import org.jkiss.dbeaver.model.ai.engine.DBAAICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -248,7 +248,7 @@ public class AISettingsManager {
     private static Gson createPropertiesLoadGson() {
         return new GsonBuilder()
             .setStrictness(Strictness.LENIENT)
-            .registerTypeAdapter(DBAAICredentialsProvider.class, new DBAAuthProviderAdapter())
+            .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter())
             .create();
     }
 
@@ -258,7 +258,7 @@ public class AISettingsManager {
             return createPropertiesLoadGson();
         } else {
             return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-                .registerTypeAdapter(DBAAICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
+                .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
         }
     }
 
@@ -304,10 +304,10 @@ public class AISettingsManager {
         }
     }
 
-    static class DBAAuthProviderAdapter implements JsonDeserializer<DBAAICredentialsProvider<?>>, JsonSerializer<DBAAICredentialsProvider<?>> {
+    static class DBAAuthProviderAdapter implements JsonDeserializer<AICredentialsProvider<?>>, JsonSerializer<AICredentialsProvider<?>> {
 
         @Override
-        public DBAAICredentialsProvider<?> deserialize(
+        public AICredentialsProvider<?> deserialize(
             @NotNull JsonElement json,
             @NotNull Type typeOfT,
             @NotNull JsonDeserializationContext context
@@ -323,7 +323,7 @@ public class AISettingsManager {
 
         @Override
         public JsonElement serialize(
-            @NotNull DBAAICredentialsProvider src,
+            @NotNull AICredentialsProvider src,
             @NotNull Type typeOfSrc,
             @NotNull JsonSerializationContext context
         ) {

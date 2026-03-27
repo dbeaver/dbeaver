@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.DBAAICredentialsProvider;
+import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +35,7 @@ public class DBACredentialsProviderDescriptor extends AbstractDescriptor {
     private final boolean isDefault;
     private final String authTypeName;
 
-    protected DBACredentialsProviderDescriptor(@NotNull IConfigurationElement contributorConfig) {
+    DBACredentialsProviderDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.id = contributorConfig.getAttribute(RegistryConstants.ATTR_ID);
         this.supportedEngines = mapEngines(contributorConfig);
@@ -44,6 +44,7 @@ public class DBACredentialsProviderDescriptor extends AbstractDescriptor {
         this.isDefault = CommonUtils.toBoolean(contributorConfig.getAttribute("default"), false);
     }
 
+    @NotNull
     private static List<String> mapEngines(@NotNull IConfigurationElement contributorConfig) {
         String engineIDString = contributorConfig.getAttribute("supportedEngines");
         //split by comma and trim
@@ -79,8 +80,8 @@ public class DBACredentialsProviderDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public DBAAICredentialsProvider<?> createProviderInstance() throws Exception {
-        return objectType.createInstance(DBAAICredentialsProvider.class);
+    public AICredentialsProvider<?> createProviderInstance() throws Exception {
+        return objectType.createInstance(AICredentialsProvider.class);
     }
 
     @Nullable

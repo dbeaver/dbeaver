@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /***
@@ -25,13 +27,14 @@ import org.jkiss.dbeaver.DBException;
  * Not all engines have multiple credentials providers, but if an engine supports multiple providers, it should use this interface to retrieve credentials.
  *
  */
-public interface DBAAICredentialsProvider<CREDENTIALS> {
+public interface AICredentialsProvider<CREDENTIALS> {
 
     /**
      * Returns the unique ID of the credentials provider. This ID is used to identify the provider and should be unique across all providers.
      *
      * @return the unique ID of the credentials provider
      */
+    @NotNull
     String getProviderId();
 
     /**
@@ -41,6 +44,7 @@ public interface DBAAICredentialsProvider<CREDENTIALS> {
      * @return the resolved credentials
      * @throws DBException if there is an error while resolving secrets or retrieving credentials
      */
+    @Nullable
     CREDENTIALS resolveSecrets() throws DBException;
 
     /**
@@ -48,6 +52,7 @@ public interface DBAAICredentialsProvider<CREDENTIALS> {
      * which may contain unresolved secrets or placeholders.
      * @return the currently stored credentials without resolving secrets
      */
+    @Nullable
     CREDENTIALS getCredentials();
 
     /**
