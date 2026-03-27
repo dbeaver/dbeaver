@@ -25,9 +25,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -52,9 +54,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 public class SQLServerDataSource
@@ -143,7 +147,9 @@ public class SQLServerDataSource
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         int errorCode = SQLState.getCodeFromException(error);
-        if (errorCode == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED) {
+        if (errorCode == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED
+            || errorCode == SQLServerConstants.EC_PASSWORD_EXPIRED
+            || errorCode == SQLServerConstants.EC_PASSWORD_MUST_CHANGE) {
             return ErrorType.AUTHENTICATION_FAILED;
         }
         return super.discoverErrorType(error);
@@ -285,6 +291,77 @@ public class SQLServerDataSource
         } catch (Exception e) {
             throw new DBCException("Error initializing SSL trust store", e);
         }
+    }
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
+        try {
+            return super.openConnection(monitor, context, purpose);
+        } catch (DBCException e) {
+            if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
+                && isPasswordExpired(e)
+                && updateExpiredPassword()) {
+                return super.openConnection(monitor, context, purpose);
+            }
+            throw e;
+        }
+    }
+
+    private boolean isPasswordExpired(@NotNull DBCException e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqle) {
+                // Check chained SQL exceptions for specific password expiry error codes
+                for (SQLException se = sqle; se != null; se = se.getNextException()) {
+                    int code = se.getErrorCode();
+                    if (code == SQLServerConstants.EC_PASSWORD_EXPIRED
+                        || code == SQLServerConstants.EC_PASSWORD_MUST_CHANGE) {
+                        return true;
+                    }
+                }
+                // Fallback: check login failure message for password expiry indicators
+                if (sqle.getErrorCode() == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED) {
+                    String message = sqle.getMessage();
+                    if (message != null) {
+                        String lower = message.toLowerCase(Locale.ROOT);
+                        if (lower.contains("password")
+                            && (lower.contains("expired") || lower.contains("must be changed"))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Prompts the user to enter a new password after detecting an expired password.
+     * The MSSQL JDBC driver does not support changing expired passwords during login,
+     * so the user must change the password externally (via SSMS, sqlcmd, or a DBA)
+     * and then enter the new password here so DBeaver can update stored credentials.
+     */
+    private boolean updateExpiredPassword() {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return false;
+        }
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+
+        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+            SQLServerMessages.password_expired_prompt,
+            connectionInfo.getUserName(),
+            connectionInfo.getUserPassword(),
+            false,
+            false);
+        if (passwordInfo == null || CommonUtils.isEmpty(passwordInfo.getNewPassword())) {
+            return false;
+        }
+
+        connectionInfo.setUserPassword(passwordInfo.getNewPassword());
+        getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        if (!getContainer().isTemporary()) {
+            getContainer().persistConfiguration();
+        }
+        return true;
     }
 
     @Override
