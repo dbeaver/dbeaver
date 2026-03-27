@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelConfigurator {
 
     private Combo userRoleCombo;
-    private Combo authTypeCombo;
+    protected Combo authTypeCombo;
 
     @Override
     public void createControl(@NotNull Composite parent, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -58,22 +58,26 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         userRoleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN);
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 20;
-        userRoleCombo.setLayoutData(gd);
+        userRoleCombo.setLayoutData(makeAuthControlLayoutData(parent));
         userRoleCombo.select(0);
         userRoleCombo.addModifyListener(textListener);
 
         if (needsAuthTypeSelector()) {
-            UIUtils.createControlLabel(parent, SnowflakeMessages.label_authenticator);
-            authTypeCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN);
-            authTypeCombo.add(""); //$NON-NLS-1$
-            authTypeCombo.add("snowflake"); //$NON-NLS-1$
-            authTypeCombo.add("externalbrowser"); //$NON-NLS-1$
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-            authTypeCombo.setLayoutData(gd);
-            authTypeCombo.addModifyListener(textListener);
+            authTypeCombo = createAuthTypeSelector(parent, textListener);
         }
+    }
+
+    @NotNull
+    protected Combo createAuthTypeSelector(@NotNull Composite parent, @NotNull ModifyListener textListener) {
+        UIUtils.createControlLabel(parent, SnowflakeMessages.label_authenticator);
+        Combo freshAuthTypeCombo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN);
+        freshAuthTypeCombo.add(""); //$NON-NLS-1$
+        freshAuthTypeCombo.add("snowflake"); //$NON-NLS-1$
+        freshAuthTypeCombo.add("externalbrowser"); //$NON-NLS-1$
+
+        freshAuthTypeCombo.setLayoutData(makeAuthControlLayoutData(parent));
+        freshAuthTypeCombo.addModifyListener(textListener);
+        return freshAuthTypeCombo;
     }
 
     protected boolean needsAuthTypeSelector() {
