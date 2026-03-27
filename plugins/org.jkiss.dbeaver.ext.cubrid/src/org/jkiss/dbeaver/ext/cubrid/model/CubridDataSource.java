@@ -135,15 +135,6 @@ public class CubridDataSource extends GenericDataSource
         return privilageCache;
     }
 
-    @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        DBSObject child = super.getChild(monitor, childName);
-        if (child == null) {
-            child = findTable(monitor, null, null, childName);
-        }
-        return child;
-    }
-
     @Nullable
     @Override
     public GenericTableBase findTable(
