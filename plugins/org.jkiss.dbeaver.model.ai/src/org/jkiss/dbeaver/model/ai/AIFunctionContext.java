@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,20 +36,16 @@ public class AIFunctionContext {
     private final AIDatabaseContext context;
     @NotNull
     private final AIPromptGenerator prompt;
-    @NotNull
-    private final List<AIMessage> promptMessages;
     private final List<AIFunctionCall> functionCalls = new ArrayList<>();
 
     public AIFunctionContext(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator prompt,
-        @NotNull List<AIMessage> promptMessages
+        @NotNull AIPromptGenerator prompt
     ) {
         this.monitor = monitor;
         this.context = context;
         this.prompt = prompt;
-        this.promptMessages = promptMessages;
     }
 
     @NotNull
@@ -68,10 +64,6 @@ public class AIFunctionContext {
     }
 
     @NotNull
-    public List<AIMessage> getPromptMessages() {
-        return promptMessages;
-    }
-
     public List<AIFunctionCall> getFunctionCalls() {
         return functionCalls;
     }
