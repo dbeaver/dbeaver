@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryType;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -364,6 +361,31 @@ public final class DBUtils {
             // Table container not found
             return object;
         }
+    }
+
+    @Nullable
+    public static DBSObject findObjectByFQN(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootContainer,
+        @NotNull String[] nameParts
+    ) throws DBException {
+        String[][] quoteStrings = executionContext.getDataSource().getSQLDialect().getIdentifierQuoteStrings();
+        if (quoteStrings == null) {
+            quoteStrings = SQLConstants.DOUBLE_QUOTE_STRINGS;
+        }
+        String objectName = DBUtils.getUnQuotedIdentifier(nameParts[nameParts.length - 1], quoteStrings);
+        String schemaName = null;
+        String catalogName = null;
+        if (nameParts.length > 1) {
+            schemaName = DBUtils.getUnQuotedIdentifier(nameParts[nameParts.length - 2], quoteStrings);
+        }
+        if (nameParts.length > 2) {
+            catalogName = DBUtils.getUnQuotedIdentifier(nameParts[nameParts.length - 3], quoteStrings);
+        }
+
+        return DBUtils.getObjectByPath(
+            monitor, executionContext, rootContainer, catalogName, schemaName, objectName);
     }
 
     @Nullable

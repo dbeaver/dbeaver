@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineFunctionProcessor;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
@@ -39,7 +40,7 @@ public class AIEngineRequestFactory {
 
     // Section header used before the DB snapshot inside the system prompt
     private static final String DB_SNAPSHOT_SECTION_HEADER = "Database snapshot:\n";
-    public static final boolean SEND_DB_SNAPSHOT_IN_PROMPT = true;
+    public static final boolean SEND_DB_SNAPSHOT_IN_PROMPT = false;
 
     // Percentage of remaining context tokens allocated to system prompt + snapshot
     private static final int SYSTEM_PROMPT_TOKEN_BUDGET_PERCENT = 80;
@@ -95,8 +96,9 @@ public class AIEngineRequestFactory {
         String dbSnapshot = "";
         boolean isContextTruncated = false;
 
-        if (SEND_DB_SNAPSHOT_IN_PROMPT) {
-            // Build DB snapshot
+        if (!(engine instanceof AIEngineFunctionProcessor)) {
+            // Build DB snapshot in first prompt if engine doesn't support functions
+            // (functions provide smart context read)
             if (databaseContext != null && dbSnapshotTokenBudget > 0) {
                 AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
                     monitor,
@@ -111,7 +113,6 @@ public class AIEngineRequestFactory {
         }
 
         // Compose system message
-
         String fullSystemPrompt = dbSnapshot.isBlank()
             ? systemPrompt
             : systemPrompt + "\n" + DB_SNAPSHOT_SECTION_HEADER + dbSnapshot;
