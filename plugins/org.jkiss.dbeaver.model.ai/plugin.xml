@@ -26,8 +26,7 @@
     <extension point="com.dbeaver.ai.assistant">
         <assistant id="ce-assistant" priority="1"
             class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"
-            sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"
-            schemaGenerator="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
+            sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"/>
     </extension>
 
     <extension point="com.dbeaver.ai.prompt">
