@@ -43,6 +43,7 @@ public class WinStoreEnvPathMapper implements IEnvironmentPathMapper {
             .resolve(WINDOWS_APP_LOCAL_DATA_PACKAGE_PREFIX + localAppFullId()).resolve("LocalCache").resolve("Roaming");
     }
 
+    @NotNull
     protected String localAppFullId() {
         return "DBeaverCE_1b7tdvn0p0f9y";
     }
