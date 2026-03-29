@@ -14,25 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 
-/**
- * AI function verifier.
- */
-public interface AIFunctionVerifier {
+import java.util.List;
+import java.util.stream.Collectors;
 
-    enum FunctionState {
-        APPLICABLE,
-        NOT_APPLICABLE,
-        AUTO_CALL
+/**
+ * AI function call confirmation
+ */
+public class AIFunctionCallConfirmation extends AIConfirmation {
+
+    @NotNull
+    private final List<AIFunctionCall> functionCalls;
+
+    public AIFunctionCallConfirmation(@NotNull List<AIFunctionCall> functionCalls) {
+        this.functionCalls = functionCalls;
     }
 
     @NotNull
-    FunctionState getFunctionState(
-        @NotNull AIFunctionContext context,
-        @NotNull AIFunctionDescriptor function
-    );
+    public List<AIFunctionCall> getFunctionCalls() {
+        return functionCalls;
+    }
 
+    @Override
+    public String getMessage() {
+        return "Confirm tools " + functionCalls.stream().map(AIFunctionCall::getFunctionName)
+            .collect(Collectors.joining(","));
+    }
 }

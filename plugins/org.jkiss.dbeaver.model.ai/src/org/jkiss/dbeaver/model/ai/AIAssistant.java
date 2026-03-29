@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -39,9 +38,11 @@ public interface AIAssistant {
     @NotNull
     AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIFunctionContext functionContext,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException;
+
+    boolean isFunctionSupported();
 
     /**
      * Toolbox manager

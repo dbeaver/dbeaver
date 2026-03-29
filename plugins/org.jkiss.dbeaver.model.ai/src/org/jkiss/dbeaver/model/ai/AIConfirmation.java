@@ -14,11 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
-/**
- * Marks that engine requires passing the function responses with
- * the function what called it.
- */
-public interface AIEngineFunctionProcessor {
+import java.util.UUID;
+
+public abstract class AIConfirmation {
+
+    private final UUID id;
+
+    public AIConfirmation() {
+        this.id = UUID.randomUUID();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    abstract String getMessage();
 }

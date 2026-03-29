@@ -74,9 +74,11 @@ public interface AIFunctionDescriptor {
     @NotNull
     String[] getDependsOn();
 
-    default boolean isApplicable(@NotNull AIFunctionContext functionContext) {
-        return !(getInstance() instanceof AIFunctionVerifier verifier) ||
-            verifier.isFunctionApplicable(functionContext, this);
+    @NotNull
+    default AIFunctionVerifier.FunctionState getFunctionState(@NotNull AIFunctionContext functionContext) {
+        return getInstance() instanceof AIFunctionVerifier verifier ?
+            verifier.getFunctionState(functionContext, this) :
+            AIFunctionVerifier.FunctionState.APPLICABLE;
     }
 
     @NotNull

@@ -84,7 +84,7 @@ public class AIAssistantImpl implements AIAssistant {
     @Override
     public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIFunctionContext functionContext,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         checkAiEnablement();
@@ -156,6 +156,22 @@ public class AIAssistantImpl implements AIAssistant {
                 );
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
+        }
+    }
+
+    @Override
+    public boolean isFunctionSupported() {
+        AIToolboxManager toolboxManager = this.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        if (!functionSettings.isFunctionsEnabled()) {
+            return false;
+        }
+        try {
+            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            return engineDescriptor.isSupportsFunctions();
+        } catch (DBException e) {
+            log.debug(e);
+            return false;
         }
     }
 

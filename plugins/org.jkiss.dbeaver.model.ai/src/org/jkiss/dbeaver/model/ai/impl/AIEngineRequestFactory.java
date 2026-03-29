@@ -22,13 +22,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineFunctionProcessor;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -51,6 +49,14 @@ public class AIEngineRequestFactory {
     private final AIDatabaseSnapshotService databaseSnapshotService;
     private final TokenCounter tokenCounter;
 
+    protected record RequestFunctions(
+        @NotNull Collection<AIFunctionDescriptor> autoFunctions,
+        @NotNull Collection<AIFunctionDescriptor> supportedFunctions
+    ) {
+        private RequestFunctions() {
+            this(Set.of(), Set.of());
+        }
+    }
     public AIEngineRequestFactory(
         @NotNull AIDatabaseSnapshotService databaseSnapshotService,
         @NotNull TokenCounter tokenCounter
@@ -72,7 +78,7 @@ public class AIEngineRequestFactory {
         AIDatabaseContext databaseContext = functionContext.getContext();
         String systemPrompt = promptGenerator.build(assistant, databaseContext);
 
-        Set<AIFunctionDescriptor> selectedFunctions = determineRequestTools(
+        RequestFunctions requestFunctions = determineRequestTools(
             assistant,
             engineDescriptor,
             functionContext
@@ -101,7 +107,7 @@ public class AIEngineRequestFactory {
         String dbSnapshot = "";
         boolean isContextTruncated = false;
 
-        if (!(engine instanceof AIEngineFunctionProcessor)) {
+        if (!engineDescriptor.isSupportsFunctions()) {
             // Build DB snapshot in first prompt if engine doesn't support functions
             // (functions provide smart context read)
             if (databaseContext != null && dbSnapshotTokenBudget > 0) {
@@ -141,24 +147,21 @@ public class AIEngineRequestFactory {
         List<AIMessage> truncated = chatTruncator.truncate(allMessages);
         AIEngineRequest request = new AIEngineRequest(truncated);
         request.setWasPromptTruncated(isContextTruncated);
-        request.setFunctions(new ArrayList<>(selectedFunctions));
+        request.setFunctions(new ArrayList<>(requestFunctions.supportedFunctions()));
 
         return request;
     }
 
     @NotNull
-    protected Set<AIFunctionDescriptor> determineRequestTools(
+    protected RequestFunctions determineRequestTools(
         @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIFunctionContext functionContext
     ) {
         AIToolboxManager toolboxManager = assistant.getToolboxManager();
         AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
-        if (!engineDescriptor.isSupportsFunctions()
-            || !functionSettings.isFunctionsEnabled()
-            || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
-        ) {
-            return Set.of();
+        if (!engineDescriptor.isSupportsFunctions() || !functionSettings.isFunctionsEnabled()) {
+            return new RequestFunctions();
         }
 
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
@@ -166,13 +169,16 @@ public class AIEngineRequestFactory {
             .getPromptGenerator(promptGenerator.generatorId());
         if (prompt == null) {
             log.error("Prompt '" + promptGenerator.generatorId() + "' not found. Functions were disabled.");
-            return Set.of();
+            return new RequestFunctions();
         }
 
         List<AIFunctionDescriptor> functions = new ArrayList<>();
+        List<AIFunctionDescriptor> autoFunctions = new ArrayList<>();
         for (AIFunctionDescriptor fd : toolboxManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
-            if (fd.isGlobal() || fd.isApplicable(functionContext)) {
-                functions.add(fd);
+            AIFunctionVerifier.FunctionState state = fd.getFunctionState(functionContext);
+            switch (state) {
+                case APPLICABLE -> functions.add(fd);
+                case AUTO_CALL -> autoFunctions.add(fd);
             }
         }
 
@@ -213,7 +219,7 @@ public class AIEngineRequestFactory {
             selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
         }
 
-        return selectedFunctions;
+        return new RequestFunctions(autoFunctions, selectedFunctions);
     }
 
 
