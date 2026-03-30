@@ -25,6 +25,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -37,7 +38,8 @@ public abstract class AbstractTrimSpacesHandler extends AbstractTextHandler {
 
     private static final Log log = Log.getLog(AbstractTrimSpacesHandler.class);
 
-    protected abstract String trimString(String input);
+    @NotNull
+    protected abstract String trimString(@NotNull String input);
 
     @Override
     public Object execute(ExecutionEvent executionEvent) throws ExecutionException {
