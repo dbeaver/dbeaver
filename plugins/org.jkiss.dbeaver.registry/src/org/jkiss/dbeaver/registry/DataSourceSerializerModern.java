@@ -625,11 +625,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
 
-                    // in TE all secrets must be resolved by dataSource itself
-                    if (!DBWorkbench.isDistributed()) {
                         final SecureCredentials creds = configurationManager.isSecure() ?
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
+                    if (shouldUpdateCreds(creds)) {
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
@@ -882,6 +881,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (!CommonUtils.isEmpty(userSettings)) {
             UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
         }
+    }
+
+    private boolean shouldUpdateCreds(@NotNull SecureCredentials creds) {
+        return creds.getUserName() != null
+            // in TE secrets must be resolved by dataSource itself, if not present here
+            || !DBWorkbench.isDistributed();
     }
 
 
