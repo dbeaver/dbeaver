@@ -57,7 +57,7 @@ public class AIDatabaseSnapshotService {
             return null;
         }
 
-        Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
+        //Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
         var prompt = new TokenBoundedStringBuilder(tokenBudget, false);
@@ -103,13 +103,17 @@ public class AIDatabaseSnapshotService {
             return true;
         }
 
-        return appendObjectDescription(
-            monitor,
-            out,
-            ctx.getScopeObject(),
-            ctx,
-            refreshCache
-        );
+        DBSObjectContainer scopeObject = ctx.getScopeObject();
+        if (scopeObject != null) {
+            return appendObjectDescription(
+                monitor,
+                out,
+                scopeObject,
+                ctx,
+                refreshCache
+            );
+        }
+        return false;
     }
 
     private boolean appendObjectDescription(
