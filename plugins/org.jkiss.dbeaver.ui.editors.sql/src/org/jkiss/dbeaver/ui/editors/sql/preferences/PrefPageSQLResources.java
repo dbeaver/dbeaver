@@ -270,7 +270,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     }
 
     @NotNull
-    private Button createConnectionToScritpsCheckbox(Composite scriptsGroup, DBPPreferenceStore store) {
+    private Button createConnectionToScritpsCheckbox(@NotNull Composite scriptsGroup, @NotNull DBPPreferenceStore store) {
         return UIUtils.createCheckbox(
             scriptsGroup,
             SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection,
