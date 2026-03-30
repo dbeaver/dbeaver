@@ -626,7 +626,7 @@ public class SQLEditorUtils {
         return result;
     }
 
-    public static boolean isShouldAttachScriptsToConnections() {
+    public static boolean isAttachScriptsToConnections() {
         return DBWorkbench.isDistributed() ||
             DBWorkbench.getPlatform()
                 .getPreferenceStore()
