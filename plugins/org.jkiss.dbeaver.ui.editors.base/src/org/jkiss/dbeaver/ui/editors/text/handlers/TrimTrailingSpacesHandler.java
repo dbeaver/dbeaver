@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 /**
- * Trim trailing and leading spaces of highlighted and non-highlighted text
+ * Trim trailing spaces of highlighted and non-highlighted text
  */
-public class TrimTextSpacesHandler extends AbstractTrimSpacesHandler {
+public class TrimTrailingSpacesHandler extends AbstractTrimSpacesHandler {
 
     @Override
     protected String trimString(String input) {
-        return input.trim();
+        return input.stripTrailing();
     }
 
 }
