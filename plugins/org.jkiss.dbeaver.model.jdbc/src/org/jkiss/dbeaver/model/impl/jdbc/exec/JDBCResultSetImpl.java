@@ -190,6 +190,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.next();
         }
         catch (SQLException e) {
+            if (!disableLogging) {
+                QMUtils.getDefaultHandler().handleFetchError(this, e);
+            }
             throw new DBCException(e, session.getExecutionContext());
         }
     }
