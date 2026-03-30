@@ -774,6 +774,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
+                // Preferences
+                DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+                preferenceStore.clear();
+                Map<String, String> customProperties = JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES);
+                customProperties.forEach(preferenceStore::setValue);
+
                 setCurrentUserSettings(dataSource, conObject);
 
                 dataSource.setTags(
@@ -856,7 +862,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
-        readDataSourcePreference(dataSource, conObject, userSettings);
+        DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+        if (userSettings != null) {
+            userSettings.entrySet().stream()
+                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
+                .forEach(setting -> preferenceStore.putUserSettings(setting.getKey(), setting.getValue()));
+        }
 
         dataSource.getNavigatorSettings().reset();
 
@@ -875,25 +886,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
         if (!CommonUtils.isEmpty(userSettings)) {
             UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
-        }
-    }
-
-
-    protected <T extends DataSourceDescriptor> void readDataSourcePreference(
-        @NotNull T dataSource,
-        @NotNull Map<String, Object> conObject,
-        @Nullable Map<String, String> userSettings
-    ) {
-        // Preferences
-        DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
-        preferenceStore.clear();
-        Map<String, String> customProperties = JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES);
-        customProperties.forEach(preferenceStore::setValue);
-
-        if (userSettings != null) {
-            userSettings.entrySet().stream()
-                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
-                .forEach(setting -> preferenceStore.putUserSettings(setting.getKey(), setting.getValue()));
         }
     }
 
