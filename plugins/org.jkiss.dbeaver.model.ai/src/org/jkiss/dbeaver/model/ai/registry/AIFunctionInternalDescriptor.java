@@ -162,7 +162,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
-        return false;
+        return true;
     }
 
     @Override

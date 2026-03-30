@@ -39,11 +39,11 @@ public class OAIMessageFactory {
 
     @NotNull
     public static OAIMessage fromAIMessage(@NotNull AIMessage msg, @Nullable String toolCallId) {
+        if (!CommonUtils.isEmpty(toolCallId)) {
+            return fromFunctionCallOutput(toolCallId, msg.getContent());
+        }
         if (msg.getFunctionCall() != null) {
             return fromFunctionCall(msg.getFunctionCall());
-        }
-        if (msg.getFunctionCallName() != null && !CommonUtils.isEmpty(toolCallId)) {
-            return fromFunctionCallOutput(toolCallId, msg.getContent());
         }
 
         OAIMessage message = new OAIMessage();
