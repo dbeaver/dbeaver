@@ -78,4 +78,5 @@ public interface QMExecutionHandler {
 
     void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error);
 
+    void handleFetchError(@NotNull DBCResultSet resultSet, @NotNull Throwable error);
 }

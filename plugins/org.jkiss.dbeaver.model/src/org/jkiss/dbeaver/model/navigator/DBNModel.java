@@ -395,11 +395,11 @@ public class DBNModel {
                 + currentNode.getNodeUri() + "'." + "\nAllowed children: " + Arrays.toString(children));
             return null;
         }
+        if (detectedNode instanceof DBNNodeExtension nodeExtension) {
+            detectedNode = nodeExtension.resolveRealNode();
+        }
 
         if (currentLevel == nodePath.pathItems.size() - 1) {
-            if (detectedNode instanceof DBNNodeExtension nodeExtension) {
-                return nodeExtension.resolveRealNode();
-            }
             return detectedNode;
         } else {
             return findNodeByPath(monitor, detectedNode, nodePath, currentLevel + 1);

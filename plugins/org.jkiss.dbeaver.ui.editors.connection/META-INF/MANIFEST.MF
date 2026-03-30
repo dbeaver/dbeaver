@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui.workbench.texteditor,
  org.eclipse.e4.ui.css.swt.theme,
+ org.eclipse.ui.net,
  org.jkiss.dbeaver.registry;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.dbeaver.ui.navigator;visibility:=reexport

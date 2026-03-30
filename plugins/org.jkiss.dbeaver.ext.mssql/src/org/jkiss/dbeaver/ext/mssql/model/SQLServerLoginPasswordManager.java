@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,7 +46,21 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
             JDBCUtils.executeSQL(session, "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, loginName) + " WITH PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)) +
                 " OLD_PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
-            throw new DBCException("Error changing user password", e);
+            throw new DBCException(getPasswordPolicyErrorMessage(e), e);
         }
+    }
+
+    @NotNull
+    static String getPasswordPolicyErrorMessage(@NotNull SQLException e) {
+        String detail = switch (e.getErrorCode()) {
+            case SQLServerConstants.EC_PASSWORD_TOO_SHORT -> ": password is too short";
+            case SQLServerConstants.EC_PASSWORD_TOO_LONG -> ": password is too long";
+            case SQLServerConstants.EC_PASSWORD_NOT_COMPLEX -> ": password is not complex enough";
+            case SQLServerConstants.EC_PASSWORD_NOT_SATISFACTORY -> ": password does not meet policy requirements";
+            case SQLServerConstants.EC_PASSWORD_RECENTLY_USED -> ": password was recently used";
+            case SQLServerConstants.EC_PASSWORD_FILTER_REJECTED -> ": password was rejected by a password filter";
+            default -> "";
+        };
+        return SQLServerMessages.password_change_error_message + detail;
     }
 }
