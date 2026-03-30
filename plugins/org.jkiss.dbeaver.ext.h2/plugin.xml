@@ -92,6 +92,8 @@
                         categories="sql,embedded"
                         dialect="h2">
 
+                    <replace provider="generic" driver="h2_embedded_v2"/>
+
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.1.210]" bundle="!drivers.h2_v2"/>
                     <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2"/>
 
