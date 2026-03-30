@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+
+package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.DBException;
 
 /**
- * Listener which consumer HTTP traffic from AI engines.
- * Chunk is a streamed text/object.
+ * Indicates that QMDB is unavailable for the current session.
  */
-public interface AIEngineResponseConsumer {
+public class QMDBUnavailableException extends DBException {
 
-    void nextChunk(@NotNull AIEngineResponseChunk chunk);
+    public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
 
-    void error(@NotNull Throwable throwable);
+    public QMDBUnavailableException() {
+        super(DEFAULT_MESSAGE);
+    }
 
-    void completeBlock();
+    public QMDBUnavailableException(@NotNull String message) {
+        super(message);
+    }
 
-    void usage(@Nullable AIUsage usage);
-
-    void systemPromptLength(int length);
-
-    void warning(@NotNull String message);
+    public QMDBUnavailableException(@NotNull String message, @NotNull Throwable cause) {
+        super(message, cause);
+    }
 }

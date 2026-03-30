@@ -14,27 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+package org.jkiss.dbeaver.model.qm;
 
 /**
- * Listener which consumer HTTP traffic from AI engines.
- * Chunk is a streamed text/object.
+ * Stores session-scoped Query Manager runtime state.
  */
-public interface AIEngineResponseConsumer {
+public interface QMRuntimeState {
+    boolean isQueryManagerUnavailable();
 
-    void nextChunk(@NotNull AIEngineResponseChunk chunk);
-
-    void error(@NotNull Throwable throwable);
-
-    void completeBlock();
-
-    void usage(@Nullable AIUsage usage);
-
-    void systemPromptLength(int length);
-
-    void warning(@NotNull String message);
+    void setQueryManagerUnavailable();
 }

@@ -39,6 +39,7 @@ public class AIEngineRequestFactory {
 
     // Section header used before the DB snapshot inside the system prompt
     private static final String DB_SNAPSHOT_SECTION_HEADER = "Database snapshot:\n";
+    public static final boolean SEND_DB_SNAPSHOT_IN_PROMPT = true;
 
     // Percentage of remaining context tokens allocated to system prompt + snapshot
     private static final int SYSTEM_PROMPT_TOKEN_BUDGET_PERCENT = 80;
@@ -91,19 +92,21 @@ public class AIEngineRequestFactory {
             dbSnapshotTokenBudget = 0;
         }
 
-        // Build DB snapshot
-
         String dbSnapshot = "";
         boolean isContextTruncated = false;
-        if (databaseContext != null && dbSnapshotTokenBudget > 0) {
-            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
-                monitor,
-                databaseContext,
-                dbSnapshotTokenBudget
-            );
-            if (dbSnapshotBuilder != null) {
-                dbSnapshot = dbSnapshotBuilder.toString();
-                isContextTruncated = dbSnapshotBuilder.isTruncated();
+
+        if (SEND_DB_SNAPSHOT_IN_PROMPT) {
+            // Build DB snapshot
+            if (databaseContext != null && dbSnapshotTokenBudget > 0) {
+                AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
+                    monitor,
+                    databaseContext,
+                    dbSnapshotTokenBudget
+                );
+                if (dbSnapshotBuilder != null) {
+                    dbSnapshot = dbSnapshotBuilder.toString();
+                    isContextTruncated = dbSnapshotBuilder.isTruncated();
+                }
             }
         }
 

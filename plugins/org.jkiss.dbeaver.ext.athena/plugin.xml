@@ -8,7 +8,7 @@
         <!-- Athena -->
         <datasource
                 class="org.jkiss.dbeaver.ext.athena.AthenaDataSourceProvider"
-                description="%datasource.athena.description"
+                description="AWS Athena datasource"
                 id="athena"
                 parent="generic"
                 label="Athena"
@@ -22,13 +22,12 @@
                         icon="icons/athena_icon.svg"
                         iconBig="icons/athena_icon_big.svg"
                         class="com.amazon.athena.jdbc.AthenaDriver"
-                        sampleURL="jdbc:athena://AWSRegion={region};"
+                        sampleURL="jdbc:athena://Region={region};"
                         defaultPort="444"
                         customEndpoint="true"
-                        description="%driver.athena.description"
+                        description="AWS Athena JDBC driver"
                         category="AWS"
                         webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
-                        propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.2.2.1000/docs/Simba+Amazon+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
                         databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
                         categories="sql,aws"
                         singleConnection="true">
@@ -54,7 +53,7 @@
                     sampleURL="jdbc:athena://AWSRegion={region};"
                     defaultPort="444"
                     customEndpoint="true"
-                    description="Legacy Athena driver. Relies on AWS SDK 1.x. Use it only if you are experiencing issues with the new driver."
+                    description="Legacy Athena driver (Simba). Relies on AWS SDK 1.x. Use it only if you are experiencing issues with the new driver."
                     category="AWS"
                     webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
                     propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
