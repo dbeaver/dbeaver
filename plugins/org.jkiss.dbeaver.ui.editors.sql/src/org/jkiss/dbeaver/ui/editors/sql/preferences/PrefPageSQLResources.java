@@ -315,7 +315,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             deleteEmptyCombo.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
         }
         autoFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
-        autoAttachConnectionsToScriptsCheck.ifPresent(box -> box.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS)));
+        autoAttachConnectionsToScriptsCheck.ifPresent(
+            box -> box.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS
+            )));
         connectionFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
         scriptFileNamePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
