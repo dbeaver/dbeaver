@@ -884,7 +884,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     private boolean shouldUpdateCreds(@NotNull SecureCredentials creds) {
-        return creds.getUserName() != null
+        boolean isCredsResolved = creds.getUserName() != null && creds.getUserPassword() != null;
+        return isCredsResolved
             // in TE secrets must be resolved by dataSource itself, if not present here
             || !DBWorkbench.isDistributed();
     }
