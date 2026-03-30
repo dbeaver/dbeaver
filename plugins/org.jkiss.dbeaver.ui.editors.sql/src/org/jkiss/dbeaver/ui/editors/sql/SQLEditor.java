@@ -530,7 +530,6 @@ public class SQLEditor extends SQLEditorBase implements
         return setDataSourceContainer(inputDataSource);
     }
 
-
     @Nullable
     private DBPDataSourceContainer defineContainer() {
         DBPDataSourceContainer inputDataSource = null;
