@@ -295,6 +295,19 @@ public final class DBUtils {
         @Nullable String schemaName,
         @Nullable String objectName
     ) throws DBException {
+        return getObjectByPath(monitor, executionContext, rootSC, catalogName, schemaName, objectName, false);
+    }
+
+    @Nullable
+    public static DBSObject getObjectByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName,
+        boolean forceConnection
+    ) throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -318,7 +331,7 @@ public final class DBUtils {
             // One container name
             String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
             DBSObject sc = rootSC.getChild(monitor, containerName);
-            if (!DBStructUtils.isConnectedContainer(sc)) {
+            if (!forceConnection && !DBStructUtils.isConnectedContainer(sc)) {
                 sc = null;
             }
             if (!(sc instanceof DBSObjectContainer)) {
@@ -374,28 +387,6 @@ public final class DBUtils {
             // Table container not found
             return object;
         }
-    }
-
-    @Nullable
-    public static DBSObject findObjectByFQN(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer rootContainer,
-        @NotNull String[] nameParts
-    ) throws DBException {
-        SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
-        String objectName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 1]);
-        String schemaName = null;
-        String catalogName = null;
-        if (nameParts.length > 1) {
-            schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 2]);
-        }
-        if (nameParts.length > 2) {
-            catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 3]);
-        }
-
-        return DBUtils.getObjectByPath(
-            monitor, executionContext, rootContainer, catalogName, schemaName, objectName);
     }
 
     @Nullable
