@@ -124,6 +124,16 @@ public final class DBUtils {
     }
 
     @NotNull
+    public static String getUnQuotedNormalizedIdentifier(@NotNull SQLDialect dialect, @NotNull String str) {
+        if (dialect.isQuotedIdentifier(str)) {
+            str = dialect.getUnquotedIdentifier(str);
+        } else {
+            str = dialect.storesUnquotedCase().transform(str);
+        }
+        return str;
+    }
+
+    @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().getUnquotedIdentifier(str);
     }
@@ -283,8 +293,8 @@ public final class DBUtils {
         @NotNull DBSObjectContainer rootSC,
         @Nullable String catalogName,
         @Nullable String schemaName,
-        @Nullable String objectName)
-        throws DBException {
+        @Nullable String objectName
+    ) throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -364,6 +374,28 @@ public final class DBUtils {
             // Table container not found
             return object;
         }
+    }
+
+    @Nullable
+    public static DBSObject findObjectByFQN(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootContainer,
+        @NotNull String[] nameParts
+    ) throws DBException {
+        SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
+        String objectName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 1]);
+        String schemaName = null;
+        String catalogName = null;
+        if (nameParts.length > 1) {
+            schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 2]);
+        }
+        if (nameParts.length > 2) {
+            catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 3]);
+        }
+
+        return DBUtils.getObjectByPath(
+            monitor, executionContext, rootContainer, catalogName, schemaName, objectName);
     }
 
     @Nullable
