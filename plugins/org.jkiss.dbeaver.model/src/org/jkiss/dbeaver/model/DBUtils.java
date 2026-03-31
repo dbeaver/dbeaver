@@ -40,7 +40,10 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -118,6 +121,16 @@ public final class DBUtils {
 
     public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().isQuotedIdentifier(str);
+    }
+
+    @NotNull
+    public static String getUnQuotedNormalizedIdentifier(@NotNull SQLDialect dialect, @NotNull String str) {
+        if (dialect.isQuotedIdentifier(str)) {
+            str = dialect.getUnquotedIdentifier(str);
+        } else {
+            str = dialect.storesUnquotedCase().transform(str);
+        }
+        return str;
     }
 
     @NotNull
@@ -370,18 +383,15 @@ public final class DBUtils {
         @NotNull DBSObjectContainer rootContainer,
         @NotNull String[] nameParts
     ) throws DBException {
-        String[][] quoteStrings = executionContext.getDataSource().getSQLDialect().getIdentifierQuoteStrings();
-        if (quoteStrings == null) {
-            quoteStrings = SQLConstants.DOUBLE_QUOTE_STRINGS;
-        }
-        String objectName = DBUtils.getUnQuotedIdentifier(nameParts[nameParts.length - 1], quoteStrings);
+        SQLDialect dialect = executionContext.getDataSource().getSQLDialect();
+        String objectName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 1]);
         String schemaName = null;
         String catalogName = null;
         if (nameParts.length > 1) {
-            schemaName = DBUtils.getUnQuotedIdentifier(nameParts[nameParts.length - 2], quoteStrings);
+            schemaName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 2]);
         }
         if (nameParts.length > 2) {
-            catalogName = DBUtils.getUnQuotedIdentifier(nameParts[nameParts.length - 3], quoteStrings);
+            catalogName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, nameParts[nameParts.length - 3]);
         }
 
         return DBUtils.getObjectByPath(
