@@ -58,9 +58,10 @@ public class AIFunctionInternalRegistry {
     public List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose) {
         return functionsById.values().stream()
             .filter(f ->
-                f.getPurpose() == AIFunctionPurpose.ALL
-                    || purpose == AIFunctionPurpose.ALL
-                    || f.getPurpose() == purpose)
+                !f.isHidden() && (
+                    f.getPurpose() == AIFunctionPurpose.ALL
+                        || purpose == AIFunctionPurpose.ALL
+                        || f.getPurpose() == purpose))
             .toList();
     }
 
