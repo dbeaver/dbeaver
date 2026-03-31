@@ -84,8 +84,7 @@ public class AIAssistantImpl implements AIAssistant {
     @Override
     public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         checkAiEnablement();
@@ -94,13 +93,11 @@ public class AIAssistantImpl implements AIAssistant {
         try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
-                context,
-                systemGenerator,
+                functionContext,
                 messages,
                 engine,
                 engineDescriptor
             );
-            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
 
@@ -162,6 +159,22 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
+    @Override
+    public boolean isFunctionSupported() {
+        AIToolboxManager toolboxManager = this.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        if (!functionSettings.isFunctionsEnabled()) {
+            return false;
+        }
+        try {
+            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            return engineDescriptor.isSupportsFunctions();
+        } catch (DBException e) {
+            log.debug(e);
+            return false;
+        }
+    }
+
     @NotNull
     @Override
     public AIToolboxManager getToolboxManager() {
@@ -174,8 +187,7 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     public AIEngineRequest buildAiEngineRequest(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
@@ -185,8 +197,7 @@ public class AIAssistantImpl implements AIAssistant {
             this,
             engine,
             engineDescriptor,
-            systemGenerator,
-            context,
+            functionContext,
             messages
         );
     }
