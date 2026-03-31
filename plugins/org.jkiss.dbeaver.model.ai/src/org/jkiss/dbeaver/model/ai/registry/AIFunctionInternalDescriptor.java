@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -48,6 +48,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final String description;
     private final String categoryId;
     private final AIFunctionInternalParameter[] parameters;
+    private transient AIFunction instance;
 
     public AIFunctionInternalDescriptor(
         @NotNull AIToolboxInternalDescriptor toolbox,
@@ -153,12 +154,15 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public AIFunction createInstance() throws DBException {
-        try {
-            return objectType.createInstance(AIFunction.class);
-        } catch (Exception e) {
-            throw new DBException("Error creating AI function " + getId(), e);
+    public AIFunction getInstance() {
+        if (instance == null) {
+            try {
+                instance = objectType.createInstance(AIFunction.class);
+            } catch (Exception e) {
+                throw new DBRuntimeException("Error creating AI function " + getId(), e);
+            }
         }
+        return instance;
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {

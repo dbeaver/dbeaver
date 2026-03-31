@@ -17,17 +17,22 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-public interface AISchemaGenerator {
-    String generateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
-    ) throws DBException;
+/**
+ * AI function verifier.
+ */
+public interface AIFunctionVerifier {
+
+    enum FunctionState {
+        APPLICABLE,
+        NOT_APPLICABLE,
+        AUTO_CALL
+    }
+
+    @NotNull
+    FunctionState getFunctionState(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor function
+    );
+
 }
