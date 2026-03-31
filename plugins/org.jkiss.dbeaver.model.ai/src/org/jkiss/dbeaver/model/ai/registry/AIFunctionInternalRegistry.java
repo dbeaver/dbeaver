@@ -70,7 +70,7 @@ public class AIFunctionInternalRegistry {
         @NotNull AIFunctionDescriptor descriptor,
         @NotNull Map<String, Object> arguments
     ) throws DBException {
-        AIFunction function = descriptor.createInstance();
+        AIFunction function = descriptor.getInstance();
         return function.callFunction(context, arguments);
     }
 }

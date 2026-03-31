@@ -175,8 +175,7 @@ public class AILegacyTranslator {
                 AIDatabaseContext dbContext = contextBuilder.build();
                 AIAssistantResponse result = aiAssistant.generateText(
                     monitor,
-                    dbContext,
-                    sysPromptBuilder,
+                    new AIFunctionContext(monitor, dbContext, sysPromptBuilder),
                     List.of(userMessage)
                 );
 
