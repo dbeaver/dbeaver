@@ -124,6 +124,16 @@ public final class DBUtils {
     }
 
     @NotNull
+    public static String getUnQuotedNormalizedIdentifier(@NotNull SQLDialect dialect, @NotNull String str) {
+        if (dialect.isQuotedIdentifier(str)) {
+            str = dialect.getUnquotedIdentifier(str);
+        } else {
+            str = dialect.storesUnquotedCase().transform(str);
+        }
+        return str;
+    }
+
+    @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().getUnquotedIdentifier(str);
     }
@@ -283,8 +293,21 @@ public final class DBUtils {
         @NotNull DBSObjectContainer rootSC,
         @Nullable String catalogName,
         @Nullable String schemaName,
-        @Nullable String objectName)
-        throws DBException {
+        @Nullable String objectName
+    ) throws DBException {
+        return getObjectByPath(monitor, executionContext, rootSC, catalogName, schemaName, objectName, false);
+    }
+
+    @Nullable
+    public static DBSObject getObjectByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName,
+        boolean forceConnection
+    ) throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -308,7 +331,7 @@ public final class DBUtils {
             // One container name
             String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
             DBSObject sc = rootSC.getChild(monitor, containerName);
-            if (!DBStructUtils.isConnectedContainer(sc)) {
+            if (!forceConnection && !DBStructUtils.isConnectedContainer(sc)) {
                 sc = null;
             }
             if (!(sc instanceof DBSObjectContainer)) {
