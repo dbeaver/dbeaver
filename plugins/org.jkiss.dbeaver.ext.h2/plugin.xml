@@ -107,7 +107,7 @@
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
-                    id="h2_embedded_v2.4+"
+                    id="h2_embedded_v3"
                     label="H2 Embedded V.2.4+"
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
@@ -120,11 +120,11 @@
                     categories="sql,embedded"
                     dialect="h2">
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v2.4"/>
-                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2.4"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v3"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v3"/>
 
-                    <file type="jar" path="drivers/h2_v2.4" bundle="drivers.h2_v2.4"/>
-                    <file type="license" path="drivers/h2_v2.4/LICENSE.txt" bundle="drivers.h2_v2.4"/>
+                    <file type="jar" path="drivers/h2_v3" bundle="drivers.h2_v3"/>
+                    <file type="license" path="drivers/h2_v3/LICENSE.txt" bundle="drivers.h2_v3"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
@@ -133,7 +133,7 @@
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
-                    id="h2_server_v2.4+"
+                    id="h2_server_v3"
                     label="H2 Server V.2.4+"
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
@@ -146,11 +146,11 @@
                     categories="sql"
                     dialect="h2">
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v2.4"/>
-                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2.4"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v3"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v3"/>
 
-                    <file type="jar" path="drivers/h2_v2.4" bundle="drivers.h2_v2.4"/>
-                    <file type="license" path="drivers/h2_v2.4/LICENSE.txt" bundle="drivers.h2_v2.4"/>
+                    <file type="jar" path="drivers/h2_v3" bundle="drivers.h2_v3"/>
+                    <file type="license" path="drivers/h2_v3/LICENSE.txt" bundle="drivers.h2_v3"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
