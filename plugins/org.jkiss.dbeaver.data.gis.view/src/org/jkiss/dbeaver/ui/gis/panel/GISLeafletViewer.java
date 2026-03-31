@@ -97,6 +97,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private final DBDAttributeBinding[] bindings;
     private final IResultSetPresentation presentation;
+    private final String template;
 
     private Browser browser;
     private DBGeometry[] lastValue;
@@ -121,6 +122,15 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     ) {
         this.bindings = bindings;
         this.presentation = presentation;
+
+        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH)) {
+            if (is == null) {
+                throw new IllegalStateException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
+            }
+            template = IOUtils.readToString(new InputStreamReader(is));
+        } catch (IOException e) {
+            throw new IllegalStateException("Error reading view template", e);
+        }
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
@@ -418,16 +428,6 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         String geomTipValuesString = String.join(",", geomTipValues);
         String geomCRS = actualSourceSRID == GisConstants.SRID_SIMPLE ? GisConstants.LL_CRS_SIMPLE : GisConstants.LL_CRS_3857;
         boolean isShowMap = showMap;
-
-        InputStream fis = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH);
-        if (fis == null) {
-            throw new IOException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
-        }
-
-        String template;
-        try (InputStreamReader isr = new InputStreamReader(fis)) {
-            template = IOUtils.readToString(isr);
-        }
 
         IVariableResolver resolver = name -> switch (name) {
             case "geomValues" -> CommonUtils.escapeHtml(geomValuesString);
