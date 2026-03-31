@@ -524,9 +524,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private boolean updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource =
-            DBWorkbench.getPlatform()
-                .getPreferenceStore()
-                .getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS)
+            SQLEditorUtils.isAttachScriptsToConnections()
                 ? defineContainer()
                 : null;
         return setDataSourceContainer(inputDataSource);
