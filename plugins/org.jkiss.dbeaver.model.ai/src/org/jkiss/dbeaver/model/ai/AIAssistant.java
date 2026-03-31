@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -33,18 +31,18 @@ public interface AIAssistant {
     /**
      * Generates text according to the prompt
      *
-     * @param context         database context. Creates database snapshot according to this context.
-     * @param systemGenerator generates prompt explaining goals, additional instructions and context information
+     * @param functionContext database context. Creates database snapshot according to this context.
      * @param messages        user messages
      * @return generated text
      */
     @NotNull
     AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException;
+
+    boolean isFunctionSupported();
 
     /**
      * Toolbox manager

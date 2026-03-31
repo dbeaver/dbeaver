@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+package org.jkiss.dbeaver.model.qm;
 
-public interface AISchemaGenerator {
-    String generateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
-    ) throws DBException;
+/**
+ * Stores session-scoped Query Manager runtime state.
+ */
+public interface QMRuntimeState {
+    boolean isQueryManagerUnavailable();
+
+    void setQueryManagerUnavailable();
 }

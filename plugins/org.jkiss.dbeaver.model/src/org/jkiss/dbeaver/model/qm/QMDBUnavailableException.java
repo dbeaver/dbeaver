@@ -14,20 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+
+package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-public interface AISchemaGenerator {
-    String generateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
-    ) throws DBException;
+/**
+ * Indicates that QMDB is unavailable for the current session.
+ */
+public class QMDBUnavailableException extends DBException {
+
+    public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
+
+    public QMDBUnavailableException() {
+        super(DEFAULT_MESSAGE);
+    }
+
+    public QMDBUnavailableException(@NotNull String message) {
+        super(message);
+    }
+
+    public QMDBUnavailableException(@NotNull String message, @NotNull Throwable cause) {
+        super(message, cause);
+    }
 }

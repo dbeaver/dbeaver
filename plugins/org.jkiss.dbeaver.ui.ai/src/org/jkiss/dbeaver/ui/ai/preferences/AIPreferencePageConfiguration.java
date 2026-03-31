@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl;
-import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -48,18 +47,13 @@ public class AIPreferencePageConfiguration extends AbstractPrefPage implements I
     private static final Log log = Log.getLog(AIPreferencePageConfiguration.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.config";
     private final AISettings settings;
-    private AISchemaGenerator ddlGenerator;
+    private final AISchemaGenerator ddlGenerator;
 
     private IObjectPropertyConfigurator<AISchemaGenerator, AISettings> formatterConfigurator;
 
     public AIPreferencePageConfiguration() {
         this.settings = AISettingsManager.getInstance().getSettings();
-        try {
-            ddlGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
-        } catch (DBException e) {
-            log.error("Formatter not found", e);
-            ddlGenerator = new AISchemaGeneratorImpl();
-        }
+        this.ddlGenerator = new AISchemaGeneratorImpl();
         UIPropertyConfiguratorDescriptor cfgDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(ddlGenerator.getClass().getName());
         if (cfgDescriptor != null) {

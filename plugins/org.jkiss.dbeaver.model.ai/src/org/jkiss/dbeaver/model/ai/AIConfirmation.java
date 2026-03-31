@@ -16,18 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import java.util.UUID;
 
-public interface AISchemaGenerator {
-    String generateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
-    ) throws DBException;
+public abstract class AIConfirmation {
+
+    private final UUID id;
+
+    public AIConfirmation() {
+        this.id = UUID.randomUUID();
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    abstract String getMessage();
 }
