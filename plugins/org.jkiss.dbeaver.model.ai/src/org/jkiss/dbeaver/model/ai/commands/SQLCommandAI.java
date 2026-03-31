@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -108,8 +107,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             );
         }
         AIDatabaseContext dbContext = contextBuilder.build();
-
-        AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
+        AIFunctionContext fc = new AIFunctionContext(monitor, dbContext, new AIPromptGenerateSql());
 
         monitor.subTask("Generate SQL from prompt");
 
@@ -118,8 +116,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         AIAssistantResponse result = assistant.generateText(
             monitor,
-            dbContext,
-            sysPromptBuilder,
+            fc,
             List.of(AIMessage.userMessage(prompt))
         );
         if (!result.isText()) {
