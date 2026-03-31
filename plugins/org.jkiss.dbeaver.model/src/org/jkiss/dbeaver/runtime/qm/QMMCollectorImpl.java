@@ -335,6 +335,22 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
+    @Override
+    public synchronized void handleFetchError(@NotNull DBCResultSet resultSet, @NotNull Throwable error) {
+        if (!DBExecUtils.isExecutionCanceled(resultSet.getSession().getDataSource(), error)) {
+            return;
+        }
+
+        QMMConnectionInfo executionContext = getConnectionInfo(resultSet.getSession().getExecutionContext());
+
+        if (executionContext != null) {
+            QMMStatementExecuteInfo execution = executionContext.execution(resultSet.getSourceStatement(), error);
+            if (execution != null) {
+                tryFireMetaEvent(execution, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
+            }
+        }
+    }
+
 
     @Override
     public synchronized void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {

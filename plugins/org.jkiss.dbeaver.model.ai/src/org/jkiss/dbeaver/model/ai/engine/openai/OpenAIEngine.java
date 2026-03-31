@@ -143,7 +143,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             for (AIFunctionDescriptor fd : request.getFunctions()) {
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getId();
+                tool.name = fd.getFullId();
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
@@ -166,9 +166,21 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(OAIMessage::new)
-            .toList();
+        List<OAIMessage> result = new ArrayList<>(messages.size());
+        for (AIMessage message : messages) {
+            if (message.getFunctionCall() != null) {
+                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
+                if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
+                    result.add(functionCallMessage);
+                    // OpenAI Responses API requires matching function_call_output for each function_call.
+                    // Keep orphan function calls in history as regular assistant messages.
+                    result.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
+                }
+            } else {
+                result.add(OAIMessageFactory.fromAIMessage(message));
+            }
+        }
+        return result;
     }
 
     @NotNull

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
-import org.jkiss.dbeaver.model.cli.model.CommandLineAuthenticator;
 import org.jkiss.dbeaver.model.cli.model.option.EclipseOptions;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptions;
 import picocli.CommandLine;
@@ -135,10 +134,5 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     @NotNull
     public CLIRunMeta getMeta() {
         return meta;
-    }
-
-    @Nullable
-    public CommandLineAuthenticator getAuthenticator() {
-        return null;
     }
 }

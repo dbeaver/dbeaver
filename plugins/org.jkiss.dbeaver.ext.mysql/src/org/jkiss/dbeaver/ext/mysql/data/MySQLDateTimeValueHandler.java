@@ -76,6 +76,9 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                 if (isMariaDB && type.getTypeID() == Types.TIME) {
                     return dbResults.getString(index + 1);
                 }
+                if (isMariaDB && isMariaDBDateTimeStringRead(type)) {
+                    return getValueFromObject(session, type, dbResults.getString(index + 1), false, false);
+                }
             } catch (SQLException e) {
                 log.debug("Exception caught when fetching date/time value", e);
             }
@@ -164,5 +167,12 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    private boolean isMariaDBDateTimeStringRead(@NotNull DBSTypedObject type) {
+        return switch (type.getTypeID()) {
+            case Types.DATE, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> true;
+            default -> false;
+        };
     }
 }

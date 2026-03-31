@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.cubrid.ui.editors;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.plan.CubridPlanAnalyser;
 import org.jkiss.dbeaver.ext.cubrid.ui.views.CubridSQLPlanFullTextViewer;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -28,14 +29,15 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
 
 public class CubridSQLPlanViewProvider extends SQLPlanSaveProvider {
 
+    @NotNull
     @Override
-    public Viewer createPlanViewer(IWorkbenchPart workbenchPart, Composite parent) {
+    public Viewer createPlanViewer(@NotNull IWorkbenchPart workbenchPart, @NotNull Composite parent) {
         CubridSQLPlanFullTextViewer treeViewer = new CubridSQLPlanFullTextViewer(workbenchPart, parent);
         return treeViewer;
     }
 
     @Override
-    public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
+    public void visualizeQueryPlan(@NotNull Viewer viewer, @NotNull SQLQuery query, @NotNull DBCPlan plan) {
         SQLQuery fullText = new SQLQuery(query.getDataSource(), ((CubridPlanAnalyser) plan).getPlanQueryString());
         showPlan(viewer, fullText, plan);
     }

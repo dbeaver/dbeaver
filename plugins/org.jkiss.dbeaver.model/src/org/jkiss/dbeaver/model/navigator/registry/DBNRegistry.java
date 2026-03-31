@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,13 @@ package org.jkiss.dbeaver.model.navigator.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNNodeExtendable;
-import org.jkiss.dbeaver.model.navigator.DBNRoot;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class DBNRegistry {
@@ -57,32 +55,39 @@ public class DBNRegistry {
         }
     }
 
-    public void extendNode(DBNNodeExtendable parentNode, boolean reflect) {
+    public void extendNode(@NotNull DBNNodeExtendable parentNode, boolean reflect) {
         if (modelExtenders.isEmpty()) {
             return;
         }
-        List<DBNNode> extraNodes = null;
+        List<DBNNodeExtension> extraNodes = null;
         for (DBNModelExtenderDescriptor med : modelExtenders) {
             if (parentNode instanceof DBNRoot && !med.isRoot()) {
                 continue;
             }
-            try {
-                DBNNode[] enList = med.getInstance().getExtraNodes((DBNNode) parentNode);
-                if (enList != null) {
-                    if (extraNodes == null) {
-                        extraNodes = new ArrayList<>();
-                    }
-                    Collections.addAll(extraNodes, enList);
-                }
-            } catch (DBException e) {
-                log.debug("Error getting model extenders", e);
+            DBNNodeExtension nodeExtension = new DBNNodeExtension((DBNNode) parentNode, med);
+            if (extraNodes == null) {
+                extraNodes = new ArrayList<>();
             }
+            extraNodes.add(nodeExtension);
         }
         if (!CommonUtils.isEmpty(extraNodes)) {
-            for (DBNNode eNode : extraNodes) {
+            for (DBNNodeExtension eNode : extraNodes) {
                 parentNode.addExtraNode(eNode, reflect);
             }
         }
+    }
+
+    @Nullable
+    public <T> DBNModelExtender findNodeExtender(@NotNull DBNNode parentNode, @NotNull Class<T> nodeType) {
+        for (DBNModelExtenderDescriptor med : modelExtenders) {
+            if (parentNode instanceof DBNRoot && !med.isRoot()) {
+                continue;
+            }
+            if (nodeType.getName().equals(med.getNodeType())) {
+                return med.getInstance();
+            }
+        }
+        return null;
     }
 
 }
