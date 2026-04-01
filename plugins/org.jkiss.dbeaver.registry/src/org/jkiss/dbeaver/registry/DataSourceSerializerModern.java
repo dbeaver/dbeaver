@@ -55,6 +55,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataSourceSerializerModern<T extends DataSourceDescriptor> implements DataSourceSerializer<T> {
 
@@ -864,9 +865,11 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
         DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
         if (userSettings != null) {
-            userSettings.entrySet().stream()
+
+            Map<String, String> datasourceUserSettings = userSettings.entrySet().stream()
                 .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
-                .forEach(setting -> preferenceStore.putUserSettings(setting.getKey(), setting.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            preferenceStore.putUserSettings(datasourceUserSettings);
         }
 
         dataSource.getNavigatorSettings().reset();

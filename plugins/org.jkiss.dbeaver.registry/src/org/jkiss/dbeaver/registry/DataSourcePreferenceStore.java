@@ -90,20 +90,13 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         }
     }
 
-    public void putUserSettings(@NotNull String key, @Nullable String value) {
-        userSettings.put(key, value);
+    public void putUserSettings(@NotNull Map<String, String> settings) {
+        userSettings.clear();
+        userSettings.putAll(settings);
     }
 
     @Override
-    public void setValue(@NotNull String name, @Nullable String value) {
-        if (value == null) {
-            setToDefault(name);
-            return;
-        }
-        super.setValue(name, value);
-    }
-
-    @Override
+    @NotNull
     public Map<String, String> getProperties() {
         Map<String, String> properties1 = super.getProperties();
         Map<String, String> properties = new HashMap<>(properties1);
