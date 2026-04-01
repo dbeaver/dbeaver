@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -54,13 +51,13 @@ public class AIDatabaseSnapshotService {
         @Nullable AIDatabaseContext aiDatabaseContext,
         int tokenBudget
     ) throws DBException {
-        schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
+        schemaGenerator = new AISchemaGeneratorImpl();
 
         if (aiDatabaseContext == null) {
             return null;
         }
 
-        Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
+        //Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
         var prompt = new TokenBoundedStringBuilder(tokenBudget, false);
@@ -98,7 +95,6 @@ public class AIDatabaseSnapshotService {
                     out,
                     entity,
                     ctx,
-                    requiresFqn(entity, ctx.getExecutionContext()),
                     refreshCache
                 )) {
                     return false;
@@ -107,14 +103,17 @@ public class AIDatabaseSnapshotService {
             return true;
         }
 
-        return appendObjectDescription(
-            monitor,
-            out,
-            ctx.getScopeObject(),
-            ctx,
-            false,
-            refreshCache
-        );
+        DBSObjectContainer scopeObject = ctx.getScopeObject();
+        if (scopeObject != null) {
+            return appendObjectDescription(
+                monitor,
+                out,
+                scopeObject,
+                ctx,
+                refreshCache
+            );
+        }
+        return false;
     }
 
     private boolean appendObjectDescription(
@@ -122,7 +121,6 @@ public class AIDatabaseSnapshotService {
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObject obj,
         @NotNull AIDatabaseContext databaseContext,
-        boolean useFqn,
         boolean refreshCache
     ) throws DBException {
         if (monitor.isCanceled()) {
@@ -135,7 +133,12 @@ public class AIDatabaseSnapshotService {
 
         if (obj instanceof DBSEntity entity) {
             try {
-                String ddl = schemaGenerator.generateSchema(monitor, databaseContext, entity, useFqn) + "\n";
+                String ddl = schemaGenerator.generateSchema(
+                    monitor,
+                    databaseContext.getExecutionContext(),
+                    databaseContext.getSchemaGenerationOptions(),
+                    entity
+                ) + "\n";
                 return out.append(ddl);
             } catch (DBException e) {
                 log.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
@@ -184,7 +187,6 @@ public class AIDatabaseSnapshotService {
                         out,
                         child,
                         dbContext,
-                        requiresFqn(child, dbContext.getExecutionContext()),
                         refreshCache
                     )) {
                         log.debug("Object description is too long, truncated at: " + child.getName());
@@ -204,19 +206,6 @@ public class AIDatabaseSnapshotService {
         }
 
         return true;
-    }
-
-    private static boolean requiresFqn(
-        @NotNull DBSObject obj,
-        @Nullable DBCExecutionContext ctx
-    ) {
-        if (ctx == null || ctx.getContextDefaults() == null) {
-            return false;
-        }
-        DBSObject parent = obj.getParentObject();
-        DBCExecutionContextDefaults<?, ?> def = ctx.getContextDefaults();
-        return parent != null
-            && !(parent.equals(def.getDefaultCatalog()) || parent.equals(def.getDefaultSchema()));
     }
 
     /**
