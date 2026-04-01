@@ -89,7 +89,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         } catch (DBCException e) {
             // Query could not be parsed (e.g. uses non-standard syntax like DuckDB FROM-first).
             // Still attempt to wrap it and let the database handle validation (#40210).
-            log.debug("Could not parse query to remove orderings, wrapping as-is: " + e.getMessage());
+            log.debug("Could not parse query to remove orderings, wrapping as-is: ", e);
         }
         // Trim query delimiters (#2541)
         if (queryText == null) {
