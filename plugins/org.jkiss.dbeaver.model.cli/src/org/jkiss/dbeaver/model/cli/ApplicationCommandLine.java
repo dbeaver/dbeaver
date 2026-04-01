@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.help.CLIHelpFactory;
 import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
 import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
@@ -31,8 +32,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -289,6 +288,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         for (CLITransformerDescriptor transformer : globalTransformers) {
             transformer.getTransformer().transform(topLevel.getCommandSpec());
         }
+        topLevel.setHelpFactory(new CLIHelpFactory());
         return topLevel;
     }
 
