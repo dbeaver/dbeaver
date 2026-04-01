@@ -305,6 +305,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
     }
 
+    @NotNull
     @Override
     public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
         IProject project = null;

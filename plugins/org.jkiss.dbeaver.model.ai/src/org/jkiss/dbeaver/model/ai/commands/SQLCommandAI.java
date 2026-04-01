@@ -112,7 +112,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         monitor.subTask("Generate SQL from prompt");
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
-            .createAssistant(dataSourceContainer.getProject().getWorkspace());
+            .getAssistant(dataSourceContainer.getProject().getWorkspace());
 
         AIAssistantResponse result = assistant.generateText(
             monitor,
