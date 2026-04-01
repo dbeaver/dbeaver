@@ -14,7 +14,7 @@
                 id="databricks"
                 parent="generic"
                 label="Databricks"
-                icon="icons/Databricks_icon.svg"
+                icon="icons/databricks_icon.svg"
                 dialect="generic">
             <drivers managable="true">
 
