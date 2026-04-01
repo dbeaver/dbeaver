@@ -1391,6 +1391,7 @@
                 <driver id="firebird_jaybird3"/>
                 <driver id="h2_server"/>
                 <driver id="h2_embedded"/>
+                <driver id="h2_embedded_v2"/>
                 <driver id="mssql"/>
                 <driver id="mssql_ms"/>
                 <driver id="postgresql"/>
