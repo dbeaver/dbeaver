@@ -27,7 +27,7 @@
 
                 <driver
                         id="h2_server"
-                        label="H2 Server V.2.4+"
+                        label="H2 Server"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
@@ -35,7 +35,7 @@
                         sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
                         defaultPort="9092"
                         webURL="https://www.h2database.com/"
-                        description="H2 Server V.2.4+ (binary format v3)"
+                        description="H2 Server"
                         categories="sql"
                         dialect="h2">
 
