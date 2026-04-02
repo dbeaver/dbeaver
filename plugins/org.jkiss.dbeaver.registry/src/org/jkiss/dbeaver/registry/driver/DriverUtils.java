@@ -103,7 +103,7 @@ public class DriverUtils {
         return Duration.ofMillis(WebUtils.DEFAULT_HTTP_TIMEOUT_MS);
     }
 
-    public static boolean matchesBundle(IConfigurationElement config) {
+    public static boolean matchesBundle(@NotNull IConfigurationElement config) {
         // Check bundle
         String bundle = config.getAttribute(RegistryConstants.ATTR_BUNDLE);
         if (!CommonUtils.isEmpty(bundle)) {

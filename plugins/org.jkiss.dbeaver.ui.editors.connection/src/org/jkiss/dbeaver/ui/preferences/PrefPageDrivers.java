@@ -114,7 +114,11 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                 proxyObjects,
                 UIConnectionMessages.pref_page_ui_general_label_proxy_user,
                 null);
-            proxyPasswordText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_password, null, SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
+            proxyPasswordText = UIUtils.createLabelText(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_label_proxy_password,
+                null,
+                SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
         }
 
         {

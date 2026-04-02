@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
@@ -265,7 +265,11 @@ public final class ModelPreferences
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
     public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
     public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
-    /** Preference key for the HTTP read/connect timeout (in milliseconds) used when downloading driver files and fetching driver metadata. Overridable via {@code DriverUtils.PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS} or {@code DriverUtils.ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS}. */
+    /**
+     * Preference key for the HTTP read/connect timeout (in milliseconds) used when downloading driver files and
+     * fetching driver metadata. Overridable via {@code DriverUtils.PROP_DRIVER_DOWNLOAD_TIMEOUT_SECONDS} or
+     * {@code DriverUtils.ENV_DRIVER_DOWNLOAD_TIMEOUT_SECONDS}.
+     */
     public static final String UI_DRIVERS_UPDATE_TIMEOUT = "ui.http.request.timeout"; //$NON-NLS-1$
     public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
     public static final String UI_DRIVERS_GLOBAL_LIBRARIES = "ui.drivers.global.libraries"; //$NON-NLS-1$

@@ -95,17 +95,24 @@ public class WebUtils {
      * @return  URL connection
      */
     @NotNull
-    private static URLConnection openURLConnection(String urlString, DBPAuthInfo authInfo, String referrer, int retryNumber) throws IOException {
+    private static URLConnection openURLConnection(
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer,
+        int retryNumber
+    ) throws IOException {
         return openURLConnection(urlString, authInfo, referrer, "GET", retryNumber, DEFAULT_HTTP_TIMEOUT_MS, null);
     }
+
+    @NotNull
     public static URLConnection openURLConnection(
-        String urlString,
-        DBPAuthInfo authInfo,
-        String referrer,
-        String method,
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer,
+        @NotNull String method,
         int retryNumber,
         int timeout,
-        Map<String, String> headers
+        @Nullable Map<String, String> headers
     ) throws IOException {
     return openURLConnection(null, urlString, authInfo, referrer, method, retryNumber, timeout, headers);
     }
