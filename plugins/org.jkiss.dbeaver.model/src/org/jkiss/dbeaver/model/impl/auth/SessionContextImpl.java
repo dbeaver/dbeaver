@@ -114,12 +114,16 @@ public class SessionContextImpl implements SMSessionContext {
 
     @Override
     public void dispose() {
-        clearContext();
+        clearContext(true);
     }
 
-    public void clearContext() {
-        for (SMSession session : sessions) {
-            session.close();
+    // Clears all sessions in this context
+    // Also closes them
+    public void clearContext(boolean closeSessions) {
+        if (closeSessions) {
+            for (SMSession session : sessions) {
+                session.close();
+            }
         }
         sessions.clear();
     }
