@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
     private Font boldFont;
-    private Image image;
 
     @Override
     public void init(Shell splash) {
@@ -75,21 +73,7 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
         boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
         getContent().addPaintListener(e -> {
-            var image = this.image;
-            if (image == null) {
-                image = getSplash().getBackgroundImage();
-
-                if (image != null && DPIUtil.getDeviceZoom() != 100) {
-                    var device = getSplash().getDisplay();
-                    var data = DPIUtil.autoScaleImageData(
-                        device,
-                        image.getImageData(100),
-                        DPIUtil.getScalingFactor(DPIUtil.getDeviceZoom())
-                    );
-
-                    image = this.image = new Image(device, data);
-                }
-            }
+            var image = getSplash().getBackgroundImage();
             if (image != null) {
                 e.gc.drawImage(image, 0, 0);
             }
@@ -106,10 +90,6 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
         if (boldFont != null) {
             boldFont.dispose();
             boldFont = null;
-        }
-        if (image != null) {
-            image.dispose();
-            image = null;
         }
     }
 }
