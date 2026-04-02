@@ -691,9 +691,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
         List<String> replaced = new ArrayList<>();
-        boolean desktopMode = !DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !DBWorkbench.isDistributed();
+        boolean desktopNotDistributed = !DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !DBWorkbench.isDistributed();
         for (DataSourceAuthModelDescriptor amd : authModels.values()) {
-            if (desktopMode && amd.isCloudModel()) {
+            if (desktopNotDistributed && amd.requiresServerApplication()) {
                 continue;
             }
             if (amd.appliesTo(driver)) {
