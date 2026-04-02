@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-<<<<<<<< HEAD:plugins/org.jkiss.dbeaver.model.ai/src/org/jkiss/dbeaver/model/ai/AIFunctionVerifier.java
 package org.jkiss.dbeaver.model.ai;
-========
-package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
->>>>>>>> 9a0b97bb94 (#40537 web request timeouts configuration):plugins/org.jkiss.dbeaver.ui.editors.data/src/org/jkiss/dbeaver/ui/controls/resultset/panel/grouping/column/GroupingFunctionColumn.java
 
 import org.jkiss.code.NotNull;
 
 /**
-<<<<<<<< HEAD:plugins/org.jkiss.dbeaver.model.ai/src/org/jkiss/dbeaver/model/ai/AIFunctionVerifier.java
  * AI function verifier.
  */
 public interface AIFunctionVerifier {
@@ -40,14 +35,4 @@ public interface AIFunctionVerifier {
         @NotNull AIFunctionDescriptor function
     );
 
-========
- * GroupingFunction column. Column represents some grouping action
- */
-public interface GroupingFunctionColumn extends GroupingColumn {
-
-    @NotNull
-    String getColumnExpression();
-
-    boolean isShowToUser();
->>>>>>>> 9a0b97bb94 (#40537 web request timeouts configuration):plugins/org.jkiss.dbeaver.ui.editors.data/src/org/jkiss/dbeaver/ui/controls/resultset/panel/grouping/column/GroupingFunctionColumn.java
 }
