@@ -114,18 +114,19 @@ public class WebUtils {
         int timeout,
         @Nullable Map<String, String> headers
     ) throws IOException {
-    return openURLConnection(null, urlString, authInfo, referrer, method, retryNumber, timeout, headers);
+        return openURLConnection(null, urlString, authInfo, referrer, method, retryNumber, timeout, headers);
     }
 
+    @NotNull
     public static URLConnection openURLConnection(
         @Nullable DBRProgressMonitor monitor,
-        String urlString,
-        DBPAuthInfo authInfo,
-        String referrer,
-        String method,
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer,
+        @NotNull String method,
         int retryNumber,
         int timeout,
-        Map<String, String> headers
+        @Nullable Map<String, String> headers
     ) throws IOException {
         if (retryNumber > MAX_RETRY_COUNT) {
             String message = String.format("Too many redirects (%d times to %s)", retryNumber, urlString);
