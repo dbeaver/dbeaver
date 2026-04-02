@@ -87,12 +87,13 @@ public class WebUtils {
     }
 
     /**
-     * Opens URL connection
-     * @param urlString   URL
-     * @param authInfo    authenticate info.
-     * @param referrer    Referrer (who opens the URL?)
-     * @param retryNumber retry number
-     * @return  URL connection
+     * Opens a GET URL connection using the default HTTP timeout.
+     *
+     * @param urlString   URL to connect to
+     * @param authInfo    optional authentication credentials
+     * @param referrer    optional referrer header value
+     * @param retryNumber current retry attempt (incremented on redirect)
+     * @return opened URL connection
      */
     @NotNull
     private static URLConnection openURLConnection(
@@ -187,9 +188,13 @@ public class WebUtils {
                 if (connection instanceof HttpURLConnection httpConnection) {
                     final int responseCode = httpConnection.getResponseCode();
                     if (responseCode != 200) {
-                        if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+                        if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
+                            || responseCode == HttpURLConnection.HTTP_MOVED_PERM
+                            || responseCode == HttpURLConnection.HTTP_SEE_OTHER
+                        ) {
                             String newUrl = connection.getHeaderField("Location");
-                            return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+                            return openURLConnection(
+                                monitor, newUrl, authInfo, referrer, method, retryNumber + 1, timeout, headers);
                         }
                         throw new IOException("Can't open '" + connection.getURL() + "': " + httpConnection.getResponseMessage());
                     }
