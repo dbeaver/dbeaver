@@ -73,7 +73,6 @@
 
         <event topicId="cb_object_settings" id="cb_object_settings_updated" class="org.jkiss.dbeaver.model.websocket.event.WSObjectSettingsEvent"/>
         <event topicId="cb_object_settings" id="cb_object_settings_deleted" class="org.jkiss.dbeaver.model.websocket.event.WSObjectSettingsEvent"/>
-        <event topicId="cb_db_oauth" id="cb_oauth_code" class="org.jkiss.dbeaver.model.websocket.event.WSOAuthCodeEvent"/>
     </extension>
 
 </plugin>

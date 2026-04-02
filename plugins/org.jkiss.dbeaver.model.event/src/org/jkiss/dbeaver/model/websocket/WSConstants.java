@@ -47,7 +47,6 @@ public interface WSConstants {
     String TOPIC_AI = "cb_ai";
     String TOPIC_USER_NOTIFICATION = "cb_notification";
     String TOPIC_OBJECT_SETTINGS = "cb_object_settings";
-    String TOPIC_DB_OAUTH = "cb_db_oauth";
 
     //TODO remove this enum
     @Deprecated
