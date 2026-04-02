@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 
 import java.util.Map;
 
@@ -27,14 +26,15 @@ import java.util.Map;
  * AI function call info
  */
 public class AIFunctionCall {
-    @Nullable
+
+    @NotNull
     private String functionName;
     @Nullable
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
     @Nullable
-    private AIFunctionDescriptor function;
+    private transient AIFunctionDescriptor function;
 
     /**
      * Properties received from AI engine. Can be required to pass down for further messages
@@ -44,6 +44,7 @@ public class AIFunctionCall {
     private Map<String, String> messageMetadata;
 
     public AIFunctionCall() {
+        functionName = "";
     }
 
     public AIFunctionCall(
@@ -60,8 +61,11 @@ public class AIFunctionCall {
         this(functionName, arguments, null);
     }
 
-    @Nullable
+    @NotNull
     public String getFunctionName() {
+        if (function != null) {
+            return function.getFullId();
+        }
         return functionName;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,18 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 
 public class AIAssistantRegistry {
+
+    private static final Log log = Log.getLog(AIAssistantRegistry.class);
+
+    private static final String WORKSPACE_ATTR_ASSISTANT = "ai.assistant";
 
     private static AIAssistantRegistry instance = null;
 
@@ -55,16 +62,32 @@ public class AIAssistantRegistry {
     }
 
     @NotNull
-    public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws IllegalStateException {
-        if (globalDescriptor != null) {
-            try {
-                return (T) globalDescriptor.createInstance(workspace);
-            } catch (DBException e) {
-                throw new IllegalStateException(e);
+    public <T extends AIAssistant> T getAssistant(@NotNull DBPWorkspace workspace) {
+        synchronized (this) {
+            SMSession workspaceSession = workspace.getWorkspaceSession();
+            if (workspaceSession instanceof SMSessionPersistent sp) {
+                T assistant = sp.getAttribute(WORKSPACE_ATTR_ASSISTANT);
+                if (assistant == null) {
+                    assistant = createAssistant(workspace);
+                    sp.setAttribute(WORKSPACE_ATTR_ASSISTANT, assistant);
+                }
+                return assistant;
             }
-        } else {
-            return (T) new AIAssistantImpl(workspace);
         }
+        // No persistent session - create new assistant on each call
+        return createAssistant(workspace);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) {
+        try {
+            if (globalDescriptor != null) {
+                return (T) globalDescriptor.createInstance(workspace);
+            }
+        } catch (DBException e) {
+            log.error("Error creating AI assistant", e);
+        }
+        return (T)new AIAssistantImpl(workspace);
     }
 
 }

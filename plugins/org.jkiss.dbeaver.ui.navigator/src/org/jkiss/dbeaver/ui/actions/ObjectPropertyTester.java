@@ -299,6 +299,10 @@ public class ObjectPropertyTester extends PropertyTester {
         if (node instanceof DBNProject && DBWorkbench.isDistributed()) {
             return false;
         }
+        if (node instanceof DBNDataSource) {
+            // We always can create datasource
+            return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+        }
         if (node instanceof DBNDatabaseNode dbNode){
             if (dbNode.isVirtual() || !workspace.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                 // Can't create virtual objects
@@ -308,13 +312,13 @@ public class ObjectPropertyTester extends PropertyTester {
             if (dataSource != null && dataSource.getInfo().isReadOnlyMetaData()) {
                 return false;
             }
-            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(dbNode)) {
+            if (isMetadataChangeDisabled(dbNode)) {
                 return false;
             }
         }
         if (onlySingle == null) {
             // Just try to find first create handler
-            if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
+            if (node instanceof DBNLocalFolder) {
                 // We always can create datasource
                 return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
             }
