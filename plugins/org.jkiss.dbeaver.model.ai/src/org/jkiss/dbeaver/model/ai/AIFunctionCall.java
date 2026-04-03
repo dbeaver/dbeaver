@@ -114,5 +114,12 @@ public class AIFunctionCall {
         return functionName + "(" + arguments + ")";
     }
 
+    @Nullable
+    public AIFunctionDescriptor getOrResolveFunction(@NotNull AIToolboxManager tbm) {
+        if (function == null) {
+            function = tbm.getFunctionByFullId(functionName);
+        }
+        return function;
+    }
 
 }
