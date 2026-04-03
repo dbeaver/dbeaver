@@ -75,7 +75,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         String queryText = null;
 
         // Remove orderings (#4652)
-        Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
+        Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), query.getText());
         if (statement instanceof PlainSelect plainSelect) {
             if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
                 plainSelect.setOrderByElements(null);
