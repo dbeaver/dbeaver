@@ -32,7 +32,7 @@ public class AIFunctionContext {
     @NotNull
     private final DBRProgressMonitor monitor;
     @Nullable
-    private final AIDatabaseContext context;
+    private AIDatabaseContext context;
     @NotNull
     private final AIPromptGenerator prompt;
     private final List<AIFunctionCall> functionCalls = new ArrayList<>();
@@ -55,6 +55,10 @@ public class AIFunctionContext {
     @Nullable
     public AIDatabaseContext getContext() {
         return context;
+    }
+
+    public void setContext(@NotNull AIDatabaseContext context) {
+        this.context = context;
     }
 
     @NotNull
