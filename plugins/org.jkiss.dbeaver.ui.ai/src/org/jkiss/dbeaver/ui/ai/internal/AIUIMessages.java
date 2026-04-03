@@ -69,6 +69,26 @@ public class AIUIMessages extends NLS {
 
     public static String ai_suggestion_popup_title;
     public static String ai_suggestion_popup_message;
+    public static String scope_selector_customize;
+    public static String scope_selector_not_available;
+    public static String scope_selector_custom_objects;
+    public static String openai_configurator_legacy_api_label;
+    public static String openai_configurator_legacy_api_tip;
+    public static String openai_configurator_log_query_label;
+    public static String openai_configurator_log_query_tip;
+    public static String openai_configurator_temperature_tip;
+    public static String openai_configurator_token_required;
+    public static String openai_configurator_token_placeholder;
+    public static String legacy_translator_error_no_datasource_title;
+    public static String legacy_translator_error_no_datasource_message;
+    public static String legacy_translator_error_no_connection_title;
+    public static String legacy_translator_error_no_connection_message;
+    public static String legacy_translator_error_ai_title;
+    public static String legacy_translator_error_ai_engine_message;
+    public static String legacy_translator_error_no_completions_message;
+    public static String legacy_translator_error_completion_title;
+    public static String legacy_translator_error_insert_sql_title;
+    public static String legacy_translator_error_insert_sql_message;
 
     static {
         // initialize resource bundle
