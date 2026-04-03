@@ -138,18 +138,23 @@ public class AIToolboxRegistry implements AIToolboxManager {
 
     @Nullable
     @Override
-    public AIFunctionDescriptor getFunctionById(@NotNull String id) {
-        AIFunctionDescriptor function = internalToolbox.getFunctionById(id);
-        if (function == null) {
-            for (AIToolbox toolbox : externalToolboxes.values()) {
-                function = toolbox.getFunctionById(id);
-                if (function != null) {
-                    break;
-                }
-            }
+    public AIFunctionDescriptor getFunctionByFullId(@NotNull String fullId) {
+        int divPos = fullId.indexOf("_");
+        if (divPos < 0) {
+            log.debug("Wrong function full ID: " + fullId);
+            return null;
         }
+        String tbId = fullId.substring(0, divPos);
+        AIToolboxDescriptor toolbox = getToolbox(tbId);
+        if (toolbox == null) {
+            log.debug("Toolbox '" + tbId + "' not found");
+            return null;
+        }
+        String functionId = fullId.substring(divPos + 1);
+        AIFunctionDescriptor function = toolbox.getFunctionById(functionId);
         if (function == null) {
-            log.warn("AI function '" + id + "' not found in any accessible toolbox");
+            log.debug("Function '" + functionId + "' not found in toolbox '" + tbId + "'");
+            return null;
         }
         return function;
     }

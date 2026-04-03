@@ -20,47 +20,64 @@ import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TitledComposite;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Control> implements UIPanelBuilder {
-    private final List<UIRowBuilderImpl> rows = new ArrayList<>();
-    private final String text;
-    private final boolean expandable;
-    private final boolean expanded;
-    private int indent = 0;
-    private int marginLeft = 5;
-    private int marginTop = 5;
-    private int marginRight = 5;
-    private int marginBottom = 5;
+    sealed interface Kind {
+        record Expandable(@NotNull String text, boolean expanded) implements Kind {
+        }
 
-    private UIPanelBuilderImpl(@Nullable String text, boolean expandable, boolean expanded) {
-        this.text = text;
-        this.expandable = expandable;
-        this.expanded = expanded;
+        record Titled(@NotNull String text) implements Kind {
+        }
+
+        record Scrolled(boolean horizontal, boolean vertical) implements Kind {
+        }
+
+        record Simple() implements Kind {
+        }
+    }
+
+    private final Kind kind;
+    private final List<UIRowBuilderImpl> rows = new ArrayList<>();
+    private int indent = 0;
+    private int marginLeft = 0;
+    private int marginTop = 0;
+    private int marginRight = 0;
+    private int marginBottom = 0;
+
+    private UIPanelBuilderImpl(@NotNull Kind kind) {
+        this.kind = kind;
     }
 
     @NotNull
     static UIPanelBuilderImpl panel() {
-        return new UIPanelBuilderImpl(null, false, false);
+        return new UIPanelBuilderImpl(new Kind.Simple());
     }
 
     @NotNull
-    static UIPanelBuilderImpl group(@NotNull String text) {
-        return new UIPanelBuilderImpl(text, false, false);
+    static UIPanelBuilderImpl expandable(@NotNull String text, boolean expanded) {
+        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded));
     }
 
     @NotNull
-    static UIPanelBuilderImpl expandableGroup(@NotNull String text, boolean expanded) {
-        return new UIPanelBuilderImpl(text, true, expanded);
+    static UIPanelBuilderImpl titled(@NotNull String text) {
+        return new UIPanelBuilderImpl(new Kind.Titled(text));
+    }
+
+    @NotNull
+    static UIPanelBuilderImpl scrolled(boolean horizontal, boolean vertical) {
+        return new UIPanelBuilderImpl(new Kind.Scrolled(horizontal, vertical));
     }
 
     @NotNull
@@ -109,19 +126,13 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             throw new IllegalStateException("Panel cannot be empty");
         }
 
-        Composite host;
-        if (expandable) {
-            host = UIControlFactory.createExpandableComposite(parent);
-        } else {
-            host = parent;
-        }
-
-        Composite client;
-        if (text != null && !expandable) {
-            client = UIControlFactory.createTitledComposite(host, text);
-        } else {
-            client = UIControlFactory.createComposite(host);
-        }
+        Composite host = switch (kind) {
+            case Kind.Expandable k -> UIControlFactory.createExpandableComposite(parent, k.text());
+            case Kind.Titled k -> UIControlFactory.createTitledComposite(parent, k.text());
+            case Kind.Scrolled k -> UIControlFactory.createScrolledComposite(parent, k.horizontal(), k.vertical());
+            case Kind.Simple ignored -> parent;
+        };
+        Composite client = UIControlFactory.createComposite(host);
 
         // Compute max number of columns based on rows' controls
         int columns = rows.stream()
@@ -130,6 +141,7 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
 
         GridLayoutFactory.fillDefaults()
             .numColumns(columns)
+            .margins(0, 0)
             .extendedMargins(marginLeft, marginRight, marginTop, marginBottom)
             .applyTo(client);
 
@@ -137,15 +149,25 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             buildRow(context, row, client, columns);
         }
 
-        if (expandable) {
-            var composite = (ExpandableComposite) host;
-            composite.setClient(client);
-            composite.setText(text);
-            composite.setExpanded(expanded, true);
-            return composite;
-        }
-
-        return client;
+        return switch (kind) {
+            case Kind.Expandable k -> {
+                var composite = (ExpandableComposite) host;
+                composite.setClient(client);
+                composite.setExpanded(k.expanded(), true);
+                yield composite;
+            }
+            case Kind.Titled ignored -> {
+                var composite = (TitledComposite) host;
+                composite.setClient(client);
+                yield composite;
+            }
+            case Kind.Scrolled ignored -> {
+                var composite = (ScrolledComposite) host;
+                UIUtils.configureScrolledComposite(composite, client);
+                yield composite;
+            }
+            case Kind.Simple ignored -> client;
+        };
     }
 
     private void buildRow(

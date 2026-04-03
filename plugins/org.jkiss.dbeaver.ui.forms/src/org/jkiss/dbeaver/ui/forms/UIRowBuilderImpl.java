@@ -61,8 +61,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder group(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler) {
-        var builder = UIPanelBuilderImpl.group(text);
+    public UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.expandable(text, expanded);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -70,8 +70,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
-        var builder = UIPanelBuilderImpl.expandableGroup(text, expanded);
+    public UIRowBuilder titledPanel(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.titled(text);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -79,8 +79,30 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder label(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler) {
-        var builder = new UIControlBuilderImpl.LabelBuilderImpl(text, SWT.NONE);
+    public UIRowBuilder scrolledPanel(boolean horizontal, boolean vertical, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.scrolled(horizontal, vertical);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder label(@NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler) {
+        var builder = new UIControlBuilderImpl.LabelBuilderImpl();
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder link(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<SelectionEvent> onSelect,
+        @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler
+    ) {
+        var builder = new UIControlBuilderImpl.LinkBuilderImpl(text, onSelect, SWT.NONE);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -119,7 +141,10 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public <T> UIRowBuilder textField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler) {
+    public <T> UIRowBuilder textField(
+        @NotNull UIObservable<T> binding,
+        @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler
+    ) {
         var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER, binding);
         handler.accept(builder);
         controls.add(builder);
@@ -128,7 +153,10 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public <T> UIRowBuilder passwordField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler) {
+    public <T> UIRowBuilder passwordField(
+        @NotNull UIObservable<T> binding,
+        @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler
+    ) {
         var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
         handler.accept(builder);
         controls.add(builder);
@@ -138,19 +166,19 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @NotNull
     @Override
     public <T> UIRowBuilder comboBox(
-        @NotNull List<? extends T> items,
+        @NotNull UIObservableList<? extends T> items,
         @NotNull UIObservable<T> binding,
         @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     ) {
-        if (items.isEmpty()) {
-            throw new IllegalArgumentException("Enum doesn't have any constants");
-        }
-
-        var builder = new UIControlBuilderImpl.ComboBuilderImpl<T>(binding, converter, items, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        var builder = new UIControlBuilderImpl.ComboBuilderImpl<>(
+            items,
+            binding,
+            converter,
+            SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY
+        );
         handler.accept(builder);
         controls.add(builder);
         return this;
     }
-
 }

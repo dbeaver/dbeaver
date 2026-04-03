@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING, "");
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, false);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);

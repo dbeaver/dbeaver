@@ -33,6 +33,7 @@ public abstract class AbstractSessionPersistent implements SMSessionPersistent {
     protected final Map<String, Object> attributes = new HashMap<>();
     private final Map<String, ThrowableConsumer<Object, Exception>> attributeDisposers = new HashMap<>();
 
+    @NotNull
     @Override
     public Map<String, Object> getAttributes() {
         synchronized (attributes) {
@@ -73,6 +74,7 @@ public abstract class AbstractSessionPersistent implements SMSessionPersistent {
         }
     }
 
+    @Override
     @NotNull
     public <T, E extends Exception> T getAttribute(
         @NotNull String name,
@@ -118,7 +120,12 @@ public abstract class AbstractSessionPersistent implements SMSessionPersistent {
 
     @Override
     public void close() {
-
+        try {
+            resetSessionCache();
+        } catch (DBCException e) {
+            log.error("Error cleaning up session cache", e);
+        }
+        this.attributes.clear();
     }
 
     private record PersistentAttribute(Object value) {
