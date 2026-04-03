@@ -107,7 +107,7 @@ public class AIEngineRequestFactory {
         String dbSnapshot = "";
         boolean isContextTruncated = false;
 
-        if (!engineDescriptor.isSupportsFunctions()) {
+        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
             // Build DB snapshot in first prompt if engine doesn't support functions
             // (functions provide smart context read)
             if (databaseContext != null && dbSnapshotTokenBudget > 0) {
@@ -152,17 +152,23 @@ public class AIEngineRequestFactory {
         return request;
     }
 
+    private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIEngineDescriptor engineDescriptor) {
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        return engineDescriptor.isSupportsFunctions() && functionSettings.isFunctionsEnabled();
+    }
+
     @NotNull
     protected RequestFunctions determineRequestTools(
         @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIFunctionContext functionContext
     ) {
-        AIToolboxManager toolboxManager = assistant.getToolboxManager();
-        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
-        if (!engineDescriptor.isSupportsFunctions() || !functionSettings.isFunctionsEnabled()) {
+        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
             return new RequestFunctions();
         }
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
 
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
         AIPromptGeneratorDescriptor prompt = AIPromptGeneratorRegistry.getInstance()
