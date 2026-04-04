@@ -148,6 +148,16 @@ public class SQLServerUtils {
         return !isDriverAzure(dataSource.getContainer().getDriver());
     }
 
+    public static int getDisplayMaxLength(@NotNull DBPDataSource dataSource, @NotNull String typeName, int rawMaxLength) {
+        if (rawMaxLength > 0 && isUnicodeCharStoredAsBytePairs(dataSource)) {
+            if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
+                // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql#arguments
+                return rawMaxLength / 2;
+            }
+        }
+        return rawMaxLength;
+    }
+
     public static boolean supportsCrossDatabaseQueries(JDBCDataSource dataSource) {
         final DBPDriver driver = dataSource.getContainer().getDriver();
         if (isDriverBabelfish(driver)) {
