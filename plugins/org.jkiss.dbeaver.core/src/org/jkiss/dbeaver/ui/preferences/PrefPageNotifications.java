@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
@@ -61,6 +62,7 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
     private Spinner soundVolumeSpinner;
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
+    private Button trayIconCheckbox;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -121,6 +123,14 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
                 group,
                 CoreMessages.pref_page_ui_general_label_long_operation_timeout + UIMessages.label_sec,
                 preferences.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT), 0, Integer.MAX_VALUE
+            );
+
+            trayIconCheckbox = UIUtils.createCheckbox(
+                group,
+                CoreMessages.pref_page_notifications_tray_icon_label,
+                CoreMessages.pref_page_notifications_tray_icon_tip,
+                preferences.getBoolean(DBeaverPreferences.UI_TRAY_ICON_ENABLED),
+                2
             );
         }
 
@@ -278,6 +288,12 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
         preferences.setValue(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME, soundVolumeSpinner.getSelection());
         preferences.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
         preferences.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
+        preferences.setValue(DBeaverPreferences.UI_TRAY_ICON_ENABLED, trayIconCheckbox.getSelection());
+
+        final UIServiceSystemAgent systemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
+        if (systemAgent != null) {
+            systemAgent.syncTrayIconWithPreference();
+        }
 
         return super.performOk();
     }
@@ -300,6 +316,7 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
         soundVolumeSpinner.setSelection(preferences.getDefaultInt(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME));
         longOperationsCheck.setSelection(preferences.getDefaultBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(preferences.getDefaultInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
+        trayIconCheckbox.setSelection(preferences.getDefaultBoolean(DBeaverPreferences.UI_TRAY_ICON_ENABLED));
 
         viewer.refresh();
 

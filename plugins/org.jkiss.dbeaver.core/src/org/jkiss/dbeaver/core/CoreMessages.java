@@ -487,6 +487,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_notifications_column_name_label;
     public static String pref_page_notifications_column_sound_label;
     public static String pref_page_notifications_column_popup_label;
+    public static String pref_page_notifications_tray_icon_label;
+    public static String pref_page_notifications_tray_icon_tip;
 
     public static String pref_page_database_general_label_sync_editor_connection_with_navigator;
     public static String pref_page_database_general_label_sync_editor_connection_with_navigator_tip;

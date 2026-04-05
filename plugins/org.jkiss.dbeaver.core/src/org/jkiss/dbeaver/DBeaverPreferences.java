@@ -29,6 +29,9 @@ public final class DBeaverPreferences
     public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_TIMEOUT = "agent.long.operation.timeout"; //$NON-NLS-1$
 
+    /** When true, long-operation agent notifications use the system tray icon (where supported). */
+    public static final String UI_TRAY_ICON_ENABLED = "ui.tray.icon.enabled"; //$NON-NLS-1$
+
     public static final String SECURITY_USE_BOUNCY_CASTLE = "security.jce.bc"; //$NON-NLS-1$
 
     public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level"; //$NON-NLS-1$

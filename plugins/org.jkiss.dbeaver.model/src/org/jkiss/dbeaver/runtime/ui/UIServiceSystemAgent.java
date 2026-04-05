@@ -32,5 +32,11 @@ public interface UIServiceSystemAgent {
      */
     void notifyAgent(String message, int status);
 
+    /**
+     * Applies tray icon visibility to the current preference (e.g. removes the tray icon when disabled).
+     */
+    default void syncTrayIconWithPreference() {
+        // no-op unless the desktop implementation supports a tray icon
+    }
 
 }

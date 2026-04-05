@@ -49,10 +49,15 @@ public class UIServiceSystemAgentImpl implements UIServiceSystemAgent {
             // Notifications disabled
             return;
         }
-        if (TrayIconHandler.isSupported()) {
+        final boolean trayIconEnabled = DBWorkbench.getPlatform().getPreferenceStore()
+            .getBoolean(DBeaverPreferences.UI_TRAY_ICON_ENABLED);
+        if (TrayIconHandler.isSupported() && trayIconEnabled) {
             UIUtils.syncExec(() -> Display.getCurrent().beep());
             trayItem.notify(message, status);
         } else {
+            if (TrayIconHandler.isSupported()) {
+                trayItem.hide();
+            }
             DBeaverNotifications.showNotification(
                 "agent.notify",
                 "Agent Notification",
@@ -63,5 +68,12 @@ public class UIServiceSystemAgentImpl implements UIServiceSystemAgent {
         }
     }
 
+    @Override
+    public void syncTrayIconWithPreference() {
+        if (TrayIconHandler.isSupported()
+            && !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.UI_TRAY_ICON_ENABLED)) {
+            trayItem.hide();
+        }
+    }
 
 }
