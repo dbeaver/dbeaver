@@ -259,11 +259,6 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
-        return getDefaultDataSourceNavigatorSettings();
-    }
-
-    @NotNull
-    public static DataSourceNavigatorSettings getDefaultDataSourceNavigatorSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);

@@ -38,7 +38,10 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -146,10 +149,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @Override
     DBNBrowseSettings getSelectedNavigatorSettings() {
-        DBNBrowseSettings currentSettings = dataSource.getNavigatorSettings();
-        return DBWorkbench.isDistributed() && currentSettings.isUserSettings()
-            ? DataSourceNavigatorSettings.getDefaultSettings()
-            : dataSource.getNavigatorSettings();
+        return dataSource.getNavigatorSettings();
     }
 
     @Nullable
