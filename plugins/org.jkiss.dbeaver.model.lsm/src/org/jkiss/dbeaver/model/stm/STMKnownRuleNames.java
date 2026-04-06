@@ -371,4 +371,5 @@ public class STMKnownRuleNames {
     public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
     public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
     public static final String LATERAL_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LATERAL);
+    public static final String DEFAULT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.DEFAULT);
 }
