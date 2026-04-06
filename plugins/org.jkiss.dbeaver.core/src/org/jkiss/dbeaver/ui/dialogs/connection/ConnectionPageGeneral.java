@@ -286,7 +286,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Override
     public void createControl(Composite parent) {
         if (navigatorSettings == null) {
-            navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+            DBNBrowseSettings settings = getWizard().getSelectedNavigatorSettings();
+            navigatorSettings = new DataSourceNavigatorSettings(settings.isUserSettings() ? settings.getOriginalSettings() : settings);
         }
 
         initializeDialogUnits(parent);
