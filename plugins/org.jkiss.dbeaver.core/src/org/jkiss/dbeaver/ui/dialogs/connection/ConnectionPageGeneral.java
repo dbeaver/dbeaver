@@ -132,7 +132,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void setNavigatorSettings(DBNBrowseSettings settings) {
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings settings) {
         this.navigatorSettings = settings;
 
         if (showVirtualModelCheck != null) {
@@ -147,10 +147,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     @Override
     public void activatePage() {
-        if (this.navigatorSettings == null) {
-            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
-        }
-
         if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
 
@@ -674,9 +670,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             dsDescriptor.setDescription(description);
         }
 
-        if (this.navigatorSettings == null) {
-            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
-        }
         dsDescriptor.setNavigatorSettings(this.navigatorSettings);
 
         dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());

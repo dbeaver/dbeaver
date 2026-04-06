@@ -326,9 +326,6 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                     log.error("Error clearing custom navigator settings", logged);
                 }
             }
-            if (dsContainer instanceof DataSourceDescriptor descriptor) {
-                descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
-            }
             askToReconnectIfNeeded();
             visibleCheck();
         }
