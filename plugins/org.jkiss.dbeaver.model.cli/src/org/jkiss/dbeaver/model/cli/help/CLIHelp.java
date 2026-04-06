@@ -119,19 +119,18 @@ public class CLIHelp extends CommandLine.Help {
         @Override
         public Ansi.Text[][] render(CommandLine.Model.OptionSpec option, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
             Ansi.Text[][] rows = delegate.render(option, paramLabelRenderer, scheme);
-
-            if (CLIUtils.isRequiredOption(option)) {
-                for (Ansi.Text[] row : rows) {
-                    if (ArrayUtils.isEmpty(row)) {
-                        continue;
+            for (Ansi.Text[] row : rows) {
+                if (ArrayUtils.isEmpty(row)) {
+                    continue;
+                }
+                // according to the source code, the number of elements can be 5 or 2 (in the minimalist rendering),
+                // description is always last, we insert the mark before it
+                if (row.length > 2) {
+                    String argType = getArgType(option);
+                    if (CommonUtils.isNotEmpty(argType)) {
+                        row[row.length - 2] = row[row.length - 2].concat("<" + argType + ">");
                     }
-                    // according to the source code, the number of elements can be 5 or 2 (in the minimalist rendering),
-                    //  description is always last, we insert the mark before it
-                    if (row.length > 2) {
-                        String argType = getArgType(option);
-                        if (CommonUtils.isNotEmpty(argType)) {
-                            row[row.length - 2] = row[row.length - 2].concat("<" + argType + ">");
-                        }
+                    if (CLIUtils.isRequiredOption(option)) {
                         //insert required marker before description
                         row[row.length - 2] = row[row.length - 2].concat("(required)");
                     }
