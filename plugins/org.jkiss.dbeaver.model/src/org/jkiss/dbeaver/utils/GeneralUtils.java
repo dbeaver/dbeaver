@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -448,6 +448,21 @@ public class GeneralUtils {
 
     public static boolean isWhitespaceExt(char c) {
         return c <= ' ' || c == 0x160;
+    }
+
+    @NotNull
+    public static String findJavaExecutable() throws IOException {
+        String javaHome = System.getProperty("java.home");
+        if (javaHome == null) {
+            throw new IOException("java.home is not set");
+        }
+
+        Path java = Path.of(javaHome, "bin", RuntimeUtils.isWindows() ? "java.exe" : "java");
+        if (!Files.isExecutable(java)) {
+            throw new IOException("Java executable not found at " + java);
+        }
+
+        return java.toAbsolutePath().toString();
     }
 
     public interface IParameterHandler {
@@ -1002,8 +1017,7 @@ public class GeneralUtils {
         }
     }
 
-
-    @Nullable
+    @NotNull
     public static String makeStandardErrorMessage(@NotNull Throwable error) {
         if (error instanceof UnknownHostException) {
             return "Unknown host " + CommonUtils.notEmpty(error.getMessage());
@@ -1015,8 +1029,16 @@ public class GeneralUtils {
             return "Class not found: " + cnfe.getMessage();
         } else if (error instanceof NoClassDefFoundError ncdf) {
             return "Class definition not found: " + ncdf.getMessage();
+        } else if (error instanceof IllegalArgumentException iae) {
+            if (!CommonUtils.isEmptyTrimmed(iae.getMessage())) {
+                return "Invalid argument: " + iae.getMessage();
+            }
         }
-        return error.getLocalizedMessage();
+        String localizedMessage = error.getLocalizedMessage();
+        if (CommonUtils.isEmpty(localizedMessage)) {
+            return error.getClass().getSimpleName();
+        }
+        return localizedMessage;
     }
 
 }

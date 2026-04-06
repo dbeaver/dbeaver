@@ -80,7 +80,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
         connectionNamePattern = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
+        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings();
     }
 
     @NotNull
@@ -245,13 +245,15 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     private void addLinkToSettings(Composite composite, String pageID) {
-        UIUtils.createPreferenceLink(
-            composite,
-            "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
-            pageID,
-            (IWorkbenchPreferenceContainer) getContainer(),
-            null
-        );
+        if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+            UIUtils.createPreferenceLink(
+                composite,
+                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
+                pageID,
+                wpc,
+                null
+            );
+        }
     }
 
     @Override

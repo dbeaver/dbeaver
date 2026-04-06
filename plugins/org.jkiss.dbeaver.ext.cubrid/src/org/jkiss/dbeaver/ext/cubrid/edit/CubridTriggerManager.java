@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -43,8 +44,12 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
 
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        CubridTable table = (CubridTable) container;
-        boolean isShard = table.getDataSource().isShard();
+        boolean isShard = false;
+        if (container instanceof CubridUser owner) {
+            isShard = owner.getDataSource().isShard();
+        } else if (container instanceof CubridTable table) {
+            isShard = table.getDataSource().isShard();
+        }
         return !isShard && container instanceof GenericTableBase;
     }
 
@@ -56,22 +61,21 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
         Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        return new CubridTrigger((GenericTableBase) container, BASE_TRIGGER_NAME, monitor);
+    	CubridTable table = (CubridTable) container;
+        return new CubridTrigger(table.getSchema(), table, BASE_TRIGGER_NAME, monitor);
     }
 
     public void createTrigger(CubridTrigger trigger, StringBuilder sb) {
         sb.append("\n").append(trigger.getActionTime()).append(" ");
-        if (trigger.getEvent().equals("COMMIT") || trigger.getEvent().equals("ROLLBACK")) {
-            sb.append(trigger.getEvent());
-        } else {
-            sb.append(trigger.getEvent());
+        sb.append(trigger.getEvent());
+        if (!trigger.getEvent().equals("COMMIT") && !trigger.getEvent().equals("ROLLBACK")) {
             sb.append(" ON ").append(trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL));
             if (trigger.getEvent().contains("UPDATE") && trigger.getTargetColumn() != null) {
                 sb.append("(" + DBUtils.getQuotedIdentifier(trigger.getDataSource(), trigger.getTargetColumn()) + ")");
             }
-            if (trigger.getCondition() != null) {
-                sb.append("\nIF ").append(trigger.getCondition());
-            }
+        }
+        if (trigger.getCondition() != null) {
+            sb.append("\nIF ").append(trigger.getCondition());
         }
         sb.append("\nEXECUTE ");
         if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE TRANSACTION")) {

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
+import org.eclipse.core.internal.net.ProxyManager;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -45,7 +47,6 @@ import org.eclipse.ui.wizards.IWizardDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -80,11 +81,14 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
 import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
+import java.net.Authenticator;
 import java.util.List;
 import java.util.*;
 
@@ -122,7 +126,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID,
         PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
 
-        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
+        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID,
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -130,11 +134,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     // Move to UI
     private static final String[] UI_PREF_PAGES = {
-            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
-            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
-            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
-            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-            PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
+        PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + PrefPageConstants.EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors", //"File Associations"
+        PrefPageConstants.P2_PROVISIONING_PREF_PAGE_ID + "/" + PrefPageConstants.P2_SITES_PREF_PAGE_ID,
     };
 
     // Move to Editors
@@ -185,6 +190,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
+    private static ServiceRegistration<IProxyService> proxyService;
+
     private final OpenEventProcessor processor;
 
     private final SystemEventListener systemSleepListener = new SystemSleepListener() {
@@ -255,6 +262,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void preStartup() {
         super.preStartup();
 
+        // Activate proxy
+        activateProxyService(CoreApplicationActivator.getDefault().getBundle().getBundleContext());
+
+        // Track stats
         {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put("startTime", DBWorkbench.getPlatform().getApplication().getApplicationStartTime());
@@ -282,13 +293,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(true);
         }
-    }
-
-    protected boolean isPropertyChangeRequiresRestart(String property) {
-        return
-            property.equals(DBeaverPreferences.LOGS_DEBUG_ENABLED) ||
-            property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
-            property.equals(ModelPreferences.PLATFORM_LANGUAGE);
     }
 
     private void filterPreferencePages() {
@@ -380,6 +384,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(false);
+        }
+
+        if (proxyService != null) {
+            proxyService.unregister();
+            proxyService = null;
         }
     }
 
@@ -531,6 +540,24 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setToDefault(PROP_PERSPECTIVE_VERSION);
         store.setToDefault(PROP_WORKBENCH_VERSION);
+    }
+
+    private static void activateProxyService(@NotNull BundleContext context) {
+        // It may require master password and already initialized platform
+        try {
+            // Save default auth settings. They may be provided by Git or any other extension
+            // Proxy manager resets them to system default which is wrong
+            Authenticator currentAuthenticator = Authenticator.getDefault();
+            ProxyManager proxyManager = (ProxyManager) ProxyManager
+                .getProxyManager();
+            proxyManager.initialize();
+            proxyService = context.registerService(IProxyService.class, proxyManager, new Hashtable<>());
+            if (currentAuthenticator != null) {
+                Authenticator.setDefault(currentAuthenticator);
+            }
+        } catch (Throwable e) {
+            log.debug("Proxy service activation has failed", e);
+        }
     }
 
     /**

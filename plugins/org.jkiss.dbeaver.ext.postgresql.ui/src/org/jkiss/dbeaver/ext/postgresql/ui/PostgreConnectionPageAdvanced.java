@@ -198,7 +198,6 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
             );
         }
 
-
         setControl(cfgGroup);
 
         loadSettings();

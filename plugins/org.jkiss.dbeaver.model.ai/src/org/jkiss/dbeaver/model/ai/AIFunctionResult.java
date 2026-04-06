@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,26 +21,23 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
 public class AIFunctionResult {
-    public enum FunctionType {
-        INFORMATION,
-        ACTION
-    }
 
-
-    private final AIFunctionResult.FunctionType type;
+    @NotNull
+    private final AIFunctionType type;
+    @NotNull
     private final Object value;
     @Nullable
-    private final DBRRunnableWithReturn<?> callback;
+    private final transient DBRRunnableWithReturn<?> callback;
 
     public AIFunctionResult(
-        @NotNull AIFunctionResult.FunctionType type,
+        @NotNull AIFunctionType type,
         @NotNull Object value
     ) {
         this(type, value, null);
     }
 
     public AIFunctionResult(
-        @NotNull AIFunctionResult.FunctionType type,
+        @NotNull AIFunctionType type,
         @NotNull Object value,
         @Nullable DBRRunnableWithReturn<?> callback
     ) {
@@ -50,7 +47,7 @@ public class AIFunctionResult {
     }
 
     @NotNull
-    public AIFunctionResult.FunctionType getType() {
+    public AIFunctionType getType() {
         return type;
     }
 

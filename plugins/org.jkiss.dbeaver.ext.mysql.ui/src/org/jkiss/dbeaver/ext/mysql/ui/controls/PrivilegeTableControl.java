@@ -66,16 +66,14 @@ public class PrivilegeTableControl extends Composite {
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        Composite privsGroup = UIUtils.createTitledComposite(this, title, 1, GridData.FILL_BOTH);
-        GridData gd = (GridData) privsGroup.getLayoutData();
-        gd.horizontalSpan = 2;
+        Composite privsGroup = UIUtils.createTitledComposite(this, title, 1, GridData.FILL_BOTH, 0, 2);
 
         tableViewer = new TableViewer(privsGroup, SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
         privTable = tableViewer.getTable();
         privTable.setHeaderVisible(true);
         privTable.setLinesVisible(true);
-        gd = new GridData(GridData.FILL_BOTH);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 300;
         privTable.setLayoutData(gd);
 

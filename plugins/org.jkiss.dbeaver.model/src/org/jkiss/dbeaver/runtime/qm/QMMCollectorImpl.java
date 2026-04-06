@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,6 +217,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo connectionInfo = getConnectionInfo(context);
         if (connectionInfo != null) {
             connectionInfo.setTransactional(transactional);
+            tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
         }
     }
 
@@ -330,6 +331,22 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
             if (exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
+            }
+        }
+    }
+
+    @Override
+    public synchronized void handleFetchError(@NotNull DBCResultSet resultSet, @NotNull Throwable error) {
+        if (!DBExecUtils.isExecutionCanceled(resultSet.getSession().getDataSource(), error)) {
+            return;
+        }
+
+        QMMConnectionInfo executionContext = getConnectionInfo(resultSet.getSession().getExecutionContext());
+
+        if (executionContext != null) {
+            QMMStatementExecuteInfo execution = executionContext.execution(resultSet.getSourceStatement(), error);
+            if (execution != null) {
+                tryFireMetaEvent(execution, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }
     }

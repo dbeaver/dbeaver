@@ -23,26 +23,21 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPPersistedObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
+import org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBECommand;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBStructUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * SQLiteUtils
@@ -94,50 +89,10 @@ public class SQLiteUtils {
         }
     }
 
-    public static void createTableAlterActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull String reason,
-        @NotNull GenericTableBase table,
-        @NotNull Collection<DBEPersistAction> actions
-    ) throws DBException {
-        final Collection<? extends GenericTableColumn> attributes = CommonUtils.safeCollection(table.getAttributes(monitor)).stream()
-            .filter(DBPPersistedObject::isPersisted)
-            .toList();
-        if (CommonUtils.isEmpty(attributes)) {
-            throw new DBException("Table has no attributes");
+    public static void makeRecreateTableCommand(DBECommandContext commandContext, SQLiteTable table, DBECommand sourceCommand) {
+        if (DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(table.getClass()) instanceof SQLiteTableManager tableManager) {
+            Map<String, Object> options = new HashMap<>();
+            tableManager.addRecreateCommand(commandContext, table, options, sourceCommand);
         }
-        final String columns = attributes.stream()
-            .map(DBUtils::getQuotedIdentifier)
-            .collect(Collectors.joining(",\n  "));
-
-        actions.add(new SQLDatabasePersistActionComment(
-            table.getDataSource(),
-            reason
-        ));
-        GenericSchema schema = table.getSchema();
-        String schemaPart = schema != null ? DBUtils.getQuotedIdentifier(schema) + "." : "";
-        actions.add(new SQLDatabasePersistAction(
-            "Create temporary table from original table",
-            "CREATE TEMPORARY TABLE "  + schemaPart + "temp AS\nSELECT"
-                + (attributes.isEmpty() ? " *" : "\n  " + columns) + "\nFROM " + DBUtils.getQuotedIdentifier(table)
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Drop original table",
-            "\nDROP TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DML) + ";\n"
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Create new table",
-            DBStructUtils.generateTableDDL(monitor, table, Map.of(DBPScriptObject.OPTION_DDL_ONLY_PERSISTED_ATTRIBUTES, true), false)
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Insert values from temporary table to new table",
-            "INSERT INTO " + schemaPart + DBUtils.getQuotedIdentifier(table)
-                + (attributes.isEmpty() ? "" : "\n (" + columns + ")") + "\nSELECT"
-                + (attributes.isEmpty() ? " *" : "\n  " + columns) + "\nFROM temp"
-        ));
-        actions.add(new SQLDatabasePersistAction(
-            "Drop temporary table",
-            "\nDROP TABLE "  + schemaPart + "temp"
-        ));
     }
 }

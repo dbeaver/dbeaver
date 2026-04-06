@@ -61,7 +61,7 @@
                     categories="sql,analytic,columns"
                     singleConnection="true"
                     allowsEmptyPassword="true">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.9.5]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.9.7]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
                     <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.4.4]" bundle="!drivers.clickhouse_com"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
@@ -69,7 +69,6 @@
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="use_server_time_zone" value="false"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -95,16 +94,27 @@
                 type="config"
                 id="clickhouse-ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="SSL settings"
                 secured="false"
                 desktop="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
             <propertyGroup label="SSL Settings">
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert" label="CA Certificate Path" type="string" description="Path to a CA certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
+                          desktop="true"/>
             </propertyGroup>
             <propertyGroup label="Advanced Settings">
                 <property id="ssl.mode" label="SSL mode" type="string" description="Is certificate verification required" validValues="STRICT,NONE" defaultValue="STRICT"/>

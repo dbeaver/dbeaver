@@ -167,8 +167,8 @@
                     <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
                     <replace provider="mssql" driver="mssql_jdbc_legacy"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.2.1.jre11]" bundle="!drivers.mssql.new"/>
-                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[13.2.1.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.4.0.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[13.4.0.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
                     <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
 
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
@@ -201,7 +201,7 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_azure"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.2.1.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.4.0.jre11]" bundle="!drivers.mssql.new"/>
                     <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
 
@@ -228,7 +228,7 @@
 
                     <replace provider="mssql" driver="mssql_jdbc_babelfish"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.2.1.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.4.0.jre11]" bundle="!drivers.mssql.new"/>
                     <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
                     <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
                     <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
@@ -558,14 +558,20 @@
                 type="config"
                 id="mssql_ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="SSL settings"
                 desktop="false"
                 secured="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="KEYSTORE" defaultValue="KEYSTORE"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
             <propertyGroup label="Parameters">
                 <property id="ssl.keystore.value" label="Keystore" type="file" features="secured,password,file"/>
+                <property id="ssl.keystore" label="Keystore path" type="string" desktop="true"/>
                 <property id="ssl.keystore.password" label="Keystore password" type="string" features="secured,password"/>
                 <property id="sslKeyStoreHostname" label="Certificate hostname" type="string"/>
             </propertyGroup>

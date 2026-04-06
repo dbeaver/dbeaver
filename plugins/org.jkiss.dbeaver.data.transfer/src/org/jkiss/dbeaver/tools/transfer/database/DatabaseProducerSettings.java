@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -35,6 +37,8 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         SEGMENTS
     }
 
+    public record FetchedRowsPolicy(boolean selectedRowsOnly, boolean selectedColumnsOnly) {}
+
     private static final int DEFAULT_SEGMENT_SIZE = 100000;
     private static final int DEFAULT_FETCH_SIZE = 10000;
 
@@ -42,8 +46,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
 
     private boolean openNewConnections = true;
     private boolean queryRowCount = true;
-    private boolean selectedRowsOnly = false;
-    private boolean selectedColumnsOnly = false;
+    private FetchedRowsPolicy fetchedRowsPolicy;
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
     private int fetchSize = DEFAULT_FETCH_SIZE;
 
@@ -76,20 +79,19 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         this.fetchSize = fetchSize;
     }
 
-    public boolean isSelectedRowsOnly() {
-        return selectedRowsOnly;
+    /**
+     * Get fetched rows policy.
+     * <p>
+     * If {@code null}, then all rows should are extracted. Otherwise,
+     * only fetched rows those are selected according to the policy are extracted.
+     */
+    @Nullable
+    public FetchedRowsPolicy getFetchedRowsPolicy() {
+        return fetchedRowsPolicy;
     }
 
-    public void setSelectedRowsOnly(boolean selectedRowsOnly) {
-        this.selectedRowsOnly = selectedRowsOnly;
-    }
-
-    public boolean isSelectedColumnsOnly() {
-        return selectedColumnsOnly;
-    }
-
-    public void setSelectedColumnsOnly(boolean selectedColumnsOnly) {
-        this.selectedColumnsOnly = selectedColumnsOnly;
+    public void setFetchedRowsPolicy(@Nullable FetchedRowsPolicy fetchedRowsPolicy) {
+        this.fetchedRowsPolicy = fetchedRowsPolicy;
     }
 
     public boolean isOpenNewConnections() {
@@ -100,11 +102,12 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         this.openNewConnections = openNewConnections;
     }
 
+    @NotNull
     public ExtractType getExtractType() {
         return extractType;
     }
 
-    public void setExtractType(ExtractType extractType) {
+    public void setExtractType(@NotNull ExtractType extractType) {
         this.extractType = extractType;
     }
 
@@ -116,8 +119,15 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         fetchSize = CommonUtils.toInt(settings.get("fetchSize"), fetchSize);
         openNewConnections = CommonUtils.toBoolean(settings.get("openNewConnections"));
         queryRowCount = CommonUtils.toBoolean(settings.get("queryRowCount"));
-        selectedColumnsOnly = CommonUtils.toBoolean(settings.get("selectedColumnsOnly"));
-        selectedRowsOnly = CommonUtils.toBoolean(settings.get("selectedRowsOnly"));
+
+        boolean fetchedRowsOnly = CommonUtils.toBoolean(settings.get("fetchedRowsOnly"));
+        boolean selectedRowsOnly = CommonUtils.toBoolean(settings.get("selectedRowsOnly"));
+        boolean selectedColumnsOnly = CommonUtils.toBoolean(settings.get("selectedColumnsOnly"));
+        if (fetchedRowsOnly || selectedRowsOnly || selectedColumnsOnly) {
+            fetchedRowsPolicy = new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly);
+        } else {
+            fetchedRowsPolicy = null;
+        }
     }
 
     @Override
@@ -127,8 +137,9 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         settings.put("fetchSize", fetchSize);
         settings.put("openNewConnections", openNewConnections);
         settings.put("queryRowCount", queryRowCount);
-        settings.put("selectedColumnsOnly", selectedColumnsOnly);
-        settings.put("selectedRowsOnly", selectedRowsOnly);
+        settings.put("fetchedRowsOnly", fetchedRowsPolicy != null);
+        settings.put("selectedColumnsOnly", fetchedRowsPolicy != null && fetchedRowsPolicy.selectedColumnsOnly());
+        settings.put("selectedRowsOnly", fetchedRowsPolicy != null && fetchedRowsPolicy.selectedRowsOnly());
     }
 
     @Override
@@ -138,8 +149,17 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_new_connection, openNewConnections);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_extract_type, extractType.name());
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, queryRowCount);
-        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, selectedRowsOnly);
-        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, selectedColumnsOnly);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_fetched_rows_only, fetchedRowsPolicy != null);
+        DTUtils.addSummary(
+            summary,
+            DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only,
+            fetchedRowsPolicy != null && fetchedRowsPolicy.selectedRowsOnly()
+        );
+        DTUtils.addSummary(
+            summary,
+            DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only,
+            fetchedRowsPolicy != null && fetchedRowsPolicy.selectedColumnsOnly()
+        );
 
         return summary.toString();
     }

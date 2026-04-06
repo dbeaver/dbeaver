@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -877,7 +877,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
-            if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
+            if (PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                return ErrorType.EXECUTION_CANCELED;
+            } else if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
             } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
                 return ErrorType.TRANSACTION_ABORTED;

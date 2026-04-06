@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -60,6 +61,8 @@ public class StatisticsTransmitter {
 
     public void send(boolean detached) {
         if (detached) {
+            log.debug("Schedule collected statistics send");
+
             new AbstractJob("Usage statistics transmitter") {
                 {
                     setSystem(true);
@@ -72,6 +75,8 @@ public class StatisticsTransmitter {
                 }
             }.schedule(3000);
         } else {
+            log.debug("Send collected statistics");
+
             sendStatistics(new LoggingProgressMonitor(log), true);
         }
     }
@@ -124,7 +129,7 @@ public class StatisticsTransmitter {
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             Map<String, String> parametersMap = new HashMap<>();
-            parametersMap.put("Content-Type", "text/plain");
+            parametersMap.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_TEXT_PLAIN);
             parametersMap.put("Locale", Locale.getDefault().toString());
             parametersMap.put("Country", Locale.getDefault().getISO3Country());
             parametersMap.put("Timezone", TimeZone.getDefault().getID());

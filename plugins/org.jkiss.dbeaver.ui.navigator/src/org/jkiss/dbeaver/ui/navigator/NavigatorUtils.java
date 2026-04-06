@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -43,7 +41,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -60,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -98,16 +96,17 @@ import java.util.*;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-    public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
-    {
+
+    @Nullable
+    public static DBNNode getSelectedNode(@Nullable ISelectionProvider selectionProvider) {
         if (selectionProvider == null) {
             return null;
         }
         return getSelectedNode(selectionProvider.getSelection());
     }
 
-    public static DBNNode getSelectedNode(ISelection selection)
-    {
+    @Nullable
+    public static DBNNode getSelectedNode(@NotNull ISelection selection) {
         if (selection.isEmpty()) {
             return null;
         }
@@ -162,8 +161,8 @@ public class NavigatorUtils {
      * @param element ui element
      * @return node or null
      */
-    public static DBNNode getSelectedNode(UIElement element)
-    {
+    @Nullable
+    public static DBNNode getSelectedNode(@NotNull UIElement element) {
         ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
         if (selectionProvider != null) {
             return NavigatorUtils.getSelectedNode(selectionProvider);
@@ -172,23 +171,23 @@ public class NavigatorUtils {
         }
     }
 
-    public static DBSObject getSelectedObject(ISelection selection)
-    {
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+    @Nullable
+    public static DBSObject getSelectedObject(@NotNull ISelection selection) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection ss)) {
             return null;
         }
-        return DBUtils.getFromObject(((IStructuredSelection)selection).getFirstElement());
+        return DBUtils.getFromObject(ss.getFirstElement());
     }
 
-    public static List<DBSObject> getSelectedObjects(ISelection selection)
-    {
+    @NotNull
+    public static List<DBSObject> getSelectedObjects(@NotNull ISelection selection) {
         if (selection.isEmpty()) {
             return Collections.emptyList();
         }
         List<DBSObject> result = new ArrayList<>();
-        if (selection instanceof IStructuredSelection) {
-            for (Iterator iter = ((IStructuredSelection)selection).iterator(); iter.hasNext(); ) {
-                DBSObject selectedObject = DBUtils.getFromObject(iter.next());
+        if (selection instanceof IStructuredSelection ss) {
+            for (Object o : ss) {
+                DBSObject selectedObject = DBUtils.getFromObject(o);
                 if (selectedObject != null) {
                     result.add(selectedObject);
                 }
@@ -443,6 +442,7 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
+            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -474,6 +474,7 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
+                    nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
                 }
             }
             // Save folders
@@ -484,12 +485,17 @@ public class NavigatorUtils {
                 targetNode.setNodeFilter(
                     nodeMeta,
                     entry.getValue(),
-                    false);
+                    false
+                );
                 changedContainers.add(targetNode.getDataSourceContainer());
             }
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
-                ds.persistConfiguration();
+                if (isSaveAsCurrentUserFilterOnly) {
+                    UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
+                } else {
+                    ds.persistConfiguration();
+                }
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
@@ -569,14 +575,8 @@ public class NavigatorUtils {
                 DBPResourceHandler resourceHandler = resource.getHandler();
                 resourceHandler.openResource(resource.getResource());
             } else if (node instanceof DBNPathBase dbnPath) {
-                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false)) {
-                    // Try resource handler
-                    IResource resource = dbnPath.getAdapter(IResource.class);
-                    if (resource instanceof IFile file) {
-                        openResourceWithHandler(file);
-                    } else {
-                        openEntityEditor(node, window, parameters);
-                    }
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false, dbnPath)) {
+                    openEntityEditor(node, window, parameters);
                 }
             } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
                 openEntityEditor(node, window, parameters);
@@ -591,14 +591,6 @@ public class NavigatorUtils {
         }
     }
 
-    private static void openResourceWithHandler(IFile file) throws CoreException, DBException {
-        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
-        if (handler != null) {
-            handler.openResource(file);
-        } else {
-            throw new DBException("Cannot find resource handler for " + file);
-        }
-    }
 
     private static void openEntityEditor(Object node, IWorkbenchWindow window, Map<?, ?> parameters) throws DBException {
         if (node instanceof DBNObjectNode objectNode) {

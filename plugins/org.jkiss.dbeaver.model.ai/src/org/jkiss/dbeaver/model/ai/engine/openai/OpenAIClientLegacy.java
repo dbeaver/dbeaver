@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.AIMetaTypes;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageFactory;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionRequest;
@@ -45,7 +45,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
 
     public OpenAIClientLegacy(
         @NotNull String baseUrl,
-        @NotNull List<OpenAIClient.HttpRequestFilter> requestFilters
+        @NotNull List<HttpRequestFilter> requestFilters
     ) {
         super(baseUrl, requestFilters);
     }
@@ -85,7 +85,6 @@ public class OpenAIClientLegacy extends OpenAIClient {
         HttpRequest modifiedRequest = applyFilters(request);
         String response = client.send(monitor, modifiedRequest);
         ChatCompletionResult chatCompletionResult = GSON.fromJson(response, ChatCompletionResult.class);
-        OAIResponsesResponse oaiResponse = new OAIResponsesResponse();
 
         int systemPromptLength = completionRequest.input.stream()
             .filter(it -> it.role.toLowerCase(Locale.ROOT).equals("system"))
@@ -93,27 +92,23 @@ public class OpenAIClientLegacy extends OpenAIClient {
             .sum();
 
         AIMessageMeta messageMeta = new AIMessageMeta(
+            AIMetaTypes.PROMPT,
             OpenAIConstants.OPENAI_ENGINE,
             completionRequest.model,
-            new AIUsage(
-                oaiResponse.usage.inputTokens(),
-                oaiResponse.usage.inputTokensDetails().cachedTokens(),
-                oaiResponse.usage.outputTokens(),
-                oaiResponse.usage.outputTokensDetails().reasoningTokens()
-            ),
+            chatCompletionResult.getAIUsage(),
             Duration.between(now, Instant.now()),
             systemPromptLength
         );
 
+        OAIResponsesResponse oaiResponse = new OAIResponsesResponse();
         oaiResponse.output = chatCompletionResult.getChoices().stream().map(
-            c -> new OAIMessage(
+            c -> OAIMessageFactory.fromAIMessage(
                 new AIMessage(
                     AIMessageType.ASSISTANT,
                     c.getMessage().getContent(),
-                    messageMeta
+                    List.of(messageMeta)
                 )
             )).toList();
         return oaiResponse;
     }
-
 }

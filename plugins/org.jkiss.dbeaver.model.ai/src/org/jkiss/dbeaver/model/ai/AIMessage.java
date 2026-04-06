@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Represents a single AI message
@@ -40,7 +40,29 @@ public class AIMessage {
     @Nullable
     private final AIFunctionResult functionResult;
     @Nullable
-    private final AIMessageMeta meta;
+    private final AIConfirmation confirmation;
+    @Nullable
+    private final List<AIMessageMeta> meta;
+    private final Throwable error;
+
+    public AIMessage(
+        @NotNull AIMessageType role,
+        @NotNull String content,
+        @Nullable String displayMessage,
+        @NotNull LocalDateTime time,
+        @Nullable List<AIMessageMeta> meta,
+        @Nullable Throwable error
+    ) {
+        this.role = role;
+        this.content = content;
+        this.displayMessage = displayMessage;
+        this.time = time;
+        this.meta = meta;
+        this.functionCall = null;
+        this.functionResult = null;
+        this.confirmation = null;
+        this.error = error;
+    }
 
     /**
      * Creates AI message
@@ -50,7 +72,7 @@ public class AIMessage {
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time,
-        @Nullable AIMessageMeta meta
+        @Nullable List<AIMessageMeta> meta
     ) {
         this.role = role;
         this.content = content;
@@ -59,81 +81,71 @@ public class AIMessage {
         this.meta = meta;
         this.functionCall = null;
         this.functionResult = null;
+        this.confirmation = null;
+        this.error = null;
     }
 
-    /**
-     * Creates AI message
-     */
-    private AIMessage(
+    // Function call + result
+    public AIMessage(
         @NotNull AIFunctionCall functionCall,
         @NotNull AIFunctionResult result,
-        @Nullable AIMessageMeta meta
+        @NotNull LocalDateTime time,
+        @Nullable List<AIMessageMeta> meta
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
-        this.content = CommonUtils.toString(result.getValue()) + " was completed";
-        this.time = LocalDateTime.now();
+        String strResult = CommonUtils.toString(result.getValue());
+        this.content = functionCall.getFunctionName() + " was completed.\n" +
+            (CommonUtils.isEmpty(strResult) ? "Empty result" : strResult);
+        this.time = time;
         this.functionCall = functionCall;
         this.functionResult = result;
-        this.displayMessage = CommonUtils.toString(result.getValue());
+        this.confirmation = null;
+        this.displayMessage = strResult;
+        this.error = null;
     }
 
-    @NotNull
-    public static AIMessage systemMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.SYSTEM, message, null);
+    // Function call confirmation
+    public AIMessage(@NotNull AIConfirmation confirmation) {
+        this.meta = null;
+        this.role = AIMessageType.CONFIRMATION;
+        this.content = confirmation.getMessage();
+        this.time = LocalDateTime.now();
+        this.functionCall = null;
+        this.functionResult = null;
+        this.confirmation = confirmation;
+        this.displayMessage = content;
+        this.error = null;
     }
 
-    @NotNull
-    public static AIMessage userMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.USER, message, null);
-    }
-
-    @NotNull
-    public static AIMessage assistantMessage(@NotNull String message, @Nullable AIMessageMeta meta) {
-        return new AIMessage(AIMessageType.ASSISTANT, message, meta);
-    }
-
-    @NotNull
-    public static AIMessage functionCall(@NotNull AIFunctionCall functionCall, @NotNull AIFunctionResult result) {
-        return new AIMessage(functionCall, result, null);
-    }
-
-    @NotNull
-    public static AIMessage warningMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.WARNING, message, null);
-    }
-
-    @NotNull
-    public static AIMessage errorMessage(@NotNull Throwable throwable) {
-        return new AIMessage(
+    public AIMessage(@NotNull Throwable error) {
+        this(
             AIMessageType.ERROR,
-            CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"),
-            null
-        );
+            CommonUtils.getAllExceptionMessages(error),
+            CommonUtils.getAllExceptionMessages(error),
+            LocalDateTime.now(),
+            null,
+            error);
     }
 
-    @NotNull
-    public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
-        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now(), null);
-    }
-
-    public AIMessage(@NotNull AIMessageType role, @NotNull String content, AIMessageMeta meta) {
+    public AIMessage(
+        @NotNull AIMessageType role,
+        @NotNull String content,
+        @Nullable List<AIMessageMeta> meta
+    ) {
         this(role, content, content, LocalDateTime.now(), meta);
-    }
-
-    @Override
-    public String toString() {
-        return "Message (" + role + "): " + content;
     }
 
     public boolean isAutoGenerated() {
         return displayMessage != null && !CommonUtils.equalObjects(displayMessage, content);
     }
 
+    @NotNull
     public String getDisplayMessage() {
         return displayMessage != null ? displayMessage : content;
     }
 
+    @Nullable
     public String getRawDisplayMessage() {
         return displayMessage;
     }
@@ -164,11 +176,71 @@ public class AIMessage {
     }
 
     @Nullable
-    public AIMessageMeta getMeta() {
+    public AIConfirmation getConfirmation() {
+        return confirmation;
+    }
+
+    @Nullable
+    public List<AIMessageMeta> getMeta() {
         return meta;
     }
 
+    @Nullable
+    public Throwable getError() {
+        return error;
+    }
+
+    @NotNull
     public AIMessage withContent(String newContent) {
         return new AIMessage(role, newContent, displayMessage, time, meta);
     }
+
+    @Override
+    public String toString() {
+        return "Message (" + role + "): " + content;
+    }
+
+    @NotNull
+    public static AIMessage systemMessage(@NotNull String message) {
+        return new AIMessage(AIMessageType.SYSTEM, message, null);
+    }
+
+    @NotNull
+    public static AIMessage userMessage(@NotNull String message) {
+        return new AIMessage(AIMessageType.USER, message, null);
+    }
+
+    @NotNull
+    public static AIMessage assistantMessage(
+        @NotNull String message,
+        @Nullable List<AIMessageMeta> meta
+    ) {
+        return new AIMessage(AIMessageType.ASSISTANT, message, meta);
+    }
+
+    @NotNull
+    public static AIMessage functionCall(@NotNull AIFunctionCall functionCall, @NotNull AIFunctionResult result) {
+        return new AIMessage(functionCall, result, LocalDateTime.now(), null);
+    }
+
+    @NotNull
+    public static AIMessage warningMessage(@NotNull String message) {
+        return new AIMessage(AIMessageType.WARNING, message, null);
+    }
+
+    @NotNull
+    public static AIMessage errorMessage(@NotNull Throwable throwable) {
+        return new AIMessage(throwable);
+    }
+
+    @NotNull
+    public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
+        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now(), null);
+    }
+
+    @NotNull
+    public static AIMessage functionConfirmation(@NotNull List<AIFunctionCall> functionCalls) {
+        return new AIMessage(new AIFunctionCallConfirmation(functionCalls));
+    }
+
 }

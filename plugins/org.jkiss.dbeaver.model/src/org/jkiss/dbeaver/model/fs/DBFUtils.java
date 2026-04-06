@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -43,6 +44,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Virtual file system utils
@@ -56,6 +58,8 @@ public class DBFUtils {
     private static volatile Boolean SUPPORT_MULTI_FS = null;
 
     private static final Map<FileSystem, String> fileSystemIdCache = new IdentityHashMap<>();
+
+    private static final Map<String, FileSystem> externalFileSystemBySchema = new ConcurrentHashMap<>();
 
     public static boolean supportsMultiFileSystems(@NotNull DBPProject project) {
         if (SUPPORT_MULTI_FS == null) {
@@ -213,14 +217,8 @@ public class DBFUtils {
         }
         DBPDataSourceContainer dsContainer = registry.createDataSource(connectionId, driver, configuration);
         dsContainer.setExtension(DBConstants.PROP_ORIGINAL_FILE_PATH, configuration.getDatabaseName());
-        int conNameSuffix = 1;
         connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
-        String finalConnectionName = connectionName;
-        while (registry.findDataSourceByName(finalConnectionName) != null) {
-            conNameSuffix++;
-            finalConnectionName = connectionName + " " + conNameSuffix;
-        }
-        dsContainer.setName(finalConnectionName);
+        dsContainer.setName(DataSourceUtils.generateUniqueDataSourceName(registry, connectionName, 1));
         dsContainer.setTemporary(true);
         DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
         dsContainer.setFolder(folder);
@@ -250,6 +248,7 @@ public class DBFUtils {
         if (IOUtils.isLocalFile(fileUriString)) {
             return Path.of(fileUriString).toAbsolutePath();
         }
+
         URI fileUri = URI.create(fileUriString);
         if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
             return Path.of(fileUriString).toAbsolutePath();
@@ -270,14 +269,20 @@ public class DBFUtils {
             // Use provider's classloader because filesystem registered there as service
             ClassLoader fsClassloader = fileSystemProvider.getClass().getClassLoader();
             Map<String, ?> env = fileSystemProvider.prepareEnv(System.getenv());
-            try (
-                FileSystem externalFileSystem = FileSystems.newFileSystem(
-                    fileUri,
-                    env,
-                    fsClassloader
-                )
-            ) {
-                return externalFileSystem.provider().getPath(fileUri);
+            try {
+                FileSystem externalFileSystem;
+                if (externalFileSystemBySchema.containsKey(fileUri.getScheme())) {
+                    externalFileSystem = externalFileSystemBySchema.get(fileUri.getScheme());
+                } else {
+                    externalFileSystem = FileSystems.newFileSystem(
+                        fileUri,
+                        env,
+                        fsClassloader
+                    );
+                    externalFileSystemBySchema.put(fileUri.getScheme(), externalFileSystem);
+                }
+                Path path = externalFileSystem.provider().getPath(fileUri);
+                return path;
             } catch (Exception e) {
                 log.error("Failed to initialize path: " + fileUri, e);
             }

@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -158,7 +159,7 @@ public class DataSourceDescriptor
     private boolean hidden;
 
     @NotNull
-    private DataSourceNavigatorSettings navigatorSettings;
+    private final DataSourceNavigatorSettings navigatorSettings;
     @NotNull
     private DBVModel virtualModel;
     private final boolean manageable;
@@ -400,11 +401,11 @@ public class DataSourceDescriptor
 
     @NotNull
     public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
-        return navigatorSettings;
+        return (DataSourceNavigatorSettings) navigatorSettings.getOriginalSettings();
     }
 
-    public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
-        this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings copyFrom) {
+        getOriginalNavigatorSettings().copyFrom(copyFrom);
     }
 
     @NotNull
@@ -637,7 +638,12 @@ public class DataSourceDescriptor
             }
         }
 
-        updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+        updateObjectFilter(type.getName(), toObjectID(parentObject), filter);
+    }
+
+    @Nullable
+    protected String toObjectID(@Nullable DBSObject parentObject) {
+        return parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject);
     }
 
     @Nullable
@@ -651,11 +657,11 @@ public class DataSourceDescriptor
         this.clientApplicationName = applicationName;
     }
 
-    void clearFilters() {
+    protected void clearFilters() {
         filterMap.clear();
     }
 
-    void updateObjectFilter(String typeName, @Nullable String objectID, DBSObjectFilter filter) {
+    protected void updateObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
             filterMapping = new FilterMapping(typeName);
@@ -1886,7 +1892,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
+        setNavigatorSettings(descriptor.navigatorSettings);
     }
 
     @Override

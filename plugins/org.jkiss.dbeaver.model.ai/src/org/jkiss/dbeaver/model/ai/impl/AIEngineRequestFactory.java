@@ -17,23 +17,19 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
-import org.jkiss.dbeaver.model.ai.registry.*;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class AIEngineRequestFactory {
     private static final Log log = Log.getLog(AIEngineRequestFactory.class);
@@ -53,6 +49,14 @@ public class AIEngineRequestFactory {
     private final AIDatabaseSnapshotService databaseSnapshotService;
     private final TokenCounter tokenCounter;
 
+    protected record RequestFunctions(
+        @NotNull Collection<AIFunctionDescriptor> autoFunctions,
+        @NotNull Collection<AIFunctionDescriptor> supportedFunctions
+    ) {
+        private RequestFunctions() {
+            this(Set.of(), Set.of());
+        }
+    }
     public AIEngineRequestFactory(
         @NotNull AIDatabaseSnapshotService databaseSnapshotService,
         @NotNull TokenCounter tokenCounter
@@ -61,15 +65,24 @@ public class AIEngineRequestFactory {
         this.tokenCounter = tokenCounter;
     }
 
+    @NotNull
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIAssistant assistant,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor,
-        @NotNull AIPromptGenerator systemPromptGenerator,
-        @Nullable AIDatabaseContext databaseContext,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        String systemPrompt = systemPromptGenerator.build();
+        AIPromptGenerator promptGenerator = functionContext.getPrompt();
+        AIDatabaseContext databaseContext = functionContext.getContext();
+        String systemPrompt = promptGenerator.build(assistant, databaseContext);
+
+        RequestFunctions requestFunctions = determineRequestTools(
+            assistant,
+            engineDescriptor,
+            functionContext
+        );
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);
@@ -91,21 +104,26 @@ public class AIEngineRequestFactory {
             dbSnapshotTokenBudget = 0;
         }
 
-        // Build DB snapshot
-
         String dbSnapshot = "";
         boolean isContextTruncated = false;
-        if (databaseContext != null && dbSnapshotTokenBudget > 0) {
-            AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
-            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
-            if (dbSnapshotBuilder != null) {
-                dbSnapshot = dbSnapshotBuilder.toString();
-                isContextTruncated = dbSnapshotBuilder.isTruncated();
+
+        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
+            // Build DB snapshot in first prompt if engine doesn't support functions
+            // (functions provide smart context read)
+            if (databaseContext != null && dbSnapshotTokenBudget > 0) {
+                AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
+                    monitor,
+                    databaseContext,
+                    dbSnapshotTokenBudget
+                );
+                if (dbSnapshotBuilder != null) {
+                    dbSnapshot = dbSnapshotBuilder.toString();
+                    isContextTruncated = dbSnapshotBuilder.isTruncated();
+                }
             }
         }
 
         // Compose system message
-
         String fullSystemPrompt = dbSnapshot.isBlank()
             ? systemPrompt
             : systemPrompt + "\n" + DB_SNAPSHOT_SECTION_HEADER + dbSnapshot;
@@ -129,48 +147,66 @@ public class AIEngineRequestFactory {
         List<AIMessage> truncated = chatTruncator.truncate(allMessages);
         AIEngineRequest request = new AIEngineRequest(truncated);
         request.setWasPromptTruncated(isContextTruncated);
-
-        determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
+        request.setFunctions(new ArrayList<>(requestFunctions.supportedFunctions()));
 
         return request;
     }
 
-    protected void determineRequestTools(
-        @NotNull DBRProgressMonitor monitor,
+    private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIEngineDescriptor engineDescriptor) {
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        return engineDescriptor.isSupportsFunctions() && functionSettings.isFunctionsEnabled();
+    }
+
+    @NotNull
+    protected RequestFunctions determineRequestTools(
+        @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
-        @NotNull AIPromptGenerator systemPromptGenerator,
-        @NotNull AIEngineRequest request
+        @NotNull AIFunctionContext functionContext
     ) {
-        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        if (!engineDescriptor.isSupportsFunctions()
-            || !aiSettings.isFunctionsEnabled()
-            || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
-        ) {
-            return;
+        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
+            return new RequestFunctions();
         }
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+
+        AIPromptGenerator promptGenerator = functionContext.getPrompt();
+        AIPromptGeneratorDescriptor prompt = AIPromptGeneratorRegistry.getInstance()
+            .getPromptGenerator(promptGenerator.generatorId());
+        if (prompt == null) {
+            log.error("Prompt '" + promptGenerator.generatorId() + "' not found. Functions were disabled.");
+            return new RequestFunctions();
+        }
+
         List<AIFunctionDescriptor> functions = new ArrayList<>();
-        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
-            if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
-                functions.add(fd);
+        List<AIFunctionDescriptor> autoFunctions = new ArrayList<>();
+        for (AIFunctionDescriptor fd : toolboxManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
+            AIFunctionVerifier.FunctionState state = fd.getFunctionState(functionContext);
+            switch (state) {
+                case APPLICABLE -> functions.add(fd);
+                case AUTO_CALL -> autoFunctions.add(fd);
             }
         }
 
-        AIPromptGeneratorDescriptor currentPromptGenerator = null;
-        for (AIPromptGeneratorDescriptor promptGeneratorDescriptor : AIPromptGeneratorRegistry.getInstance().getAllPromptGenerator()) {
-            if (systemPromptGenerator.generatorId().equals(promptGeneratorDescriptor.getId())) {
-                currentPromptGenerator = promptGeneratorDescriptor;
-                break;
+        Set<AIFunctionDescriptor> enabledFunctions = new LinkedHashSet<>();
+        for (AIToolbox toolbox : toolboxManager.getAllToolboxes()) {
+            if (!toolbox.isEnabled() || !toolbox.isAccessible()) {
+                continue;
+            }
+            AIFunctionSettings.ToolboxSettings toolboxSettings = functionSettings.getToolboxSettings(toolbox);
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions()) {
+                if (toolboxSettings.isFunctionEnabled(function)) {
+                    enabledFunctions.add(function);
+                }
             }
         }
 
-        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
-
-        List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
+        Set<AIFunctionDescriptor> selectedFunctions = new LinkedHashSet<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->
-            !enabledFunctions.contains(aiFunctionDescriptor.getId())
+            !enabledFunctions.contains(aiFunctionDescriptor)
         );
 
-        Set<String> requiredByDeps = resolveDependencies(selectedFunctions, currentPromptGenerator);
+        Set<String> requiredByDeps = resolveDependencies(selectedFunctions);
 
         if (!requiredByDeps.isEmpty()) {
             for (AIFunctionDescriptor f : functions) {
@@ -180,7 +216,16 @@ public class AIEngineRequestFactory {
             }
         }
 
-        request.setFunctions(selectedFunctions);
+        if (!prompt.isSupportsActions()) {
+            // Filter out actions
+            selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
+        }
+        if (!prompt.isSupportsUi()) {
+            // Filter out ui functions
+            selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
+        }
+
+        return new RequestFunctions(autoFunctions, selectedFunctions);
     }
 
 
@@ -194,33 +239,20 @@ public class AIEngineRequestFactory {
         }
     }
 
-    protected AISchemaGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
-        DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
-
-        return AISchemaGenerationOptions.builder()
-            .withMaxDbSnapshotTokens(dbSnapshotTokenBudget)
-            .withSendObjectComment(prefs.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
-            .withSendColumnTypes(prefs.getBoolean(AIConstants.AI_SEND_TYPE_INFO))
-            .build();
-
-    }
-
     /**
      * Resolves transitive dependencies for the given list of already selected function descriptors.
      */
     @NotNull
-    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected, @Nullable AIPromptGeneratorDescriptor pg) {
+    private static Set<String> resolveDependencies(@NotNull Set<AIFunctionDescriptor> selected) {
         Set<String> result = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
-            collectDependencies(fd.getDependsOn(), result);
-        }
-        if (pg != null) {
-            collectDependencies(pg.getDependsOn(), result);
+            collectDependencies(fd.getToolbox(), fd.getDependsOn(), result);
         }
         return result;
     }
 
     private static void collectDependencies(
+        @NotNull AIToolbox toolbox,
         @NotNull String[] dependencies,
         @NotNull Set<String> result
     ) {
@@ -231,9 +263,9 @@ public class AIEngineRequestFactory {
             if (!result.add(depId)) {
                 continue;
             }
-            AIFunctionDescriptor dep = AIFunctionRegistry.getInstance().getFunction(depId);
+            AIFunctionDescriptor dep = toolbox.getFunctionById(depId);
             if (dep != null) {
-                collectDependencies(dep.getDependsOn(), result);
+                collectDependencies(toolbox, dep.getDependsOn(), result);
             }
         }
     }

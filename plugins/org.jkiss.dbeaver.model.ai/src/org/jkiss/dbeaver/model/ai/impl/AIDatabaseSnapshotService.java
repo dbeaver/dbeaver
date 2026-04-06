@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,7 +39,7 @@ import java.util.stream.Stream;
  */
 public class AIDatabaseSnapshotService {
 
-    private static final Log LOG = Log.getLog(AIDatabaseSnapshotService.class);
+    private static final Log log = Log.getLog(AIDatabaseSnapshotService.class);
     private AISchemaGenerator schemaGenerator;
 
     public AIDatabaseSnapshotService() {
@@ -53,33 +49,27 @@ public class AIDatabaseSnapshotService {
     public TokenBoundedStringBuilder createDbSnapshot(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext aiDatabaseContext,
-        @NotNull AISchemaGenerationOptions options
+        int tokenBudget
     ) throws DBException {
-        schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
+        schemaGenerator = new AISchemaGeneratorImpl();
 
         if (aiDatabaseContext == null) {
             return null;
         }
 
-        Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
+        //Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
-        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), false);
+        var prompt = new TokenBoundedStringBuilder(tokenBudget, false);
 
-        if (appendContext(monitor, aiDatabaseContext, options, prompt, true)) {
+        if (appendContext(monitor, aiDatabaseContext, prompt, true)) {
             return prompt;
         }
 
-        // --- fall-back -----------------------------------------------------
-        AISchemaGenerationOptions fallback = buildFallbackOptions(options);
-        if (options.equals(fallback)) {        // nothing else we can exclude
-            return prompt;
-        }
+        log.debug("Context description is too long, generating partial description");
 
-        LOG.warn("Context description is too long, generating partial description");
-
-        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), true);
-        appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
+        var partialPrompt = new TokenBoundedStringBuilder(tokenBudget, true);
+        appendContext(monitor, aiDatabaseContext, partialPrompt, false);
         return partialPrompt;
     }
 
@@ -89,7 +79,6 @@ public class AIDatabaseSnapshotService {
     private boolean appendContext(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext ctx,
-        @NotNull AISchemaGenerationOptions options,
         @NotNull TokenBoundedStringBuilder out,
         boolean refreshCache
     ) throws DBException {
@@ -105,9 +94,7 @@ public class AIDatabaseSnapshotService {
                     monitor,
                     out,
                     entity,
-                    ctx.getExecutionContext(),
-                    options,
-                    requiresFqn(entity, ctx.getExecutionContext()),
+                    ctx,
                     refreshCache
                 )) {
                     return false;
@@ -116,24 +103,24 @@ public class AIDatabaseSnapshotService {
             return true;
         }
 
-        return appendObjectDescription(
-            monitor,
-            out,
-            ctx.getScopeObject(),
-            ctx.getExecutionContext(),
-            options,
-            false,
-            refreshCache
-        );
+        DBSObjectContainer scopeObject = ctx.getScopeObject();
+        if (scopeObject != null) {
+            return appendObjectDescription(
+                monitor,
+                out,
+                scopeObject,
+                ctx,
+                refreshCache
+            );
+        }
+        return false;
     }
 
     private boolean appendObjectDescription(
         @NotNull DBRProgressMonitor monitor,
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObject obj,
-        @Nullable DBCExecutionContext execCtx,
-        @NotNull AISchemaGenerationOptions options,
-        boolean useFqn,
+        @NotNull AIDatabaseContext databaseContext,
         boolean refreshCache
     ) throws DBException {
         if (monitor.isCanceled()) {
@@ -146,16 +133,22 @@ public class AIDatabaseSnapshotService {
 
         if (obj instanceof DBSEntity entity) {
             try {
-                String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
+                String ddl = schemaGenerator.generateSchema(
+                    monitor,
+                    databaseContext.getExecutionContext(),
+                    databaseContext.getSchemaGenerationOptions(),
+                    entity
+                ) + "\n";
                 return out.append(ddl);
             } catch (DBException e) {
-                LOG.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
+                log.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
                 return true;
             }
         }
 
         if (obj instanceof DBSObjectContainer container) {
-            return appendContainerDDL(monitor, out, container, execCtx, options, refreshCache);
+            container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+            return appendContainerDDL(monitor, out, container, databaseContext, refreshCache);
         }
 
         return true;    // nothing to append for other object types
@@ -165,11 +158,9 @@ public class AIDatabaseSnapshotService {
         @NotNull DBRProgressMonitor monitor,
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObjectContainer container,
-        @Nullable DBCExecutionContext execCtx,
-        @NotNull AISchemaGenerationOptions options,
+        @NotNull AIDatabaseContext dbContext,
         boolean refreshCache
-    ) throws DBException {
-
+    ) {
         if (refreshCache) {
             try {
                 container.cacheStructure(
@@ -177,7 +168,7 @@ public class AIDatabaseSnapshotService {
                     DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
                 );
             } catch (DBException e) {
-                LOG.warn("Failed to cache for '" + container.getName() + "'. Proceeding.", e);
+                log.warn("Failed to cache for '" + container.getName() + "'. Proceeding.", e);
             }
         }
 
@@ -195,16 +186,14 @@ public class AIDatabaseSnapshotService {
                         monitor,
                         out,
                         child,
-                        execCtx,
-                        options,
-                        requiresFqn(child, execCtx),
+                        dbContext,
                         refreshCache
                     )) {
-                        LOG.warn("Object description is too long, truncated at: " + child.getName());
+                        log.debug("Object description is too long, truncated at: " + child.getName());
                         return false;
                     }
                 } catch (DBException e) {
-                    LOG.warn(
+                    log.warn(
                         "Failed to read metadata for child '" + child.getName()
                             + "' of container '" + container.getName() + "'",
                         e
@@ -212,33 +201,11 @@ public class AIDatabaseSnapshotService {
                 }
             }
         } catch (DBException e) {
-            LOG.warn("Failed to children for '" + container.getName() + "'", e);
+            log.warn("Failed to children for '" + container.getName() + "'", e);
             return true;
         }
 
         return true;
-    }
-
-    private static boolean requiresFqn(
-        @NotNull DBSObject obj,
-        @Nullable DBCExecutionContext ctx
-    ) {
-        if (ctx == null || ctx.getContextDefaults() == null) {
-            return false;
-        }
-        DBSObject parent = obj.getParentObject();
-        DBCExecutionContextDefaults<?, ?> def = ctx.getContextDefaults();
-        return parent != null
-            && !(parent.equals(def.getDefaultCatalog()) || parent.equals(def.getDefaultSchema()));
-    }
-
-    private static AISchemaGenerationOptions buildFallbackOptions(AISchemaGenerationOptions original) {
-        return original.toBuilder()
-            .withSendObjectComment(false)
-            .withSendColumnTypes(false)
-            .withSendForeignKeys(false)
-            .withSendConstraints(false)
-            .build();
     }
 
     /**
@@ -274,7 +241,7 @@ public class AIDatabaseSnapshotService {
                             DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
                         );
                     } catch (DBException e) {
-                        LOG.error("Failed to cache structure for " + container.getName(), e);
+                        log.error("Failed to cache structure for " + container.getName(), e);
                     }
                 }
             });
@@ -289,7 +256,7 @@ public class AIDatabaseSnapshotService {
 
         private final StringBuilder sb = new StringBuilder();
         private final int maxChars;
-        private final boolean isTruncated;
+        private boolean isTruncated;
 
         TokenBoundedStringBuilder(int maxTokens, boolean isTruncated) {
             this.maxChars = (maxTokens - SAFE_MARGIN_TOKENS) * DummyTokenCounter.TOKEN_TO_CHAR_RATIO;
@@ -298,6 +265,7 @@ public class AIDatabaseSnapshotService {
 
         boolean append(@NotNull CharSequence chunk) {
             if (sb.length() + chunk.length() > maxChars) {
+                this.isTruncated = true;
                 return false;
             }
             sb.append(chunk);
