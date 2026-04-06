@@ -345,12 +345,15 @@ public class SQLServerUtils {
         var strippedQuery = SQLUtils.stripComments(sqlDialect, ddl);
         var fullDeclarationFirstKeyWord = getFullDeclarationFirstKeyWord(strippedQuery);
         if ("CREATE".equalsIgnoreCase(firstKeyword) && !"CREATE OR ALTER".equalsIgnoreCase(fullDeclarationFirstKeyWord)) {
+            if (SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())) {
+                return ddl.replaceFirst(firstKeyword, "ALTER");
+            }
             return ddl.replaceFirst(firstKeyword, replacement);
         }
         return ddl;
     }
 
-
+    @NotNull
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
         var pattern = Pattern.compile("(CREATE\\s+OR\\s+ALTER|\\w+)");
         var matcher = pattern.matcher(ddl);
@@ -366,6 +369,7 @@ public class SQLServerUtils {
      * @param sql string query (can be nullable, will be checked)
      * @return changed SQL or original SQL if the "create and replace" already exists
      */
+    @Nullable
     public static String changeCreateToCreateOrReplace(@Nullable String sql) {
         if (CommonUtils.isNotEmpty(sql) && sql.contains("create") && !sql.contains("create or replace")) {
             sql = sql.replaceFirst("create", "create or replace");
@@ -373,7 +377,7 @@ public class SQLServerUtils {
         return sql;
     }
 
-    public static boolean isTableType(SQLServerTableBase table) {
+    public static boolean isTableType(@Nullable SQLServerTableBase table) {
         return table instanceof SQLServerTableType;
     }
 
