@@ -150,10 +150,14 @@ public class AIDatabaseContext {
         }
     }
 
+    @Nullable
     public DBSObjectContainer getScopeObject() {
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults == null) {
-            return (DBSObjectContainer) executionContext.getDataSource();
+            if (executionContext.getDataSource() instanceof DBSObjectContainer oc) {
+                return oc;
+            }
+            return null;
         }
 
         DBSObjectContainer scoped = switch (getScope()) {

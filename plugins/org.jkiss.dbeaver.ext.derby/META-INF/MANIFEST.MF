@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Derby Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.derby;singleton:=true
-Bundle-Version: 1.1.261.qualifier
-Bundle-Release-Date: 20260406
+Bundle-Version: 1.1.262.qualifier
+Bundle-Release-Date: 20260420
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
