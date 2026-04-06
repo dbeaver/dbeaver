@@ -81,13 +81,13 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @Override
     public void dispose() {
-        super.dispose();
-
         // Dispose resource handlers
         for (ResourceHandlerDescriptor handlerDescriptor : this.handlerDescriptors) {
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
+
+        super.dispose();
     }
 
     private DBPResourceHandler getResourceHandler(DBPResourceTypeDescriptor resourceType) {
@@ -305,6 +305,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
     }
 
+    @NotNull
     @Override
     public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
         IProject project = null;
