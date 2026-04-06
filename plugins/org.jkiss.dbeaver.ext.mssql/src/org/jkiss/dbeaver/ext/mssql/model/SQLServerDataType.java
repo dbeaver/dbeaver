@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -391,10 +391,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
                 return DBPDataKind.STRING;
 
             case SQLServerConstants.TYPE_GEOGRAPHY:
-            case SQLServerConstants.TYPE_GEOMETRY:
             case SQLServerConstants.TYPE_HIERARCHYID:
                 return DBPDataKind.BINARY;
 
+            case SQLServerConstants.TYPE_GEOMETRY:
             case SQLServerConstants.TYPE_SQL_VARIANT:
                 return DBPDataKind.OBJECT;
 
