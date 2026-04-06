@@ -20,9 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.CLIUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -37,6 +41,25 @@ public class CLIHelp extends CommandLine.Help {
         return new CLIOptionRendererDelegate(
             super.createDefaultOptionRenderer()
         );
+    }
+
+
+    @Override
+    public String optionListExcludingGroups(
+        List<CommandLine.Model.OptionSpec> optionList,
+        Layout layout,
+        Comparator<CommandLine.Model.OptionSpec> optionSort,
+        IParamLabelRenderer valueLabelRenderer
+    ) {
+        boolean isSubCommand = commandSpec().parent() != null;
+        optionList = optionList.stream().filter(option -> {
+            if (isSubCommand && CLIUtils.isGlobalOption(option)) {
+                // skip global options for subcommand, they will be rendered in the help of the top level command
+                return false;
+            }
+            return true;
+        }).toList();
+        return super.optionListExcludingGroups(optionList, layout, optionSort, valueLabelRenderer);
     }
 
     public String parameterList(
@@ -85,7 +108,7 @@ public class CLIHelp extends CommandLine.Help {
         return footer;
     }
 
-    private class CLIOptionRendererDelegate implements IOptionRenderer {
+    private static class CLIOptionRendererDelegate implements IOptionRenderer {
         @NotNull
         private final IOptionRenderer delegate;
 
@@ -105,6 +128,10 @@ public class CLIHelp extends CommandLine.Help {
                     // according to the source code, the number of elements can be 5 or 2 (in the minimalist rendering),
                     //  description is always last, we insert the mark before it
                     if (row.length > 2) {
+                        String argType = getArgType(option);
+                        if (CommonUtils.isNotEmpty(argType)) {
+                            row[row.length - 2] = row[row.length - 2].concat("<" + argType + ">");
+                        }
                         //insert required marker before description
                         row[row.length - 2] = row[row.length - 2].concat("(required)");
                     }
@@ -114,7 +141,7 @@ public class CLIHelp extends CommandLine.Help {
         }
     }
 
-    private class CLIParameterRendererDelegate implements IParamLabelRenderer {
+    private static class CLIParameterRendererDelegate implements IParamLabelRenderer {
         @NotNull
         private final IParamLabelRenderer delegate;
 
@@ -125,14 +152,9 @@ public class CLIHelp extends CommandLine.Help {
         @Override
         public Ansi.Text renderParameterLabel(CommandLine.Model.ArgSpec argSpec, Ansi ansi, List<Ansi.IStyle> styles) {
             Ansi.Text label = delegate.renderParameterLabel(argSpec, ansi, styles);
-            if (argSpec.userObject() instanceof Field field) {
-                Class<?> type = field.getType();
-                String typeName = type.getSimpleName();
-                if (type.isPrimitive() && type.equals(int.class)) {
-                    //to resolve confusion with Integer and int name
-                    typeName = "integer";
-                }
-                label = label.concat("<" + typeName + ">");
+            String argType = getArgType(argSpec);
+            if (CommonUtils.isNotEmpty(argType)) {
+                label.concat("<" + argType + ">");
             }
             if (argSpec.arity().min() > 0) {
                 label = label.concat("(required)");
@@ -147,4 +169,27 @@ public class CLIHelp extends CommandLine.Help {
         }
     }
 
+    @NotNull
+    private static String getArgType(@NotNull CommandLine.Model.ArgSpec argSpec) {
+        if (argSpec.userObject() instanceof Field field) {
+            Class<?> fieldType = field.getType();
+            String typeName = fieldType.getSimpleName();
+            if (fieldType.isPrimitive() && fieldType.equals(int.class)) {
+                //to resolve confusion with Integer and int name
+                typeName = "integer";
+            } else if (field.getGenericType() instanceof ParameterizedType pt) {
+                Type argType = pt.getActualTypeArguments()[0];
+                if (argType instanceof Class<?> typeClass) {
+                    typeName = typeClass.getSimpleName();
+                } else {
+                    typeName = pt.getTypeName();
+                }
+                if(Collection.class.isAssignableFrom(fieldType)) {
+                    typeName = typeName + "[]";
+                }
+            }
+            return typeName.toLowerCase();
+        }
+        return "";
+    }
 }

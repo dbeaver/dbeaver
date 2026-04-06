@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.help.CLIGlobalOption;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceAuthOptions;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
@@ -429,8 +430,8 @@ public class CLIUtils {
             var print = new PrintWriter(out)
         ) {
             var updatedCmd = new CommandLine(commandForHelp);
-
-            updatedCmd.getHelpSectionMap().remove(CommandLine.Model.UsageMessageSpec.SECTION_KEY_DESCRIPTION);
+            //to avoid split sections between 'root' commands and subcommands
+            updatedCmd.getHelpSectionMap().remove(CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING);
             updatedCmd.usage(print);
             return out.toString();
         } catch (Exception e) {
@@ -455,6 +456,15 @@ public class CLIUtils {
             }
         }
         return option.required();
+    }
+
+    public static boolean isGlobalOption(@NotNull CommandLine.Model.OptionSpec option) {
+        Object userObject = option.userObject();
+        // use origin value from annotation, because picocli may mark options as required when they are in an arg group
+        if (userObject instanceof Field optionField) {
+            return optionField.isAnnotationPresent(CLIGlobalOption.class);
+        }
+        return false;
     }
 
     @NotNull
