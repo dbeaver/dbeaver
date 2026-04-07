@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 
 import java.util.Map;
 
@@ -115,5 +114,12 @@ public class AIFunctionCall {
         return functionName + "(" + arguments + ")";
     }
 
+    @Nullable
+    public AIFunctionDescriptor getOrResolveFunction(@NotNull AIToolboxManager tbm) {
+        if (function == null) {
+            function = tbm.getFunctionByFullId(functionName);
+        }
+        return function;
+    }
 
 }
