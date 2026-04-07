@@ -121,17 +121,16 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
             .orElse(null);
         String typeName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.dataType))
             .map(STMTreeNode::getTextContent).orElse(null);
-
-        STMTreeNode defaultValueNode = node.findFirstChildOfName(STMKnownRuleNames.defaultClause);
-        SQLQueryValueExpression defaultValueExpr = null;
-        if (defaultValueNode != null) {
-            STMTreeNode firstChild = defaultValueNode.findFirstNonErrorChild();
-            if (firstChild != null && STMKnownRuleNames.DEFAULT_TERM.equals(firstChild.getNodeName())) {
-                defaultValueExpr = recognizer.collectValueExpression(defaultValueNode, null);
-            } else if (typeName != null) {
-                typeName = typeName + " " + defaultValueNode.getTextContent();
+        for (STMTreeNode child : node.findChildrenOfName(STMKnownRuleNames.anyWord)) {
+            if (typeName != null) {
+                typeName = typeName + " " + child.getTextContent();
             }
         }
+
+        STMTreeNode defaultValueNode = node.findFirstChildOfName(STMKnownRuleNames.defaultClause);
+        SQLQueryValueExpression defaultValueExpr = defaultValueNode == null
+            ? null
+            : recognizer.collectValueExpression(defaultValueNode, null);
 
         LinkedList<SQLQueryColumnConstraintSpec> constraints = new LinkedList<>();
         for (STMTreeNode subnode : node.findChildrenOfName(STMKnownRuleNames.columnConstraintDefinition)) {
