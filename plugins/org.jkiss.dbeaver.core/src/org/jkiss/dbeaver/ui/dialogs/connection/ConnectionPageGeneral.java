@@ -171,7 +171,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
-                updateNavigatorSettingsPreset(navigatorSettingsCombo, dataSourceDescriptor.getNavigatorSettings());
 
                 folderSelector.setFolder(dataSourceDescriptor.getFolder());
 
@@ -186,7 +185,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         } else {
             // Default settings
             setConnectionType(connectionTypeCombo, DBPConnectionType.getDefaultConnectionType());
-            updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
             folderSelector.setFolder(curDataSourceFolder);
 
             readOnlyConnection.setSelection(false);

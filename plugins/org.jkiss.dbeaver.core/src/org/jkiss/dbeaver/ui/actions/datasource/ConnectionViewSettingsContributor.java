@@ -148,7 +148,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             askToReconnectIfNeeded();
         }
 
-        void askToReconnectIfNeeded() {
+        protected void askToReconnectIfNeeded() {
             if (dsContainer.isConnected()) {
                 if (UIUtils.confirmAction(
                     UIUtils.getActiveWorkbenchShell(),
@@ -293,7 +293,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         private ActionContributionItem clearUserSettings;
 
 
-        ClearCurrentUserSettings(@NotNull DBPDataSourceContainer container) {
+        public ClearCurrentUserSettings(@NotNull DBPDataSourceContainer container) {
             super(container, UINavigatorMessages.dialog_connection_set_default_connection_settings, AS_PUSH_BUTTON);
             setToolTipText(UINavigatorMessages.dialog_connection_set_default_connection_settings_tip);
         }
@@ -313,7 +313,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         }
 
         @Override
-        void updateSettings(@NotNull DBNBrowseSettings settings) {
+        protected void updateSettings(@NotNull DBNBrowseSettings settings) {
             super.updateSettings(settings);
             visibleCheck();
         }
