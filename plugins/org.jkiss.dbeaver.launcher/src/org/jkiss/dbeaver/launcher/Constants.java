@@ -31,8 +31,7 @@ public class Constants {
     public static final String INTERNAL_OS_OS390 = "OS/390"; //$NON-NLS-1$
     public static final String INTERNAL_OS_ZOS = "z/OS"; //$NON-NLS-1$
 
-    public static final String ARCH_X86 = "x86";//$NON-NLS-1$
-    public static final String ARCH_X86_64 = "x86_64";//$NON-NLS-1$
+    public static final String ARCH_X86_64 = "x86_64"; //$NON-NLS-1$
 
     /**
      * Constant string (value "win32") indicating the platform is running on a
