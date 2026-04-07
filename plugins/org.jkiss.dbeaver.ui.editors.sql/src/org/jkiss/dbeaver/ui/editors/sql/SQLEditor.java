@@ -152,8 +152,10 @@ public class SQLEditor extends SQLEditorBase implements
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
+    private static final String DROP_QUERY_CONFIRM_DIALOG_ID = "DBeaver.SQLDropQueryConfirmDialog";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
     private static final Pattern EMBEDDED_BINDING_PREFIX_PATTERN = Pattern.compile("--\\s*CONNECTION:\\s*(.+)", Pattern.CASE_INSENSITIVE);
 
@@ -3135,12 +3137,21 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private int createDropQueryConfirmationDialog(@NotNull SQLQuery dropQuery, int dialogType) {
+        String querySummary = "DROP";
+        String queryTextForDisplay = dropQuery.getText();
+        if (queryTextForDisplay.length() > MAX_QUERY_PREVIEW_LENGTH) {
+            // Truncate string. Too big strings may freeze UI.
+            queryTextForDisplay = CommonUtils.truncateString(queryTextForDisplay, MAX_QUERY_PREVIEW_LENGTH) +
+                "... (truncated " + (queryTextForDisplay.length() - MAX_QUERY_PREVIEW_LENGTH) + " characters)";
+        }
         return ConfirmationDialog.confirmAction(
             getSite().getShell(),
-            ConfirmationDialog.WARNING,
+            MessageDialog.WARNING,
             ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
-            dropQuery.getText()
+            queryTextForDisplay,
+            DROP_QUERY_CONFIRM_DIALOG_ID,
+            querySummary
         );
     }
 
