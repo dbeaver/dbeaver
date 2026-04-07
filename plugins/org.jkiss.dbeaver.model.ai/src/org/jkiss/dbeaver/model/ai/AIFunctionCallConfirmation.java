@@ -44,4 +44,14 @@ public class AIFunctionCallConfirmation extends AIConfirmation {
         return "Confirm tools " + functionCalls.stream().map(AIFunctionCall::getFunctionName)
             .collect(Collectors.joining(","));
     }
+
+    public boolean hasInformationFunctions(@NotNull AIToolboxManager toolboxManager) {
+        for (AIFunctionCall fc : functionCalls) {
+            AIFunctionDescriptor function = fc.getOrResolveFunction(toolboxManager);
+            if (function != null && function.getType() == AIFunctionType.INFORMATION) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
