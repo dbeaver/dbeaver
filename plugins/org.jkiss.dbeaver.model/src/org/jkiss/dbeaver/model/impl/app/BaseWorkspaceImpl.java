@@ -87,7 +87,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     public void initializeWorkspaceSession() {
         // Acquire workspace session
         try {
-            this.getAuthContext().addSession(acquireWorkspaceSession(new VoidProgressMonitor()));
+            SMSession workspaceSession = acquireWorkspaceSession(new VoidProgressMonitor());
+            this.getAuthContext().addSession(workspaceSession);
         } catch (DBException e) {
             if (!(e instanceof DBInterruptedException)) {
                 log.debug(e);
@@ -163,6 +164,8 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     @Override
     public void dispose() {
         DBVModel.checkGlobalCacheIsEmpty();
+        // Close workspace session
+        getAuthContext().dispose();
     }
 
     @Nullable
