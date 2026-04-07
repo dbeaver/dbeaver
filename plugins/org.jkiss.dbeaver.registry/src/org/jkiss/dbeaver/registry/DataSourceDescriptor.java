@@ -252,7 +252,9 @@ public class DataSourceDescriptor
         this.sharedCredentials = source.sharedCredentials;
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
-        this.navigatorSettings.setUserSettings(source.navigatorSettings.isUserSettings());
+        if (navigatorSettings.isUserSettings()) {
+            navigatorSettings.setOriginalSettings(source.getOriginalNavigatorSettings());
+        }
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;

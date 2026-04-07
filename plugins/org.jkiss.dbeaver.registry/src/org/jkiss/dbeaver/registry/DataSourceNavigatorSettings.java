@@ -137,7 +137,6 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.hideSchemas = copyFrom.isHideSchemas();
         this.hideVirtualModel = copyFrom.isHideVirtualModel();
         this.userSettings = copyFrom.isUserSettings();
-        this.originalSettings = copyFrom.getOriginalSettings();
     }
 
     @Override
