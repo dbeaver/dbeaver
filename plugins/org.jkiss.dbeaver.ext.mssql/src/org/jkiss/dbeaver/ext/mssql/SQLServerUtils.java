@@ -331,8 +331,13 @@ public class SQLServerUtils {
     }
 
     /**
-     * If the data source indicates that it is running on SQL Server 2016 SP1 or later (i.e. version 16 or above),
-     * the "CREATE" keyword is replaced with "CREATE OR ALTER". Otherwise, it is replaced with "ALTER".
+     * Replaces the "CREATE" keyword in the given DDL statement with an appropriate alternative.
+     * <p>
+     * If the data source version is 16 or above (SQL Server 2016 SP1+) and the driver is not
+     * the native SQL Server JDBC driver, the "CREATE" keyword is replaced with "CREATE OR ALTER".
+     * Otherwise, it is replaced with "ALTER".
+     * <p>
+     * If the DDL already contains "CREATE OR ALTER", no replacement is performed.
      */
     @NotNull
     public static String changeCreateToAlterDDL(
@@ -341,13 +346,11 @@ public class SQLServerUtils {
     ) {
         var sqlDialect = dataSource.getSQLDialect();
         var firstKeyword = SQLUtils.getFirstKeyword(sqlDialect, ddl);
-        var replacement = dataSource.isAtLeastV16() ? "CREATE OR ALTER" : "ALTER";
+        var replacement = dataSource.isAtLeastV16() && !SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())
+            ? "CREATE OR ALTER" : "ALTER";
         var strippedQuery = SQLUtils.stripComments(sqlDialect, ddl);
         var fullDeclarationFirstKeyWord = getFullDeclarationFirstKeyWord(strippedQuery);
         if ("CREATE".equalsIgnoreCase(firstKeyword) && !"CREATE OR ALTER".equalsIgnoreCase(fullDeclarationFirstKeyWord)) {
-            if (SQLServerUtils.isDriverSqlServer(dataSource.getContainer().getDriver())) {
-                return ddl.replaceFirst(firstKeyword, "ALTER");
-            }
             return ddl.replaceFirst(firstKeyword, replacement);
         }
         return ddl;
