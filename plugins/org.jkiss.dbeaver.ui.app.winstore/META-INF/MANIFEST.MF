@@ -7,6 +7,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-Version: 1.0.102.qualifier
 Bundle-Release-Date: 20260420
 Bundle-RequiredExecutionEnvironment: JavaSE-21
+Export-Package: org.jkiss.dbeaver.winstore
 Require-Bundle: org.jkiss.dbeaver.model
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.winstore
 

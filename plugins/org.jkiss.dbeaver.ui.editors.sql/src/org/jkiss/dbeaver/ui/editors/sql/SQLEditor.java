@@ -131,8 +131,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -4127,7 +4127,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onStartQuery(DBCSession session, final SQLQuery query) {
+        public void onStartQuery(@NotNull DBCSession session, @NotNull final SQLQuery query) {
             try {
                 SQLEditor owner = queryProcessor.getOwner();
                 boolean isInExecute = owner.getTotalQueryRunning() > 0;
@@ -4165,7 +4165,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
+        public void onEndQuery(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull DBCStatistics statistics) {
             try {
                 SQLEditor owner = getOwner();
                 synchronized (owner.runningQueries) {
@@ -4339,7 +4339,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndScript(final DBCStatistics statistics, final boolean hasErrors) {
+        public void onEndScript(@NotNull final DBCStatistics statistics, final boolean hasErrors) {
             try {
                 SQLEditor owner = getOwner();
                 if (owner.isDisposed()) {
@@ -4373,7 +4373,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+        public void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {
             if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
                 refreshContextDefaults(session);
             }
