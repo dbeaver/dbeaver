@@ -27,7 +27,7 @@ import java.nio.file.Path;
 public class WinStoreEnvPathMapper implements IEnvironmentPathMapper {
     private static final Log log = Log.getLog(WinStoreEnvPathMapper.class);
 
-    private static final String WINDOWS_APP_LOCAL_DATA_PACKAGE = "DBeaverCorp.DBeaverCE_1b7tdvn0p0f9y";
+    private static final String WINDOWS_APP_LOCAL_DATA_PACKAGE_PREFIX = "DBeaverCorp.";
     private static final String APP_DATA_ROAMING_PATH_STRING = System.getenv("AppData");
     private static final String LOCAL_APP_DATA_PATH_STRING = System.getenv("LOCALAPPDATA");
     private static final String USER_HOME_PATH_STRING = System.getProperty(StandardConstants.ENV_USER_HOME);
@@ -40,7 +40,12 @@ public class WinStoreEnvPathMapper implements IEnvironmentPathMapper {
             : Path.of(USER_HOME_PATH_STRING, "AppData", "Local");
         
         realVirtualizedRoot = localAppDataPath.resolve("Packages")
-            .resolve(WINDOWS_APP_LOCAL_DATA_PACKAGE).resolve("LocalCache").resolve("Roaming");
+            .resolve(WINDOWS_APP_LOCAL_DATA_PACKAGE_PREFIX + localAppFullId()).resolve("LocalCache").resolve("Roaming");
+    }
+
+    @NotNull
+    protected String localAppFullId() {
+        return "DBeaverCE_1b7tdvn0p0f9y";
     }
 
     @Override

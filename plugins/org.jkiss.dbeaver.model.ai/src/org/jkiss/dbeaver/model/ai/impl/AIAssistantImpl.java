@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -47,7 +48,7 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
-    protected static final int MAX_FUNCTION_CALLS = 5;
+    protected static final int MAX_FUNCTION_CALLS = 10;
 
     protected final DBPWorkspace workspace;
 
@@ -83,8 +84,7 @@ public class AIAssistantImpl implements AIAssistant {
     @Override
     public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         checkAiEnablement();
@@ -93,13 +93,11 @@ public class AIAssistantImpl implements AIAssistant {
         try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
-                context,
-                systemGenerator,
+                functionContext,
                 messages,
                 engine,
                 engineDescriptor
             );
-            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
 
@@ -123,7 +121,6 @@ public class AIAssistantImpl implements AIAssistant {
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
                     AIFunctionCall functionCall = completionResponse.getFunctionCall();
                     if (functionCall != null) {
-                        functionContext.addFunctionCall(functionCall);
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         String stringValue = CommonUtils.toString(result.getValue());
                         if (result.getType() == AIFunctionType.ACTION) {
@@ -162,6 +159,22 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
+    @Override
+    public boolean isFunctionSupported() {
+        AIToolboxManager toolboxManager = this.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        if (!functionSettings.isFunctionsEnabled()) {
+            return false;
+        }
+        try {
+            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            return engineDescriptor.isSupportsFunctions();
+        } catch (DBException e) {
+            log.debug(e);
+            return false;
+        }
+    }
+
     @NotNull
     @Override
     public AIToolboxManager getToolboxManager() {
@@ -174,8 +187,7 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     public AIEngineRequest buildAiEngineRequest(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
@@ -185,8 +197,7 @@ public class AIAssistantImpl implements AIAssistant {
             this,
             engine,
             engineDescriptor,
-            systemGenerator,
-            context,
+            functionContext,
             messages
         );
     }
@@ -201,8 +212,7 @@ public class AIAssistantImpl implements AIAssistant {
         return new AIFunctionContext(
             monitor,
             context,
-            systemGenerator,
-            messages
+            systemGenerator
         );
     }
 
@@ -215,16 +225,25 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = getToolboxManager().getFunctionByFullId(functionName);
+        AIFunctionDescriptor function = functionCall.getFunction();
+        if (function == null) {
+            function = getToolboxManager().getFunctionByFullId(functionName);
+            if (function != null) {
+                functionCall.setFunction(function);
+            }
+        }
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
-        functionCall.setFunction(function);
-        log.debug("Call AI function '" + function.getId() + "'");
         Map<String, Object> arguments = functionCall.getArguments();
         if (arguments == null) {
             arguments = Map.of();
         }
+        log.debug("Call AI function " + function.getId() + "(" +
+            arguments.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining(",")) +
+            ")");
         DBPDataSourceContainer container = context.getContext() != null
             ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
         AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(
