@@ -14,7 +14,7 @@
                 id="databricks"
                 parent="generic"
                 label="Databricks"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
+                icon="icons/databricks_icon.svg"
                 dialect="generic">
             <drivers managable="true">
 
@@ -24,12 +24,13 @@
                 <driver
                     id="databricks-oss"
                     label="Databricks"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon_big.png"
+                    icon="icons/databricks_icon.svg"
+                    iconBig="icons/databricks_icon_big.svg"
+                    logoImage="icons/databricks_logo.svg"
                     class="com.databricks.client.jdbc.Driver"
                     sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
                     webURL="https://docs.databricks.com/aws/en/integrations/jdbc-oss.html"
-                    databaseDocumentationSuffixURL="Database-driver-Azure-Databricks"
+                    databaseDocumentationSuffixURL="Database-driver-Databricks"
                     description="Databricks OSS JDBC Driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql,analytic,cloud"
