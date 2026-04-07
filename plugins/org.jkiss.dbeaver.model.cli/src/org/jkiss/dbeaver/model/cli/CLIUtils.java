@@ -442,8 +442,8 @@ public class CLIUtils {
         }
     }
 
-    public static boolean isRequiredOption(@NotNull CommandLine.Model.OptionSpec option) {
-        Object userObject = option.userObject();
+    public static boolean isRequiredOption(@NotNull CommandLine.Model.ArgSpec arg) {
+        Object userObject = arg.userObject();
         // use origin value from annotation, because picocli may mark options as required when they are in an arg group
         if (userObject instanceof Field optionField) {
             CommandLine.Option optionAnnotation = optionField.getAnnotation(CommandLine.Option.class);
@@ -455,7 +455,10 @@ public class CLIUtils {
                 return propertyAnnotation.required();
             }
         }
-        return option.required();
+
+        return arg.isOption()
+            ? arg.required()
+            : arg.arity().min() > 0;
     }
 
     public static boolean isGlobalOption(@NotNull CommandLine.Model.OptionSpec option) {

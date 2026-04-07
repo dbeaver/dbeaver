@@ -37,12 +37,6 @@ public class CLIHelp extends CommandLine.Help {
         super(commandSpec, colorScheme);
     }
 
-    public IOptionRenderer createDefaultOptionRenderer() {
-        return new CLIOptionRendererDelegate(
-            super.createDefaultOptionRenderer()
-        );
-    }
-
 
     @Override
     public String optionListExcludingGroups(
@@ -60,14 +54,6 @@ public class CLIHelp extends CommandLine.Help {
             return true;
         }).toList();
         return super.optionListExcludingGroups(optionList, layout, optionSort, valueLabelRenderer);
-    }
-
-    public String parameterList(
-        @NotNull List<CommandLine.Model.PositionalParamSpec> positionalParams,
-        @NotNull Layout layout,
-        @NotNull IParamLabelRenderer paramLabelRenderer
-    ) {
-        return super.parameterList(positionalParams, layout, new CLIParameterRendererDelegate(paramLabelRenderer));
     }
 
     public Comparator<CommandLine.Model.OptionSpec> createDefaultOptionSort() {
@@ -108,36 +94,9 @@ public class CLIHelp extends CommandLine.Help {
         return footer;
     }
 
-    private static class CLIOptionRendererDelegate implements IOptionRenderer {
-        @NotNull
-        private final IOptionRenderer delegate;
-
-        public CLIOptionRendererDelegate(@NotNull IOptionRenderer delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public Ansi.Text[][] render(CommandLine.Model.OptionSpec option, IParamLabelRenderer paramLabelRenderer, ColorScheme scheme) {
-            Ansi.Text[][] rows = delegate.render(option, paramLabelRenderer, scheme);
-            for (Ansi.Text[] row : rows) {
-                if (ArrayUtils.isEmpty(row)) {
-                    continue;
-                }
-                // according to the source code, the number of elements can be 5 or 2 (in the minimalist rendering),
-                // description is always last, we insert the mark before it
-                if (row.length > 2) {
-                    String argType = getArgType(option);
-                    if (CommonUtils.isNotEmpty(argType)) {
-                        row[row.length - 2] = row[row.length - 2].concat("<" + argType + ">");
-                    }
-                    if (CLIUtils.isRequiredOption(option)) {
-                        //insert required marker before description
-                        row[row.length - 2] = row[row.length - 2].concat("(required)");
-                    }
-                }
-            }
-            return rows;
-        }
+    @Override
+    public IParamLabelRenderer parameterLabelRenderer() {
+        return new CLIParameterRendererDelegate(super.parameterLabelRenderer());
     }
 
     private static class CLIParameterRendererDelegate implements IParamLabelRenderer {
@@ -153,10 +112,14 @@ public class CLIHelp extends CommandLine.Help {
             Ansi.Text label = delegate.renderParameterLabel(argSpec, ansi, styles);
             String argType = getArgType(argSpec);
             if (CommonUtils.isNotEmpty(argType)) {
-                label.concat("<" + argType + ">");
+                boolean insertIntoName = label.plainString().endsWith(">");
+                if (insertIntoName) {
+                    label = label.substring(0, label.getCJKAdjustedLength() - 1);
+                }
+                label = label.concat("(" + argType + ")" + (insertIntoName ? ">" : ""));
             }
-            if (argSpec.arity().min() > 0) {
-                label = label.concat("(required)");
+            if(CLIUtils.isRequiredOption(argSpec)) {
+                label = label.concat(" (required)");
             }
 
             return label;
@@ -176,7 +139,10 @@ public class CLIHelp extends CommandLine.Help {
             if (fieldType.isPrimitive() && fieldType.equals(int.class)) {
                 //to resolve confusion with Integer and int name
                 typeName = "integer";
-            } else if (field.getGenericType() instanceof ParameterizedType pt) {
+            } else if (fieldType.isArray() && fieldType.getComponentType().equals(int.class)) {
+                typeName = "integer[]";
+            }
+            else if (field.getGenericType() instanceof ParameterizedType pt) {
                 Type argType = pt.getActualTypeArguments()[0];
                 if (argType instanceof Class<?> typeClass) {
                     typeName = typeClass.getSimpleName();
