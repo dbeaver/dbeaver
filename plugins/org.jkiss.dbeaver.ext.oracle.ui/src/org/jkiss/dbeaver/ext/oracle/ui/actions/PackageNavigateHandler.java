@@ -110,7 +110,9 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
             }
             final IDocument document = sqlEditor.getDocument();
             if (document != null) {
-                String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                String commentSkip = """
+                    ^(?!\\s*--)\\s*""";
+                String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
                 final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
                 if (parameters != null) {
                     List<OracleProcedureArgument> inParams = new ArrayList<>();
