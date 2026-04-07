@@ -97,6 +97,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
 
     private final DBDAttributeBinding[] bindings;
     private final IResultSetPresentation presentation;
+    private final GISLeafletHttpServer.Handle server;
+    private final String template;
 
     private Browser browser;
     private DBGeometry[] lastValue;
@@ -111,16 +113,29 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private boolean flipCoordinates = false;
     private final Composite composite;
 
-    private GISLeafletHttpServer.Handle server;
-
     public GISLeafletViewer(
         @NotNull Composite parent,
         @NotNull DBDAttributeBinding[] bindings,
         @Nullable SpatialDataProvider spatialDataProvider,
         @Nullable IResultSetPresentation presentation
-    ) {
+    ) throws DBException {
         this.bindings = bindings;
         this.presentation = presentation;
+
+        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH)) {
+            if (is == null) {
+                throw new DBException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
+            }
+            template = IOUtils.readToString(new InputStreamReader(is));
+        } catch (IOException e) {
+            throw new DBException("Error reading view template", e);
+        }
+
+        try {
+            server = GISLeafletHttpServer.acquire();
+        } catch (Exception e) {
+            throw new DBException("Error initializing internal HTTP server for GIS viewer", e);
+        }
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
@@ -224,16 +239,6 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         showLabels = preferences.getBoolean(GeometryViewerConstants.PREF_SHOW_LABELS);
 
         preferences.addPropertyChangeListener(this);
-
-        try {
-            server = GISLeafletHttpServer.acquire();
-        } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(
-                "GIS Viewer initialization error",
-                "Error initializing internal HTTP server for GIS viewer. Viewer functionality may be limited.",
-                e
-            );
-        }
     }
 
     @Override
@@ -418,16 +423,6 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         String geomTipValuesString = String.join(",", geomTipValues);
         String geomCRS = actualSourceSRID == GisConstants.SRID_SIMPLE ? GisConstants.LL_CRS_SIMPLE : GisConstants.LL_CRS_3857;
         boolean isShowMap = showMap;
-
-        InputStream fis = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH);
-        if (fis == null) {
-            throw new IOException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
-        }
-
-        String template;
-        try (InputStreamReader isr = new InputStreamReader(fis)) {
-            template = IOUtils.readToString(isr);
-        }
 
         IVariableResolver resolver = name -> switch (name) {
             case "geomValues" -> CommonUtils.escapeHtml(geomValuesString);
