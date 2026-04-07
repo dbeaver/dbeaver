@@ -314,7 +314,20 @@ public final class AIUtils {
         @NotNull DBSSchema schema
     ) {
         switch (context.getScope()) {
-            case CURRENT_DATABASE, CURRENT_SCHEMA -> {
+            case CURRENT_DATABASE -> {
+                if (schema.getParentObject() instanceof DBSCatalog parentCatalog) {
+                    DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                        if (defaultCatalog != null) {
+                            return parentCatalog == defaultCatalog;
+                        }
+                    }
+                }
+                // If there is no default catalog or server doesn't support catalogs
+                return true;
+            }
+            case CURRENT_SCHEMA -> {
                 DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
