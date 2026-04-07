@@ -139,14 +139,24 @@ public class AIToolboxRegistry implements AIToolboxManager {
     @Nullable
     @Override
     public AIFunctionDescriptor getFunctionByFullId(@NotNull String fullId) {
-        return getAllToolboxes().stream()
-            .flatMap(it -> it.getSupportedFunctions().stream())
-            .filter(it -> fullId.equals(it.getFullId()))
-            .findFirst()
-            .orElseGet(() -> {
-                log.warn("AI function '" + fullId + "' not found in any accessible toolbox");
-                return null;
-            });
+        int divPos = fullId.indexOf("_");
+        if (divPos < 0) {
+            log.debug("Wrong function full ID: " + fullId);
+            return null;
+        }
+        String tbId = fullId.substring(0, divPos);
+        AIToolboxDescriptor toolbox = getToolbox(tbId);
+        if (toolbox == null) {
+            log.debug("Toolbox '" + tbId + "' not found");
+            return null;
+        }
+        String functionId = fullId.substring(divPos + 1);
+        AIFunctionDescriptor function = toolbox.getFunctionById(functionId);
+        if (function == null) {
+            log.debug("Function '" + functionId + "' not found in toolbox '" + tbId + "'");
+            return null;
+        }
+        return function;
     }
 
     @NotNull
