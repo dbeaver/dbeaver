@@ -75,14 +75,21 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         String queryText = null;
 
         // Remove orderings (#4652)
-        Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-        if (statement instanceof PlainSelect plainSelect) {
-            if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
-                plainSelect.setOrderByElements(null);
-                queryText = statement.toString();
+        try {
+            Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
+            if (statement instanceof PlainSelect plainSelect) {
+                if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
+                    plainSelect.setOrderByElements(null);
+                    queryText = statement.toString();
+                }
             }
-        } else {
-            throw new DBCException("Cannot calculate row count for non-SELECT statement '" + query.getText() + "'");
+            // For non-PlainSelect statements (e.g. DuckDB FROM-first syntax, PostgreSQL TABLE command,
+            // CTEs starting with WITH), still attempt to wrap in SELECT COUNT(*) and let the database
+            // decide if it's valid (#40210)
+        } catch (DBCException e) {
+            // Query could not be parsed (e.g. uses non-standard syntax like DuckDB FROM-first).
+            // Still attempt to wrap it and let the database handle validation (#40210).
+            log.debug("Could not parse query to remove orderings, wrapping as-is: ", e);
         }
         // Trim query delimiters (#2541)
         if (queryText == null) {
