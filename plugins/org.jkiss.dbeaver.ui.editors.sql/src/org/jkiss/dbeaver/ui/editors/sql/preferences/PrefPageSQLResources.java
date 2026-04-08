@@ -51,6 +51,8 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
+import java.util.Optional;
+
 /**
  * PrefPageSQLResources
  */
@@ -64,7 +66,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
     private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
-    private Button autoAttachConnectionsToScriptsCheck;
+    private Optional<Button> autoAttachConnectionsToScriptsCheck;
     private Text scriptTitlePattern;
     private Text scriptFileNamePattern;
     private Spinner bigScriptFileSizeBoundarySpinner;
@@ -118,13 +120,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 SQLEditorMessages.pref_page_sql_editor_checkbox_create_script_folders_tip,
                 store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS),
                 2);
-            autoAttachConnectionsToScriptsCheck = UIUtils.createCheckbox(
-                scriptsGroup,
-                SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection,
-                SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection_tip,
-                store.getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS),
-                2
-            );
+            autoAttachConnectionsToScriptsCheck = !DBWorkbench.isDistributed()
+                ? Optional.of(createConnectionToScritpsCheckbox(scriptsGroup, store))
+                : Optional.empty();
             scriptTitlePattern = UIUtils.createLabelText(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_title_pattern,
@@ -271,6 +269,17 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
         return composite;
     }
 
+    @NotNull
+    private Button createConnectionToScritpsCheckbox(@NotNull Composite scriptsGroup, @NotNull DBPPreferenceStore store) {
+        return UIUtils.createCheckbox(
+            scriptsGroup,
+            SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection,
+            SQLEditorMessages.pref_page_sql_editor_checkbox_attach_scripts_to_connection_tip,
+            store.getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS),
+            2
+        );
+    }
+
     private void setSettings(@NotNull DBPPreferenceStore store) {
         setScriptBindingTypes(SQLScriptBindingType.valueOf(store.getString(SQLPreferenceConstants.SCRIPT_BIND_COMMENT_TYPE)));
         enableCommentType();
@@ -306,7 +315,9 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             deleteEmptyCombo.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
         }
         autoFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
-        autoAttachConnectionsToScriptsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS));
+        autoAttachConnectionsToScriptsCheck.ifPresent(
+            box -> box.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS
+            )));
         connectionFoldersCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
         scriptTitlePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
         scriptFileNamePattern.setText(store.getDefaultString(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN));
@@ -355,7 +366,11 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
         }
         store.setValue(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
-        store.setValue(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS, autoAttachConnectionsToScriptsCheck.getSelection());
+
+        autoAttachConnectionsToScriptsCheck.ifPresent(
+            box -> store.setValue(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS, box.getSelection())
+        );
+
         store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         store.setValue(SQLPreferenceConstants.SCRIPT_FILE_NAME_PATTERN, scriptFileNamePattern.getText());

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.osgi.framework.Version;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -31,6 +33,7 @@ import java.sql.SQLException;
 
 public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
     public static final DuckDBGeometryValueHandler INSTANCE = new DuckDBGeometryValueHandler();
+    private static final Version STANDARD_WKB_STORAGE_VERSION = new Version(1, 5, 0);
 
     @Override
     protected Object fetchColumnValue(
@@ -48,6 +51,10 @@ public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
 
     @Override
     protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+        if (session != null && isStandardWkbStorage(session)) {
+            return super.convertGeometryFromBinaryFormat(session, object);
+        }
+
         try {
             var buffer = ByteBuffer.wrap(object).order(ByteOrder.LITTLE_ENDIAN);
             var factory = new GeometryFactory(new PrecisionModel());
@@ -55,5 +62,10 @@ public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
         } catch (Exception e) {
             return super.convertGeometryFromBinaryFormat(session, object);
         }
+    }
+
+    private boolean isStandardWkbStorage(@NotNull DBCSession session) {
+        Version version = session.getDataSource().getInfo().getDatabaseVersion();
+        return version != null && version.compareTo(STANDARD_WKB_STORAGE_VERSION) >= 0;
     }
 }

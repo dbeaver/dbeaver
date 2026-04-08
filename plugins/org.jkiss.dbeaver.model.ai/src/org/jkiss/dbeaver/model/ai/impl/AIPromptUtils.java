@@ -86,6 +86,8 @@ public class AIPromptUtils {
 
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
+        instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
+        instructions.add("If user wants to see table data then show it in markdown table format by default.");
         instructions.add("Stick strictly to SQL dialect syntax.");
         instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
@@ -107,7 +109,8 @@ public class AIPromptUtils {
         List<String> instructions = new ArrayList<>();
         instructions.add("You are the DBeaver AI assistant.");
         instructions.add("Act as a database architect and SQL expert.");
-        instructions.add("Rely only on the provided schema information.");
+        instructions.add("Use tools to ask for database schema information.");
+        instructions.add("Rely only on the provided schema information, do not make assumptions.");
         String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
         if (!CommonUtils.isEmpty(useLanguage)) {
             instructions.add("Use " + useLanguage + " language in your responses.");
