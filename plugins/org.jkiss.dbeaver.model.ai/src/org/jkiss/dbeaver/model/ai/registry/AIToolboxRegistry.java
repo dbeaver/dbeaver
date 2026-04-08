@@ -114,10 +114,10 @@ public class AIToolboxRegistry implements AIToolboxManager {
     @NotNull
     @Override
     public List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose) {
-        List<AIFunctionDescriptor> functions = new ArrayList<>(internalToolbox.getSupportedFunctions());
+        List<AIFunctionDescriptor> functions = new ArrayList<>(internalToolbox.getSupportedFunctions(purpose));
         for (AIToolbox toolbox : externalToolboxes.values()) {
             if (toolbox.isEnabled() && toolbox.isAccessible()) {
-                functions.addAll(toolbox.getSupportedFunctions());
+                functions.addAll(toolbox.getSupportedFunctions(purpose));
             }
         }
         return functions;
