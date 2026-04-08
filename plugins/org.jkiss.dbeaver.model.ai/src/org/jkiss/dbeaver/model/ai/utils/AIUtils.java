@@ -237,7 +237,19 @@ public final class AIUtils {
         if (settings.getScope() != null || !container.isConnected()) {
             return;
         }
-        settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+        if (executionContext == null || executionContext.getContextDefaults() == null) {
+            // default scope
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+            return;
+        }
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        } else if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+        } else {
+            settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        }
     }
 
     public static boolean isExcludableObject(
