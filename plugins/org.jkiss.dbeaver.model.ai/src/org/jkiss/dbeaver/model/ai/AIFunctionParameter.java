@@ -42,4 +42,9 @@ public interface AIFunctionParameter {
     default AIFunctionParameterTransformer getTransformer() {
         return null;
     }
+
+    @Nullable
+    default String getTransformerSuffix() {
+        return null;
+    }
 }

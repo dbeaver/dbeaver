@@ -30,6 +30,7 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     private final static Log log = Log.getLog(AIFunctionInternalParameter.class);
 
     private final IConfigurationElement config;
+    private String targetSuffix;
     private AIFunctionParameterTransformer transformer;
 
     public AIFunctionInternalParameter(@NotNull IConfigurationElement config) {
@@ -39,6 +40,7 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
         if (!CommonUtils.isEmpty(transformerClass)) {
             try {
                 transformer = new ObjectType(transformerClass).createInstance(AIFunctionParameterTransformer.class);
+                targetSuffix = this.config.getAttribute("targetSuffix");
             } catch (DBException e) {
                 log.error("Error creating transformer");
             }
@@ -85,5 +87,11 @@ public class AIFunctionInternalParameter extends AbstractDescriptor implements A
     @Override
     public AIFunctionParameterTransformer getTransformer() {
         return transformer;
+    }
+
+    @Nullable
+    @Override
+    public String getTransformerSuffix() {
+        return targetSuffix;
     }
 }

@@ -135,26 +135,28 @@ public class AIFunctionCall {
         // In headless apps (server apps) we do not call action functions directly
         // We pass all parameters in the result
         if (function != null) {
-            Map<String, Object> ta = new LinkedHashMap<>(arguments.size());
+            Map<String, Object> ta = new LinkedHashMap<>(arguments);
             for (Map.Entry<String, Object> arg : arguments.entrySet()) {
-                Object paramValue = arg.getValue();
-                AIFunctionParameter parameter = function.getParameter(arg.getKey());
+                String paramName = arg.getKey();
+                AIFunctionParameter parameter = function.getParameter(paramName);
                 if (parameter != null) {
-                    if (parameter.getTransformer() != null) {
+                    AIFunctionParameterTransformer transformer = parameter.getTransformer();
+                    if (transformer != null) {
                         try {
-                            paramValue = parameter.getTransformer().transformParameter(
+                            Object paramValue = arg.getValue();
+                            Object transformedValue = transformer.transformParameter(
                                 context,
                                 functionContext,
                                 function,
                                 parameter,
                                 paramValue
                             );
+                            ta.put(paramName + "_" + parameter.getTransformerSuffix(), transformedValue);
                         } catch (Exception e) {
                             log.debug("Error transforming AI function parameter value", e);
                         }
                     }
                 }
-                ta.put(arg.getKey(), paramValue);
             }
             this.arguments = ta;
         }
