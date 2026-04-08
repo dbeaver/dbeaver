@@ -24,10 +24,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptField;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptInfo;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Base authentication dialog
@@ -42,6 +48,9 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
     private String savePasswordText;
     private String savePasswordToolTipText;
     private String description;
+    private List<DBPAuthPromptField> credentialFields;
+    private final Map<String, Text> credentialFieldControls = new LinkedHashMap<>();
+    private final DBPAuthPromptInfo authPromptInfo = new DBPAuthPromptInfo();
 
     protected Text usernameText;
     protected Text passwordText;
@@ -70,6 +79,10 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
 
     public DBPAuthInfo getAuthInfo() {
         return authInfo;
+    }
+
+    public DBPAuthPromptInfo getAuthPromptInfo() {
+        return authPromptInfo;
     }
 
     public String getUserName() {
@@ -121,6 +134,10 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         this.description = description;
     }
 
+    public void setCredentialFields(@NotNull List<DBPAuthPromptField> credentialFields) {
+        this.credentialFields = credentialFields;
+    }
+
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
@@ -136,35 +153,16 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
             UIUtils.createInfoLabel(addrGroup, description);
         }
 
-        {
-            Composite credGroup = UIUtils.createTitledComposite(addrGroup, UIConnectionMessages.dialog_connection_auth_group_user_cridentials, 2, GridData.FILL_BOTH);
-            if (!passwordOnly) {
-                Label usernameLabel = new Label(credGroup, SWT.NONE);
-                usernameLabel.setText(this.userNameLabel);
-                usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-                usernameText = new Text(credGroup, SWT.BORDER);
-                gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.grabExcessHorizontalSpace = true;
-                gd.widthHint = 200;
-                //gd.horizontalSpan = 3;
-                usernameText.setLayoutData(gd);
-                if (authInfo.getUserName() != null) {
-                    usernameText.setText(authInfo.getUserName());
-                }
-            }
-
-            Label passwordLabel = new Label(credGroup, SWT.NONE);
-            passwordLabel.setText(this.passwordLabel);
-            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-            passwordText = new Text(credGroup, SWT.BORDER | SWT.PASSWORD);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            passwordText.setLayoutData(gd);
-            if (authInfo.getUserPassword() != null && authInfo.isSavePassword()) {
-                passwordText.setText(authInfo.getUserPassword());
-            }
+        Composite credGroup = UIUtils.createTitledComposite(
+            addrGroup,
+            UIConnectionMessages.dialog_connection_auth_group_user_cridentials,
+            2,
+            GridData.FILL_BOTH
+        );
+        if (CommonUtils.isEmpty(credentialFields)) {
+            createDefaultCredentialControls(credGroup);
+        } else {
+            createCustomCredentialControls(credGroup);
         }
 
         if (showSavePassword) {
@@ -177,21 +175,83 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
             savePasswordCheck.setSelection(authInfo.isSavePassword());
         }
 
-        if (passwordOnly || !CommonUtils.isEmpty(usernameText.getText())) {
+        if (!CommonUtils.isEmpty(credentialFieldControls)) {
+            Text firstEmptyField = credentialFieldControls.values().stream()
+                .filter(t -> CommonUtils.isEmpty(t.getText()))
+                .findFirst()
+                .orElse(credentialFieldControls.values().iterator().next());
+            firstEmptyField.setFocus();
+        } else if (passwordOnly || !CommonUtils.isEmpty(usernameText.getText())) {
             passwordText.setFocus();
         }
 
         return addrGroup;
     }
 
+    private void createDefaultCredentialControls(@NotNull Composite credGroup) {
+        GridData gd;
+        if (!passwordOnly) {
+            Label usernameLabel = new Label(credGroup, SWT.NONE);
+            usernameLabel.setText(this.userNameLabel);
+            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            usernameText = new Text(credGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 200;
+            usernameText.setLayoutData(gd);
+            if (authInfo.getUserName() != null) {
+                usernameText.setText(authInfo.getUserName());
+            }
+        }
+
+        Label passwordLabel = new Label(credGroup, SWT.NONE);
+        passwordLabel.setText(this.passwordLabel);
+        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+        passwordText = new Text(credGroup, SWT.BORDER | SWT.PASSWORD);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        passwordText.setLayoutData(gd);
+        if (authInfo.getUserPassword() != null && authInfo.isSavePassword()) {
+            passwordText.setText(authInfo.getUserPassword());
+        }
+    }
+
+    private void createCustomCredentialControls(@NotNull Composite credGroup) {
+        for (DBPAuthPromptField field : credentialFields) {
+            Label fieldLabel = new Label(credGroup, SWT.NONE);
+            fieldLabel.setText(field.getLabel());
+            fieldLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            if (CommonUtils.isNotEmpty(field.getDescription())) {
+                fieldLabel.setToolTipText(field.getDescription());
+            }
+
+            Text fieldText = new Text(credGroup, SWT.BORDER | (field.isPassword() ? SWT.PASSWORD : SWT.NONE));
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 200;
+            fieldText.setLayoutData(gd);
+            fieldText.setText(CommonUtils.notEmpty(field.getValue()));
+            fieldText.setToolTipText(field.getDescription());
+            credentialFieldControls.put(field.getId(), fieldText);
+        }
+    }
+
     @Override
     protected void okPressed() {
-        if (!passwordOnly) {
-            authInfo.setUserName(usernameText.getText());
+        if (CommonUtils.isEmpty(credentialFields)) {
+            if (!passwordOnly) {
+                authInfo.setUserName(usernameText.getText());
+            }
+            authInfo.setUserPassword(passwordText.getText());
+        } else {
+            credentialFieldControls.forEach((id, control) -> authPromptInfo.setFieldValue(id, control.getText()));
         }
-        authInfo.setUserPassword(passwordText.getText());
         if (showSavePassword) {
-            authInfo.setSavePassword(savePasswordCheck.getSelection());
+            boolean savePassword = savePasswordCheck.getSelection();
+            authInfo.setSavePassword(savePassword);
+            authPromptInfo.setSavePassword(savePassword);
         }
 
         super.okPressed();

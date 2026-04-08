@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptField;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptInfo;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -126,6 +128,14 @@ public interface DBPPlatformUI {
         @Nullable String userPassword,
         boolean passwordOnly,
         boolean showSavePassword);
+
+    @Nullable
+    DBPAuthPromptInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull List<DBPAuthPromptField> fields,
+        boolean showSavePassword
+    );
 
     /**
      * Asks for password change. Returns null if user canceled this action.

@@ -26,9 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
-import org.jkiss.dbeaver.model.access.DBAAuthModelExternal;
-import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
+import org.jkiss.dbeaver.model.access.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
@@ -43,12 +41,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.*;
 import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
@@ -66,6 +62,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
@@ -1137,7 +1134,7 @@ public class DataSourceDescriptor
                     // 3. Use legacy password provider
                     if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
                         // Ask for password
-                        authProvidedFromCredProvider = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
+                        //authProvidedFromCredProvider = askForPassword(this, null, DBWTunnel.AuthCredentials.CREDENTIALS);
                     }
                 }
                 if (!authProvidedFromCredProvider) {
@@ -1188,15 +1185,14 @@ public class DataSourceDescriptor
                     monitor.subTask("Initialize tunnel");
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {
-                        if (!tunnelConfiguration.isSavePassword()) {
-                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
-                            if (rc != DBWTunnel.AuthCredentials.NONE) {
-                                if (!askForPassword(this, tunnelConfiguration, rc)) {
-                                    tunnelHandler = null;
-                                    return false;
-                                }
+                        DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
+                        if (rc != DBWTunnel.AuthCredentials.NONE) {
+                            if (!askForPassword(this, tunnelConfiguration, rc)) {
+                                tunnelHandler = null;
+                                return false;
                             }
                         }
+
                         // We need to resolve jump server differently due to it being a part of ssh configuration
                         DBExecUtils.startContextInitiation(this);
                         try {
@@ -2030,6 +2026,13 @@ public class DataSourceDescriptor
         @Nullable DBWHandlerConfiguration networkHandler,
         @NotNull DBWTunnel.AuthCredentials authType
     ) {
+        if (networkHandler == null && authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
+            Boolean authModelPrompted = askForAuthModelCredentials(dataSourceContainer);
+            if (authModelPrompted != null) {
+                return authModelPrompted;
+            }
+        }
+
         DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
         DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();
 
@@ -2091,6 +2094,97 @@ public class DataSourceDescriptor
         }
 
         return true;
+    }
+
+    @Nullable
+    private static Boolean askForAuthModelCredentials(@NotNull DataSourceDescriptor dataSourceContainer) {
+        DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
+        DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();
+        DBAAuthModel<DBAAuthCredentials> authModel = actualConfig.getAuthModel();
+        if (!(authModel instanceof DBAAuthModelPromptProperties<?> promptPropertiesProvider)) {
+            return null;
+        }
+
+        DBAAuthCredentials credentials = authModel.loadCredentials(dataSourceContainer, actualConfig);
+        List<String> promptPropertyIds = ((DBAAuthModelPromptProperties<DBAAuthCredentials>) promptPropertiesProvider)
+            .getConnectionPromptProperties(dataSourceContainer, actualConfig, credentials);
+        if (CommonUtils.isEmpty(promptPropertyIds)) {
+            return true;
+        }
+
+        DBAAuthCredentialsForm credentialsForm = authModel.createCredentialsForm(dataSourceContainer, actualConfig);
+        PropertyCollector propertyCollector = new PropertyCollector(credentialsForm, false);
+        propertyCollector.collectProperties();
+
+        Map<String, DBPPropertyDescriptor> propertyDescriptors = new LinkedHashMap<>();
+        for (DBPPropertyDescriptor property : propertyCollector.getProperties()) {
+            propertyDescriptors.put(property.getId(), property);
+        }
+
+        final String prompt = "'" + dataSourceContainer.getName() + RegistryMessages.dialog_connection_auth_title; //$NON-NLS-1$
+        List<DBPAuthPromptField> promptFields = new ArrayList<>();
+        for (String propertyId : promptPropertyIds) {
+            DBPPropertyDescriptor property = propertyDescriptors.get(propertyId);
+            if (property == null) {
+                continue;
+            }
+
+            Object currentValue = propertyCollector.getPropertyValue(null, propertyId);
+            if (!isEmptyPropertyValue(currentValue)) {
+                continue;
+            }
+            promptFields.add(new DBPAuthPromptField(
+                propertyId,
+                property.getDisplayName(),
+                property.getDescription(),
+                property.hasFeature(DBConstants.PROP_FEATURE_PASSWORD),
+                currentValue == null ? null : CommonUtils.toString(currentValue)
+            ));
+        }
+
+        if (promptFields.isEmpty()) {
+            return true;
+        }
+
+        DBPAuthPromptInfo promptInfo = DBWorkbench.getPlatformUI().promptUserCredentials(
+            prompt,
+            null,
+            promptFields,
+            !dataSourceContainer.isTemporary()
+        );
+        if (promptInfo == null) {
+            return false;
+        }
+
+        PropertySerializationUtils.updateCredentialsFromProperties(
+            new VoidProgressMonitor(),
+            credentials,
+            promptInfo.getFieldValues()
+        );
+        authModel.provideCredentials(dataSourceContainer, actualConfig, credentials);
+
+        boolean savePassword = promptInfo.isSavePassword();
+        dataSourceContainer.setSavePassword(savePassword);
+
+        if (savePassword && connConfig != actualConfig) {
+            authModel.saveCredentials(dataSourceContainer, connConfig, credentials);
+        }
+        if (savePassword) {
+            try {
+                dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean isEmptyPropertyValue(@Nullable Object value) {
+        if (value == null) {
+            return true;
+        }
+        return value instanceof String str ? CommonUtils.isEmpty(str) : false;
     }
 
     private static DBPAuthInfo askCredentials(

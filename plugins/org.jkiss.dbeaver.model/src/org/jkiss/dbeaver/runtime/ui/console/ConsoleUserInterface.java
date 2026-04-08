@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptField;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptInfo;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -160,6 +162,17 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         @NotNull String passwordLabel,
         @Nullable String userPassword,
         boolean passwordOnly,
+        boolean showSavePassword
+    ) {
+        throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
+    }
+
+    @Nullable
+    @Override
+    public DBPAuthPromptInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull List<DBPAuthPromptField> fields,
         boolean showSavePassword
     ) {
         throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");

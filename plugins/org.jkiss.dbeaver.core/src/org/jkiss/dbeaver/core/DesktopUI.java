@@ -45,6 +45,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptField;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -422,6 +424,30 @@ public class DesktopUI extends ConsoleUserInterface {
                 authDialog.setUserPassword(userPassword);
                 if (authDialog.open() == IDialogConstants.OK_ID) {
                     return authDialog.getAuthInfo();
+                } else {
+                    return null;
+                }
+            }
+        }.execute();
+    }
+
+    @Nullable
+    @Override
+    public DBPAuthPromptInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull List<DBPAuthPromptField> fields,
+        boolean showSavePassword
+    ) {
+        return new UITask<DBPAuthPromptInfo>() {
+            @Override
+            public DBPAuthPromptInfo runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
+                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, false, showSavePassword);
+                authDialog.setDescription(description == null ? prompt : description);
+                authDialog.setCredentialFields(fields);
+                if (authDialog.open() == IDialogConstants.OK_ID) {
+                    return authDialog.getAuthPromptInfo();
                 } else {
                     return null;
                 }
