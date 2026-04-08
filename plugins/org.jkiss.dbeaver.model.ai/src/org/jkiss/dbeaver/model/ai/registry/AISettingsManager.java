@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -246,6 +248,7 @@ public class AISettingsManager {
     private static Gson createPropertiesLoadGson() {
         return new GsonBuilder()
             .setStrictness(Strictness.LENIENT)
+            .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter())
             .create();
     }
 
@@ -254,7 +257,8 @@ public class AISettingsManager {
         if (saveSecretsAsPlainText()) {
             return createPropertiesLoadGson();
         } else {
-            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder().create();
+            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
+                .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
         }
     }
 
@@ -297,6 +301,37 @@ public class AISettingsManager {
         @Override
         public synchronized void reset() {
             this.settings = null;
+        }
+    }
+
+    static class DBAAuthProviderAdapter implements JsonDeserializer<AICredentialsProvider<?>>, JsonSerializer<AICredentialsProvider<?>> {
+
+        @Override
+        public AICredentialsProvider<?> deserialize(
+            @NotNull JsonElement json,
+            @NotNull Type typeOfT,
+            @NotNull JsonDeserializationContext context
+        ) {
+            JsonObject obj = json.getAsJsonObject();
+            String type = obj.get("type").getAsString(); //NON-NLS-1
+            DBACredentialsProviderDescriptor authProviderByID = AICredentialsProviderRegistry.getInstance()
+                .getCredentialsProviderByID(type);
+            Class<?> providerClass = authProviderByID.getProviderClass();
+            return context.deserialize(obj.getAsJsonObject("data"), providerClass); //NON-NLS-1
+        }
+
+
+        @Override
+        public JsonElement serialize(
+            @NotNull AICredentialsProvider src,
+            @NotNull Type typeOfSrc,
+            @NotNull JsonSerializationContext context
+        ) {
+
+            JsonObject obj = new JsonObject();
+            obj.add("data", context.serialize(src, src.getClass())); //NON-NLS-1
+            obj.addProperty("type", src.getProviderId()); //NON-NLS-1
+            return obj;
         }
     }
 }

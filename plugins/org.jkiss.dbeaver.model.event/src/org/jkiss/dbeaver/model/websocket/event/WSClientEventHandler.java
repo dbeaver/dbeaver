@@ -14,27 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql;
+package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.auth.SMSession;
 
 /**
- * SQLQueryListener
+ * WS event handler
  */
-public interface SQLQueryListener {
-    default void onStartScript() {}
+public interface WSClientEventHandler<EVENT> {
 
-    default void onStartQuery(@NotNull DBCSession session, @NotNull SQLQuery query) {}
+    void handleEvent(@NotNull SMSession session, @NotNull EVENT event) throws DBException;
 
-    default void onEndQuery(
-        @NotNull DBCSession session,
-        @NotNull SQLQueryResult result,
-        @NotNull DBCStatistics statistics
-    ) {}
-
-    default void onEndScript(@NotNull DBCStatistics statistics, boolean hasErrors) {}
-
-    default void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {}
 }
