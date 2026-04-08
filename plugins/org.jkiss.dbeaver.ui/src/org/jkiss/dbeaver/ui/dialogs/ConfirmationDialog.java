@@ -62,7 +62,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     @Nullable
     private final String codeBlockText;
     @Nullable
-    private final String dialogBoundsSettingsId;
+    private final String confirmationId;
 
     public ConfirmationDialog(
         Shell parentShell,
@@ -72,7 +72,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         int dialogImageType,
         String[] dialogButtonLabels,
         int defaultIndex,
-        String toggleMessage,
+        @Nullable String toggleMessage,
         boolean toggleState)
     {
         this(
@@ -98,15 +98,15 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         int dialogImageType,
         String[] dialogButtonLabels,
         int defaultIndex,
-        String toggleMessage,
+        @Nullable String toggleMessage,
         boolean toggleState,
         @Nullable String codeBlockText,
-        @Nullable String dialogBoundsSettingsId)
+        @Nullable String confirmationId)
     {
         super(parentShell, dialogTitle, image, message, dialogImageType, dialogButtonLabels, defaultIndex, toggleMessage, toggleState);
         this.hideToggle = toggleMessage == null;
         this.codeBlockText = codeBlockText;
-        this.dialogBoundsSettingsId = dialogBoundsSettingsId;
+        this.confirmationId = confirmationId;
     }
 
     @Override
@@ -130,7 +130,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return CommonUtils.isNotEmpty(dialogBoundsSettingsId) ? UIUtils.getDialogSettings(dialogBoundsSettingsId) : super.getDialogBoundsSettings();
+        return CommonUtils.isNotEmpty(confirmationId) ? UIUtils.getDialogSettings("ConfirmationDialog." + confirmationId) : super.getDialogBoundsSettings();
     }
 
     @Override
@@ -186,12 +186,12 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     public static int open(
         int kind,
         int imageKind,
-        Shell parent,
-        String title,
-        String message,
-        String toggleMessage,
+        @Nullable Shell parent,
+        @NotNull String title,
+        @NotNull String message,
+        @Nullable String toggleMessage,
         boolean toggleState,
-        String key)
+        @NotNull String key)
     {
         return open(kind, imageKind, parent, title, message, toggleMessage, toggleState, key, null, null);
     }
@@ -199,14 +199,14 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     public static int open(
         int kind,
         int imageKind,
-        Shell parent,
-        String title,
-        String message,
-        String toggleMessage,
+        @Nullable Shell parent,
+        @NotNull String title,
+        @NotNull String message,
+        @Nullable String toggleMessage,
         boolean toggleState,
-        String key,
-        @Nullable String codeBlockText,
-        @Nullable String dialogBoundsSettingsId)
+        @NotNull String key,
+        @Nullable String confirmationId,
+        @Nullable String codeBlockText)
     {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (toggleMessage != null) {
@@ -237,7 +237,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             toggleMessage,
             toggleState,
             codeBlockText,
-            dialogBoundsSettingsId);
+            confirmationId);
         dialog.setPrefStore(new PreferenceStoreDelegate(prefStore));
         dialog.setPrefKey(key);
         return dialog.open();
@@ -292,7 +292,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     }
 
     public static int confirmAction(@Nullable Shell shell, int imageType, @NotNull String id, int type, @NotNull Object... args) {
-        return confirmAction(shell, imageType, id, type, null, null, args);
+        return confirmAction(shell, imageType, id, type, null, args);
     }
 
     public static int confirmAction(
@@ -301,7 +301,6 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         @NotNull String id,
         int type,
         @Nullable String codeBlockText,
-        @Nullable String dialogBoundsSettingsId,
         @NotNull Object... args)
     {
         ConfirmationDescriptor descriptor = ConfirmationRegistry.getInstance().getConfirmation(id);
@@ -327,8 +326,8 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             toggleMessage != null ? NLS.bind(toggleMessage, args) : null,
             false,
             ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id,
-            codeBlockText,
-            dialogBoundsSettingsId
+            id,
+            codeBlockText
         );
     }
 
