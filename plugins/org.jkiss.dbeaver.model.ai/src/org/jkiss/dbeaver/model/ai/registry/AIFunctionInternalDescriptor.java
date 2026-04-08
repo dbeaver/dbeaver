@@ -45,7 +45,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
     private final String[] dependsOn;
-    private final String description;
+    private final String aiDescription;
     private final String userDescription;
     private final String categoryId;
     private final AIFunctionInternalParameter[] parameters;
@@ -67,7 +67,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.userDescription = config.getAttribute("userDescription");
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
@@ -120,8 +120,8 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     @Nullable
-    public String getDescription() {
-        return description;
+    public String getAiDescription() {
+        return aiDescription;
     }
 
     @Nullable

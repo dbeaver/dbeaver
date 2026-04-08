@@ -39,7 +39,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="description" type="string">
+         <attribute name="aiDescription" type="string">
             <annotation>
                <documentation>
                   Detailed AI-facing function description used by the assistant to understand the function behavior and when to call it
