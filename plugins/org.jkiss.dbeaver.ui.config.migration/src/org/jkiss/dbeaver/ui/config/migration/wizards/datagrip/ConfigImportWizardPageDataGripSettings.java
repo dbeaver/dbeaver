@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -29,8 +27,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
@@ -121,16 +120,19 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
         pasteConfigurationCompositeLayoutData.heightHint = 180;
         pasteConfigurationComposite.setLayoutData(pasteConfigurationCompositeLayoutData);
 
-        Label pasteDescriptionLabel = new Label(pasteConfigurationComposite, SWT.WRAP);
-        pasteDescriptionLabel.setText(ImportConfigMessages.config_import_wizard_jetbrains_paste_description);
-        pasteDescriptionLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        UIUtils.createControlLabel(pasteConfigurationComposite, ImportConfigMessages.config_import_wizard_jetbrains_paste_configuration);
-        pastedConfigurationText = new Text(pasteConfigurationComposite, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
+        Composite textComposite = UIUtils.createTitledComposite(
+            pasteConfigurationComposite,
+            ImportConfigMessages.config_import_wizard_jetbrains_paste_configuration,
+            1,
+            GridData.FILL_BOTH
+        );
+        pastedConfigurationText = new Text(textComposite, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
         GridData pastedConfigurationLayoutData = new GridData(GridData.FILL_BOTH);
         pastedConfigurationLayoutData.heightHint = 180;
         pastedConfigurationText.setLayoutData(pastedConfigurationLayoutData);
         pastedConfigurationText.addModifyListener(e -> validateConfigurationInput());
+
+        UIUtils.createInfoLabel(pasteConfigurationComposite, ImportConfigMessages.config_import_wizard_jetbrains_paste_description);
 
         SelectionAdapter modeSelectionListener = new SelectionAdapter() {
             @Override
