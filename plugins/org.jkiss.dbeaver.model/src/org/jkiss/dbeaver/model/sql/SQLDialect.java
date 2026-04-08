@@ -311,6 +311,8 @@ public interface SQLDialect {
 
     boolean supportsTableDropCascade();
 
+    // TODO: add supportsMultiObjectDrop() for DROP TABLE t1, t2, t3 syntax (see #40297)
+
     boolean supportsOrderByIndex();
 
     boolean supportsNestedComments();
