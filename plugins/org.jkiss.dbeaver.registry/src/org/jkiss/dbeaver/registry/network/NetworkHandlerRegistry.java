@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -66,7 +67,7 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors() {
         List<NetworkHandlerDescriptor> descList = new ArrayList<>(descriptors);
-        descList.removeIf(nhd -> nhd.getReplacedBy() != null);
+        descList.removeIf(nhd -> !isAvailable(nhd));
         return descList;
     }
 
@@ -74,9 +75,9 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
         for (NetworkHandlerDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
                 if (descriptor.getReplacedBy() != null) {
-                    return descriptor.getReplacedBy();
+                    descriptor = descriptor.getReplacedBy();
                 }
-                return descriptor;
+                return isAvailable(descriptor) ? descriptor : null;
             }
         }
         return null;
@@ -91,11 +92,20 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) {
+            if ((d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) && hasRequiredPermissions(d)) {
                 result.add(d);
             }
         }
         return result;
+    }
+
+    private boolean isAvailable(@NotNull NetworkHandlerDescriptor descriptor) {
+        return descriptor.getReplacedBy() == null && hasRequiredPermissions(descriptor);
+    }
+
+    private boolean hasRequiredPermissions(@NotNull NetworkHandlerDescriptor descriptor) {
+        return descriptor.getRequiredPermissions().stream()
+            .allMatch(permission -> DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(permission));
     }
 
 }

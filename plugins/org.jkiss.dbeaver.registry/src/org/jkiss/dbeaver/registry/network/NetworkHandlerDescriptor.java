@@ -52,6 +52,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private final ObjectType handlerType;
     private final int order;
     private final List<String> replacesIDs;
+    private final List<String> requiredPermissions;
     private NetworkHandlerDescriptor replacedBy;
     private final DBPPropertyDescriptor[] properties;
     private final boolean isDistributed; // see getter
@@ -72,6 +73,13 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
         this.isDistributed = CommonUtils.getBoolean(config.getAttribute("distributed"), false);
         this.isDesktop = CommonUtils.getBoolean(config.getAttribute("desktop"), true);
+        String requiredPermissionsAttr = config.getAttribute("permissions_required");
+        this.requiredPermissions = CommonUtils.isEmpty(requiredPermissionsAttr)
+            ? List.of()
+            : Arrays.stream(CommonUtils.split(requiredPermissionsAttr, ","))
+                .map(String::trim)
+                .filter(CommonUtils::isNotEmpty)
+                .toList();
 
         this.replacesIDs = Arrays.stream(config.getChildren("replace"))
             .map(re -> re.getAttribute("id"))
@@ -181,5 +189,10 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     // Handler works in desktop application only
     public boolean isDesktopHandler() {
         return isDesktop;
+    }
+
+    @NotNull
+    List<String> getRequiredPermissions() {
+        return requiredPermissions;
     }
 }
