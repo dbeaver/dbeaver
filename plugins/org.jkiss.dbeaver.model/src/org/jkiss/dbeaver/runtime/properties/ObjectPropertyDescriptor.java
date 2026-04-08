@@ -74,8 +74,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         ObjectPropertyGroupDescriptor parent,
         Property propInfo,
         Method getter,
-        String locale)
-    {
+        String locale,
+        boolean collectLocalizedNames
+    ) {
         super(source, parent, getter, propInfo.id(), propInfo.order());
         this.propInfo = propInfo;
 
@@ -131,21 +132,25 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 log.warn("Can't create label provider", e);
             }
         }
-
-        this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId(), !propInfo.hidden(), locale);
-        this.propDescription = CommonUtils.isEmpty(propInfo.description())
-            ? propName
-            : getLocalizedString(
-                propInfo.name(),
-                Property.RESOURCE_TYPE_DESCRIPTION,
-                Property.DEFAULT_LOCAL_STRING.equals(propInfo.description()) ? propName : propInfo.description(),
-                false,
-                locale
-            );
-        this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
-            null :
-            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);
-
+        if (collectLocalizedNames) {
+            this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId(), !propInfo.hidden(), locale);
+            this.propDescription = CommonUtils.isEmpty(propInfo.description())
+                ? propName
+                : getLocalizedString(
+                    propInfo.name(),
+                    Property.RESOURCE_TYPE_DESCRIPTION,
+                    Property.DEFAULT_LOCAL_STRING.equals(propInfo.description()) ? propName : propInfo.description(),
+                    false,
+                    locale
+                );
+            this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
+                null :
+                getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);
+        } else {
+            propName = getId();
+            propDescription = Property.DEFAULT_LOCAL_STRING.equals(propInfo.description()) ? propName : propInfo.description();
+            propHint = null;
+        }
     }
 
     @Override
