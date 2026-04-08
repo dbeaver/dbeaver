@@ -73,7 +73,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
         this.isDistributed = CommonUtils.getBoolean(config.getAttribute("distributed"), false);
         this.isDesktop = CommonUtils.getBoolean(config.getAttribute("desktop"), true);
-        String requiredPermissionsAttr = config.getAttribute("permissions_required");
+        String requiredPermissionsAttr = config.getAttribute("requiredPermissions");
         this.requiredPermissions = CommonUtils.isEmpty(requiredPermissionsAttr)
             ? List.of()
             : Arrays.stream(CommonUtils.split(requiredPermissionsAttr, ","))
