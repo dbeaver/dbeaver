@@ -57,6 +57,7 @@ public class AIEngineRequestFactory {
             this(Set.of(), Set.of());
         }
     }
+
     public AIEngineRequestFactory(
         @NotNull AIDatabaseSnapshotService databaseSnapshotService,
         @NotNull TokenCounter tokenCounter
@@ -194,7 +195,7 @@ public class AIEngineRequestFactory {
                 continue;
             }
             AIFunctionSettings.ToolboxSettings toolboxSettings = functionSettings.getToolboxSettings(toolbox);
-            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions()) {
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions(AIFunctionPurpose.TOOL)) {
                 if (toolboxSettings.isFunctionEnabled(function)) {
                     enabledFunctions.add(function);
                 }
