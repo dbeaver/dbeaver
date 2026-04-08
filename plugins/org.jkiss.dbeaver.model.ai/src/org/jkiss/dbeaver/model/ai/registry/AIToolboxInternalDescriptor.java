@@ -62,8 +62,8 @@ public class AIToolboxInternalDescriptor implements AIToolboxDescriptor {
 
     @NotNull
     @Override
-    public List<AIFunctionDescriptor> getSupportedFunctions() {
-        return functionRegistry.getAllFunctions(AIFunctionPurpose.ALL);
+    public List<AIFunctionDescriptor> getSupportedFunctions(@NotNull AIFunctionPurpose purpose) {
+        return functionRegistry.getAllFunctions(purpose);
     }
 
     @Nullable
