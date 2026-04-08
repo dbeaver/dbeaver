@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionCategoryDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * AI toolbox manager.
@@ -47,4 +49,11 @@ public interface AIToolboxManager {
     AIFunctionSettings getFunctionSettings();
 
     void saveFunctionSettings() throws DBCException;
+
+    /**
+     * Saves external toolbox configurations.
+     *
+     * @param toolboxConfigurations map of toolbox ID to its configuration properties
+     */
+    void saveExternalToolboxes(@NotNull Map<String, Map<String, Object>> toolboxConfigurations) throws DBException;
 }
