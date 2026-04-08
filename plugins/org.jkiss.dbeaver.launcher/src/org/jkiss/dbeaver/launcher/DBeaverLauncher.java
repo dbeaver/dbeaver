@@ -1852,6 +1852,10 @@ public class DBeaverLauncher {
     public int run(String[] args) {
         int result;
         try {
+            if (DelegateMainLauncher.canHandle(args)) {
+                DelegateMainLauncher.run(args);
+                return 0;
+            }
             basicRun(args);
             String exitCode = System.getProperty(PROP_EXITCODE);
             try {
