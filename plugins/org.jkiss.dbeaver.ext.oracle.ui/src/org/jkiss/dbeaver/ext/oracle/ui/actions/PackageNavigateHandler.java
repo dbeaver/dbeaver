@@ -110,6 +110,7 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
             }
             final IDocument document = sqlEditor.getDocument();
             if (document != null) {
+                // excludes any line that starts wih --
                 String commentSkip = """
                     ^(?!\\s*--)\\s*""";
                 String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
