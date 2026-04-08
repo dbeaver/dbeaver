@@ -58,6 +58,7 @@ public class DB2IDataSource extends GenericDataSource {
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             props.put(APPLICATION_NAME_PROP, GeneralUtils.getProductName());
         }
+        // https://stackoverflow.com/questions/26032662/jt400-jar-disable-login-screen
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             props.put("prompt", "false");
         }
