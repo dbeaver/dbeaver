@@ -126,6 +126,7 @@ import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -3136,20 +3137,17 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private int createDropQueryConfirmationDialog(@NotNull SQLQuery dropQuery, int dialogType) {
-        String querySummary = "DROP";
         String queryTextForDisplay = dropQuery.getText();
         if (queryTextForDisplay.length() > MAX_QUERY_PREVIEW_LENGTH) {
             // Truncate string. Too big strings may freeze UI.
-            queryTextForDisplay = CommonUtils.truncateString(queryTextForDisplay, MAX_QUERY_PREVIEW_LENGTH) +
-                "... (truncated " + (queryTextForDisplay.length() - MAX_QUERY_PREVIEW_LENGTH) + " characters)";
+            queryTextForDisplay = StringUtils.truncateText(queryTextForDisplay, MAX_QUERY_PREVIEW_LENGTH);
         }
         return ConfirmationDialog.confirmAction(
             getSite().getShell(),
-            MessageDialog.WARNING,
+            ConfirmationDialog.WARNING,
             ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
-            queryTextForDisplay,
-            querySummary
+            queryTextForDisplay
         );
     }
 
