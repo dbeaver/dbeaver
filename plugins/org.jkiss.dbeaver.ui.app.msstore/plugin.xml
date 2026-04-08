@@ -3,11 +3,11 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.pluginService">
-        <service class="org.jkiss.dbeaver.winstore.WinStoreService"/>
+        <service class="org.jkiss.dbeaver.msstore.WinStoreService"/>
     </extension>
     
     <extension point="org.jkiss.dbeaver.service">
-        <service class="org.jkiss.dbeaver.winstore.WinStoreEnvPathMapper" name="org.jkiss.dbeaver.runtime.IEnvironmentPathMapper"/>
+        <service class="org.jkiss.dbeaver.msstore.WinStoreEnvPathMapper" name="org.jkiss.dbeaver.runtime.IEnvironmentPathMapper"/>
     </extension>
 
 </plugin>

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.winstore;
+package org.jkiss.dbeaver.msstore;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
