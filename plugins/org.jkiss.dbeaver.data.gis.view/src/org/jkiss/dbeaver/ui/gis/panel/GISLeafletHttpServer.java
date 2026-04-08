@@ -146,11 +146,11 @@ final class GISLeafletHttpServer {
         };
         try (content; exchange) {
             if (content != null) {
-                log.debug("Serving content for path: " + path);
+                log.trace("Serving content for path: " + path);
                 exchange.sendResponseHeaders(200, 0);
                 content.transferTo(exchange.getResponseBody());
             } else {
-                log.warn("No content found for path: " + path);
+                log.trace("No content found for path: " + path);
                 exchange.sendResponseHeaders(404, 0);
             }
         }

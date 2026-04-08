@@ -6,6 +6,7 @@
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
     <extension-point id="com.dbeaver.ai.prompt" name="AI prompt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
     <extension-point id="com.dbeaver.ai.function" name="AI functions" schema="schema/com.dbeaver.ai.function.exsd"/>
+    <extension-point id="com.dbeaver.ai.credentialsProvider" name="AI Authorizations" schema="schema/com.dbeaver.ai.credentialsProvider.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai"
