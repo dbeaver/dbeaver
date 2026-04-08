@@ -186,7 +186,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @NotNull
     private static List<CopilotMessage> toCopilotMessages(@NotNull List<AIMessage> messages) {
         return messages.stream()
-            .map(CopilotMessage::from)
+            .flatMap(message -> CopilotMessage.from(message).stream())
             .toList();
     }
 

@@ -24,7 +24,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponse;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,7 +46,7 @@ public final class CopilotUtils {
         }
 
         Map<String, String> metadata = CommonUtils.isEmpty(accumulator.id()) ? null :
-            Map.of(OpenAIConstants.TOOL_RESULT_CALL_ID, accumulator.id());
+            Map.of(CopilotConstants.TOOL_RESULT_CALL_ID, accumulator.id());
         return new AIFunctionCall(CommonUtils.notEmpty(accumulator.name()), arguments, metadata);
     }
 
