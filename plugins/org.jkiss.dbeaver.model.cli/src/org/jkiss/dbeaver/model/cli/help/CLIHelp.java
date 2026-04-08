@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.cli.help;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.CLIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -40,10 +41,10 @@ public class CLIHelp extends CommandLine.Help {
 
     @Override
     public String optionListExcludingGroups(
-        List<CommandLine.Model.OptionSpec> optionList,
-        Layout layout,
-        Comparator<CommandLine.Model.OptionSpec> optionSort,
-        IParamLabelRenderer valueLabelRenderer
+        @NotNull List<CommandLine.Model.OptionSpec> optionList,
+        @NotNull Layout layout,
+        @Nullable Comparator<CommandLine.Model.OptionSpec> optionSort,
+        @NotNull IParamLabelRenderer valueLabelRenderer
     ) {
         boolean isSubCommand = commandSpec().parent() != null;
         optionList = optionList.stream().filter(option -> {
@@ -56,6 +57,7 @@ public class CLIHelp extends CommandLine.Help {
         return super.optionListExcludingGroups(optionList, layout, optionSort, valueLabelRenderer);
     }
 
+    @NotNull
     public Comparator<CommandLine.Model.OptionSpec> createDefaultOptionSort() {
         Comparator<CommandLine.Model.OptionSpec> defaultSort = super.createDefaultOptionSort();
         return ((Comparator<CommandLine.Model.OptionSpec>) (o1, o2) -> {
@@ -71,8 +73,9 @@ public class CLIHelp extends CommandLine.Help {
         }).thenComparing(defaultSort);
     }
 
+    @NotNull
     @Override
-    public String footer(Object... params) {
+    public String footer(@NotNull Object... params) {
         String footer = super.footer(params);
         Object commandObject = commandSpec().userObject();
         if (commandObject != null && commandObject.getClass().isAnnotationPresent(CLIExample.class)) {
@@ -94,6 +97,7 @@ public class CLIHelp extends CommandLine.Help {
         return footer;
     }
 
+    @NotNull
     @Override
     public IParamLabelRenderer parameterLabelRenderer() {
         return new CLIParameterRendererDelegate(super.parameterLabelRenderer());
@@ -107,8 +111,13 @@ public class CLIHelp extends CommandLine.Help {
             this.delegate = delegate;
         }
 
+        @NotNull
         @Override
-        public Ansi.Text renderParameterLabel(CommandLine.Model.ArgSpec argSpec, Ansi ansi, List<Ansi.IStyle> styles) {
+        public Ansi.Text renderParameterLabel(
+            @NotNull CommandLine.Model.ArgSpec argSpec,
+            @NotNull Ansi ansi,
+            @NotNull List<Ansi.IStyle> styles
+        ) {
             Ansi.Text label = delegate.renderParameterLabel(argSpec, ansi, styles);
             String argType = getArgType(argSpec);
             if (CommonUtils.isNotEmpty(argType)) {
@@ -118,13 +127,14 @@ public class CLIHelp extends CommandLine.Help {
                 }
                 label = label.concat("(" + argType + ")" + (insertIntoName ? ">" : ""));
             }
-            if(CLIUtils.isRequiredOption(argSpec)) {
+            if (CLIUtils.isRequiredOption(argSpec)) {
                 label = label.concat(" (required)");
             }
 
             return label;
         }
 
+        @NotNull
         @Override
         public String separator() {
             return delegate.separator();
@@ -141,15 +151,14 @@ public class CLIHelp extends CommandLine.Help {
                 typeName = "integer";
             } else if (fieldType.isArray() && fieldType.getComponentType().equals(int.class)) {
                 typeName = "integer[]";
-            }
-            else if (field.getGenericType() instanceof ParameterizedType pt) {
+            } else if (field.getGenericType() instanceof ParameterizedType pt) {
                 Type argType = pt.getActualTypeArguments()[0];
                 if (argType instanceof Class<?> typeClass) {
                     typeName = typeClass.getSimpleName();
                 } else {
                     typeName = pt.getTypeName();
                 }
-                if(Collection.class.isAssignableFrom(fieldType)) {
+                if (Collection.class.isAssignableFrom(fieldType)) {
                     typeName = typeName + "[]";
                 }
             }
