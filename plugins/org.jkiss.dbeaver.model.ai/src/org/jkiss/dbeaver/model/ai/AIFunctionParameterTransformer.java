@@ -18,33 +18,18 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 
-public interface AIFunctionParameter {
-
-    @NotNull
-    String getName();
-
-    @NotNull
-    String getType();
+public interface AIFunctionParameterTransformer {
 
     @Nullable
-    String getDescription();
+    Object transformParameter(
+        @Nullable AIDatabaseContext databaseContext,
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor function,
+        @NotNull AIFunctionParameter parameter,
+        @Nullable Object value
+    ) throws DBException;
 
-    boolean isRequired();
-
-    @Nullable
-    String getDefaultValue();
-
-    @Nullable
-    String[] getValidValues();
-
-    @Nullable
-    default AIFunctionParameterTransformer getTransformer() {
-        return null;
-    }
-
-    @Nullable
-    default String getTransformerSuffix() {
-        return null;
-    }
 }
