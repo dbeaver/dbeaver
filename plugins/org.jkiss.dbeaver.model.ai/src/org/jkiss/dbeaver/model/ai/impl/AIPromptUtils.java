@@ -69,6 +69,9 @@ public class AIPromptUtils {
             }
             SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
             lines.add("SQL dialect: " + dialect.getDialectName());
+            if (dsInfo != null) {
+                lines.add("Server version: " + dsInfo.getDatabaseProductName() + " " + dsInfo.getDatabaseProductVersion());
+            }
 
             String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
