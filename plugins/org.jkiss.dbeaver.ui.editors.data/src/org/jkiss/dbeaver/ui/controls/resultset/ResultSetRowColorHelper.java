@@ -41,14 +41,14 @@ import java.util.*;
  * Encapsulates all row color mapping and group row striping logic
  * extracted from {@link ResultSetModel}.
  */
-class ResultSetRowColorHelper {
+public class ResultSetRowColorHelper {
 
     private static final Log log = Log.getLog(ResultSetRowColorHelper.class);
 
     private final ResultSetModel model;
     private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping;
 
-    ResultSetRowColorHelper(@NotNull ResultSetModel model, @NotNull Comparator<DBDAttributeBinding> positionSorter) {
+    public ResultSetRowColorHelper(@NotNull ResultSetModel model, @NotNull Comparator<DBDAttributeBinding> positionSorter) {
         this.model = model;
         this.colorMapping = new TreeMap<>(positionSorter);
     }
