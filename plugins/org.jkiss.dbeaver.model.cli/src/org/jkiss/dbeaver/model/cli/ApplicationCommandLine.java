@@ -50,6 +50,9 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     //transformers for specific command
     protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
     static {
+        //auto width for terminal
+        System.setProperty("picocli.usage.width", "AUTO");
+
         IExtensionRegistry er = Platform.getExtensionRegistry();
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
