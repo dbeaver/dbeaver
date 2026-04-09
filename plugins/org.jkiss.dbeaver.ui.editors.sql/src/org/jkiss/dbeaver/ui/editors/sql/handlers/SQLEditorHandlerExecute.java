@@ -104,7 +104,10 @@ public class SQLEditorHandlerExecute extends AbstractHandler {
                         }
                         DBSObject object = executionContext.getDefaultCatalog();
                         if (object == null) {
-                            object = editor.getDataSource();
+                            object = executionContext.getDefaultSchema();
+                        }
+                        if (object == null) {
+                            throw new DBException("No database selected. Please select a database before executing a script natively");
                         }
                         if (editor.getGlobalScriptContext().getSourceFile() != null) {
                             nativeExecutor.execute(object, editor.getGlobalScriptContext().getSourceFile());

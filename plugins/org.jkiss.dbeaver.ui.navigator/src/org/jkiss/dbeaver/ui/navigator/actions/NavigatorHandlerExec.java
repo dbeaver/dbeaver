@@ -85,17 +85,17 @@ public class NavigatorHandlerExec extends AbstractHandler {
                         container.connect(monitor, true, false);
                     }
                     DBPDataSource dataSource = container.getDataSource();
-                    DBSObject launchObject = dataSource;
+                    DBSObject launchObject = null;
                     if (catalog != null) {
                         if (dataSource instanceof DBSObjectContainer) {
                             if (DBSCatalog.class.isAssignableFrom(((DBSObjectContainer) dataSource).getPrimaryChildType(monitor))) {
                                 Collection<? extends DBSObject> children = ((DBSObjectContainer) dataSource).getChildren(monitor);
-                                DBSObject foundCatalog = DBUtils.findObject(children, catalog);
-                                if (foundCatalog != null) {
-                                    launchObject = foundCatalog;
-                                }
+                                launchObject = DBUtils.findObject(children, catalog);
                             }
                         }
+                    }
+                    if (launchObject == null) {
+                        throw new DBException("No database selected. Please select a database before executing a script natively");
                     }
                     SQLNativeExecutorDescriptor executorDescriptor = SQLNativeExecutorRegistry.getInstance()
                         .getExecutorDescriptor(container);
