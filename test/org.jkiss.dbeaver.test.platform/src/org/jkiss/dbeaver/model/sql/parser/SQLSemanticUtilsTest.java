@@ -68,7 +68,10 @@ public class SQLSemanticUtilsTest extends DBeaverUnitTest {
 
         // then
         List<String> foundTables = new ArrayList<>();
-        SQLSemanticUtils.traverseQueryForTableNodes(Objects.requireNonNull(query.getStatement()), t -> foundTables.add(t.getFullyQualifiedName()));
+        SQLSemanticUtils.traverseQueryForTableNodes(
+            Objects.requireNonNull(query.getStatement()),
+            t -> foundTables.add(t.getFullyQualifiedName())
+        );
 
         assertCollectionsEqual(referencedTables, foundTables);
     }
