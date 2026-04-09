@@ -173,7 +173,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
                         }
                     }
                     treeViewButton.setData(new PlanActionInfo(actionDescriptor));
-                    treeViewButton.setAction(new Action("Ask AI") {
+                    treeViewButton.setAction(new Action(actionDescriptor.getLabel()) {
                         @Override
                         public void run() {
                             try {
@@ -193,7 +193,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
                             } catch (Exception e) {
                                 DBWorkbench.getPlatformUI().showError(
                                     SQLEditorMessages.editors_sql_error_execution_plan_title,
-                                    SQLEditorMessages.editors_sql_error_execution_plan_message,
+                                    null,
                                     e);
                             }
                         }
