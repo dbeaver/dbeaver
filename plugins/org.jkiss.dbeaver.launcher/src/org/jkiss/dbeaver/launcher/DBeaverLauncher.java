@@ -1853,7 +1853,9 @@ public class DBeaverLauncher {
         int result;
         try {
             if (DelegateMainLauncher.canHandle(args)) {
-                DelegateMainLauncher.run(args);
+                commands = args;
+                String[] passThruArgs = processCommandLine(Arrays.copyOf(args, args.length));
+                DelegateMainLauncher.run(passThruArgs);
                 return 0;
             }
             basicRun(args);

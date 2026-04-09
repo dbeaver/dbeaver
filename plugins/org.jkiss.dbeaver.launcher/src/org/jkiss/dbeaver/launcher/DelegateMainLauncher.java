@@ -72,30 +72,6 @@ public final class DelegateMainLauncher {
         mainMethod.invoke(null, (Object) delegateArgs.toArray(String[]::new));
     }
 
-    public static String[] parseCommandLine(String argString) {
-        List<String> result = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        char activeQuote = 0;
-        for (int i = 0; i < argString.length(); i++) {
-            char ch = argString.charAt(i);
-            if (activeQuote != 0) {
-                activeQuote = appendQuotedCharacter(current, activeQuote, ch);
-                continue;
-            }
-            if (Character.isWhitespace(ch)) {
-                flushToken(result, current);
-                continue;
-            }
-            if (isQuoteCharacter(ch)) {
-                activeQuote = ch;
-                continue;
-            }
-            current.append(ch);
-        }
-        flushToken(result, current);
-        return result.toArray(String[]::new);
-    }
-
     private static ClassLoader getClassLoader(String delegateClasspath) {
         ClassLoader delegateClassLoader = DelegateMainLauncher.class.getClassLoader();
         if (delegateClasspath != null) {
@@ -123,24 +99,5 @@ public final class DelegateMainLauncher {
             throw new IllegalStateException("Missing value for required argument: " + optionName);
         }
         return args[valueIndex];
-    }
-
-    private static char appendQuotedCharacter(StringBuilder current, char activeQuote, char ch) {
-        if (ch == activeQuote) {
-            return 0;
-        }
-        current.append(ch);
-        return activeQuote;
-    }
-
-    private static boolean isQuoteCharacter(char ch) {
-        return ch == '"' || ch == '\'';
-    }
-
-    private static void flushToken(List<String> result, StringBuilder current) {
-        if (!current.isEmpty()) {
-            result.add(current.toString());
-            current.setLength(0);
-        }
     }
 }
