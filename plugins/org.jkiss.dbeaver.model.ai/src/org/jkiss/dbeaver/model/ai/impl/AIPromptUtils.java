@@ -52,8 +52,6 @@ public class AIPromptUtils {
     }
 
     public static String[] describeDataSourceInfo(@Nullable DBSLogicalDataSource dataSource) {
-        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
-            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
 
         if (dataSource != null) {
@@ -69,6 +67,8 @@ public class AIPromptUtils {
                     lines.add("Java driver: " + driver.getFullName());
                 }
             }
+            SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
+            lines.add("SQL dialect: " + dialect.getDialectName());
 
             String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
@@ -79,8 +79,8 @@ public class AIPromptUtils {
                 lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
             }
         }
-        lines.add("SQL dialect: " + dialect.getDialectName());
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
+
         return lines.toArray(String[]::new);
     }
 

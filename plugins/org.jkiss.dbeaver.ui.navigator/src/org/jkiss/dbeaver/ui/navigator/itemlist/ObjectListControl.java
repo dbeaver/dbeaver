@@ -1254,7 +1254,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Override
-        public void completeLoading(Collection<OBJECT_TYPE> items) {
+        public void completeLoading(@Nullable Collection<OBJECT_TYPE> items) {
             super.completeLoading(items);
             afterCompleteLoading(items);
         }
@@ -1270,7 +1270,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Override
-        public void completeLoading(Void v) {
+        public void completeLoading(@Nullable Void v) {
             super.completeLoading(v);
         }
     }

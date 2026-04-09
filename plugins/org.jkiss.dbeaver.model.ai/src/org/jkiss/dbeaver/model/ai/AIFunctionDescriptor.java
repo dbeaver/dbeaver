@@ -71,6 +71,9 @@ public interface AIFunctionDescriptor {
     @NotNull
     AIFunctionParameter[] getParameters();
 
+    @Nullable
+    AIFunctionParameter getParameter(@NotNull String name);
+
     @NotNull
     String[] getDependsOn();
 
