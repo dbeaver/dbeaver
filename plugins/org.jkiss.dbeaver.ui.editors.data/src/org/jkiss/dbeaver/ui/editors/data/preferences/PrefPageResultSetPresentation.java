@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageResultSetPresentation
@@ -57,10 +57,10 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
+    protected boolean hasDataSourceSpecificOptions(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-        	store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE) ||
             store.contains(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA) ||
             store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
@@ -83,8 +83,11 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
 
         {
             Composite uiGroup = UIUtils.createTitledComposite(composite, DataEditorsMessages.pref_page_database_resultsets_group_common, 2);
-            autoSwitchMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, null, false, 2);
-            showFiltersInSingleTabMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_filters_panel_in_singletab_mode, null, true, 2);
+            autoSwitchMode = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, null, false, 2);
+            showFiltersInSingleTabMode = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_filters_panel_in_singletab_mode,
+                null, true, 2);
             columnHeaderExtra = UIUtils.createLabelCombo(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_column_header_extra, SWT.READ_ONLY
             );
@@ -100,12 +103,27 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_column_header_extra_data_type,
                 ResultSetPreferences.ColumnHeaderExtraContent.DATA_TYPE.ordinal()
             );
-            columnWidthByValue = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values, DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip, false, 2);
-            showConnectionName = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_connection_name, null, false, 2);
-            transformComplexTypes = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types, DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types_tip, false, 2);
-            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
-            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_right_justify_datetime, null, false, 2);
-            autoCompleteProposal = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_auto_completion, DataEditorsMessages.pref_page_database_resultsets_label_auto_completion_tip, true, 2);
+            columnWidthByValue = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values,
+                DataEditorsMessages.pref_page_database_resultsets_label_calc_column_width_by_values_tip,
+                false, 2);
+            showConnectionName = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_show_connection_name,
+                null, false, 2);
+            transformComplexTypes = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types,
+                DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types_tip,
+                false, 2);
+            rightJustifyNumbers = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date,
+                null, false, 2);
+            rightJustifyDateTime = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_right_justify_datetime,
+                null, false, 2);
+            autoCompleteProposal = UIUtils.createCheckbox(uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_auto_completion,
+                DataEditorsMessages.pref_page_database_resultsets_label_auto_completion_tip,
+                true, 2);
         }
 
         return composite;
@@ -156,7 +174,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store) {
+    protected void clearPreferences(@NotNull DBPPreferenceStore store) {
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA);

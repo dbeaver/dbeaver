@@ -3091,7 +3091,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Nullable
         @Override
-        public String getDescription(IGridItem element) {
+        public String getDescription(@NotNull IGridItem element) {
             if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.NOTHING || element.getParent() != null) {
                 return null;
             }
