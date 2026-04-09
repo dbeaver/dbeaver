@@ -58,6 +58,11 @@ public class AIPromptUtils {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
+            SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
+            lines.add("SQL dialect: " + dialect.getDialectName());
+            if (dsInfo != null) {
+                lines.add("Server version: " + dsInfo.getDatabaseProductName() + " " + dsInfo.getDatabaseVersion());
+            }
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
                 lines.add("DBeaver connection name: " + dataSource.getDataSourceContainer().getName());
                 DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
@@ -66,11 +71,6 @@ public class AIPromptUtils {
                 } else {
                     lines.add("Java driver: " + driver.getFullName());
                 }
-            }
-            SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
-            lines.add("SQL dialect: " + dialect.getDialectName());
-            if (dsInfo != null) {
-                lines.add("Server version: " + dsInfo.getDatabaseProductName() + " " + dsInfo.getDatabaseProductVersion());
             }
 
             String currentSchema = dataSource.getCurrentSchema();
