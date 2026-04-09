@@ -46,5 +46,5 @@ public interface UIServiceFilterConfig {
         @NotNull DBXTreeItem itemsMeta
     ) throws DBException;
 
-    boolean shouldUserUserFilter(@NotNull DBNDatabaseNode originalNode);
+    boolean isUseUserFilter(@NotNull DBNDatabaseNode originalNode);
 }

@@ -448,7 +448,7 @@ public class NavigatorUtils {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
                 }
-                isSaveAsCurrentUserFilterOnly = isSaveAsCurrentUserFilterOnly && uiServiceFilterConfig.shouldUserUserFilter(node);
+                isSaveAsCurrentUserFilterOnly = isSaveAsCurrentUserFilterOnly && uiServiceFilterConfig.isUseUserFilter(node);
                 DBNDatabaseNode parentNode = node.getParentNode() instanceof DBNDatabaseNode parent ? parent : node;
                 {
                     DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> {
