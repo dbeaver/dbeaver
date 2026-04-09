@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
+package org.jkiss.dbeaver.model.fs.lock.shared;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.fs.lock.FileLock;
+import org.jkiss.dbeaver.model.fs.lock.Lock;
+import org.jkiss.dbeaver.model.fs.lock.LockException;
 
-public class SpreadsheetMessages extends NLS {
+public class SharedFileLock implements Lock {
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetMessages";
+    private final FileLock fileLock;
 
-    public static String tooltip_column;
-    public static String tooltip_description;
-    public static String tooltip_table;
-
-    static {
-        NLS.initializeMessages(BUNDLE_NAME, SpreadsheetMessages.class);
+    public SharedFileLock(@NotNull FileLock fileLock) {
+        this.fileLock = fileLock;
     }
 
-    private SpreadsheetMessages() {
+    @Override
+    public void close() throws LockException {
+        fileLock.close();
     }
 }

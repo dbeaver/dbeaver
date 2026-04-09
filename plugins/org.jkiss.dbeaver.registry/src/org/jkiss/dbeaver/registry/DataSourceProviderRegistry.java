@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -691,9 +691,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
         List<String> replaced = new ArrayList<>();
-        boolean desktopMode = !DBWorkbench.getPlatform().getApplication().isHeadlessMode();
+        boolean desktopNotDistributed = !DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !DBWorkbench.isDistributed();
         for (DataSourceAuthModelDescriptor amd : authModels.values()) {
-            if (desktopMode && amd.isCloudModel()) {
+            if (desktopNotDistributed && amd.requiresServerApplication()) {
                 continue;
             }
             if (amd.appliesTo(driver)) {
