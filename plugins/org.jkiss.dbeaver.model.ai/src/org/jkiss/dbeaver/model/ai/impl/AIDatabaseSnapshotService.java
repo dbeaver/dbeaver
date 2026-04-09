@@ -20,15 +20,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,7 +47,9 @@ import java.util.stream.Stream;
 public class AIDatabaseSnapshotService {
 
     private static final Log log = Log.getLog(AIDatabaseSnapshotService.class);
-    private AISchemaGenerator schemaGenerator;
+
+    private final AISchemaGenerator schemaGenerator = new AISchemaGeneratorImpl();
+    private boolean basicSnapshot;
 
     public AIDatabaseSnapshotService() {
     }
@@ -49,15 +58,14 @@ public class AIDatabaseSnapshotService {
     public TokenBoundedStringBuilder createDbSnapshot(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext aiDatabaseContext,
+        boolean basicSnapshot,
         int tokenBudget
     ) throws DBException {
-        schemaGenerator = new AISchemaGeneratorImpl();
-
         if (aiDatabaseContext == null) {
             return null;
         }
+        this.basicSnapshot = basicSnapshot;
 
-        //Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
         var prompt = new TokenBoundedStringBuilder(tokenBudget, false);
@@ -70,6 +78,7 @@ public class AIDatabaseSnapshotService {
 
         var partialPrompt = new TokenBoundedStringBuilder(tokenBudget, true);
         appendContext(monitor, aiDatabaseContext, partialPrompt, false);
+
         return partialPrompt;
     }
 
@@ -82,6 +91,11 @@ public class AIDatabaseSnapshotService {
         @NotNull TokenBoundedStringBuilder out,
         boolean refreshCache
     ) throws DBException {
+
+        appendBasicSchemaInfo(monitor, ctx, out);
+        if (basicSnapshot) {
+            return true;
+        }
 
         if (ctx.getScope() == AIDatabaseScope.CUSTOM && ctx.getCustomEntities() != null) {
             List<DBSObject> entities = normalizeCustomEntities(ctx.getCustomEntities());
@@ -114,6 +128,51 @@ public class AIDatabaseSnapshotService {
             );
         }
         return false;
+    }
+
+    private static void appendBasicSchemaInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext ctx,
+        @NotNull TokenBoundedStringBuilder out
+    ) throws DBException {
+        // Add catalogs/schemas information
+        DBCExecutionContext executionContext = ctx.getExecutionContext();
+        DBPDataSource dataSource = executionContext.getDataSource();
+        DBPDataSourceInfo dsInfo = dataSource.getInfo();
+        String catalogTerm = dsInfo.getCatalogTerm();
+        String schemaTerm = dsInfo.getSchemaTerm();
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+        if (dataSource instanceof DBSObjectContainer objectContainer) {
+            String indent = "- ";
+            if (catalogTerm != null) {
+                List<String> catalogIdentifiers = CommonUtils.safeCollection(objectContainer.getChildren(monitor)).stream()
+                    .filter(c -> c instanceof DBSCatalog catalog &&
+                        AIUtils.isCatalogInScope(ctx, executionContext, catalog))
+                    .map(DBPNamedObject::getName).toList();
+                if (!catalogIdentifiers.isEmpty()) {
+                    out.append(indent + catalogTerm + " list: " + String.join(",", catalogIdentifiers) + "\n");
+                }
+            }
+
+            if (contextDefaults != null) {
+                DBSObjectContainer schemaContainer;
+                DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                if (defaultCatalog != null) {
+                    schemaContainer = defaultCatalog;
+                } else {
+                    schemaContainer = objectContainer;
+                }
+
+                List<String> schemaIdentifiers = CommonUtils.safeCollection(schemaContainer.getChildren(monitor)).stream()
+                    .filter(c -> c instanceof DBSSchema schema &&
+                        AIUtils.isSchemaInScope(ctx, executionContext, schema))
+                    .map(DBPNamedObject::getName).toList();
+                if (!schemaIdentifiers.isEmpty()) {
+                    String containerName = defaultCatalog != null ? catalogTerm + " '" + defaultCatalog.getName() + "'" : "Datasource";
+                    out.append(indent + containerName + " " + schemaTerm.toLowerCase() + " list: " + String.join(",", schemaIdentifiers) + "\n");
+                }
+            }
+        }
     }
 
     private boolean appendObjectDescription(
@@ -276,8 +335,7 @@ public class AIDatabaseSnapshotService {
             return isTruncated;
         }
 
-        @Override
-        public String toString() {
+        public String build() {
             return sb.toString();
         }
     }
