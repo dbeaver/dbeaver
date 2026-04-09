@@ -769,7 +769,7 @@ public class ReferenceValueEditor {
         }
 
         @Override
-        public void completeLoading(EnumValuesData result) {
+        public void completeLoading(@Nullable EnumValuesData result) {
             boolean dataObtained = result != null && !result.keyValues.isEmpty();
             
             super.completeLoading(result);

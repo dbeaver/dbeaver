@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.*;
@@ -405,7 +406,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         public ProgressVisualizer<Collection<MySQLTableBase>> createTablesLoadVisualizer() {
             return new ProgressVisualizer<Collection<MySQLTableBase>>() {
                 @Override
-                public void completeLoading(Collection<MySQLTableBase> tables) {
+                public void completeLoading(@Nullable Collection<MySQLTableBase> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
                         return;
@@ -433,7 +434,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         public ProgressVisualizer<java.util.List<MySQLPrivilege>> createPrivilegesLoadVisualizer() {
             return new ProgressVisualizer<java.util.List<MySQLPrivilege>>() {
                 @Override
-                public void completeLoading(java.util.List<MySQLPrivilege> privs) {
+                public void completeLoading(@Nullable java.util.List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     List<MySQLPrivilege> otherPrivs = new ArrayList<>();
                     List<MySQLPrivilege> tablePrivs = new ArrayList<>();
