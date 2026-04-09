@@ -81,6 +81,7 @@ simpleType
  | floatType
  | decimalType
  | stringType
+ | jsonType
  | fixedStringType
  | uuidType
  | boolType
@@ -102,6 +103,7 @@ arrayType: Array LeftParen anyType RightParen;
 mapType: Map LeftParen key=anyType Comma value=anyType RightParen;
 
 stringType: 'String';
+jsonType: 'JSON';
 fixedStringType: FixedString LeftParen Number RightParen;
 uuidType: 'UUID';
 boolType: 'Boolean' | 'Bool';
