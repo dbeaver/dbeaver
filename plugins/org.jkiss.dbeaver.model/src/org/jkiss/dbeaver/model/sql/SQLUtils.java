@@ -39,6 +39,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,8 +81,82 @@ public final class SQLUtils {
         return false;
     }
 
-    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query)
-    {
+    /**
+     * Comment text fragment location information
+     *
+     * @param start comment position in the original SQL text
+     * @param length if the comment fragment
+     * @param accumulatedOffset total amount of comment characters dropped after this comment,
+     *                          e.g. difference between the non-commented text positions in original vs clean SQL text
+     * @param cleanPosition position of the corresponding location in the clean SQL text,
+     *                      e.g. start-prevComment.accumulatedOffset
+     * */
+    public record CommentEntry(
+        int start,
+        int length,
+        int accumulatedOffset,
+        int cleanPosition
+    ){
+    }
+
+    /**
+     * SQL comments collection result
+     *
+     * @param originalSqlText containing comments
+     * @param cleanSqlText the same as original but with comments extracted
+     * @param comments extracted comment entries from the original text augmented with position's mapping information
+     */
+    public record CommentsCollectionResult(
+        @NotNull
+        String originalSqlText,
+        @NotNull
+        String cleanSqlText,
+        @NotNull
+        CommentEntry[] comments
+    ) {
+    }
+
+    @NotNull
+    public static CommentsCollectionResult collectComments(@NotNull SQLDialect dialect, @NotNull String sqlText) {
+        // prepare regex pattern to match all the comments according to dialect
+        List<String> subpatterns = new ArrayList<>();
+        Pair<String, String> mlComments = dialect.getMultiLineComments();
+        if (mlComments != null) {
+            String prefix = Pattern.quote(mlComments.getFirst());
+            String suffix = Pattern.quote(mlComments.getSecond());
+            subpatterns.add(prefix + "(((?!" + suffix + ")(.|[\\r\\n]))*)" + suffix);
+        }
+        String[] slComments = dialect.getSingleLineComments();
+        if (slComments != null) {
+            for (String prefix : slComments) {
+                subpatterns.add(Pattern.quote(prefix) + "[^\\n\\r]*");
+            }
+        }
+        Pattern p = Pattern.compile("(" + String.join(")|(", subpatterns) + ")");
+
+        // extract all the comments and collect their location info in one go
+        Matcher m = p.matcher(sqlText);
+        List<CommentEntry> comments = new LinkedList<>();
+        String cleanSqlText = m.replaceAll(
+            new Function<>() {
+                private int accumulatedOffset = 0;
+
+                @Override
+                public String apply(MatchResult mr) {
+                    int length = mr.end() - mr.start();
+                    int cleanPosition = mr.start() - this.accumulatedOffset;
+                    this.accumulatedOffset += length;
+                    comments.add(new CommentEntry(mr.start(), length, this.accumulatedOffset, cleanPosition));
+                    return "";
+                }
+            }
+        );
+
+        return new CommentsCollectionResult(sqlText, cleanSqlText, comments.toArray(CommentEntry[]::new));
+    }
+
+    @NotNull
+    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query) {
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         return stripComments(
             query,
