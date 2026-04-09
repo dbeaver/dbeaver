@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -184,7 +185,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             SQLServerDataType systemDataType = getSystemDataType();
             String typeName = systemDataType.getName();
             sql.append(typeName.toUpperCase(Locale.ENGLISH));
-            SQLServerTypedObject serverTypedObjects = new SQLServerTypedObject(typeName, getDataTypeIDByName(typeName), dataKind, scale, precision, maxLength);
+            int displayMaxLength = SQLServerUtils.getDisplayMaxLength(getDataSource(), typeName, maxLength);
+            SQLServerTypedObject serverTypedObjects = new SQLServerTypedObject(typeName, getDataTypeIDByName(typeName), dataKind, scale, precision, displayMaxLength);
             String modifiers = SQLUtils.getColumnTypeModifiers(getDataSource(), serverTypedObjects, typeName, dataKind);
             if (modifiers != null) {
                 sql.append(modifiers);
@@ -252,7 +254,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     @Override
     @Property(order = 22)
     public long getMaxLength() {
-        return maxLength;
+        return SQLServerUtils.getDisplayMaxLength(getDataSource(), getSystemDataType().getName(), maxLength);
     }
 
     @Override
