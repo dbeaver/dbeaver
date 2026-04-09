@@ -74,10 +74,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
-        return new AIEngineRequestFactory(
-            new AIDatabaseSnapshotService(),
-            new DummyTokenCounter()
-        );
+        return new AIEngineRequestFactory(new DummyTokenCounter());
     }
 
     @NotNull
