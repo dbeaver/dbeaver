@@ -442,11 +442,13 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
+            UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.getService(UIServiceFilterConfig.class);
+            boolean isSaveAsCurrentUserFilterOnly = uiServiceFilterConfig != null;
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
                 }
+                isSaveAsCurrentUserFilterOnly = isSaveAsCurrentUserFilterOnly && uiServiceFilterConfig.shouldUserUserFilter(node);
                 DBNDatabaseNode parentNode = node.getParentNode() instanceof DBNDatabaseNode parent ? parent : node;
                 {
                     DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> {
@@ -463,7 +465,8 @@ public class NavigatorUtils {
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
                         nodeFilter = parentNode.getNodeFilter(nodeMeta, true);
-                        if (nodeFilter == null) {
+                        //for user filter always use fresh filter
+                        if (nodeFilter == null || isSaveAsCurrentUserFilterOnly) {
                             nodeFilter = new DBSObjectFilter();
                         }
                         folders.put(parentNode, nodeFilter);
