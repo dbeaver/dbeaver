@@ -26,10 +26,13 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Keeps configuration for database context generation.
@@ -39,6 +42,8 @@ public class AIDatabaseContext {
     private final DBSLogicalDataSource dataSource;
     private final AIDatabaseScope scope;
     private final List<DBSObject> customEntities;
+    private final Set<DBSCatalog> customCatalogs;
+    private final Set<DBSSchema> customSchemas;
     private final DBCExecutionContext executionContext;
 
     private final AISchemaGenerationOptions schemaGenerationOptions;
@@ -53,6 +58,31 @@ public class AIDatabaseContext {
         this.dataSource = dataSource;
         this.scope = scope;
         this.customEntities = customEntities;
+
+        if (customEntities != null) {
+            // Calculate custom catalogs and schemas
+            Set<DBSCatalog> catalogs = new LinkedHashSet<>();
+            for (DBSObject object : customEntities) {
+                DBSCatalog catalog = DBStructUtils.getObjectCatalog(object);
+                if (catalog != null) {
+                    catalogs.add(catalog);
+                }
+            }
+            this.customCatalogs = catalogs;
+
+            Set<DBSSchema> schemas = new LinkedHashSet<>();
+            for (DBSObject object : customEntities) {
+                DBSSchema schema = DBStructUtils.getObjectSchema(object);
+                if (schema != null) {
+                    schemas.add(schema);
+                }
+            }
+            this.customSchemas = schemas;
+
+        } else {
+            this.customCatalogs = Set.of();
+            this.customSchemas = Set.of();
+        }
         this.executionContext = executionContext;
 
         this.schemaGenerationOptions = schemaGenerationOptions;
@@ -71,6 +101,16 @@ public class AIDatabaseContext {
     @Nullable
     public List<DBSObject> getCustomEntities() {
         return customEntities;
+    }
+
+    @NotNull
+    public Set<DBSCatalog> getCustomCatalogs() {
+        return customCatalogs;
+    }
+
+    @NotNull
+    public Set<DBSSchema> getCustomSchemas() {
+        return customSchemas;
     }
 
     @NotNull
