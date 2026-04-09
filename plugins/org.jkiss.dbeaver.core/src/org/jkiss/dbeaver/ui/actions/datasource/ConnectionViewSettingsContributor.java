@@ -133,7 +133,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         }
 
         void updateSettings(@NotNull DBNBrowseSettings settings) {
-            if (DBWorkbench.isDistributed() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
+            if (isUseUserSettings() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
                 try {
                     DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, dataSourceNavigatorSettings);
                     dataSourceNavigatorSettings.setUserSettings(true);
@@ -146,6 +146,11 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                 dsContainer.persistConfiguration();
             }
             askToReconnectIfNeeded();
+        }
+
+        private boolean isUseUserSettings() {
+            return DBWorkbench.isDistributed()
+                && !dsContainer.getProject().isPrivateProject();
         }
 
         protected void askToReconnectIfNeeded() {
@@ -336,5 +341,6 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             clearUserSettings.setVisible(isVisible);
         }
     }
+
 
 }
