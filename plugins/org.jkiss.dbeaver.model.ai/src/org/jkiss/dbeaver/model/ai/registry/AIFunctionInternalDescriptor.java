@@ -19,19 +19,33 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AIFunctionInternalDescriptor extends AbstractDescriptor implements AIFunctionDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
+
+    private static final AIFunction VOID_STUB = new AIFunction() {
+        @NotNull
+        @Override
+        public AIFunctionResult callFunction(
+            @NotNull AIFunctionContext context,
+            @NotNull Map<String, Object> parameters
+        ) throws DBException {
+            throw new DBCFeatureNotSupportedException("Internal error. This function mustn't be called");
+        }
+    };
 
     private final AIToolboxInternalDescriptor toolbox;
     private final ObjectType objectType;
@@ -41,7 +55,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean global;
     private final boolean hidden;
     private final boolean ui;
-    private boolean enabledByDefault;
+    private final boolean enabledByDefault;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
     private final String[] dependsOn;
@@ -148,18 +162,34 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         return parameters;
     }
 
+    @Nullable
+    @Override
+    public AIFunctionParameter getParameter(@NotNull String name) {
+        for (AIFunctionParameter p : parameters) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public String[] getDependsOn() {
         return dependsOn;
     }
 
+
     @NotNull
     public AIFunction getInstance() {
         if (instance == null) {
-            try {
-                instance = objectType.createInstance(AIFunction.class);
-            } catch (Exception e) {
-                throw new DBRuntimeException("Error creating AI function " + getId(), e);
+            if (CommonUtils.isEmpty(objectType.getImplName())) {
+                instance = VOID_STUB;
+            } else {
+                try {
+                    instance = objectType.createInstance(AIFunction.class);
+                } catch (Exception e) {
+                    throw new DBRuntimeException("Error creating AI function " + getId(), e);
+                }
             }
         }
         return instance;
