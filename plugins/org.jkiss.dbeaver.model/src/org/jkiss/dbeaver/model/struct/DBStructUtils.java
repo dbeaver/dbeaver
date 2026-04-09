@@ -603,19 +603,45 @@ public final class DBStructUtils {
         return false;
     }
 
+    @Nullable
+    public static DBSSchema getObjectSchema(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSSchema schema) {
+            return schema;
+        }
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSSchema schema) {
+                return schema;
+            }
+            parent = parent.getParentObject();
+        }
+        return null;
+    }
+
     /**
      * Retrieves the schema name associated with the provided database object.
      */
     @Nullable
-    public static String getObjectSchema(@NotNull DBSObject dbsObject) {
-        if (dbsObject instanceof DBSSchema) {
-            return dbsObject.getName();
+    public static String getObjectSchemaName(@NotNull DBSObject dbsObject) {
+        DBSSchema schema = getObjectSchema(dbsObject);
+        return schema == null ? null : schema.getName();
+    }
+
+    @Nullable
+    public static DBSCatalog getObjectCatalog(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSCatalog catalog) {
+            return catalog;
+        } else if (dbsObject instanceof DBSSchema) {
+            DBSObject parent = dbsObject.getParentObject();
+            if (parent instanceof DBSCatalog catalog) {
+                return catalog;
+            }
         }
 
         DBSObject parent = dbsObject;
         while (parent != null) {
-            if (parent instanceof DBSSchema) {
-                return parent.getName();
+            if (parent instanceof DBSCatalog catalog) {
+                return catalog;
             }
             parent = parent.getParentObject();
         }
@@ -627,27 +653,9 @@ public final class DBStructUtils {
      * Retrieves the catalog name associated with the provided database object.
      */
     @Nullable
-    public static String getObjectCatalog(@NotNull DBSObject dbsObject) {
-        if (dbsObject instanceof DBSCatalog) {
-            return dbsObject.getName();
-        }
-
-        if (dbsObject instanceof DBSSchema) {
-            DBSObject parent = dbsObject.getParentObject();
-            if (parent instanceof DBSCatalog) {
-                return parent.getName();
-            }
-        }
-
-        DBSObject parent = dbsObject;
-        while (parent != null) {
-            if (parent instanceof DBSCatalog) {
-                return parent.getName();
-            }
-            parent = parent.getParentObject();
-        }
-
-        return null;
+    public static String getObjectCatalogName(@NotNull DBSObject dbsObject) {
+        DBSCatalog catalog = getObjectCatalog(dbsObject);
+        return catalog == null ? null : catalog.getName();
     }
 
     public static boolean isPrimaryKey(@NotNull DBSTableColumn column) {
