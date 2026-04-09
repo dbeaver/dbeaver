@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.jkiss.code.NotNull;
 
-import javax.net.ssl.X509TrustManager;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -40,24 +39,7 @@ import java.util.Date;
  * Here are some cert gen helpers.
  * Originally taken from https://stackoverflow.com/questions/1615871/creating-an-x509-certificate-in-java-without-bouncycastle
  */
-public class CertificateGenHelper {
-
-    // FIXME: Not secure at all!!!
-    // However some people need to use self-signed and untrusted server.
-    // Crap.
-    public static final X509TrustManager[] NON_VALIDATING_TRUST_MANAGERS = new X509TrustManager[] {
-        new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-            public void checkClientTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {
-            }
-            public void checkServerTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {
-            }
-        }
-    };
+public class SelfSignedCertificateGenerator {
 
     /**
      * Create a self-signed X.509 Certificate
@@ -66,9 +48,13 @@ public class CertificateGenHelper {
      * @param days how many days from now the Certificate is valid for
      * @param algorithm the signing algorithm, eg "SHA1withRSA"
      */
-    public static Certificate generateCertificate(String dn, KeyPair pair, int days, String algorithm)
-        throws GeneralSecurityException, OperatorCreationException
-    {
+    @NotNull
+    public static Certificate generateSelfSignedCertificate(
+        @NotNull String dn,
+        @NotNull KeyPair pair,
+        int days,
+        @NotNull String algorithm
+    ) throws GeneralSecurityException, OperatorCreationException {
         Instant from = Instant.now();
         Instant until = from.plus(days, ChronoUnit.DAYS);
         BigInteger sn = new BigInteger(64, new SecureRandom());
@@ -81,19 +67,6 @@ public class CertificateGenHelper {
         cert.verify(pair.getPublic());
 
         return cert;
-    }
-
-    public static Certificate generateCertificate(String dn)
-        throws GeneralSecurityException, OperatorCreationException
-    {
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        return generateCertificate(dn, keyPair, 365, "SHA256withRSA");
-    }
-
-    public static void main (String[] argv) throws Exception {
-        Certificate certificate = generateCertificate("CN=Test, L=New York, S=New York, C=US");
-        System.out.println("Certificate:" + certificate);
     }
 
 }

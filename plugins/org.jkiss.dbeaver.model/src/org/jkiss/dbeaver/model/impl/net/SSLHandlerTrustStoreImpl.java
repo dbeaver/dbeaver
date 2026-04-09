@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
-import org.jkiss.dbeaver.model.impl.app.CertificateGenHelper;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.security.TrustStoreUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -39,6 +38,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.net.ssl.*;
 
 /**
  * Default Java SSL Handler. Saves certificate in local trust store
@@ -177,7 +177,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
 
         TrustManager[] trustManagers;
         if (sslConfig.getBooleanProperty(PROP_SSL_SELF_SIGNED_CERT)) {
-            trustManagers = CertificateGenHelper.NON_VALIDATING_TRUST_MANAGERS;
+            trustManagers = TrustStoreUtils.NON_VALIDATING_TRUST_MANAGERS;
         } else {
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
             trustManagerFactory.init(trustStore);
@@ -224,7 +224,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     @NotNull
     public static SSLSocketFactory createNonValidatingSslSocketFactory() throws Exception {
         final SSLContext context = SSLContext.getInstance("SSL");
-        context.init(null, CertificateGenHelper.NON_VALIDATING_TRUST_MANAGERS, new SecureRandom());
+        context.init(null, TrustStoreUtils.NON_VALIDATING_TRUST_MANAGERS, new SecureRandom());
 
         return context.getSocketFactory();
     }

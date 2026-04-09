@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
-import org.bouncycastle.util.io.pem.PemReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -121,27 +120,14 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
        }
     }
 
-    public static byte[] readEncryptedString(InputStream stream) throws IOException {
-        try (Reader reader = new InputStreamReader(stream)) {
-            return readEncryptedString(reader);
-        }
-    }
-
-    public static byte[] readEncryptedString(Reader reader) throws IOException {
-        StringBuilder result = new StringBuilder(4000);
-        try (BufferedReader br = new BufferedReader(reader)) {
-            for (; ; ) {
-                final String line = br.readLine();
-                if (line == null || line.isEmpty()) break;
-                if (line.startsWith("-") || line.startsWith("#")) continue;
-                result.append(line);
-            }
-        }
-        return Base64.decode(result.toString());
-    }
-
     @Override
-    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, byte[] caCertData, byte[] clientCertData, byte[] keyData) throws DBException {
+    public void addCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType,
+        byte[] caCertData,
+        byte[] clientCertData,
+        byte[] keyData
+    ) throws DBException {
         if (userDefinedKeystores.containsKey(getKeyStoreName(dataSource, certType))) {
             throw new DBException("Adding new certificates would override user-specified keystore");
         }
@@ -168,7 +154,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
             }
             if (keyData != null) {
                 PrivateKey privateKey = loadPrivateKeyFromPEM(keyData);
-                keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
+                keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[0]));
             }
 
             saveKeyStore(dataSource, certType, keyStore);
@@ -179,7 +165,12 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
-    public void addCertificate(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType, @NotNull String keyStorePath, @NotNull char[] keyStorePassword) throws DBException {
+    public void addCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType,
+        @NotNull String keyStorePath,
+        @NotNull char[] keyStorePassword
+    ) {
         userDefinedKeystores.put(
             getKeyStoreName(dataSource, certType),
             new UserDefinedKeystore(new File(keyStorePath), keyStorePassword)
@@ -211,13 +202,13 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            Certificate clientCert = CertificateGenHelper.generateCertificate(certDN, keyPair, 365, "SHA256withRSA");
+            Certificate clientCert = SelfSignedCertificateGenerator.generateSelfSignedCertificate(certDN, keyPair, 365, "SHA256withRSA");
 
             keyStore.setCertificateEntry(CLIENT_CERT_ALIAS, clientCert);
             certChain.add(clientCert);
 
             PrivateKey privateKey = keyPair.getPrivate();
-            keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[certChain.size()]));
+            keyStore.setKeyEntry(KEY_CERT_ALIAS, privateKey, DEFAULT_PASSWORD, certChain.toArray(new Certificate[0]));
 
             saveKeyStore(dataSource, certType, keyStore);
         } catch (Throwable e) {
@@ -242,6 +233,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         }
     }
 
+    @NotNull
     @Override
     public Path getKeyStorePath(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) {
         final UserDefinedKeystore userDefinedKeystore = getUserDefinedKeystore(dataSource, certType);
@@ -271,7 +263,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
     @NotNull
     public static byte[] loadDerFromPem(@NotNull Reader reader) throws IOException {
-        return new PemReader(reader).readPemObject().getContent();
+        return new SimplePemReader(reader).readPemObject();
     }
 
     /**
