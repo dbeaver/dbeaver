@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
+package org.jkiss.dbeaver.model.websocket.event;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.auth.SMSession;
 
-public class SpreadsheetMessages extends NLS {
+/**
+ * WS event handler
+ */
+public interface WSClientEventHandler<EVENT> {
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetMessages";
+    void handleEvent(@NotNull SMSession session, @NotNull EVENT event) throws DBException;
 
-    public static String tooltip_column;
-    public static String tooltip_description;
-    public static String tooltip_table;
-
-    static {
-        NLS.initializeMessages(BUNDLE_NAME, SpreadsheetMessages.class);
-    }
-
-    private SpreadsheetMessages() {
-    }
 }
