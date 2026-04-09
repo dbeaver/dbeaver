@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -3100,6 +3102,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (attributeBinding.isRequired()) {
                     tip.append(" NOT NULL");
                 }
+                // Show source table name so users can identify column origins in JOINs
+                String sourceTable = getSourceTableName(attributeBinding);
+                if (sourceTable != null) {
+                    tip.append("\n").append(SpreadsheetMessages.tooltip_table).append(": ").append(sourceTable);
+                }
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\n").append(SpreadsheetMessages.tooltip_description).append(": ").append(description);
                 }
@@ -3116,6 +3123,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return tip.toString();
             }
             return null;
+        }
+
+        @Nullable
+        private String getSourceTableName(@NotNull DBDAttributeBinding binding) {
+            DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
+            if (metaAttribute == null) {
+                return null;
+            }
+            DBCEntityMetaData entityMeta = metaAttribute.getEntityMetaData();
+            if (entityMeta == null) {
+                return null;
+            }
+            String qualifiedName = DBUtils.getSimpleQualifiedName(
+                entityMeta.getCatalogName(),
+                entityMeta.getSchemaName(),
+                entityMeta.getEntityName()
+            );
+            return CommonUtils.isEmpty(qualifiedName) ? null : qualifiedName;
         }
 
         @Override

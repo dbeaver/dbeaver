@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * LightGrid
@@ -3629,7 +3629,13 @@ public abstract class LightGrid extends Canvas {
      *
      * @param e event
      */
-    private void onMouseMove(MouseEvent e) {
+    private void onMouseMove(@NotNull MouseEvent e) {
+        if (e.x < 0 && e.y < 0) {
+            // Reject invalid events that often are originated from our GIS viewer (#37034)
+            log.trace("Invalid mouse event received: " + e);
+            return;
+        }
+
         List<RedrawCell> redrawCells = new ArrayList<>();
         //if populated will be fired at end of method.
         Event selectionEvent = null;

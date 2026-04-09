@@ -657,6 +657,7 @@ public final class SQLUtils {
                 }
                 // Text content. Fall down
             case STRING:
+                return sqlDialect.getQuotedString(strValue);
             case ROWID:
                 if (!sqlDialect.isQuotedString(strValue)) {
                     return sqlDialect.getQuotedString(strValue);
