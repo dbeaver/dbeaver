@@ -117,16 +117,18 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static CommentsCollectionResult collectComments(@NotNull SQLDialect dialect, @NotNull String sqlText) {
+    public static CommentsCollectionResult collectComments(
+        @NotNull String sqlText,
+        @Nullable Pair<String, String> mlComments,
+        @Nullable String[] slComments
+    ) {
         // prepare regex pattern to match all the comments according to dialect
         List<String> subpatterns = new ArrayList<>();
-        Pair<String, String> mlComments = dialect.getMultiLineComments();
         if (mlComments != null) {
             String prefix = Pattern.quote(mlComments.getFirst());
             String suffix = Pattern.quote(mlComments.getSecond());
             subpatterns.add(prefix + "(((?!" + suffix + ")(.|[\\r\\n]))*)" + suffix);
         }
-        String[] slComments = dialect.getSingleLineComments();
         if (slComments != null) {
             for (String prefix : slComments) {
                 subpatterns.add(Pattern.quote(prefix) + "[^\\n\\r]*");
