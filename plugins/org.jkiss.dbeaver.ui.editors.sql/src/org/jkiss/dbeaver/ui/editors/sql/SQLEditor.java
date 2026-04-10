@@ -3137,17 +3137,12 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private int createDropQueryConfirmationDialog(@NotNull SQLQuery dropQuery, int dialogType) {
-        String queryTextForDisplay = dropQuery.getText();
-        if (queryTextForDisplay.length() > MAX_QUERY_PREVIEW_LENGTH) {
-            // Truncate string. Too big strings may freeze UI.
-            queryTextForDisplay = StringUtils.truncateText(queryTextForDisplay, MAX_QUERY_PREVIEW_LENGTH);
-        }
         return ConfirmationDialog.confirmAction(
             getSite().getShell(),
             ConfirmationDialog.WARNING,
             ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
-            queryTextForDisplay
+            StringUtils.truncateText(dropQuery.getText(), MAX_QUERY_PREVIEW_LENGTH)
         );
     }
 
