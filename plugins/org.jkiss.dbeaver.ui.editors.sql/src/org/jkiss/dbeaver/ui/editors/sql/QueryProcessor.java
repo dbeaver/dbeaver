@@ -260,12 +260,9 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
                     curJob = job;
                     ResultSetViewer rsv = resultsContainer.getResultSetController();
                     if (rsv != null) {
-                        // Discard pending edits when the query will destroy the underlying data
-                        if (rsv.isDirty() && containsDropQuery(queries)) {
-                            rsv.rejectChanges();
-                        }
                         rsv.resetDataFilter(false);
                         rsv.resetHistory();
+                        // Dirty result sets will prompt to save via checkForChanges inside refresh
                         rsv.refresh();
                     }
                 } else {
@@ -278,15 +275,6 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
             }
         }
         return true;
-    }
-
-    private boolean containsDropQuery(@NotNull List<SQLScriptElement> queries) {
-        for (SQLScriptElement element : queries) {
-            if (element instanceof SQLQuery sqlQuery && sqlQuery.isDropDangerous()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void processDataExport(SQLScriptContext scriptContext, List<SQLScriptElement> queries) {
