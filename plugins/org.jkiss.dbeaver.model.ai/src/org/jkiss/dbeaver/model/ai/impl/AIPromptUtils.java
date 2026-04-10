@@ -73,13 +73,15 @@ public class AIPromptUtils {
                 }
             }
 
-            String currentSchema = dataSource.getCurrentSchema();
-            if (!CommonUtils.isEmpty(currentSchema)) {
-                lines.add("Current " + (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
-            }
             String currentCatalog = dataSource.getCurrentCatalog();
             if (!CommonUtils.isEmpty(currentCatalog)) {
-                lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
+                String catalogTerm = (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()).toLowerCase();
+                lines.add("Default " + catalogTerm + ": " + currentCatalog);
+            }
+            String currentSchema = dataSource.getCurrentSchema();
+            if (!CommonUtils.isEmpty(currentSchema)) {
+                String schemaTerm = (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()).toLowerCase();
+                lines.add("Default " + schemaTerm + ": " + currentSchema);
             }
         }
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
