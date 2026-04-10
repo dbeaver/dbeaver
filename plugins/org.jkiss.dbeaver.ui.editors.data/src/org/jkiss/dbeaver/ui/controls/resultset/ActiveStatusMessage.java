@@ -133,8 +133,9 @@ abstract class ActiveStatusMessage extends Composite {
 
     private class LoadVisualizer implements ILoadVisualizer<String> {
         private boolean completed;
+        @NotNull
         @Override
-        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
+        public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor) {
             return monitor;
         }
 
@@ -149,7 +150,7 @@ abstract class ActiveStatusMessage extends Composite {
         }
 
         @Override
-        public void completeLoading(String message) {
+        public void completeLoading(@Nullable String message) {
             completed = true;
             if (!messageText.isDisposed() && !CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
                 actionItem.setImage(actionImage);

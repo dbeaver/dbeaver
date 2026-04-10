@@ -136,6 +136,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.hideFolders = copyFrom.isHideFolders();
         this.hideSchemas = copyFrom.isHideSchemas();
         this.hideVirtualModel = copyFrom.isHideVirtualModel();
+        this.userSettings = copyFrom.isUserSettings();
     }
 
     @Override
@@ -258,6 +259,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
+    @NotNull
     public static DBNBrowseSettings getDefaultSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.views.session;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
@@ -62,11 +63,14 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IEd
         //DatabaseEditorUtils.setPartBackground(this, sessionsViewer.getControl());
     }
 
-    protected abstract SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent);
+    @NotNull
+    protected abstract SessionManagerViewer<?> createSessionViewer(
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Composite parent
+    );
 
     @Override
-    public RefreshResult refreshPart(Object source, boolean force)
-    {
+    public RefreshResult refreshPart(Object source, boolean force) {
         sessionsViewer.refreshSessions();
         return RefreshResult.REFRESHED;
     }
