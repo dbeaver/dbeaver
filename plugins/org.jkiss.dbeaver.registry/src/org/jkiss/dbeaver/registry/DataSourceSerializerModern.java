@@ -871,6 +871,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+            dataSource.getNavigatorSettings().setUserSettings(true);
             DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
             dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);

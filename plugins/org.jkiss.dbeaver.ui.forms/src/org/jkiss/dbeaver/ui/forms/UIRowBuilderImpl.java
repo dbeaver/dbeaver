@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.forms;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.forms.UIControlBuilder.*;
+import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.*;
+import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.ButtonBuilderImpl.Kind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,8 +91,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder label(@NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler) {
-        var builder = new UIControlBuilderImpl.LabelBuilderImpl();
+    public UIRowBuilder label(@NotNull Consumer<? super LabelBuilder> handler) {
+        var builder = new LabelBuilderImpl();
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -100,9 +103,9 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     public UIRowBuilder link(
         @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
-        @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler
+        @NotNull Consumer<? super LinkBuilder> handler
     ) {
-        var builder = new UIControlBuilderImpl.LinkBuilderImpl(text, onSelect, SWT.NONE);
+        var builder = new LinkBuilderImpl(text, onSelect, SWT.NONE);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -113,9 +116,9 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     public UIRowBuilder button(
         @NotNull String text,
         @NotNull Consumer<SelectionEvent> onSelect,
-        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
+        @NotNull Consumer<? super ButtonBuilder> handler
     ) {
-        var builder = new UIControlBuilderImpl.ButtonBuilderImpl(text, onSelect, SWT.NONE);
+        var builder = new ButtonBuilderImpl(text, onSelect, Kind.BUTTON);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -123,8 +126,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
-        var builder = new UIControlBuilderImpl.ButtonBuilderImpl(text, null, SWT.RADIO);
+    public UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+        var builder = new ButtonBuilderImpl(text, null, Kind.RADIO);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -132,8 +135,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
-        var builder = new UIControlBuilderImpl.ButtonBuilderImpl(text, null, SWT.CHECK);
+    public UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+        var builder = new ButtonBuilderImpl(text, null, Kind.CHECK);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -143,9 +146,9 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @Override
     public <T> UIRowBuilder textField(
         @NotNull UIObservable<T> binding,
-        @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler
+        @NotNull Consumer<? super TextBuilder<T>> handler
     ) {
-        var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER, binding);
+        var builder = new TextBuilderImpl<T>(SWT.BORDER, binding);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -155,9 +158,9 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @Override
     public <T> UIRowBuilder passwordField(
         @NotNull UIObservable<T> binding,
-        @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler
+        @NotNull Consumer<? super TextBuilder<T>> handler
     ) {
-        var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
+        var builder = new TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -169,9 +172,9 @@ final class UIRowBuilderImpl implements UIRowBuilder {
         @NotNull UIObservableList<? extends T> items,
         @NotNull UIObservable<T> binding,
         @NotNull Function<? super T, String> converter,
-        @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
+        @NotNull Consumer<? super ComboBuilder<T>> handler
     ) {
-        var builder = new UIControlBuilderImpl.ComboBuilderImpl<>(
+        var builder = new ComboBuilderImpl<>(
             items,
             binding,
             converter,

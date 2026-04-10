@@ -33,7 +33,7 @@ public interface AIFunctionDescriptor {
 
     @NotNull
     default String getFullId() {
-        return getToolbox().getToolboxId() + "_" + getId();
+        return getFullFunctionId(getToolbox().getToolboxId(), getId());
     }
 
     @NotNull
@@ -71,6 +71,9 @@ public interface AIFunctionDescriptor {
     @NotNull
     AIFunctionParameter[] getParameters();
 
+    @Nullable
+    AIFunctionParameter getParameter(@NotNull String name);
+
     @NotNull
     String[] getDependsOn();
 
@@ -84,4 +87,7 @@ public interface AIFunctionDescriptor {
     @NotNull
     AIFunction getInstance();
 
+    static String getFullFunctionId(@NotNull String toolboxId, @NotNull String toolId) {
+        return toolboxId + "_" + toolId;
+    }
 }
