@@ -233,9 +233,6 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         Map<String, Object> arguments = functionCall.getArguments();
-        if (arguments == null) {
-            arguments = Map.of();
-        }
         log.debug("Call AI function " + function.getId() + "(" +
             arguments.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())

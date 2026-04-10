@@ -14,37 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.ui.editors.sql.plan;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
-public interface AIFunctionParameter {
+/**
+ * ExplainPlanParameters for actions
+ */
+public record ExplainPlanParameters(
+    @NotNull SQLEditor editor,
+    @NotNull DBPDataSource dataSource,
+    @NotNull SQLQuery query,
+    @NotNull DBCPlan plan
+) {
 
-    @NotNull
-    String getName();
-
-    @NotNull
-    String getType();
-
-    @Nullable
-    String getDescription();
-
-    boolean isRequired();
-
-    @Nullable
-    String getDefaultValue();
-
-    @Nullable
-    String[] getValidValues();
-
-    @Nullable
-    default AIFunctionParameterTransformer getTransformer() {
-        return null;
-    }
-
-    @Nullable
-    default String getTransformerSuffix() {
-        return null;
-    }
 }
