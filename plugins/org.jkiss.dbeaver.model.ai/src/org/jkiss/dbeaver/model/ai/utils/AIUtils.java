@@ -350,7 +350,9 @@ public final class AIUtils {
                 return true;
             }
             case CUSTOM -> {
-                return context.getCustomSchemas().contains(schema);
+                List<DBSObject> customEntities = context.getCustomEntities();
+                return context.getCustomSchemas().contains(schema) ||
+                    (customEntities != null && customEntities.contains(schema.getParentObject()));
             }
             default -> {
                 return false;
