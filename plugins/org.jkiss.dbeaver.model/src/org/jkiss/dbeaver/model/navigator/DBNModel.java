@@ -140,7 +140,9 @@ public class DBNModel {
     }
 
     public void dispose() {
-        this.eventProcessingJob.cancel();
+        if (this.eventProcessingJob != null) {
+            this.eventProcessingJob.cancel();
+        }
         if (root != null) {
             this.root.dispose(false);
             synchronized (nodeMap) {

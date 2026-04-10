@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -44,7 +46,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final Log log = Log.getLog(QMMCollectorImpl.class);
 
     private static final int MAX_HISTORY_EVENTS = 10000;
-    private static final int MAX_WAIT_COUNT = 5;
+    private static final int MAX_WAIT_COUNT = 20;
 
     // Session map
     private final LongKeyMap<QMMConnectionInfo> connectionMap = new LongKeyMap<>();
@@ -91,14 +93,10 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 listeners.clear();
             }
         }
-        int waintCount = 0;
-        while (!CommonUtils.isEmpty(eventPool) && waintCount < MAX_WAIT_COUNT) {
-            try {
-                waintCount++;
-                Thread.sleep(eventDispatchPeriod);
-            } catch (InterruptedException e) {
-                log.warn("Interrupted while waiting event processing", e);
-            }
+        int waitCount = 0;
+        while (!CommonUtils.isEmpty(eventPool) && waitCount < MAX_WAIT_COUNT) {
+            waitCount++;
+            RuntimeUtils.pause((int) eventDispatchPeriod);
         }
         running = false;
     }
@@ -189,6 +187,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return events;
     }
 
+    @Nullable
     public QMMConnectionInfo getConnectionInfo(DBCExecutionContext context) {
         synchronized (connectionMap) {
             QMMConnectionInfo connectionInfo = connectionMap.get(context.getContextId());
