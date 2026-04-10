@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
@@ -303,6 +304,18 @@ public abstract class NavigatorViewBase extends ViewPart
     @Override
     public void setFocus() {
         tree.getViewer().getControl().setFocus();
+    }
+
+    public boolean focusFilterControl(boolean selectAll) {
+        final Text filterControl = tree.getFilterControl();
+        if (filterControl == null || filterControl.isDisposed()) {
+            return false;
+        }
+        filterControl.setFocus();
+        if (selectAll) {
+            filterControl.selectAll();
+        }
+        return true;
     }
 
     @Override
