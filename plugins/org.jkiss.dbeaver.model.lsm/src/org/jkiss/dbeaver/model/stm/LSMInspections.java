@@ -136,7 +136,8 @@ public class LSMInspections {
         SQLStandardParser.RULE_aggregateExprParam,
         SQLStandardParser.RULE_anyWord,
         SQLStandardParser.RULE_correlationName,
-        SQLStandardParser.RULE_tableHintKeywords
+        SQLStandardParser.RULE_tableHintKeywords,
+        SQLStandardParser.RULE_typeModifier
     );
 
     @NotNull
@@ -270,7 +271,8 @@ public class LSMInspections {
         SQLStandardParser.RULE_anyWordWithAnyValue,
         SQLStandardParser.RULE_anyProperty,
         SQLStandardParser.RULE_anyWordsWithProperty,
-        SQLStandardParser.RULE_anyUnexpected
+        SQLStandardParser.RULE_anyUnexpected,
+        SQLStandardParser.RULE_typeModifier
     );
 
     private static boolean isAnySomething(STMTreeNode node) {
