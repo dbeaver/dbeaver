@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,7 +256,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             loadingService,
             new ProgressLoaderVisualizer<>(loadingService, styledText) {
                 @Override
-                public void completeLoading(Collection<DBPObject> dbpObjects) {
+                public void completeLoading(@Nullable Collection<DBPObject> dbpObjects) {
                     StringBuilder text = new StringBuilder();
                     for (DBPObject item : dbpObjects) {
                         if (item instanceof DBPObjectWithDescription) {
@@ -336,18 +336,17 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
     }
 
-    public DatabaseObjectListControl getSessionListControl() {
+    @NotNull
+    public DatabaseObjectListControl<?> getSessionListControl() {
         return sessionTable;
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         sessionTable.disposeControl();
         UIUtils.dispose(boldFont);
     }
 
-    protected void onSessionSelect(DBAServerSession session)
-    {
+    protected void onSessionSelect(@Nullable DBAServerSession session) {
         if (curSession == session && selectedPlanElement == null) {
             return;
         }
@@ -357,8 +356,10 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         updatePreview();
     }
 
-    protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
-    {
+    protected void contributeToToolbar(
+        @NotNull DBAServerSessionManager<?> sessionManager,
+        @NotNull IContributionManager contributionManager
+    ) {
 
     }
 
@@ -458,7 +459,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             contributeToToolbar(getSessionManager(), contributionManager);
 
             if (sessionManager instanceof DBAServerSessionManagerSQL &&
@@ -512,6 +513,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             return SessionManagerViewer.this.getSessionOptions();
         }
 
+        @Nullable
         @Override
         protected ISearchExecutor getSearchRunner()
         {
@@ -578,7 +580,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         private final class SessionLoadVisualizer extends ObjectsLoadVisualizer {
             @Override
-            public void completeLoading(Collection<SESSION_TYPE> items) {
+            public void completeLoading(@Nullable Collection<SESSION_TYPE> items) {
                 Collection<DBAServerSession> previouslySelectedSessions = getSelectedSessions();
                 super.completeLoading(items);
                 if (items != null) {

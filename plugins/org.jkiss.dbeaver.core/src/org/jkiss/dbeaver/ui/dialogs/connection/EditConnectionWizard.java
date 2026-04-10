@@ -148,6 +148,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     @Override
+    @NotNull
     DBNBrowseSettings getSelectedNavigatorSettings() {
         return dataSource.getNavigatorSettings();
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -323,12 +324,13 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
             NavigatorUtils.createContextMenu(mainEditor.getSite(), varsTable, manager -> {} );
         }
 
+        @Nullable
         @Override
         protected ISearchExecutor getSearchRunner() {
             return searcher;
         }
 
-        protected void addSearchAction(IContributionManager contributionManager) {
+        protected void addSearchAction(@NotNull IContributionManager contributionManager) {
             contributionManager.add(new Action("Find variable", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
                 @Override
                 public void run() {
@@ -347,7 +349,7 @@ public class SQLVariablesPanel extends Composite implements DBCScriptContextList
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
 
             addAction = new Action("Add variable", DBeaverIcons.getImageDescriptor(UIIcon.ADD)) {
