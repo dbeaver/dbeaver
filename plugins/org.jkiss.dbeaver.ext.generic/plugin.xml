@@ -1063,6 +1063,7 @@
                     description="GizmoSQL JDBC driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/gizmodata/gizmosql-jdbc-driver"
+                    allowsEmptyPassword="false"
                     categories="sql,analytic">
                     <file type="jar" path="maven:/com.gizmodata:gizmosql-jdbc-driver:RELEASE"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
