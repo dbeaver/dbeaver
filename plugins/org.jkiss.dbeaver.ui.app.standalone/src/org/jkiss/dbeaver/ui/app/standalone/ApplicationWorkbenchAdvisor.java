@@ -367,9 +367,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             try {
                 return super.preShutdown();
             } catch (Exception e) {
-                log.error(e);
-                System.exit(120);
-                return false;
+                log.trace(e);
+                log.debug("Error during shutdown: " + e.getMessage());
+                //System.exit(120);
+                return true;
             }
         }
     }
@@ -434,6 +435,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         // They are locking resources which are shared between other editors
         // So we need to close them first
         IWorkbenchPage workbenchPage = window.getActivePage();
+        if (workbenchPage == null) {
+            return true;
+        }
         IEditorReference[] editors = workbenchPage.getEditorReferences();
         List<IEditorPart> editorsToRevert = new ArrayList<>();
         for (IEditorReference editor : editors) {
