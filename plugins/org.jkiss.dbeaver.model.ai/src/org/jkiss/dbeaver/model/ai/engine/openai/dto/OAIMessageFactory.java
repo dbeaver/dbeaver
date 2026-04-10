@@ -64,7 +64,7 @@ public class OAIMessageFactory {
         message.name = functionCall.getFunctionName();
 
         Map<String, Object> argumentsMap = functionCall.getArguments();
-        message.arguments = argumentsMap == null ? "{}" : JSONUtils.GSON.toJson(argumentsMap);
+        message.arguments = JSONUtils.GSON.toJson(argumentsMap);
 
         Map<String, String> additionalProperties = functionCall.getMessageMetadata();
         if (additionalProperties != null) {
