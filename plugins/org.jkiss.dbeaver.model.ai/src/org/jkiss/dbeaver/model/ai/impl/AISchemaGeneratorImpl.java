@@ -74,7 +74,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             }
         }
 
-        return ddl.toString();
+        return ddl.toString().trim();
     }
 
     private void addReferencesDDL(

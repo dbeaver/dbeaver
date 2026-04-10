@@ -160,8 +160,8 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
             }
             List<SQLPlanActionDescriptor> actionDescriptors = registry.getActionDescriptors();
             if (!actionDescriptors.isEmpty()) {
-                UIUtils.createEmptyLabel(tabViewFolder, 1, 1)
-                    .setLayoutData(new GridData(GridData.FILL_VERTICAL));
+//                UIUtils.createEmptyLabel(tabViewFolder, 1, 1)
+//                    .setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
                 for (SQLPlanActionDescriptor actionDescriptor : actionDescriptors) {
                     VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT | SWT.PUSH);
