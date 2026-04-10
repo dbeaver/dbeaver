@@ -191,11 +191,15 @@ public class QueryReconstructor {
 
     /**
      * Test if given comments are positioned only before and/or after the meaningful tokens in the original text
+     *
      * @param originalTokens of the comments-free cleaned-up version of the SQL text
      * @param comments of the original SQL text
      */
     @NotNull
-    private static SurroundingCommentsInfo findSurroundingComments(@NotNull Token[] originalTokens, @NotNull SQLUtils.CommentEntry[] comments) {
+    private static SurroundingCommentsInfo findSurroundingComments(
+        @NotNull Token[] originalTokens,
+        @NotNull SQLUtils.CommentEntry[] comments
+    ) {
         Token firstToken = originalTokens[0];
         int firstTokenOffset = 0;
         int leadingCommentIndex = 0;

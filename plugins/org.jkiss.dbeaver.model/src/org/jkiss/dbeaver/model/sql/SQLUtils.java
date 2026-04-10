@@ -143,8 +143,9 @@ public final class SQLUtils {
             new Function<>() {
                 private int accumulatedOffset = 0;
 
+                @NotNull
                 @Override
-                public String apply(MatchResult mr) {
+                public String apply(@NotNull MatchResult mr) {
                     int length = mr.end() - mr.start();
                     int cleanPosition = mr.start() - this.accumulatedOffset;
                     this.accumulatedOffset += length;
