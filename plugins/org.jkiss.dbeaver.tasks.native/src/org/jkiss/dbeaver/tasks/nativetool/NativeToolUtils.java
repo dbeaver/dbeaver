@@ -120,17 +120,25 @@ public abstract class NativeToolUtils {
                     hostname = config.getHostName();
                     port = config.getHostPort();
                 }
-            } else {
+            }
+            // Fall back to URI parsing if sample URL is not available
+            // or if extraction from sample URL pattern failed
+            if (CommonUtils.isEmpty(hostname)) {
                 try {
                     URI uri = URI.create(url);
                     hostname = uri.getHost();
-                    port = String.valueOf(uri.getPort());
+                    int uriPort = uri.getPort();
+                    if (uriPort > 0) {
+                        port = String.valueOf(uriPort);
+                    }
                 } catch (Exception e) {
                     log.error("Can't parse connection URL", e);
                 }
             }
         }
-        cmd.add("--host=" + hostname);
+        if (!CommonUtils.isEmpty(hostname)) {
+            cmd.add("--host=" + hostname);
+        }
         if (!CommonUtils.isEmpty(port)) {
             cmd.add("--port=" + port);
         }

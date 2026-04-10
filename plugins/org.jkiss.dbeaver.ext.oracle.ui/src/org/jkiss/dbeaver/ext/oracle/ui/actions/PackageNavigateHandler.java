@@ -32,6 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -62,7 +63,8 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
     {
         final OracleProcedurePackaged procedure = getSelectedProcedure(event);
         if (procedure != null) {
-            IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(procedure);
+            OraclePackage procPackage = procedure.getParentObject();
+            IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(procPackage);
             if (entityEditor instanceof EntityEditor) {
                 ((EntityEditor) entityEditor).switchFolder("source.definition");
                 SQLEditorBase sqlEditor = entityEditor.getAdapter(SQLEditorBase.class);
@@ -108,7 +110,10 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
             }
             final IDocument document = sqlEditor.getDocument();
             if (document != null) {
-                String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                // excludes any line that starts wih --
+                String commentSkip = """
+                    ^(?!\\s*--)\\s*""";
+                String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
                 final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
                 if (parameters != null) {
                     List<OracleProcedureArgument> inParams = new ArrayList<>();

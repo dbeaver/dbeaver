@@ -43,7 +43,7 @@ public interface AIToolbox {
     boolean isAccessible();
 
     @NotNull
-    List<AIFunctionDescriptor> getSupportedFunctions();
+    List<AIFunctionDescriptor> getSupportedFunctions(@NotNull AIFunctionPurpose purpose);
 
     @Nullable
     AIFunctionDescriptor getFunctionById(@NotNull String id);

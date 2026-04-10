@@ -19,19 +19,31 @@ package org.jkiss.dbeaver.model.ai.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class AISchemaGeneratorImpl implements AISchemaGenerator {
+    private static final Log log = Log.getLog(AISchemaGeneratorImpl.class);
 
     @Override
     public String generateSchema(
@@ -40,31 +52,74 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity entity
     ) throws DBException {
-        return describeTable(monitor, executionContext, options, entity);
-    }
-
-    @NotNull
-    public String describeTable(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity table
-    ) throws DBException {
         StringBuilder ddl = new StringBuilder();
 
         if (options.sendFullDDL()) {
             String tableDDL = DBStructUtils.generateTableDDL(
                 monitor,
-                table,
+                entity,
                 Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true),
                 false
             );
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
-            generateCustomDDL(monitor, executionContext, options, table, ddl);
+            generateCustomDDL(monitor, executionContext, options, entity, ddl);
+            ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
         }
 
-        return ddl.toString();
+        if (options.sendReferences() && executionContext != null) {
+            if (entity instanceof DBSTable table) {
+                // Always generate native DDL because it uses FQNs and ALTER TABLE syntax
+                addReferencesDDL(monitor, executionContext, table, true, ddl);
+            }
+        }
+
+        return ddl.toString().trim();
+    }
+
+    private void addReferencesDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSTable table,
+        boolean nativeDDL,
+        @NotNull StringBuilder ddl
+    ) {
+        try {
+            Collection<? extends DBSEntityAssociation> references = table.getReferences(monitor);
+            if (!CommonUtils.isEmpty(references)) {
+                final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
+                for (DBSEntityAssociation refKey : references) {
+                    if (refKey instanceof DBSTableForeignKey tfk) {
+                        String fkScript;
+                        if (nativeDDL) {
+                            final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(
+                                refKey.getClass(),
+                                SQLObjectEditor.class
+                            );
+                            if (entityEditor instanceof SQLForeignKeyManager fkm) {
+                                DBEPersistAction[] ddlActions = fkm.makeCreateCommand(tfk, Map.of())
+                                    .getPersistActions(monitor, executionContext, Map.of());
+                                fkScript = SQLUtils.generateScript(
+                                    table.getDataSource(),
+                                    ddlActions,
+                                    false
+                                );
+                            } else {
+                                fkScript = null;
+                            }
+                        } else {
+                            fkScript = describeForeignKey(monitor, refKey);
+                        }
+                        if (!CommonUtils.isEmpty(fkScript)) {
+                            DBStructUtils.addDDLLine(ddl, fkScript);
+                        }
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.debug("Error reading table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                "' references", e);
+        }
     }
 
     @NotNull

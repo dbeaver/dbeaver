@@ -73,13 +73,13 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
         boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
         getContent().addPaintListener(e -> {
-            String productVersion = "";
-            if (product != null) {
-                productVersion = GeneralUtils.getPlainVersion();
+            var image = getSplash().getBackgroundImage();
+            if (image != null) {
+                e.gc.drawImage(image, 0, 0);
             }
             e.gc.setFont(boldFont);
             e.gc.setForeground(getForeground());
-            e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
+            e.gc.drawText(GeneralUtils.getPlainVersion(), versionCoord.x, versionCoord.y, true);
             e.gc.setFont(normalFont);
         });
     }
