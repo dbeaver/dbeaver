@@ -39,6 +39,7 @@ public class CLIHelp extends CommandLine.Help {
     }
 
 
+    @NotNull
     @Override
     public String optionListExcludingGroups(
         @NotNull List<CommandLine.Model.OptionSpec> optionList,

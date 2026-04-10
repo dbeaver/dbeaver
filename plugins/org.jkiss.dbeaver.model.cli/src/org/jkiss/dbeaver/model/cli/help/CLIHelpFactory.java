@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import picocli.CommandLine;
 
 public class CLIHelpFactory implements CommandLine.IHelpFactory {
+    @NotNull
     @Override
     public CommandLine.Help create(
         @NotNull
