@@ -199,7 +199,7 @@ public class CubridUser extends GenericSchema
             if (!tableName.equals(lastTableName)) {
                 columnInfoMap.clear();
                 lastTableName = tableName;
-                
+
                 String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName);
                 sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -224,14 +224,8 @@ public class CubridUser extends GenericSchema
             return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, isForeignKey, dbResult);
         }
 
-        private static class ColumnExtraInfo {
-            String type;
-            String extra;
-            ColumnExtraInfo(String type, String extra) { 
-                this.type = type;
-                this.extra = extra;
-            }
-        }
+        private record ColumnExtraInfo(@Nullable String type, @Nullable String extra) {}
+
     }
 
     public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, CubridTableIndex, GenericTableIndexColumn>
