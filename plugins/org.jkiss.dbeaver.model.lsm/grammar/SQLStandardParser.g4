@@ -119,8 +119,9 @@ intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
 
 // column definition
-columnDefinition: columnName dataType anyWord* defaultClause? columnConstraintDefinition* anyWordWithAnyValue?;
+columnDefinition: columnName dataType typeModifier* defaultClause? columnConstraintDefinition* anyWordWithAnyValue?;
 columnName: identifier;
+typeModifier: actualIdentifier;
 
 // default
 defaultClause: DEFAULT valueExpression;

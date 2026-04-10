@@ -121,7 +121,7 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
             .orElse(null);
         String typeName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.dataType))
             .map(STMTreeNode::getTextContent).orElse(null);
-        for (STMTreeNode child : node.findChildrenOfName(STMKnownRuleNames.anyWord)) {
+        for (STMTreeNode child : node.findChildrenOfName(STMKnownRuleNames.typeModifier)) {
             if (typeName != null) {
                 typeName = typeName + " " + child.getTextContent();
             }

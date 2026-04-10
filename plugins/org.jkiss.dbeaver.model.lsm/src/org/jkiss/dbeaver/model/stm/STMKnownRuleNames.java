@@ -63,6 +63,7 @@ public class STMKnownRuleNames {
     // column definition
     public static final String columnDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnDefinition];
     public static final String columnName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnName];
+    public static final String typeModifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_typeModifier];
     public static final String columnIndex = SQLStandardParser.ruleNames[SQLStandardParser.RULE_columnIndex];
 
     // default
