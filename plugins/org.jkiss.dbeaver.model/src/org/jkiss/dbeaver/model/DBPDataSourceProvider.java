@@ -86,7 +86,7 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
         return am;
     }
 
-    default boolean providesDriverClasses() {
+    default boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return true;
     }
 
