@@ -25,7 +25,7 @@ import java.util.EnumSet;
 /**
  * BigQuery SQL dialect
  */
-public class BigQuerySQLDialect extends GenericSQLDialect {
+public class BQSQLDialect extends GenericSQLDialect {
 
     private static final String[] EXEC_KEYWORDS = {"CALL"};
 
@@ -39,7 +39,7 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
         {"REPEAT", SQLConstants.BLOCK_END + " REPEAT"}
     };
 
-    public BigQuerySQLDialect() {
+    public BQSQLDialect() {
         super("BigQuery", "google_bigquery");
     }
 
