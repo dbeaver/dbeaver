@@ -20,7 +20,7 @@
                 <!-- Simba JDBC driver -->
                 <driver
                         id="google_bigquery_jdbc_simba"
-                        label="Google BigQuery (Legacy)"
+                        label="Google BigQuery"
                         icon="icons/bigquery_icon.png"
                         iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
@@ -49,7 +49,7 @@
                 <!-- Google JDBC driver -->
                 <driver
                     id="google_bigquery_jdbc"
-                    label="Google BigQuery"
+                    label="Google BigQuery (Experimental)"
                     icon="icons/bigquery_icon.png"
                     iconBig="icons/bigquery_icon_big.png"
                     class="com.google.cloud.bigquery.jdbc.BigQueryDriver"
@@ -60,7 +60,8 @@
                     webURL="https://docs.cloud.google.com/bigquery/docs/jdbc-for-bigquery"
                     databaseDocumentationSuffixURL="Database-driver-BigQuery"
                     categories="sql,gcp"
-                    singleConnection="true">
+                    singleConnection="true"
+                    propagateDriverProperties="true">
                     <file type="jar" path="maven:/com.google.cloud:google-cloud-bigquery-jdbc:RELEASE[0.6.0]" bundle="!drivers.google-bigquery"/>
 
                     <file type="jar" path="drivers/google-bigquery" bundle="drivers.google-bigquery"/>
