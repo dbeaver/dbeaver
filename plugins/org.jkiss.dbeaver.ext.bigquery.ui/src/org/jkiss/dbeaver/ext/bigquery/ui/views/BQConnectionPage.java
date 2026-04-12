@@ -40,9 +40,9 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Locale;
 
 /**
- * BigQueryConnectionPage
+ * BQConnectionPage
  */
-public class BigQueryConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
+public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Text projectText;
     private Text extraProjectsText;
@@ -53,7 +53,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
     private static final ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
 
-    public BigQueryConnectionPage() {
+    public BQConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
     }
 
@@ -104,8 +104,9 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             UIUtils.setDefaultTextControlWidthHint(hostText);
 
             portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BQConstants.DEFAULT_PORT));
-            GridData gd = (GridData) portText.getLayoutData();
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
+            portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
