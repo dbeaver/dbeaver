@@ -243,9 +243,7 @@ public final class AIUtils {
             return;
         }
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) {
-            settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
-        } else if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
+        if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
             settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
         } else {
             settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
@@ -350,7 +348,9 @@ public final class AIUtils {
                 return true;
             }
             case CUSTOM -> {
-                return context.getCustomSchemas().contains(schema);
+                List<DBSObject> customEntities = context.getCustomEntities();
+                return context.getCustomSchemas().contains(schema) ||
+                    (customEntities != null && customEntities.contains(schema.getParentObject()));
             }
             default -> {
                 return false;
