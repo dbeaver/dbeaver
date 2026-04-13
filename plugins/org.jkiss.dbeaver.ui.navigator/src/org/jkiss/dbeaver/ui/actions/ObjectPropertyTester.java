@@ -257,7 +257,7 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
                     if (filter != null) {
-                        UIServiceFilterConfig service = DBWorkbench.getService(UIServiceFilterConfig.class);
+                        UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
                         boolean isUserChangeable = service == null || service.isUserChangeable(filter);
                         if ("defined".equals(expectedValue)) {
                             return isUserChangeable && !filter.isEmpty();
