@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ class DriverDependenciesTree {
         filesTree = new Tree(parent, SWT.BORDER | SWT.FULL_SELECTION);
         filesTree.setHeaderVisible(true);
         final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumHeight = filesTree.getHeaderHeight() + filesTree.getItemHeight() * 3;
+        gd.heightHint = 4 * UIUtils.getFontHeight(filesTree);
         filesTree.setLayoutData(gd);
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
@@ -245,12 +245,7 @@ class DriverDependenciesTree {
             return;
         }
         Shell shell = filesTree.getShell();
-        Point curSize = shell.getSize();
-        int itemHeight = filesTree.getItemHeight();
-        shell.setSize(curSize.x, Math.min(
-            (int)(UIUtils.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
-            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight * 2);
-        shell.layout();
+        UIUtils.resizeShell(shell);
     }
 
     private boolean addDependencies(TreeItem parent, DBPDriverDependencies.DependencyNode node) {

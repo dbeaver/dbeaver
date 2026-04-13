@@ -100,8 +100,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         expander.addExpansionListener(new ExpansionAdapter() {
             public void expansionStateChanged(ExpansionEvent e) {
+                setTreeSizes(depsTree.getTree());
                 parent.getShell().pack(true);
                 UIUtils.resizeShell(parent.getShell());
+                UIUtils.centerShell(UIUtils.getActiveWorkbenchShell(), parent.getShell());
             }
         });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
@@ -239,9 +241,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
             };
 
-            GridData treeGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-            treeGridData.widthHint = 600;
-            depsTree.getTree().setLayoutData(treeGridData);
+            setTreeSizes(depsTree.getTree());
 
             Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
             infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -271,6 +271,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         createLinksPanel(composite);
         return composite;
+    }
+
+    private static void setTreeSizes(Tree tree) {
+        int maxHeight = tree.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        GridData treeGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+        treeGridData.widthHint = 600;
+        treeGridData.heightHint = Math.min(300, maxHeight);
+        tree.setLayoutData(treeGridData);
     }
 
 
