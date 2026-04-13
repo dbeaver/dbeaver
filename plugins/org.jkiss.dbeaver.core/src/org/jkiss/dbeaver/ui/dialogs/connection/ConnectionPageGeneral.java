@@ -132,7 +132,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void setNavigatorSettings(DBNBrowseSettings settings) {
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings settings) {
         this.navigatorSettings = settings;
 
         if (showVirtualModelCheck != null) {
@@ -147,10 +147,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     @Override
     public void activatePage() {
-        if (this.navigatorSettings == null) {
-            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
-        }
-
         if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
 
@@ -175,7 +171,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
-                updateNavigatorSettingsPreset(navigatorSettingsCombo, dataSourceDescriptor.getNavigatorSettings());
 
                 folderSelector.setFolder(dataSourceDescriptor.getFolder());
 
@@ -190,11 +185,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         } else {
             // Default settings
             setConnectionType(connectionTypeCombo, DBPConnectionType.getDefaultConnectionType());
-            updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
             folderSelector.setFolder(curDataSourceFolder);
 
             readOnlyConnection.setSelection(false);
         }
+        updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
 
         long features = getWizard().getSelectedDriver().getDataSourceProvider().getFeatures();
         boolean isFeatureCatalogOnlyNeedToApply = (features & DBPDataSourceProvider.FEATURE_CATALOGS_ONLY) != 0;
@@ -285,7 +280,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Override
     public void createControl(Composite parent) {
         if (navigatorSettings == null) {
-            navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
+            DBNBrowseSettings settings = getWizard().getSelectedNavigatorSettings();
+            navigatorSettings = new DataSourceNavigatorSettings(settings.isUserSettings() ? settings.getOriginalSettings() : settings);
         }
 
         initializeDialogUnits(parent);
@@ -672,9 +668,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             dsDescriptor.setDescription(description);
         }
 
-        if (this.navigatorSettings == null) {
-            this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
-        }
         dsDescriptor.setNavigatorSettings(this.navigatorSettings);
 
         dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
