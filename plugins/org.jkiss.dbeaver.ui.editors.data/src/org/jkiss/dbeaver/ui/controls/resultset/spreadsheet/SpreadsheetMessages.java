@@ -24,6 +24,7 @@ public class SpreadsheetMessages extends NLS {
 
     public static String tooltip_column;
     public static String tooltip_description;
+    public static String tooltip_table;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, SpreadsheetMessages.class);

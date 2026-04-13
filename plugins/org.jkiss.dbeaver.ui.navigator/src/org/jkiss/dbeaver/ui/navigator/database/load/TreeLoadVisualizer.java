@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -45,8 +47,9 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         this.parent = parent;
     }
 
+    @NotNull
     @Override
-    public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
+    public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor) {
         return monitor;
     }
 
@@ -61,7 +64,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
     }
 
     @Override
-    public void completeLoading(Object[] children) {
+    public void completeLoading(@Nullable Object[] children) {
         final Control viewerControl = viewer.getControl();
         if (viewerControl.isDisposed()) {
             return;
