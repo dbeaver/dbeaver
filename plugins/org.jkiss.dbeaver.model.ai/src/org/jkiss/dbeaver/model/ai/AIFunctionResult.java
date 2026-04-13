@@ -22,10 +22,12 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
 public class AIFunctionResult {
 
+    @NotNull
     private final AIFunctionType type;
+    @NotNull
     private final Object value;
     @Nullable
-    private final DBRRunnableWithReturn<?> callback;
+    private final transient DBRRunnableWithReturn<?> callback;
 
     public AIFunctionResult(
         @NotNull AIFunctionType type,

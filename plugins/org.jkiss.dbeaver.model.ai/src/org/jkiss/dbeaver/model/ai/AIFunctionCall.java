@@ -15,26 +15,31 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * AI function call info
  */
 public class AIFunctionCall {
-    @Nullable
+
+    private static final Log log = Log.getLog(AIFunctionCall.class);
+
+    @NotNull
     private String functionName;
-    @Nullable
+    @NotNull
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
     @Nullable
-    private AIFunctionDescriptor function;
+    private transient AIFunctionDescriptor function;
 
     /**
      * Properties received from AI engine. Can be required to pass down for further messages
@@ -44,11 +49,13 @@ public class AIFunctionCall {
     private Map<String, String> messageMetadata;
 
     public AIFunctionCall() {
+        functionName = "";
+        arguments = Map.of();
     }
 
     public AIFunctionCall(
         @NotNull String functionName,
-        @Nullable Map<String, Object> arguments,
+        @NotNull Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
         this.functionName = functionName;
@@ -60,8 +67,11 @@ public class AIFunctionCall {
         this(functionName, arguments, null);
     }
 
-    @Nullable
+    @NotNull
     public String getFunctionName() {
+        if (function != null) {
+            return function.getFullId();
+        }
         return functionName;
     }
 
@@ -69,7 +79,7 @@ public class AIFunctionCall {
         this.functionName = functionName;
     }
 
-    @Nullable
+    @NotNull
     public Map<String, Object> getArguments() {
         return arguments;
     }
@@ -110,5 +120,45 @@ public class AIFunctionCall {
         return functionName + "(" + arguments + ")";
     }
 
+    @Nullable
+    public AIFunctionDescriptor getOrResolveFunction(@NotNull AIToolboxManager tbm) {
+        if (function == null) {
+            function = tbm.getFunctionByFullId(functionName);
+        }
+        return function;
+    }
 
+    public void transformArguments(
+        @Nullable AIDatabaseContext context,
+        @NotNull AIFunctionContext functionContext
+    ) {
+        // In headless apps (server apps) we do not call action functions directly
+        // We pass all parameters in the result
+        if (function != null) {
+            Map<String, Object> ta = new LinkedHashMap<>(arguments);
+            for (Map.Entry<String, Object> arg : arguments.entrySet()) {
+                String paramName = arg.getKey();
+                AIFunctionParameter parameter = function.getParameter(paramName);
+                if (parameter != null) {
+                    AIFunctionParameterTransformer transformer = parameter.getTransformer();
+                    if (transformer != null) {
+                        try {
+                            Object paramValue = arg.getValue();
+                            Object transformedValue = transformer.transformParameter(
+                                context,
+                                functionContext,
+                                function,
+                                parameter,
+                                paramValue
+                            );
+                            ta.put(paramName + "_" + parameter.getTransformerSuffix(), transformedValue);
+                        } catch (Exception e) {
+                            log.debug("Error transforming AI function parameter value", e);
+                        }
+                    }
+                }
+            }
+            this.arguments = ta;
+        }
+    }
 }

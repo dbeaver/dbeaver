@@ -274,7 +274,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
                 },
                 new ObjectsLoadVisualizer() {
                     @Override
-                    public void completeLoading(Collection<T> items) {
+                    public void completeLoading(@Nullable Collection<T> items) {
                         super.completeLoading(items);
                         performSearch(SearchType.NONE, false);
                         if (isSetFocusAfterLoad) {
@@ -319,12 +319,12 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             addColumnConfigAction(contributionManager);
         }
 
-        protected void addSearchAction(IContributionManager contributionManager) {
+        protected void addSearchAction(@NotNull IContributionManager contributionManager) {
             contributionManager.add(new Action("Filter objects", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
                 @Override
                 public void run() {
@@ -333,6 +333,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             });
         }
 
+        @Nullable
         @Override
         protected ISearchExecutor getSearchRunner() {
             return searcher;
