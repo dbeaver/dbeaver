@@ -39,10 +39,17 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="description" type="string">
+         <attribute name="aiDescription" type="string">
             <annotation>
                <documentation>
-                  Function description for AI assistant
+                  Detailed AI-facing function description used by the assistant to understand the function behavior and when to call it
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="userDescription" type="string">
+            <annotation>
+               <documentation>
+                  Optional shorter user-facing description shown in UI. If omitted, description is used
                </documentation>
             </annotation>
          </attribute>
