@@ -245,7 +245,10 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if (node.getParentNode() instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+                if (!(node instanceof DBNDatabaseFolder && node.getParentNode() instanceof DBNDataSource) && // Do not show filters for root folders
+                    node.getParentNode() instanceof DBNDatabaseNode dbNode &&
+                    dbNode.getItemsMeta() != null
+                ) {
                     return true;
                 }
                 break;
