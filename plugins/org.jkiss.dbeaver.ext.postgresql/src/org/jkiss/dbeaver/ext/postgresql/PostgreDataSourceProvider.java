@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -60,6 +61,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
         return connectionsProps;
     }
 
+    @DynamicCall
     public PostgreDataSourceProvider() {
         super(PostgreDataSource.class);
     }

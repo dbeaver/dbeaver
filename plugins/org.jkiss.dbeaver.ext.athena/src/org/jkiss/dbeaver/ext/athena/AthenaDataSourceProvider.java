@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.athena;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,6 +35,7 @@ import org.jkiss.utils.CommonUtils;
 
 public class AthenaDataSourceProvider extends GenericDataSourceProvider<AthenaDataSource> implements DBPInformationProvider {
 
+    @DynamicCall
     public AthenaDataSourceProvider() {
         super(AthenaDataSource.class);
     }

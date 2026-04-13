@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
 public class SQLiteDataSourceProvider extends GenericDataSourceProvider<SQLiteDataSource> {
 
+    @DynamicCall
     public SQLiteDataSourceProvider() {
         super(SQLiteDataSource.class);
     }

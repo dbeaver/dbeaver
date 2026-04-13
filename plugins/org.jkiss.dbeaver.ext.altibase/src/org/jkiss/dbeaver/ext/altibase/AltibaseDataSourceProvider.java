@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.altibase;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
 public class AltibaseDataSourceProvider extends GenericDataSourceProvider<AltibaseDataSource> {
+    @DynamicCall
     public AltibaseDataSourceProvider() {
         super(AltibaseDataSource.class);
     }

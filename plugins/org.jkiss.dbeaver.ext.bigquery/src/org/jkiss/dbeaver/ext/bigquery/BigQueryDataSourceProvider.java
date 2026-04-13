@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.bigquery;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
@@ -25,6 +26,7 @@ import org.jkiss.utils.CommonUtils;
 
 public class BigQueryDataSourceProvider extends GenericDataSourceProvider<BigQueryDataSource> {
 
+    @DynamicCall
     public BigQueryDataSourceProvider() {
         super(BigQueryDataSource.class);
     }

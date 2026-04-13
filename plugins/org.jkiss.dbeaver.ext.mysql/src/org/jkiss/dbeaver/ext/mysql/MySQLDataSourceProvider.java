@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -81,6 +82,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider<MySQLDataSou
         return connectionsProps;
     }
 
+    @DynamicCall
     public MySQLDataSourceProvider() {
         super(MySQLDataSource.class);
     }

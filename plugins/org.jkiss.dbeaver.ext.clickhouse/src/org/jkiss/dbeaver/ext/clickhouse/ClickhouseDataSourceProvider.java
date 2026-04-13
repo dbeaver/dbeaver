@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ClickhouseDataSourceProvider extends GenericDataSourceProvider<ClickhouseDataSource> {
 
+    @DynamicCall
     public ClickhouseDataSourceProvider() {
         super(ClickhouseDataSource.class);
     }
