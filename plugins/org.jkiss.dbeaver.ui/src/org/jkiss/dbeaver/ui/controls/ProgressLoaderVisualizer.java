@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -75,8 +76,9 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
         this.progressMessage = "Initializing";
     }
 
+    @NotNull
     @Override
-    public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
+    public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor) {
         DBRProgressMonitor progressMonitor = new ProxyProgressMonitor(monitor) {
             @Override
             public void subTask(@NotNull String name) {
@@ -104,7 +106,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
     }
 
     @Override
-    public void completeLoading(RESULT result) {
+    public void completeLoading(@Nullable RESULT result) {
         this.finished = true;
     }
 

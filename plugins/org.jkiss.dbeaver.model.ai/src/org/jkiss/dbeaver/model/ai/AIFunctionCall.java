@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -27,9 +30,11 @@ import java.util.Map;
  */
 public class AIFunctionCall {
 
+    private static final Log log = Log.getLog(AIFunctionCall.class);
+
     @NotNull
     private String functionName;
-    @Nullable
+    @NotNull
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
@@ -45,11 +50,12 @@ public class AIFunctionCall {
 
     public AIFunctionCall() {
         functionName = "";
+        arguments = Map.of();
     }
 
     public AIFunctionCall(
         @NotNull String functionName,
-        @Nullable Map<String, Object> arguments,
+        @NotNull Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
         this.functionName = functionName;
@@ -73,7 +79,7 @@ public class AIFunctionCall {
         this.functionName = functionName;
     }
 
-    @Nullable
+    @NotNull
     public Map<String, Object> getArguments() {
         return arguments;
     }
@@ -122,4 +128,37 @@ public class AIFunctionCall {
         return function;
     }
 
+    public void transformArguments(
+        @Nullable AIDatabaseContext context,
+        @NotNull AIFunctionContext functionContext
+    ) {
+        // In headless apps (server apps) we do not call action functions directly
+        // We pass all parameters in the result
+        if (function != null) {
+            Map<String, Object> ta = new LinkedHashMap<>(arguments);
+            for (Map.Entry<String, Object> arg : arguments.entrySet()) {
+                String paramName = arg.getKey();
+                AIFunctionParameter parameter = function.getParameter(paramName);
+                if (parameter != null) {
+                    AIFunctionParameterTransformer transformer = parameter.getTransformer();
+                    if (transformer != null) {
+                        try {
+                            Object paramValue = arg.getValue();
+                            Object transformedValue = transformer.transformParameter(
+                                context,
+                                functionContext,
+                                function,
+                                parameter,
+                                paramValue
+                            );
+                            ta.put(paramName + "_" + parameter.getTransformerSuffix(), transformedValue);
+                        } catch (Exception e) {
+                            log.debug("Error transforming AI function parameter value", e);
+                        }
+                    }
+                }
+            }
+            this.arguments = ta;
+        }
+    }
 }
