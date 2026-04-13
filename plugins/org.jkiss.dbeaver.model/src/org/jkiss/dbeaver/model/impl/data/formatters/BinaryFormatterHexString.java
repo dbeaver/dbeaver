@@ -48,8 +48,8 @@ public class BinaryFormatterHexString extends BinaryFormatterHex {
     @Override
     public byte[] toBytes(String string)
     {
-        if (string.startsWith(HEX_PREFIX) || string.endsWith(HEX_POSTFIX)) {
-            string = string.substring(HEX_PREFIX.length(), string.length() - HEX_PREFIX.length() - HEX_POSTFIX.length());
+        if (string.startsWith(HEX_PREFIX) && string.endsWith(HEX_POSTFIX)) {
+            string = string.substring(HEX_PREFIX.length(), string.length() - HEX_POSTFIX.length());
         }
         return super.toBytes(string);
     }
