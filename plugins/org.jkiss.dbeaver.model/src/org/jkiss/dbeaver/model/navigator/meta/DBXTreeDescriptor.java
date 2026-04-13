@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -28,7 +29,20 @@ public class DBXTreeDescriptor extends DBXTreeItem {
 
     private final boolean supportsEntityMerge;
 
-    public DBXTreeDescriptor(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, String path, String propertyName, boolean optional, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursiveLink) {
+    public DBXTreeDescriptor(
+        @NotNull AbstractDescriptor source,
+        @Nullable DBXTreeNode parent,
+        @Nullable IConfigurationElement config,
+        @NotNull String path,
+        @Nullable String propertyName,
+        boolean optional,
+        boolean navigable,
+        boolean inline,
+        boolean virtual,
+        boolean standalone,
+        @Nullable String visibleIf,
+        @Nullable String recursiveLink
+    ) {
         super(source, parent, config, path, propertyName, optional, navigable, inline, virtual, standalone, visibleIf, recursiveLink);
 
         this.supportsEntityMerge = config != null && CommonUtils.toBoolean(config.getAttribute("supportsEntityMerge"));

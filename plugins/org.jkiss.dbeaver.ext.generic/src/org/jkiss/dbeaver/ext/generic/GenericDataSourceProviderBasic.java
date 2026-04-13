@@ -14,34 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.clickhouse;
+package org.jkiss.dbeaver.ext.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.ext.generic.GenericMetaModelRegistry;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class ClickhouseDataSourceProvider extends GenericDataSourceProvider<ClickhouseDataSource> {
+public class GenericDataSourceProviderBasic extends GenericDataSourceProvider<GenericDataSource> {
 
-    public ClickhouseDataSourceProvider() {
-        super(ClickhouseDataSource.class);
-    }
-
-    protected ClickhouseDataSourceProvider(@NotNull Class<?extends ClickhouseDataSource> dsClass) {
-        super(dsClass);
+    public GenericDataSourceProviderBasic() {
+        super(GenericDataSource.class);
     }
 
     @NotNull
     @Override
-    public ClickhouseDataSource openDataSource(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBPDataSourceContainer container)
-            throws DBException {
-        GenericMetaModel metaModel = GenericMetaModelRegistry.getInstance().getMetaModel(container);
-        return new ClickhouseDataSource(monitor, container, metaModel);
+    public GenericDataSource openDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container)
+        throws DBException {
+        GenericMetaModel metaModelInstance = GenericMetaModelRegistry.getInstance().getMetaModel(container);
+        return metaModelInstance.createDataSourceImpl(monitor, container);
     }
+
 }

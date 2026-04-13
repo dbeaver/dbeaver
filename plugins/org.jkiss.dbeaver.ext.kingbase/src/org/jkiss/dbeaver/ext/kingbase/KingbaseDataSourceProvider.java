@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceURLProvider;
 import org.jkiss.dbeaver.model.DatabaseURL;
@@ -30,21 +30,14 @@ import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class KingbaseDataSourceProvider extends JDBCDataSourceProvider {
-    private static Map<String, String> connectionsProps;
-
+public class KingbaseDataSourceProvider extends PostgreDataSourceProvider {
     static {
-        connectionsProps = new HashMap<>();
 
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (preferenceStore != null) {
@@ -53,8 +46,8 @@ public class KingbaseDataSourceProvider extends JDBCDataSourceProvider {
         }
     }
 
-    public static Map<String, String> getConnectionsProps() {
-        return connectionsProps;
+    public KingbaseDataSourceProvider() {
+        super(KingbaseDataSource.class);
     }
 
     @Override
@@ -97,7 +90,7 @@ public class KingbaseDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+    public KingbaseDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new KingbaseDataSource(monitor, container);
     }
     
