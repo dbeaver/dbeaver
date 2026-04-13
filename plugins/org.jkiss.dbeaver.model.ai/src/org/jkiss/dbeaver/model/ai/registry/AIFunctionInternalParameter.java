@@ -19,14 +19,32 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
+import org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
-public class AIFunctionInternalParameter implements AIFunctionParameter {
+public class AIFunctionInternalParameter extends AbstractDescriptor implements AIFunctionParameter{
+    private final static Log log = Log.getLog(AIFunctionInternalParameter.class);
+
     private final IConfigurationElement config;
+    private String targetSuffix;
+    private AIFunctionParameterTransformer transformer;
 
     public AIFunctionInternalParameter(@NotNull IConfigurationElement config) {
+        super(config);
         this.config = config;
+        String transformerClass = this.config.getAttribute("transformer");
+        if (!CommonUtils.isEmpty(transformerClass)) {
+            try {
+                transformer = new ObjectType(transformerClass).createInstance(AIFunctionParameterTransformer.class);
+                targetSuffix = this.config.getAttribute("targetSuffix");
+            } catch (DBException e) {
+                log.error("Error creating transformer");
+            }
+        }
     }
 
     @Override
@@ -63,5 +81,17 @@ public class AIFunctionInternalParameter implements AIFunctionParameter {
     public String[] getValidValues() {
         String validValues = config.getAttribute("validValues");
         return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
+    }
+
+    @Nullable
+    @Override
+    public AIFunctionParameterTransformer getTransformer() {
+        return transformer;
+    }
+
+    @Nullable
+    @Override
+    public String getTransformerSuffix() {
+        return targetSuffix;
     }
 }
