@@ -30,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -62,9 +63,9 @@ public class DBXTreeItem extends DBXTreeNode {
     public DBXTreeItem(
         @NotNull AbstractDescriptor source,
         @Nullable DBXTreeNode parent,
-        @NotNull IConfigurationElement config,
+        @Nullable IConfigurationElement config,
         @NotNull String path,
-        @NotNull String propertyName,
+        @Nullable String propertyName,
         boolean optional,
         boolean navigable,
         boolean inline,
@@ -74,13 +75,13 @@ public class DBXTreeItem extends DBXTreeNode {
         @Nullable String recursiveLink)
     {
         super(source, parent, config, navigable, inline, virtual, standalone, visibleIf, recursiveLink);
-        this.label = parent == null ? ModelMessages.model_navigator_Connection : config.getAttribute("label");
-        this.itemLabel = parent == null ? ModelMessages.model_navigator_Connection : config.getAttribute("itemLabel");
+        this.label = parent == null || config == null ? ModelMessages.model_navigator_Connection : config.getAttribute("label");
+        this.itemLabel = parent == null || config == null ? ModelMessages.model_navigator_Connection : config.getAttribute("itemLabel");
         if (itemLabel == null) {
             itemLabel = label;
         }
         if (CommonUtils.isEmpty(path)) {
-            log.error("Path is not specified for the item: " + config + " " + config.getAttribute("label"));
+            log.error("Path is not specified for the item: " + config);
         }
         this.path = path;
         this.propertyName = propertyName;
@@ -140,10 +141,7 @@ public class DBXTreeItem extends DBXTreeNode {
     @Nullable
     private String getNodeTerm(@Nullable DBPDataSource dataSource, @NotNull String termId, boolean multiple) {
         if (termId.startsWith("#") && dataSource instanceof DBPTermProvider termProvider) {
-            String term = termProvider.getObjectTypeTerm(getPath(), termId.substring(1), multiple);
-            if (term != null) {
-                return term;
-            }
+            return termProvider.getObjectTypeTerm(getPath(), termId.substring(1), multiple);
         }
         return null;
     }
@@ -172,6 +170,20 @@ public class DBXTreeItem extends DBXTreeNode {
                 if (subItem != null) {
                     return subItem;
                 }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public synchronized Class<?> getPropertyOrCollectionItemType(@NotNull Class<?> ownerOjectClass) {
+        Method readMethod = getPropertyReadMethod(ownerOjectClass);
+        if (readMethod != null) {
+            Type propType = readMethod.getGenericReturnType();
+            if (BeanUtils.isCollectionType(propType)) {
+                return BeanUtils.getCollectionType(propType);
+            } else if (propType instanceof Class<?> clazz) {
+                return clazz;
             }
         }
         return null;
@@ -214,7 +226,13 @@ public class DBXTreeItem extends DBXTreeNode {
                 }
             }
         }
-        return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
+        if (clazz != Object.class) {
+            Class<?> superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                return findPropertyGetter(superclass, getName, isName);
+            }
+        }
+        return null;
     }
 
     @Override

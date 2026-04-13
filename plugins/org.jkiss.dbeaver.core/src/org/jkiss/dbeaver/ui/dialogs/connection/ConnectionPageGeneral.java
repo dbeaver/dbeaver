@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -696,9 +696,19 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         @NotNull DBPDataSourceContainer dataSourceDescriptor,
         @NotNull Class<? extends DBSObject> baseType
     ) {
-        DBXTreeDescriptor treeDescriptor = dataSourceDescriptor.getDriver().getProviderDescriptor().getTreeDescriptor();
+        DBPDriver driver = dataSourceDescriptor.getDriver();
+        Class<?> dataSourceClass = driver.getDataSourceProvider().getDataSourceClass();
+        DBXTreeDescriptor treeDescriptor = driver.getProviderDescriptor().getTreeDescriptor();
         if (treeDescriptor != null) {
-            List<DBXTreeNode> children = treeDescriptor.getChildren(null);
+            Class<?> type = DBXTreeDescriptor.findImplementorTypeInDataSourceTree(
+                treeDescriptor,
+                dataSourceClass,
+                baseType,
+                null
+            );
+            if (type != null) {
+                return type;
+            }
         }
 
         return baseType;
