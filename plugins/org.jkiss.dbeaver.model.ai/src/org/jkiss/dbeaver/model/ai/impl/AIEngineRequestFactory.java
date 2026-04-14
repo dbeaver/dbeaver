@@ -46,7 +46,6 @@ public class AIEngineRequestFactory {
     // Reserved tokens for overhead (API limits, formatting, metadata, etc.)
     private static final int OVERHEAD_TOKEN_RESERVE = 100;
 
-    private final AIDatabaseSnapshotService databaseSnapshotService;
     private final TokenCounter tokenCounter;
 
     protected record RequestFunctions(
@@ -58,11 +57,7 @@ public class AIEngineRequestFactory {
         }
     }
 
-    public AIEngineRequestFactory(
-        @NotNull AIDatabaseSnapshotService databaseSnapshotService,
-        @NotNull TokenCounter tokenCounter
-    ) {
-        this.databaseSnapshotService = databaseSnapshotService;
+    public AIEngineRequestFactory(@NotNull TokenCounter tokenCounter) {
         this.tokenCounter = tokenCounter;
     }
 
@@ -108,19 +103,21 @@ public class AIEngineRequestFactory {
         String dbSnapshot = "";
         boolean isContextTruncated = false;
 
-        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
-            // Build DB snapshot in first prompt if engine doesn't support functions
-            // (functions provide smart context read)
-            if (databaseContext != null && dbSnapshotTokenBudget > 0) {
-                AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
-                    monitor,
-                    databaseContext,
-                    dbSnapshotTokenBudget
-                );
-                if (dbSnapshotBuilder != null) {
-                    dbSnapshot = dbSnapshotBuilder.toString();
-                    isContextTruncated = dbSnapshotBuilder.isTruncated();
-                }
+        // Build full DB snapshot (t) in first prompt if engine doesn't support functions
+        // (functions provide smart context read)
+        if (databaseContext != null && dbSnapshotTokenBudget > 0) {
+            AIDatabaseSnapshotService databaseSnapshotService = new AIDatabaseSnapshotService();
+
+            boolean functionsEnabled = isFunctionsEnabled(assistant, engineDescriptor);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
+                monitor,
+                databaseContext,
+                functionsEnabled,
+                dbSnapshotTokenBudget
+            );
+            if (dbSnapshotBuilder != null) {
+                dbSnapshot = dbSnapshotBuilder.build();
+                isContextTruncated = dbSnapshotBuilder.isTruncated();
             }
         }
 
