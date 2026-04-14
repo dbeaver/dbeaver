@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ext.gbase8s;
+package org.jkiss.dbeaver.ext.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sDataSource;
-import org.jkiss.dbeaver.ext.gbase8s.model.meta.GBase8sMetaModel;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * @author Chao Tian
- */
-public class GBase8sDataSourceProvider extends GenericDataSourceProvider<GBase8sDataSource> {
-    public GBase8sDataSourceProvider() {
-        super(GBase8sDataSource.class);
+public class GenericDataSourceProviderBasic extends GenericDataSourceProvider<GenericDataSource> {
+
+    public GenericDataSourceProviderBasic() {
+        super(GenericDataSource.class);
     }
 
     @NotNull
     @Override
-    public GBase8sDataSource openDataSource(
+    public GenericDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container
-    ) throws DBException {
-        return new GBase8sDataSource(monitor, container, new GBase8sMetaModel());
+        @NotNull DBPDataSourceContainer container)
+        throws DBException {
+        GenericMetaModel metaModelInstance = GenericMetaModelRegistry.getInstance().getMetaModel(container);
+        return metaModelInstance.createDataSourceImpl(monitor, container);
     }
+
 }
