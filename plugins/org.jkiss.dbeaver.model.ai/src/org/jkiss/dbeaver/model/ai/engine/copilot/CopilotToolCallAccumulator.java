@@ -14,32 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
+package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIUsage;
 
-import java.util.List;
-
-public record CopilotChatChunk(
+public class CopilotToolCallAccumulator {
+    @Nullable
+    private String id;
+    @Nullable
+    private String name;
     @NotNull
-    List<CopilotChunkChoice> choices,
-    @Nullable
-    CopilotUsage usage
-) {
+    private final StringBuilder arguments = new StringBuilder();
 
     @Nullable
-    public AIUsage getAIUsage() {
-        if (usage == null) {
-            return null;
-        }
+    public String id() {
+        return id;
+    }
 
-        return new AIUsage(
-            usage.promptTokens(),
-            usage.promptTokensDetails() != null ? usage.promptTokensDetails().cachedTokens() : 0,
-            usage.completionTokens(),
-            usage.reasoningTokens()
-        );
+    public void setId(@Nullable String id) {
+        this.id = id;
+    }
+
+    @Nullable
+    public String name() {
+        return name;
+    }
+
+    public void setName(@Nullable String name) {
+        this.name = name;
+    }
+
+    public void appendArguments(@NotNull String argumentsPart) {
+        arguments.append(argumentsPart);
+    }
+
+    @NotNull
+    public String arguments() {
+        return arguments.toString();
     }
 }
