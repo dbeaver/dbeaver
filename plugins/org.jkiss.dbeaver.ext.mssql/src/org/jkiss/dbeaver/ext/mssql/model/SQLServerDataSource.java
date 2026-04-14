@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.TableFunction;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -639,6 +640,15 @@ public class SQLServerDataSource
     @Override
     public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
         try {
+            Statement statement = SQLSemanticProcessor.parseQuery(this.sqlDialect, sqlQuery.getText());
+            if (statement instanceof PlainSelect plainSelect
+                && plainSelect.getFromItem() instanceof TableFunction) {
+                // Force TOP injection for TVF queries.
+                // SET ROWCOUNT (used by setMaxRows fallback) is a session-level setting that
+                // also limits DML inside multi-statement TVFs, causing the function to return
+                // fewer rows than expected before the outer WHERE/ORDER BY is applied.
+                return true;
+            }
             SQLServerTableBase table = SQLServerUtils.getTableFromQuery(session, sqlQuery, this);
             return table != null && table.isClustered(session.getProgressMonitor());
         } catch (DBException | SQLException e) {
