@@ -145,9 +145,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
     private DriverDescriptor replacedBy;
-    private String nonAvailabilityTitle;
-    private String nonAvailabilityDescription;
-    private String nonAvailabilityReason;
+    private DBPDriverStub stub;
 
     private final Map<String, Object> defaultParameters = new HashMap<>();
     private final Map<String, Object> customParameters = new HashMap<>();
@@ -283,9 +281,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.supportedPageFields.addAll(copyFrom.supportedPageFields);
         this.supportsDistributedMode = copyFrom.supportsDistributedMode;
         this.notAvailableDriver = copyFrom.notAvailableDriver;
-        this.nonAvailabilityTitle = copyFrom.nonAvailabilityTitle;
-        this.nonAvailabilityDescription = copyFrom.nonAvailabilityDescription;
-        this.nonAvailabilityReason = copyFrom.nonAvailabilityReason;
+        this.stub = copyFrom.stub;
     }
 
     // Predefined driver constructor
@@ -464,9 +460,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         {
             IConfigurationElement[] notAvailable = config.getChildren(RegistryConstants.ATTR_NOT_AVAILABLE_DRIVER);
             for (IConfigurationElement element : notAvailable) {
-                this.nonAvailabilityReason = element.getAttribute(RegistryConstants.ATTR_MESSAGE);
-                this.nonAvailabilityTitle = element.getAttribute(RegistryConstants.ATTR_TITLE);
-                this.nonAvailabilityDescription = element.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+                this.stub = new DBPDriverStub(
+                    element.getAttribute(RegistryConstants.ATTR_MESSAGE),
+                    element.getAttribute(RegistryConstants.ATTR_TITLE),
+                    element.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
             }
         }
     }
@@ -492,27 +489,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return replacedBy;
     }
 
-    @Override
-    public boolean isNotAvailable() {
-        return nonAvailabilityReason != null;
-    }
-
-    @NotNull
-    @Override
-    public String getNonAvailabilityReason() {
-        return nonAvailabilityReason;
-    }
-
     @Nullable
     @Override
-    public String getNonAvailabilityTitle() {
-        return nonAvailabilityTitle;
-    }
-
-    @Nullable
-    @Override
-    public String getNonAvailabilityDescription() {
-        return nonAvailabilityDescription;
+    public DBPDriverStub getDriverStub() {
+        return stub;
     }
 
     public void setReplacedBy(DriverDescriptor replaceBy) {
@@ -556,16 +536,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public DBPDataSourceProvider getDataSourceProvider() {
+    public DBPDataSourceProvider<?> getDataSourceProvider() {
         return providerDescriptor.getInstance(this);
     }
 
     @Nullable
     @Override
     public DBPNativeClientLocationManager getNativeClientManager() {
-        DBPDataSourceProvider provider = getDataSourceProvider();
-        if (provider instanceof DBPNativeClientLocationManager) {
-            return (DBPNativeClientLocationManager) provider;
+        DBPDataSourceProvider<?> provider = getDataSourceProvider();
+        if (provider instanceof DBPNativeClientLocationManager clientManager) {
+            return clientManager;
         } else {
             return null;
         }
@@ -909,6 +889,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public boolean isTemporary() {
         return temporary || providerDescriptor.isTemporary();
+    }
+
+    @Override
+    public boolean isCommercial() {
+        return false;
     }
 
     public void setTemporary(boolean temporary) {

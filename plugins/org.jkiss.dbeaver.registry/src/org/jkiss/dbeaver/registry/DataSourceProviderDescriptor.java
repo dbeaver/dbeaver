@@ -71,7 +71,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final String description;
     private final boolean temporary;
     private DBPImage icon;
-    private DBPDataSourceProvider instance;
+    private DBPDataSourceProvider<?> instance;
     private DBXTreeDescriptor treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManageable;
@@ -307,7 +307,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public DBPDataSourceProvider getInstance(@NotNull DriverDescriptor driver) {
+    public DBPDataSourceProvider<?> getInstance(@NotNull DriverDescriptor driver) {
         if (instance == null) {
             initProviderBundle(driver);
             try {

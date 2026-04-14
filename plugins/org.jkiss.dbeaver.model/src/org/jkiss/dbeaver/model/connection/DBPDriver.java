@@ -43,7 +43,7 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
      * Driver contributor
      */
     @NotNull
-    DBPDataSourceProvider getDataSourceProvider();
+    DBPDataSourceProvider<?> getDataSourceProvider();
 
     @NotNull
     DBPDataSourceProviderDescriptor getProviderDescriptor();
@@ -138,21 +138,16 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
     boolean isCustom();
     // Temporary driver: used for automatically created drivers when connection  configuration is broken
     boolean isTemporary();
+    // Commercial driver provided by third party vendor
+    boolean isCommercial();
 
     boolean isDisabled();
     @Nullable
     DBPDriver getReplacedBy();
 
-    boolean isNotAvailable();
-
+    // Driver stub. If not null then this driver instance cannot be created
     @Nullable
-    String getNonAvailabilityTitle();
-
-    @Nullable
-    String getNonAvailabilityDescription();
-
-    @Nullable
-    String getNonAvailabilityReason();
+    DBPDriverStub getDriverStub();
 
     /**
      * @return a pair of providerId and driverId for each of driver replacement
