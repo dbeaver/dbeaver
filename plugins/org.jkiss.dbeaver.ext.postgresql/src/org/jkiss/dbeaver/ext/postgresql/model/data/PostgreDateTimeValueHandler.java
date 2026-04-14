@@ -85,6 +85,15 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
                 try {
                     return jdbc.getObject(index + 1, OffsetTime.class);
                 } catch (SQLException e) {
+                    try {
+                        String rawString = jdbc.getString(index + 1);
+                        // PostgreSQL accepts 24:00:00 for TIME, but java.sql.Time can't display it distinctly from 00:00:00.
+                        if (PostgreConstants.TIME_END_OF_DAY.equals(rawString)) {
+                            return PostgreConstants.TIME_END_OF_DAY;
+                        }
+                    } catch (SQLException e1) {
+                        log.debug("Exception caught when reading PostgreSQL time value as string", e1);
+                    }
                     log.debug("Exception caught when fetching time value", e);
                 }
             }

@@ -120,6 +120,7 @@ public class PostgreConstants {
     public static final String TYPE_TIMESTAMP = "timestamp";
     public static final String TYPE_TIMETZ = "timetz";
     public static final String TYPE_TIMESTAMPTZ = "timestamptz";
+    public static final String TIME_END_OF_DAY = "24:00:00";
     public static final String TYPE_XML = "xml";
     public static final String TYPE_BOOLEAN = "boolean";
     public static final String TYPE_BYTEA = "bytea";
