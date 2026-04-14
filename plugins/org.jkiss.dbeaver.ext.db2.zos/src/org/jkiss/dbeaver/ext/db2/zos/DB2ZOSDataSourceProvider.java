@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.zos;
 
+import org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
-public class DB2ZOSDataSourceProvider extends GenericDataSourceProvider {
+public class DB2ZOSDataSourceProvider extends GenericDataSourceProvider<DB2ZOSDataSource> {
 
-    public DB2ZOSDataSourceProvider()
-    {
+    public DB2ZOSDataSourceProvider() {
+        super(DB2ZOSDataSource.class);
     }
 
 }
