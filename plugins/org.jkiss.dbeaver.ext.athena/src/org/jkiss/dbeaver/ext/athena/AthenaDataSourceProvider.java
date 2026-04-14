@@ -16,45 +16,36 @@
  */
 package org.jkiss.dbeaver.ext.athena;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.model.AthenaDataSource;
 import org.jkiss.dbeaver.ext.athena.model.AthenaMetaModel;
 import org.jkiss.dbeaver.ext.athena.model.AthenaUtils;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPInformationProvider;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class AthenaDataSourceProvider extends GenericDataSourceProvider implements DBPInformationProvider {
+public class AthenaDataSourceProvider extends GenericDataSourceProvider<AthenaDataSource> implements DBPInformationProvider {
 
-    private static final Log log = Log.getLog(AthenaDataSourceProvider.class);
-
-    public AthenaDataSourceProvider()
-    {
-    }
-
-    @Override
-    public void init(@NotNull DBPPlatform platform) {
-
+    @DynamicCall
+    public AthenaDataSourceProvider() {
+        super(AthenaDataSource.class);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public AthenaDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container)
-        throws DBException
-    {
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         return new AthenaDataSource(monitor, container, new AthenaMetaModel());
     }
 

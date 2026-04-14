@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +22,8 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSession;
 import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionManager;
@@ -56,19 +57,20 @@ public class ExasolServerSessionEditor extends AbstractSessionEditor {
         super.createEditorControl(parent);
     }
 
+    @NotNull
     @SuppressWarnings("rawtypes")
 	@Override
-    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+    protected SessionManagerViewer<?> createSessionViewer(@NotNull DBCExecutionContext executionContext, @NotNull Composite parent) {
         return new SessionManagerViewer<ExasolServerSession>(this, parent, new ExasolServerSessionManager((ExasolDataSource) executionContext.getDataSource())) {
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager) {
+            protected void contributeToToolbar(@NotNull DBAServerSessionManager<?> sessionManager, @NotNull IContributionManager contributionManager) {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(terminateQueryAction);
                 contributionManager.add(new Separator());
             }
 
             @Override
-            protected void onSessionSelect(DBAServerSession session) {
+            protected void onSessionSelect(@Nullable DBAServerSession session) {
                 super.onSessionSelect(session);
                 killSessionAction.setEnabled(session != null);
                 terminateQueryAction.setEnabled(session != null && !CommonUtils.isEmpty(session.getActiveQuery()));
