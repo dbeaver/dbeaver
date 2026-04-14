@@ -144,7 +144,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
                 tool.name = fd.getFullId();
-                tool.description = fd.getDescription();
+                tool.description = fd.getAiDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
                 for (AIFunctionParameter param : fd.getParameters()) {

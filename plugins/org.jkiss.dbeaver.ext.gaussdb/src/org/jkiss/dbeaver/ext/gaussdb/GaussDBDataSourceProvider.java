@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceURLProvider;
 import org.jkiss.dbeaver.model.DatabaseURL;
@@ -39,16 +38,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
-
-    private static Map<String, String> connectionsProps;
+public class GaussDBDataSourceProvider extends JDBCDataSourceProvider<GaussDBDataSource> {
 
     static {
-        connectionsProps = new HashMap<>();
-
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (preferenceStore != null) {
             PrefUtils.setDefaultPreferenceValue(preferenceStore, PostgreConstants.PROP_DD_PLAIN_STRING, false);
@@ -56,8 +48,8 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
         }
     }
 
-    public static Map<String, String> getConnectionsProps() {
-        return connectionsProps;
+    public GaussDBDataSourceProvider() {
+        super(GaussDBDataSource.class);
     }
 
     @Override
@@ -67,7 +59,7 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+    public GaussDBDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new GaussDBDataSource(monitor, container);
     }
 
