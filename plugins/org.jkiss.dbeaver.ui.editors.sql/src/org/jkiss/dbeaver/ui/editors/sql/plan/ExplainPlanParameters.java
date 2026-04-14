@@ -14,33 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.ui.editors.sql.plan;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
- * Generates AI prompts.
+ * ExplainPlanParameters for actions
  */
-public interface AIPromptGenerator {
-
-    @NotNull
-    String generatorId();
-
-    @NotNull
-    String build(@NotNull AIAssistant assistant, @Nullable AIDatabaseContext context);
-
-    /**
-     * Prompt features may be used by AI functions to provide more precise results
-     */
-    default boolean hasFeature(@NotNull String feature) {
-        return false;
-    }
-
-    @NotNull
-    default AIDatabaseContext.Builder configureDatabaseContext(@NotNull AIDatabaseContext.Builder contextBuilder) {
-        return contextBuilder;
-    }
+public record ExplainPlanParameters(
+    @NotNull SQLEditor editor,
+    @NotNull DBPDataSource dataSource,
+    @NotNull SQLQuery query,
+    @NotNull DBCPlan plan
+) {
 
 }
