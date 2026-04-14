@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithParam;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -59,6 +60,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanActionDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -69,7 +71,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * ResultSetViewer
@@ -86,7 +90,14 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         public PlanViewInfo(SQLPlanViewDescriptor descriptor) {
             this.descriptor = descriptor;
         }
-    };
+    }
+    private static class PlanActionInfo {
+        private final SQLPlanActionDescriptor action;
+
+        public PlanActionInfo(@NotNull SQLPlanActionDescriptor action) {
+            this.action = action;
+        }
+    }
 
 
     private final IWorkbenchPart workbenchPart;
@@ -126,13 +137,13 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
             tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
             ((GridLayout)tabViewFolder.getLayout()).marginTop = 20;
             tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            SQLPlanViewRegistry instance = SQLPlanViewRegistry.getInstance();
             DBPDataSource currentDataSource = null;
             if (this.contextProvider.getExecutionContext() != null) {
                 currentDataSource = this.contextProvider.getExecutionContext().getDataSource();
             }
 
-            for (SQLPlanViewDescriptor viewDesc : instance.getPlanViewDescriptors()) {
+            SQLPlanViewRegistry registry = SQLPlanViewRegistry.getInstance();
+            for (SQLPlanViewDescriptor viewDesc : registry.getPlanViewDescriptors()) {
                 if (viewDesc.isDataSourceSpecific() && !viewDesc.supportedBy(currentDataSource)) {
                     continue;
                 }
@@ -147,10 +158,56 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
                 treeViewButton.setData(new PlanViewInfo(viewDesc));
                 treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             }
+            List<SQLPlanActionDescriptor> actionDescriptors = registry.getActionDescriptors();
+            if (!actionDescriptors.isEmpty()) {
+//                UIUtils.createEmptyLabel(tabViewFolder, 1, 1)
+//                    .setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+                for (SQLPlanActionDescriptor actionDescriptor : actionDescriptors) {
+                    VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT | SWT.PUSH);
+                    treeViewButton.setText(actionDescriptor.getLabel());
+                    if (!CommonUtils.isEmpty(actionDescriptor.getDescription())) {
+                        treeViewButton.setToolTipText(actionDescriptor.getDescription());
+                        if (actionDescriptor.getIcon() != null) {
+                            treeViewButton.setImage(DBeaverIcons.getImage(actionDescriptor.getIcon()));
+                        }
+                    }
+                    treeViewButton.setData(new PlanActionInfo(actionDescriptor));
+                    treeViewButton.setAction(new Action(actionDescriptor.getLabel()) {
+                        @Override
+                        public void run() {
+                            try {
+                                if (lastPlan != null
+                                    && contextProvider.getExecutionContext() != null
+                                    && workbenchPart instanceof SQLEditor editor
+                                ) {
+                                    DBRRunnableWithParam<ExplainPlanParameters> runnable = actionDescriptor.createInstance();
+                                    ExplainPlanParameters params = new ExplainPlanParameters(
+                                        editor,
+                                        contextProvider.getExecutionContext().getDataSource(),
+                                        getQuery(),
+                                        lastPlan
+                                    );
+                                    runnable.run(params);
+                                }
+                            } catch (Exception e) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    SQLEditorMessages.editors_sql_error_execution_plan_title,
+                                    null,
+                                    e);
+                            }
+                        }
+                    }, true);
+                }
+            }
+
             tabViewFolder.addListener(SWT.Selection, event -> {
                 try {
-                    changeActiveView(tabViewFolder.getSelection());
-                } catch (DBException e) {
+                    VerticalButton button = tabViewFolder.getSelection();
+                    if (button.getData() instanceof PlanViewInfo viewInfo) {
+                        changeActiveView(viewInfo);
+                    }
+                } catch (Exception e) {
                     DBWorkbench.getPlatformUI().showError(
                         SQLEditorMessages.editors_sql_error_execution_plan_title,
                         SQLEditorMessages.editors_sql_error_execution_plan_message,
@@ -174,11 +231,12 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         VerticalButton curItem = null;
         String activeViewId = settings.get("activeView");
         for (VerticalButton item : tabViewFolder.getItems()) {
-            PlanViewInfo data = (PlanViewInfo) item.getData();
-            if (curItem == null) {
-                curItem = item;
-            } else if (activeViewId != null && activeViewId.equals(data.descriptor.getId())) {
-                curItem = item;
+            if (item.getData() instanceof PlanViewInfo viewInfo) {
+                if (curItem == null) {
+                    curItem = item;
+                } else if (activeViewId != null && activeViewId.equals(viewInfo.descriptor.getId())) {
+                    curItem = item;
+                }
             }
         }
         tabViewFolder.setSelection(curItem);
@@ -233,16 +291,13 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
 
     @NotNull
     private PlanViewInfo[] getPlanViews() {
-        VerticalButton[] items = tabViewFolder.getItems();
-        PlanViewInfo[] infos = new PlanViewInfo[items.length];
-        for (int i = 0; i < items.length; i++) {
-            infos[i] = (PlanViewInfo) items[i].getData();
-        }
-        return infos;
+        return Arrays.stream(tabViewFolder.getItems())
+            .filter(i -> i.getData() instanceof PlanViewInfo)
+            .map(i -> (PlanViewInfo)i.getData()).toArray(PlanViewInfo[]::new);
     }
 
-    private void changeActiveView(@NotNull VerticalButton viewButton) throws DBException {
-        activeViewInfo = (PlanViewInfo) viewButton.getData();
+    private void changeActiveView(@NotNull PlanViewInfo viewInfo) throws DBException {
+        activeViewInfo = viewInfo;
         if (activeViewInfo.planViewer == null) {
             activeViewInfo.planViewer = activeViewInfo.descriptor.createInstance();
             activeViewInfo.viewer = activeViewInfo.planViewer.createPlanViewer(workbenchPart, planViewComposite);

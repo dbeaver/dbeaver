@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
@@ -80,26 +82,31 @@ public class HANAPlanNode extends AbstractExecutionPlanNode {
         parentNode = node;
     }
 
+    @Nullable
     @Override
     public DBCPlanNode getParent() {
         return parentNode;
     }
 
+    @NotNull
     @Override
     public Collection<HANAPlanNode> getNested() {
         return nestedNodes;
     }
 
+    @Nullable
     @Override
     public String getNodeName() {
         return operatorName;
     }
 
+    @Nullable
     @Override
     public String getNodeType() {
         return null;
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return operatorDetails;

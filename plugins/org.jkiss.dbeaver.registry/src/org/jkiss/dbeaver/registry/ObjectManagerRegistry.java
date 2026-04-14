@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 
@@ -94,12 +96,14 @@ public class ObjectManagerRegistry implements DBERegistry {
         return null;
     }
 
-    public DBEObjectManager<?> getObjectManager(Class<?> aClass) {
+    @Nullable
+    public DBEObjectManager<?> getObjectManager(@NotNull Class<?> aClass) {
         ObjectManagerDescriptor entityManager = getEntityManager(aClass);
         return entityManager == null ? null : entityManager.getManager();
     }
 
-    public <T> T getObjectManager(Class<?> objectClass, Class<T> managerType) {
+    @Nullable
+    public <T> T getObjectManager(@NotNull Class<?> objectClass, @NotNull Class<T> managerType) {
         final DBEObjectManager<?> objectManager = getObjectManager(objectClass);
         if (objectManager != null && managerType.isAssignableFrom(objectManager.getClass())) {
             return managerType.cast(objectManager);
