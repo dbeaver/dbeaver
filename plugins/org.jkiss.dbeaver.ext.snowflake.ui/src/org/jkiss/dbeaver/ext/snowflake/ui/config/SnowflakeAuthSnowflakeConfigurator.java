@@ -168,7 +168,7 @@ public class SnowflakeAuthSnowflakeConfigurator extends DatabaseNativeAuthModelC
         @NotNull
         public String getSelectedAuthProperty() {
             String uiText = authTypeCombo.getText();
-            return Objects.requireNonNullElse(uiLabelPropertyMapper.get(uiText), "");
+            return Objects.requireNonNullElse(uiLabelPropertyMapper.get(uiText), CommonUtils.notEmpty(uiText));
         }
 
         public void setLayoutData(@NotNull Object layoutData) {
