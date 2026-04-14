@@ -225,12 +225,10 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     @Override
     protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
-            if (this.getDataSourceContainer() != null && !this.getDataSourceContainer().getDriver().isEmbedded()) {
-                store.setValue(
-                    SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
-                    editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
-                );
-            }
+            store.setValue(
+                SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
+                editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
+            );
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 
