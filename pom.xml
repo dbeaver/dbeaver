@@ -43,38 +43,6 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <pomDependencies>consider</pomDependencies>
-                    <environments>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>win32</os>
-                            <ws>win32</ws>
-                            <arch>aarch64</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>linux</os>
-                            <ws>gtk</ws>
-                            <arch>aarch64</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>x86_64</arch>
-                        </environment>
-                        <environment>
-                            <os>macosx</os>
-                            <ws>cocoa</ws>
-                            <arch>aarch64</arch>
-                        </environment>
-                    </environments>
                 </configuration>
             </plugin>
 
@@ -128,6 +96,169 @@
                 <!-- Tests -->
                 <module>test</module>
             </modules>
+        </profile>
+
+        <!--
+            Platform-specific build profiles.
+            No artifacts are built by default. Activate one or more profiles to build requested artifacts.
+            Multiple profiles can be combined to build several artifacts simultaneously.
+            Use `-Dbuild.all-environments` to trigger a build for all supported platforms.
+        -->
+        <profile>
+            <id>build-linux-x86_64</id>
+            <activation>
+                <property>
+                    <name>build.all-environments</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments combine.children="append">
+                                <environment>
+                                    <os>linux</os>
+                                    <ws>gtk</ws>
+                                    <arch>x86_64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>build-linux-aarch64</id>
+            <activation>
+                <property>
+                    <name>build.all-environments</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments combine.children="append">
+                                <environment>
+                                    <os>linux</os>
+                                    <ws>gtk</ws>
+                                    <arch>aarch64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>build-windows-x86_64</id>
+            <activation>
+                <property>
+                    <name>build.all-environments</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments combine.children="append">
+                                <environment>
+                                    <os>win32</os>
+                                    <ws>win32</ws>
+                                    <arch>x86_64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>build-windows-aarch64</id>
+            <activation>
+                <property>
+                    <name>build.all-environments</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments combine.children="append">
+                                <environment>
+                                    <os>win32</os>
+                                    <ws>win32</ws>
+                                    <arch>aarch64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>build-macos-x86_64</id>
+            <activation>
+                <property>
+                    <name>build.all-environments</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments combine.children="append">
+                                <environment>
+                                    <os>macosx</os>
+                                    <ws>cocoa</ws>
+                                    <arch>x86_64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>build-macos-aarch64</id>
+            <activation>
+                <property>
+                    <name>build.all-environments</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.tycho</groupId>
+                        <artifactId>target-platform-configuration</artifactId>
+                        <version>${tycho-version}</version>
+                        <configuration>
+                            <environments combine.children="append">
+                                <environment>
+                                    <os>macosx</os>
+                                    <ws>cocoa</ws>
+                                    <arch>aarch64</arch>
+                                </environment>
+                            </environments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>

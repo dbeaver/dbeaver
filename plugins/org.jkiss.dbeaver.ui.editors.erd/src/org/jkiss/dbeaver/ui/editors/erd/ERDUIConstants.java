@@ -44,6 +44,7 @@ public class ERDUIConstants {
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
+    public static final String PREF_LOAD_LAZY_DESCRIPTIONS = "erd.load.lazy.descriptions";
 
     public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
     public static final String PROP_DIAGRAM_NOTATION_LABEL_FONT = "org.jkiss.dbeaver.erd.diagram.font.notation.label";
