@@ -14,37 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ext.oceanbase;
+package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DatabaseURL;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class OceanbaseDataSourceProvider extends MySQLDataSourceProvider {
-    public OceanbaseDataSourceProvider() {
-        super(OceanbaseMySQLDataSource.class);
+/**
+ * Abstract dataSource provider
+ */
+public abstract class AbstractDataSourceProvider<DATASOURCE extends AbstractDataSource> implements DBPDataSourceProvider<DATASOURCE> {
+    static final protected Log log = Log.getLog(AbstractDataSourceProvider.class);
+
+    private final Class<? extends DATASOURCE> dataSourceClass;
+
+    protected AbstractDataSourceProvider(@NotNull Class<? extends DATASOURCE> dsClass) {
+        this.dataSourceClass = dsClass;
     }
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
-        return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
+    public Class<? extends DATASOURCE> getDataSourceClass() {
+        return dataSourceClass;
+    }
+
+    @Override
+    public void init(@NotNull DBPPlatform platform) {
+
     }
 
     @NotNull
     @Override
-    public OceanbaseMySQLDataSource openDataSource(
+    public DBPPropertyDescriptor[] getConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
-        return new OceanbaseMySQLDataSource(monitor, container);
+        return new DBPPropertyDescriptor[0];
     }
 
 }

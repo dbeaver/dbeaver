@@ -942,11 +942,19 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @NotNull
     public abstract DBXTreeNode getMeta();
 
+    @Nullable
     public DBXTreeItem getItemsMeta() {
         List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        for (DBXTreeNode cn : metaChildren) {
-            if (cn instanceof DBXTreeItem treeItem) {
-                return treeItem;
+        if (!metaChildren.isEmpty()) {
+            for (DBXTreeNode cn : metaChildren) {
+                if (cn instanceof DBXTreeItem treeItem) {
+                    return treeItem;
+                }
+            }
+            // No direct tree item children
+            if (metaChildren.getFirst() instanceof DBXTreeFolder folder) {
+                List<DBXTreeNode> children = folder.getChildren(this);
+                return !children.isEmpty() && children.getFirst() instanceof DBXTreeItem treeItem ? treeItem : null;
             }
         }
         return null;
