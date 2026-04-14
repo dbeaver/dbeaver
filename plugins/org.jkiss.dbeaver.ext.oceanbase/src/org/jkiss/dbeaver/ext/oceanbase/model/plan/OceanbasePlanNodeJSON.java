@@ -105,12 +105,14 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         nested.add(new OceanbasePlanNodeJSON(this, name, value));
     }
 
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -171,11 +173,13 @@ public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements 
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
 
+    @Nullable
     @Override
     public OceanbasePlanNodeJSON getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<OceanbasePlanNodeJSON> getNested() {
         return nested;

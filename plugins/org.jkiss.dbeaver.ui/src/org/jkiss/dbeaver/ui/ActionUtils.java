@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,13 +52,14 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Action utils
@@ -386,6 +387,7 @@ public class ActionUtils {
         }
     }
 
+    @NotNull
     public static IAction makeAction(
         @NotNull final IActionDelegate actionDelegate,
         @Nullable IWorkbenchSite site,
@@ -425,6 +427,17 @@ public class ActionUtils {
 
         return actionImpl;
     }
+
+    @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+        return new Action(text, DBeaverIcons.getImageDescriptor(icon)) {
+            @Override
+            public void run() {
+                callback.run();
+            }
+        };
+    }
+
 
     public static void evaluatePropertyState(String propertyName) {
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
