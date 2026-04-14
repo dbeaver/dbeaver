@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -336,7 +336,7 @@ public class GridCellRenderer extends AbstractRenderer {
             if (iconList != null) {
                 int iconsPaddingWidth = iconsWidth + 7;
                 Color oldBg = gc.getBackground(), oldFg = gc.getForeground();
-                gc.setBackground(focus ? grid.getBackground() : background);
+                gc.setBackground(background);
                 int leftDivPos = bounds.x + bounds.width - iconsPaddingWidth;
                 gc.fillRectangle(
                     leftDivPos,
@@ -431,7 +431,7 @@ public class GridCellRenderer extends AbstractRenderer {
                 Image hintImage = DBeaverIcons.getImage(hintIcon);
                 Rectangle iconSize = hintImage.getBounds();
                 if (x >= cellOrigin.x + column.getWidth() - 4 - iconsWidth - iconSize.width) {
-                    hint.performAction(gridController, state);
+                    hint.performAction(gridController, grid.toDisplay(x, y), state);
                     return;
                 }
             }

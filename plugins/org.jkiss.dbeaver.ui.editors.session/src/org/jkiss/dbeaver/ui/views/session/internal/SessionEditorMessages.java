@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.views.session.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class SessionEditorMessages extends NLS {
 

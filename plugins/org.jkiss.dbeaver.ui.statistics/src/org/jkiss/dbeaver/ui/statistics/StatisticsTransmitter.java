@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -45,8 +46,7 @@ import java.util.stream.Stream;
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
-    public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
-    public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
+    public static final String STATS_HOSTS = /*<STATS-PROD-URL*/"stats.dbeaver.com"/*/>*/;
     private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
     private final String endpoint;
@@ -56,26 +56,27 @@ public class StatisticsTransmitter {
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
 
-        if (System.getProperty(DBConstants.LM_STAGE_MODE) != null) {
-            endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
-        } else {
-            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
-        }
+        endpoint = URL_TEMPLATE.formatted(STATS_HOSTS);
     }
 
     public void send(boolean detached) {
         if (detached) {
+            log.debug("Schedule collected statistics send");
+
             new AbstractJob("Usage statistics transmitter") {
                 {
                     setSystem(true);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     sendStatistics(monitor, false);
                     return Status.OK_STATUS;
                 }
             }.schedule(3000);
         } else {
+            log.debug("Send collected statistics");
+
             sendStatistics(new LoggingProgressMonitor(log), true);
         }
     }
@@ -128,7 +129,7 @@ public class StatisticsTransmitter {
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             Map<String, String> parametersMap = new HashMap<>();
-            parametersMap.put("Content-Type", "text/plain");
+            parametersMap.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_TEXT_PLAIN);
             parametersMap.put("Locale", Locale.getDefault().toString());
             parametersMap.put("Country", Locale.getDefault().getISO3Country());
             parametersMap.put("Timezone", TimeZone.getDefault().getID());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -53,13 +50,13 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -69,7 +66,6 @@ import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
 import org.jkiss.dbeaver.ui.gis.panel.actions.ToggleLabelsAction;
 import org.jkiss.dbeaver.ui.gis.registry.GeometryViewerRegistry;
 import org.jkiss.dbeaver.ui.gis.registry.LeafletTilesDescriptor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -78,14 +74,13 @@ import org.jkiss.utils.IOUtils;
 import org.locationtech.jts.geom.Geometry;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceListener {
     private static final Log log = Log.getLog(GISLeafletViewer.class);
 
+    private static final String VIEW_TEMPLATE_PATH = "web/view_template.html";
     private static final String PREF_RECENT_SRID_LIST = "srid.list.recent";
 
     private static final String[] SUPPORTED_FORMATS = new String[] { "png", "gif", "bmp" };
@@ -97,16 +92,18 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private volatile boolean browserCreating = false;
 
     private static final Gson gson = new GsonBuilder()
-            .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
+        .disableHtmlEscaping()
+        .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
     private final DBDAttributeBinding[] bindings;
     private final IResultSetPresentation presentation;
+    private final GISLeafletHttpServer.Handle server;
+    private final String template;
 
     private Browser browser;
     private DBGeometry[] lastValue;
     private int sourceSRID = UNDEFINED_SRID; // Explicitly set SRID
     private int actualSourceSRID; // SRID taken from geometry value
-    private Path scriptFile;
     private final Composite statusBar;
     private final ToolBarManager toolBarManager;
     private int defaultSRID; // Target SRID used to render map
@@ -116,14 +113,34 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private boolean flipCoordinates = false;
     private final Composite composite;
 
-    public GISLeafletViewer(Composite parent, @NotNull DBDAttributeBinding[] bindings, @Nullable SpatialDataProvider spatialDataProvider, @Nullable IResultSetPresentation presentation) {
+    public GISLeafletViewer(
+        @NotNull Composite parent,
+        @NotNull DBDAttributeBinding[] bindings,
+        @Nullable SpatialDataProvider spatialDataProvider,
+        @Nullable IResultSetPresentation presentation
+    ) throws DBException {
         this.bindings = bindings;
         this.presentation = presentation;
+
+        try (InputStream is = GISViewerActivator.getDefault().getResourceStream(VIEW_TEMPLATE_PATH)) {
+            if (is == null) {
+                throw new DBException("View template file not found (" + VIEW_TEMPLATE_PATH + ")");
+            }
+            template = IOUtils.readToString(new InputStreamReader(is));
+        } catch (IOException e) {
+            throw new DBException("Error reading view template", e);
+        }
+
+        try {
+            server = GISLeafletHttpServer.acquire();
+        } catch (Exception e) {
+            throw new DBException("Error initializing internal HTTP server for GIS viewer", e);
+        }
 
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
         composite = UIUtils.createPlaceholder(parent, 1);
-        CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(composite);
         browserCreating = true;
         try {
             browser = new Browser(composite, SWT.NONE);
@@ -169,7 +186,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
 
             browser.addDisposeListener(e -> {
-                cleanupFiles();
+                server.close();
                 GISViewerActivator.getDefault().getPreferences().removePropertyChangeListener(this);
             });
         }
@@ -177,7 +194,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         {
             statusBar = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
             statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(statusBar);
 
             ToolBar bottomToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
@@ -305,8 +322,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                     browser.setUrl("about:blank");
                 } else {
                     final Bounds bounds = recenter ? null : Bounds.tryExtractFromBrowser(browser);
-                    final Path file = generateViewScript(values, bounds);
-                    browser.setUrl(file.toFile().toURI().toURL().toString());
+                    server.setIndex(generateViewScript(values, bounds));
+                    browser.setUrl(server.getUrl());
                 }
             } catch (IOException e) {
                 throw new DBException("Error generating viewer script", e);
@@ -316,14 +333,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         populateToolbar();
     }
 
-    private Path generateViewScript(DBGeometry[] values, @Nullable Bounds bounds) throws IOException {
-        if (scriptFile == null) {
-            Path tempDir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gis-viewer-files");
-            checkIncludesExistence(tempDir);
-
-            scriptFile = Files.createTempFile(tempDir, "view", "gis.html");
-        }
-
+    @NotNull
+    private String generateViewScript(@NotNull DBGeometry[] values, @Nullable Bounds bounds) throws IOException {
         int attributeSrid = UNDEFINED_SRID;
         if (bindings[0].getAttribute() instanceof GisAttribute) {
             try {
@@ -337,8 +348,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         List<String> geomValues = new ArrayList<>();
         List<String> geomTipValues = new ArrayList<>();
         boolean showMap = false;
-        for (int i = 0; i < values.length; i++) {
-            DBGeometry value = values[i];
+        for (DBGeometry value : values) {
             if (DBUtils.isNullValue(value)) {
                 continue;
             }
@@ -414,80 +424,30 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         String geomCRS = actualSourceSRID == GisConstants.SRID_SIMPLE ? GisConstants.LL_CRS_SIMPLE : GisConstants.LL_CRS_3857;
         boolean isShowMap = showMap;
 
-        InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.VIEW_TEMPLATE_PATH);
-        if (fis == null) {
-            throw new IOException("View template file not found (" + GISBrowserViewerConstants.VIEW_TEMPLATE_PATH + ")");
-        }
-        try (InputStreamReader isr = new InputStreamReader(fis)) {
-            String viewTemplate = IOUtils.readToString(isr);
-            viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
-                switch (name) {
-                    case "geomValues":
-                        return geomValuesString;
-                    case "geomTipValues":
-                        return geomTipValuesString;
-                    case "geomSRID":
-                        return String.valueOf(defaultSRID);
-                    case "showMap":
-                        return String.valueOf(isShowMap);
-                    case "showTools":
-                        return String.valueOf(toolsVisible);
-                    case "showLabels":
-                        return String.valueOf(showLabels);
-                    case "geomCRS":
-                        return geomCRS;
-                    case "geomBounds":
-                        return CommonUtils.toString(bounds, "undefined");
-                    case "minZoomLevel":
-                        return String.valueOf(GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
-                    case "defaultTiles":
-                        LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
-                        if (descriptor == null) {
-                            return null;
-                        }
-                        return GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
+        IVariableResolver resolver = name -> switch (name) {
+            case "geomValues" -> CommonUtils.escapeHtml(geomValuesString);
+            case "geomTipValues" -> CommonUtils.escapeHtml(geomTipValuesString);
+            case "geomSRID" -> String.valueOf(defaultSRID);
+            case "showMap" -> String.valueOf(isShowMap);
+            case "showTools" -> String.valueOf(toolsVisible);
+            case "showLabels" -> String.valueOf(showLabels);
+            case "geomCRS" -> geomCRS;
+            case "geomBounds" -> CommonUtils.toString(bounds, "undefined");
+            case "minZoomLevel" -> {
+                DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
+                yield String.valueOf(preferences.getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
+            }
+            case "defaultTiles" -> {
+                LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
+                if (descriptor == null) {
+                    yield null;
                 }
-                return null;
-            });
-            try (OutputStream fos = Files.newOutputStream(scriptFile)) {
-                fos.write(viewTemplate.getBytes(GeneralUtils.UTF8_CHARSET));
+                yield GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
             }
-        } finally {
-            ContentUtils.close(fis);
-        }
+            default -> null;
+        };
 
-        return scriptFile;
-    }
-
-    private void checkIncludesExistence(Path scriptDir) throws IOException {
-        Path incFolder = scriptDir.resolve("inc");
-        if (!Files.exists(incFolder)) {
-            Files.createDirectories(incFolder);
-            for (String fileName : GISBrowserViewerConstants.INC_FILES) {
-                InputStream fis = GISViewerActivator.getDefault().getResourceStream(GISBrowserViewerConstants.WEB_INC_PATH + fileName);
-                if (fis != null) {
-                    try (OutputStream fos = Files.newOutputStream(incFolder.resolve(fileName))) {
-                        try {
-                            IOUtils.copyStream(fis, fos);
-                        } catch (Exception e) {
-                            log.warn("Error copying inc file " + fileName, e);
-                        } finally {
-                            ContentUtils.close(fis);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void cleanupFiles() {
-        if (scriptFile != null) {
-            try {
-                Files.delete(scriptFile);
-            } catch (IOException e) {
-                log.debug("Can't delete temp script file '" + scriptFile + "'", e);
-            }
-        }
+        return GeneralUtils.replaceVariables(template, resolver);
     }
 
     public Composite getBrowserComposite() {
@@ -520,7 +480,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_open, DBeaverIcons.getImageDescriptor(UIIcon.BROWSER)) {
             @Override
             public void run() {
-                ShellUtils.launchProgram(scriptFile.toAbsolutePath().toString());
+                ShellUtils.launchProgram(server.getUrl());
             }
         });
         toolBarManager.add(new Action(GISMessages.panel_leaflet_viewer_tool_bar_action_text_copy_as, DBeaverIcons.getImageDescriptor(UIIcon.PICTURE)) {
@@ -768,7 +728,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
             imageData = GISBrowserImageUtils.getControlScreenshotOnWindows(browser);
         } else {
-            Image image = new Image(Display.getDefault(), browser.getBounds());
+            Rectangle bounds = browser.getBounds();
+            Image image = new Image(Display.getDefault(), bounds.width, bounds.height);
             GC gc = new GC(image);
             try {
                 browser.print(gc);
@@ -776,6 +737,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 gc.dispose();
             }
             imageData = image.getImageData();
+            image.dispose();
         }
 
         toolsVisible = toolsVisibility;

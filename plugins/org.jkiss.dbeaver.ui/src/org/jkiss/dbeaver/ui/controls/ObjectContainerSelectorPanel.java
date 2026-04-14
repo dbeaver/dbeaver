@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -55,9 +55,8 @@ import java.util.List;
 /**
  * ObjectContainerSelectorPanel
  */
-public abstract class ObjectContainerSelectorPanel extends Composite
-{
-    private static final Log log = Log.getLog(ObjectContainerSelectorPanel.class);
+public abstract class ObjectContainerSelectorPanel extends Composite {
+
     public static final int MAX_HISTORY_LENGTH = 20;
 
     private final DBPProject project;
@@ -66,12 +65,12 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private final Combo containerNameCombo;
 
     private final List<HistoryItem> historyItems = new ArrayList<>();
-    private final ToolItem browseButton;
+    private final Button browseButton;
 
     private static class HistoryItem {
-        private String containerName;
-        private String containerPath;
-        private String dataSourceName;
+        private final String containerName;
+        private final String containerPath;
+        private final String dataSourceName;
         private DBNDatabaseNode containerNode;
 
         HistoryItem(String containerName, String containerPath, String dataSourceName, DBNDatabaseNode node) {
@@ -128,15 +127,12 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             }
         });
 
-        ToolBar buttonToolbar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
-        browseButton = new ToolItem(buttonToolbar, SWT.NONE);
-        browseButton.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-        browseButton.setText(UIMessages.browse_button_choose);
-        browseButton.setToolTipText(UIMessages.browse_button_choose_tooltip);
         Runnable containerSelector = () -> {
             if (project != null) {
-                final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-                final DBNProject rootNode = navigatorModel.getRoot().getProjectNode(project);
+                DBNModel navigatorModel = project.getNavigatorModel();
+                assert navigatorModel != null;
+                DBNProject rootNode = navigatorModel.getRoot().getProjectNode(project);
+                assert rootNode != null;
                 DBNNode selectedNode = getSelectedNode();
                 DBNNode node = DBWorkbench.getPlatformUI().selectObject(
                     getShell(),
@@ -160,12 +156,12 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                 updateToolTips();
             }
         };
-        browseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                containerSelector.run();
-            }
-        });
+        browseButton = UIUtils.createPushButton(
+            this,
+            UIMessages.browse_button_choose,
+            UIMessages.browse_button_choose_tooltip,
+            UIIcon.OPEN,
+            SelectionListener.widgetSelectedAdapter(e -> containerSelector.run()));
         containerNameCombo.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {
@@ -178,20 +174,15 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         updateToolTips();
     }
 
-    public void checkValidContainerNode(DBNNode node) throws DBException
-    {
+    public void checkValidContainerNode(DBNNode node) throws DBException {
         if (node instanceof DBNDatabaseNode) {
             DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
-            if (nodeObject instanceof DBSObjectContainer) {
+            if (nodeObject instanceof DBSObjectContainer objectContainer) {
                 try {
-                    Class<?> childrenClass = ((DBSObjectContainer) nodeObject).getPrimaryChildType(null);
-                    if (childrenClass != null) {
-                        if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
-                            // Upper level of container
-                            throw new DBException("You can select only table container (e.g. schema).");
-                        }
-                    } else {
-                        throw new DBException("Can't determine container child objects for " + nodeObject);
+                    Class<?> childrenClass = objectContainer.getPrimaryChildType(null);
+                    if (!DBSEntity.class.isAssignableFrom(childrenClass)) {
+                        // Upper level of container
+                        throw new DBException("You can select only table container (e.g. schema).");
                     }
                 } catch (DBException e) {
                     throw new DBException("Error determining container elements type", e);
@@ -203,8 +194,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     }
 
     private HistoryItem addNodeToHistory(DBNDatabaseNode node) {
-        for (int i = 0; i < historyItems.size(); i++) {
-            HistoryItem item = historyItems.get(i);
+        for (HistoryItem item : historyItems) {
             if (item.isSameNode(node)) {
                 item.containerNode = node;
                 moveHistoryItemToBeginning(item);
@@ -217,7 +207,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             node.getDataSourceContainer().getName(),
             node
         );
-        historyItems.add(0, newItem);
+        historyItems.addFirst(newItem);
         containerNameCombo.add(newItem.getFullName(), 0);
         return newItem;
     }
@@ -225,7 +215,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private void moveHistoryItemToBeginning(HistoryItem item) {
         int itemIndex = historyItems.indexOf(item);
         historyItems.remove(item);
-        historyItems.add(0, item);
+        historyItems.addFirst(item);
 
         containerNameCombo.remove(itemIndex);
         containerNameCombo.add(item.getFullName(), 0);
@@ -241,9 +231,11 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                 try {
                     UIUtils.runInProgressDialog(monitor -> {
                         try {
-                            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, project, historyItem.containerPath);
-                            if (node instanceof DBNDatabaseNode) {
-                                historyItem.containerNode = (DBNDatabaseNode) node;
+                            DBNModel navigatorModel = project.getNavigatorModel();
+                            assert navigatorModel != null;
+                            DBNNode node = navigatorModel.getNodeByPath(monitor, project, historyItem.containerPath);
+                            if (node instanceof DBNDatabaseNode dbNode) {
+                                historyItem.containerNode = dbNode;
                             }
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
@@ -328,17 +320,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         moveHistoryItemToBeginning(item);
     }
 
-    private void removeItemFromCombo(HistoryItem item) {
-        int itemCount = containerNameCombo.getItemCount();
-        for (int i = 0; i < itemCount; i++) {
-            if (containerNameCombo.getItem(i).equals(item.getFullName())) {
-                containerNameCombo.remove(i);
-                break;
-            }
-        }
-    }
-
-    protected abstract void setSelectedNode(DBNDatabaseNode node);
+    protected abstract void setSelectedNode(@NotNull DBNDatabaseNode node);
 
     @Nullable
     protected abstract DBNNode getSelectedNode();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.session.SQLServerSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -45,18 +47,23 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, DBPAdaptable, DBCQueryTransformProviderExt {
+public class SQLServerDataSource
+    extends JDBCDataSource
+    implements DBSInstanceContainer, DBPObjectStatisticsCollector, DBPAdaptable, DBCQueryTransformProviderExt, DBSVisibilityScopeProvider {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
     private static final String PROP_ENCRYPT_SSL = "encrypt";
@@ -77,7 +84,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
-        super(monitor, container, new SQLServerDialect());
+        super(monitor, container, new SQLServerDialectMssql());
         isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
     }
 
@@ -136,7 +143,19 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return info;
     }
 
-    public boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
+    @NotNull
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        int errorCode = SQLState.getCodeFromException(error);
+        if (errorCode == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED
+            || errorCode == SQLServerConstants.EC_PASSWORD_EXPIRED
+            || errorCode == SQLServerConstants.EC_PASSWORD_MUST_CHANGE) {
+            return ErrorType.AUTHENTICATION_FAILED;
+        }
+        return super.discoverErrorType(error);
+    }
+
+    public boolean isDataWarehouseServer(@NotNull DBRProgressMonitor monitor) {
         return getServerVersion(monitor).contains(SQLServerConstants.SQL_DW_SERVER_LABEL);
     }
 
@@ -275,6 +294,77 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
+        try {
+            return super.openConnection(monitor, context, purpose);
+        } catch (DBCException e) {
+            if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
+                && isPasswordExpired(e)
+                && updateExpiredPassword()) {
+                return super.openConnection(monitor, context, purpose);
+            }
+            throw e;
+        }
+    }
+
+    private boolean isPasswordExpired(@NotNull DBCException e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqle) {
+                // Check chained SQL exceptions for specific password expiry error codes
+                for (SQLException se = sqle; se != null; se = se.getNextException()) {
+                    int code = se.getErrorCode();
+                    if (code == SQLServerConstants.EC_PASSWORD_EXPIRED
+                        || code == SQLServerConstants.EC_PASSWORD_MUST_CHANGE) {
+                        return true;
+                    }
+                }
+                // Fallback: check login failure message for password expiry indicators
+                if (sqle.getErrorCode() == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED) {
+                    String message = sqle.getMessage();
+                    if (message != null) {
+                        String lower = message.toLowerCase(Locale.ROOT);
+                        if (lower.contains("password")
+                            && (lower.contains("expired") || lower.contains("must be changed"))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Prompts the user to enter a new password after detecting an expired password.
+     * The MSSQL JDBC driver does not support changing expired passwords during login,
+     * so the user must change the password externally (via SSMS, sqlcmd, or a DBA)
+     * and then enter the new password here so DBeaver can update stored credentials.
+     */
+    private boolean updateExpiredPassword() {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return false;
+        }
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+
+        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+            SQLServerMessages.password_expired_prompt,
+            connectionInfo.getUserName(),
+            connectionInfo.getUserPassword(),
+            false,
+            false);
+        if (passwordInfo == null || CommonUtils.isEmpty(passwordInfo.getNewPassword())) {
+            return false;
+        }
+
+        connectionInfo.setUserPassword(passwordInfo.getNewPassword());
+        getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        if (!getContainer().isTemporary()) {
+            getContainer().persistConfiguration();
+        }
+        return true;
+    }
+
+    @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
         return new SQLServerExecutionContext(instance, type);
     }
@@ -347,6 +437,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return getLocalDataType(valueType).getDataKind();
     }
 
+    @NotNull
     @Override
     public List<SQLServerDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
@@ -366,11 +457,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return sdt;
     }
 
+    @Nullable
     @Override
     public SQLServerDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public SQLServerDataType getLocalDataType(int typeID) {
         DBSDataType dt = super.getLocalDataType(typeID);
@@ -380,6 +473,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return (SQLServerDataType) dt;
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return switch (dataKind) {
@@ -429,6 +523,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return ((SQLServerExecutionContext)getDefaultInstance().getDefaultContext(monitor, true)).getDefaultCatalog();
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return databaseCache.getAllObjects(monitor, this);
@@ -467,7 +562,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new SQLServerStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
@@ -507,7 +602,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -569,7 +664,20 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
         return !hasNextValExpr;
     }
-    
+
+    @NotNull
+    @Override
+    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        var tempdb = getDatabase(monitor, SQLServerConstants.TEMPDB_DATABASE);
+        if (tempdb != null) {
+            var dbo = tempdb.getSchema(monitor, SQLServerConstants.DEFAULT_SCHEMA_NAME);
+            if (dbo != null) {
+                return List.of(dbo);
+            }
+        }
+        return List.of();
+    }
+
     public static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
         DatabaseCache() {
             setListOrderComparator(DBUtils.nameComparator());

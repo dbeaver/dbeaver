@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseArrayType;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
@@ -28,7 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
@@ -38,10 +39,11 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.*;
 
 public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
+    private static final Log log = Log.getLog(ClickhouseArrayValueHandler.class);
+
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
     public static final String ARRAY_DELIMITER = ",";
     public static final Set<Character> QUOTED_CHARS = Set.of('[', ']', '"', ' ', '\\');
@@ -59,6 +61,32 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     protected boolean useSetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
         return true;
+    }
+
+    @Override
+    protected Object fetchColumnValue(
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
+        // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
+        try {
+            return super.fetchColumnValue(session, resultSet, type, index);
+        } catch (SQLException exception) {
+            String lowerCaseTypename = type.getTypeName().toLowerCase();
+            if (lowerCaseTypename.contains("ipv4")
+                || lowerCaseTypename.contains("ipv6")
+                || lowerCaseTypename.contains("uuid")
+                || lowerCaseTypename.contains("map")
+            ) {
+                log.warn("Falling back to getString() for type " + type.getTypeName(), exception);
+                return getValueFromObject(session, type, resultSet.getString(index), false, false);
+            } else {
+                throw exception;
+            }
+        }
+
     }
 
     @Override
@@ -127,32 +155,6 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             }
         } catch (DBException e) {
             throw new DBCException("Can't extract array data from Java array", e);
-        }
-    }
-
-    @Override
-    protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
-        int paramIndex,
-        Object value
-    ) throws DBCException, SQLException {
-        if (value instanceof JDBCCollection collection && !collection.isNull()) {
-            String arrayTypeName = paramType.getTypeName();
-            boolean nonNullableComponentType = !arrayTypeName.contains("Nullable");
-            boolean arrayHasNullValues = Arrays.stream(collection.toArray()).anyMatch(Objects::isNull);
-            if (nonNullableComponentType && arrayHasNullValues) {
-                throw new DBCException("Array of non-nullable types \"" + arrayTypeName + "\" has null values");
-            }
-
-            statement.setObject(
-                paramIndex,
-                getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE),
-                Types.OTHER
-            );
-        } else {
-            super.bindParameter(session, statement, paramType, paramIndex, value);
         }
     }
 
@@ -267,7 +269,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
                 session.getProgressMonitor(),
                 (ClickhouseDataSource) session.getDataSource(),
-                type.getTypeName()
+                type.getFullTypeName()
             );
         } catch (DBException e) {
             throw new DBCException("Can't resolve array data type " + type.getFullTypeName());

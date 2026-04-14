@@ -84,7 +84,7 @@ public abstract class AbstractTable<
     }
 
     @Override
-    public void setName(String tableName)
+    public void setName(@NotNull String tableName)
     {
         this.tableName = tableName;
     }

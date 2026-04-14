@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,14 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 import java.lang.reflect.InvocationTargetException;
@@ -102,6 +105,7 @@ public class ProgressEditorPart extends EditorPart {
         final DatabaseLazyEditorInput input = getEditorInput();
 
         progressCanvas = new Composite(parent, SWT.NONE);
+        CSSUtils.setExcludeFromStyling(progressCanvas);
 
         if (input.canLoadImmediately()) {
             scheduleEditorLoad();
@@ -166,7 +170,7 @@ public class ProgressEditorPart extends EditorPart {
         }
 
         @Override
-        public IDatabaseEditorInput evaluate(DBRProgressMonitor monitor)
+        public IDatabaseEditorInput evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
@@ -191,7 +195,7 @@ public class ProgressEditorPart extends EditorPart {
         }
 
         @Override
-        public void completeLoading(IDatabaseEditorInput result) {
+        public void completeLoading(@Nullable IDatabaseEditorInput result) {
             super.completeLoading(result);
             super.visualizeLoading();
             if (!progressCanvas.isDisposed()) {

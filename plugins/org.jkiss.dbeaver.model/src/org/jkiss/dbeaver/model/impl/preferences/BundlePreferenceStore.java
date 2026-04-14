@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.impl.preferences;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.service.prefs.BackingStoreException;
@@ -41,12 +43,12 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public boolean contains(String name) {
+    public boolean contains(@NotNull String name) {
         return props.get(name, null) != null || defaultProps.get(name, null) != null;
     }
 
     @Override
-    public boolean getBoolean(String name) {
+    public boolean getBoolean(@NotNull String name) {
         return props.get(name, null) != null ?
             props.getBoolean(name, BOOLEAN_DEFAULT_DEFAULT) :
             defaultProps.get(name, null) != null ?
@@ -55,7 +57,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public double getDouble(String name) {
+    public double getDouble(@NotNull String name) {
         return props.get(name, null) != null ?
             props.getDouble(name, DOUBLE_DEFAULT_DEFAULT) :
             defaultProps.get(name, null) != null ?
@@ -64,7 +66,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public float getFloat(String name) {
+    public float getFloat(@NotNull String name) {
         return props.get(name, null) != null ?
             props.getFloat(name, FLOAT_DEFAULT_DEFAULT) :
             defaultProps.get(name, null) != null ?
@@ -73,7 +75,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public int getInt(String name) {
+    public int getInt(@NotNull String name) {
         return props.get(name, null) != null ?
             props.getInt(name, INT_DEFAULT_DEFAULT) :
             defaultProps.get(name, null) != null ?
@@ -82,7 +84,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public long getLong(String name) {
+    public long getLong(@NotNull String name) {
         return props.get(name, null) != null ?
             props.getLong(name, LONG_DEFAULT_DEFAULT) :
             defaultProps.get(name, null) != null ?
@@ -91,7 +93,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public String getString(String name) {
+    public String getString(@NotNull String name) {
         return props.get(name, null) != null ?
             props.get(name, STRING_DEFAULT_DEFAULT) :
             defaultProps.get(name, null) != null ?
@@ -100,37 +102,37 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public boolean getDefaultBoolean(String name) {
+    public boolean getDefaultBoolean(@NotNull String name) {
         return defaultProps.getBoolean(name, BOOLEAN_DEFAULT_DEFAULT);
     }
 
     @Override
-    public double getDefaultDouble(String name) {
+    public double getDefaultDouble(@NotNull String name) {
         return defaultProps.getDouble(name, DOUBLE_DEFAULT_DEFAULT);
     }
 
     @Override
-    public float getDefaultFloat(String name) {
+    public float getDefaultFloat(@NotNull String name) {
         return defaultProps.getFloat(name, FLOAT_DEFAULT_DEFAULT);
     }
 
     @Override
-    public int getDefaultInt(String name) {
+    public int getDefaultInt(@NotNull String name) {
         return defaultProps.getInt(name, INT_DEFAULT_DEFAULT);
     }
 
     @Override
-    public long getDefaultLong(String name) {
+    public long getDefaultLong(@NotNull String name) {
         return defaultProps.getLong(name, LONG_DEFAULT_DEFAULT);
     }
 
     @Override
-    public String getDefaultString(String name) {
+    public String getDefaultString(@NotNull String name) {
         return defaultProps.get(name, STRING_DEFAULT_DEFAULT);
     }
 
     @Override
-    public boolean isDefault(String name) {
+    public boolean isDefault(@NotNull String name) {
         return props.get(name, null) == null && defaultProps.get(name, null) != null;
     }
 
@@ -140,37 +142,37 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setDefault(String name, double value) {
+    public void setDefault(@NotNull String name, double value) {
         defaultProps.putDouble(name, value);
     }
 
     @Override
-    public void setDefault(String name, float value) {
+    public void setDefault(@NotNull String name, float value) {
         defaultProps.putFloat(name, value);
     }
 
     @Override
-    public void setDefault(String name, int value) {
+    public void setDefault(@NotNull String name, int value) {
         defaultProps.putInt(name, value);
     }
 
     @Override
-    public void setDefault(String name, long value) {
+    public void setDefault(@NotNull String name, long value) {
         defaultProps.putLong(name, value);
     }
 
     @Override
-    public void setDefault(String name, String defaultObject) {
+    public void setDefault(@NotNull String name, @Nullable String defaultObject) {
         defaultProps.put(name, defaultObject);
     }
 
     @Override
-    public void setDefault(String name, boolean value) {
+    public void setDefault(@NotNull String name, boolean value) {
         defaultProps.putBoolean(name, value);
     }
 
     @Override
-    public void setToDefault(String name) {
+    public void setToDefault(@NotNull String name) {
         String oldValue = getString(name);
         String defaultValue = getDefaultString(name);
         props.remove(name);
@@ -181,7 +183,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, double value) {
+    public void setValue(@NotNull String name, double value) {
         double oldValue = getDouble(name);
         if (oldValue == value) {
             return;
@@ -196,7 +198,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, float value) {
+    public void setValue(@NotNull String name, float value) {
         float oldValue = getFloat(name);
         if (oldValue == value) {
             return;
@@ -211,7 +213,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, int value) {
+    public void setValue(@NotNull String name, int value) {
         int oldValue = getInt(name);
         if (oldValue == value) {
             return;
@@ -226,7 +228,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, long value) {
+    public void setValue(@NotNull String name, long value) {
         long oldValue = getLong(name);
         if (oldValue == value) {
             return;
@@ -241,7 +243,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, String value) {
+    public void setValue(@NotNull String name, @Nullable String value) {
         String oldValue = getString(name);
         if (CommonUtils.equalObjects(oldValue, value)) {
             return;
@@ -256,7 +258,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, boolean value) {
+    public void setValue(@NotNull String name, boolean value) {
         boolean oldValue = getBoolean(name);
         if (oldValue == value) {
             return;

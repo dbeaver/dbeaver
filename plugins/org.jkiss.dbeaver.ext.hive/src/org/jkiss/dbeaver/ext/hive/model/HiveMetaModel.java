@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,9 @@ public class HiveMetaModel extends GenericMetaModel
         return new HiveDataSource(monitor, container, this);
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(@NotNull GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(
                     container,
@@ -65,6 +66,7 @@ public class HiveMetaModel extends GenericMetaModel
         return new HiveTable(container, tableName, tableType, dbResult);
     }
 
+    @NotNull
     @Override
     public GenericTableIndex createIndexImpl(@NotNull GenericTableBase table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
         return new HiveIndex((HiveTable) table, indexName, persisted, "", indexType.getName(), null);

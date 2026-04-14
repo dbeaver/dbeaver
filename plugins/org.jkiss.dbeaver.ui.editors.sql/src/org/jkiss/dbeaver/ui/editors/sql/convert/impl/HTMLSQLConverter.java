@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,38 +34,38 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Map;
 
 /**
- * UnformattedSQLConverter
+ * HTMLSQLConverter
  */
 public class HTMLSQLConverter implements ISQLTextConverter {
     private static final Log log = Log.getLog(HTMLSQLConverter.class);
+    public static final String OPTION_ADD_CODE_BLOCK = "addCodeBlock";
 
     @NotNull
     @Override
     public String convertText(
-            @NotNull SQLDialect dialect,
-            @NotNull SQLSyntaxManager syntaxManager,
-            @NotNull SQLRuleScanner ruleManager,
-            @NotNull IDocument document,
-            int startPos,
-            int length,
-            @NotNull Map<String, Object> options)
+        @NotNull SQLDialect dialect,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLRuleScanner ruleScanner,
+        @NotNull IDocument document,
+        int startPos,
+        int length,
+        @NotNull Map<String, Object> options)
     {
         StringBuilder result = new StringBuilder();
-        ruleManager.setRange(document, startPos, length);
+        ruleScanner.setRange(document, startPos, length);
         try {
             result.append("<pre>");
-            for (;;) {
-                IToken token = ruleManager.nextToken();
-                if (token.isEOF()) {
-                    break;
-                }
-                int tokenOffset = ruleManager.getTokenOffset();
-                final int tokenLength = ruleManager.getTokenLength();
+            if (options.get(OPTION_ADD_CODE_BLOCK) != null && (Boolean) options.get(OPTION_ADD_CODE_BLOCK)) {
+                result.append("<code class=\"language-sql\">");
+            }
+            IToken token = ruleScanner.nextToken();
+            while (!token.isEOF()) {
+                int tokenOffset = ruleScanner.getTokenOffset();
+                final int tokenLength = ruleScanner.getTokenLength();
                 boolean hasSpan = false;
                 Object data = token.getData();
-                if (data instanceof TextAttribute) {
+                if (data instanceof TextAttribute ta) {
                     result.append("<span style='");
-                    TextAttribute ta = (TextAttribute) data;
                     if (ta.getBackground() != null) {
                         result.append("background-color:").append(toHex(ta.getBackground())).append(";");
                     }
@@ -79,7 +79,6 @@ public class HTMLSQLConverter implements ISQLTextConverter {
                         result.append("font-style: italic;");
                     }
 
-                    //ta.getStyle()
                     result.append("'>");
                     hasSpan = true;
                 }
@@ -87,6 +86,10 @@ public class HTMLSQLConverter implements ISQLTextConverter {
                 if (hasSpan) {
                     result.append("</span>");
                 }
+                token = ruleScanner.nextToken();
+            }
+            if (options.get(OPTION_ADD_CODE_BLOCK) != null && (Boolean) options.get(OPTION_ADD_CODE_BLOCK)) {
+                result.append("</code>");
             }
             result.append("</pre>");
         } catch (BadLocationException e) {
@@ -95,7 +98,7 @@ public class HTMLSQLConverter implements ISQLTextConverter {
         return result.toString().trim();
     }
 
-    private static String toHex(Color color) {
+    private static String toHex(@NotNull Color color) {
         return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
     }
 }

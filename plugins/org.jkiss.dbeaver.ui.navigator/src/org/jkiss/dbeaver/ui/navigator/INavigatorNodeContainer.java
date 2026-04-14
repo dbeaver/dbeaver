@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.navigator;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public interface INavigatorNodeContainer {
 
+    @Nullable
     DBNNode getRootNode();
 
 }

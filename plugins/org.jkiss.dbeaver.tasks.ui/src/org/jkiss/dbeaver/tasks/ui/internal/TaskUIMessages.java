@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tasks.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class TaskUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages"; //$NON-NLS-1$
@@ -34,7 +34,6 @@ public class TaskUIMessages extends NLS {
     public static String edit_task_variabl_dialog_column_value;
 
     public static String task_config_wizard_group_task_label;
-    public static String task_config_wizard_button_save_task;
     public static String task_config_wizard_link_open_tasks_view;
     public static String task_config_wizard_button_variables;
     public static String task_config_wizard_button_variables_configure;
@@ -70,16 +69,13 @@ public class TaskUIMessages extends NLS {
     public static String task_configuration_wizard_page_task_enter_type;
     public static String task_configuration_wizard_page_settings_fill_parameters;
     public static String task_configuration_wizard_dialog_configuration_error;
+    public static String task_configuration_wizard_dialog_button_save;
     public static String task_execute_handler_tool_error_title;
     public static String task_execute_handler_tool_error_message;
     public static String task_execute_handler_tool_error_project_message;
     public static String task_execute_handler_tool_error_apply_message;
     public static String task_execute_handler_tool_warn_readonly_title;
     public static String task_execute_handler_tool_warn_readonly_message;
-
-    public static String task_config_wizard_page_task_advanced_label;
-    public static String task_config_wizard_page_task_max_exec_time;
-    public static String task_config_wizard_page_task_max_exec_time_descr;
 
     static {
         // initialize resource bundle

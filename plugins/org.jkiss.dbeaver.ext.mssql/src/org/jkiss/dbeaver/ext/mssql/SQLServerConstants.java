@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,5 +147,17 @@ public class SQLServerConstants {
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
 
     public static final CharSequence SQL_DW_SERVER_LABEL = "SQL Data Warehouse";
+
+    public static final int EC_SQL_SERVER_LOGON_FAILED = 18456;
+    public static final int EC_PASSWORD_EXPIRED = 18487;
+    public static final int EC_PASSWORD_MUST_CHANGE = 18488;
+
+    // Password policy violation errors (returned by ALTER LOGIN when changing password)
+    public static final int EC_PASSWORD_TOO_SHORT = 18463;
+    public static final int EC_PASSWORD_TOO_LONG = 18464;
+    public static final int EC_PASSWORD_NOT_COMPLEX = 18465;
+    public static final int EC_PASSWORD_NOT_SATISFACTORY = 18466;
+    public static final int EC_PASSWORD_RECENTLY_USED = 18467;
+    public static final int EC_PASSWORD_FILTER_REJECTED = 18468;
 
 }

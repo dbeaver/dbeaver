@@ -141,7 +141,7 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
     private class ConfigureDialog extends BaseDialog {
         public ConfigureDialog(@NotNull Shell shell) {
             super(shell, NLS.bind(DTMessages.data_transfer_wizard_output_event_processor_configure_title, descriptor.getLabel()), null);
-            setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL);
+            setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
         }
 
         @Override

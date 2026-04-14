@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.config.migration;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class ImportConfigMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages"; //$NON-NLS-1$
@@ -55,6 +55,8 @@ public class ImportConfigMessages extends NLS {
     public static String config_import_wizard_squirrel_description;
     public static String config_import_wizard_import_driver;
     public static String config_import_wizard_extract_url_parameters;
+    public static String config_import_wizard_jetbrains_description;
+    public static String config_import_wizard_pgadmin_description;
 
     static {
         // initialize resource bundle

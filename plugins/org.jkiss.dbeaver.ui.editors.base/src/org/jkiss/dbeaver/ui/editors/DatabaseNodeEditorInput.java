@@ -49,6 +49,12 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
         this.nodePath = dbnDatabaseNode.getNodeUri();
         this.nodeName = dbnDatabaseNode.getNodeDisplayName();
     }
+
+    @Nullable
+    @Override
+    public String getNodePath() {
+        return nodePath;
+    }
     
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -60,8 +66,11 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     }
 
     @Override
-    public String getToolTipText()
-    {
+    public String getToolTipText() {
+        if (getNavigatorNode() == null) {
+            return "";
+        }
+
         StringBuilder toolTip = new StringBuilder();
 
         for (DBNNode node = getNavigatorNode(); node != null; node = node.getParentNode()) {

@@ -67,6 +67,7 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
     private boolean useBulkLoad = false;
     private String onDuplicateKeyInsertMethodId;
     private boolean disableReferentialIntegrity;
+    private boolean enableQmLogging;
     private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
     private transient Map<String, Object> dialogSettings;
@@ -222,6 +223,14 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         }
     }
 
+    public boolean isEnableQmLogging() {
+        return enableQmLogging;
+    }
+
+    public void setEnableQmLogging(boolean enableQmLogging) {
+        this.enableQmLogging = enableQmLogging;
+    }
+
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
         this.dialogSettings = settings;
@@ -242,6 +251,7 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         useBulkLoad = CommonUtils.getBoolean(settings.get("useBulkLoad"), useBulkLoad);
         truncateBeforeLoad = CommonUtils.getBoolean(settings.get("truncateBeforeLoad"), truncateBeforeLoad);
         openTableOnFinish = CommonUtils.getBoolean(settings.get("openTableOnFinish"), openTableOnFinish);
+        enableQmLogging = CommonUtils.getBoolean(settings.get("enableQmLogging"), enableQmLogging);
 
         List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
         {
@@ -315,6 +325,7 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         settings.put("useBulkLoad", useBulkLoad);
         settings.put("truncateBeforeLoad", truncateBeforeLoad);
         settings.put("openTableOnFinish", openTableOnFinish);
+        settings.put("enableQmLogging", enableQmLogging);
 
         // Load all data mappings
         Map<String, Object> mappings = new LinkedHashMap<>();
@@ -353,6 +364,7 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_disable_referential_integrity, disableReferentialIntegrity);
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_use_bulk_load, useBulkLoad);
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_truncate_before_load, truncateBeforeLoad);
+        DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_enable_qm_logging, enableQmLogging);
 
         return summary.toString();
     }

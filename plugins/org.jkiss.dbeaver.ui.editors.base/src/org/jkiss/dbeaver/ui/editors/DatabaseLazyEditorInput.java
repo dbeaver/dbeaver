@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -151,6 +150,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return nodeName;
     }
 
+    @Nullable
+    @Override
     public String getNodePath() {
         return nodePath;
     }
@@ -176,14 +177,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return null;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return null;
     }
 
+    @Nullable
     @Override
-    public DBNDatabaseNode getNavigatorNode()
-    {
+    public DBNDatabaseNode getNavigatorNode() {
         return null;
     }
 
@@ -288,18 +290,21 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
                 final Integer result = new UITask<Integer>() {
                     @Override
                     protected Integer runTask() {
-                        ConnectionLostDialog clDialog = new ConnectionLostDialog(UIUtils.getActiveWorkbenchShell(), dataSourceContainer, e, "Close");
+                        ConnectionLostDialog clDialog = new ConnectionLostDialog(
+                            UIUtils.getActiveWorkbenchShell(),
+                            dataSourceContainer,
+                            e,
+                            IDialogConstants.ABORT_LABEL
+                        );
                         return clDialog.open();
                     }
                 }.execute();
-                if (result == IDialogConstants.STOP_ID) {
-                    // Close editor
-                    return null;
-                } else if (result == IDialogConstants.RETRY_ID) {
+                if (result == IDialogConstants.RETRY_ID) {
                     connectionStart = System.currentTimeMillis();
                     continue;
                 } else {
-                    return new ErrorEditorInput(GeneralUtils.makeExceptionStatus(e), navigatorModel.getNodeByObject(dataSourceContainer));
+                    // Unload editor
+                    return unloadInput();
                 }
             }
             if (connectionTimeout > 0 && connectionStart + connectionTimeout <= System.currentTimeMillis()) {
@@ -316,21 +321,17 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
             final DBNNode[] editorNodeResult = new DBNNode[1];
             DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                try {
-                    // FIXME: DBNModel#getNodeByObject should ensure that the project is loaded, not the caller
-                    navigatorModel.ensureProjectLoaded(project);
-                    DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
-                    if (dsNode == null) {
-                        throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");
-                    }
-
-                    dsNode.initializeNode(monitor, null);
-
-                    editorNodeResult[0] = navigatorModel.getNodeByPath(
-                        monitor, project, nodePath);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                // FIXME: DBNModel#getNodeByObject should ensure that the project is loaded, not the caller
+                navigatorModel.ensureProjectLoaded(project);
+                DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
+                if (dsNode == null) {
+                    throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");
                 }
+
+                dsNode.initializeNode(monitor, null);
+
+                editorNodeResult[0] = navigatorModel.getNodeByPath(
+                    monitor, project, nodePath);
             });
             DBNNode node = editorNodeResult[0];
             if (node == null) {
@@ -362,7 +363,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
     @NotNull
     @Override
-    public ILazyEditorInput unloadInput() {
+    public DatabaseLazyEditorInput unloadInput() {
         return new DatabaseLazyEditorInput(
             nodePath,
             nodeName,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -62,25 +63,25 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         this.reuseStatement = reuseStatement;
     }
 
+    @NotNull
     @Override
-    public void add(@NotNull Object[] attributeValues) throws DBCException
-    {
+    public DBSDataManipulator.ExecuteBatch add(@NotNull Object[] attributeValues) throws DBCException {
         if (!ArrayUtils.isEmpty(attributes) && ArrayUtils.isEmpty(attributeValues)) {
             throw new DBCException("Bad attribute values: " + Arrays.toString(attributeValues));
         }
         values.add(attributeValues);
+        return this;
     }
 
     @NotNull
     @Override
-    public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException
-    {
+    public DBCStatistics execute(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException {
         return processBatch(session, null, options);
     }
 
     @NotNull
     @Override
-    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
+    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, @NotNull Map<String, Object> options) throws DBException {
         processBatch(session, actions, options);
     }
 
@@ -93,7 +94,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
      * @throws DBCException
      */
     @NotNull
-    DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException
+    DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws DBException
     {
         //session.getProgressMonitor().subTask("Save batch (" + values.size() + ")");
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
@@ -150,7 +151,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         if (actions == null) {
                             flushBatch(statistics, statement);
                         }
-                        statement.close();
+                        DBUtils.closeSafely(statement);
                         statement = null;
                         statementsInBatch = 0;
                         reuse = true;
@@ -198,7 +199,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     }
                 } finally {
                     if (!reuse && !useBatch) {
-                        statement.close();
+                        DBUtils.closeSafely(statement);
                     }
                 }
             }
@@ -207,13 +208,13 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 if (actions == null) {
                     flushBatch(statistics, statement);
                 }
-                statement.close();
+                DBUtils.closeSafely(statement);
                 statement = null;
             }
             values.clear();
         } finally {
             if (reuseStatement && statement != null) {
-                statement.close();
+                DBUtils.closeSafely(statement);
             }
             if (!useBatch && !values.isEmpty()) {
                 values.clear();
@@ -329,7 +330,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     }
 
     private void readKeys(@NotNull DBCSession session, @NotNull DBCStatement dbStat, @NotNull DBDDataReceiver keysReceiver)
-        throws DBCException
+        throws DBException
     {
         DBCResultSet dbResult;
         try {
@@ -342,20 +343,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         if (dbResult == null) {
             return;
         }
-        try {
-            keysReceiver.fetchStart(session, dbResult, -1, -1);
-            try {
-                while (dbResult.nextRow()) {
-                    keysReceiver.fetchRow(session, dbResult);
-                }
+        try (dbResult) {
+            DBDDataReceiver.startFetchWorkflow(keysReceiver, session, dbResult, -1, -1);
+            while (dbResult.nextRow()) {
+                keysReceiver.fetchRow(session, dbResult);
             }
-            finally {
-                keysReceiver.fetchEnd(session, dbResult);
-            }
-        }
-        finally {
-            dbResult.close();
-            keysReceiver.close();
         }
     }
 

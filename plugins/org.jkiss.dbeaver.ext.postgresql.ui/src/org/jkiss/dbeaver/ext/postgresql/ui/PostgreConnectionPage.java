@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -88,13 +91,11 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         GridData gd = new GridData(GridData.FILL_BOTH);
         mainGroup.setLayoutData(gd);
 
-        Group addrGroup = UIUtils.createControlGroup(
+        Composite addrGroup = UIUtils.createTitledComposite(
             mainGroup,
             UIConnectionMessages.dialog_connection_server_label,
             4,
-            GridData.FILL_HORIZONTAL,
-            0
-        );
+            GridData.FILL_HORIZONTAL);
 
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
@@ -127,6 +128,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(hostText);
         hostText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
@@ -148,6 +150,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         dbText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(dbText);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);

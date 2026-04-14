@@ -162,6 +162,18 @@ public abstract class SQLQueryCompletionItem {
         return new SQLCompositeFieldCompletionItem(score, filterKey, attribute, memberInfo);
     }
 
+    /**
+     * Returns completion item that describes field of the composite entity, which is not backed by the database metadata
+     */
+    @NotNull
+    public static SQLQueryCompletionItem forSpecialCompositeField(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo
+    ) {
+        return new SQLSpecialCompositeFieldCompletionItem(score, filterKey, memberInfo);
+    }
+
     public static SQLQueryCompletionItem forJoinCondition(
         int score,
         @NotNull SQLQueryWordEntry filterKey,
@@ -424,6 +436,34 @@ public abstract class SQLQueryCompletionItem {
         @Override
         protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitCompositeField(this);
+        }
+    }
+
+    /**
+     * Completion item that describes field of the composite entity, which is not backed by the database metadata
+     */
+    public static class SQLSpecialCompositeFieldCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
+        public final SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo;
+
+        SQLSpecialCompositeFieldCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo
+        ) {
+            super(score, filterKey);
+            this.memberInfo = memberInfo;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitSpecialCompositeField(this);
         }
     }
 

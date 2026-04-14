@@ -40,7 +40,7 @@
                 id="stream.csv"
                 class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
                 description="%dataTransfer.producer.stream.processor.csv.description"
-                icon="icons/formats/csv.png"
+                icon="icons/formats/csv.svg"
                 label="%dataTransfer.producer.stream.processor.csv.name"
                 contentType="text/plain">
                 <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
@@ -49,6 +49,7 @@
                     <property id="delimiter" label="%dataTransfer.producer.stream.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
                     <property id="header" label="%dataTransfer.producer.stream.processor.csv.property.header.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top"/>
                     <property id="quoteChar" label="%dataTransfer.producer.stream.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
+                    <property id="strictQuotes" label="%dataTransfer.producer.stream.processor.csv.property.strictQuotes.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.strictQuotes.description" defaultValue="false" required="false"/>
                     <property id="escapeChar" label="%dataTransfer.producer.stream.processor.csv.property.escapeChar.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.escapeChar.description" defaultValue="\" required="false"/>
                     <property id="nullString" label="%dataTransfer.producer.stream.processor.csv.property.nullString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="emptyStringNull" label="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.description" defaultValue="" required="false"/>
@@ -74,9 +75,10 @@
 
             <processor
                     id="stream.xml"
+                    shortId="xml"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterXML"
                     description="%dataTransfer.processor.xml.description"
-                    icon="icons/formats/xml.png"
+                    icon="icons/formats/xml.svg"
                     label="%dataTransfer.processor.xml.name"
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
@@ -86,9 +88,10 @@
             </processor>
             <processor
                     id="stream.dbunit"
+                    shortId="dbunit"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterDbUnit"
                     description="%dataTransfer.processor.dbunit.description"
-                    icon="icons/formats/xml.png"
+                    icon="icons/formats/xml.svg"
                     label="%dataTransfer.processor.dbunit.name"
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
@@ -101,9 +104,10 @@
             </processor>
             <processor
                     id="stream.json"
+                    shortId="json"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterJSON"
                     description="%dataTransfer.processor.json.description"
-                    icon="icons/formats/json.png"
+                    icon="icons/formats/json.svg"
                     label="%dataTransfer.processor.json.name"
                     contentType="text/json">
                 <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
@@ -118,9 +122,10 @@
             </processor>
             <processor
                     id="stream.html"
+                    shortId="html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
-                    icon="icons/formats/html.png"
+                    icon="icons/formats/html.svg"
                     label="%dataTransfer.processor.html.name"
                     appFileExtension="html"
                     appName="%dataTransfer.processor.web.name"
@@ -136,9 +141,10 @@
             </processor>
             <processor
                     id="stream.csv"
+                    shortId="csv"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV"
                     description="%dataTransfer.processor.csv.description"
-                    icon="icons/formats/csv.png"
+                    icon="icons/formats/csv.svg"
                     label="%dataTransfer.processor.csv.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.csv.propertyGroup.general.label">
@@ -160,9 +166,10 @@
             </processor>
             <processor
                     id="stream.markdown.table"
+                    shortId="markdown"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterMarkdownTable"
                     description="%dataTransfer.processor.markdownTable.description"
-                    icon="icons/formats/markdown.png"
+                    icon="icons/formats/markdown.svg"
                     label="%dataTransfer.processor.markdownTable.name"
                 contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
@@ -175,6 +182,7 @@
             </processor>
             <processor
                     id="stream.sql"
+                    shortId="sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
                     icon="icons/formats/sql.svg"
@@ -198,9 +206,10 @@
             </processor>
             <processor
                     id="stream.txt"
+                    shortId="txt"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterTXT"
                     description="%dataTransfer.processor.txt.description"
-                    icon="icons/formats/text.png"
+                    icon="icons/formats/text.svg"
                     label="%dataTransfer.processor.txt.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
@@ -226,7 +235,7 @@
                     id="stream.source.code"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSourceCode"
                     description="%dataTransfer.processor.source.code.description"
-                    icon="icons/formats/code.png"
+                    icon="icons/formats/code.svg"
                     label="%dataTransfer.processor.source.code.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.source.code.propertyGroup.general.label">
@@ -327,4 +336,9 @@
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.tools.transfer.internal.DataTransferPreferencesInitializer"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource id="stream" class="org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSourceProvider" dialect="basic"/>
+    </extension>
+
 </plugin>

@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -287,6 +284,12 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         "TO_JSON"
     };
 
+    private static final String[] SNOWFLAKE_KEYWORDS = new String[] {
+        "SHOW",
+        "GRANTS",
+        "TRUNCATE"
+    };
+
     public SnowflakeSQLDialect() {
         super("Snowflake", "snowflake");
     }
@@ -319,6 +322,7 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
         addFunctions(Arrays.asList(SNOWFLAKE_GEOSPATIAL_FUNCTIONS));
         addFunctions(Arrays.asList(SNOWFLAKE_DATE_AND_TIME_FUNCTIONS));
         addFunctions(Arrays.asList(SNOWFLAKE_OTHER_FUNCTIONS));
+        addKeywords(Arrays.asList(SNOWFLAKE_KEYWORDS), DBPKeywordType.KEYWORD);
     }
 
     @NotNull

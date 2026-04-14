@@ -152,7 +152,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         for (Map.Entry<String, Map<String, Object>> consObject : JSONUtils.getNestedObjects(map, "constraints")) {
             String consName = consObject.getKey();
             Map<String, Object> consMap = consObject.getValue();
-            String consType = JSONUtils.getString(consMap, "type");
+            //String consType = JSONUtils.getString(consMap, "type");
             DBVEntityConstraint constraint = new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, consName);
             boolean useAllColumns = JSONUtils.getBoolean(consMap, "useAllColumns");
             constraint.setUseAllColumns(useAllColumns);
@@ -253,11 +253,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
     }
 
     @NotNull
@@ -729,7 +724,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
     }
 
@@ -742,8 +737,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
         @NotNull DBRProgressMonitor monitor,
-        List<DBDAttributeValue> precedingKeys,
         @NotNull DBSEntityAttribute keyColumn,
+        @Nullable List<DBDAttributeValue> restColumns,
         boolean sortAsc,
         boolean sortByDesc
     ) throws DBException {
@@ -751,8 +746,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (realEntity instanceof DBSDictionary) {
             return ((DBSDictionary) realEntity).getDictionaryAccessor(
                 monitor,
-                    precedingKeys,
                 keyColumn,
+                restColumns,
                 sortAsc,
                 sortByDesc
             );
@@ -776,7 +771,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         
         @NotNull
         @Override
-        public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException {
+        public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) {
             return Collections.emptyList();
         }
         
@@ -803,7 +798,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             boolean isPreceeding,
             long offset,
             long maxResults
-        ) throws DBException {
+        ) {
             return Collections.emptyList();
         }
         
@@ -813,18 +808,18 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             @NotNull Object pattern, boolean caseInsensitive, boolean byDesc, 
             Object value, boolean isPreceeding, 
             long offset, long maxResults
-        ) throws DBException {
+        ) {
             return Collections.emptyList();
         }
 
         @Override
-        public void close() throws Exception {
+        public void close() {
             // do nothing
         }
 
         @NotNull
         @Override
-        public List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException {
+        public List<DBDLabelValuePair> getValues(long offset, int pageSize) {
             return Collections.emptyList();
         }
     };

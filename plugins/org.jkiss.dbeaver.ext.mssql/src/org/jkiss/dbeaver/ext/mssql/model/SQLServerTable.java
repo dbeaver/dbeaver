@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCheckConstraintContainer;
@@ -166,13 +165,14 @@ public class SQLServerTable extends SQLServerTableBase
         return getSchema().getForeignKeyCache().getObjects(monitor, getSchema(), this);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option)
             || OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)
             || OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
@@ -210,12 +210,6 @@ public class SQLServerTable extends SQLServerTableBase
     @Override
     public long getStatObjectSize() {
         return totalBytes;
-    }
-
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
     }
 
     private void readTableStats(DBRProgressMonitor monitor) throws DBCException {

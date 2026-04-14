@@ -86,12 +86,14 @@ public class CSVImporterTest  extends DBeaverUnitTest {
   
     @Test
     public void guessColumnTypesWithLongData() throws DBException, IOException {
-    	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("2147483648,-9223372036854775808", false);
-    	Assert.assertEquals(2,  columnsInfo.size());
+    	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("2147483648,-9223372036854775808,1", false);
+    	Assert.assertEquals(3,  columnsInfo.size());
     	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
-    	Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+    	Assert.assertEquals("BIGINT", columnsInfo.get(0).getTypeName());
     	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
-    	Assert.assertEquals("INTEGER", columnsInfo.get(1).getTypeName());
+    	Assert.assertEquals("BIGINT", columnsInfo.get(1).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(2).getTypeName());
     }
     
     @Test

@@ -28,16 +28,16 @@
                         defaultHost="https://www.googleapis.com/bigquery/v2"
                         defaultPort="443"
                         description="Google BigQuery driver"
-                        webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
+                        webURL="https://docs.cloud.google.com/bigquery/docs/reference/odbc-jdbc-drivers"
                         propertiesURL="https://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/"
                         databaseDocumentationSuffixURL="Database-driver-BigQuery"
                         categories="sql,gcp"
                         singleConnection="true">
-                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.5.4.1008.zip" bundle="!drivers.bigquery"/>
+                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.6.3.1004.zip" bundle="!drivers.bigquery"/>
                     <file type="license" path="licenses/external/lgpl-3.0.txt"/>
 
                     <file type="jar" path="drivers/bigquery" bundle="drivers.bigquery"/>
-                    <file type="jar" path="drivers/google-jdbc-deps" bundle="drivers.bigquery"/>
+                    <file type="jar" path="bundle:/org.jkiss.bundle.google-cloud" bundle="drivers.bigquery"/>
                     <file type="license" path="drivers/bigquery/EULA.txt" bundle="drivers.bigquery"/>
 
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>

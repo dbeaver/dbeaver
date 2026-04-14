@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,26 +45,25 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     private static final Log log = Log.getLog(JDBCResultSetImpl.class);
 
     private final ResultSet original;
-    private final String description;
     private JDBCResultSetMetaData metaData;
     private long rowsFetched;
     private long maxRows = -1;
-    private final boolean fake;
     private final boolean disableLogging;
 
-    public static JDBCResultSet makeResultSet(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
-        throws SQLException
-    {
-        return session.getDataSource().getJdbcFactory().createResultSet(session, statement, original, description, disableLogging);
-    }
-
-    protected JDBCResultSetImpl(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
-    {
+    protected JDBCResultSetImpl(
+        @NotNull JDBCSession session,
+        @NotNull JDBCStatement statement,
+        @NotNull ResultSet original,
+        boolean disableLogging
+    ) {
         super(session, statement);
+
+        if (statement instanceof JDBCFakeStatementImpl fake) {
+            fake.setResultSet(this);
+        }
+
         this.original = original;
         this.disableLogging = disableLogging;
-        this.description = description;
-        this.fake = statement == null;
 
         if (!disableLogging) {
             // Notify handler
@@ -73,6 +72,20 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         if (JDBCTrace.isApiTraceEnabled()) {
             JDBCTrace.dumpResultSetOpen(this.original);
         }
+    }
+
+    @NotNull
+    public static JDBCResultSet makeResultSet(
+        @NotNull JDBCSession session,
+        @Nullable JDBCStatement statement,
+        @NotNull ResultSet original,
+        boolean disableLogging
+    ) throws SQLException {
+        if (statement == null) {
+            statement = new JDBCFakeStatementImpl(session, null, disableLogging);
+        }
+        return session.getDataSource().getJdbcFactory().createResultSet(
+            session, statement, original, disableLogging);
     }
 /*
 
@@ -95,12 +108,10 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         // FIXME: starte/end block. Do we need them here?
         //this.session.getProgressMonitor().startBlock(statement, null);
         //QMUtils.getDefaultHandler().handleResultSetFetch(this);
-        this.session.getExecutionContext().lockQueryExecution();
     }
 
     protected void afterFetch()
     {
-        this.session.getExecutionContext().unlockQueryExecution();
         if (JDBCUtils.LOG_JDBC_WARNINGS) {
             try {
                 JDBCUtils.reportWarnings(getSession(), this.getWarnings());
@@ -117,27 +128,16 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         return original;
     }
 
+    @NotNull
     @Override
     public JDBCSession getSession()
     {
         return session;
     }
 
+    @NotNull
     @Override
-    public JDBCStatement getSourceStatement()
-    {
-        if (fake && statement == null) {
-            // Make fake statement
-            JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(
-                session,
-                this,
-                "-- " + description, // Set description as commented SQL
-                disableLogging);
-            this.statement = fakeStatement;
-
-            fakeStatement.beforeExecute();
-            fakeStatement.afterExecute();
-        }
+    public JDBCStatement getSourceStatement() {
         return statement;
     }
 
@@ -190,6 +190,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             return this.next();
         }
         catch (SQLException e) {
+            if (!disableLogging) {
+                QMUtils.getDefaultHandler().handleFetchError(this, e);
+            }
             throw new DBCException(e, session.getExecutionContext());
         }
     }
@@ -320,9 +323,12 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
                 log.error("Can't close result set", e);
             }
         }
-        if (fake && statement != null) {
+
+        if (statement instanceof JDBCFakeStatementImpl) {
+            // Fake statements are closed by result set close
             statement.close();
         }
+
         if (JDBCTrace.isApiTraceEnabled()) {
             JDBCTrace.dumpResultSetClose();
         }

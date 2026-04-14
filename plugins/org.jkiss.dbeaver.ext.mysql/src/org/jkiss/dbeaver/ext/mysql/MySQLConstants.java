@@ -56,6 +56,9 @@ public class MySQLConstants {
 
     public static final String PROP_CACHE_META_DATA = "cache-meta-data";
 
+    public static final String PROP_SHOW_ALL_DBS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-dbs@";
+    public static final boolean PROP_SHOW_ALL_DBS_DEFAULT = true;
+
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
     public static final String INFO_SCHEMA_NAME = "information_schema";

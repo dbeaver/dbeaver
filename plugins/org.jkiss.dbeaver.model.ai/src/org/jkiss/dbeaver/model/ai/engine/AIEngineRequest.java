@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,50 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public record AIEngineRequest(
-    @NotNull List<AIMessage> messages
-) {
+/**
+ * Request to AI engine
+ */
+public final class AIEngineRequest {
+    @NotNull
+    private final List<AIMessage> messages;
+    private final List<AIFunctionDescriptor> functions = new ArrayList<>();
+    private boolean wasPromptTruncated = false;
 
-    public static AIEngineRequest of(
-        @NotNull DBRProgressMonitor monitor,
-        AIEngine engine,
-        List<AIMessage> messages
-    ) throws DBException {
-        int maxRequestSize = engine.getContextWindowSize(monitor);
-        List<AIMessage> truncatedMessages = AIUtils.truncateMessages(messages, maxRequestSize);
-        return new AIEngineRequest(truncatedMessages);
+    public AIEngineRequest(@NotNull List<AIMessage> messages) {
+        this.messages = messages;
     }
 
-    @Override
-    public String toString() {
-        return "AI request " + messages;
+    public AIEngineRequest(@NotNull AIMessage message) {
+        this(List.of(message));
+    }
+
+    @NotNull
+    public List<AIMessage> getMessages() {
+        return messages;
+    }
+
+    @NotNull
+    public List<AIFunctionDescriptor> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(@NotNull List<AIFunctionDescriptor> functions) {
+        this.functions.clear();
+        this.functions.addAll(functions);
+    }
+
+    public void setWasPromptTruncated(boolean wasPromptTruncated) {
+        this.wasPromptTruncated = wasPromptTruncated;
+    }
+
+    public boolean wasPromptTruncated() {
+        return wasPromptTruncated;
     }
 
 }

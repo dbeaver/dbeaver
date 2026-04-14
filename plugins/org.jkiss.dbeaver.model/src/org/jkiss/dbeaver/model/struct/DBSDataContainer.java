@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -41,23 +42,27 @@ public interface DBSDataContainer extends DBSObject {
     String FEATURE_DATA_SEARCH = "data.search";
     String FEATURE_KEY_VALUE = "data.key.value";
     String FEATURE_DATA_MODIFIED_ON_REFRESH = "data.modifying";
+    String FEATURE_DATA_READ_FETCHED = "data.read.fetched";
 
     long FLAG_NONE                  = 0;
     long FLAG_READ_PSEUDO           = 1 << 1;
     long FLAG_USE_SELECTED_ROWS     = 1 << 2;
     long FLAG_USE_SELECTED_COLUMNS  = 1 << 3;
     long FLAG_FETCH_SEGMENT         = 1 << 4;
+    long FLAG_USE_FETCHED_ROWS      = 1 << 5;
     long FLAG_REFRESH               = 1 << 8;
 
+    @Nullable
     DBPDataSource getDataSource();
 
     /**
      * Features supported by implementation
      * @return supported features
      */
+    @NotNull
     String[] getSupportedFeatures();
 
-    default boolean isFeatureSupported(String feature) {
+    default boolean isFeatureSupported(@NotNull String feature) {
         return ArrayUtils.contains(getSupportedFeatures(), feature);
     }
 
@@ -85,7 +90,7 @@ public interface DBSDataContainer extends DBSObject {
         long maxRows,
         long flags,
         int fetchSize)
-        throws DBCException;
+        throws DBException;
 
     /**
      * Counts data rows in container.
@@ -102,6 +107,6 @@ public interface DBSDataContainer extends DBSObject {
         @NotNull DBCSession session,
         @Nullable DBDDataFilter dataFilter,
         long flags)
-        throws DBCException;
+        throws DBException;
 
 }

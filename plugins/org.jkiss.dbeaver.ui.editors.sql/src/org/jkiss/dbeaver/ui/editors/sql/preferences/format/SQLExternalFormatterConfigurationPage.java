@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@
 package org.jkiss.dbeaver.ui.editors.sql.preferences.format;
 
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
@@ -37,7 +41,13 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
     @Override
     protected Composite createFormatSettings(Composite parent) {
 
-        Group settingsGroup = UIUtils.createControlGroup(parent, "Settings", 4, GridData.FILL_HORIZONTAL, 0);
+        Composite settingsGroup = UIUtils.createTitledComposite(
+            parent,
+            SQLEditorMessages.pref_page_sql_format_label_settings,
+            4,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
 
         externalCmdText = UIUtils.createLabelText(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_external_command_line, "");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -65,7 +75,7 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore store, boolean useDefaults) {
+    public void loadSettings(@NotNull DBPPreferenceStore store, boolean useDefaults) {
         super.loadSettings(store, useDefaults);
         externalCmdText.setText(useDefaults
             ? store.getDefaultString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD)
@@ -82,7 +92,7 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
     }
 
     @Override
-    public void saveSettings(DBPPreferenceStore store) {
+    public void saveSettings(@NotNull DBPPreferenceStore store) {
         super.saveSettings(store);
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD, externalCmdText.getText());
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE, externalUseFile.getSelection());

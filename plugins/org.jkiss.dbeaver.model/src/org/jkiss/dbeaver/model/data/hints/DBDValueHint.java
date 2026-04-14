@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.data.hints;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
@@ -41,16 +43,21 @@ public interface DBDValueHint {
 
     int OPTION_READ_ONLY = 1;
 
+    @NotNull
     HintType getHintType();
 
+    @Nullable
     String getHintText();
 
+    @Nullable
     String getHintDescription();
 
+    @Nullable
     default DBPImage getHintIcon() {
         return null;
     }
 
+    @NotNull
     default HintStyle getHintStyle() {
         return HintStyle.NORMAL;
     }

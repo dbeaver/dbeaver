@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
@@ -752,7 +753,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
         } else if (adapter == SQLHelpProvider.class) {
@@ -779,6 +780,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
@@ -788,18 +790,21 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return dataTypeCache;
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return dataTypeCache.getCachedObject(typeID);
     }
 
+    @NotNull
     @Override
-    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN:
                 return "TINYINT(1)";
@@ -824,7 +829,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -864,6 +869,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
+            boolean showAllDatabases = CommonUtils.getBoolean(
+                configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
+                MySQLConstants.PROP_SHOW_ALL_DBS_DEFAULT
+            );
+            String databaseName = getDatabaseName(configuration);
+            if (!showAllDatabases && CommonUtils.isNotEmpty(databaseName)) {
+                catalogFilters = new DBSObjectFilter();
+                catalogFilters.addInclude(databaseName);
+            }
             if (catalogFilters != null) {
                 boolean supportsCondition = owner.supportsConditionForShowDatabasesStatement();
                 if (!supportsCondition) {
@@ -875,7 +890,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     catalogFilters,
                     supportsCondition ? MySQLConstants.COL_DATABASE_NAME : MySQLConstants.COL_SCHEMA_NAME,
                     true,
-                    owner);
+                    owner
+                );
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
@@ -895,6 +911,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             return SQLState.SQL_42000.getCode().equals(sqlState);
         }
 
+        @Nullable
+        private String getDatabaseName(@NotNull DBPConnectionConfiguration configuration) {
+            try {
+                DBWUtils.ConnectivityParameters connectivityParameters = DBWUtils.getConnectivityParameters(
+                    configuration,
+                    getContainer().getDriver()
+                );
+                return connectivityParameters.databaseName();
+            } catch (DBException e) {
+                log.error(e);
+                return null;
+            }
+        }
     }
 
     @NotNull
@@ -907,6 +936,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             getContainer().getDriver().getDriverClassName());
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {

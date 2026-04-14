@@ -39,7 +39,6 @@ import org.jkiss.utils.Pair;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +55,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     private final SQLQueryComplexName name;
     @Nullable
     private DBSEntity table = null;
+    @Nullable
+    private DBSObject immediateTargetObject = null;
 
     private final boolean forDdl;
 
@@ -85,6 +86,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     }
 
     @Nullable
+    public DBSObject getImmediateTargetObject() {
+        return this.immediateTargetObject;
+    }
+
+    @Nullable
     public SQLQueryRowsSourceModel getReferencedSource() {
         return this.referencedSource;
     }
@@ -107,46 +113,47 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
 
     @Override
     protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
-        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRowsSourceContext originalContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQuerySymbolOrigin rowsetRefOrigin = new SQLQuerySymbolOrigin.RowsSourceRef(context);
         if (this.name == null) {
             statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
-            return context.resetAsUnresolved();
+            return originalContext.resetAsUnresolved();
         }
         if (this.name.invalidPartsCount > 0) {
+            SQLQueryRowsSourceContext nameContext = originalContext.resetAsUnresolved();
             SQLQuerySemanticUtils.performPartialResolution(
-                context,
+                nameContext,
                 statistics,
                 this.name,
-                rowsetRefOrigin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                new SQLQuerySymbolOrigin.RowsSourceRef(nameContext),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
                 SQLQuerySymbolClass.ERROR
             );
             statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
-            return context.resetAsUnresolved();
+            return nameContext;
         }
 
         if (this.name.parts.size() == 1) {
-            if (this.name.stringParts.getLast().equalsIgnoreCase(context.getDialect().getDualTableName())) {
+            if (this.name.stringParts.getLast().equalsIgnoreCase(originalContext.getDialect().getDualTableName())) {
                 this.name.parts.getLast().getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
-                return context.reset();
+                return originalContext.reset();
             } else {
-                SourceResolutionResult dynamicSource = context.findDynamicRowsSource(this.name.parts.getFirst());
+                SourceResolutionResult dynamicSource = originalContext.findDynamicRowsSource(this.name.parts.getFirst());
                 if (dynamicSource != null) {
                     this.referencedSource = dynamicSource.source;
                     SQLQueryComplexName referenceName = dynamicSource.referenceName;
+                    SQLQueryRowsSourceContext nameContext = originalContext.reset();
                     if (referenceName != null) {
                         this.name.parts.getFirst().setDefinition(referenceName.parts.getLast());
-                        this.name.parts.getFirst().setOrigin(rowsetRefOrigin);
+                        this.name.parts.getFirst().setOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(nameContext));
                     }
-                    return context.reset().appendSource(this, name, null);
+                    return nameContext.appendSource(this, name, null);
                 }
             }
         }
 
-        List<? extends DBSObject> candidates = context.getConnectionInfo().findRealObjects(
+        List<? extends DBSObject> candidates = originalContext.getConnectionInfo().findRealObjects(
             statistics.getMonitor(),
             RelationalObjectType.TYPE_UNKNOWN,
             this.name.stringParts
@@ -156,27 +163,35 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
 
         this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
 
+        SQLQueryRowsSourceContext resultContext;
         if (this.table != null) {
-            SQLQuerySemanticUtils.setNamePartsDefinition(this.name, refTarget, SQLQuerySymbolClass.TABLE, rowsetRefOrigin);
-            context = context.reset().appendSource(this, name, this.table);
+            this.immediateTargetObject = refTarget;
+            SQLQueryRowsSourceContext nameContext = originalContext.reset();
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                nameContext, this.name, refTarget, SQLQuerySymbolClass.TABLE,
+                new SQLQuerySymbolOrigin.RowsSourceRef(nameContext),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET
+            );
+            resultContext = nameContext.appendSource(this, name, this.table);
         } else {
+            SQLQueryRowsSourceContext nameContext = originalContext.resetAsUnresolved();
             SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
                 ? SQLQuerySymbolClass.TABLE
                 : SQLQuerySymbolClass.ERROR;
             SQLQuerySemanticUtils.performPartialResolution(
-                context,
+                nameContext,
                 statistics,
                 this.name,
-                rowsetRefOrigin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                new SQLQuerySymbolOrigin.RowsSourceRef(nameContext),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
                 tableSymbolClass
             );
-            context = context.resetAsUnresolved();
-            if (candidates.isEmpty() || (candidates.size() == 1 && table != null)) {
+            resultContext = nameContext;
+            if (candidates.isEmpty() || candidates.size() == 1) {
                 statistics.appendError(this.name.syntaxNode, "Table " + this.name.getNameString() + " not found");
             }
         }
-        return context;
+        return resultContext;
     }
 
     @Nullable

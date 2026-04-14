@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oceanbase.model.plan;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -32,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
+public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
 
     private final OceanbasePlanNodeJSON parent;
     private final Map<String, String> nodeProps = new LinkedHashMap<>();
@@ -104,12 +105,14 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         nested.add(new OceanbasePlanNodeJSON(this, name, value));
     }
 
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -170,11 +173,13 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
 
+    @Nullable
     @Override
     public OceanbasePlanNodeJSON getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<OceanbasePlanNodeJSON> getNested() {
         return nested;
@@ -185,11 +190,13 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         return object == null ? nodeProps.toString() : object.toString();
     }
 
+    @NotNull
     @Override
     public Object getEditableValue() {
         return this;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
@@ -201,33 +208,34 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         return props;
     }
 
+    @Nullable
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
         return nodeProps.get(id);
     }
 
     @Override
-    public boolean isPropertySet(String id) {
+    public boolean isPropertySet(@NotNull String id) {
         return false;// attributes.containsKey(id.toString());
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
         // noting to do
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
         // noting to do
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value) {
         // noting to do
     }
 

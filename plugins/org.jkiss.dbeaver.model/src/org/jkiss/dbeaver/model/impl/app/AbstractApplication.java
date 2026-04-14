@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
@@ -41,6 +40,8 @@ import java.util.UUID;
 public abstract class AbstractApplication implements IApplication, DBPApplication {
 
     private static final Log log = Log.getLog(AbstractApplication.class);
+
+    public static final Integer EXIT_ERROR_UNSPECIFIED = 1;
 
     private static DBPApplication INSTANCE;
 
@@ -124,7 +125,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
     }
 
     @Override
-    public String getInfoDetails(DBRProgressMonitor monitor) {
+    public String getInfoDetails() {
         return "N/A";
     }
 
@@ -147,6 +148,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
     /////////////////////////////////////////
     // IApplication
 
+    @NotNull
     @Override
     public Object start(IApplicationContext context) throws Exception {
         return EXIT_OK;

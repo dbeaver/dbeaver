@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.gis.IGeometryValueEditor;
@@ -60,7 +59,7 @@ public class GISTextViewer extends StringInlineEditor implements IGeometryViewer
     @Override
     protected Control createControl(Composite editPlaceholder) {
         Composite composite = UIUtils.createPlaceholder(editPlaceholder, 1);
-        CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(composite);
 
         Composite controlPanel = UIUtils.createPlaceholder(composite, 1);
         controlPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -70,7 +69,7 @@ public class GISTextViewer extends StringInlineEditor implements IGeometryViewer
 
         Composite bottomPanel = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
         bottomPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        CSSUtils.setCSSClass(bottomPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(bottomPanel);
 
         ToolBar bottomToolbar = new ToolBar(bottomPanel, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 

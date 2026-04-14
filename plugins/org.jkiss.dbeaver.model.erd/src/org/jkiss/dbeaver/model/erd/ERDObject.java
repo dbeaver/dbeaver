@@ -89,7 +89,7 @@ public abstract class ERDObject<OBJECT> implements DBPAdaptable, DBPNamedObject 
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBPPropertySource.class) {
             PropertyCollector propertyCollector = new PropertyCollector(object, false);
             propertyCollector.collectProperties();

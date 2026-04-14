@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
 
 <plugin>
 
@@ -262,6 +246,7 @@
                     defaultUser="root"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
+                    databaseDocumentationSuffixURL="Database-driver-MariaDB"
                     description="MariaDB JDBC driver"
                     promoted="1"
                     categories="sql">
@@ -303,6 +288,7 @@
                 </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
+                        <property id="@dbeaver-show-all-dbs@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." defaultValue="false"/>
                         <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
                     </propertyGroup>
                 </provider-properties>
@@ -388,16 +374,27 @@
                 type="config"
                 id="mysql_ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="Secure socket layer"
                 desktop="false"
                 secured="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
             <propertyGroup label="SSL Settings">
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert" label="CA Certificate Path" type="string" description="Path to a CA certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
+                          desktop="true"/>
                 <property id="ssl.cipher.suites" label="Cipher Suites (optional)" description="Specify a comma-separated list of cipher suites" type="string" features="secured,password"/>
             </propertyGroup>
             <propertyGroup label="Additional SSL Settings">

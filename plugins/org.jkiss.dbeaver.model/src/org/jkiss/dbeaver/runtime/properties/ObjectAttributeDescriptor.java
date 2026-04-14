@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -144,7 +143,7 @@ public abstract class ObjectAttributeDescriptor {
         return isLazy;
     }
 
-    public boolean isLazy(Object object, boolean checkParent)
+    public boolean isLazy(@NotNull Object object, boolean checkParent)
     {
         if (object instanceof DBSObject dbso && !dbso.isPersisted()) {
             return false;
@@ -183,17 +182,7 @@ public abstract class ObjectAttributeDescriptor {
 
     @NotNull
     public static Class<?> getObjectClass(Object theObject) {
-        if (theObject instanceof DPIClientObject) {
-            String objectType = ((DPIClientObject) theObject).dpiObjectType();
-            try {
-                return  ((DPIClientObject) theObject).dpiClassLoader().loadClass(objectType);
-            } catch (ClassNotFoundException e) {
-                log.debug("Cannot determine DPI object local class '" + objectType + "'", e);
-                return theObject.getClass();
-            }
-        } else {
-            return theObject.getClass();
-        }
+        return theObject.getClass();
     }
 
     @NotNull
@@ -203,8 +192,19 @@ public abstract class ObjectAttributeDescriptor {
         IPropertyFilter filter,
         @Nullable String locale
     ) {
+        return extractAnnotations(source, theClass, filter, locale, true);
+    }
+
+    @NotNull
+    public static List<ObjectPropertyDescriptor> extractAnnotations(
+        @Nullable DBPPropertySource source,
+        Class<?> theClass,
+        IPropertyFilter filter,
+        @Nullable String locale,
+        boolean collectLocalizedNames
+    ) {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
-        extractAnnotations(source, null, theClass, annoProps, filter, locale);
+        extractAnnotations(source, null, theClass, annoProps, filter, locale,  collectLocalizedNames);
         return annoProps;
     }
 
@@ -227,8 +227,9 @@ public abstract class ObjectAttributeDescriptor {
         Class<?> theClass,
         List<ObjectPropertyDescriptor> annoProps,
         IPropertyFilter filter,
-        @Nullable String locale)
-    {
+        @Nullable String locale,
+        boolean collectLocalizedNames
+    ) {
         Object object = source == null ? null : source.getEditableValue();
         Method[] methods = theClass.getMethods();
         Map<String, Method> passedNames = new HashMap<>();
@@ -255,7 +256,7 @@ public abstract class ObjectAttributeDescriptor {
                     continue;
                 }
                 // Single property
-                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method, locale);
+                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method, locale, collectLocalizedNames);
                 if (filter != null && !filter.select(object, desc)) {
                     continue;
                 }
@@ -269,6 +270,7 @@ public abstract class ObjectAttributeDescriptor {
             }
         }
         annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+
     }
 
 }

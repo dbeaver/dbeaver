@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,7 +99,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true);
+        boolean isLoaded = loadDataSources(true) != null;
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
             addDataSourceListener(modelChangeListener);
@@ -737,6 +739,29 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    /**
+     * Flushes all pending data source events. This is a blocking operation.
+     */
+    public void flushDataSourceEvents() {
+        final DBPEventListener[] listeners;
+        final DBPEvent[] events;
+        synchronized (dataSourceListeners) {
+            events = dataSourceEvents.toArray(new DBPEvent[0]);
+            dataSourceEvents.clear();
+
+            if (dataSourceListeners.isEmpty()) {
+                return;
+            }
+            listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
+        }
+
+        for (DBPEvent event : events) {
+            for (DBPEventListener listener : listeners) {
+                listener.handleDataSourceEvent(event);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
@@ -777,7 +802,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    private boolean loadDataSources(boolean refresh) {
+    private DataSourceParseResults loadDataSources(boolean refresh) {
        return loadDataSources(
             configurationManager.getConfigurationStorages(),
             configurationManager,
@@ -787,17 +812,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public boolean loadDataSources(
+    public DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     ) {
-        // need this to show is the data source was updated
-        boolean configChanged = false;
         if (!project.isOpen() || project.isInMemory()) {
-            return false;
+            return null;
         }
         // Clear filters before reload
         savedFilters.clear();
@@ -807,10 +830,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
             if (loadDataSources(cfgStorage, manager, dataSourceIds, parseResults)) {
-                configChanged = true;
             } else {
                 if (lastError != null) {
-                    return false;
+                    return null;
                 }
             }
         }
@@ -829,27 +851,25 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
 
             if (purgeUntouched) {
-                List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
                 for (DataSourceDescriptor ds : dataSources.values()) {
                     if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
                         !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
                     {
-                        removedDataSource.add(ds);
+                        parseResults.removedDataSources.add(ds);
                     }
                 }
-                for (DataSourceDescriptor ds : removedDataSource) {
+                for (DBPDataSourceContainer ds : parseResults.removedDataSources) {
                     this.dataSources.remove(ds.getId());
                     this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
                     ds.dispose();
                 }
 
-                List<DataSourceFolder> removedFolder = new ArrayList<>();
                 for (DataSourceFolder folder : dataSourceFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
-                        removedFolder.add(folder);
+                        parseResults.removedFolders.add(folder);
                     }
                 }
-                for (DataSourceFolder folder : removedFolder) {
+                for (DBPDataSourceFolder folder : parseResults.removedFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)
                         && !DataSourceUtils.isFolderHasTemporaryDataSources(folder)
                     ) {
@@ -862,7 +882,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         updateProjectNature();
 
-        return configChanged;
+        return parseResults;
     }
 
     protected boolean loadDataSources(
@@ -956,7 +976,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    protected void updateProjectNature() {
+    private void updateProjectNature() {
+        if (project instanceof BaseProjectImpl bp) {
+            bp.updateProjectNature();
+        }
     }
 
     @NotNull
@@ -1067,23 +1090,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            final DBPEventListener[] listeners;
-            final DBPEvent[] events;
-            synchronized (dataSourceListeners) {
-                events = dataSourceEvents.toArray(new DBPEvent[0]);
-                dataSourceEvents.clear();
-
-                if (dataSourceListeners.isEmpty()) {
-                    return Status.OK_STATUS;
-                }
-                listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
-            }
-
-            for (DBPEvent event : events) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-            }
+            flushDataSourceEvents();
             return Status.OK_STATUS;
         }
     }
@@ -1131,8 +1138,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         ConfigSaver() {
             super("Datasource configuration save");
         }
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (DataSourceRegistry.this) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 saveDataSources(monitor);

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -66,6 +67,7 @@ public class OracleSchema extends OracleGlobalObject implements
     // Synonyms read is very expensive. Exclude them from children by default
     // Children are used in auto-completion which must be fast
     private boolean synonymsAsChildren = false;
+    private boolean sequencesAsChildren = false;
 
     final public TableCache tableCache = new TableCache();
     final public ConstraintCache constraintCache = new ConstraintCache();
@@ -96,8 +98,9 @@ public class OracleSchema extends OracleGlobalObject implements
         super(dataSource, id > 0);
         this.id = id;
         this.name = name;
-        synonymsAsChildren = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        this.loadMetadataOptions();
     }
+
 
     public OracleSchema(@NotNull OracleDataSource dataSource, @NotNull ResultSet dbResult) {
         super(dataSource, true);
@@ -108,7 +111,13 @@ public class OracleSchema extends OracleGlobalObject implements
             this.name = "? " + super.hashCode();
         }
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
-        synonymsAsChildren = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        this.loadMetadataOptions();
+    }
+
+    private void loadMetadataOptions() {
+        DBPConnectionConfiguration cfg = this.getDataSource().getContainer().getConnectionConfiguration();
+        synonymsAsChildren = CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        sequencesAsChildren = CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
     }
 
     public boolean isPublic()
@@ -379,6 +388,9 @@ public class OracleSchema extends OracleGlobalObject implements
         if (synonymsAsChildren) {
             children.addAll(synonymCache.getAllObjects(monitor, this));
         }
+        if (sequencesAsChildren) {
+            children.addAll(sequenceCache.getAllObjects(monitor, this));
+        }
         children.addAll(packageCache.getAllObjects(monitor, this));
         return children;
     }
@@ -397,17 +409,22 @@ public class OracleSchema extends OracleGlobalObject implements
                 return synonym;
             }
         }
+        if (sequencesAsChildren) {
+            OracleSequence sequence = sequenceCache.getObject(monitor, this, childName);
+            if (sequence != null) {
+                return sequence;
+            }
+        }
         return packageCache.getObject(monitor, this, childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return OracleTable.class;
     }
 
+    @NotNull
     @Override
     public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) {
         return List.of(this.getDataSource().getPublicSchema());
@@ -490,7 +507,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -528,6 +545,7 @@ public class OracleSchema extends OracleGlobalObject implements
         }
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
@@ -707,7 +725,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Override
         protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
+            throws DBException
         {
             return new OracleTableColumn(session.getProgressMonitor(), table, dbResult);
         }
@@ -785,7 +803,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase forTable)
             throws SQLException
         {
             
@@ -883,7 +901,9 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Nullable
         @Override
-        protected OracleTableConstraint fetchObject(JDBCSession session, OracleSchema owner, OracleTableBase parent, String indexName, JDBCResultSet dbResult)
+        protected OracleTableConstraint fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase parent, @NotNull
+        String indexName, @NotNull
+        JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableConstraint(parent, dbResult);
@@ -892,10 +912,11 @@ public class OracleSchema extends OracleGlobalObject implements
         @Nullable
         @Override
         protected OracleTableConstraintColumn[] fetchObjectRow(
-            JDBCSession session,
-            OracleTableBase parent, OracleTableConstraint object, JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+            @NotNull JDBCSession session,
+            @NotNull OracleTableBase parent,
+            @NotNull OracleTableConstraint object,
+            @NotNull JDBCResultSet dbResult
+        ) throws DBException {
             //resultset has field COLUMN_NAMES_NUMS - special query was used
             if (JDBCUtils.safeGetString(dbResult, "COLUMN_NAMES_NUMS") != null) {
                 
@@ -931,26 +952,23 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableConstraint constraint, @NotNull List<OracleTableConstraintColumn> rows)
         {
             constraint.setAttributeReferences(rows);
         }
     }
     
-    class SpecialPosition {
+    static class SpecialPosition {
         
         private final String column;
         private final int pos;
         
-        public SpecialPosition(String value) {
-            
-            String data[] = value.split(":");
+        public SpecialPosition(@NotNull String value) {
+            String[] data = value.split(":");
             
             this.column = data[0];
             
-            this.pos = data.length == 1 ? 0 : Integer.valueOf(data[1]);
-            
-            
+            this.pos = data.length == 1 ? 0 : CommonUtils.toInt(data[1]);
         }
         
         public SpecialPosition(String column, int pos) {
@@ -1001,7 +1019,7 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @Override
-        protected void loadObjects(DBRProgressMonitor monitor, OracleSchema schema, OracleTable forParent)
+        protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema schema, @Nullable OracleTable forParent)
             throws DBException
         {
                  
@@ -1014,7 +1032,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTable forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTable forTable)
             throws SQLException
         {
             boolean useSimpleConnection = CommonUtils.toBoolean(session.getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
@@ -1108,7 +1126,9 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Nullable
         @Override
-        protected OracleTableForeignKey fetchObject(JDBCSession session, OracleSchema owner, OracleTable parent, String indexName, JDBCResultSet dbResult)
+        protected OracleTableForeignKey fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTable parent, @NotNull
+        String indexName, @NotNull
+        JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableForeignKey(session.getProgressMonitor(), parent, dbResult);
@@ -1117,8 +1137,8 @@ public class OracleSchema extends OracleGlobalObject implements
         @Nullable
         @Override
         protected OracleTableForeignKeyColumn[] fetchObjectRow(
-            JDBCSession session,
-            OracleTable parent, OracleTableForeignKey object, JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull OracleTable parent, @NotNull OracleTableForeignKey object, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
            
@@ -1163,7 +1183,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableForeignKey foreignKey, @NotNull List<OracleTableForeignKeyColumn> rows)
         {
             foreignKey.setAttributeReferences((List)rows);
         }
@@ -1181,7 +1201,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -1214,11 +1234,11 @@ public class OracleSchema extends OracleGlobalObject implements
         @Nullable
         @Override
         protected OracleTableIndex fetchObject(
-            JDBCSession session,
-            OracleSchema owner,
-            OracleTableBase parent,
-            String indexName,
-            JDBCResultSet dbResult
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @NotNull OracleTableBase parent,
+            @NotNull String indexName,
+            @NotNull JDBCResultSet dbResult
         ) throws SQLException, DBException {
             return new OracleTableIndex(owner, parent, indexName, dbResult);
         }
@@ -1226,10 +1246,10 @@ public class OracleSchema extends OracleGlobalObject implements
         @Nullable
         @Override
         protected OracleTableIndexColumn[] fetchObjectRow(
-            JDBCSession session,
-            OracleTableBase parent,
-            OracleTableIndex object,
-            JDBCResultSet dbResult
+            @NotNull JDBCSession session,
+            @NotNull OracleTableBase parent,
+            @NotNull OracleTableIndex object,
+            @NotNull JDBCResultSet dbResult
         ) throws DBException {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
@@ -1251,7 +1271,7 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableIndex index, List<OracleTableIndexColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableIndex index, @NotNull List<OracleTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
@@ -1481,7 +1501,11 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema schema, OracleTableBase table) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema schema,
+            @Nullable OracleTableBase table
+        ) throws SQLException {
             final JDBCPreparedStatement dbStmt = session.prepareStatement(
                 "SELECT" + OracleUtils.getSysCatalogHint(schema.getDataSource()) + " t.*, c.*, c.COLUMN_NAME AS TRIGGER_COLUMN_NAME" +
                 "\nFROM " +
@@ -1501,13 +1525,24 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Nullable
         @Override
-        protected OracleTableTrigger fetchObject(JDBCSession session, OracleSchema schema, OracleTableBase table, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected OracleTableTrigger fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema schema,
+            @NotNull OracleTableBase table,
+            @NotNull String childName,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new OracleTableTrigger(table, resultSet);
         }
 
         @Nullable
         @Override
-        protected OracleTriggerColumn[] fetchObjectRow(JDBCSession session, OracleTableBase table, OracleTableTrigger trigger, JDBCResultSet resultSet) throws DBException {
+        protected OracleTriggerColumn[] fetchObjectRow(
+            @NotNull JDBCSession session,
+            @NotNull OracleTableBase table,
+            @NotNull OracleTableTrigger trigger,
+            @NotNull JDBCResultSet resultSet
+        ) throws DBException {
             final OracleTableBase refTable = OracleTableBase.findTable(
                 session.getProgressMonitor(),
                 table.getDataSource(),
@@ -1532,7 +1567,7 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableTrigger trigger, List<OracleTriggerColumn> columns) {
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableTrigger trigger, @NotNull List<OracleTriggerColumn> columns) {
             trigger.setColumns(columns);
         }
 

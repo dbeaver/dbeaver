@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public final class MySQLUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages"; //$NON-NLS-1$
@@ -34,6 +34,8 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_connection_server_timezone;
     public static String dialog_connection_auto_detect;
     public static String dialog_connection_local_client;
+    public static String dialog_connection_show_all_databases;
+    public static String dialog_connection_show_all_databases_tip;
     public static String edit_catalog_manager_dialog_schema_name;
     public static String edit_command_change_user_action_create_new_user;
     public static String edit_command_change_user_action_update_user_record;
@@ -104,6 +106,7 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_checkbox_dump_events;
     public static String tools_db_export_wizard_page_settings_checkbox_ext_inserts;
     public static String tools_db_export_wizard_page_settings_checkbox_no_create;
+    public static String tools_db_export_wizard_page_settings_checkbox_compressed;
     public static String tools_db_export_wizard_page_settings_combo_item_lock_tables;
     public static String tools_db_export_wizard_page_settings_combo_item_normal;
     public static String tools_db_export_wizard_page_settings_combo_item_online_backup;

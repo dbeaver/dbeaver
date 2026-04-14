@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -55,6 +54,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
@@ -65,21 +65,18 @@ import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
-import org.jkiss.dbeaver.ui.navigator.project.FileSystemExplorerView;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 /**
  * DBeaver UI core
@@ -95,10 +92,10 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     static void disposeUI() {
-        DesktopUI instance = getInstance();
-        if (instance != null) {
+        DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+        if (platformUI instanceof DesktopUI desktopUI) {
             try {
-                instance.dispose();
+                desktopUI.dispose();
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -114,8 +111,9 @@ public class DesktopUI extends ConsoleUserInterface {
     // This method is called during startup thru @ComponentReference in workbench
     public void initialize() {
         new AbstractJob("Workbench listener") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
                     UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
@@ -140,7 +138,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public UserResponse showError(@Nullable final String title, @Nullable final String message, @NotNull final IStatus status) {
+    public UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status) {
         if (isHeadlessMode()) {
             return super.showError(title, message, status);
         }
@@ -170,7 +168,7 @@ public class DesktopUI extends ConsoleUserInterface {
             // Display the dialog
             StandardErrorDialog dialog = new StandardErrorDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                Objects.requireNonNull(title, "Error"),
+                CommonUtils.notNull(title, "Error"),
                 message,
                 status,
                 IStatus.ERROR);
@@ -185,10 +183,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public UserResponse showError(@Nullable String title, @Nullable String message, Throwable error) {
-        if (error == null) {
-            return showError(title, message);
-        }
+    public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull Throwable error) {
         if (isHeadlessMode()) {
             return super.showError(title, message, error);
         }
@@ -311,7 +306,7 @@ public class DesktopUI extends ConsoleUserInterface {
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
             .toList();
 
-        return UIUtils.syncExec(new RunnableWithResult<>() {
+        UserChoiceResponse userChoice = UIUtils.syncExec(new RunnableWithResult<>() {
             public UserChoiceResponse runWithResult() {
                 List<Button> extraCheckboxes = new ArrayList<>(forAllLabels.size());
                 Integer[] selectedCheckboxIndex = {null};
@@ -324,7 +319,7 @@ public class DesktopUI extends ConsoleUserInterface {
                 if (previousChoice != null && reply.get(previousChoice) != null) {
                     mbb.setDefaultReply(reply.get(previousChoice));
                 }
-                if (forAllLabels.size() > 0) {
+                if (!forAllLabels.isEmpty()) {
                     mbb.setCustomArea(pp -> {
                         SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
                             int chkIndex = (Integer) e.widget.getData();
@@ -350,7 +345,8 @@ public class DesktopUI extends ConsoleUserInterface {
                 int choiceIndex = reply.indexOf(result);
                 return new UserChoiceResponse(choiceIndex, selectedCheckboxIndex[0]);
             }
-        }); 
+        });
+        return userChoice == null ? new UserChoiceResponse(0, null) : userChoice;
     }
 
     @Override
@@ -433,6 +429,7 @@ public class DesktopUI extends ConsoleUserInterface {
         }.execute();
     }
 
+    @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible) {
         // Ask user
@@ -451,12 +448,31 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public String promptProperty(String prompt, String defValue) {
+    @Nullable
+    public String promptProperty(@NotNull String prompt, @Nullable String defValue) {
+        return promptProperty(s -> new EnterNameDialog(s, prompt, defValue));
+    }
+
+    @Override
+    @Nullable
+    public String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue) {
+        return promptProperty(s -> new EnterNameDialog(s, prompt, defValue) {
+            @NotNull
+            @Override
+            protected String createTitle() {
+                return title;
+            }
+        });
+    }
+
+    @Nullable
+    private String promptProperty(@NotNull Function<Shell, EnterNameDialog> dialogFactory) {
         return new UITask<String>() {
             @Override
+            @Nullable
             public String runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
-                final EnterNameDialog dialog = new EnterNameDialog(shell, prompt, defValue);
+                final EnterNameDialog dialog = dialogFactory.apply(shell);
                 if (dialog.open() == IDialogConstants.OK_ID) {
                     return dialog.getResult();
                 } else {
@@ -531,16 +547,8 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeWithProgress(@NotNull Runnable runnable) {
-        UIExecutionQueue.queueExec(runnable);
-    }
-
-    @Override
-    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        // FIXME: we need to run with progress service bu we can't change active control focus
-        // Otherwise it breaks some functions (e.g. data editor value save as it handles focus events).
-        // so we can use runInProgressServie function
-        runnable.run(new VoidProgressMonitor());
+    public void executeInMainThread(@NotNull Runnable runnable) {
+        UIUtils.syncExec(runnable);
     }
 
     /**
@@ -553,8 +561,9 @@ public class DesktopUI extends ConsoleUserInterface {
         @NotNull DBRRunnableWithResult<Future<T>> runnable
     ) {
         final AbstractJob job = new AbstractJob(operationDescription) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                 try {
                     UIExecutionQueue.blockQueue();
@@ -622,7 +631,7 @@ public class DesktopUI extends ConsoleUserInterface {
                             }  
                         };
                         
-                        progress.run(true, runnable != null, monitor -> {
+                        progress.run(true, true, monitor -> {
                             monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                             job.join();
                             monitor.done();
@@ -655,15 +664,19 @@ public class DesktopUI extends ConsoleUserInterface {
         return UIUtils.runWithMonitor(runnable);
     }
 
+    @Override
+    public <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return UIUtils.runWithDialog(runnable);
+    }
 
     @NotNull
     @Override
-    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+    public <RESULT> Job createLoadingService(@NotNull ILoadService<RESULT> loadingService, @NotNull ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
     }
 
     @Override
-    public void copyTextToClipboard(String text, boolean htmlFormat) {
+    public void copyTextToClipboard(@NotNull String text, boolean htmlFormat) {
         if (CommonUtils.isEmpty(text)) {
             return;
         }
@@ -685,7 +698,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeShellProgram(String shellCommand) {
+    public void executeShellProgram(@NotNull String shellCommand) {
         UIUtils.asyncExec(() -> ShellUtils.launchProgram(shellCommand));
     }
 
@@ -703,63 +716,7 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
-        DBNFileSystems fileSystemsNode = FileSystemExplorerView.getFileSystemsNode();
-        if (fileSystemsNode == null) {
-            log.error("File system root node not found");
-            return null;
-        }
-        DBNNode selectedNode = null;
-        if (defaultValue != null) {
-            try {
-                selectedNode = UIUtils.runWithMonitor(monitor -> {
-                    monitor.beginTask("Locate file", 1);
-                    monitor.subTask("Locate '" + defaultValue + "'");
-                    try {
-                        return fileSystemsNode.findNodeByPath(monitor, defaultValue);
-                    } finally {
-                        monitor.done();
-                    }
-                });
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        List<String> allExtensions = new ArrayList<>();
-        if (filterExt != null && filterExt.length > 0) {
-            for (String maskList : filterExt) {
-                for (String mask : maskList.split(";")) {
-                    String ext = IOUtils.getFileExtension(mask);
-                    if (ext != null) {
-                        allExtensions.add(ext);
-                    }
-                }
-            }
-        }
-
-        Predicate<String> extFilter = s -> {
-            if (allExtensions.contains("*")) {
-                return true;
-            }
-            if (!allExtensions.isEmpty()) {
-                int i = s.lastIndexOf('.');
-                if (i < 0) return false;
-                return allExtensions.contains(s.substring(i + 1).toLowerCase());
-            }
-            return true;
-        };
-        DBNNode object = ObjectBrowserDialog.selectObject(
-            UIUtils.getActiveWorkbenchShell(),
-            title,
-            fileSystemsNode,
-            selectedNode,
-            new Class[] { DBNPathBase.class },
-            new Class[] { DBNPathBase.class },
-            null,
-            extFilter);
-        if (object instanceof DBNPathBase path) {
-            return path;
-        }
+        showMessageBox("Not supported", "External file system are not supported", true);
         return null;
     }
 
@@ -791,5 +748,4 @@ public class DesktopUI extends ConsoleUserInterface {
             return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
     }
-
 }

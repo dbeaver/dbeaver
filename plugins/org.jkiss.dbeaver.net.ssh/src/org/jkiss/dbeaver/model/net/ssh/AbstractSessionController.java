@@ -276,7 +276,11 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             if (jumpPortForward != null) {
                 origin.removePortForward(jumpPortForward);
             }
-            origin.disconnect(monitor, configuration, timeout);
+            try {
+                origin.disconnect(monitor, configuration, timeout);
+            } catch (Exception e) {
+                log.debug("Error during SSH session close", e);
+            }
 
             registered = false;
             jumpDestination = null;
@@ -475,9 +479,8 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         public void removePortForward(@NotNull SSHPortForwardConfiguration configuration) throws DBException {
             final PortForwardInfo info = portForwards.get(configuration);
             if (info == null) {
-                throw new DBException("Port forward is not set up: " + configuration);
-            }
-            if (info.usages.decrementAndGet() == 0) {
+                log.debug("SSH port forward is not set up: " + configuration + ". Tunnel opening was interrupted?");
+            } else if (info.usages.decrementAndGet() == 0) {
                 super.removePortForward(info.resolved);
                 portForwards.remove(configuration);
             }

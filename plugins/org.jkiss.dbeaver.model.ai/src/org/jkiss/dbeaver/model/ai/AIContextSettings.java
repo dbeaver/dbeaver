@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,10 +48,12 @@ public abstract class AIContextSettings {
 
     protected static class PersistentSettings {
         public boolean confirmed;
+        public boolean mcpEnabled;
         public AIDatabaseScope scope;
         public String[] objects;
     }
 
+    @Nullable
     public abstract DBPDataSourceContainer getDataSourceContainer();
 
     public abstract void saveSettings() throws DBException;
@@ -59,6 +64,14 @@ public abstract class AIContextSettings {
 
     public void setMetaTransferConfirmed(boolean metaTransferConfirmed) {
         this.settings.confirmed = metaTransferConfirmed;
+    }
+
+    public boolean isMcpEnabled() {
+        return settings.mcpEnabled;
+    }
+
+    public void setMcpEnabled(boolean mcpEnabled) {
+        this.settings.mcpEnabled = mcpEnabled;
     }
 
     @Nullable
@@ -81,14 +94,18 @@ public abstract class AIContextSettings {
 
     public void loadSettingsFromMap(Map<String, Object> dsConfig) {
         settings = GSON.fromJson(GSON.toJsonTree(dsConfig), PersistentSettings.class);
+        if (settings.objects != null) {
+            settings.objects = Arrays.stream(settings.objects)
+                .filter(o -> !CommonUtils.isEmpty(o)).toArray(String[]::new);
+        }
     }
 
     public void loadSettingsFromString(String dsConfig) {
-        loadSettingsFromMap(GSON.fromJson(dsConfig, Map.class));
+        loadSettingsFromMap(GSON.fromJson(dsConfig, JSONUtils.MAP_TYPE_TOKEN));
     }
 
     public Map<String, Object> saveSettingsToMap() {
-        return GSON.fromJson(GSON.toJson(settings), Map.class);
+        return GSON.fromJson(GSON.toJson(settings), JSONUtils.MAP_TYPE_TOKEN);
     }
 
     public String saveSettingsToString() {
@@ -97,6 +114,7 @@ public abstract class AIContextSettings {
 
     public boolean equalsSettings(AIContextSettings that) {
         return settings.confirmed == that.settings.confirmed &&
+            settings.mcpEnabled == that.settings.mcpEnabled &&
             settings.scope == that.settings.scope &&
             Objects.deepEquals(settings.objects, that.settings.objects);
     }

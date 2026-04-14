@@ -3,7 +3,7 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotConfigurator"/>
     </extension>
 
@@ -18,7 +18,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
+        <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="dbeaver.ai.pref"/>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.engines" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines" name="%pref.page.ai.engines.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
         </page>
@@ -27,12 +31,20 @@
             <keywordReference id="dbeaver.ai.pref"/>
             <keywordReference id="dbeaver.ai.config"/>
         </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.prompts" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="dbeaver.ai.pref"/>
+            <keywordReference id="dbeaver.ai.prompts"/>
+        </page>
     </extension>
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.engines.name">
+        <page id="org.jkiss.dbeaver.preferences.ai.engines" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines" name="%pref.page.ai.engines.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
+        <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%prop.page.ai.config.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.prompts" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
     </extension>
@@ -47,7 +59,9 @@
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.ai.configuration" name="%command.org.jkiss.dbeaver.ui.ai.configuration.name" description="%command.org.jkiss.dbeaver.ui.ai.configuration.description" categoryId="org.jkiss.dbeaver.core.sql"/>
     </extension>
+
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="menu:SQLEditorMenu?after=query">
             <command commandId="org.jkiss.dbeaver.ui.ai.showCompletion">
@@ -74,22 +88,33 @@
                 <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
             </not>
         </definition>
-        <!-- Enabled by the policy, has precedence over the user's preference -->
-        <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy">
-            <not>
-                <or>
-                    <test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
-                    <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
-                </or>
-            </not>
-        </definition>
+    </extension>
+
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.ai.activity.policy" name="AI Activity (Policy)">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+            </enabledWhen>
+        </activity>
+        <activity id="dbeaver.ai.activity" name="AI Activity">
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.user"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+                </and>
+            </enabledWhen>
+        </activity>
+
+        <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.ui.ai.*"/>
+        <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.preferences.ai"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ui.ai.showCompletion" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/misc/ai.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.ai.showCompletion" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"/>
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.ui.ai.showCompletion" class="org.jkiss.dbeaver.ui.ai.internal.AITranslateHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.ai.configuration" class="org.jkiss.dbeaver.ui.ai.internal.AIConfigurationHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -106,6 +131,9 @@
     <extension point="org.eclipse.ui.keywords">
         <keyword id="dbeaver.ai.pref" label="%keyword.org.jkiss.dbeaver.ai.pref"/>
         <keyword id="dbeaver.ai.config" label="%keyword.org.jkiss.dbeaver.ai.config"/>
+        <keyword id="dbeaver.ai.prompts" label="%keyword.org.jkiss.dbeaver.ai.prompts"/>
     </extension>
-
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.ai.AIWorkbenchInitializer" order="2"/>
+    </extension>
 </plugin>

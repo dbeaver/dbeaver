@@ -640,7 +640,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             overviewRuler,
             true,
             styles,
-            this::getActivePreferenceStore
+            this::getActivePreferenceStore,
+            this
         );
     }
 
@@ -1370,5 +1371,4 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             return editorInput.isReadOnly();
         }
     }
-
 }

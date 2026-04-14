@@ -190,9 +190,9 @@ public class PropertyTreeViewer extends TreeViewer {
         };
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> {
-                getControl().setFont(BaseThemeSettings.instance.baseFont);
+                getControl().setFont(BaseThemeSettings.instance.treeAndTableFont);
                 refresh();
             },
             treeControl
@@ -1174,7 +1174,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 cell.setFont(((IFontProvider) extraLabelProvider).getFont(node.property));
 
             } else if (changed) {
-                cell.setFont(BaseThemeSettings.instance.baseFontBold);
+                cell.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             } else {
                 cell.setFont(null);
             }

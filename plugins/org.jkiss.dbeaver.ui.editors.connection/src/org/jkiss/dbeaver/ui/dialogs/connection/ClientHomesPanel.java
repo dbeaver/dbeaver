@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * ClientHomesPanel
@@ -121,8 +121,13 @@ public class ClientHomesPanel extends Composite {
             }
         });
 
-        Group infoGroup = UIUtils.createControlGroup(this, UIConnectionMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        ((GridData) (infoGroup.getLayoutData())).minimumWidth = 300;
+        Composite infoGroup = UIUtils.createTitledComposite(
+            this,
+            UIConnectionMessages.controls_client_homes_panel_group_information,
+            2,
+            GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL,
+            0
+        );
         idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
         pathText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);
         nameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
@@ -267,10 +272,10 @@ public class ClientHomesPanel extends Composite {
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
-            homeItem.setFont(BaseThemeSettings.instance.baseFontItalic);
+            homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
         } else {
             if (homeInfo.isDefault) {
-                homeItem.setFont(BaseThemeSettings.instance.baseFontBold);
+                homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }
         return homeItem;
@@ -317,9 +322,14 @@ public class ClientHomesPanel extends Composite {
         protected void buttonPressed(int buttonId) {
             if (IDialogConstants.OK_ID == buttonId) {
                 selectedHome = panel.getSelectedHome();
-                if (driver instanceof DriverDescriptor) {
-                    ((DriverDescriptor) driver).setNativeClientLocations(panel.getLocalLocations());
-                    ((DriverDescriptor) driver).getProviderDescriptor().getRegistry().saveDrivers();
+                if (driver instanceof DriverDescriptor descriptor) {
+                    descriptor.setNativeClientLocations(panel.getLocalLocations());
+                    try {
+                        descriptor.getProviderDescriptor().getRegistry().saveDrivers();
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                        return;
+                    }
                 }
             }
             super.buttonPressed(buttonId);

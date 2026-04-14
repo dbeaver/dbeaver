@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -285,8 +285,7 @@ public class DBNModel {
         if (rootDbNodeIndex < 0) {
             return null;
         }
-        Map<String, DBNDataSource> datasourceById = databaseRootNode.getDataSources()
-            .stream()
+        Map<String, DBNDataSource> datasourceById = Arrays.stream(databaseRootNode.getDataSources())
             .collect(Collectors.toMap(DBNDataSource::getNodeId, Function.identity()));
         for (int i = rootDbNodeIndex + 1; i < nodePath.pathItems.size(); i++) {
             // it can be folder name or datasource id
@@ -310,6 +309,29 @@ public class DBNModel {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, this, nodePath);
         }
         return findNodeByPath(monitor, getRoot(), nodePath, 0);
+    }
+
+    /**
+     * Converts a project-relative path to the full node path.
+     *
+     * @param project      Project to which the path is relative
+     * @param relativePath Path relative to the project node, without path prefix.
+     * @return Full node path with prefix, or {@code null} if the project node is not found or the path is not valid.
+     */
+    @Nullable
+    public String toProjectPath(@NotNull DBPProject project, @NotNull String relativePath) {
+        DBNProject projectNode = getRoot().getProjectNode(project);
+        if (projectNode == null) {
+            log.debug("Project node not found");
+            return null;
+        }
+        NodePath path = getNodePath(relativePath);
+        if (path.type == DBNNode.NodePathType.other) {
+            return projectNode.getNodeUri() + '/' + path.pathItems.stream()
+                .map(DBNUtils::encodeNodePath)
+                .collect(Collectors.joining("/"));
+        }
+        return null;
     }
 
     @Nullable
@@ -372,6 +394,9 @@ public class DBNModel {
             log.debug("Node '" + expectedNodePathName + "' not found in parent node '"
                 + currentNode.getNodeUri() + "'." + "\nAllowed children: " + Arrays.toString(children));
             return null;
+        }
+        if (detectedNode instanceof DBNNodeExtension nodeExtension) {
+            detectedNode = nodeExtension.resolveRealNode();
         }
 
         if (currentLevel == nodePath.pathItems.size() - 1) {
@@ -644,7 +669,7 @@ public class DBNModel {
                 }
 
                 try {
-                    DBWorkbench.getPlatformUI().executeWithProgress(() -> {
+                    DBWorkbench.getPlatformUI().executeInMainThread(() -> {
                         for (int i = 0; i < realEvents.length; i++) {
                             for (INavigatorListener listener : listenersCopy) {
                                 listener.nodeChanged(realEvents[i]);

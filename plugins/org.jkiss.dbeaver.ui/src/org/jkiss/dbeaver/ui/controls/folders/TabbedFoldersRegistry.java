@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.folders;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,7 +29,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.InputStream;
@@ -104,8 +104,9 @@ class TabbedFoldersRegistry {
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (savedStates) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 flushConfig();
@@ -119,13 +120,13 @@ class TabbedFoldersRegistry {
             Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
             try (OutputStream out = Files.newOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-                xml.setButify(true);
-                try (final XMLBuilder.Element e = xml.startElement("folders")) {
+                xml.setBeautify(true);
+                try (var ignored = xml.startElement("folders")) {
                     for (Map.Entry<String, TabbedFolderState> entry : savedStates.entrySet()) {
-                        try (final XMLBuilder.Element e2 = xml.startElement("folder")) {
+                        try (var ignored2 = xml.startElement("folder")) {
                             xml.addAttribute("id", entry.getKey());
                             for (Map.Entry<String, TabbedFolderState.TabState> tab : entry.getValue().getTabStates().entrySet()) {
-                                try (final XMLBuilder.Element e3 = xml.startElement("tab")) {
+                                try (final XMLBuilder.Element ignored3 = xml.startElement("tab")) {
                                     xml.addAttribute("id", tab.getKey());
                                     xml.addAttribute("height", tab.getValue().height);
                                     xml.addAttribute("width", tab.getValue().width);
@@ -151,21 +152,21 @@ class TabbedFoldersRegistry {
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
             switch (localName) {
                 case "folders":
                     break;
                 case "folder":
                     curTabbedFolderState = new TabbedFolderState();
-                    savedStates.put(atts.getValue("id"), curTabbedFolderState);
+                    savedStates.put(attributes.getValue("id"), curTabbedFolderState);
                     break;
                 case "tab":
                     if (curTabbedFolderState != null) {
                         TabbedFolderState.TabState tabState = new TabbedFolderState.TabState();
-                        tabState.height = CommonUtils.toInt(atts.getValue("height"), 0);
-                        tabState.width = CommonUtils.toInt(atts.getValue("width"), 0);
-                        tabState.embedded = CommonUtils.toBoolean(atts.getValue("embedded"));
-                        curTabbedFolderState.setTabState(atts.getValue("id"), tabState);
+                        tabState.height = CommonUtils.toInt(attributes.getValue("height"), 0);
+                        tabState.width = CommonUtils.toInt(attributes.getValue("width"), 0);
+                        tabState.embedded = CommonUtils.toBoolean(attributes.getValue("embedded"));
+                        curTabbedFolderState.setTabState(attributes.getValue("id"), tabState);
                     }
                     break;
             }

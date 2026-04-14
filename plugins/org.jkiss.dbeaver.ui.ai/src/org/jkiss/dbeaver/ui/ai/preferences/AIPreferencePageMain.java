@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,91 +16,34 @@
  */
 package org.jkiss.dbeaver.ui.ai.preferences;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
-import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
-    private static final Log log = Log.getLog(AIPreferencePageMain.class);
+public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
+
     private final AISettings settings;
-
-    private AIEngine completionEngine;
-    private Combo serviceCombo;
-
-    private final Map<String, String> serviceNameMappings = new HashMap<>();
-    private final Map<String, EngineConfiguratorPage> engineConfiguratorMapping = new HashMap<>();
-    private EngineConfiguratorPage activeEngineConfiguratorPage;
     private Button enableAICheck;
 
     public AIPreferencePageMain() {
-        this.settings = AISettingsRegistry.getInstance().getSettings();
-        String activeEngine = this.settings.activeEngine();
-        try {
-            completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
-        } catch (DBException e) {
-            log.error("Error getting engine configuration", e);
-
-            DBWorkbench.getPlatformUI().showError(
-                "Error loading AI settings",
-                "Error loading AI settings for " + activeEngine,
-                e
-            );
-        }
+        this.settings = AISettingsManager.getInstance().getSettings();
     }
 
     @Override
-    public IAdaptable getElement() {
-        return this.settings;
-    }
+    public void init(IWorkbench workbench) {
 
-    @Override
-    public void setElement(IAdaptable element) {
-
-    }
-
-    @Nullable
-    private IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> createEngineConfigurator() {
-        UIPropertyConfiguratorDescriptor engineDescriptor =
-            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
-        if (engineDescriptor != null) {
-            try {
-                return engineDescriptor.createConfigurator();
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-        return null;
     }
 
     @Override
@@ -117,30 +60,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             return false;
         }
         this.settings.setAiDisabled(!enableAICheck.getSelection());
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        this.settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
-        if (!serviceCombo.getText().isEmpty()) {
-            for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
-                try {
-                    AIEngineSettings<?> engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
-                    entry.getValue().saveSettings(engineConfiguration);
-                } catch (DBException e) {
-                    log.error("Error saving engine settings", e);
 
-                    DBWorkbench.getPlatformUI().showError(
-                        "Error saving AI settings",
-                        "Error saving engine settings for " + entry.getKey(),
-                        e
-                    );
-                }
-            }
-        }
-        AISettingsRegistry.getInstance().saveSettings(this.settings);
-        try {
-            store.save();
-        } catch (IOException e) {
-            log.debug(e);
-        }
+        AISettingsManager.getInstance().saveSettings(this.settings);
 
         return true;
     }
@@ -149,129 +70,44 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
-        enableAICheck = UIUtils.createCheckbox(
+
+        Composite groupObjects = UIUtils.createTitledComposite(
             composite,
+            "AI settings",
+            2,
+            GridData.HORIZONTAL_ALIGN_BEGINNING);
+
+        enableAICheck = UIUtils.createCheckbox(
+            groupObjects,
             AIUIMessages.gpt_preference_page_checkbox_enable_ai_label,
             AIUIMessages.gpt_preference_page_checkbox_enable_ai_tip,
-            false,
+            !this.settings.isAiDisabled(),
             2);
 
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite links = UIUtils.createTitledComposite(
+            composite,
+            "Configuration",
+            1,
+            GridData.HORIZONTAL_ALIGN_BEGINNING);
 
-        Composite serviceComposite = UIUtils.createComposite(composite, 2);
-        serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
-        List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
-            .getCompletionEngines();
-        int defaultEngineSelection = -1;
-        for (int i = 0; i < completionEngines.size(); i++) {
-            serviceCombo.add(completionEngines.get(i).getLabel());
-            serviceNameMappings.put(completionEngines.get(i).getLabel(), completionEngines.get(i).getId());
-            if (completionEngines.get(i).isDefault()) {
-                defaultEngineSelection = i;
-            }
-            if (completionEngines.get(i).getId().equals(this.settings.activeEngine())) {
-                serviceCombo.select(i);
-            }
-        }
-        if (serviceCombo.getSelectionIndex() == -1 && defaultEngineSelection != -1) {
-            serviceCombo.select(defaultEngineSelection);
-        }
-
-        final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
-        engineGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        if (completionEngine != null) {
-            drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
-        }
-        serviceCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                String id = serviceNameMappings.get(serviceCombo.getText());
-                try {
-                    completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(id);
-                } catch (DBException ex) {
-                    log.error("Error getting engine configuration");
-                    return;
-                }
-                if (activeEngineConfiguratorPage != null) {
-                    activeEngineConfiguratorPage.disposeControl();
-                }
-                drawConfiguratorComposite(id, engineGroup);
-                engineGroup.layout(true, true);
-                UIUtils.resizeShell(parent.getShell());
-            }
-        });
-        performDefaults();
+        // Link to secure storage config
+        addLinkToSettings(links, AIPreferencePageEngines.PAGE_ID);
+        addLinkToSettings(links, AIPreferencePageConfiguration.PAGE_ID);
+        addLinkToSettings(links, AIPreferencePagePrompts.PAGE_ID);
 
         return composite;
     }
 
-    private void drawConfiguratorComposite(@NotNull String id, @NotNull Group engineGroup) {
-        activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
-
-        if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> engineConfigurator
-                = createEngineConfigurator();
-            activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
-            activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
-            engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
-        } else {
-            activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
-        }
-
-        try {
-            activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(
-                "Error loading AI settings",
-                "Error loading engine settings for " + id,
-                e
+    private void addLinkToSettings(Composite composite, String pageID) {
+        if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+            UIUtils.createPreferenceLink(
+                composite,
+                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
+                pageID,
+                wpc,
+                null
             );
         }
     }
 
-    @Override
-    public void init(IWorkbench workbench) {
-
-    }
-
-    private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> configurator;
-        private Composite composite;
-
-        EngineConfiguratorPage(IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> configurator) {
-            this.configurator = configurator;
-        }
-
-        private void createControl(Composite parent, AIEngine engine) {
-            composite = UIUtils.createComposite(parent, 1);
-            composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (configurator != null) {
-                configurator.createControl(composite, engine, () -> {});
-            }
-        }
-
-        private void disposeControl() {
-            composite.dispose();
-        }
-
-        private void loadSettings(AIEngineSettings<?> settings) {
-            if (configurator != null) {
-                configurator.loadSettings(settings);
-            }
-        }
-
-        private void saveSettings(AIEngineSettings<?> settings) {
-            if (configurator != null) {
-                configurator.saveSettings(settings);
-            }
-        }
-    }
-
-
-
-    @Override
-    protected boolean hasAccessToPage() {
-        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
-    }
 }

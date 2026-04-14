@@ -110,7 +110,7 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
                 statistics,
                 this.procName,
                 origin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.FUNCTION,
                 SQLQuerySymbolClass.ERROR
             );
             statistics.appendError(this.getSyntaxNode(), "Invalid function reference");
@@ -128,7 +128,7 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
                 statistics,
                 this.procName,
                 origin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.FUNCTION,
                 SQLQuerySymbolClass.FUNCTION
             );
             return SQLQueryExprType.UNKNOWN;
@@ -187,7 +187,7 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
                         statistics,
                         this.procName.trimEnd(),
                         origin,
-                        Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                        SQLQuerySymbolOrigin.DbObjectFilterMode.FUNCTION,
                         SQLQuerySymbolClass.FUNCTION
                     );
                 }
@@ -198,7 +198,14 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
         this.procedure = proc == null ? null : proc.procedure;
 
         if (this.procedure != null) {
-            SQLQuerySemanticUtils.setNamePartsDefinition(this.procName, proc.referenceTarget, SQLQuerySymbolClass.FUNCTION, origin);
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                context.getRowsSources(),
+                this.procName,
+                proc.referenceTarget,
+                SQLQuerySymbolClass.FUNCTION,
+                origin,
+                SQLQuerySymbolOrigin.DbObjectFilterMode.FUNCTION
+            );
 
             if (proc.validationErrors != null) {
                 proc.validationErrors.forEach(Runnable::run);
@@ -263,7 +270,7 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
                 statistics,
                 this.procName,
                 origin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.FUNCTION,
                 tableSymbolClass
             );
             if (candidates.isEmpty()) {

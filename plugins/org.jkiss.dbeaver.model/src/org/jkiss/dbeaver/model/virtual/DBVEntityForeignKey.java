@@ -126,10 +126,24 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
 
     public synchronized void setReferencedConstraint(DBRProgressMonitor monitor, DBSEntityConstraint constraint) throws DBException {
         DBSEntity refEntity = constraint.getParentObject();
-        if (refEntity instanceof DBVEntity) {
-            refEntity = ((DBVEntity) refEntity).getRealEntity(monitor);
+        if (refEntity instanceof DBVEntity dbvEntity) {
+            refEntity = dbvEntity.getRealEntity(monitor);
         }
-        DBNDatabaseNode refNode = getParentObject().getProject().getNavigatorModel().getNodeByObject(monitor, refEntity, true);
+        if (refEntity == null) {
+            log.warn("Null ref entity");
+            return;
+        }
+        DBPProject project = getParentObject().getProject();
+        if (project == null) {
+            log.warn("Null project in " + getParentObject());
+            return;
+        }
+        DBNModel navigatorModel = project.getNavigatorModel();
+        if (navigatorModel == null) {
+            log.warn("Null navigator model in project " + project.getId());
+            return;
+        }
+        DBNDatabaseNode refNode = navigatorModel.getNodeByObject(monitor, refEntity, true);
         if (refNode == null) {
             log.warn("Can't find navigator node for object " + DBUtils.getObjectFullId(refEntity));
             return;
@@ -158,13 +172,13 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             throw new DBException("Can't find reference node " + refEntityId + " for virtual foreign key");
         }
         DBSObject object = ((DBNDatabaseNode) refNode).getObject();
-        if (object instanceof DBSEntity) {
-            List<DBSEntityConstraint> constraints = DBVUtils.getAllConstraints(monitor, (DBSEntity) object);
-            DBSObject refEntityConstraint = DBUtils.findObject(constraints, refConstraintId);
+        if (object instanceof DBSEntity e) {
+            List<DBSEntityConstraint> constraints = DBVUtils.getAllConstraints(monitor, e);
+            DBSEntityConstraint refEntityConstraint = DBUtils.findObject(constraints, refConstraintId);
             if (refEntityConstraint == null) {
                 throw new DBException("Can't find constraint " + refConstraintId + " in entity " + refEntityId);
             }
-            return (DBSEntityConstraint) refEntityConstraint;
+            return refEntityConstraint;
         } else {
             throw new DBException("Object " + refEntityId + " is not an entity");
         }
@@ -254,7 +268,7 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
             return null;
         }
         DBPProject project = getParentObject().getProject();
-        DBNModel navModel = project.getNavigatorModel();
+        DBNModel navModel = project == null ? null : project.getNavigatorModel();
 
         DBNDataSource dsNode = navModel == null ? null : navModel.getDataSourceByPath(project, refEntityId);
         return dsNode == null ? null : dsNode.getDataSourceContainer();

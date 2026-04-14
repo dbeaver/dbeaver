@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.lock;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -196,7 +198,7 @@ public class OracleLock implements DBAServerLock {
 	public static class OracleLockColumnsValueValidator implements IPropertyValueValidator<OracleLock, Object> {
 
 		@Override
-		public boolean isValidValue(OracleLock lock, Object value) throws IllegalArgumentException {
+		public boolean isValidValue(@NotNull OracleLock lock, @Nullable Object value) throws IllegalArgumentException {
 			return lock.getDataSource().isAtLeastV10();
 		}
 	}

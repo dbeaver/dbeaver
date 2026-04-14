@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -54,51 +54,59 @@ public class QMUtils {
 
     private static final Log log = Log.getLog(QMUtils.class);
 
-    private static DBPPlatform application;
+    private static QMRegistryImpl qmRegistry;
     private static QMExecutionHandler defaultHandler;
 
-
-    public static void initApplication(DBPPlatform application) {
-        QMUtils.application = application;
+    public static void initPlatform(boolean useLogger) {
+        QMUtils.qmRegistry = new QMRegistryImpl(useLogger);
     }
 
+    @NotNull
     public static QMExecutionHandler getDefaultHandler() {
         if (defaultHandler == null) {
-            defaultHandler = application.getQueryManager().getDefaultHandler();
+            defaultHandler = getQueryManager().getDefaultHandler();
         }
         return defaultHandler;
     }
 
-    public static void registerHandler(QMExecutionHandler handler) {
-        application.getQueryManager().registerHandler(handler);
+    @NotNull
+    private static QMRegistry getQueryManager() {
+        if (qmRegistry == null) {
+            throw new IllegalStateException("Query manager registry is not initialized");
+        }
+        return qmRegistry;
     }
 
-    public static void unregisterHandler(QMExecutionHandler handler) {
-        application.getQueryManager().unregisterHandler(handler);
+    public static void registerHandler(@NotNull QMExecutionHandler handler) {
+        getQueryManager().registerHandler(handler);
     }
 
-    public static void registerMetaListener(QMMetaListener metaListener) {
-        application.getQueryManager().registerMetaListener(metaListener);
+    public static void unregisterHandler(@NotNull QMExecutionHandler handler) {
+        getQueryManager().unregisterHandler(handler);
     }
 
-    public static void unregisterMetaListener(QMMetaListener metaListener) {
-        application.getQueryManager().unregisterMetaListener(metaListener);
+    public static void registerMetaListener(@NotNull QMMetaListener metaListener) {
+        getQueryManager().registerMetaListener(metaListener);
+    }
+
+    public static void unregisterMetaListener(@NotNull QMMetaListener metaListener) {
+        getQueryManager().unregisterMetaListener(metaListener);
     }
 
     @Nullable
     public static QMEventBrowser getEventBrowser(boolean currentSessionOnly) {
-        if (application == null) {
+        if (qmRegistry == null) {
             return null;
         }
-        return application.getQueryManager().getEventBrowser(currentSessionOnly);
+        return getQueryManager().getEventBrowser(currentSessionOnly);
     }
 
-    public static boolean isTransactionActive(DBCExecutionContext executionContext) {
+    public static boolean isTransactionActive(@Nullable DBCExecutionContext executionContext) {
         return isTransactionActive(executionContext, true);
     }
 
-    public static boolean isTransactionActive(DBCExecutionContext executionContext, boolean checkQueries) {
-        if (executionContext == null || application == null) {
+    public static boolean isTransactionActive(@Nullable DBCExecutionContext executionContext, boolean checkQueries) {
+        if (executionContext == null || qmRegistry == null) {
             return false;
         } else {
             QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
@@ -118,22 +126,19 @@ public class QMUtils {
                             return sp.getLastExecute() != null;
                         }
                     }
-//                    for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
-//                        if (exec.isTransactional()) {
-//                            return true;
-//                        }
-//                    }
                 }
             }
         }
         return false;
     }
 
-    public static QMMConnectionInfo getCurrentConnection(DBCExecutionContext executionContext) {
-        return application.getQueryManager().getMetaCollector().getConnectionInfo(executionContext);
+    @Nullable
+    public static QMMConnectionInfo getCurrentConnection(@NotNull DBCExecutionContext executionContext) {
+        return getQueryManager().getMetaCollector().getConnectionInfo(executionContext);
     }
 
-    public static QMMTransactionSavepointInfo getCurrentTransaction(DBCExecutionContext executionContext) {
+    @Nullable
+    public static QMMTransactionSavepointInfo getCurrentTransaction(@NotNull DBCExecutionContext executionContext) {
         QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
         if (sessionInfo != null && !sessionInfo.isClosed() && sessionInfo.isTransactional()) {
             QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
@@ -145,20 +150,20 @@ public class QMUtils {
     }
 
     @NotNull
-    public static QMTransactionState getTransactionState(DBCExecutionContext executionContext) {
+    public static QMTransactionState getTransactionState(@Nullable DBCExecutionContext executionContext) {
         int execCount = 0, updateCount = 0;
         final boolean txnMode;
         long txnStartTime = 0;
-        if (executionContext == null || application == null) {
+        if (executionContext == null || qmRegistry == null) {
             txnMode = false;
         } else {
             QMMConnectionInfo sessionInfo = getCurrentConnection(executionContext);
             if (sessionInfo == null || sessionInfo.isClosed()) {
                 txnMode = false;
             } else if (sessionInfo.isTransactional()) {
+                txnMode = true;
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
-                    txnMode = true;
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
                     QMMStatementExecuteInfo execInfo = sp.getLastExecute();
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
@@ -172,9 +177,6 @@ public class QMUtils {
                             updateCount++;
                         }
                     }
-                } else {
-                    // No active transaction?
-                    txnMode = false;
                 }
             } else {
                 txnMode = false;
@@ -186,7 +188,8 @@ public class QMUtils {
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
     }
 
-    public static QMEventCriteria createDefaultCriteria(DBPPreferenceStore store) {
+    @NotNull
+    public static QMEventCriteria createDefaultCriteria(@NotNull DBPPreferenceStore store) {
         QMEventCriteria criteria = new QMEventCriteria();
 
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
@@ -206,7 +209,8 @@ public class QMUtils {
     /**
      * Extract QM session from execution context
      */
-    public static String getQmSessionId(DBCExecutionContext executionContext) throws DBException {
+    @Nullable
+    public static String getQmSessionId(@NotNull DBCExecutionContext executionContext) throws DBException {
         if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
             return provider.getQueryManagerSessionId();
         }
@@ -243,7 +247,7 @@ public class QMUtils {
     }
 
     @Nullable
-    public static String getQmSessionId(SMSession session) {
+    public static String getQmSessionId(@Nullable SMSession session) {
         SMSessionPersistent sessionPersistent = DBUtils.getAdapter(SMSessionPersistent.class, session);
         if (sessionPersistent == null) {
             log.warn("Session persistent not found");
@@ -256,7 +260,7 @@ public class QMUtils {
     /**
      * Return close time for events that were ended
      */
-    public static long getObjectEventTime(QMEvent event) {
+    public static long getObjectEventTime(@NotNull QMEvent event) {
         if (event instanceof QMMetaEvent metaEvent) {
             return metaEvent.getTimestamp();
         }
@@ -270,13 +274,19 @@ public class QMUtils {
     /**
      * Returns workspace session
      */
-    public static SMSession getWorkspaceSession(DBRProgressMonitor monitor) throws DBException {
+    public static SMSession getWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         SMSession workspaceSession = workspace.getAuthContext().getSpaceSession(monitor, workspace, false);
         if (workspaceSession == null) {
             throw new DBException("No workspace session");
         }
         return workspaceSession;
+    }
+
+    public static void disposePlatform() {
+        if (qmRegistry != null) {
+            qmRegistry.dispose();
+        }
     }
 
     public static class ListCursorImpl implements QMEventCursor {
@@ -302,44 +312,15 @@ public class QMUtils {
         }
 
         @Override
-        public boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException {
+        public boolean hasNextEvent(DBRProgressMonitor monitor) {
             return position < events.size();
         }
 
         @Override
-        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
+        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) {
             QMMetaEvent event = events.get(position);
             position++;
             return new QMMetaEventEntity(event.getObject(), event.getAction(), position, "", null);
-        }
-
-        @Override
-        public void close() {
-
-        }
-
-    }
-
-    public static class EmptyCursorImpl implements QMEventCursor {
-
-        @Override
-        public long getTotalSize() {
-            return 0;
-        }
-
-        @Override
-        public void scroll(int position, DBRProgressMonitor monitor) throws DBException {
-            throw new DBException("Empty cursor");
-        }
-
-        @Override
-        public boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException {
-            return false;
-        }
-
-        @Override
-        public QMMetaEventEntity nextEvent(DBRProgressMonitor monitor) throws DBException {
-            throw new DBException("Empty cursor");
         }
 
         @Override

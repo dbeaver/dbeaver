@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.registry.formatter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.impl.data.formatters.NumberFormatSample;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -199,7 +202,6 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         if (descriptor == null) {
             throw new IllegalArgumentException("Formatter '" + typeId + "' not found");
         }
-        DBDDataFormatter formatter = descriptor.createFormatter();
 
         Map<String, Object> defProps = descriptor.getSample().getDefaultProperties(locale);
         Map<String, Object> props = getFormatterProperties(store, typeId);
@@ -207,12 +209,28 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         if (defProps != null && !defProps.isEmpty()) {
             formatterProps.putAll(defProps);
         }
-        if (props != null && !props.isEmpty()) {
+        if (!props.isEmpty()) {
             formatterProps.putAll(props);
         }
+
+        if (DBDDataFormatter.TYPE_NAME_NUMBER.equalsIgnoreCase(typeId)) {
+            boolean excludeIds = CommonUtils.toBoolean(
+                formatterProps.getOrDefault(NumberFormatSample.PROP_EXCLUDE_ID_COLUMNS, false)
+            );
+            if (excludeIds && type instanceof DBSTableColumn column
+                && (DBStructUtils.isPrimaryKey(column) || DBStructUtils.isForeignKey(column))) {
+
+                formatterProps.put(NumberFormatSample.PROP_USE_GROUPING, false);
+            }
+        }
+
+        DBDDataFormatter formatter = descriptor.createFormatter();
         formatter.init(type, locale, formatterProps);
+
         return formatter;
     }
+
+
 
     public static void initDefaultPreferences(DBPPreferenceStore store, Locale locale)
     {

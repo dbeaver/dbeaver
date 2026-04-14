@@ -57,7 +57,7 @@ public class SQLQuerySemanticUtils {
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull SQLQueryComplexName name,
         @NotNull SQLQuerySymbolOrigin origin,
-        @NotNull Set<DBSObjectType> objectTypes,
+        @NotNull SQLQuerySymbolOrigin.DbObjectFilterMode filterMode,
         @NotNull SQLQuerySymbolClass entityNameClass
     ) {
         if (!statistics.useRealMetadata() || context.getConnectionInfo().isDummy()) {
@@ -71,9 +71,7 @@ public class SQLQuerySemanticUtils {
         for (int len = namePartsCount; len > 0 && object == null; len--) {
             fragmentStrings = name.stringParts.subList(0, len);
             List<? extends DBSObject> objs = context.getConnectionInfo()
-                .findRealObjects(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, fragmentStrings).stream()
-                .filter(o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())))
-                .toList();
+                .findRealObjects(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, fragmentStrings);
             if (objs.size() == 1) {
                 object = objs.getFirst();
             } else if (objs.size() > 1) {
@@ -86,10 +84,10 @@ public class SQLQuerySemanticUtils {
 
         if (object != null && !fragmentStrings.isEmpty()) {
             List<SQLQuerySymbolEntry> nameFragment = name.parts.subList(0, fragmentStrings.size());
-            setNamePartsDefinition(nameFragment, object, inferSymbolClass(object), origin);
+            setNamePartsDefinition(context, nameFragment, object, inferSymbolClass(object), origin, filterMode);
             if (name.parts.size() > nameFragment.size()) {
                 SQLQuerySymbolEntry part = name.parts.get(nameFragment.size());
-                SQLQuerySymbolOrigin lastPartOrigin = new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, objectTypes);
+                SQLQuerySymbolOrigin lastPartOrigin = new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, context, filterMode);
                 if (part != null) {
                     part.setOrigin(lastPartOrigin);
                 } else if (name.parts.size() == nameFragment.size() + 1 && name.endingPeriodNode != null) {
@@ -106,28 +104,34 @@ public class SQLQuerySemanticUtils {
     }
 
     public static void setNamePartsDefinition(
+        @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryComplexName name,
         @NotNull DBSObject realObject,
-        @NotNull SQLQuerySymbolOrigin origin
+        @NotNull SQLQuerySymbolOrigin origin,
+        @NotNull SQLQuerySymbolOrigin.DbObjectFilterMode filterMode
     ) {
         SQLQuerySymbolClass entityNameClass  = inferSymbolClass(realObject);
-        setNamePartsDefinition(name,  realObject, entityNameClass, origin);
+        setNamePartsDefinition(context, name,  realObject, entityNameClass, origin, filterMode);
     }
 
     public static void setNamePartsDefinition(
+        @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryComplexName name,
         @NotNull DBSObject realObject,
         @NotNull SQLQuerySymbolClass entityNameClass,
-        @NotNull SQLQuerySymbolOrigin origin
+        @NotNull SQLQuerySymbolOrigin origin,
+        @NotNull SQLQuerySymbolOrigin.DbObjectFilterMode filterMode
     ) {
-        setNamePartsDefinition(name.parts, realObject, entityNameClass, origin);
+        setNamePartsDefinition(context, name.parts, realObject, entityNameClass, origin, filterMode);
     }
 
-    private static void setNamePartsDefinition(
+    public static void setNamePartsDefinition(
+        @NotNull SQLQueryRowsSourceContext context,
         @NotNull List<SQLQuerySymbolEntry> parts,
         @NotNull DBSObject realObject,
         @NotNull SQLQuerySymbolClass entityNameClass,
-        @NotNull SQLQuerySymbolOrigin origin
+        @NotNull SQLQuerySymbolOrigin origin,
+        @NotNull SQLQuerySymbolOrigin.DbObjectFilterMode filterMode
     ) {
         if (!parts.isEmpty()) {
             SQLQuerySymbolEntry lastPart = parts.getLast();
@@ -145,7 +149,7 @@ public class SQLQuerySemanticUtils {
                 if (objectName.equalsIgnoreCase(nameEntry.getName())) {
                     SQLQuerySymbolClass objectNameClass = inferSymbolClass(object);
                     nameEntry.setDefinition(new SQLQuerySymbolByDbObjectDefinition(object, objectNameClass));
-                    lastPart.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, RelationalObjectType.TYPE_UNKNOWN));
+                    lastPart.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, context, filterMode));
                     lastPart = nameEntry;
                     scopeNameIndex--;
                 }
@@ -261,7 +265,14 @@ public class SQLQuerySemanticUtils {
                     SQLQuerySymbolEntry part = name.parts.get(i);
                     part.setDefinition(lastDefSymbolEntry = tableName.parts.get(j));
                     if (part.getOrigin() == null) {
-                        part.setOrigin(lastDefSymbolEntry.getOrigin());
+                        part.setOrigin(
+                            lastDefSymbolEntry.getOrigin() instanceof SQLQuerySymbolOrigin.DbObjectFromDbObject objOrigin
+                                ? new SQLQuerySymbolOrigin.DbObjectFromDbObject(
+                                    objOrigin.getObject(),
+                                    objOrigin.getRowsContext(),
+                                    SQLQuerySymbolOrigin.DbObjectFilterMode.VALUE)
+                                : lastDefSymbolEntry.getOrigin()
+                        );
                     }
                 }
                 while (i >= 0) {

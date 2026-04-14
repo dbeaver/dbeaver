@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -31,61 +32,51 @@ public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
 
     private static final Log log = Log.getLog(JDBCSavepointImpl.class);
 
-    private JDBCExecutionContext context;
-    private Savepoint original;
+    private final JDBCExecutionContext context;
+    private final Savepoint original;
 
-    public JDBCSavepointImpl(JDBCExecutionContext context, Savepoint savepoint)
-    {
+    public JDBCSavepointImpl(@NotNull JDBCExecutionContext context, @NotNull Savepoint savepoint) {
         this.context = context;
         this.original = savepoint;
     }
 
     @Override
-    public int getId()
-    {
+    public int getId() {
         try {
             return original.getSavepointId();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             log.error(e);
             return 0;
         }
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         try {
             return original.getSavepointName();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             log.error(e);
             return null;
         }
     }
 
+    @NotNull
     @Override
-    public DBCExecutionContext getContext()
-    {
+    public DBCExecutionContext getContext() {
         return context;
     }
 
     @Override
-    public int getSavepointId()
-        throws SQLException
-    {
+    public int getSavepointId() throws SQLException {
         return original.getSavepointId();
     }
 
     @Override
-    public String getSavepointName()
-        throws SQLException
-    {
+    public String getSavepointName() throws SQLException {
         return original.getSavepointName();
     }
 
-    public Savepoint getOriginal()
-    {
+    public Savepoint getOriginal() {
         return original;
     }
 }

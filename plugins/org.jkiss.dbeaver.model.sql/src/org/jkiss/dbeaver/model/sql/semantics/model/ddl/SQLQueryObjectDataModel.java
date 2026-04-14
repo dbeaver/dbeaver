@@ -113,7 +113,7 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
                 statistics,
                 this.name,
                 this.objectNameOrigin,
-                scopeMemberTypes,
+                SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT,
                 SQLQuerySymbolClass.ERROR
             );
             statistics.appendError(this.getSyntaxNode(), "Object " + this.name.getNameString() + " not found in the database");
@@ -124,7 +124,13 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
             return context.resetAsUnresolved();
         } else {
             this.object = candidates.getFirst();
-            SQLQuerySemanticUtils.setNamePartsDefinition(this.name, this.object, this.objectNameOrigin);
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                context,
+                this.name,
+                this.object,
+                this.objectNameOrigin,
+                SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
+            );
             if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
                 statistics.appendError(
                     this.getSyntaxNode(),

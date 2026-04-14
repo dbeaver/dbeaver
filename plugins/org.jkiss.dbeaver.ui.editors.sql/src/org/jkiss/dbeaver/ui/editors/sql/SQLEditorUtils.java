@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.internal.jobs.JobManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.texteditor.ITextEditorExtension2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
@@ -136,7 +139,7 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (String path : project.findResources(Map.of(EditorUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+            for (String path : project.findResources(Map.of(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, container.getId()))) {
                 final IResource resource = project.getRootResource().findMember(path);
                 if (resource instanceof IFile) {
                     result.add(new ResourceInfo((IFile) resource, container));
@@ -622,6 +625,13 @@ public class SQLEditorUtils {
         }
         return result;
     }
+
+    public static boolean isAttachScriptsToConnections() {
+        return DBWorkbench.isDistributed() ||
+            DBWorkbench.getPlatform()
+                .getPreferenceStore()
+                .getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS);
+    }
     
     /**
      * Checks whether template's context is suitable for the editor context
@@ -727,11 +737,10 @@ public class SQLEditorUtils {
         }
     }
 
-    public static boolean openSqlConsoleAndTryConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
+    public static boolean openNewSqlConsoleAndTryConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             SQLEditor editor = (SQLEditor) serviceSQL.openSQLConsole(container, null, null, "Console", "");
-            onConnected.accept(editor);
             EditorConnector connector = new EditorConnector(editor, container, onConnected);
             connector.engage();
             return true;
@@ -740,4 +749,95 @@ public class SQLEditorUtils {
         }
     }
 
+    public static boolean isProblemMarker(@NotNull IMarker marker) {
+        try {
+            return marker.isSubtypeOf("org.eclipse.core.resources.problemmarker");
+        } catch (CoreException e) {
+            log.error(e);
+            return false;
+        }
+    }
+
+    @Nullable
+    public static EditorsCollection findResourceEditors(@NotNull IResource member) {
+        EditorsCollection editorRefs = null;
+
+        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : window.getPages()) {
+                for (IEditorReference editorRef : page.getEditorReferences()) {
+                    try {
+                        IResource editorResource = ResourceUtil.getResource(editorRef.getEditorInput());
+                        if (editorResource != null && editorResource.equals(member)) {
+                            if (editorRefs == null) {
+                                editorRefs = new EditorsCollection();
+                            }
+                            editorRefs.add(Pair.of(page, editorRef));
+                        }
+                    } catch (PartInitException e) {
+                        log.error(e);
+                    }
+                }
+            }
+        }
+
+        return editorRefs;
+    }
+
+    public static class EditorsCollection extends LinkedList<Pair<IWorkbenchPage, IEditorReference>> {
+
+        @NotNull
+        public List<Pair<IWorkbenchPage, SQLEditor>> findConnectedSqlEditors() {
+            List<Pair<IWorkbenchPage, SQLEditor>> results = new LinkedList<>();
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof SQLEditor sqlEditor && sqlEditor.getDataSource() != null) {
+                    results.add(Pair.of(editorRef.getFirst(), sqlEditor));
+                }
+            }
+            return results;
+        }
+
+        @NotNull
+        public List<Pair<IWorkbenchPage, SQLEditor>> findNotConnectedSqlEditors() {
+            List<Pair<IWorkbenchPage, SQLEditor>> results = new LinkedList<>();
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof SQLEditor sqlEditor) {
+                    DBPDataSourceContainer container = sqlEditor.getDataSourceContainer();
+                    if (container == null || !container.isConnected()) {
+                        results.add(Pair.of(editorRef.getFirst(), sqlEditor));
+                    }
+                }
+            }
+            return results;
+        }
+
+        public void validateEditorInputState() {
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof ITextEditorExtension2) {
+                    UIUtils.asyncExec(() -> ((ITextEditorExtension2) editor).validateEditorInputState());
+                }
+            }
+        }
+
+        public void setDataSourceForSqlEditors(@NotNull DBPDataSourceContainer fileDsContainer) {
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof SQLEditor sqlEditor) {
+                    DBPDataSourceContainer editorDsContainer = sqlEditor.getDataSourceContainer();
+                    if (editorDsContainer != fileDsContainer) {
+                        UIUtils.asyncExec(() -> sqlEditor.setDataSourceContainer(fileDsContainer));
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void closeNoSave() {
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                editorRef.getFirst().closeEditors(new IEditorReference[] {editorRef.getSecond()}, false);
+            }
+        }
+    }
 }

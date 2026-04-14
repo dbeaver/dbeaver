@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,26 @@ import java.sql.Types;
 
 public class ClickhouseArrayType extends ClickhouseAbstractDataType {
     private final DBSDataType componentType;
-    private final String name;
+    private final String baseName;
+    private final String fullName;
 
     public ClickhouseArrayType(@NotNull ClickhouseDataSource dataSource, @NotNull DBSDataType componentType) {
         super(dataSource);
         this.componentType = componentType;
-        this.name = "Array(" + componentType.getFullTypeName() + ")";
+        this.baseName = "Array";
+        this.fullName = "Array(" + componentType.getFullTypeName() + ")";
     }
 
     @NotNull
     @Override
     public String getTypeName() {
-        return name;
+        return baseName;
+    }
+
+    @NotNull
+    @Override
+    public String getFullTypeName() {
+        return fullName;
     }
 
     @Override

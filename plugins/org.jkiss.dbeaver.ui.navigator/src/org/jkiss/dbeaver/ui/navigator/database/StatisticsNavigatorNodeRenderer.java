@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -53,6 +52,7 @@ import org.jkiss.dbeaver.ui.internal.registry.NavigatorExtensionsRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -200,7 +200,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private void drawObjectChildrenCounter(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds) {
         int childCount = 0;
         try {
-            childCount = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor())).length;
+            DBNDatabaseNode[] nodeChildren = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
+            childCount = nodeChildren == null ? 0 : nodeChildren.length;
         } catch (DBException e) {
             return;
         }
@@ -268,7 +269,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         try {
             gc.setForeground(NavigatorThemeSettings.instance.hintColor);
-            gc.setFont(BaseThemeSettings.instance.baseFontItalic);
+            gc.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
 
             drawTextClipped(gc, text, bounds);
         } finally {
@@ -568,8 +569,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             this.treeItem = treeItem;
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Collect database statistics", 1);
                 if (object instanceof DBPObjectStatisticsCollector) {
@@ -579,9 +581,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 }
                 long maxStatSize = 0;
 
-                if (parentNode instanceof DBNDatabaseNode) {
+                if (parentNode instanceof DBNDatabaseNode dbNode) {
                     // Calculate max object size
-                    DBNDatabaseNode[] children = ((DBNDatabaseNode)parentNode).getChildren(monitor);
+                    DBNDatabaseNode[] children = dbNode.getChildren(monitor);
                     if (children != null) {
                         for (DBNDatabaseNode childNode : children) {
                             DBSObject child = childNode.getObject();

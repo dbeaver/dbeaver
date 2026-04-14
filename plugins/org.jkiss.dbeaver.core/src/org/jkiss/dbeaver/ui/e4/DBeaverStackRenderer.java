@@ -140,13 +140,13 @@ public class DBeaverStackRenderer extends StackRenderer {
         super.populateTabMenu(menu, part);
 
         IWorkbenchPart workbenchPart = getWorkbenchPart(part);
-        if (workbenchPart instanceof IEditorPart) {
+        if (workbenchPart instanceof IEditorPart editorPart) {
             IWorkbenchPage activePage = workbenchPart.getSite().getWorkbenchWindow().getActivePage();
             if (activePage.getActiveEditor() != workbenchPart) {
                 activePage.activate(workbenchPart);
             }
 
-            IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
+            IEditorInput editorInput = editorPart.getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
                 populateEditorMenu(menu, workbenchPart, databaseEditorInput);
             }
@@ -157,7 +157,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 populateFileMenu(menu, workbenchPart, file, localFile);
             }
 
-            if (localFile == null && workbenchPart instanceof SQLEditor) {
+            if (localFile == null && workbenchPart instanceof SQLEditor sqlEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
 
@@ -167,7 +167,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 saveAsScriptItem.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        ((SQLEditor) workbenchPart).saveAsNewScript();
+                        sqlEditor.saveAsNewScript();
                     }
                 });
             }

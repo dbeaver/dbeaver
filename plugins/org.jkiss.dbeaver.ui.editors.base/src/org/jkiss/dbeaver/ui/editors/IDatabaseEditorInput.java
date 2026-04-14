@@ -32,9 +32,14 @@ import java.util.Collection;
  */
 public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextProvider {
 
+    @Nullable
+    @Override
     DBNDatabaseNode getNavigatorNode();
 
     DBSObject getDatabaseObject();
+
+    @Nullable
+    String getNodePath();
 
     /**
      * Default editor page ID

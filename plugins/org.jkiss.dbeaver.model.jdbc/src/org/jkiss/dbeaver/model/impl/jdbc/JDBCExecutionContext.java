@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -47,7 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Implements transaction manager and execution context defaults.
  * Both depend on datasource implementation.
  */
-public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager, DBPAdaptable {
+public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource, JDBCRemoteInstance> implements DBCTransactionManager, DBPAdaptable {
     public static final String TYPE_MAIN = "Main";
     public static final String TYPE_METADATA = "Metadata";
 
@@ -58,37 +60,22 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     // Time to wait for txn level/auto-commit detection
     static final int TXN_INFO_READ_TIMEOUT = 5000;
 
-    @NotNull
-    private volatile JDBCRemoteInstance instance;
     private volatile Connection connection;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
-    private final ReentrantLock queryExecutionLock;
+
+    private StatementLock statementLock = NoOpLock.INSTANCE;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
-        super(instance.getDataSource(), purpose);
-        this.instance = instance;
+        super(instance, purpose);
         if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
-            queryExecutionLock = new ReentrantLock();
-        } else {
-            queryExecutionLock = null;
+            statementLock = new SingleThreadLock();
         }
     }
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, boolean test) {
-        super(instance.getDataSource(), "Test for " + instance);
-        this.instance = instance;
-        queryExecutionLock = null;
-    }
-
-    @Override
-    public JDBCRemoteInstance getOwnerInstance() {
-        return instance;
-    }
-
-    protected void setOwnerInstance(@NotNull JDBCRemoteInstance instance) {
-        this.instance = instance;
+        super(instance, "Test for " + instance);
     }
 
     @NotNull
@@ -114,7 +101,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             log.error("Reopening not-closed connection");
             close();
         }
-        boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         final JDBCRemoteInstance currentInstance = this.instance;
 
         DBExecUtils.startContextInitiation(dataSource.getContainer());
@@ -162,7 +148,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             try {
                 this.initContextBootstrap(monitor, autoCommit);
-            } catch (DBCException e) {
+            } catch (DBException e) {
                 log.warn("Error while running context bootstrap", e);
             }
 
@@ -202,6 +188,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     protected void disconnect() {
+        disconnect(true);
+    }
+
+    protected void disconnect(boolean removeContext) {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
@@ -211,8 +201,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }
             this.connection = null;
         }
-        // Notify QM
-        super.closeContext();
+        if (removeContext) {
+            // Notify QM
+            super.closeContext();
+        }
     }
 
     @NotNull
@@ -275,6 +267,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public void close() {
         closeContext(true);
+        statementLock.close();
     }
 
     private void closeContext(boolean removeContext) {
@@ -285,7 +278,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             this.instance.removeContext(this);
         }
 
-        disconnect();
+        disconnect(removeContext);
     }
 
     //////////////////////////////////////////////////////////////
@@ -301,8 +294,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             if (!txnIsolationLevelReadInProgress) {
                 txnIsolationLevelReadInProgress = true;
                 new AbstractJob("Get transaction isolation level") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         try {
                             DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
                                 try {
@@ -507,13 +501,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return instance.getDataSource().getInfo().supportsTransactions();
     }
 
-    public void reconnect(DBRProgressMonitor monitor) throws DBCException {
-        close();
-        connect(monitor, null, null, this, true);
-    }
-
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
             return adapter.cast(this);
         }
@@ -528,23 +517,116 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return dataSource.getName() + " - " + instance.getName() + " - " + getContextName();
     }
 
-    /**
-     * Acquires lock on connection level.
-     * Any other thread will wait until you release lock with @unlockQueryExecution
-     */
-    public void lockQueryExecution() {
-        if (this.queryExecutionLock != null) {
-            this.queryExecutionLock.lock();
+    public void lockStatementExecution(@NotNull DBCStatement stmt) {
+        statementLock.lock(stmt);
+    }
+
+    public void unlockStatementExecution(@NotNull DBCStatement stmt) {
+        statementLock.unlock(stmt);
+    }
+
+    ///////////////////////
+    /// Statement locks
+
+    private interface StatementLock {
+        void lock(@NotNull Object owner);
+        void unlock(@NotNull Object owner);
+        void close();
+    }
+
+    private static class NoOpLock implements StatementLock {
+        private static final NoOpLock INSTANCE = new NoOpLock();
+        @Override
+        public void lock(@NotNull Object owner) {
+            // no-op
+        }
+        @Override
+        public void unlock(@NotNull Object owner) {
+            // no-op
+        }
+        @Override
+        public void close() {
+            // no-op
         }
     }
 
-    /**
-     * Release lock. Must be called in finally.
-     */
-    public void unlockQueryExecution() {
-        if (this.queryExecutionLock != null) {
-            this.queryExecutionLock.unlock();
+    // Used for non-thread-safe drivers
+    // All statements and their result sets are executed/fetched consequently
+    private static class SingleThreadLock implements StatementLock {
+        private final ReentrantLock lock = new ReentrantLock(true);
+        private final Map<Long, LockInfo> traces = new ConcurrentHashMap<>();
+        private volatile boolean closed = false;
+
+        public void lock(@NotNull Object owner) {
+            if (closed) {
+                throw new IllegalStateException("Lock already closed");
+            }
+
+            long identity = getIdentity(owner);
+
+            if (lock.isHeldByCurrentThread() && traces.containsKey(identity)) {
+                traces.put(identity, new LockInfo(Thread.currentThread()));
+                return;
+            }
+
+            try {
+                lock.lockInterruptibly();
+                if (closed) {
+                    lock.unlock();
+                    throw new IllegalStateException("Lock was closed while waiting for lock");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(
+                    "Thread " + Thread.currentThread().getName() + " was interrupted while waiting for lock", e
+                );
+            }
+            traces.put(identity, new LockInfo(Thread.currentThread()));
         }
+
+        public void unlock(@NotNull Object owner) {
+            long identity = getIdentity(owner);
+
+            if (!traces.containsKey(identity)) {
+                return;
+            }
+
+            if (lock.isHeldByCurrentThread()) {
+                traces.remove(identity);
+                lock.unlock();
+            } else {
+                if (traces.containsKey(identity)) {
+                    throw new IllegalMonitorStateException(
+                        "unlock() called from thread " + Thread.currentThread().getName() +
+                            " but owner " + owner + " belongs to another thread"
+                    );
+                }
+            }
+        }
+
+        private static long getIdentity(Object owner) {
+            return  ((long) System.identityHashCode(owner) << 32)
+                | (System.identityHashCode(Thread.currentThread()) & 0xffffffffL);
+        }
+
+        public void close() {
+            closed = true;
+        }
+
+        private static class LockInfo {
+            final StackTraceElement[] trace;
+            final Thread thread;
+            final long timestamp;
+
+            LockInfo(Thread thread) {
+                this.thread = thread;
+                this.trace = thread.getStackTrace();
+                this.timestamp = System.currentTimeMillis();
+            }
+        }
+
+
     }
+
 
 }

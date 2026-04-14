@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 /**
- * DataSource AI settings.
- * These settings are stored for each connection separately.
+ * AI completion settings.
+ * Datasource-specific settings. Used in prompt generators to generate context info message.
  */
 public class AICompletionSettings extends AIContextSettings {
 
@@ -48,7 +47,7 @@ public class AICompletionSettings extends AIContextSettings {
         this(getPreferenceStore(), dataSourceContainer);
     }
 
-    public AICompletionSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
+    private AICompletionSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
         this.preferenceStore = preferenceStore;
         loadSettings();
@@ -86,19 +85,9 @@ public class AICompletionSettings extends AIContextSettings {
         settings.scope = CommonUtils.valueOf(
             AIDatabaseScope.class,
             preferenceStore.getString(getParameterName(AI_META_SCOPE)),
-            AIDatabaseScope.CURRENT_SCHEMA);
+            null);
         String csString = preferenceStore.getString(getParameterName(AI_META_CUSTOM));
         settings.objects = CommonUtils.isEmpty(csString) ? new String[0] : csString.split(",");
-    }
-
-    public void saveSettingsToPreferenceStore(DBPPreferenceStore preferenceStore) {
-        preferenceStore.setValue(getParameterName(AI_META_TRANSFER_CONFIRMED), settings.confirmed);
-        preferenceStore.setValue(getParameterName(AI_META_SCOPE), settings.scope.name());
-        if (ArrayUtils.isEmpty(settings.objects)) {
-            preferenceStore.setToDefault(getParameterName(AI_META_CUSTOM));
-        } else {
-            preferenceStore.setValue(getParameterName(AI_META_CUSTOM), String.join(",", settings.objects));
-        }
     }
 
     @NotNull

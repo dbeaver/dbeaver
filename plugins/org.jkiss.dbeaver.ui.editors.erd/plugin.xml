@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.ui.editors.erd.export.format" name="ERD Export Formats" schema="schema/org.jkiss.dbeaver.ext.erd.export.format.exsd"/>
@@ -31,7 +14,7 @@
             label="%editor.erd.name"
             description="%editor.erd.description"
             position="additions_end"
-            icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png">
+            icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
             <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
         </editor>
@@ -170,7 +153,7 @@
              class="org.jkiss.dbeaver.ui.editors.erd.action.ERDEditorPropertyTester"
              id="org.jkiss.dbeaver.ui.editors.erd.action.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.ui.editors.erd.editor"
-             properties="canUndo,canRedo,canDelete,editable,supportsStructureEdit,editMode"
+             properties="canUndo,canRedo,canDelete,editable,supportsStructureEdit,editMode,isERD"
              type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
        </propertyTester>
     </extension>
@@ -400,16 +383,18 @@
 
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
-           <enabledWhen>
-              <instanceof value="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
-           </enabledWhen>
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                    <test property="org.jkiss.dbeaver.ui.editors.erd.editor.isERD"/>
+                </adapt>
+            </enabledWhen>
         </page>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorStandalone.name"
                 extensions="erd"
-                icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"
                 contributorClass="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorStandalone"
                 id="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorStandalone">
@@ -430,8 +415,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"/>
-        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/picture_save.svg"/>
         <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.ui.editors.erd/icons/move.svg"/>
     </extension>
@@ -465,7 +450,7 @@
             <enabledWhen>
                 <with variable="activePart">
                     <and>
-                        <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                     </and>
                 </with>
             </enabledWhen>
@@ -517,7 +502,7 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                    <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>
                         </iterate>
@@ -547,7 +532,7 @@
                         <iterate operator="and">
                             <and>
                                 <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-                                <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                             </and>
                         </iterate>
                     </with>
@@ -568,7 +553,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.ui.editors.erd.navigator.DiagramCreateWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"
              id="org.jkiss.dbeaver.ui.editors.erd.navigator.DiagramCreateWizard"
              name="%wizard.erd.name">
            <description>

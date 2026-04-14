@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="DBeaver Runtime"
-        version="25.1.5.qualifier"
+        version="26.0.3.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.model">
 
@@ -19,6 +19,7 @@
     <plugin id="bcpkix" version="0.0.0" />
     <plugin id="bcutil" version="0.0.0" />
 
+    <plugin id="picocli" version="0.0.0" />
     <plugin id="org.antlr.antlr4-runtime" version="0.0.0" />
     <plugin id="com.github.jsqlparser" version="0.0.0" />
     <plugin id="org.apache.commons.jexl" version="0.0.0" />
@@ -44,6 +45,7 @@
     <plugin id="org.jkiss.dbeaver.model.sql" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.sql.jdbc" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.lsm" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.ai" version="0.0.0" />
 
     <plugin id="org.jkiss.dbeaver.registry" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.net.ssh" version="0.0.0" />
@@ -53,9 +55,6 @@
     <plugin id="org.jkiss.dbeaver.data.transfer" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.tasks.native" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.erd" version="0.0.0" />
-
-    <plugin id="org.jkiss.dbeaver.dpi.app" version="0.0.0" />
-    <plugin id="org.jkiss.dbeaver.dpi.model" version="0.0.0" />
 
     <!-- GIS -->
     <plugin id="org.jkiss.dbeaver.data.gis" version="0.0.0" />

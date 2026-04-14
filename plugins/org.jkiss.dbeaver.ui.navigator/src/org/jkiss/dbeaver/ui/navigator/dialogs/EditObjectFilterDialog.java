@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.StringEditorTable;
+import org.jkiss.dbeaver.ui.controls.StringEditorTableUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -46,17 +48,27 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private static final String NULL_FILTER_NAME = "";
 
     private final DBPDataSourceRegistry dsRegistry;
-    private String objectTitle;
-    private DBSObjectFilter filter;
-    private boolean globalFilter;
+    private final String objectTitle;
+    protected DBSObjectFilter filter;
+    protected final boolean globalFilter;
     private Composite blockControl;
     private ControlEnableState blockEnableState;
     private Table includeTable;
     private Table excludeTable;
-    private Combo namesCombo;
-    private Button enableButton;
+    protected Combo namesCombo;
 
-    public EditObjectFilterDialog(Shell shell, DBPDataSourceRegistry dsRegistry, String objectTitle, DBSObjectFilter filter, boolean globalFilter) {
+    protected Composite sfGroup;
+    protected Button saveButton;
+    protected Button removeButton;
+    protected Button enableButton;
+
+    public EditObjectFilterDialog(
+        @NotNull Shell shell,
+        @NotNull DBPDataSourceRegistry dsRegistry,
+        @NotNull String objectTitle,
+        @Nullable DBSObjectFilter filter,
+        boolean globalFilter
+    ) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
         this.dsRegistry = dsRegistry;
         this.objectTitle = objectTitle;
@@ -64,19 +76,59 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         this.globalFilter = globalFilter;
     }
 
+    @NotNull
     public DBSObjectFilter getFilter() {
         return filter;
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         getShell().setText(NLS.bind(UINavigatorMessages.dialog_filter_title, objectTitle));
-        //getShell().setImage(DBIcon.EVENT.getImage());
 
         Composite composite = super.createDialogArea(parent);
 
+        setTopPanel(composite);
+        blockControl = UIUtils.createPlaceholder(composite, 1);
+        GridData blockControlGd = new GridData(GridData.FILL_BOTH);
+        blockControlGd.heightHint = 350;
+        blockControl.setLayoutData(blockControlGd);
+
+        includeTable = StringEditorTableUtils.createEditableList(
+            blockControl, UINavigatorMessages.dialog_filter_list_include,
+            filter.getInclude(), null, null
+        );
+        excludeTable = StringEditorTableUtils.createEditableList(
+            blockControl, UINavigatorMessages.dialog_filter_list_exclude,
+            filter.getExclude(), null, null
+        );
+
+        UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
+        UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
+
+        setSfGroup(composite);
+        redrawFilterRelatedContent();
+
+        return composite;
+    }
+
+    @NotNull
+    protected Composite setTopPanel(@NotNull Composite composite) {
+        Composite topPanel = getTopPanelPlaceholder(composite);
+        setEnableCheckbox(topPanel);
+        if (!globalFilter) {
+            setGlobalFilterLink(topPanel);
+        }
+        return topPanel;
+    }
+
+    @NotNull
+    protected Composite getTopPanelPlaceholder(@NotNull Composite composite) {
         Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return topPanel;
+    }
+
+    protected void setEnableCheckbox(@NotNull Composite topPanel) {
         enableButton = UIUtils.createCheckbox(topPanel, UIMessages.button_enable, false);
         enableButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -85,70 +137,83 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 enableFiltersContent();
             }
         });
-        enableButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        enableButton.setSelection(filter.isEnabled());
-        if (!globalFilter) {
-            Link globalLink = UIUtils.createLink(topPanel, UINavigatorMessages.dialog_filter_global_link, new SelectionAdapter() {
+        GridData cbGd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
+        enableButton.setLayoutData(cbGd);
+    }
+
+    protected void setGlobalFilterLink(@NotNull Composite topPanel) {
+        Link globalLink = UIUtils.createLink(
+            topPanel, UINavigatorMessages.dialog_filter_global_link, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     setReturnCode(SHOW_GLOBAL_FILTERS_ID);
                     close();
                 }
-            });
-            globalLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        }
-        blockControl = UIUtils.createPlaceholder(composite, 1);
-        blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        includeTable = StringEditorTable.createEditableList(blockControl, UINavigatorMessages.dialog_filter_list_include, filter.getInclude(), null, null);
-        excludeTable = StringEditorTable.createEditableList(blockControl, UINavigatorMessages.dialog_filter_list_exclude, filter.getExclude(), null, null);
-
-        UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
-
-        {
-            Group sfGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.dialog_filter_save_label, 4, GridData.FILL_HORIZONTAL, 0);
-            namesCombo = UIUtils.createLabelCombo(sfGroup, UINavigatorMessages.dialog_filter_name_label, SWT.DROP_DOWN);
-            namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            namesCombo.add(NULL_FILTER_NAME);
-            List<String> sfNames = new ArrayList<>();
-            for (DBSObjectFilter sf : dsRegistry.getSavedFilters()) {
-                sfNames.add(sf.getName());
             }
-            Collections.sort(sfNames);
-            for (String sfName : sfNames) {
-                namesCombo.add(sfName);
-            }
-            namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
-            namesCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    changeSavedFilter();
-                }
-            });
+        );
+        GridData linkGD = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
+        globalLink.setLayoutData(linkGD);
+    }
 
-            Button saveButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_save_button, null);
-            saveButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    namesCombo.add(namesCombo.getText());
-                    saveConfigurations();
-                }
-            });
-            Button removeButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_remove_button, null);
-            removeButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    dsRegistry.removeSavedFilter(namesCombo.getText());
-                    namesCombo.remove(namesCombo.getText());
-                    namesCombo.setText(NULL_FILTER_NAME);
-                }
-            });
+    protected void setSfGroup(@NotNull Composite composite) {
+        sfGroup = UIUtils.createTitledComposite(
+            composite,
+            UINavigatorMessages.dialog_filter_save_label,
+            4,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
+        namesCombo = UIUtils.createLabelCombo(sfGroup, UINavigatorMessages.dialog_filter_name_label, SWT.DROP_DOWN);
+        namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        namesCombo.add(NULL_FILTER_NAME);
+        List<String> sfNames = new ArrayList<>();
+        for (DBSObjectFilter sf : dsRegistry.getSavedFilters()) {
+            sfNames.add(sf.getName());
         }
+        Collections.sort(sfNames);
+        for (String sfName : sfNames) {
+            namesCombo.add(sfName);
+        }
+        namesCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeSavedFilter();
+            }
+        });
+        setSaveButton();
+        setRemoveButton();
+    }
 
+    protected void setSaveButton() {
+        saveButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_save_button, null);
+        saveButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                namesCombo.add(namesCombo.getText());
+                saveConfigurations();
+            }
+        });
+    }
+
+    protected void setRemoveButton() {
+        removeButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_remove_button, null);
+        removeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                dsRegistry.removeSavedFilter(namesCombo.getText());
+                namesCombo.remove(namesCombo.getText());
+                namesCombo.setText(NULL_FILTER_NAME);
+            }
+        });
+    }
+
+    protected void redrawFilterRelatedContent() {
+        StringEditorTableUtils.replaceAllStringValues(includeTable, filter.getInclude(), null);
+        StringEditorTableUtils.replaceAllStringValues(excludeTable, filter.getExclude(), null);
+        namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
+        enableButton.setSelection(filter.isEnabled());
         enableFiltersContent();
-
-        return composite;
     }
 
     private void changeSavedFilter() {
@@ -158,38 +223,55 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
         if (CommonUtils.isEmpty(filterName)) {
             // Reset filter
-            StringEditorTable.replaceAllStringValues(includeTable, null, null);
-            StringEditorTable.replaceAllStringValues(excludeTable, null, null);
+            filter.setInclude(null);
+            filter.setExclude(null);
         } else {
             // Find saved filter
             DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
             if (savedFilter != null) {
-                StringEditorTable.replaceAllStringValues(includeTable, savedFilter.getInclude(), null);
-                StringEditorTable.replaceAllStringValues(excludeTable, savedFilter.getExclude(), null);
+                filter.setInclude(savedFilter.getInclude());
+                filter.setExclude(savedFilter.getExclude());
             }
         }
         filter.setName(filterName);
+        redrawFilterRelatedContent();
     }
 
-    private void enableFiltersContent() {
+    protected void enableFiltersContent() {
         if (filter.isEnabled()) {
-            if (blockEnableState != null) {
-                blockEnableState.restore();
-                blockEnableState = null;
-            }
+            enableFilterChange();
         } else if (blockEnableState == null) {
-            blockEnableState = ControlEnableState.disable(blockControl);
+            disableFilterChange();
+        }
+    }
+
+    protected void disableFilterChange() {
+        blockEnableState = ControlEnableState.disable(blockControl);
+    }
+
+    protected void enableFilterChange() {
+        if (blockEnableState != null) {
+            blockEnableState.restore();
+            blockEnableState = null;
         }
     }
 
     private void saveConfigurations() {
-        filter.setEnabled(enableButton.getSelection());
-        filter.setInclude(StringEditorTable.collectStringValues(includeTable));
-        filter.setExclude(StringEditorTable.collectStringValues(excludeTable));
-        filter.setName(namesCombo.getText());
-        if (!CommonUtils.isEmpty(filter.getName())) {
+        saveChangedFilterState();
+        if (shouldSaveFilterInRegistry()) {
             dsRegistry.updateSavedFilter(filter);
         }
+    }
+
+    protected void saveChangedFilterState() {
+        filter.setEnabled(enableButton.getSelection());
+        filter.setInclude(StringEditorTableUtils.collectStringValues(includeTable));
+        filter.setExclude(StringEditorTableUtils.collectStringValues(excludeTable));
+        filter.setName(namesCombo.getText());
+    }
+
+    protected boolean shouldSaveFilterInRegistry() {
+        return !CommonUtils.isEmpty(filter.getName());
     }
 
     @Override
@@ -202,5 +284,4 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     protected void cancelPressed() {
         super.cancelPressed();
     }
-
 }

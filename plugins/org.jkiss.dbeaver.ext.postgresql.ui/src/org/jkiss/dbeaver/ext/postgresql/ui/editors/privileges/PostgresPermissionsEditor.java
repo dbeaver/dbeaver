@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,11 +217,11 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
             ),
             new DBECommandReflector<PostgrePrivilegeOwner, PostgreCommandGrantPrivilege>() {
                 @Override
-                public void redoCommand(PostgreCommandGrantPrivilege cmd) {
+                public void redoCommand(@NotNull PostgreCommandGrantPrivilege cmd) {
                 }
 
                 @Override
-                public void undoCommand(PostgreCommandGrantPrivilege cmd) {
+                public void undoCommand(@NotNull PostgreCommandGrantPrivilege cmd) {
                 }
             });
     }
@@ -269,7 +269,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
 
         permissionTable.removeAll();
 
-        PostgrePrivilegeType[] supportedPrivilegeTypes = getSupportedPrivilegeTypes(objects.get(0));
+        PostgrePrivilegeType[] supportedPrivilegeTypes = getSupportedPrivilegeTypes(objects.getFirst());
         PostgrePrivilege objectPermissions = getObjectPermissions(selectedObjects[0]);
         for (PostgrePrivilegeType privilegeType : supportedPrivilegeTypes) {
             TableItem tableItem = new TableItem(permissionTable, SWT.LEFT);
@@ -316,7 +316,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         LoadingJob.createService(
             new DatabaseLoadService<>("Load permissions", getExecutionContext()) {
                 @Override
-                public PermissionInfo evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public PermissionInfo evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
@@ -354,7 +354,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         ProgressVisualizer<PermissionInfo> createLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
-                public void completeLoading(PermissionInfo privs) {
+                public void completeLoading(@Nullable PermissionInfo privs) {
                     super.completeLoading(privs);
                     if (privs == null) {
                         return;
@@ -372,7 +372,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
 
             contributionManager.add(new Separator());
@@ -450,11 +450,11 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : objectNames) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return BaseThemeSettings.instance.baseFontBold;
+                                return BaseThemeSettings.instance.treeAndTableFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return BaseThemeSettings.instance.baseFontBold;
+                        return BaseThemeSettings.instance.treeAndTableFontBold;
                     }
                 }
                 return null;
@@ -467,8 +467,8 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                 if (element instanceof DBNNode && !(element instanceof DBNDatabaseNode)) {
                     return false;
                 }
-                if (element instanceof DBNDatabaseFolder) {
-                    final DBXTreeFolder meta = ((DBNDatabaseFolder) element).getMeta();
+                if (element instanceof DBNDatabaseFolder dbFolder) {
+                    final DBXTreeFolder meta = dbFolder.getMeta();
                     final Class<?> childType = meta.getSource().getObjectClass(meta.getType());
                     if (childType == null) {
                         return false;
@@ -523,7 +523,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
     private void addText(Composite parent) {
         selectedObjectNames = new Text(
             parent,
-            SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL
+            SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL
         );
         selectedObjectNames.setLayoutData(new GridData(GridData.FILL_BOTH));
     }

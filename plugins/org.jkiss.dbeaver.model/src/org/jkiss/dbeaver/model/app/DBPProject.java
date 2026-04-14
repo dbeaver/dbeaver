@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     @NotNull
     String getName();
+
+    @Nullable
+    String getDescription();
 
     @NotNull
     String getDisplayName();
@@ -132,6 +135,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
 
     void setProjectProperty(@NotNull String propName, @Nullable Object propValue);
 
+    void setProjectProperties(@NotNull Map<String, Object> properties);
+
     /**
      * Finds resources that match the supplied {@code properties} map.
      */
@@ -151,6 +156,8 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     void moveResourceProperties(@NotNull String oldResourcePath, @NotNull String newResourcePath);
 
     void refreshProject(DBRProgressMonitor monitor);
+
+    void updateProject(@Nullable String newName, @Nullable String description) throws DBException;
 
     @Nullable
     DBNModel getNavigatorModel();

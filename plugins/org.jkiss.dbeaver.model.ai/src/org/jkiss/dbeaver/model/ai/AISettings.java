@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,72 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
+import org.jkiss.dbeaver.model.DBPAdaptable;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI global settings.
  * Keeps global parameters and configuration of all AI engines
  */
-public class AISettings implements IAdaptable {
+public class AISettings implements DBPAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
-    private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
+    private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
+
+    private final Map<String, String> customInstructions = new LinkedHashMap<>();
+
+    public AISettings() {
+    }
+
+    @NotNull
+    public Map<String, Object> getAllProperties() {
+        return properties;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(@NotNull String name) {
+        return (T) properties.get(name);
+    }
+
+    @NotNull
+    public <T> T getProperty(@NotNull String name, @NotNull T defaultValue) {
+        return Objects.requireNonNullElse(getProperty(name), defaultValue);
+    }
+
+    public void setProperty(@NotNull String name, @Nullable Object value) {
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
+    }
+
+    @NotNull
+    public Map<String, String> getCustomInstructions() {
+        return Map.copyOf(customInstructions);
+    }
+
+    @Nullable
+    public String getCustomInstructions(@NotNull String promptGeneratorId) {
+        return customInstructions.get(promptGeneratorId);
+    }
+
+    public void setCustomInstructions(@NotNull Map<String, String> instructions) {
+        customInstructions.clear();
+        customInstructions.putAll(instructions);
+    }
+
 
     public boolean isAiDisabled() {
         return aiDisabled;
@@ -61,41 +104,55 @@ public class AISettings implements IAdaptable {
         this.activeEngine = activeEngine;
     }
 
+    public boolean hasConfiguration(String engineId) {
+        return engineConfigurations.containsKey(engineId);
+    }
+
     @NotNull
-    public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
-        AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
-        if (aiEngineSettings == null) {
-            AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-            if (engineDescriptor == null) {
-                throw new DBException("AI engine " + engineId + " not found");
-            }
-            if (!CommonUtils.isEmpty(engineDescriptor.getReplaces())) {
-                aiEngineSettings = engineConfigurations.get(engineDescriptor.getReplaces());
-            }
+    public synchronized <T extends AIEngineProperties> T getEngineConfiguration(@NotNull String engineId) throws DBException {
+        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+        if (engineDescriptor == null) {
+            throw new DBException("AI engine " + engineId + " not found");
         }
 
-        if (!AISettingsRegistry.saveSecretsAsPlainText()) {
-            if (!resolvedSecrets.contains(engineId)) {
-                aiEngineSettings.resolveSecrets();
-                resolvedSecrets.add(engineId);
+        AIEngineProperties aiEngineSettings = engineConfigurations.get(engineId);
+        if (aiEngineSettings == null) {
+            aiEngineSettings = engineDescriptor.createPropertiesInstance();
+        }
+
+        if (aiEngineSettings != null) {
+            if (!AISettingsManager.saveSecretsAsPlainText()) {
+                if (!resolvedSecrets.contains(engineId)) {
+                    aiEngineSettings.resolveSecrets();
+                    resolvedSecrets.add(engineId);
+                }
             }
         }
 
         return (T) aiEngineSettings;
     }
 
-    public void setEngineConfiguration(String engineId, AIEngineSettings<?> engineConfiguration) {
+    public Map<String, AIEngineProperties> getEngineConfigurations() {
+        return engineConfigurations;
+    }
+
+    public void setEngineConfiguration(
+        @NotNull String engineId,
+        @NotNull AIEngineProperties engineConfiguration
+    ) {
         engineConfigurations.put(engineId, engineConfiguration);
     }
 
-    public void setEngineConfigurations(Map<String, AIEngineSettings<?>> engineConfigurations) {
+    public void setEngineConfigurations(
+        @NotNull Map<String, AIEngineProperties> engineConfigurations
+    ) {
         this.engineConfigurations.putAll(engineConfigurations);
     }
 
     public void saveSecrets() throws DBException {
-        for (Map.Entry<String, AIEngineSettings<?>> entry : engineConfigurations.entrySet()) {
+        for (Map.Entry<String, AIEngineProperties> entry : engineConfigurations.entrySet()) {
             String engineId = entry.getKey();
-            AIEngineSettings<?> engineConfiguration = entry.getValue();
+            AIEngineProperties engineConfiguration = entry.getValue();
 
             if (resolvedSecrets.contains(engineId)) {
                 engineConfiguration.saveSecrets();
@@ -104,7 +161,7 @@ public class AISettings implements IAdaptable {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
     }
 }

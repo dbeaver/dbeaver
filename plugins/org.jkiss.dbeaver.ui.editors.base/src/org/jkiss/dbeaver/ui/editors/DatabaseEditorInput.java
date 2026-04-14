@@ -91,6 +91,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return false;
     }
 
+    @Nullable
+    @Override
+    public String getNodePath() {
+        return null;
+    }
+
     @Override
     public ImageDescriptor getImageDescriptor()
     {
@@ -167,11 +173,13 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         }
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
     }
 
+    @Nullable
     @Override
     public NODE getNavigatorNode()
     {

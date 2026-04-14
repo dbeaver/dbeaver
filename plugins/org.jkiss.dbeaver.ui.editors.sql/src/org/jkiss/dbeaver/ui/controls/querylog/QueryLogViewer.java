@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,8 +86,8 @@ import org.jkiss.utils.LongKeyMap;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -99,9 +99,31 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final String CMD_FILTER_ID = "org.jkiss.dbeaver.core.qm.filter";
+    private static final String QMDB_UNAVAILABLE_TITLE = "Query Manager is unavailable";
+    private static final String QMDB_UNAVAILABLE_MESSAGE =
+        "Query Manager was disabled for this session because the managed QMDB service could not be started.";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    private static abstract class LogColumn {
+    private final IWorkbenchPartSite site;
+    private final Text searchText;
+    private final Table logTable;
+    private final List<ColumnDescriptor> columns = new ArrayList<>();
+    private final LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
+
+    private QMEventFilter defaultFilter = new DefaultEventFilter();
+    private QMEventFilter filter;
+    private QMEventCriteria criteria;
+    private boolean useDefaultFilter = true;
+    private final boolean currentSessionOnly;
+    private boolean qmdbUnavailableDialogShown;
+
+    private DragSource dndSource;
+
+    private volatile boolean reloadInProgress = false;
+
+    private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
+
+    private abstract static class LogColumn {
         private final String id;
         private final String title;
         private final String toolTip;
@@ -314,25 +336,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         COLUMN_CONTEXT,
     };
 
-    private final IWorkbenchPartSite site;
-    private final Text searchText;
-    private final Table logTable;
-    private final List<ColumnDescriptor> columns = new ArrayList<>();
-    private final LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
+    public QueryLogViewer(
+        @NotNull Composite parent,
+        @NotNull IWorkbenchPartSite site,
+        @Nullable QMEventFilter filter,
+        boolean showConnection,
+        boolean currentSessionOnly
+    ) {
 
-    private QMEventFilter defaultFilter = new DefaultEventFilter();
-    private QMEventFilter filter;
-    private QMEventCriteria criteria;
-    private boolean useDefaultFilter = true;
-    private final boolean currentSessionOnly;
-
-    private DragSource dndSource;
-
-    private volatile boolean reloadInProgress = false;
-
-    private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
-
-    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection, boolean currentSessionOnly) {
         super();
 
         this.site = site;
@@ -542,7 +553,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private Font getObjectFont(QMEvent event) {
         if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
             if (!exec.isClosed() || exec.isFetching()) {
-                return BaseThemeSettings.instance.baseFontBold;
+                return BaseThemeSettings.instance.treeAndTableFontBold;
             }
         }
         return null;
@@ -616,10 +627,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         criteria.setFetchingSize(entriesPerPage);
 
         EventHistoryReadService loadingService = new EventHistoryReadService(criteria);
-        LoadingJob.createService(
-                loadingService,
-                new EvenHistoryReadVisualizer(loadingService))
-                .schedule();
+        LoadingJob<QueryHistoryLoadResult> loadingJob = LoadingJob.createService(
+            loadingService,
+            new EvenHistoryReadVisualizer(loadingService)
+        );
+        loadingJob.schedule();
     }
 
     @Override
@@ -1006,8 +1018,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             super(ModelMessages.controls_querylog_job_refresh);
         }
 
+        @NotNull
         @Override
-        protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
             refresh();
             return Status.OK_STATUS;
         }
@@ -1135,13 +1148,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-            if (alignment == SWT.LEAD) {
-                createCopyButton(parent);
-                createExecuteButton(parent);
-            } else {
-                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-            }
+        protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+            createCopyButton(parent);
+            createExecuteButton(parent);
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }
 
         @Override
@@ -1218,10 +1232,32 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
     }
 
-    class EventHistoryReadService extends AbstractLoadService<List<QMEvent>> {
+    private static class QueryHistoryLoadResult {
+        private final List<QMEvent> events;
+        private final DBException error;
 
-        private static final int RETRIES_QM_WAITING = 60;
-        private static final int WAITING_QM_SESSION_SECONDS_PER_TRY = 1;
+        private QueryHistoryLoadResult(@NotNull List<QMEvent> events, @Nullable DBException error) {
+            this.events = events;
+            this.error = error;
+        }
+
+        @NotNull
+        private List<QMEvent> getEvents() {
+            return events;
+        }
+
+        @Nullable
+        private DBException getError() {
+            return error;
+        }
+
+        private boolean isQmdbUnavailable() {
+            return error != null && CommonUtils.getCauseOfType(error, QMDBUnavailableException.class) != null;
+        }
+    }
+
+    class EventHistoryReadService extends AbstractLoadService<QueryHistoryLoadResult> {
+
         private final QMEventCriteria criteria;
 
         protected EventHistoryReadService(@NotNull QMEventCriteria criteria) {
@@ -1229,8 +1265,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             this.criteria = criteria;
         }
 
+        @NotNull
         @Override
-        public List<QMEvent> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public QueryHistoryLoadResult evaluate(
+            @NotNull DBRProgressMonitor monitor
+        ) throws InvocationTargetException, InterruptedException {
+
             final List<QMEvent> events = new ArrayList<>();
             QMEventBrowser eventBrowser = QMUtils.getEventBrowser(currentSessionOnly);
             if (eventBrowser != null) {
@@ -1243,16 +1283,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
                 String qmSessionId = null;
                 if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
-                    int tries = 0;
                     qmSessionId = provider.getQueryManagerSessionId();
-                    while (qmSessionId == null && tries < RETRIES_QM_WAITING) {
-                        if (DBWorkbench.getPlatform().isShuttingDown()) {
-                            break;
-                        }
-                        RuntimeUtils.pause(WAITING_QM_SESSION_SECONDS_PER_TRY * 1000);
-                        qmSessionId = provider.getQueryManagerSessionId();
-                        tries++;
-                    }
                 }
                 var cursorFilter = new QMCursorFilter(
                     qmSessionId,
@@ -1265,14 +1296,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                             break;
                         }
                         events.add(cursor.nextEvent(monitor));
-                        //monitor.subTask(events.get(events.size() - 1).toString());
                     }
                 } catch (DBException e) {
-                    throw new InvocationTargetException(e);
+                    monitor.done();
+                    return new QueryHistoryLoadResult(events, e);
                 }
                 monitor.done();
             }
-            return events;
+            return new QueryHistoryLoadResult(events, null);
         }
 
         @Override
@@ -1282,8 +1313,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     }
 
-    private class EvenHistoryReadVisualizer extends ProgressLoaderVisualizer<List<QMEvent>> {
-        EvenHistoryReadVisualizer(EventHistoryReadService loadingService) {
+    private class EvenHistoryReadVisualizer extends ProgressLoaderVisualizer<QueryHistoryLoadResult> {
+        EvenHistoryReadVisualizer(@NotNull EventHistoryReadService loadingService) {
             super(loadingService, logTable);
         }
 
@@ -1294,15 +1325,26 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        public void completeLoading(List<QMEvent> result) {
+        public void completeLoading(@Nullable QueryHistoryLoadResult result) {
             try {
                 super.completeLoading(result);
                 super.visualizeLoading();
                 if (logTable.isDisposed()) {
                     return;
                 }
+                if (result != null && result.getError() != null) {
+                    if (result.isQmdbUnavailable()) {
+                        if (!qmdbUnavailableDialogShown) {
+                            qmdbUnavailableDialogShown = true;
+                            DBWorkbench.getPlatformUI().showError(QMDB_UNAVAILABLE_TITLE, QMDB_UNAVAILABLE_MESSAGE, result.getError());
+                        }
+                    } else {
+                        DBWorkbench.getPlatformUI().showError(getLoadService().getServiceName(), null, result.getError());
+                    }
+                    return;
+                }
                 if (result != null) {
-                    updateMetaInfo(result);
+                    updateMetaInfo(result.getEvents());
                 }
                 // Apply sort (if any)
                 TableColumn sortColumn = logTable.getSortColumn();

@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
  */
 public class DBNDiagram extends DBNResource
 {
-    private static final DBIcon DIAGRAM_ICON = new DBIcon("platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png");
+    private static final DBIcon DIAGRAM_ICON = new DBIcon("platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg");
 
     private DBPImage image;
 

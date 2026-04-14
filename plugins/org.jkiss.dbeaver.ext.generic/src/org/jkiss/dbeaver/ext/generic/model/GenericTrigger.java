@@ -58,7 +58,7 @@ public abstract class GenericTrigger<OWNER extends DBSObject> implements
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -99,6 +99,7 @@ public abstract class GenericTrigger<OWNER extends DBSObject> implements
         return (GenericDataSource) container.getDataSource();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

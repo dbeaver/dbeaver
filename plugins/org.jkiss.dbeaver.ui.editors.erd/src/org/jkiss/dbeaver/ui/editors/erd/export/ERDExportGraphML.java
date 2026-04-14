@@ -56,7 +56,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         try {
             try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(targetFile), GeneralUtils.UTF8_CHARSET)) {
                 XMLBuilder xml = new XMLBuilder(osw, GeneralUtils.UTF8_ENCODING);
-                xml.setButify(true);
+                xml.setBeautify(true);
 
                 xml.startElement("graphml");
                 xml.addAttribute("xmlns", "http://graphml.graphdrawing.org/xmlns");

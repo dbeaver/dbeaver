@@ -21,8 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -51,6 +54,9 @@ public class DBTaskUtils {
     public static final String TASK_VARIABLES = "taskVariables";
     public static final String TASK_PROMPT_VARIABLES = "promptTaskVariables";
     public static final String TASK_CONTEXT = "taskContext";
+
+    public static final String CONNECTION_DESCRIPTION_TEMPLATE = "[%s] (%s - %s:%s%s)";
+
 
     @NotNull
     public static Map<String, Object> getVariables(@NotNull DBTTask task) {
@@ -223,19 +229,44 @@ public class DBTaskUtils {
             Optional<String> inputFileKey = task.getProperties().keySet().stream().filter(k -> k.contains("inputFile")).findFirst();
             String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : "file";
             String dbObjectNames = "";
+            String connectionInfo = "";
             Object dbObjectIdsObj = task.getProperties().get("databaseObjects");
             if (dbObjectIdsObj != null) {
                 List<String> dbObjectIds = (List<String>)dbObjectIdsObj;
-                dbObjectNames = dbObjectIds.stream().map(id -> DBUtils.getObjectNameFromId(id)).collect(Collectors.joining(", "));
+                dbObjectNames = dbObjectIds.stream()
+                    .map(DBUtils::getObjectNameFromId)
+                    .collect(Collectors.joining(", "));
+
+                if (!((List<?>) dbObjectIdsObj).isEmpty()) {
+                    DBPDataSourceContainer container = DBUtils.findDataSourceByObjectId(
+                        task.getProject(),
+                        ((List<String>) dbObjectIdsObj).getFirst()
+                    );
+                    if (container != null) {
+                        connectionInfo =  DBTaskUtils.buildConnectionDescription(container, null);
+                    }
+                }
             }
-            messageBuilder.append(NLS.bind(messageOrNull, dbObjectNames, inputFile)).append("\n");
-            confirmationRequired |= true;
+            messageBuilder.append(NLS.bind(messageOrNull, connectionInfo + "\n" + dbObjectNames, inputFile)).append("\n");
+            confirmationRequired = true;
         }
         confirmationRequired |= extraConfirmationsCollector.collect(messageBuilder, task); 
         return confirmationRequired;
     }
-    
+
     public static interface TaskConfirmationsCollector {
         boolean collect(StringBuilder messageBuilder, DBTTask task);
+    }
+
+    @NotNull
+    public static String buildConnectionDescription(@NotNull DBPDataSourceContainer container, @Nullable String databaseName) {
+        DBPConnectionConfiguration connection = container.getConnectionConfiguration();
+
+        return CONNECTION_DESCRIPTION_TEMPLATE.formatted(container.getName(),
+            container.getDriver(),
+            connection.getHostName(),
+            connection.getHostPort(),
+            CommonUtils.isEmpty(databaseName) ? "" : "/" + databaseName
+        );
     }
 }

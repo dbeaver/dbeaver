@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ext.bigquery.ui.config;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
@@ -37,6 +39,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
 
     private Combo authTypeCombo;
     private TextWithOpenFile authCertFile;
+    private Label keyPathLabel;
 
     @Override
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -45,10 +48,27 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         authTypeCombo.add(BigQueryMessages.label_service_based);
         authTypeCombo.add(BigQueryMessages.label_user_based);
         authTypeCombo.select(0);
+        authTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            updateKeyPathVisibility();
+            propertyChangeListener.run();
+        }));
 
-        UIUtils.createControlLabel(authPanel, BigQueryMessages.label_key_path);
+        keyPathLabel = UIUtils.createControlLabel(authPanel, BigQueryMessages.label_key_path);
         authCertFile = new ConfigurationFileSelector(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"}, DBWorkbench.isDistributed());
         authCertFile.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
+        updateKeyPathVisibility();
+    }
+
+    private void updateKeyPathVisibility() {
+        if (keyPathLabel != null && authCertFile != null) {
+            boolean serviceBased = authTypeCombo.getSelectionIndex() == 0;
+            UIUtils.setControlVisible(keyPathLabel, serviceBased);
+            UIUtils.setControlVisible(authCertFile.getPanel(), serviceBased);
+            if (!authTypeCombo.isDisposed()) {
+                authTypeCombo.getShell().layout(true, true);
+                UIUtils.resizeShell(authTypeCombo.getShell());
+            }
+        }
     }
 
     @Override

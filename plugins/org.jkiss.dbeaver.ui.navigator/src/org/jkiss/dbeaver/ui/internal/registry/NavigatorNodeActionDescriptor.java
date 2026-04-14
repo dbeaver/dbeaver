@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.internal.registry;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
@@ -34,6 +33,7 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
 
     private final ObjectType implType;
     private final int order;
+    private final boolean alwaysEnabled;
     private final Expression enablementExpression;
     private INavigatorNodeActionHandler instance;
 
@@ -42,6 +42,7 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
 
         this.implType = new ObjectType(config.getAttribute("class"));
         this.order = CommonUtils.toInt(config.getAttribute("order"));
+        this.alwaysEnabled = CommonUtils.toBoolean(config.getAttribute("alwaysEnabled"));
         this.enablementExpression = getEnablementExpression(config);
     }
 
@@ -61,7 +62,11 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
         return order;
     }
 
-    public boolean appliesTo(@Nullable DBPObject object) {
+    public boolean isAlwaysEnabled() {
+        return alwaysEnabled;
+    }
+
+    public boolean appliesTo(@NotNull DBPObject object) {
         return object != null && isExpressionTrue(enablementExpression, object) && appliesTo(object, null);
     }
 

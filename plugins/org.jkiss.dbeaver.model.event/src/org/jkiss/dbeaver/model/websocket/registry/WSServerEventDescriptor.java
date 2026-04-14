@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.websocket.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 
 /**
@@ -41,6 +40,6 @@ public class WSServerEventDescriptor extends WSAbstractEventDescriptor {
 
     @NotNull
     public Class<? extends WSEvent> getEventClass() {
-        return implType.getObjectClass(WSEvent.class);
+        return implType.getImplClass(WSEvent.class);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
@@ -78,7 +79,7 @@ class DriverDependenciesTree {
         filesTree = new Tree(parent, SWT.BORDER | SWT.FULL_SELECTION);
         filesTree.setHeaderVisible(true);
         final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumHeight = filesTree.getHeaderHeight() + filesTree.getItemHeight() * 3;
+        gd.heightHint = 4 * UIUtils.getFontHeight(filesTree);
         filesTree.setLayoutData(gd);
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
@@ -160,7 +161,8 @@ class DriverDependenciesTree {
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             if (editable) {
-                item.setFont(1, BaseThemeSettings.instance.baseFontBold);
+                item.setFont(1, BaseThemeSettings.instance.treeAndTableFontBold);
+                item.setText(1, NLS.bind(UIConnectionMessages.dialog_driver_download_version_change_label, item.getText(1)));
             }
             totalItems++;
             if (addDependencies(item, node)) {
@@ -243,12 +245,7 @@ class DriverDependenciesTree {
             return;
         }
         Shell shell = filesTree.getShell();
-        Point curSize = shell.getSize();
-        int itemHeight = filesTree.getItemHeight();
-        shell.setSize(curSize.x, Math.min(
-            (int)(UIUtils.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
-            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight * 2);
-        shell.layout();
+        UIUtils.resizeShell(shell);
     }
 
     private boolean addDependencies(TreeItem parent, DBPDriverDependencies.DependencyNode node) {
@@ -305,35 +302,31 @@ class DriverDependenciesTree {
         } catch (InterruptedException e) {
             return;
         }
-        final String currentVersion = dependencyNode.library.getVersion();
-        if (currentVersion != null && !allVersions.contains(currentVersion)) {
+
+        final String currentVersion = CommonUtils.notEmpty(dependencyNode.library.getVersion());
+        if (!allVersions.contains(currentVersion)) {
             allVersions.add(currentVersion);
         }
 
         final CCombo editor = new CCombo(filesTree, SWT.DROP_DOWN | SWT.READ_ONLY);
         editor.setVisibleItemCount(15);
-        int versionIndex = -1;
-        for (int i = 0; i < allVersions.size(); i++) {
-            String version = allVersions.get(i);
-            editor.add(version);
-            if (version.equals(currentVersion)) {
-                versionIndex = i;
-            }
-        }
-        if (versionIndex >= 0) {
-            editor.select(versionIndex);
-            editor.setText(currentVersion);
-        }
         editor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String newVersion = editor.getItem(editor.getSelectionIndex());
+                String newVersion = allVersions.get(editor.getSelectionIndex());
                 disposeOldEditor();
                 if (dependencyNode.library instanceof DriverLibraryMavenArtifact mavenLib) {
                     setLibraryVersion(mavenLib, newVersion);
                 }
             }
         });
+        for (String version : allVersions) {
+            editor.add(version);
+        }
+
+        int currentVersionIndex = allVersions.indexOf(currentVersion);
+        editor.setItem(currentVersionIndex, NLS.bind(UIConnectionMessages.dialog_driver_download_current_version_label, currentVersion));
+        editor.select(currentVersionIndex);
 
         treeEditor.setEditor(editor, item, 1);
         editor.setListVisible(true);

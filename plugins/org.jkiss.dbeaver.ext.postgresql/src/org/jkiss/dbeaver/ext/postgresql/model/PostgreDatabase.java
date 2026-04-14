@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -282,7 +281,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
@@ -314,7 +313,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription(DBRProgressMonitor monitor) {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
             return null;
         }
@@ -338,11 +337,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
     }
 
     @NotNull
@@ -554,11 +548,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return dataSource.resolveDataKind(typeName, typeID);
     }
 
+    @Nullable
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
 
+    @NotNull
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
         synchronized (dataTypeCache) {
@@ -573,16 +569,19 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     @Override
     public PostgreDataType getLocalDataType(String typeName) {
         return getDataType(null, typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return getDataType(new VoidProgressMonitor(), typeID);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return PostgreUtils.getDefaultDataTypeName(dataKind);
@@ -836,6 +835,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return schema.getTable(monitor, tableId);
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchemas(monitor);
@@ -935,6 +935,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     public PostgreDataType getDataType(DBRProgressMonitor monitor, long typeId) {
         if (typeId <= 0) {
             return null;
@@ -1042,12 +1043,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public void setDbTotalSize(long dbTotalSize) {
         this.dbTotalSize = dbTotalSize;
-    }
-
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
     }
 
     @Override
@@ -1466,6 +1461,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1486,6 +1482,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1506,6 +1503,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {

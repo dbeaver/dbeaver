@@ -272,6 +272,9 @@ public interface SQLDialect {
 
     boolean supportsSubqueries();
 
+    /**
+     * Returns true when database dialect allows <b>table</b> alias in FROM clause
+     */
     boolean supportsAliasInSelect();
 
     boolean supportsAliasInUpdate();
@@ -538,4 +541,7 @@ public interface SQLDialect {
         return false;
     }
 
+    default boolean supportsQualifiedColumnNames() {
+        return true;
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerAuthentication;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -32,23 +31,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider<SQLServerDataSource> {
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
-
-    private static Map<String,String> connectionsProps;
-
-    static {
-        connectionsProps = new HashMap<>();
+    public SQLServerDataSourceProvider() {
+        super(SQLServerDataSource.class);
     }
 
-    public static Map<String,String> getConnectionsProps() {
-        return connectionsProps;
-    }
-
-    public SQLServerDataSourceProvider()
-    {
+    public SQLServerDataSourceProvider(@NotNull Class<? extends SQLServerDataSource> dsClass) {
+        super(dsClass);
     }
 
     @Override
@@ -56,8 +46,9 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         }
@@ -129,7 +120,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public SQLServerDataSource openDataSource(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBPDataSourceContainer container)
             throws DBException
@@ -137,8 +128,9 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
         return new SQLServerDataSource(monitor, container);
     }
 
+    @NotNull
     @Override
-    public DBPAuthModelDescriptor detectConnectionAuthModel(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public DBPAuthModelDescriptor detectConnectionAuthModel(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if (driver.getProviderDescriptor().matchesId(SQLServerConstants.PROVIDER_SQL_SERVER) &&
             (CommonUtils.isEmpty(connectionInfo.getAuthModelId()) ||
             connectionInfo.getAuthModelId().equals(AuthModelDatabaseNative.ID)))

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -213,7 +214,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
         }
 
         @Override
-        public void saxStartElement(@NotNull SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) throws XMLException {
             switch (localName) {
                 case TAG_CONTAINER:
                     if (curContainer == null) {
@@ -221,7 +222,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
                     } else {
                         DBVContainer container = new DBVContainer(
                             curContainer,
-                            atts.getValue(ATTR_NAME)
+                            attributes.getValue(ATTR_NAME)
                         );
                         curContainer.addContainer(container);
                         curContainer = container;
@@ -230,26 +231,26 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
                 case TAG_ENTITY:
                     curEntity = new DBVEntity(
                         curContainer,
-                        atts.getValue(ATTR_NAME),
-                        atts.getValue(ATTR_DESCRIPTION)
+                        attributes.getValue(ATTR_NAME),
+                        attributes.getValue(ATTR_DESCRIPTION)
                     );
                     curContainer.addEntity(curEntity);
                     break;
                 case TAG_PROPERTY:
                     if (curTransformSettings != null) {
                         curTransformSettings.setTransformOption(
-                            atts.getValue(ATTR_NAME),
-                            atts.getValue(ATTR_VALUE)
+                            attributes.getValue(ATTR_NAME),
+                            attributes.getValue(ATTR_VALUE)
                         );
                     } else if (curAttribute != null) {
                         curAttribute.setProperty(
-                            atts.getValue(ATTR_NAME),
-                            atts.getValue(ATTR_VALUE)
+                            attributes.getValue(ATTR_NAME),
+                            attributes.getValue(ATTR_VALUE)
                         );
                     } else if (curEntity != null) {
                         curEntity.setProperty(
-                            atts.getValue(ATTR_NAME),
-                            atts.getValue(ATTR_VALUE)
+                            attributes.getValue(ATTR_NAME),
+                            attributes.getValue(ATTR_VALUE)
                         );
                     }
                     break;
@@ -258,26 +259,26 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
                         curConstraint = new DBVEntityConstraint(
                             curEntity,
                             DBSEntityConstraintType.VIRTUAL_KEY,
-                            atts.getValue(ATTR_NAME)
+                            attributes.getValue(ATTR_NAME)
                         );
                         curEntity.addConstraint(curConstraint, false);
                     }
                     break;
                 case TAG_ATTRIBUTE:
                     if (curConstraint != null) {
-                        curConstraint.addAttribute(atts.getValue(ATTR_NAME));
+                        curConstraint.addAttribute(attributes.getValue(ATTR_NAME));
                     } else if (curAttribute != null) {
-                        DBVEntityAttribute childAttribute = new DBVEntityAttribute(curEntity, curAttribute, atts.getValue(ATTR_NAME));
+                        DBVEntityAttribute childAttribute = new DBVEntityAttribute(curEntity, curAttribute, attributes.getValue(ATTR_NAME));
                         curAttribute.addChild(childAttribute);
                         curAttribute = childAttribute;
                     } else if (curEntity != null) {
-                        curAttribute = new DBVEntityAttribute(curEntity, null, atts.getValue(ATTR_NAME));
+                        curAttribute = new DBVEntityAttribute(curEntity, null, attributes.getValue(ATTR_NAME));
                         curEntity.addVirtualAttribute(curAttribute, false);
                     }
                     break;
                 case TAG_TRANSFORM:
                     curTransformSettings = new DBVTransformSettings();
-                    curTransformSettings.setCustomTransformer(atts.getValue(ATTR_CUSTOM));
+                    curTransformSettings.setCustomTransformer(attributes.getValue(ATTR_CUSTOM));
                     if (curAttribute != null) {
                         curAttribute.setTransformSettings(curTransformSettings);
                     } else if (curEntity != null) {
@@ -286,7 +287,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
                     break;
                 case TAG_INCLUDE:
                 case TAG_EXCLUDE:
-                    String transformerId = atts.getValue(ATTR_ID);
+                    String transformerId = attributes.getValue(ATTR_ID);
                     if (curTransformSettings != null && !CommonUtils.isEmpty(transformerId)) {
                         DBDAttributeTransformerDescriptor transformer = DBWorkbench.getPlatform().getValueHandlerRegistry()
                             .getTransformer(transformerId);
@@ -301,16 +302,16 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
                     if (curEntity != null) {
                         try {
                             curColor = new DBVColorOverride(
-                                atts.getValue(ATTR_NAME),
-                                DBCLogicalOperator.valueOf(atts.getValue(ATTR_OPERATOR)),
+                                attributes.getValue(ATTR_NAME),
+                                DBCLogicalOperator.valueOf(attributes.getValue(ATTR_OPERATOR)),
                                 null,
-                                atts.getValue(ATTR_FOREGROUND),
-                                atts.getValue(ATTR_BACKGROUND)
+                                attributes.getValue(ATTR_FOREGROUND),
+                                attributes.getValue(ATTR_BACKGROUND)
                             );
-                            curColor.setRange(CommonUtils.getBoolean(atts.getValue(ATTR_RANGE), false));
-                            curColor.setSingleColumn(CommonUtils.getBoolean(atts.getValue(ATTR_SINGLE_COLUMN), false));
-                            curColor.setColorForeground2(atts.getValue(ATTR_FOREGROUND2));
-                            curColor.setColorBackground2(atts.getValue(ATTR_BACKGROUND2));
+                            curColor.setRange(CommonUtils.getBoolean(attributes.getValue(ATTR_RANGE), false));
+                            curColor.setSingleColumn(CommonUtils.getBoolean(attributes.getValue(ATTR_SINGLE_COLUMN), false));
+                            curColor.setColorForeground2(attributes.getValue(ATTR_FOREGROUND2));
+                            curColor.setColorBackground2(attributes.getValue(ATTR_BACKGROUND2));
                             curEntity.addColorOverride(curColor);
                         } catch (Throwable e) {
                             log.warn("Error reading color settings", e);
@@ -326,14 +327,14 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
             if (colorValue) {
                 curColor.addAttributeValue(GeneralUtils.deserializeObject(data));
             }
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
             switch (localName) {
                 case TAG_CONTAINER:
                     curContainer = curContainer.getParentObject();

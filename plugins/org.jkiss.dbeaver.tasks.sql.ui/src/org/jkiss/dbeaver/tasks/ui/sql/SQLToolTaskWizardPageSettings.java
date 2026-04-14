@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -65,9 +67,9 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
     private static final Log log = Log.getLog(SQLToolTaskWizardPageSettings.class);
 
-    private SQLToolTaskWizard sqlWizard;
+    private final SQLToolTaskWizard sqlWizard;
 
-    private List<DBSObject> selectedObjects = new ArrayList<>();
+    private final List<DBSObject> selectedObjects = new ArrayList<>();
     private PropertyTreeViewer taskOptionsViewer;
     private Object sqlPreviewPanel;
     private TableViewer objectsViewer;
@@ -92,9 +94,14 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         previewSplitter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         SashForm settingsPanel = new SashForm(previewSplitter, SWT.HORIZONTAL);
-        Group objectsPanel;
+        Composite objectsPanel;
         {
-            objectsPanel = UIUtils.createControlGroup(settingsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_objects, 2, GridData.FILL_BOTH, 0);
+            objectsPanel = UIUtils.createTitledComposite(
+                settingsPanel,
+                TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_objects,
+                2,
+                GridData.FILL_BOTH
+            );
             objectsViewer = new TableViewer(objectsPanel, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             objectsViewer.setContentProvider(new ListContentProvider());
             objectsViewer.setLabelProvider(new ColumnLabelProvider() {
@@ -194,7 +201,12 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         }
 
         {
-            Group optionsPanel = UIUtils.createControlGroup(settingsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_settings, 1, GridData.FILL_BOTH, 0);
+            Composite optionsPanel = UIUtils.createTitledComposite(
+                settingsPanel,
+                TasksSQLUIMessages.sql_tool_task_wizard_page_settings_group_label_settings,
+                1,
+                GridData.FILL_BOTH
+            );
 
             taskOptionsViewer = new PropertyTreeViewer(optionsPanel, SWT.BORDER);
             taskOptionsViewer.addPropertyChangeListener(event -> updateScriptPreview());
@@ -251,10 +263,6 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
     }
 
     @Override
-    public void deactivatePage() {
-    }
-
-    @Override
     protected boolean determinePageCompletion() {
         if (selectedObjects.isEmpty()) {
             setErrorMessage("You must select object(s)");
@@ -275,7 +283,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         SQLToolExecuteHandler taskHandler = sqlWizard.getTaskHandler();
         try {
             return taskHandler.generateScript(new VoidProgressMonitor(), sqlWizard.getSettings());
-        } catch (DBCException e) {
+        } catch (Exception e) {
             log.error(e);
             return "-- Error: " + e.getMessage();
         }
@@ -318,7 +326,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         SQLToolExecuteSettings<DBSObject> settings = sqlWizard.getSettings();
 
         if (settings != null && !settings.getObjectList().isEmpty()) {
-            return DBUtils.getDefaultContext(settings.getObjectList().get(0), false);
+            return DBUtils.getDefaultContext(settings.getObjectList().getFirst(), false);
         }
         return null;
     }

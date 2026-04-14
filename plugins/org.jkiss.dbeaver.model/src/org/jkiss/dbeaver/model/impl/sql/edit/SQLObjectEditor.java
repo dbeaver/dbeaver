@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -433,7 +433,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
+        public DBEPersistAction[] getPersistActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull Map<String, Object> options
+        ) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
@@ -569,7 +573,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
 
         @Override
-        public void redoCommand(ObjectRenameCommand command) {
+        public void redoCommand(@NotNull ObjectRenameCommand command) {
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.newName);
 
@@ -588,7 +592,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void undoCommand(ObjectRenameCommand command) {
+        public void undoCommand(@NotNull ObjectRenameCommand command) {
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.oldName);
 
@@ -662,7 +666,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public class ReorderObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectReorderCommand> {
 
         @Override
-        public void redoCommand(ObjectReorderCommand command) {
+        public void redoCommand(@NotNull ObjectReorderCommand command) {
             OBJECT_TYPE object = command.getObject();
 
             // Update positions in sibling objects
@@ -692,7 +696,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void undoCommand(ObjectReorderCommand command) {
+        public void undoCommand(@NotNull ObjectReorderCommand command) {
             ((DBPOrderedObject) command.getObject()).setOrdinalPosition(command.oldPosition);
             final DBSObject parentObject = command.getObject().getParentObject();
             if (parentObject != null) {
@@ -706,12 +710,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public static class RefreshObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommandAbstract<OBJECT_TYPE>> {
 
         @Override
-        public void redoCommand(DBECommandAbstract<OBJECT_TYPE> command) {
+        public void redoCommand(@NotNull DBECommandAbstract<OBJECT_TYPE> command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 
         @Override
-        public void undoCommand(DBECommandAbstract<OBJECT_TYPE> command) {
+        public void undoCommand(@NotNull DBECommandAbstract<OBJECT_TYPE> command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
@@ -104,7 +105,7 @@ public class CompileHandler extends OracleTaskHandler
                         monitor.beginTask("Compile", 1);
                         try {
                             compileUnit(monitor, compileLog, unit);
-                        } catch (DBCException e) {
+                        } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         } finally {
                             monitor.done();
@@ -202,8 +203,7 @@ public class CompileHandler extends OracleTaskHandler
         }
     }
 
-    public static boolean compileUnit(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSourceObject unit) throws DBCException
-    {
+    public static boolean compileUnit(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSourceObject unit) throws DBException {
         final DBEPersistAction[] compileActions = unit.getCompileActions(monitor);
         if (ArrayUtils.isEmpty(compileActions)) {
             if (unit instanceof OracleSequence) {

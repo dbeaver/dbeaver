@@ -50,7 +50,6 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,8 +129,14 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @Nullable
+    @Override
     public DBPDataSource getDataSource() {
         return dataSource;
+    }
+
+    @NotNull
+    public List<SQLScriptElement> getScriptElements() {
+        return List.of(this);
     }
 
     private void parseQuery() {
@@ -151,15 +156,6 @@ public class SQLQuery implements SQLScriptElement {
                 // Detect single source table (no joins, no group by, no sub-selects)
                 {
                     FromItem fromItem = plainSelect.getFromItem();
-                    if (fromItem instanceof ParenthesedSelect ps &&
-                        isPotentiallySingleSourceSelect(plainSelect) &&
-                        ps.getPlainSelect() != null &&
-                        isPotentiallySingleSourceSelect(ps.getPlainSelect())
-                    ) {
-                        // Real select is in sub-select
-                        plainSelect = ps.getPlainSelect();
-                        fromItem = plainSelect.getFromItem();
-                    }
                     if (fromItem instanceof Table fromTable && isPotentiallySingleSourceSelect(plainSelect)) {
                         boolean hasSubSelects = false;
                         boolean hasDirectSelects = false;
@@ -504,10 +500,12 @@ public class SQLQuery implements SQLScriptElement {
         return false;
     }
 
-    public boolean isDropTableDangerous() {
+    public boolean isDropDangerous() {
         parseQuery();
-        return statement != null && statement instanceof Drop &&
-            ((Drop) statement).getName() != null && ((Drop) statement).getType().equalsIgnoreCase("table");
+        return statement != null &&
+            statement instanceof Drop dropStatement &&
+            dropStatement.getName() != null
+            && dropStatement.getType() != null;
     }
 
     public boolean isModifying() {

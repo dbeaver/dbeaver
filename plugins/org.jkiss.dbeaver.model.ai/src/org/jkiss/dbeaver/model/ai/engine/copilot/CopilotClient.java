@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,47 +21,48 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
+import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
-import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Flow;
 import java.util.concurrent.Future;
-import java.util.concurrent.SubmissionPublisher;
 
-public class CopilotClient implements AutoCloseable {
+public class CopilotClient extends AbstractHttpAIClient {
+    private static final Log log = Log.getLog(CopilotClient.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Gson GSON = new GsonBuilder()
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    protected static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
 
-    private static final String COPILOT_SESSION_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token";
-    private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
-    private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
     private static final String USER_AGENT = "GithubCopilot/1.155.0";
-    private static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
+    protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
     private static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
 
-    private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
-    private static Map<String, CopilotModel> models = new LinkedHashMap<>();
+    private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
+    private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
+    private static final String COPILOT_SESSION_TOKEN_URL = "/copilot_internal/v2/token";
+
+    private final String baseAuthURL;
+
+    public CopilotClient(@NotNull String authProviderBaseURL) {
+        this.baseAuthURL = authProviderBaseURL;
+    }
 
     /**
      * Request access to the user's account
@@ -70,18 +71,13 @@ public class CopilotClient implements AutoCloseable {
         DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
-            .header("accept", "application/json")
-            .header("content-type", "application/json")
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(10)) // Set timeout
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(deviceCodeRequest)))
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), DeviceCodeResponse.class);
-        } else {
-            throw mapHttpError(response);
-        }
+        return GSON.fromJson(client.send(monitor, request), DeviceCodeResponse.class);
     }
 
     /**
@@ -100,8 +96,8 @@ public class CopilotClient implements AutoCloseable {
         );
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
-            .header("accept", "application/json")
-            .header("content-type", "application/json")
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(5)) // Set timeout
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(accessTokenRequest)))
             .build();
@@ -111,11 +107,7 @@ public class CopilotClient implements AutoCloseable {
         Instant start = Instant.now();
 
         while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
-            var response = client.send(monitor, request);
-            if (response.statusCode() != 200) {
-                throw mapHttpError(response);
-            }
-            var body = GSON.fromJson(response.body(), AccessTokenResponse.class);
+            var body = GSON.fromJson(client.send(monitor, request), AccessTokenResponse.class);
             if (CommonUtils.isNotEmpty(body.accessToken())) {
                 return body.accessToken();
             }
@@ -137,26 +129,22 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request session token
      */
+    @NotNull
     public CopilotSessionToken requestSessionToken(
         DBRProgressMonitor monitor,
         String accessToken
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(COPILOT_SESSION_TOKEN_URL))
-            .header("authorization", "token " + accessToken)
+            .uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
+            .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken)
             .header("editor-version", EDITOR_VERSION)
             .header("editor-plugin-version", EDITOR_PLUGIN_VERSION)
-            .header("user-agent", USER_AGENT)
+            .header(HttpConstants.HEADER_USER_AGENT, USER_AGENT)
             .GET()
             .timeout(TIMEOUT)
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), CopilotSessionToken.class);
-        } else {
-            throw mapHttpError(response);
-        }
+        return GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
     }
 
     /**
@@ -169,89 +157,64 @@ public class CopilotClient implements AutoCloseable {
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
-            .header("Content-type", "application/json")
-            .header("authorization", "Bearer " + token)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), CopilotChatResponse.class);
-        } else {
-            throw mapHttpError(response);
-        }
+        String responseJson = client.send(monitor, request);
+        return GSON.fromJson(responseJson, CopilotChatResponse.class);
     }
 
-    public Flow.Publisher<CopilotChatChunk> createChatCompletionStream(
+    public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        String token,
-        @NotNull CopilotChatRequest chatRequest
+        @NotNull String token,
+        @NotNull CopilotChatRequest chatRequest,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
-            .header("Content-type", "application/json")
-            .header("authorization", "Bearer " + token)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
-
-        SubmissionPublisher<CopilotChatChunk> publisher = new SubmissionPublisher<>();
 
         client.sendAsync(
             request,
             line -> {
                 if (line.startsWith(DATA_EVENT)) {
-
                     String data = line.substring(6).trim();
-                    if (DONE_EVENT.equals(data)) {
-                        publisher.close();
-                    } else {
-                        try {
-                            CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
-                            publisher.submit(chunk);
-                        } catch (Exception e) {
-                            publisher.closeExceptionally(e);
-                        }
+                    if (data.equals(DONE_EVENT)) {
+                        listener.completeBlock();
+                        return;
+                    }
+                    try {
+                        CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
+                        List<String> choices = chunk.choices().stream()
+                            .takeWhile(it -> it.delta().content() != null)
+                            .map(it -> it.delta().content())
+                            .toList();
+                        listener.nextChunk(new AIEngineResponseChunk(choices));
+                        listener.usage(chunk.getAIUsage());
+                    } catch (Exception e) {
+                        listener.error(e);
                     }
                 }
             },
-            publisher::closeExceptionally,
-            publisher::close
+            listener::error,
+            listener::completeBlock
         );
-
-        return publisher;
     }
 
-    /**
-     * Retrieves the list of available model IDs. If the cache is empty or a refresh is forced,
-     * the method will load new models using the provided token and update the internal cache.
-     *
-     * @param monitor the progress monitor used to track the progress and detect cancellations
-     * @param token the authentication token used for accessing the models, can be null
-     * @param forceRefresh a flag indicating whether to force a refresh of the model cache
-     * @return a list of model IDs as strings. If no models are available, returns an empty list
-     */
-    public static List<String> getModels(@NotNull DBRProgressMonitor monitor, @Nullable String token, boolean forceRefresh) {
-        if ((models.isEmpty() || forceRefresh) && CommonUtils.isNotEmpty(token)) {
-            try (CopilotClient copilotClient = new CopilotClient()) {
-                List<CopilotModel> copilotModelList = copilotClient.loadModels(monitor, token);
-                models = copilotModelList.stream()
-                    .collect(LinkedHashMap::new, (map, model) -> map.put(model.id(), model), LinkedHashMap::putAll);
-            } catch (Exception ex) {
-                DBWorkbench.getPlatformUI().showError(
-                    "Error reading model list",
-                    "Failed to read the model list",
-                    ex
-                );
-            }
-        }
-        if (models.isEmpty()) {
-            return List.of();
-        }
-        return models.keySet().stream().toList();
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("Copilot request failed: " + statusCode + ", " + body);
+        return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
     }
 
     /**
@@ -265,29 +228,18 @@ public class CopilotClient implements AutoCloseable {
     public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
-            .header("Content-type", "application/json")
-            .header("authorization", "Bearer " + token)
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .GET()
             .timeout(TIMEOUT)
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            CopilotModelList copilotModels = GSON.fromJson(response.body(), CopilotModelList.class);
-            return copilotModels.data().stream().filter(CopilotModel::isEnabled).toList();
-        } else {
-            throw new DBException("Request failed: status=" + response.statusCode() + ", body=" + response.body());
-        }
-    }
-
-    @Override
-    public void close() {
-        client.close();
-    }
-
-    private static DBException mapHttpError(HttpResponse<String> response) {
-        return new DBException("HTTP error: " + response.statusCode() + " " + response.body());
+        var response = client.send(monitor, request);
+        var models = GSON.fromJson(response, CopilotModelList.class);
+        return models.data().stream()
+            .filter(CopilotModel::isEnabled)
+            .toList();
     }
 
     private record DeviceCodeRequest(

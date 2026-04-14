@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,15 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.AIAssistant;
-import org.jkiss.dbeaver.model.ai.AICompletionSettings;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AITranslateRequest;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -41,22 +42,24 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
-import org.jkiss.dbeaver.ui.ai.internal.AIFeatures;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AILegacyTranslator {
+    private static final Log log = Log.getLog(AILegacyTranslator.class);
 
     public void performAiTranslation(ExecutionEvent event) {
         // CE legacy popup
-        AIFeatures.SQL_AI_POPUP.use();
+        AIUIFeatures.SQL_AI_POPUP.use();
 
-        if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
+        if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             return;
         }
         if (!(HandlerUtil.getActiveEditor(event) instanceof SQLEditor editor)) {
@@ -74,13 +77,8 @@ public class AILegacyTranslator {
         }
 
         try {
-            AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(dataSourceContainer.getProject().getWorkspace());
-            if (!aiAssistant.hasValidConfiguration()) {
-                UIUtils.showPreferencesFor(
-                    editor.getSite().getShell(),
-                    AISettingsRegistry.getInstance().getSettings(),
-                    AIPreferencePageMain.PAGE_ID
-                );
+            if (!AIUtils.hasValidConfiguration()) {
+                AIUIUtils.showPreferences(editor.getSite().getShell(), true);
                 return;
             }
 
@@ -95,7 +93,7 @@ public class AILegacyTranslator {
 
             AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
                 HandlerUtil.getActiveShell(event),
-                "AI smart completion",
+                AIUIMessages.ai_suggestion_popup_title,
                 lDataSource,
                 executionContext,
                 settings
@@ -137,7 +135,7 @@ public class AILegacyTranslator {
             return;
         }
 
-        AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
+        AIUIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", dataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "scope", popup.getScope().name()
         ));
@@ -161,16 +159,33 @@ public class AILegacyTranslator {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                final AIDatabaseContext context = new AIDatabaseContext.Builder(dataSource)
+                AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(dataSource)
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
-                    .setExecutionContext(executionContext)
-                    .build();
+                    .setExecutionContext(executionContext);
 
-                AITranslateRequest daiTranslateRequest = new AITranslateRequest(userInput, context);
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
-                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
-                sql.set(aiAssistant.translateTextToSql(monitor, daiTranslateRequest));
+                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant(workspace);
+
+                AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
+                contextBuilder = sysPromptBuilder.configureDatabaseContext(contextBuilder);
+
+                AIMessage userMessage = AIMessage.userMessage(userInput);
+
+                AIDatabaseContext dbContext = contextBuilder.build();
+                AIAssistantResponse result = aiAssistant.generateText(
+                    monitor,
+                    new AIFunctionContext(monitor, dbContext, sysPromptBuilder),
+                    List.of(userMessage)
+                );
+
+                if (result.isText()) {
+                    String finalText = AITextUtils.extractGeneratedSqlQuery(monitor, dbContext, userMessage, result.getText());
+
+                    sql.set(finalText);
+                } else {
+                    log.debug("Error generating SQL: " + result);
+                }
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }

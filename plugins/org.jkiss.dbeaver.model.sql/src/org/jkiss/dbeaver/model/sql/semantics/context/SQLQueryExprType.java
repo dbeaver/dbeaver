@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 
+import java.lang.invoke.TypeDescriptor;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,7 +63,7 @@ public abstract class SQLQueryExprType {
         this.dataKind = dataKind;
         this.typedObject = null;
     }
-    
+
     private SQLQueryExprType(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBSTypedObject typedObject) {
         this.declaratorDefinition = declaratorDefinition;
         this.dataKind = typedObject.getDataKind();
@@ -172,6 +173,19 @@ public abstract class SQLQueryExprType {
     }
 
     /**
+     * Prepare type info based on the data type description, not covered by the database model
+     */
+    @NotNull
+    public static SQLQueryExprType forTypedObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSTypedObjectEx2 typedObj,
+        @Nullable SQLQuerySymbolDefinition declaratorDefinition
+    ) throws DBException {
+        DBSTypeDescriptor typeDesc = typedObj.getTypeDescriptor(monitor);
+        return typeDesc == null ? UNKNOWN : forDescribed(monitor, typeDesc, declaratorDefinition);
+    }
+
+    /**
      * Prepare type info based on the metadata
      */
     @NotNull
@@ -232,24 +246,42 @@ public abstract class SQLQueryExprType {
         return new SQLQueryExprSimpleType(declaratorDefinition, typedObj);
     }
 
+    /**
+     * Prepare type info based on the data type description
+     */
+    @NotNull
+    private static SQLQueryExprType forDescribed(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSTypeDescriptor typeDesc,
+        @Nullable SQLQuerySymbolDefinition declaratorDefinition
+    ) throws DBException {
+        SQLQueryExprType type = forDescribedIfPresented(monitor, null, typeDesc, declaratorDefinition);
+        return type != null ? type : new SQLQueryExprSimpleDescribedType(declaratorDefinition, typeDesc);
+    }
+    
     @Nullable
     private static SQLQueryExprType forDescribedIfPresented(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSTypedObject typedObj,
+        @Nullable DBSTypedObject typedObj,
         @Nullable DBSTypeDescriptor typeDesc,
         @Nullable SQLQuerySymbolDefinition declaratorDefinition
     ) throws DBException {
         if (typeDesc == null) {
             return null;
         }
-        
-        if (typeDesc.isIndexable()) {
-            return new SQLQueryExprDescribedIndexableType(declaratorDefinition, typedObj, typeDesc);
-        } else if (typeDesc.getUnderlyingType() != null) {
-            return forTypedObjectImpl(monitor, typeDesc.getUnderlyingType(), declaratorDefinition);
-        }
-            
-        return null;
+
+        return switch (typeDesc.getKind()) {
+            case UNKNOWN -> typeDesc.getUnderlyingType() == null
+                ? null
+                : forTypedObjectImpl(monitor, typeDesc.getUnderlyingType(), declaratorDefinition);
+            case INDEXABLE -> typedObj == null
+                ? new SQLQueryExprDescribedIndexableType(declaratorDefinition, typeDesc)
+                : new SQLQueryExprDescribedIndexableType(declaratorDefinition, typedObj, typeDesc);
+            case COMPOSITE -> typedObj == null
+                ? new SQLQueryExprDescribedCompositeType(declaratorDefinition, typeDesc)
+                : new SQLQueryExprDescribedCompositeType(declaratorDefinition, typedObj, typeDesc);
+            case SIMPLE -> new SQLQueryExprSimpleDescribedType(declaratorDefinition, typeDesc);
+        };
     }
 
     @Nullable
@@ -314,9 +346,10 @@ public abstract class SQLQueryExprType {
         @NotNull
         @Override
         public String getDisplayName() {
-            return this.referencedSource.tableOrNull != null
-                ? SQLQuerySemanticUtils.getObjectTypeName(this.referencedSource.tableOrNull)
-                : this.reference.getNameString();
+            String tableObjectName = this.referencedSource.tableOrNull == null
+                ? null
+                : SQLQuerySemanticUtils.getObjectTypeName(this.referencedSource.tableOrNull);
+            return tableObjectName != null ? tableObjectName : this.reference.getNameString();
         }
 
         @NotNull
@@ -338,6 +371,76 @@ public abstract class SQLQueryExprType {
         @Override
         public String toString() {
             return "RowType[" + this.getDisplayName() + "]";
+        }
+    }
+
+    /**
+     * The composite type covered by the type descriptor
+     */
+    private static class SQLQueryExprDescribedCompositeType extends SQLQueryExprType {
+        private final DBSTypeDescriptor typeDesc;
+
+        public SQLQueryExprDescribedCompositeType(
+            @Nullable SQLQuerySymbolDefinition declaratorDefinition,
+            @NotNull DBSTypedObject typedObject,
+            @NotNull DBSTypeDescriptor typeDesc
+        ) {
+            super(declaratorDefinition, typedObject);
+            this.typeDesc = typeDesc;
+        }
+
+        public SQLQueryExprDescribedCompositeType(
+            @Nullable SQLQuerySymbolDefinition declaratorDefinition,
+            @NotNull DBSTypeDescriptor typeDesc
+        ) {
+            super(declaratorDefinition, DBPDataKind.STRUCT);
+            this.typeDesc = typeDesc;
+        }
+
+        @NotNull
+        @Override
+        public String getDisplayName() {
+            return this.typeDesc.getTypeName();
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+            Collection<DBSTypeDescriptor.CompositeMemberInfo> members = this.typeDesc.getCompositeMembers(monitor);
+            if (members == null || members.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                List<SQLQueryExprTypeMemberInfo> result = new ArrayList<>(members.size());
+                for  (DBSTypeDescriptor.CompositeMemberInfo member : members) {
+                    result.add(new SQLQueryExprTypeMemberInfo(
+                        this,
+                        member.name(),
+                        this.makeMemberType(monitor, member.type()),
+                        null,
+                        null
+                    ));
+                }
+                return result;
+            }
+        }
+
+        @Nullable
+        @Override
+        public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
+            DBSTypeDescriptor memberTypeDesc = this.typeDesc.findCompositeMember(monitor, memberName);
+            return memberTypeDesc == null ? null : this.makeMemberType(monitor, memberTypeDesc);
+        }
+
+        private SQLQueryExprType makeMemberType(@NotNull DBRProgressMonitor monitor, @NotNull DBSTypeDescriptor typeDesc) throws DBException {
+            SQLQuerySymbolDefinition def = this.declaratorDefinition instanceof SQLQuerySymbolByDbObjectDefinition byObjDef
+                ? new SQLQuerySymbolByDbObjectDefinition(byObjDef.getDbObject(), SQLQuerySymbolClass.COMPOSITE_FIELD) : null;
+            return SQLQueryExprType.forDescribed(monitor, typeDesc, def);
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "DescribedCompositeType[" + this.typeDesc.getTypeName() + "]";
         }
     }
 
@@ -511,13 +614,21 @@ public abstract class SQLQueryExprType {
     
     private static class SQLQueryExprDescribedIndexableType extends SQLQueryExprType {
         private final DBSTypeDescriptor typeDesc;
-        
+
         public SQLQueryExprDescribedIndexableType(
             @Nullable SQLQuerySymbolDefinition declaratorDefinition,
             @NotNull DBSTypedObject typedObject,
             @NotNull DBSTypeDescriptor typeDesc
         ) {
             super(declaratorDefinition, typedObject);
+            this.typeDesc = typeDesc;
+        }
+
+        public SQLQueryExprDescribedIndexableType(
+            @Nullable SQLQuerySymbolDefinition declaratorDefinition,
+            @NotNull DBSTypeDescriptor typeDesc
+        ) {
+            super(declaratorDefinition, DBPDataKind.ARRAY);
             this.typeDesc = typeDesc;
         }
 
@@ -603,6 +714,35 @@ public abstract class SQLQueryExprType {
         @Override
         public String toString() {
             return "SimpleType[" + this.typedObject.getFullTypeName() + "]";
+        }
+    }
+
+    /**
+     * The type based on the type descriptor and treated as atomic
+     */
+    private static class SQLQueryExprSimpleDescribedType extends SQLQueryExprType {
+
+        @NotNull
+        private final DBSTypeDescriptor typeDesc;
+
+        public SQLQueryExprSimpleDescribedType(
+            @Nullable SQLQuerySymbolDefinition declaratorDefinition,
+            @NotNull DBSTypeDescriptor typeDesc
+        ) {
+            super(declaratorDefinition, typeDesc.getDataKind() != null ? typeDesc.getDataKind() : DBPDataKind.UNKNOWN);
+            this.typeDesc = typeDesc;
+        }
+
+        @NotNull
+        @Override
+        public String getDisplayName() {
+            return this.typeDesc.getTypeName();
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "SimpleDescribedType[" + this.typeDesc.getTypeName() + "]";
         }
     }
     

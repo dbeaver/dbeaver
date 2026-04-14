@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ import java.util.stream.IntStream;
 
 public class ClickhouseTupleType extends ClickhouseAbstractDataType implements DBSEntity {
     private final List<ClickhouseTupleTypeAttribute> attributes;
-    private final String name;
+    private final String baseName;
+    private final String fullName;
 
     public ClickhouseTupleType(
         @NotNull ClickhouseDataSource dataSource,
@@ -57,7 +58,8 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
             ))
             .toList();
 
-        this.name = name + elements.stream()
+        this.baseName = name;
+        this.fullName = name + elements.stream()
             .map(Pair::getSecond)
             .map(DBSTypedObject::getFullTypeName)
             .collect(Collectors.joining(", ", "(", ")"));
@@ -72,7 +74,13 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
     @NotNull
     @Override
     public String getTypeName() {
-        return name;
+        return baseName;
+    }
+
+    @NotNull
+    @Override
+    public String getFullTypeName() {
+        return fullName;
     }
 
     @Override

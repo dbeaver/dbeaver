@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -79,30 +78,26 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
         TasksJob.runTask("Change default object", monitor -> {
             try {
                 DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                    try {
-                        DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
+                    DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
 
-                        DBCExecutionContext[] contextsToChange;
-                        if (editorContext != null && editorContext != defaultContext && editorContext.getDataSource() == defaultContext.getDataSource()) {
-                            contextsToChange = new DBCExecutionContext[] { defaultContext, editorContext };
-                        } else {
-                            contextsToChange = new DBCExecutionContext[] { defaultContext };
-                        }
+                    DBCExecutionContext[] contextsToChange;
+                    if (editorContext != null && editorContext != defaultContext && editorContext.getDataSource() == defaultContext.getDataSource()) {
+                        contextsToChange = new DBCExecutionContext[] { defaultContext, editorContext };
+                    } else {
+                        contextsToChange = new DBCExecutionContext[] { defaultContext };
+                    }
 
-                        for (DBCExecutionContext executionContext : contextsToChange) {
-                            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
-                            if (contextDefaults != null) {
-                                if (object instanceof DBSCatalog && contextDefaults.supportsCatalogChange()) {
-                                    contextDefaults.setDefaultCatalog(monitor, (DBSCatalog) object, null);
-                                } else if (object instanceof DBSSchema && contextDefaults.supportsSchemaChange()) {
-                                    contextDefaults.setDefaultSchema(monitor, (DBSSchema) object);
-                                } else {
-                                    throw new DBCException("Internal error: active object change not supported");
-                                }
+                    for (DBCExecutionContext executionContext : contextsToChange) {
+                        DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                        if (contextDefaults != null) {
+                            if (object instanceof DBSCatalog catalog && contextDefaults.supportsCatalogChange()) {
+                                contextDefaults.setDefaultCatalog(monitor, catalog, null);
+                            } else if (object instanceof DBSSchema schema && contextDefaults.supportsSchemaChange()) {
+                                contextDefaults.setDefaultSchema(monitor, schema);
+                            } else {
+                                throw new DBCException("Internal error: active object change not supported");
                             }
                         }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
             } catch (Exception e) {

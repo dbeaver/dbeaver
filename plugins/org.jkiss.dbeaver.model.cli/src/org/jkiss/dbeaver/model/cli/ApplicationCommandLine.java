@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,234 +16,329 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
+import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
+import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
+import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import picocli.CommandLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
     private static final Log log = Log.getLog(ApplicationCommandLine.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.commandLine";
 
-    public static final String PARAM_HELP = "help";
-    public static final String PARAM_THREAD_DUMP = "dump";
-    public static final String PARAM_DB_LIST = "databaseList";
-    private static final String PARAM_VERSION = "version";
-    private static final Gson gson = new GsonBuilder()
-        .setPrettyPrinting()
-        .create();
-
-    public final static Options ALL_OPTIONS = new Options()
-        .addOption(PARAM_HELP, PARAM_HELP, false, "Help")
-        .addOption(PARAM_DB_LIST, "database-driver-list", true, "Show list of supported database drivers in json format")
-        .addOption(PARAM_THREAD_DUMP, "thread-dump", false, "Print instance thread dump")
-        .addOption(
-            PARAM_VERSION,
-            PARAM_VERSION,
-            false,
-            "Displays the app name, edition, and version in Major.Minor.Micro.Timestamp format"
-        );
-
-    protected static final Map<String, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
-
+    protected static final Map<Class<?>, CLICommandDescriptor> commands = new LinkedHashMap<>();
+    //transformers for top level command
+    protected static final List<CLITransformerDescriptor> globalTransformers = new ArrayList<>();
+    //transformers for specific command
+    protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
     static {
         IExtensionRegistry er = Platform.getExtensionRegistry();
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
+        Map<Class<?>, CLICommandDescriptor> replacedBy = new LinkedHashMap<>();
         for (IConfigurationElement ext : extElements) {
             if ("parameter".equals(ext.getName())) {
                 try {
-                    CommandLineParameterDescriptor parameter = new CommandLineParameterDescriptor(ext);
-                    customParameters.put(parameter.getName(), parameter);
+                    CLICommandDescriptor parameter = new CLICommandDescriptor(ext);
+                    if (parameter.getReplacedHandler() != null) {
+                        replacedBy.put(parameter.getReplacedHandler(), parameter);
+                    }
+                    commands.put(parameter.getImplClass(), parameter);
                 } catch (Exception e) {
                     log.error("Can't load contributed parameter", e);
                 }
+            } else if ("transformer".equals(ext.getName())) {
+                try {
+                    CLITransformerDescriptor transformer = new CLITransformerDescriptor(ext);
+                    if (transformer.getCommandClass() == null) {
+                        globalTransformers.add(transformer);
+                    } else {
+                        commandTransformer.computeIfAbsent(transformer.getCommandClass(), k -> new ArrayList<>())
+                            .add(transformer);
+                    }
+                } catch (Exception e) {
+                    log.error("Can't load contributed transformer", e);
+                }
             }
         }
-
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
-            ALL_OPTIONS.addOption(param.getName(), param.getLongName(), param.hasArg(), param.getDescription());
-        }
+        replacedBy.keySet().forEach(commands::remove);
     }
 
     protected ApplicationCommandLine() {
+
     }
 
-    public CmdProcessResult executeCommandLineCommands(
-        @Nullable CommandLine commandLine,
+    protected abstract AbstractTopLevelCommand createTopLevelCommand(
+        @Nullable T applicationInstanceController,
+        @NotNull CLIContextImpl context,
+        @NotNull CLIRunMeta runMeta
+    );
+
+    /**
+     * @param supportNewInstance whether to support starting new instance, true if called from ApplicationInstanceController
+     */
+
+    public CLIProcessResult executeCommandLineCommands(
         @Nullable T controller,
-        boolean uiActivated
+        boolean uiActivated,
+        boolean supportNewInstance,
+        @NotNull String[] args
     ) throws Exception {
-        if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
-        }
-
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
-            if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
-                if (param.isForceNewInstance()) {
-                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+        log.trace("Executing command line: " + String.join(" ", args));
+        CLIProcessResult result;
+        try (var context = new CLIContextImpl(controller)) {
+            CommandLine commandLine = initCommandLine(
+                controller,
+                context,
+                new CLIRunMeta(uiActivated, supportNewInstance)
+            );
+            CommandLine.ParseResult parseResult;
+            try {
+                parseResult = commandLine.parseArgs(args);
+            } catch (CommandLine.UnmatchedArgumentException e) {
+                String message;
+                if (!CommonUtils.isEmpty(e.getUnmatched())) {
+                    String command = e.getCommandLine().getCommandName();
+                    message = "Parameter(s) " + String.join(" ", e.getUnmatched()) + " cannot be specified after '" + command + "'";
+                } else {
+                    message = e.getMessage();
                 }
-                break;
-            }
-        }
-        if (commandLine.hasOption(PARAM_HELP)) {
-            HelpFormatter helpFormatter = new HelpFormatter();
-            helpFormatter.setWidth(120);
-            helpFormatter.setOptionComparator((o1, o2) -> 0);
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2010-2025 DBeaver Corp", true);
-            try (
-                var out = new StringWriter();
-                var print = new PrintWriter(out)
-            ) {
-                helpFormatter.printHelp(
-                    print, 100, "dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, 4, 4, "(C) 2010-2025 DBeaver Corp", true
+                log.error(message);
+                return new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(message),
+                    CLIConstants.EXIT_CODE_ERROR
                 );
-                return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, out.toString());
-            } catch (Exception e) {
-                log.error("Error handling command line: " + e.getMessage());
-                return new CmdProcessResult(CmdProcessResult.PostAction.ERROR, e.getMessage());
+            } catch (CommandLine.MissingParameterException e) {
+                return new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(e.getMessage()),
+                    CLIConstants.EXIT_CODE_ERROR
+                );
             }
-        }
 
-        if (commandLine.hasOption(PARAM_VERSION)) {
-            String version = GeneralUtils.getLongProductTitle();
-            System.out.println(version);
-            return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, version);
-        }
+            if (commandLineIsEmpty(parseResult)) {
+                return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+            }
+            validateCommandLineParameters(parseResult);
 
-        if (!uiActivated) {
-            if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
-                if (controller == null) {
-                    log.debug("Can't process commands because no running instance is present");
-                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            // Handle help/version before executing commands,
+            // because we don't need to execute/start new instance for this cases
+            CommandLine.Model.CommandSpec commandForHelp = findCommandForHelp(parseResult);
+
+            if (commandForHelp != null) {
+                String help = CLIUtils.getHelpFromCommand(commandForHelp);
+                return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
+            }
+
+            if (parseResult.isVersionHelpRequested()) {
+                String version = GeneralUtils.getLongProductTitle();
+                return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
+            }
+
+            for (CLICommandDescriptor descriptor : commands.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
+                    continue;
                 }
-                String threadDump = controller.getThreadDump();
-                System.out.println(threadDump);
-                return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, threadDump);
-            }
-        }
-
-        return handleCustomParameters(commandLine);
-    }
-
-    public CmdProcessResult handleCustomParameters(CommandLine commandLine) {
-        CmdProcessResult result = new CmdProcessResult(CmdProcessResult.PostAction.UNKNOWN_COMMAND);
-
-        if (commandLine == null) {
-            return result;
-        }
-
-        List<CommandLineParameterDescriptor> initialParameters = new ArrayList<>();
-        List<CommandLineParameterDescriptor> parameters = new ArrayList<>();
-        for (Option cliOption : commandLine.getOptions()) {
-            CommandLineParameterDescriptor param = customParameters.get(cliOption.getOpt());
-            if (param == null) {
-                param = customParameters.get(cliOption.getLongOpt());
-            }
-            if (param == null) {
-                //log.error("Wrong command line parameter " + cliOption);
-                continue;
-            }
-            if (param.isContextInitializer()) {
-                initialParameters.add(param);
-            } else {
-                parameters.add(param);
-            }
-        }
-        List<CommandLineParameterDescriptor> allParameters = new ArrayList<>(initialParameters);
-        allParameters.addAll(parameters);
-
-        try (CommandLineContext context = new CommandLineContext()) {
-            for (CommandLineParameterDescriptor param : allParameters) {
-                try {
-                    if (param.hasArg()) {
-                        for (String optValue : commandLine.getOptionValues(param.getName())) {
-                            param.getHandler().handleParameter(
-                                commandLine,
-                                param.getName(),
-                                optValue,
-                                context
-                            );
-                        }
-                    } else {
-                        param.getHandler().handleParameter(
-                            commandLine,
-                            param.getName(),
-                            null,
-                            context
-                        );
-                    }
-                } catch (Exception e) {
-                    log.error("Error evaluating parameter '" + param.getName() + "'", e);
-                }
-                if (param.isExitAfterExecute()) {
-                    result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);
-                    break;
+                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
+                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
                 }
             }
+
+            commandLine.execute(args);
+            if (commandLine.getExecutionExceptionHandler() instanceof ExceptionHandler exceptionHandler) {
+                Exception executionException = exceptionHandler.getException();
+                if (executionException != null) {
+                    throw executionException;
+                }
+            }
+            CLIProcessResult.PostAction action = context.getPostAction() != null
+                ? context.getPostAction()
+                : CLIProcessResult.PostAction.UNKNOWN_COMMAND;
             if (!CommonUtils.isEmpty(context.getResults())) {
-                result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, gson.toJson(context.getResults()));
+                var finalAction = action == CLIProcessResult.PostAction.UNKNOWN_COMMAND
+                    ? CLIProcessResult.PostAction.SHUTDOWN
+                    : action;
+                return new CLIProcessResult(finalAction, context.getResults());
+            }
+            return new CLIProcessResult(action);
+
+        } catch (Exception e) {
+            log.error("Error evaluating cli:" + e.getMessage(), e);
+            String output = "Error evaluating cli: " + CommonUtils.getAllExceptionMessages(e);
+            if (e instanceof CLIException cliException) {
+                result = new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(output),
+                    cliException.getExitCode()
+                );
+            } else {
+                result = new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    output
+                );
             }
         }
-        
+
+
         return result;
     }
 
-
-    @Nullable
-    public CommandLine getCommandLine() {
-        return getCommandLine(Platform.getApplicationArgs());
+    private static CommandLine.Model.CommandSpec findCommandForHelp(
+        @NotNull CommandLine.ParseResult parseResult
+    ) {
+        if (parseResult.isUsageHelpRequested()) {
+            return parseResult.commandSpec();
+        }
+        for (var sub : parseResult.subcommands()) {
+            var command = findCommandForHelp(sub);
+            if (command != null) {
+                return command;
+            }
+        }
+        return null;
     }
 
-    @Nullable
-    public CommandLine getCommandLine(@NotNull String[] args) {
-        try {
-            // Remove keyring parameter because its name contains special characters
-            // Actual valuation of keyring happens in app launcher
+    protected void validateCommandLineParameters(@NotNull CommandLine.ParseResult parseResult) throws CLIException {
 
-            List<String> applicationArgs = Arrays.stream(args).collect(Collectors.toList());
-            Iterator<String> iterator = applicationArgs.iterator();
-            boolean removeArgs = false;
-            while (iterator.hasNext()) {
-                String arg = iterator.next();
-                if (CommonUtils.isEmpty(arg)) {
+    }
+
+    @NotNull
+    public String[] preprocessCommandLine(@NotNull String[] args) throws DBException {
+        try (var context = new CLIContextImpl(null)) {
+            CommandLine commandLine = initCommandLine(
+                null,
+                context,
+                new CLIRunMeta(false, false)
+            );
+            commandLine.setUnmatchedArgumentsAllowed(true);
+            CommandLine.ParseResult parseResult;
+            parseResult = commandLine.parseArgs(args);
+            if (commandLineIsEmpty(parseResult)) {
+                return new String[0];
+            }
+            for (CLICommandDescriptor descriptor : commands.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
                     continue;
                 }
-                // argument name start with '-', example '-help'
-                if (arg.startsWith("-")) {
-                    boolean argSupported = ALL_OPTIONS.hasOption(arg);
-                    if (argSupported) {
-                        removeArgs = false;
-                    } else {
-                        //remove not supported argument to avoid parser exception
-                        //also remove all arguments for this arg
-                        iterator.remove();
-                        removeArgs = true;
-                    }
-                } else if (removeArgs) {
-                    iterator.remove();
-                }
+                preprocessCommandLineParameter(
+                    descriptor,
+                    cliCommand,
+                    context,
+                    false
+                );
             }
-
-            return new DefaultParser().parse(ALL_OPTIONS, applicationArgs.toArray(new String[0]), false);
         } catch (Exception e) {
-            log.warn("Error parsing command line: " + e.getMessage());
-            return null;
+            log.error("Error preprocessing command line: " + e.getMessage(), e);
         }
+        return args;
+    }
+
+    protected void preprocessCommandLineParameter(
+        @NotNull CLICommandDescriptor descriptor,
+        @NotNull CommandLine.ParseResult cliCommand,
+        @NotNull CLIContextImpl context,
+        boolean uiActivated
+    ) {
+
+    }
+
+    @NotNull
+    protected CommandLine initCommandLine(
+        @Nullable T applicationInstanceController,
+        @NotNull CLIContextImpl context,
+        @NotNull CLIRunMeta runMeta
+    ) {
+        AbstractTopLevelCommand topLevelImp = createTopLevelCommand(applicationInstanceController, context, runMeta);
+        var topLevel = new CommandLine(topLevelImp);
+        topLevel.setExecutionStrategy(new CommandLine.RunAll());
+        ExceptionHandler exceptionHandler = new ExceptionHandler();
+        topLevel.setExecutionExceptionHandler(exceptionHandler);
+        transformCommand(topLevel.getCommandSpec(), topLevelImp.getClass());
+        for (CLICommandDescriptor param : commands.values()) {
+            if (param.getImplClass().getAnnotation(CommandLine.Command.class) == null) {
+                log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
+                continue;
+            }
+            CommandLine command = new CommandLine(param.getImplClass());
+            transformCommand(command.getCommandSpec(), param.getImplClass());
+            topLevel.addSubcommand(command);
+        }
+        // call after adding subcommands, because global transformers can affect all command tree
+        for (CLITransformerDescriptor transformer : globalTransformers) {
+            transformer.getTransformer().transform(topLevel.getCommandSpec());
+        }
+        return topLevel;
+    }
+
+    private void transformCommand(
+        @NotNull CommandLine.Model.CommandSpec commandSpec,
+        @NotNull Class<?> implClass
+    ) {
+        List<CLITransformerDescriptor> transformers = commandTransformer.get(implClass);
+        if (!CommonUtils.isEmpty(transformers)) {
+            for (CLITransformerDescriptor transformer : transformers) {
+                transformer.getTransformer().transform(commandSpec);
+            }
+        }
+        if (!CommonUtils.isEmpty(commandSpec.subcommands())) {
+            for (Map.Entry<String, CommandLine> stringCommandLineEntry : commandSpec.subcommands().entrySet()) {
+                CommandLine.Model.CommandSpec subCommandSpec = stringCommandLineEntry.getValue().getCommandSpec();
+                transformCommand(subCommandSpec, subCommandSpec.userObject().getClass());
+            }
+        }
+    }
+
+    protected boolean commandLineIsEmpty(@Nullable CommandLine.ParseResult commandLine) {
+        if (commandLine == null) {
+            return true;
+        }
+
+        var noOptions = Stream.concat(commandLine.matchedArgs().stream(), commandLine.matchedOptions().stream())
+            .allMatch(argSpec -> {
+                if (argSpec.userObject() instanceof Field field) {
+                    return field.isAnnotationPresent(NonExecutableOption.class);
+                }
+                return false;
+            });
+
+        return noOptions && CommonUtils.isEmpty(commandLine.subcommands());
+    }
+
+
+    @Nullable
+    protected CommandLine.ParseResult findCommand(@NotNull CommandLine.ParseResult pr, @NotNull Class<?> clazz) {
+        Object commandObject = pr.commandSpec().userObject();
+        if (clazz.equals(commandObject.getClass())) {
+            return pr;
+        }
+        for (var sub : pr.subcommands()) {
+            var found = findCommand(sub, clazz);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 }

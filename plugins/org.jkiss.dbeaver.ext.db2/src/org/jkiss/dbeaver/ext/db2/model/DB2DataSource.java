@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationManager;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
-import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
+import org.jkiss.dbeaver.ext.db2.model.plan.DB2ExecutionPlan;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
@@ -63,8 +63,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -209,7 +207,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public <T> T getAdapter(Class<T> adapter)
+    public <T> T getAdapter(@NotNull Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new DB2StructureAssistant(this));
@@ -413,6 +411,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return this;
     }
 
+    @NotNull
     @Override
     public Collection<DB2DataType> getLocalDataTypes()
     {
@@ -424,6 +423,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         }
     }
 
+    @Nullable
     @Override
     public DB2DataType getLocalDataType(String typeName)
     {
@@ -475,7 +475,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         if (ptSchemaname == null) {
             throw new DBCException(DB2Messages.dialog_explain_no_tables_found_ex);
         }
-        DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
+        DB2ExecutionPlan plan = new DB2ExecutionPlan(query, ptSchemaname);
         plan.explain((JDBCSession) session);
         return plan;
     }
@@ -843,7 +843,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }

@@ -41,6 +41,7 @@ public class GenericDataSourceObjectContainer extends GenericObjectContainer {
         return null;
     }
 
+    @NotNull
     @Override
     public GenericStructContainer getObject() {
         return dataSource;

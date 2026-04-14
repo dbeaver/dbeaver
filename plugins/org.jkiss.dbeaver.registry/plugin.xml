@@ -16,7 +16,6 @@
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="%extension-point.org.jkiss.dbeaver.resources.name" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.fileSystem" name="%extension-point.org.jkiss.dbeaver.fileSystem.name" schema="schema/org.jkiss.dbeaver.fileSystem.exsd"/>
     <extension-point id="org.jkiss.dbeaver.language" name="%extension-point.org.jkiss.dbeaver.language.name" schema="schema/org.jkiss.dbeaver.language.exsd"/>
     <extension-point id="org.jkiss.dbeaver.task" name="%extension-point.org.jkiss.dbeaver.task.name" schema="schema/org.jkiss.dbeaver.task.exsd"/>
     <extension-point id="org.jkiss.dbeaver.productFeature" name="%extension-point.org.jkiss.dbeaver.productFeature.name" schema="schema/org.jkiss.dbeaver.productFeature.exsd"/>
@@ -56,6 +55,7 @@
             type="proxy"
             id="socks_proxy"
             codeName="Proxy"
+            prefix="proxy"
             label="%handler.socks_proxy.label"
             description="%handler.socks_proxy.description"
             desktop="true"
@@ -71,8 +71,8 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="native"
-            label="Database Native"
-            description="Database native authentication"
+            label="Username/password"
+            description="Database authentication (username/password)"
             class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative"
             default="true">
 

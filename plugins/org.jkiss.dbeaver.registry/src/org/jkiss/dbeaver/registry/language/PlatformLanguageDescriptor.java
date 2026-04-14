@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,9 @@ public class PlatformLanguageDescriptor extends AbstractContextDescriptor implem
         return getLabel();
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return config.getAttribute(RegistryConstants.ATTR_LABEL, locale);
     }
 
