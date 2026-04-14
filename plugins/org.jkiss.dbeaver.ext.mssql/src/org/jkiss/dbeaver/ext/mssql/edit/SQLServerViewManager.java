@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
         switch (action) {
             case CREATE:
-                actions.add(new SQLDatabasePersistAction("Create view", view.getName()));
+                actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
                 break;
             case ALTER:
                 actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource(), view.getDDL())));
