@@ -38,6 +38,9 @@ public interface AIToolbox {
     @Nullable
     String getDescription();
 
+    @NotNull
+    Map<String, Object> getToolboxSettings();
+
     boolean isEnabled();
 
     boolean isAccessible();
