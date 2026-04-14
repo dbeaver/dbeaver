@@ -732,7 +732,7 @@ public class NavigatorUtils {
         }
         if (locator != null) {
             IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(locator);
-            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView view) {
+            if (partSite != null && partSite.getPart() instanceof NavigatorViewBase view) {
                 return view.getNavigatorTree();
             }
         }
