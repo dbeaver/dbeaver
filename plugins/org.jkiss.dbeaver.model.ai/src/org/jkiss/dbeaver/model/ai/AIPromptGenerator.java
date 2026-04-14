@@ -31,6 +31,13 @@ public interface AIPromptGenerator {
     @NotNull
     String build(@NotNull AIAssistant assistant, @Nullable AIDatabaseContext context);
 
+    /**
+     * Prompt features may be used by AI functions to provide more precise results
+     */
+    default boolean hasFeature(@NotNull String feature) {
+        return false;
+    }
+
     @NotNull
     default AIDatabaseContext.Builder configureDatabaseContext(@NotNull AIDatabaseContext.Builder contextBuilder) {
         return contextBuilder;

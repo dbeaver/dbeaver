@@ -32,7 +32,7 @@
             properties="visible"
             type="java.lang.Object"/>
     </extension>
-    
+
     <extension point="org.eclipse.ui.views">
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
@@ -613,7 +613,6 @@
                         <iterate operator="and">
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
                                 <and>
-                                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                                     <test property="org.jkiss.dbeaver.core.datasource.editable"/>
                                 </and>
                             </adapt>
@@ -743,9 +742,8 @@
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            
-            
-            
+
+
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
@@ -1255,10 +1253,10 @@
             id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
             class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
             name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
-         <page 
-             id="org.jkiss.dbeaver.preferences.accessibility" 
+        <page
+            id="org.jkiss.dbeaver.preferences.accessibility"
              category="org.jkiss.dbeaver.preferences.main"
-             class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility" 
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility"
              name="%page.org.jkiss.dbeaver.preferences.accessibility.name">
         </page>
     </extension>
