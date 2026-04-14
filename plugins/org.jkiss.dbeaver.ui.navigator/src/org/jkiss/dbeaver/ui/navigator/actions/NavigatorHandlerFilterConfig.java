@@ -74,7 +74,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 } else {
                     uiServiceFilterConfig.configFilterInDialog(shell, dbNode, parentNode, itemsMeta);
                 }
-            } else {
+            } else if (log.isDebugEnabled()) {
                 log.debug("Cannot find items meta for node: " + parentNode.getNodeUri());
             }
         } catch (DBException e) {
