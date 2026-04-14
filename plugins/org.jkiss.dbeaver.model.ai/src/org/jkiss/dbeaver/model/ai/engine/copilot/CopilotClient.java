@@ -212,7 +212,6 @@ public class CopilotClient extends AbstractHttpAIClient {
 
             String data = line.substring(DATA_EVENT.length()).trim();
             if (DONE_EVENT.equals(data)) {
-                listener.completeBlock();
                 return;
             }
 
