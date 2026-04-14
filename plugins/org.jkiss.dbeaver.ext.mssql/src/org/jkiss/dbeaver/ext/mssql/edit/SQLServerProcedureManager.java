@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
 
     @Override
     protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException {
+            throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
@@ -77,13 +77,13 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
 
     @Override
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
-        createOrReplaceProcedureQuery(monitor, executionContext, actions, command.getObject(), true);
+        createOrReplaceProcedureQuery(executionContext, actions, command.getObject(), true);
     }
 
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
-            createOrReplaceProcedureQuery(monitor, executionContext, actionList, command.getObject(), false);
+            createOrReplaceProcedureQuery(executionContext, actionList, command.getObject(), false);
         }
     }
 
@@ -98,13 +98,16 @@ public class SQLServerProcedureManager extends SQLServerObjectManager<SQLServerP
         addDatabaseSwitchAction2(executionContext, actions, command.getObject().getContainer().getDatabase());
     }
 
-    private void createOrReplaceProcedureQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerProcedure procedure, boolean create) throws DBException {
+    private void createOrReplaceProcedureQuery(@NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull SQLServerProcedure procedure, boolean create) throws DBException {
         addDatabaseSwitchAction1(executionContext, actions, procedure.getContainer().getDatabase());
 
         if (create) {
             actions.add(new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
         } else {
-            actions.add(new SQLDatabasePersistAction("Alter procedure", SQLServerUtils.changeCreateToAlterDDL(procedure.getDataSource(), procedure.getBody())));
+            actions.add(new SQLDatabasePersistAction(
+                "Alter procedure",
+                SQLServerUtils.changeCreateToAlterDDL(procedure.getDataSource(), procedure.getBody())
+            ));
         }
 
         addDatabaseSwitchAction2(executionContext, actions, procedure.getContainer().getDatabase());

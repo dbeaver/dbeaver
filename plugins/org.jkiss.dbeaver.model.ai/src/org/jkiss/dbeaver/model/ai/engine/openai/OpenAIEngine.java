@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
@@ -142,9 +139,26 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         oaiRequest.model = model();
 
         if (!CommonUtils.isEmpty(request.getFunctions())) {
-            oaiRequest.tools = request.getFunctions().stream()
-                .map(OAITool::fromDescriptor)
-                .toList();
+            List<OAITool> tools = new ArrayList<>();
+            for (AIFunctionDescriptor fd : request.getFunctions()) {
+                OAITool tool = new OAITool();
+                tool.type = OAITool.TYPE_FUNCTION;
+                tool.name = fd.getFullId();
+                tool.description = fd.getAiDescription();
+                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                List<String> requiredFields = new ArrayList<>();
+                for (AIFunctionParameter param : fd.getParameters()) {
+                    OAIToolParameter tp = new OAIToolParameter();
+                    tp.type = param.getType();
+                    tp.description = param.getDescription();
+                    tp.enumItems = param.getValidValues();
+                    requiredFields.add(param.getName());
+                    tool.parameters.properties.put(param.getName(), tp);
+                }
+                tool.parameters.required = requiredFields.toArray(new String[0]);
+                tools.add(tool);
+            }
+            oaiRequest.tools = tools;
         }
 
         return oaiRequest;

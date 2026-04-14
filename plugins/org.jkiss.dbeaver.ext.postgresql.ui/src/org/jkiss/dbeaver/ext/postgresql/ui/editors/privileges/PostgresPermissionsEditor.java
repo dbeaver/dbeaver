@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -354,7 +354,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         ProgressVisualizer<PermissionInfo> createLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
-                public void completeLoading(PermissionInfo privs) {
+                public void completeLoading(@Nullable PermissionInfo privs) {
                     super.completeLoading(privs);
                     if (privs == null) {
                         return;
@@ -372,7 +372,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
 
             contributionManager.add(new Separator());
