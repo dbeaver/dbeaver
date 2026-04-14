@@ -10,9 +10,9 @@
         <relativePath>../../</relativePath>
     </parent>
     <version>26.0.3-SNAPSHOT</version>
-    <artifactId>appstore</artifactId>
+    <artifactId>msstore</artifactId>
     <packaging>eclipse-repository</packaging>
-    <name>DBeaver CE AppStore</name>
+    <name>DBeaver CE MSStore</name>
 
     <build>
         <plugins>
@@ -27,10 +27,10 @@
                     </formats>
                     <products>
                         <product>
-                            <id>org.jkiss.dbeaver.core.appstore</id>
+                            <id>org.jkiss.dbeaver.core.msstore</id>
                             <archiveFileName>dbeaver-ce-${dbeaver-version}</archiveFileName>
                             <rootFolders>
-                                <macosx>DBeaver.app</macosx>
+                                <macosx>DBeaver.msstore</macosx>
                                 <win32>dbeaver</win32>
                             </rootFolders>
                         </product>
