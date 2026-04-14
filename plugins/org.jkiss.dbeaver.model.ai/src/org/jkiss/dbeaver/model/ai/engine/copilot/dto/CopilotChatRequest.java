@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,68 +17,89 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 
 import java.util.List;
 
 public record CopilotChatRequest(
-    String model,
+    @NotNull String model,
     boolean intent,
-    List<CopilotMessage> messages,
+    @NotNull List<CopilotMessage> messages,
+    @NotNull List<CopilotFunction> tools,
     boolean stream,
-    int n,
+    @SerializedName("n") int responseCount,
     @SerializedName("top_p") int topP,
     double temperature
 ) {
+    @NotNull
     public static Builder builder() {
         return new Builder();
     }
 
     public static class Builder {
+        @NotNull
         private String model;
         private boolean intent;
+        @NotNull
         private List<CopilotMessage> messages;
+        @NotNull
+        private List<CopilotFunction> tools;
         private boolean stream;
-        private int n;
+        private int responseCount;
         private int topP;
         private double temperature;
 
-        public Builder withModel(String model) {
+        @NotNull
+        public Builder withModel(@NotNull String model) {
             this.model = model;
             return this;
         }
 
+        @NotNull
         public Builder withIntent(boolean intent) {
             this.intent = intent;
             return this;
         }
 
-        public Builder withMessages(List<CopilotMessage> messages) {
+        @NotNull
+        public Builder withMessages(@NotNull List<CopilotMessage> messages) {
             this.messages = messages;
             return this;
         }
 
+        @NotNull
+        public Builder withTools(@NotNull List<CopilotFunction> tools) {
+            this.tools = tools;
+            return this;
+        }
+
+        @NotNull
         public Builder withStream(boolean stream) {
             this.stream = stream;
             return this;
         }
 
-        public Builder withN(int n) {
-            this.n = n;
+        @NotNull
+        public Builder withN(int responseCount) {
+            this.responseCount = responseCount;
             return this;
         }
 
+        @NotNull
         public Builder withTopP(int topP) {
             this.topP = topP;
             return this;
         }
 
+        @NotNull
         public Builder withTemperature(double temperature) {
             this.temperature = temperature;
             return this;
         }
 
+        @NotNull
         public CopilotChatRequest build() {
-            return new CopilotChatRequest(model, intent, messages, stream, n, topP, temperature);
+            return new CopilotChatRequest(model, intent, messages, tools, stream, responseCount, topP, temperature);
         }
     }
 }
