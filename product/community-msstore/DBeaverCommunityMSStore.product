@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.msstore" id="org.jkiss.dbeaver.ui.app.standalone.msstore"
+<product name="DBeaver CE MS Store" uid="org.jkiss.dbeaver.core.msstore" id="org.jkiss.dbeaver.ui.app.standalone.msstore"
          application="org.jkiss.dbeaver.ui.app.standalone.msstore" version="26.0.3.qualifier" useFeatures="true"
     includeLaunchers="true">
 
