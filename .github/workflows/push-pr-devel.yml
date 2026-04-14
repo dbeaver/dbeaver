@@ -22,7 +22,7 @@ jobs:
       project-directory: ./dbeaver/product/aggregate
       project-deps: ./dbeaver/project.deps
       timeout-minutes: 5
-      mvn-args: -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce,appstore
+      mvn-args: -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce,appstore -Dbuild.all-environments
 
   lint-java:
     name: Check style

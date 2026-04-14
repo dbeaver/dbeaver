@@ -396,6 +396,7 @@ public class ActionUtils {
         }
     }
 
+    @NotNull
     public static IAction makeAction(
         @NotNull final IActionDelegate actionDelegate,
         @Nullable IWorkbenchSite site,
@@ -437,21 +438,24 @@ public class ActionUtils {
     }
 
     @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+        return new Action(text, DBeaverIcons.getImageDescriptor(icon)) {
+            @Override
+            public void run() {
+                callback.run();
+            }
+        };
+    }
+
+    @NotNull
     public static IAction makeAction(
         @NotNull String text,
         @NotNull String toolTipText,
         @NotNull DBIcon icon,
         @NotNull Runnable callback
     ) {
-        Action action = new Action() {
-            @Override
-            public void run() {
-                callback.run();
-            }
-        };
-        action.setText(text);
+        var action = makeAction(text, icon, callback);
         action.setToolTipText(toolTipText);
-        action.setImageDescriptor(DBeaverIcons.getImageDescriptor(icon));
         return action;
     }
 

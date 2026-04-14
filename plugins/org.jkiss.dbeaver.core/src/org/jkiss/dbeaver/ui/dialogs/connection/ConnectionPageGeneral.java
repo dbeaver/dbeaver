@@ -34,12 +34,15 @@ import org.jkiss.dbeaver.model.DBPDataSourcePermission;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -72,13 +75,13 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
 
     private static class FilterInfo {
-        final Class<?> type;
+        final Class<? extends DBSObject> baseType;
         final String title;
         Link link;
         DBSObjectFilter filter;
 
-        private FilterInfo(Class<?> type, String title) {
-            this.type = type;
+        private FilterInfo(@NotNull Class<? extends DBSObject> baseType, @NotNull String title) {
+            this.baseType = baseType;
             this.title = title;
         }
     }
@@ -112,17 +115,21 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
         filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
-        filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
+        filters.add(new FilterInfo(DBSEntity.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
         filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
     }
 
-    ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor) {
+    ConnectionPageGeneral(@NotNull ConnectionWizard wizard, @NotNull DataSourceDescriptor dataSourceDescriptor) {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
         this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
 
         for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, true);
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(
+                getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
+                null,
+                true
+            );
         }
     }
 
@@ -195,10 +202,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         boolean isFeatureCatalogOnlyNeedToApply = (features & DBPDataSourceProvider.FEATURE_CATALOGS_ONLY) != 0;
 
         for (FilterInfo filterInfo : filters) {
-            if (DBSCatalog.class.isAssignableFrom(filterInfo.type)) {
+            if (DBSCatalog.class.isAssignableFrom(filterInfo.baseType)) {
                 enableFilter(filterInfo,
                     (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0 || isFeatureCatalogOnlyNeedToApply);
-            } else if (DBSSchema.class.isAssignableFrom(filterInfo.type)) {
+            } else if (DBSSchema.class.isAssignableFrom(filterInfo.baseType)) {
                 enableFilter(filterInfo,
                     (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0 && !isFeatureCatalogOnlyNeedToApply);
             } else {
@@ -675,9 +682,36 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
-                dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
+                dataSource.setObjectFilter(
+                    getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
+                    null,
+                    filterInfo.filter
+                );
             }
         }
+    }
+
+    @NotNull
+    public static Class<?> getDataSourceObjectType(
+        @NotNull DBPDataSourceContainer dataSourceDescriptor,
+        @NotNull Class<? extends DBSObject> baseType
+    ) {
+        DBPDriver driver = dataSourceDescriptor.getDriver();
+        Class<?> dataSourceClass = driver.getDataSourceProvider().getDataSourceClass();
+        DBXTreeDescriptor treeDescriptor = driver.getProviderDescriptor().getTreeDescriptor();
+        if (treeDescriptor != null) {
+            Class<?> type = DBXTreeDescriptor.findImplementorTypeInDataSourceTree(
+                treeDescriptor,
+                dataSourceClass,
+                baseType,
+                null
+            );
+            if (type != null) {
+                return type;
+            }
+        }
+
+        return baseType;
     }
 
     public void setDataSourceFolder(@Nullable DBPDataSourceFolder dataSourceFolder) {

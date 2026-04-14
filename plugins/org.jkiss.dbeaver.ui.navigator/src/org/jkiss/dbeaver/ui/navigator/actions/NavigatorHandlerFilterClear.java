@@ -53,7 +53,7 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
             DBXTreeItem itemsMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, parentNode));
             if (itemsMeta != null) {
                 DBSObjectFilter emptyFilter = new DBSObjectFilter();
-                UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.getService(UIServiceFilterConfig.class);
+                UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
                 if (uiServiceFilterConfig == null) {
                     parentNode.setNodeFilter(itemsMeta, emptyFilter, true);
                     NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(parentNode));

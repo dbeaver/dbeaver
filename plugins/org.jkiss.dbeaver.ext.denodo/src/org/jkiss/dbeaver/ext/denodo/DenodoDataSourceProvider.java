@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,20 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.denodo.model.DenodoDataSource;
 import org.jkiss.dbeaver.ext.denodo.model.DenodoMetaModel;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
+public class DenodoDataSourceProvider extends GenericDataSourceProvider<DenodoDataSource> {
 
     private static final Log log = Log.getLog(DenodoDataSourceProvider.class);
+
+    public DenodoDataSourceProvider() {
+        super(DenodoDataSource.class);
+    }
 
     @Override
     public long getFeatures()
@@ -41,8 +44,7 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();
 
         url.append("jdbc:denodo://");
@@ -63,7 +65,7 @@ public class DenodoDataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public DenodoDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container)
         throws DBException
