@@ -185,7 +185,7 @@
             <id>build-linux-x86_64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <modules>
@@ -196,7 +196,7 @@
             <id>build-linux-aarch64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <modules>
@@ -207,7 +207,7 @@
             <id>build-windows-x86_64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <modules>
@@ -220,7 +220,7 @@
             <id>build-windows-aarch64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <modules>
@@ -233,7 +233,7 @@
             <id>build-macos-x86_64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <modules>
@@ -244,7 +244,7 @@
             <id>build-macos-aarch64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <modules>

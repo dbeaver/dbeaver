@@ -102,12 +102,13 @@
             Platform-specific build profiles.
             No artifacts are built by default. Activate one or more profiles to build requested artifacts.
             Multiple profiles can be combined to build several artifacts simultaneously.
+            Use `-Dbuild.all-environments` to trigger a build for all supported platforms.
         -->
         <profile>
             <id>build-linux-x86_64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <build>
@@ -133,7 +134,7 @@
             <id>build-linux-aarch64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <build>
@@ -159,7 +160,7 @@
             <id>build-windows-x86_64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <build>
@@ -185,7 +186,7 @@
             <id>build-windows-aarch64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <build>
@@ -211,7 +212,7 @@
             <id>build-macos-x86_64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <build>
@@ -237,7 +238,7 @@
             <id>build-macos-aarch64</id>
             <activation>
                 <property>
-                    <name>build.all-artifacts</name>
+                    <name>build.all-environments</name>
                 </property>
             </activation>
             <build>
