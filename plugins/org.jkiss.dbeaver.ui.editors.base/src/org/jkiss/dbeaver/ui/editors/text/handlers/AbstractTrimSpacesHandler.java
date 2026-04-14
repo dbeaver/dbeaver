@@ -22,13 +22,14 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -41,8 +42,9 @@ public abstract class AbstractTrimSpacesHandler extends AbstractTextHandler {
     @NotNull
     protected abstract String trimString(@NotNull String input);
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent executionEvent) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent executionEvent) throws ExecutionException {
 
         BaseTextEditor textEditor = BaseTextEditor.getTextEditor(HandlerUtil.getActiveEditor(executionEvent));
 
@@ -61,7 +63,7 @@ public abstract class AbstractTrimSpacesHandler extends AbstractTextHandler {
                             if (startLine != endLine) {
                                 // Highlighted more than one line - make trim for each row separately
                                 StringBuilder allStrings = new StringBuilder();
-                                String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+                                String lineSeparator = TextUtilities.getDefaultLineDelimiter(document);
                                 for (int i = startLine; i <= endLine; i++) {
                                     IRegion lineInformation = document.getLineInformation(i);
                                     String untrimmedString = document.get(lineInformation.getOffset(), lineInformation.getLength());
