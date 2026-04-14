@@ -27,6 +27,7 @@ public record AISchemaGenerationOptions(
     boolean sendForeignKeys,
     boolean sendIndexes,
     boolean sendFullDDL,
+    boolean sendReferences,
     boolean useFQN
 ) {
 
@@ -42,6 +43,7 @@ public record AISchemaGenerationOptions(
             .withSendForeignKeys(sendForeignKeys)
             .withSendIndexes(sendIndexes)
             .withSendFullDDL(sendFullDDL)
+            .withSendFullDDL(sendReferences)
             .withUseFQN(useFQN);
     }
 
@@ -52,6 +54,7 @@ public record AISchemaGenerationOptions(
         private boolean sendForeignKeys;
         private boolean sendIndexes;
         private boolean sendFullDDL;
+        private boolean sendReferences;
         private boolean useFQN;
 
         private Builder() {
@@ -97,6 +100,12 @@ public record AISchemaGenerationOptions(
         }
 
         @NotNull
+        public Builder withSendReferences(boolean sendReferences) {
+            this.sendReferences = sendReferences;
+            return this;
+        }
+
+        @NotNull
         public Builder withUseFQN(boolean useFQN) {
             this.useFQN = useFQN;
             return this;
@@ -111,6 +120,7 @@ public record AISchemaGenerationOptions(
                 sendForeignKeys,
                 sendIndexes,
                 sendFullDDL,
+                sendReferences,
                 useFQN
             );
         }
