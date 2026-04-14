@@ -134,7 +134,8 @@ public final class SQLUtils {
                 subpatterns.add(Pattern.quote(prefix) + "[^\\n\\r]*");
             }
         }
-        Pattern p = Pattern.compile("(" + String.join(")|(", subpatterns) + ")");
+        String anyCommentPattern = "((" + String.join(")|(", subpatterns) + "))";
+        Pattern p = Pattern.compile(anyCommentPattern + "([\\r\\n\\s]" + anyCommentPattern + ")*+");
 
         // extract all the comments and collect their location info in one go
         Matcher m = p.matcher(sqlText);

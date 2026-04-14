@@ -21,16 +21,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.Diff;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Carries information about the comments in the original SQL text to effectively reconstruct it on modifications,
  * combining both original text fragments with comments and newly introduced fragments of the new SQL text
  */
 public class QueryReconstructor {
+
+    private static final boolean DEBUG = false;
 
     private final SQLUtils.CommentsCollectionResult commentsCollectionResult;
     private final Token[] originalQueryTokens;
@@ -82,6 +87,10 @@ public class QueryReconstructor {
 
         // compare new and old text (called image in jsqlparser) by tokens
         List<Diff.Range> diff = Diff.prepareDiff(originalTokens, newTokens, (x, y) -> x.image.equals(y.image));
+
+        if (DEBUG) {
+            printDiffDebugView(originalTokens, newTokens, diff);
+        }
 
         StringBuilder result = new StringBuilder();
         {
@@ -216,9 +225,67 @@ public class QueryReconstructor {
         }
         int end = comments[trailingCommentIndex].accumulatedOffset() + lastToken.absoluteEnd;
 
-        boolean hasOnlySurroundingComments = trailingCommentIndex - leadingCommentIndex <= 1;
+        boolean hasOnlySurroundingComments = (trailingCommentIndex + 1) - (leadingCommentIndex - 1) <= 1;
 
         // jsqlparser's token absolute positions always have +1, so take -1 each time using them with text
         return new SurroundingCommentsInfo(start - 1, end - 1, hasOnlySurroundingComments);
+    }
+
+    /**
+     * Collect and print debug view of token's diff, which is copy-pasteable into a table processor like MS Excel
+     */
+    private static void printDiffDebugView(
+        @NotNull Token[] originalTokens,
+        @NotNull Token[] newTokens,
+        @NotNull List<Diff.Range> diff
+    ) {
+        String[][] arr = new String[newTokens.length + 2][originalTokens.length + 2];
+        for (int i = 0; i < originalTokens.length; i++) {
+            arr[0][i + 2] = Integer.toString(i);
+            arr[1][i + 2] = originalTokens[i].image;
+        }
+        for (int i = 0; i < newTokens.length; i++) {
+            arr[i + 2][0] = Integer.toString(i);
+            arr[i + 2][1] = newTokens[i].image;
+        }
+        var x = 0;
+        var y = 0;
+        for (var d : diff) {
+            switch (d.operation) {
+                case MATCH_AB -> {
+                    x = d.start;
+                    for (int i = 0; i < d.length; i++, x++, y++) {
+                        arr[y + 2][x + 2] = "\\";
+                    }
+                }
+                case DELETE_A -> {
+                    x = d.start;
+                    for (int i = 0; i < d.length; i++, x++) {
+                        arr[y + 2][x + 2] = "d";
+                    }
+                }
+                case INSERT_B -> {
+                    y = d.start;
+                    for (int i = 0; i < d.length; i++, y++) {
+                        arr[y + 2][x + 2] = "i";
+                    }
+                }
+                default -> throw new IllegalStateException("Unexpected diff range operation : " + d.operation);
+            }
+        }
+        String splitLine = "-".repeat(Math.max(
+            Stream.of(arr[0]).filter(Objects::nonNull).mapToInt(String::length).sum(),
+            Stream.of(arr[1]).filter(Objects::nonNull).mapToInt(String::length).sum()
+        ));
+        var sb = new StringBuilder();
+        sb.append(splitLine);
+        for (String[] line : arr) {
+            for (String cell : line) {
+                sb.append(CommonUtils.notNull(cell, "")).append("\t");
+            }
+            sb.append("\n");
+        }
+        sb.append(splitLine);
+        System.out.println(sb);
     }
 }
