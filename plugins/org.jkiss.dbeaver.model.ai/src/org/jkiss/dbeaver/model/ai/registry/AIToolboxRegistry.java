@@ -160,7 +160,7 @@ public class AIToolboxRegistry implements AIToolboxManager {
     }
 
     @Override
-    public void saveExternalToolboxes(@NotNull Map<String, Map<String, Object>> toolboxConfigurations) throws DBException {
+    public void saveToolboxSettings(@NotNull List<? extends AIToolbox> toolboxes) throws DBException {
         // No-op in base implementation; overridden in Pro
     }
 
