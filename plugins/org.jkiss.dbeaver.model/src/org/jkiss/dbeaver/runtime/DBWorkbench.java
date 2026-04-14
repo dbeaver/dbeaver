@@ -94,7 +94,7 @@ public class DBWorkbench {
     }
 
     /**
-     * Service management
+     * Get service by class. Writes warning in log iuf service not found
      */
     @Nullable
     public static <T> T getService(@NotNull Class<T> serviceType) {
@@ -103,6 +103,11 @@ public class DBWorkbench {
             log.debug("Service '" + serviceType.getName() + "' not found");
         }
         return service;
+    }
+
+    @Nullable
+    public static <T> T findService(@NotNull Class<T> serviceType) {
+        return ServiceRegistry.getInstance().getService(serviceType);
     }
 
     /**

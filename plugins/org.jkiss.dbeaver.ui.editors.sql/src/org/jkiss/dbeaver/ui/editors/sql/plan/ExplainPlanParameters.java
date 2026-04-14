@@ -14,15 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.db2.zos;
+package org.jkiss.dbeaver.ui.editors.sql.plan;
 
-import org.jkiss.dbeaver.ext.db2.zos.model.DB2ZOSDataSource;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
-public class DB2ZOSDataSourceProvider extends GenericDataSourceProvider<DB2ZOSDataSource> {
-
-    public DB2ZOSDataSourceProvider() {
-        super(DB2ZOSDataSource.class);
-    }
+/**
+ * ExplainPlanParameters for actions
+ */
+public record ExplainPlanParameters(
+    @NotNull SQLEditor editor,
+    @NotNull DBPDataSource dataSource,
+    @NotNull SQLQuery query,
+    @NotNull DBCPlan plan
+) {
 
 }
