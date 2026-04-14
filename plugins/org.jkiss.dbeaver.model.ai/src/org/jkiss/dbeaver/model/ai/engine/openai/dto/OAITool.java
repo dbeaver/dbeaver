@@ -25,14 +25,10 @@ import java.util.List;
 
 public class OAITool {
 
-    @NotNull
     public static final String TYPE_FUNCTION = "function";
 
-    @NotNull
     public String type;
-    @NotNull
     public String name;
-    @NotNull
     public String description;
     public boolean strict;
     @NotNull
@@ -43,7 +39,7 @@ public class OAITool {
         OAITool tool = new OAITool();
         tool.type = OAITool.TYPE_FUNCTION;
         tool.name = fd.getFullId();
-        tool.description = fd.getDescription();
+        tool.description = fd.getAiDescription();
         tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
         List<String> requiredFields = new ArrayList<>();
         for (AIFunctionParameter param : fd.getParameters()) {
