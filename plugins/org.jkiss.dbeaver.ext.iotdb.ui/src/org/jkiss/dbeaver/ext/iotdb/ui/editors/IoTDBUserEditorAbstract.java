@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
@@ -76,7 +77,7 @@ public abstract class IoTDBUserEditorAbstract extends AbstractDatabaseObjectEdit
         public ProgressVisualizer<List<IoTDBGrant>> createGrantsLoadVisualizer() {
             return new ProgressVisualizer<List<IoTDBGrant>>() {
                 @Override
-                public void completeLoading(List<IoTDBGrant> grants) {
+                public void completeLoading(@Nullable List<IoTDBGrant> grants) {
                     super.completeLoading(grants);
                     processGrants(grants);
                 }
@@ -84,7 +85,7 @@ public abstract class IoTDBUserEditorAbstract extends AbstractDatabaseObjectEdit
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
         }

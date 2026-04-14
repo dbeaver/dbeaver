@@ -38,4 +38,13 @@ public interface AIFunctionParameter {
     @Nullable
     String[] getValidValues();
 
+    @Nullable
+    default AIFunctionParameterTransformer getTransformer() {
+        return null;
+    }
+
+    @Nullable
+    default String getTransformerSuffix() {
+        return null;
+    }
 }

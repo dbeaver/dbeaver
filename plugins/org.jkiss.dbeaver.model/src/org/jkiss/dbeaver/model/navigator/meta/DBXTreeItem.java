@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -29,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -59,34 +61,38 @@ public class DBXTreeItem extends DBXTreeNode {
     }
 
     public DBXTreeItem(
-        AbstractDescriptor source,
-        DBXTreeNode parent,
-        IConfigurationElement config,
-        String path,
-        String propertyName,
+        @NotNull AbstractDescriptor source,
+        @Nullable DBXTreeNode parent,
+        @Nullable IConfigurationElement config,
+        @NotNull String path,
+        @Nullable String propertyName,
         boolean optional,
         boolean navigable,
         boolean inline,
         boolean virtual,
         boolean standalone,
-        String visibleIf,
-        String recursiveLink)
+        @Nullable String visibleIf,
+        @Nullable String recursiveLink)
     {
         super(source, parent, config, navigable, inline, virtual, standalone, visibleIf, recursiveLink);
-        this.label = parent == null ? ModelMessages.model_navigator_Connection : config.getAttribute("label");
-        this.itemLabel = parent == null ? ModelMessages.model_navigator_Connection : config.getAttribute("itemLabel");
+        this.label = parent == null || config == null ? ModelMessages.model_navigator_Connection : config.getAttribute("label");
+        this.itemLabel = parent == null || config == null ? ModelMessages.model_navigator_Connection : config.getAttribute("itemLabel");
         if (itemLabel == null) {
             itemLabel = label;
         }
         if (CommonUtils.isEmpty(path)) {
-            log.error("Path is not specified for the item: " + config + " " + config.getAttribute("label"));
+            log.error("Path is not specified for the item: " + config);
         }
         this.path = path;
         this.propertyName = propertyName;
         this.optional = optional;
     }
 
-    public DBXTreeItem(AbstractDescriptor source, DBXTreeNode parent, DBXTreeItem item) {
+    public DBXTreeItem(
+        @NotNull AbstractDescriptor source,
+        @NotNull DBXTreeNode parent,
+        @NotNull DBXTreeItem item
+    ) {
         super(source, parent, item);
         this.label = item.label;
         this.itemLabel = item.itemLabel;
@@ -95,11 +101,13 @@ public class DBXTreeItem extends DBXTreeNode {
         this.optional = item.optional;
     }
 
+    @NotNull
     public String getPath()
     {
         return path;
     }
 
+    @NotNull
     public String getPropertyName()
     {
         return propertyName;
@@ -110,9 +118,9 @@ public class DBXTreeItem extends DBXTreeNode {
         return optional;
     }
 
+    @NotNull
     @Override
-    public String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, String locale)
-    {
+    public String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale) {
         final String term = getNodeTerm(dataSource, label, true);
         if (term != null) {
             return term;
@@ -120,9 +128,9 @@ public class DBXTreeItem extends DBXTreeNode {
         return label;
     }
 
+    @NotNull
     @Override
-    public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale)
-    {
+    public String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale) {
         final String term = getNodeTerm(dataSource, itemLabel, false);
         if (term != null) {
             return term;
@@ -130,18 +138,16 @@ public class DBXTreeItem extends DBXTreeNode {
         return itemLabel;
     }
 
-    private String getNodeTerm(@Nullable DBPDataSource dataSource, String termId, boolean multiple)
-    {
-        if (termId.startsWith("#") && dataSource instanceof DBPTermProvider) {
-            String term = ((DBPTermProvider) dataSource).getObjectTypeTerm(getPath(), termId.substring(1), multiple);
-            if (term != null) {
-                return term;
-            }
+    @Nullable
+    private String getNodeTerm(@Nullable DBPDataSource dataSource, @NotNull String termId, boolean multiple) {
+        if (termId.startsWith("#") && dataSource instanceof DBPTermProvider termProvider) {
+            return termProvider.getObjectTypeTerm(getPath(), termId.substring(1), multiple);
         }
         return null;
     }
 
-    public DBXTreeItem findChildItemByPath(String path) {
+    @Nullable
+    public DBXTreeItem findChildItemByPath(@NotNull String path) {
         if (getChildren() != null) {
             for (DBXTreeNode node : getChildren()) {
                 DBXTreeItem subItem = findChildItemByPath(node, path);
@@ -153,9 +159,10 @@ public class DBXTreeItem extends DBXTreeNode {
         return null;
     }
 
-    private DBXTreeItem findChildItemByPath(DBXTreeNode node, String path) {
-        if (node instanceof DBXTreeItem && CommonUtils.equalObjects(((DBXTreeItem) node).getPath(), path)) {
-            return (DBXTreeItem) node;
+    @Nullable
+    private DBXTreeItem findChildItemByPath(@NotNull DBXTreeNode node, @NotNull String path) {
+        if (node instanceof DBXTreeItem item && CommonUtils.equalObjects(item.getPath(), path)) {
+            return item;
         }
         if (node instanceof DBXTreeFolder && node.getChildren() != null) {
             for (DBXTreeNode subFolder : node.getChildren()) {
@@ -168,7 +175,22 @@ public class DBXTreeItem extends DBXTreeNode {
         return null;
     }
 
-    public synchronized Method getPropertyReadMethod(Class<?> objectClass) {
+    @Nullable
+    public synchronized Class<?> getPropertyOrCollectionItemType(@NotNull Class<?> ownerOjectClass) {
+        Method readMethod = getPropertyReadMethod(ownerOjectClass);
+        if (readMethod != null) {
+            Type propType = readMethod.getGenericReturnType();
+            if (BeanUtils.isCollectionType(propType)) {
+                return BeanUtils.getCollectionType(propType);
+            } else if (propType instanceof Class<?> clazz) {
+                return clazz;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public synchronized Method getPropertyReadMethod(@NotNull Class<?> objectClass) {
         Method getter = propertyGettersCache.get(objectClass);
         if (getter == null) {
             getter = findPropertyReadMethod(objectClass, propertyName);
@@ -180,12 +202,14 @@ public class DBXTreeItem extends DBXTreeNode {
         return getter == NULL_GETTER ? null : getter;
     }
 
-    public static Method findPropertyReadMethod(Class<?> clazz, String propertyName) {
+    @Nullable
+    public static Method findPropertyReadMethod(@NotNull Class<?> clazz, @NotNull String propertyName) {
         String methodName = BeanUtils.propertyNameToMethodName(propertyName);
         return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
     }
 
-    private static Method findPropertyGetter(Class<?> clazz, String getName, String isName) {
+    @Nullable
+    private static Method findPropertyGetter(@NotNull Class<?> clazz, @NotNull String getName, @NotNull String isName) {
         Method[] methods = clazz.getDeclaredMethods();
 
         for (Method method : methods) {
@@ -202,7 +226,13 @@ public class DBXTreeItem extends DBXTreeNode {
                 }
             }
         }
-        return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
+        if (clazz != Object.class) {
+            Class<?> superclass = clazz.getSuperclass();
+            if (superclass != null) {
+                return findPropertyGetter(superclass, getName, isName);
+            }
+        }
+        return null;
     }
 
     @Override
