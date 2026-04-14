@@ -30,6 +30,7 @@ public final class DelegateMainLauncher {
 
     private static final String DELEGATE_MAIN_CLASS_ARG = "--delegateMainClass";
     private static final String DELEGATE_CLASSPATH_ARG = "--delegateClasspath";
+    private static final String DELEGATE_ARGS_ARG = "--delegateArgs";
 
     private DelegateMainLauncher() {
     }
@@ -44,22 +45,27 @@ public final class DelegateMainLauncher {
         String delegateMainClass = null;
         String delegateClasspath = null;
         List<String> delegateArgs = new ArrayList<>(args.length);
+        boolean collectDelegateArgs = false;
 
-        int i = 0;
-        while (i < args.length) {
+        for (int i = 0; i < args.length; i++) {
             String arg = args[i];
+            if (collectDelegateArgs) {
+                delegateArgs.add(arg);
+                continue;
+            }
             if (DELEGATE_MAIN_CLASS_ARG.equals(arg)) {
                 delegateMainClass = requireArgumentValue(args, i, DELEGATE_MAIN_CLASS_ARG);
-                i += 2;
+                i++;
                 continue;
             }
             if (DELEGATE_CLASSPATH_ARG.equals(arg)) {
                 delegateClasspath = requireArgumentValue(args, i, DELEGATE_CLASSPATH_ARG);
-                i += 2;
+                i++;
                 continue;
             }
-            delegateArgs.add(arg);
-            i++;
+            if (DELEGATE_ARGS_ARG.equals(arg)) {
+                collectDelegateArgs = true;
+            }
         }
 
         if (delegateMainClass == null) {
