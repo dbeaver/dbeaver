@@ -693,6 +693,7 @@ public class OracleSchema extends OracleGlobalObject implements
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase forTable)
             throws SQLException
         {
+            boolean readColumnComments = CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS));
             String colsView;
             if (!owner.getDataSource().isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, "ALL_TAB_COLS")) {
                 colsView = "TAB_COLUMNS";
@@ -701,10 +702,19 @@ public class OracleSchema extends OracleGlobalObject implements
             }
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\nc.*,c.TABLE_NAME as OBJECT_NAME " +
-                    "FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), colsView)).append(" c\n" +
-//                    "LEFT OUTER JOIN " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
-                    "WHERE c.OWNER=?");
+                .append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append("\nc.*, c.TABLE_NAME as OBJECT_NAME");
+            if (readColumnComments) {
+                sql.append(", cc.COMMENTS AS COMMENTS, 1 AS COMMENTS_LOADED\n");
+            } else {
+                sql.append(", NULL AS COMMENTS, 0 AS COMMENTS_LOADED\n");
+            }
+            sql.append("FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), colsView)).append(" c\n");
+            if (readColumnComments) {
+                sql.append("LEFT OUTER JOIN ")
+                    .append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "COL_COMMENTS"))
+                    .append(" cc ON cc.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n");
+            }
+            sql.append("WHERE c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
