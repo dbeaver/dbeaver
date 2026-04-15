@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,26 +131,31 @@ public class ExasolPlanNode extends AbstractExecutionPlanNode {
     // ----------------------
     // Methods from Interface
     // ---------------------	
+    @Nullable
     @Override
     public DBCPlanNode getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<ExasolPlanNode> getNested() {
         return listNestedNodes;
     }
 
+    @Nullable
     @Override
     public String getNodeName() {
         return objectName;
     }
 
+    @Nullable
     @Override
     public String getNodeType() {
         return commandName;
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return detailInfo;

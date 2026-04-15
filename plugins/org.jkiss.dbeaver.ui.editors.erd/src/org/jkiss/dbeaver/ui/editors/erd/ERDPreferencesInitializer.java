@@ -35,6 +35,7 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, false);
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_ROUTING_TYPE, ERDUIConstants.PREF_DEFAULT_ATTR_ERD_ROUTER_ID);
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_NOTATION_TYPE, ERDUIConstants.PREF_DEFAULT_ATTR_ERD_NOTATION_ID);
+        PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS, false);
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, true);
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, true);
         PrefUtils.setDefaultPreferenceValue(store, ERDUIConstants.PREF_PRINT_PAGE_MODE, ERDUIConstants.PRINT_MODE_DEFAULT);
