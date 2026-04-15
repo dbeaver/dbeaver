@@ -16,8 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.timescale.TimescaleSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.timescale.TimescaleTable;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
+import java.sql.SQLException;
 /**
  * PostgreServerTimescale
  */
@@ -41,5 +49,29 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
     public String getServerTypeName() {
         return "Timescale";
     }
-}
 
+    @Override
+    public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.r ||
+            kind == PostgreClass.RelKind.t ||
+            kind == PostgreClass.RelKind.p
+        ) {
+            return new TimescaleTable(schema, dbResult);
+        }
+        return super.createRelationOfClass(schema, kind, dbResult);
+    }
+
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+        return new TimescaleSchemaCache();
+    }
+
+    private static class TimescaleSchemaCache extends PostgreDatabase.SchemaCache {
+
+        @Override
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String name = JDBCUtils.safeGetString(resultSet, "nspname");
+            return new TimescaleSchema(owner, name, resultSet);
+        }
+    }
+}

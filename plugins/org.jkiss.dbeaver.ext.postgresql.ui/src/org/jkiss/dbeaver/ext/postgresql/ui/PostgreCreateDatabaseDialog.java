@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,9 +77,9 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         boolean supportsTablespaces = dataSource.getServerType().supportsTablespaces();
         boolean supportsTemplates = dataSource.getServerType().supportsTemplates();
 
-        final Composite composite = super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
-        final Composite groupGeneral = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_general, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        Composite groupGeneral = UIUtils.createTitledComposite(composite, PostgreMessages.dialog_create_db_group_general, 2, GridData.FILL_HORIZONTAL);
 
         final Text nameText = UIUtils.createLabelText(groupGeneral, PostgreMessages.dialog_create_db_label_db_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
@@ -97,7 +97,12 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
             });
         }
 
-        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        Composite groupDefinition = UIUtils.createTitledComposite(
+            composite,
+            PostgreMessages.dialog_create_db_group_definition,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         if (supportsTemplates) {
             templateCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_template_db, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             templateCombo.addSelectionListener(new SelectionAdapter() {

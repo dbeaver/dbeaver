@@ -32,7 +32,7 @@
             properties="visible"
             type="java.lang.Object"/>
     </extension>
-    
+
     <extension point="org.eclipse.ui.views">
         <view
                 id="org.jkiss.dbeaver.core.queryManager"
@@ -605,26 +605,21 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label"
-                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/show_all_details.svg">
-
-                <dynamic id="org.jkiss.dbeaver.core.connection.settings"
-                         class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor"/>
-
+            <dynamic id="org.jkiss.dbeaver.core.connection.settings"
+                     class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
                                 <and>
-                                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                                     <test property="org.jkiss.dbeaver.core.datasource.editable"/>
                                 </and>
                             </adapt>
                         </iterate>
                     </with>
                 </visibleWhen>
-            </menu>
+            </dynamic>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -633,7 +628,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <menu
+            <menu id="navigator.filter"
                   icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"
                   label="%menu.filter.label">
                 <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
@@ -747,9 +742,8 @@
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            
-            
-            
+
+
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
@@ -984,6 +978,14 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
+        <!-- General colors -->
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.accent.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.accent"
+            value="51, 135, 197">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.accent.description</description>
+        </colorDefinition>
 
         <!-- Colors for transactions -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">
@@ -1251,10 +1253,10 @@
             id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
             class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
             name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
-         <page 
-             id="org.jkiss.dbeaver.preferences.accessibility" 
+        <page
+            id="org.jkiss.dbeaver.preferences.accessibility"
              category="org.jkiss.dbeaver.preferences.main"
-             class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility" 
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility"
              name="%page.org.jkiss.dbeaver.preferences.accessibility.name">
         </page>
     </extension>
@@ -1281,5 +1283,7 @@
     <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
         <fragment apply="always" uri="fragment.e4xmi"/>
     </extension>
-
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.DBeaverCoreWorkbenchInitializer" order="2"/>
+    </extension>
 </plugin>

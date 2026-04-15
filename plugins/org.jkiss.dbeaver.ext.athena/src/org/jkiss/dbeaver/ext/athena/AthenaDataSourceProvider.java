@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,44 +16,36 @@
  */
 package org.jkiss.dbeaver.ext.athena;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.model.AthenaDataSource;
 import org.jkiss.dbeaver.ext.athena.model.AthenaMetaModel;
+import org.jkiss.dbeaver.ext.athena.model.AthenaUtils;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPInformationProvider;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class AthenaDataSourceProvider extends GenericDataSourceProvider implements DBPInformationProvider {
+public class AthenaDataSourceProvider extends GenericDataSourceProvider<AthenaDataSource> implements DBPInformationProvider {
 
-    private static final Log log = Log.getLog(AthenaDataSourceProvider.class);
-
-    public AthenaDataSourceProvider()
-    {
-    }
-
-    @Override
-    public void init(@NotNull DBPPlatform platform) {
-
+    @DynamicCall
+    public AthenaDataSourceProvider() {
+        super(AthenaDataSource.class);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public AthenaDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container)
-        throws DBException
-    {
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         return new AthenaDataSource(monitor, container, new AthenaMetaModel());
     }
 
@@ -70,7 +62,10 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider implemen
             }
         }
         if (CommonUtils.isEmpty(urlTemplate) || !urlTemplate.startsWith(AthenaConstants.JDBC_URL_PREFIX)) {
-            return AthenaConstants.JDBC_URL_PREFIX + AthenaConstants.DRIVER_PROP_REGION + "=" + regionName + ";";
+            String regionPropName = AthenaUtils.isLegacyDriver(driver) ?
+                AthenaConstants.DRIVER_PROP_REGION_OLD : AthenaConstants.DRIVER_PROP_REGION;
+
+            return AthenaConstants.JDBC_URL_PREFIX + regionPropName + "=" + regionName + ";";
         }
         urlTemplate = urlTemplate
             .replace("{region}", regionName)

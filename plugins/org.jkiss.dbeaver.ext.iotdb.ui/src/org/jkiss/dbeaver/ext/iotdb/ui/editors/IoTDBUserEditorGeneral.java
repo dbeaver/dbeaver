@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
@@ -55,8 +56,8 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
 
         // Login -> User Name
         {
-            Composite loginGroup = UIUtils.createControlGroup(container,
-                    IoTDBUiMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite loginGroup = UIUtils.createTitledComposite(container,
+                    IoTDBUiMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL);
             Text userNameText = UIUtils.createLabelText(loginGroup,
                     IoTDBUiMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getName());
             userNameText.setEditable(false);
@@ -147,7 +148,7 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
         public ProgressVisualizer<List<IoTDBPrivilege>> createLoadVisualizer() {
             return new ProgressVisualizer<List<IoTDBPrivilege>>() {
                 @Override
-                public void completeLoading(List<IoTDBPrivilege> privileges) {
+                public void completeLoading(@Nullable List<IoTDBPrivilege> privileges) {
                     super.completeLoading(privileges);
                     privilegesTable.fillPrivileges(privileges);
                     loadGrants();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IViewPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -32,7 +30,10 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionNavigatorSettingsDialog;
@@ -48,29 +49,79 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
 
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems) {
-        DBPDataSourceContainer dsContainer = AbstractDataSourceHandler.getDataSourceContainerFromPart(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
+        DBPDataSourceContainer dsContainer = AbstractDataSourceHandler.getDataSourceContainerFromPart(UIUtils.getActiveWorkbenchWindow()
+            .getActivePage().getActivePart());
         if (dsContainer == null) {
             return;
         }
-        boolean presetChecked = false;
-        for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
-            if (preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
-                continue;
+
+        MenuManager customizeViewMenu = new MenuManager(RegistryMessages.navigator_settings_customize_view);
+        customizeViewMenu.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
+        addPresetSettings(customizeViewMenu, dsContainer);
+        addSystemObjects(customizeViewMenu, dsContainer);
+        addAdditionalSettings(customizeViewMenu, dsContainer);
+        menuItems.add(customizeViewMenu);
+    }
+
+    private void addPresetSettings(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
+        DBNBrowseSettings chosenSettings = dsContainer.getNavigatorSettings();
+
+        if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(chosenSettings)) {
+            customizeViewMenu.add(new UseSettingsPresetAction(
+                dsContainer,
+                RegistryMessages.navigator_settings_switch_to_advanced_mode,
+                DataSourceNavigatorSettings.PRESET_ADVANCED,
+                false
+            ));
+        } else {
+            customizeViewMenu.add(new UseSettingsPresetAction(
+                dsContainer,
+                RegistryMessages.navigator_settings_switch_to_simple_mode,
+                DataSourceNavigatorSettings.PRESET_SIMPLE,
+                false
+            ));
+            boolean presetChecked = false;
+            for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
+                if (preset == DataSourceNavigatorSettings.PRESET_CUSTOM
+                    || preset == DataSourceNavigatorSettings.PRESET_SIMPLE) {
+                    continue;
+                }
+                boolean isChecked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
+                if (isChecked) {
+                    presetChecked = true;
+                }
+                customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, preset.getName(), preset, isChecked));
             }
-            boolean checked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
-            if (checked) {
-                presetChecked = checked;
-            }
-            menuItems.add(new ActionContributionItem(new UseSettingsPresetAction(dsContainer, preset, checked)));
+            customizeViewMenu.add(new UseSettingsCustomAction(dsContainer, !presetChecked));
         }
-        menuItems.add(new ActionContributionItem(new UseSettingsCustomAction(dsContainer, !presetChecked)));
-        menuItems.add(new Separator());
-        menuItems.add(new ActionContributionItem(new ShowSystemObjectsAction(dsContainer)));
-        menuItems.add(new Separator());
-        menuItems.add(new ActionContributionItem(new ShowHostNameAction(dsContainer)));
-        menuItems.add(new ActionContributionItem(new ShowObjectsDescriptionAction(dsContainer)));
-        menuItems.add(new ActionContributionItem(new ShowStatisticsAction(dsContainer)));
-        menuItems.add(new ActionContributionItem(new ShowStatusIconsAction(dsContainer)));
+        customizeViewMenu.add(new Separator());
+    }
+
+    private void addSystemObjects(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
+        customizeViewMenu.add(new ShowSystemObjectsAction(dsContainer));
+        customizeViewMenu.add(new Separator());
+    }
+
+    private void addAdditionalSettings(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
+        customizeViewMenu.add(new ShowHostNameAction(dsContainer));
+        customizeViewMenu.add(new ShowObjectsDescriptionAction(dsContainer));
+        customizeViewMenu.add(new ShowStatisticsAction(dsContainer));
+        customizeViewMenu.add(new ShowStatusIconsAction(dsContainer));
+        if (DBWorkbench.isDistributed()) {
+            addClearUserSettingsAction(customizeViewMenu, dsContainer);
+        }
+    }
+
+
+    private void addClearUserSettingsAction(@NotNull MenuManager customizeViewMenu, @NotNull DBPDataSourceContainer dsContainer) {
+        Separator separator = new Separator();
+        ClearCurrentUserSettings settingsClearAction = new ClearCurrentUserSettings(dsContainer);
+        ActionContributionItem clearUserSettings = new ActionContributionItem(settingsClearAction);
+        settingsClearAction.setSeparator(separator);
+        settingsClearAction.setClearUserSettings(clearUserSettings);
+        settingsClearAction.visibleCheck();
+        customizeViewMenu.add(separator);
+        customizeViewMenu.add(clearUserSettings);
     }
 
     private abstract static class SettingsAction extends Action {
@@ -81,10 +132,11 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             this.dsContainer = dsContainer;
         }
 
-        void updateSettings(DBNBrowseSettings settings) {
-            if (DBWorkbench.isDistributed()) {
+        void updateSettings(@NotNull DBNBrowseSettings settings) {
+            if (isUseUserSettings() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
                 try {
-                    DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, (DataSourceNavigatorSettings) settings);
+                    DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, dataSourceNavigatorSettings);
+                    dataSourceNavigatorSettings.setUserSettings(true);
                 } catch (DBException e) {
                     log.error("Error updating custom navigator settings", e);
                     return;
@@ -93,13 +145,21 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                 ((DataSourceDescriptor) this.dsContainer).setNavigatorSettings(settings);
                 dsContainer.persistConfiguration();
             }
+            askToReconnectIfNeeded();
+        }
 
+        private boolean isUseUserSettings() {
+            return DBWorkbench.isDistributed()
+                && !dsContainer.getProject().isPrivateProject();
+        }
+
+        protected void askToReconnectIfNeeded() {
             if (dsContainer.isConnected()) {
                 if (UIUtils.confirmAction(
                     UIUtils.getActiveWorkbenchShell(),
                     CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName()) ))
-                {
+                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName())
+                )) {
                     DataSourceHandler.reconnectDataSource(null, dsContainer);
                 }
             }
@@ -119,8 +179,13 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
     private static class UseSettingsPresetAction extends SettingsAction {
         private final DataSourceNavigatorSettings.Preset preset;
 
-        UseSettingsPresetAction(DBPDataSourceContainer dsContainer, DataSourceNavigatorSettings.Preset preset, boolean checked) {
-            super(dsContainer, preset.getName(), AS_RADIO_BUTTON);
+        UseSettingsPresetAction(
+            @NotNull DBPDataSourceContainer dsContainer,
+            @NotNull String label,
+            @NotNull DataSourceNavigatorSettings.Preset preset,
+            boolean checked
+        ) {
+            super(dsContainer, label, AS_RADIO_BUTTON);
             this.preset = preset;
             setToolTipText(preset.getDescription());
             setChecked(checked);
@@ -226,5 +291,56 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             refreshNavigator();
         }
     }
+
+    private static class ClearCurrentUserSettings extends SettingsAction {
+
+        private Separator separator;
+        private ActionContributionItem clearUserSettings;
+
+
+        public ClearCurrentUserSettings(@NotNull DBPDataSourceContainer container) {
+            super(container, UINavigatorMessages.dialog_connection_set_default_connection_settings, AS_PUSH_BUTTON);
+            setToolTipText(UINavigatorMessages.dialog_connection_set_default_connection_settings_tip);
+        }
+
+        @Override
+        public void run() {
+            clearCurrentUserSettings();
+            refreshNavigator();
+        }
+
+        public void setSeparator(@NotNull Separator separator) {
+            this.separator = separator;
+        }
+
+        public void setClearUserSettings(@NotNull ActionContributionItem clearUserSettings) {
+            this.clearUserSettings = clearUserSettings;
+        }
+
+        @Override
+        protected void updateSettings(@NotNull DBNBrowseSettings settings) {
+            super.updateSettings(settings);
+            visibleCheck();
+        }
+
+        private void clearCurrentUserSettings() {
+            if (DBWorkbench.isDistributed()) {
+                try {
+                    DataSourceNavigatorSettingsUtils.clearCustomNavigatorSettings(dsContainer);
+                } catch (DBException logged) {
+                    log.error("Error clearing custom navigator settings", logged);
+                }
+            }
+            askToReconnectIfNeeded();
+            visibleCheck();
+        }
+
+        public void visibleCheck() {
+            boolean isVisible = dsContainer.getNavigatorSettings().isUserSettings();
+            separator.setVisible(isVisible);
+            clearUserSettings.setVisible(isVisible);
+        }
+    }
+
 
 }

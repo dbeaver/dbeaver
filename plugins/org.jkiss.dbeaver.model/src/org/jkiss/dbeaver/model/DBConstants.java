@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,6 @@ public class DBConstants {
 
     // Internal properties prefix. This is a legacy properties marker (used to divide driver properties from provider properties)
     // Left for backward compatibility. Do not use it for new provider property names
-    @Deprecated
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
 
     // Used for default driver property values redefine

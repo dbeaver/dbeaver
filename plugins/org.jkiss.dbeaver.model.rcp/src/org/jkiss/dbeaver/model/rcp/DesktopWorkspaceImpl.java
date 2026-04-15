@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,13 +81,13 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @Override
     public void dispose() {
-        super.dispose();
-
         // Dispose resource handlers
         for (ResourceHandlerDescriptor handlerDescriptor : this.handlerDescriptors) {
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
+
+        super.dispose();
     }
 
     private DBPResourceHandler getResourceHandler(DBPResourceTypeDescriptor resourceType) {
@@ -287,6 +287,21 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
         } catch (Throwable e) {
             log.error("Error refreshing workspace contents", e);
+        }
+    }
+
+    @Override
+    public void renameProject(@NotNull DBPProject project, @NotNull String newName) throws DBException {
+        if (project instanceof DesktopProjectImpl projectImpl) {
+            IProject eclipseProject = projectImpl.getEclipseProject();
+            try {
+                project.updateProject(newName, null);
+                IProjectDescription description = eclipseProject.getDescription();
+                description.setName(newName);
+                eclipseProject.move(description, true, null);
+            } catch (CoreException e) {
+                throw new DBException("Error renaming project", e);
+            }
         }
     }
 

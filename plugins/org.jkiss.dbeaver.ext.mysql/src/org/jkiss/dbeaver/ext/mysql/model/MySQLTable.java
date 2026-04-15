@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -190,16 +188,16 @@ public class MySQLTable extends MySQLTableBase
     @Nullable
     private String enableReferentialIntegrityStatement;
 
-    public MySQLTable(MySQLCatalog catalog)
+    public MySQLTable(@NotNull MySQLCatalog catalog)
     {
         super(catalog);
     }
 
     // Copy constructor
-    public MySQLTable(DBRProgressMonitor monitor, MySQLCatalog catalog, DBSEntity source) throws DBException {
+    public MySQLTable(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog catalog, @NotNull DBSEntity source) throws DBException {
         super(monitor, catalog, source);
-        if (source instanceof MySQLTable) {
-            AdditionalInfo sourceAI = ((MySQLTable)source).getAdditionalInfo(monitor);
+        if (source instanceof MySQLTable mt) {
+            AdditionalInfo sourceAI = mt.getAdditionalInfo(monitor);
             additionalInfo.loaded = true;
             additionalInfo.description = sourceAI.description;
             additionalInfo.charset = sourceAI.charset;
@@ -208,18 +206,18 @@ public class MySQLTable extends MySQLTableBase
             additionalInfo.partitioned = sourceAI.partitioned;
 
             // Copy triggers
-            for (MySQLTrigger srcTrigger : ((MySQLTable) source).getTriggers(monitor)) {
+            for (MySQLTrigger srcTrigger : CommonUtils.safeCollection(mt.getTriggers(monitor))) {
                 MySQLTrigger trigger = new MySQLTrigger(catalog, this, srcTrigger);
                 getContainer().triggerCache.cacheObject(trigger);
             }
             // Copy partitions
-            for (MySQLPartition partition : ((MySQLTable)source).partitionCache.getCachedObjects()) {
+            for (MySQLPartition partition : mt.partitionCache.getCachedObjects()) {
                 partitionCache.cacheObject(new MySQLPartition(monitor, this, partition, source));
             }
         }
-        if (source instanceof DBSTable) {
+        if (source instanceof DBSTable dbsTable) {
             // Copy indexes
-            for (DBSTableIndex srcIndex : CommonUtils.safeCollection(((DBSTable)source).getIndexes(monitor))) {
+            for (DBSTableIndex srcIndex : CommonUtils.safeCollection(dbsTable.getIndexes(monitor))) {
                 if (srcIndex instanceof MySQLTableIndex && srcIndex.isPrimary()) {
                     // Skip primary key index (it will be created implicitly)
                     continue;
@@ -270,20 +268,12 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     public boolean hasStatistics() {
-        return additionalInfo.loaded == true;
+        return additionalInfo.loaded;
     }
 
     @Override
     public long getStatObjectSize() {
         return additionalInfo.dataLength + additionalInfo.indexLength;
-    }
-
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        PropertyCollector collector = new PropertyCollector(additionalInfo, true);
-        collector.collectProperties();
-        return collector;
     }
 
 
@@ -379,12 +369,14 @@ public class MySQLTable extends MySQLTableBase
         return foreignKeys.getCachedObjects();
     }
 
-    public MySQLTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName)
+    @Nullable
+    public MySQLTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, @NotNull String fkName)
         throws DBException
     {
         return DBUtils.findObject(getAssociations(monitor), fkName);
     }
 
+    @NotNull
     public DBSObjectCache<MySQLTable, MySQLTableForeignKey> getForeignKeyCache()
     {
         return foreignKeys;
@@ -404,15 +396,15 @@ public class MySQLTable extends MySQLTableBase
         return triggers;
     }
 
+    @NotNull
     @Association
-    public Collection<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
+    public Collection<MySQLPartition> getPartitions(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return partitionCache.getAllObjects(monitor, this);
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
-    {
+    private void loadAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBCException {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
@@ -752,8 +744,7 @@ public class MySQLTable extends MySQLTableBase
         }
 
         @Override
-        protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-        {
+        protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull JDBCResultSet dbResult) {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
             String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
             if (CommonUtils.isEmpty(partitionName) && CommonUtils.isEmpty(subPartitionName)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.AlphanumericComparator;
@@ -205,8 +201,12 @@ public class DBNUtils {
         if (element instanceof DBSWrapper wrapper) {
             DBSObject object = wrapper.getObject();
             if (object != null) {
+                if (object instanceof DBSInstance i && object.getParentObject() instanceof DBSInstanceContainer ic) {
+                    return ic.getDefaultInstance() == i;
+                }
+
                 // Get default context from default instance - not from active object
-                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object.getDataSource(), false);
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object, false);
                 if (defaultContext != null) {
                     DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
                     if (contextDefaults != null) {
@@ -246,20 +246,9 @@ public class DBNUtils {
         if (itemsMeta != null && itemsMeta.isOptional()) {
             // Maybe we need nested item.
             // Specifically this handles optional catalogs and schemas in Generic driver
-            Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
-            if (expectedChildrenType != null) {
-                List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
-                if (childMetas.size() == 1 && childMetas.getFirst() instanceof DBXTreeItem nestedMeta) {
-                    DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
-                    if (nodeChildren != null && nodeChildren.length > 0 &&
-                        !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
-                    {
-                        // Note: We should've check expectedNestedType.isInstance(nodeChildren[0].getObject())
-                        // but we cannot. Because after filters are applied child nodes may contain deeper nested type
-                        // FIXME: support it for databases which support only tables
-                        itemsMeta = nestedMeta;
-                    }
-                }
+            DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
+            if (!ArrayUtils.isEmpty(nodeChildren)) {
+                return nodeChildren[0].getItemsMeta();
             }
         }
         return itemsMeta;

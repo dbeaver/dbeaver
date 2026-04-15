@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -158,7 +159,7 @@ public class DataSourceDescriptor
     private boolean hidden;
 
     @NotNull
-    private DataSourceNavigatorSettings navigatorSettings;
+    private final DataSourceNavigatorSettings navigatorSettings;
     @NotNull
     private DBVModel virtualModel;
     private final boolean manageable;
@@ -251,6 +252,9 @@ public class DataSourceDescriptor
         this.sharedCredentials = source.sharedCredentials;
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
+        if (navigatorSettings.isUserSettings()) {
+            navigatorSettings.setOriginalSettings(source.getOriginalNavigatorSettings());
+        }
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
@@ -399,11 +403,11 @@ public class DataSourceDescriptor
 
     @NotNull
     public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
-        return navigatorSettings;
+        return (DataSourceNavigatorSettings) navigatorSettings.getOriginalSettings();
     }
 
-    public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
-        this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings copyFrom) {
+        getOriginalNavigatorSettings().copyFrom(copyFrom);
     }
 
     @NotNull
@@ -515,20 +519,11 @@ public class DataSourceDescriptor
 
     @Override
     public boolean isDefaultAutoCommit() {
-        if (connectionInfo.getBootstrap().getDefaultAutoCommit() != null) {
-            return connectionInfo.getBootstrap().getDefaultAutoCommit();
+        Boolean bootstrapAutoCommit = connectionInfo.getBootstrap().getDefaultAutoCommit();
+        if (bootstrapAutoCommit != null) {
+            return bootstrapAutoCommit;
         } else {
             return getConnectionConfiguration().getConnectionType().isAutocommit();
-        }
-    }
-
-    @Override
-    public void setDefaultAutoCommit(final boolean autoCommit) {
-        // Save in preferences
-        if (autoCommit == getConnectionConfiguration().getConnectionType().isAutocommit()) {
-            connectionInfo.getBootstrap().setDefaultAutoCommit(null);
-        } else {
-            connectionInfo.getBootstrap().setDefaultAutoCommit(autoCommit);
         }
     }
 
@@ -567,15 +562,6 @@ public class DataSourceDescriptor
     @Override
     public Integer getDefaultTransactionsIsolation() {
         return connectionInfo.getBootstrap().getDefaultTransactionIsolation();
-    }
-
-    @Override
-    public void setDefaultTransactionsIsolation(@Nullable final DBPTransactionIsolation isolationLevel) {
-        if (isolationLevel == null) {
-            connectionInfo.getBootstrap().setDefaultTransactionIsolation(null);
-        } else {
-            connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
-        }
     }
 
     @Override
@@ -654,7 +640,12 @@ public class DataSourceDescriptor
             }
         }
 
-        updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+        updateObjectFilter(type.getName(), toObjectID(parentObject), filter);
+    }
+
+    @Nullable
+    protected String toObjectID(@Nullable DBSObject parentObject) {
+        return parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject);
     }
 
     @Nullable
@@ -668,11 +659,11 @@ public class DataSourceDescriptor
         this.clientApplicationName = applicationName;
     }
 
-    void clearFilters() {
+    protected void clearFilters() {
         filterMap.clear();
     }
 
-    void updateObjectFilter(String typeName, @Nullable String objectID, DBSObjectFilter filter) {
+    protected void updateObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
             filterMapping = new FilterMapping(typeName);
@@ -1623,7 +1614,7 @@ public class DataSourceDescriptor
     public void acquire(@NotNull DBPDataSourceTask user) {
         synchronized (users) {
             if (users.contains(user)) {
-                log.warn("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
+                log.debug("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
             } else {
                 users.add(user);
             }
@@ -1635,7 +1626,7 @@ public class DataSourceDescriptor
         synchronized (users) {
             if (!users.remove(user)) {
                 if (!isDisposed()) {
-                    log.warn("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
+                    log.debug("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
                 }
             }
         }
@@ -1903,7 +1894,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
+        setNavigatorSettings(descriptor.navigatorSettings);
     }
 
     @Override

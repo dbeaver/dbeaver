@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -228,6 +229,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return null;
     }
 
+    @Nullable
     public QMMStatementExecuteInfo getExecution(DBCStatement statement) {
         for (QMMStatementExecuteInfo exec = this.executionStack; exec != null; exec = exec.getPrevious()) {
             if (exec.getStatement().getReference() == statement) {
@@ -274,6 +276,9 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         QMMStatementExecuteInfo exec = getExecution(statement);
         if (exec != null) {
             exec.close(rowCount, error);
+            if (isExecutionCanceled(statement, error)) {
+                markExecutionCanceled(exec, error);
+            }
         }
         return exec;
     }
@@ -295,8 +300,46 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec != null) {
             exec.endFetch(rowCount);
+            if (exec.getErrorMessage() == null && isExecutionCanceled(resultSet.getSourceStatement(), null)) {
+                markExecutionCanceled(exec, null);
+            }
         }
         return exec;
+    }
+
+    @Nullable
+    public QMMStatementExecuteInfo execution(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        QMMStatementExecuteInfo execution = getExecution(statement);
+        if (execution != null) {
+            markExecutionCanceled(execution, error);
+        }
+        return execution;
+    }
+
+    private boolean isExecutionCanceled(@NotNull DBCStatement statement, @Nullable Throwable error) {
+        return statement.getSession().getProgressMonitor().isCanceled() ||
+            error != null && DBExecUtils.isExecutionCanceled(statement.getSession().getDataSource(), error);
+    }
+
+    private void markExecutionCanceled(@NotNull QMMStatementExecuteInfo exec, @Nullable Throwable error) {
+        exec.setError(exec.getErrorCode(), getCancelMessage(error));
+    }
+
+    @NotNull
+    private String getCancelMessage(@Nullable Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            if (CommonUtils.isNotEmpty(current.getMessage()) &&
+                !CommonUtils.equalObjects(current.getMessage(), ModelMessages.model_jdbc_exception_internal_jdbc_driver_error)) {
+                return current.getMessage();
+            }
+            Throwable cause = current.getCause();
+            if (cause == current) {
+                break;
+            }
+            current = cause;
+        }
+        return "Query execution was cancelled by user";
     }
 
     public QMMProjectInfo getProjectInfo() {
@@ -352,7 +395,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     }
 
     public void setTransactional(boolean transactional) {
-        this.transactional = transactional;
+        changeTransactional(transactional);
     }
 
     public String getConnectionUserName() {

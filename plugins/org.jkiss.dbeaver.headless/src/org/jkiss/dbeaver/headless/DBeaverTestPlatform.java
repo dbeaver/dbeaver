@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.headless;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
@@ -27,14 +28,12 @@ import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -63,7 +62,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     private DBeaverTestWorkspace workspace;
 
     private static boolean disposed = false;
-    private QMRegistryImpl qmController;
     private DefaultCertificateStorage defaultCertificateStorage;
 
     public static String getCorePluginID() {
@@ -85,19 +83,19 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     DBeaverTestPlatform() {
     }
 
-    protected void initialize() {
+    protected void initialize() throws DBException {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Test Platform...");
 
         this.defaultCertificateStorage = new DefaultCertificateStorage(
+            this,
             DBeaverTestActivator.getConfigurationFile(DBConstants.CERTIFICATE_STORAGE_FOLDER).toPath());
 
         // Register properties adapter
         this.workspace = new DBeaverTestWorkspace(this, ResourcesPlugin.getWorkspace());
         this.workspace.initializeProjects();
 
-        QMUtils.initApplication(this);
-        this.qmController = new QMRegistryImpl();
+        QMUtils.initPlatform(false);
 
         super.initialize();
 
@@ -114,6 +112,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
         workspace.dispose();
 
+        QMUtils.disposePlatform();
         DataSourceProviderRegistry.dispose();
 
         // Remove temp folder
@@ -147,11 +146,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @Override
     public DBeaverHeadlessApplication getApplication() {
         return (DBeaverHeadlessApplication) BaseApplicationImpl.getInstance();
-    }
-
-    @NotNull
-    public QMRegistry getQueryManager() {
-        return qmController;
     }
 
     @NotNull

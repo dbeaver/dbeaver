@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -60,7 +61,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         RegistryMessages.navigator_settings_preset_simple_view_name,
         RegistryMessages.navigator_settings_preset_simple_view_description
     );
-    public static final Preset PRESET_FULL = new Preset(
+    public static final Preset PRESET_ADVANCED = new Preset(
         "advanced",
         RegistryMessages.navigator_settings_preset_advanced_view_name,
         RegistryMessages.navigator_settings_preset_advanced_view_description
@@ -105,10 +106,10 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         PRESET_SIMPLE.settings.setHideFolders(true);
         PRESET_SIMPLE.settings.setHideVirtualModel(true);
 
-        PRESET_FULL.settings.setShowSystemObjects(true);
+        PRESET_ADVANCED.settings.setShowSystemObjects(true);
 
         PRESETS.put(PRESET_SIMPLE.name, PRESET_SIMPLE);
-        PRESETS.put(PRESET_FULL.name, PRESET_FULL);
+        PRESETS.put(PRESET_ADVANCED.name, PRESET_ADVANCED);
         PRESETS.put(PRESET_CUSTOM.name, PRESET_CUSTOM);
     }
 
@@ -122,6 +123,8 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     private boolean userSettings;
 
+    private transient DBNBrowseSettings originalSettings;
+
     public DataSourceNavigatorSettings() {
     }
 
@@ -133,6 +136,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.hideFolders = copyFrom.isHideFolders();
         this.hideSchemas = copyFrom.isHideSchemas();
         this.hideVirtualModel = copyFrom.isHideVirtualModel();
+        this.userSettings = copyFrom.isUserSettings();
     }
 
     @Override
@@ -207,6 +211,31 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.userSettings = userSettings;
     }
 
+    @NotNull
+    public DBNBrowseSettings getOriginalSettings() {
+        return originalSettings == null ? this : originalSettings;
+    }
+
+    public void setOriginalSettings(@Nullable DataSourceNavigatorSettings originalSettings) {
+        this.originalSettings = originalSettings;
+        this.userSettings = true;
+    }
+
+    public void copyFrom(@NotNull DBNBrowseSettings source) {
+        this.showSystemObjects = source.isShowSystemObjects();
+        this.showUtilityObjects = source.isShowUtilityObjects();
+        this.showOnlyEntities = source.isShowOnlyEntities();
+        this.mergeEntities = source.isMergeEntities();
+        this.hideFolders = source.isHideFolders();
+        this.hideSchemas = source.isHideSchemas();
+        this.hideVirtualModel = source.isHideVirtualModel();
+    }
+
+    public void reset() {
+        this.userSettings = false;
+        this.originalSettings = null;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof DataSourceNavigatorSettings source)) {
@@ -230,6 +259,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
+    @NotNull
     public static DBNBrowseSettings getDefaultSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 

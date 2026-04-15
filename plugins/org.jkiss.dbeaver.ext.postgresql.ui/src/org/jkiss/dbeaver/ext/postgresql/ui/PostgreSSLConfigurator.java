@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -68,7 +67,12 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         createTrustStoreConfigGroup(composite);
 
         if (this.getEditIntention() != DBPConnectionEditIntention.CREDENTIALS_ONLY) {
-            Group advGroup = UIUtils.createControlGroup(composite, PostgreMessages.dialog_connection_network_postgres_ssl_advanced, 2, GridData.FILL_HORIZONTAL, -1);
+            Composite advGroup = UIUtils.createTitledComposite(
+                composite,
+                PostgreMessages.dialog_connection_network_postgres_ssl_advanced,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
             sslModeCombo = UIUtils.createLabelCombo(advGroup, PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_mode, SWT.READ_ONLY | SWT.DROP_DOWN);
             sslModeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             for (String mode : SSL_MODES) {

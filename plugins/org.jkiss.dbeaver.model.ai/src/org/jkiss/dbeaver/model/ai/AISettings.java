@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,18 +37,26 @@ public class AISettings implements DBPAdaptable {
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
-    private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
-    private final Set<String> enabledFunctions = new LinkedHashSet<>();
+
+    private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
     }
 
+    @NotNull
     public Map<String, Object> getAllProperties() {
         return properties;
     }
 
-    public <T> T getProperty(@NotNull String name, @Nullable T defaultValue) {
-        return (T) properties.getOrDefault(name, defaultValue);
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(@NotNull String name) {
+        return (T) properties.get(name);
+    }
+
+    @NotNull
+    public <T> T getProperty(@NotNull String name, @NotNull T defaultValue) {
+        return Objects.requireNonNullElse(getProperty(name), defaultValue);
     }
 
     public void setProperty(@NotNull String name, @Nullable Object value) {
@@ -60,52 +68,20 @@ public class AISettings implements DBPAdaptable {
     }
 
     @NotNull
-    public Set<String> getEnabledFunctions() {
-        return new HashSet<>(enabledFunctions);
+    public Map<String, String> getCustomInstructions() {
+        return Map.copyOf(customInstructions);
     }
 
-    public void setEnabledFunctions(@Nullable Set<String> functions) {
-        this.enabledFunctions.clear();
-        if (functions != null) {
-            this.enabledFunctions.addAll(functions);
-        }
+    @Nullable
+    public String getCustomInstructions(@NotNull String promptGeneratorId) {
+        return customInstructions.get(promptGeneratorId);
     }
 
-    public boolean isFunctionEnabled(@NotNull String functionId) {
-        return enabledFunctions.contains(functionId);
+    public void setCustomInstructions(@NotNull Map<String, String> instructions) {
+        customInstructions.clear();
+        customInstructions.putAll(instructions);
     }
 
-    public void enableFunction(@NotNull String functionId) {
-        enabledFunctions.add(functionId);
-    }
-
-    public void disableFunction(@NotNull String functionId) {
-        enabledFunctions.remove(functionId);
-    }
-
-    @NotNull
-    public Set<String> getEnabledFunctionCategories() {
-        return new HashSet<>(enabledFunctionCategories);
-    }
-
-    public void setEnabledFunctionCategories(@Nullable Set<String> categories) {
-        this.enabledFunctionCategories.clear();
-        if (categories != null) {
-            this.enabledFunctionCategories.addAll(categories);
-        }
-    }
-
-    public boolean isFunctionCategoryEnabled(String category) {
-        return enabledFunctionCategories.contains(category);
-    }
-
-    public void enableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.add(category);
-    }
-
-    public void disableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.remove(category);
-    }
 
     public boolean isAiDisabled() {
         return aiDisabled;

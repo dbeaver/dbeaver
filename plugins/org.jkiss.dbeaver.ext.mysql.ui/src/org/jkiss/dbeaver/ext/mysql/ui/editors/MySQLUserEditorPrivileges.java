@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.*;
@@ -82,7 +83,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         leftPane.setLayoutData(new GridData(GridData.FILL_BOTH));
         leftPane.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
         {
-            Composite catalogGroup = UIUtils.createControlGroup(leftPane, MySQLUIMessages.editors_user_editor_privileges_group_catalogs, 1, GridData.FILL_BOTH, 0);
+            Composite catalogGroup = UIUtils.createTitledComposite(
+                leftPane,
+                MySQLUIMessages.editors_user_editor_privileges_group_catalogs,
+                1,
+                GridData.FILL_BOTH
+            );
 
             catalogsTable = new Table(catalogGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             catalogsTable.setHeaderVisible(true);
@@ -117,7 +123,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
 
         {
-            Composite tablesGroup = UIUtils.createControlGroup(leftPane, MySQLUIMessages.editors_user_editor_privileges_group_tables, 1, GridData.FILL_BOTH, 0);
+            Composite tablesGroup = UIUtils.createTitledComposite(
+                leftPane,
+                MySQLUIMessages.editors_user_editor_privileges_group_tables,
+                1,
+                GridData.FILL_BOTH
+            );
 
             tablesTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             tablesTable.setHeaderVisible(true);
@@ -395,7 +406,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         public ProgressVisualizer<Collection<MySQLTableBase>> createTablesLoadVisualizer() {
             return new ProgressVisualizer<Collection<MySQLTableBase>>() {
                 @Override
-                public void completeLoading(Collection<MySQLTableBase> tables) {
+                public void completeLoading(@Nullable Collection<MySQLTableBase> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
                         return;
@@ -423,7 +434,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         public ProgressVisualizer<java.util.List<MySQLPrivilege>> createPrivilegesLoadVisualizer() {
             return new ProgressVisualizer<java.util.List<MySQLPrivilege>>() {
                 @Override
-                public void completeLoading(java.util.List<MySQLPrivilege> privs) {
+                public void completeLoading(@Nullable java.util.List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     List<MySQLPrivilege> otherPrivs = new ArrayList<>();
                     List<MySQLPrivilege> tablePrivs = new ArrayList<>();

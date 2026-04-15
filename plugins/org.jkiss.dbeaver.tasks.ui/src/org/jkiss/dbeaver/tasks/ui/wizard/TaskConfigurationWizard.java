@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.NotNull;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageActive;
@@ -69,13 +69,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
-    private Button saveAsTaskButton;
     private TaskConfigurationWIzardActionConfigurator<SETTINGS> actionsConfigurator;
 
     private Map<String, Object> variables;
     private boolean promptVariables;
     private DBTTaskContext taskContext;
     @Nullable private DBTTaskFolder currentSelectedTaskFolder;
+    private boolean taskEditorDisabled;
 
     protected TaskConfigurationWizard() {
     }
@@ -183,6 +183,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         }
     }
 
+    public boolean isTaskSaveEnabled() {
+        return !taskEditorDisabled;
+    }
+
     public boolean isNewTaskEditor() {
         return currentTask != null && getProject().getTaskManager().getTaskById(currentTask.getId()) == null;
     }
@@ -238,7 +242,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (page instanceof TaskConfigurationWizardPageTask) {
             return false;
         }
-        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
+        if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageApplicable()) {
             return false;
         }
         return true;
@@ -286,7 +290,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return true;
     }
 
-    private boolean saveTask() {
+    boolean saveTask() {
         IWizardPage currentPage = getContainer().getCurrentPage();
         // Save current page settings
         if (currentPage instanceof IWizardPageActive) {
@@ -357,6 +361,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (tasksViewDescriptor == null || getContainer().isSelectorMode()) {
             // Do not create save buttons
             UIUtils.createEmptyLabel(parent, hSpan, 1);
+            taskEditorDisabled = true;
         } else {
             Composite panel = new Composite(parent, SWT.NONE);
             panel.setBackground(parent.getBackground());
@@ -371,7 +376,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             if (supportsVariables) {
                 layout.numColumns++;
-                UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_variables + " ...", new SelectionAdapter() {
+                UIUtils.createPushButton(panel,  null, null, UIIcon.SQL_VARIABLE, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         configureVariables();
@@ -379,19 +384,12 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 });
             }
 
-            saveAsTaskButton = UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_save_task, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    saveTask();
-                }
-            });
-
             layout.numColumns++;
-            Button taskViewButton = UIUtils.createDialogButton(
+            Button taskViewButton = UIUtils.createPushButton(
                 panel,
                 null,
-                null,
                 TaskUIMessages.task_config_wizard_link_open_tasks_view,
+                null,
                 SelectionListener.widgetSelectedAdapter(e -> {
                     try {
                         UIUtils.getActiveWorkbenchWindow().getActivePage().showView(tasksViewDescriptor.getId());
@@ -432,19 +430,16 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public void createVariablesEditButton(Composite parent) {
-        final Group group = UIUtils.createControlGroup(
+        Composite group = UIUtils.createTitledComposite(
             parent,
             TaskUIMessages.task_config_wizard_button_variables,
             1,
-            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
-            0
+            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
         );
-        UIUtils.createDialogButton(group, TaskUIMessages.task_config_wizard_button_variables_configure, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                configureVariables();
-            }
-        });
+        UIUtils.createDialogButton(
+            group,
+            TaskUIMessages.task_config_wizard_button_variables_configure,
+            SelectionListener.widgetSelectedAdapter(e -> configureVariables()));
         final Button promptTaskVariablesCheckbox = UIUtils.createCheckbox(
             group,
             TaskUIMessages.task_config_wizard_button_variables_prompt,
@@ -494,9 +489,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     void enableTaskButtons(boolean enable) {
-        if (saveAsTaskButton != null) {
-            saveAsTaskButton.setEnabled(enable);
-        }
         if (actionsConfigurator != null) {
             actionsConfigurator.enableActions(enable);
         }
@@ -506,9 +498,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public void updateTaskButtons() {
-        if (saveAsTaskButton != null) {
-            saveAsTaskButton.setEnabled(canFinish() && getTaskType() != null);
-        }
         if (actionsConfigurator != null) {
             actionsConfigurator.updateActions();
         }

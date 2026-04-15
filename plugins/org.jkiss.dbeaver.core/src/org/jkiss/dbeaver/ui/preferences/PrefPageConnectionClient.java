@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 /**
- * PrefPageConnections
+ * PrefPageConnectionClient
  */
 public class PrefPageConnectionClient extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.client.connections"; //$NON-NLS-1$
@@ -97,34 +97,68 @@ public class PrefPageConnectionClient extends TargetPrefPage {
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         {
-            Group clientNameGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_client_name_group, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite clientNameGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_database_client_name_group,
+                2,
+                GridData.FILL_HORIZONTAL);
 
-            disableClientApplicationNameCheck = UIUtils.createCheckbox(clientNameGroup, CoreMessages.pref_page_database_label_disable_client_application_name, null, false, 2);
+            disableClientApplicationNameCheck = UIUtils.createCheckbox(
+                clientNameGroup,
+                CoreMessages.pref_page_database_label_disable_client_application_name,
+                null,
+                false,
+                2
+            );
 
             final Label label = UIUtils.createLabel(clientNameGroup,
                 CoreMessages.pref_page_database_client_name_group_description);
             GridData gd = new GridData();
             gd.horizontalSpan = 2;
             label.setLayoutData(gd);
-            overrideClientApplicationNameCheck = UIUtils.createCheckbox(clientNameGroup, CoreMessages.pref_page_database_label_override_client_application_name, null, false, 2);
+            overrideClientApplicationNameCheck = UIUtils.createCheckbox(
+                clientNameGroup,
+                CoreMessages.pref_page_database_label_override_client_application_name,
+                null,
+                false,
+                2
+            );
             overrideClientApplicationNameCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     updateClientAppEnablement();
                 }
             });
-            clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, ""); //$NON-NLS-1$
+            clientApplicationNameText = UIUtils.createLabelText(
+                clientNameGroup,
+                CoreMessages.pref_page_database_label_client_application_name,
+                "" //$NON-NLS-1$
+            );
 
             ContentAssistUtils.installContentProposal(
                 clientApplicationNameText,
                 new SmartTextContentAdapter(),
                 new StringContentProposalProvider(ALLOWED_VARIABLES));
-            UIUtils.setContentProposalToolTip(clientApplicationNameText, CoreMessages.pref_page_connections_application_name_text, ALLOWED_VARIABLES);
+            UIUtils.setContentProposalToolTip(
+                clientApplicationNameText,
+                CoreMessages.pref_page_connections_application_name_text,
+                ALLOWED_VARIABLES
+            );
         }
 
         {
-            Group connGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_general, 2, GridData.FILL_HORIZONTAL, 0);
-            connUseEnvVariables = UIUtils.createCheckbox(connGroup, CoreMessages.pref_page_connection_label_use_environment, null, false, 2);
+            Composite connGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_connection_label_general,
+                2,
+                GridData.FILL_HORIZONTAL);
+            connUseEnvVariables = UIUtils.createCheckbox(
+                connGroup,
+                CoreMessages.pref_page_connection_label_use_environment,
+                null,
+                false,
+                2
+            );
         }
         return composite;
     }
@@ -134,7 +168,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
+        if (disableClientApplicationNameCheck == null) {
+            return;
+        }
         try {
             disableClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE));
             overrideClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE));
@@ -148,7 +185,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
+        if (disableClientApplicationNameCheck == null) {
+            return;
+        }
         try {
             store.setValue(ModelPreferences.META_CLIENT_NAME_DISABLE, disableClientApplicationNameCheck.getSelection());
             store.setValue(ModelPreferences.META_CLIENT_NAME_OVERRIDE, overrideClientApplicationNameCheck.getSelection());
@@ -168,6 +208,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         store.setToDefault(ModelPreferences.CONNECT_USE_ENV_VARS);
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;

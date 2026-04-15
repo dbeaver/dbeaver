@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
@@ -83,7 +84,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
         // databases
         {
-            Composite databaseGroup = UIUtils.createControlGroup(leftPane, "Databases", 1, GridData.FILL_BOTH, 0);
+            Composite databaseGroup = UIUtils.createTitledComposite(leftPane, "Databases", 1, GridData.FILL_BOTH);
             databasesTable = new Table(databaseGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             databasesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
@@ -116,7 +117,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
         // tables
         {
-            Composite tablesGroup = UIUtils.createControlGroup(leftPane, "Tables", 1, GridData.FILL_BOTH, 0);
+            Composite tablesGroup = UIUtils.createTitledComposite(leftPane, "Tables", 1, GridData.FILL_BOTH);
             tablesTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             tablesTable.setHeaderVisible(true);
             gd = new GridData(GridData.FILL_BOTH);
@@ -334,7 +335,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
         public ProgressVisualizer<List<String>> createTablesLoadVisualizer() {
             return new ProgressVisualizer<List<String>>() {
                 @Override
-                public void completeLoading(List<String> tables) {
+                public void completeLoading(@Nullable List<String> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
                         return;
@@ -357,7 +358,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
         public ProgressVisualizer<List<IoTDBPrivilege>> createPrivilegesLoadVisualizer() {
             return new ProgressVisualizer<List<IoTDBPrivilege>>() {
                 @Override
-                public void completeLoading(List<IoTDBPrivilege> privileges) {
+                public void completeLoading(@Nullable List<IoTDBPrivilege> privileges) {
                     super.completeLoading(privileges);
                     tablePrivilegesTable.fillPrivileges(privileges);
                     loadGrants();

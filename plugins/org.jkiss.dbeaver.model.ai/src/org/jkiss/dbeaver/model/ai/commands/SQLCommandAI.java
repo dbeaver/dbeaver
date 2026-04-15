@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -77,7 +76,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
         AICompletionSettings completionSettings = new AICompletionSettings(dataSourceContainer);
-        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !completionSettings.isMetaTransferConfirmed()) {
+        if (!completionSettings.isMetaTransferConfirmed()) {
             if (DBWorkbench.getPlatformUI().confirmAction("Do you confirm AI usage",
                 "Do you confirm AI usage for '" + dataSourceContainer.getName() + "'?"
             )) {
@@ -108,18 +107,16 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             );
         }
         AIDatabaseContext dbContext = contextBuilder.build();
-
-        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
+        AIFunctionContext fc = new AIFunctionContext(monitor, dbContext, new AIPromptGenerateSql());
 
         monitor.subTask("Generate SQL from prompt");
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
-            .createAssistant(dataSourceContainer.getProject().getWorkspace());
+            .getAssistant(dataSourceContainer.getProject().getWorkspace());
 
         AIAssistantResponse result = assistant.generateText(
             monitor,
-            dbContext,
-            sysPromptBuilder,
+            fc,
             List.of(AIMessage.userMessage(prompt))
         );
         if (!result.isText()) {
