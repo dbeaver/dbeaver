@@ -17,29 +17,25 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAITool;
 
-import java.util.List;
-
-public record CopilotChatChunk(
+public class CopilotFunction {
     @NotNull
-    List<CopilotChunkChoice> choices,
-    @Nullable
-    CopilotUsage usage
-) {
+    private final String type = "function";
+    @NotNull
+    private final OAITool function;
 
-    @Nullable
-    public AIUsage getAIUsage() {
-        if (usage == null) {
-            return null;
-        }
+    public CopilotFunction(@NotNull OAITool function) {
+        this.function = function;
+    }
 
-        return new AIUsage(
-            usage.promptTokens(),
-            usage.promptTokensDetails() != null ? usage.promptTokensDetails().cachedTokens() : 0,
-            usage.completionTokens(),
-            usage.reasoningTokens()
-        );
+    @NotNull
+    public String type() {
+        return type;
+    }
+
+    @NotNull
+    public OAITool function() {
+        return function;
     }
 }
