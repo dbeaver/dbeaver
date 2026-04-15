@@ -51,7 +51,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
 
     private final RestServer server;
 
-    protected ApplicationInstanceServer(Class<T> controllerClass) throws IOException {
+    protected ApplicationInstanceServer(@NotNull Class<T> controllerClass) throws IOException {
         String password = SecurityUtils.generatePassword(32);
         server = RestServer
             .builder(controllerClass, controllerClass.cast(this))
@@ -228,6 +228,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         registry.entrySet().removeIf(entry -> isStaleProcessEntry(entry.getKey(), entry.getValue()));
     }
 
+    @NotNull
     private static Map<Long, InstanceServerProperties> propertiesToMap(@NotNull Properties props) {
         Set<String> keys = new HashSet<>(props.stringPropertyNames());
         String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
