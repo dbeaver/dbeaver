@@ -347,7 +347,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return driverInstance;
     }
 
-    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+    protected void fillConnectionProperties(
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull Properties connectProps
+    ) {
         {
             // Use driver properties
             final Map<String, Object> driverProperties = container.getDriver().getConnectionProperties();
@@ -362,7 +365,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @NotNull
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
 
@@ -379,7 +387,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return connectProps;
     }
 
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    @Nullable
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         String url = connectionInfo.getUrl();
         if (CommonUtils.isEmpty(url)) {
             url = getContainer().getDriver().getConnectionURL(connectionInfo);
