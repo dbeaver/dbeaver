@@ -108,6 +108,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     abstract DBPProject getSelectedProject();
 
+    @NotNull
     abstract DBNBrowseSettings getSelectedNavigatorSettings();
 
     public abstract ConnectionPageSettings getPageSettings();

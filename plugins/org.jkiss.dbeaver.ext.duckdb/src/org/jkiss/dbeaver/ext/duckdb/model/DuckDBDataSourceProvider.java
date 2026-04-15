@@ -16,17 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class DuckDBDataSourceProvider extends GenericDataSourceProvider {
-    @NotNull
-    @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        return super.openDataSource(monitor, container);
+public class DuckDBDataSourceProvider extends GenericDataSourceProvider<DuckDBDataSource> {
+    public DuckDBDataSourceProvider() {
+        super(DuckDBDataSource.class);
     }
+
 }

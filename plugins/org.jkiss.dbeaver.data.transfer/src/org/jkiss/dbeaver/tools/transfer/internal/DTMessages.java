@@ -38,8 +38,8 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_checkbox_fetched_rows_only;
     public static String data_transfer_wizard_output_checkbox_selected_columns_only;
     public static String data_transfer_wizard_output_checkbox_selected_rows_only;
-    public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
-    public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
+    public static String data_transfer_wizard_output_checkbox_extract_in_batches;
+    public static String data_transfer_wizard_output_checkbox_extract_in_batches_tip;
     public static String data_transfer_wizard_output_description;
     public static String data_transfer_wizard_output_dialog_directory_message;
     public static String data_transfer_wizard_output_dialog_directory_text;
