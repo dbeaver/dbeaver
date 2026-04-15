@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
@@ -164,21 +163,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     static {
         Path driversHome = DriverDescriptor.getCustomDriversHome();
-        if (driversHome != null) {
-            System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
-        }
+        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.toAbsolutePath().toString());
     }
 
-    private DriverDescriptor(String id) {
-        this(DataSourceProviderDescriptor.NULL_PROVIDER, id);
+    private DriverDescriptor(@NotNull String id) {
+        this(DataSourceProviderDescriptor.getNullProvider(), id);
     }
 
     // New driver constructor
-    public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id) {
+    public DriverDescriptor(@NotNull DataSourceProviderDescriptor providerDescriptor, @NotNull String id) {
         this(providerDescriptor, id, null);
     }
 
-    public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id, DriverDescriptor copyFrom) {
+    public DriverDescriptor(
+        @NotNull DataSourceProviderDescriptor providerDescriptor,
+        @NotNull String id,
+        @Nullable DriverDescriptor copyFrom
+    ) {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = id;
@@ -288,7 +289,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     // Predefined driver constructor
-    public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config) {
+    public DriverDescriptor(@NotNull DataSourceProviderDescriptor providerDescriptor, @NotNull IConfigurationElement config) {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
@@ -470,18 +471,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    @NotNull
     Map<String, Object> getDefaultParameters() {
         return defaultParameters;
     }
 
+    @NotNull
     Map<String, Object> getCustomParameters() {
         return customParameters;
     }
 
+    @NotNull
     List<DBPNativeClientLocation> getNativeClientHomes() {
         return nativeClientHomes;
     }
 
+    @Nullable
     @Override
     public DriverDescriptor getReplacedBy() {
         return replacedBy;
@@ -529,7 +534,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public List<Pair<String,String>> getDriverReplacementsInfo() {
         List<Pair<String, String>> result = new ArrayList<>();
         for (ReplaceInfo replaceInfo : driverReplacements) {
-            result.add(new Pair<String, String>(replaceInfo.providerId, replaceInfo.driverId));
+            result.add(new Pair<>(replaceInfo.providerId, replaceInfo.driverId));
         }
         return result;
     }
@@ -1094,7 +1099,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public void validateFilesPresence(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer dataSourceContainer
-    ) throws DBException {
+    ) {
         getDriverLoader(dataSourceContainer).validateFilesPresence(monitor);
     }
 
@@ -1342,6 +1347,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return origInstantiable;
     }
 
+    @NotNull
     public List<DBPDriverLibrary> getOrigLibraries() {
         return origLibraries;
     }
@@ -1364,6 +1370,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.supportsDistributedMode = supportsDistributedMode;
     }
 
+    @Nullable
     public DBPNativeClientLocation getDefaultClientLocation() {
         DBPNativeClientLocationManager clientManager = getNativeClientManager();
         if (clientManager != null) {
@@ -1401,12 +1408,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return customFolder;
     }
 
+    @NotNull
     public static Path getWorkspaceDriversStorageFolder() {
         return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath()
             .resolve(DBFileController.DATA_FOLDER)
             .resolve(DBFileController.TYPE_DATABASE_DRIVER);
     }
 
+    @NotNull
     public static Path getProvidedDriversStorageFolder() {
         return DBWorkbench.getPlatform()
             .getWorkspace()
@@ -1414,6 +1423,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             .resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
     }
 
+    @NotNull
     public static Path getDriversContribFolder() throws IOException {
         return Path.of(Platform.getInstallLocation().getDataArea(DBConstants.DEFAULT_DRIVERS_FOLDER).toExternalForm());
     }
@@ -1452,21 +1462,24 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     public static String[] getDriversSources() {
-        String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
+        String sourcesString = CommonUtils.notEmpty(
+            DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES));
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[0]);
     }
 
     @NotNull
     public static String getDriversPrimarySource() {
-        String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
+        String sourcesString = CommonUtils.notEmpty(
+            DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES));
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }
 
     @NotNull
     public static String[] getGlobalLibraries() {
-        final String librariesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_GLOBAL_LIBRARIES);
+        final String librariesString = CommonUtils.notEmpty(
+            DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_GLOBAL_LIBRARIES));
         final List<String> libraries = new ArrayList<>();
         for (String library : CommonUtils.splitString(librariesString, '|')) {
             try {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
-import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.parser.ParseException;
+import net.sf.jsqlparser.parser.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -52,6 +50,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -498,4 +497,15 @@ public class SQLSemanticProcessor {
         return schema + '.' + name;
     }
 
+    @NotNull
+    public static Token[] parseSqlTextForTokens(@NotNull SQLDialect dialect, @NotNull String sqlText) throws DBCException {
+        Statement statement = SQLSemanticProcessor.parseQuery(dialect, sqlText);
+        LinkedList<Token> tokensList = new LinkedList<>();
+        for (Token t = ((ASTNodeAccess) statement).getASTNode().jjtGetFirstToken(); t != null; t = t.next) {
+            if (!t.image.isEmpty()) {
+                tokensList.add(t);
+            }
+        }
+        return tokensList.toArray(Token[]::new);
+    }
 }
