@@ -38,8 +38,10 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class CubridUser extends GenericSchema
 {
@@ -173,8 +175,10 @@ public class CubridUser extends GenericSchema
         return indexes;
     }
 
-    public class CubridTableCache extends TableCache
-    {
+    public class CubridTableCache extends TableCache {
+        private String lastTableName;
+        private final Map<String, ColumnExtraInfo> columnInfoMap = new HashMap<>();
+
         protected CubridTableCache(@NotNull GenericDataSource dataSource) {
             super(dataSource);
         }
@@ -187,25 +191,41 @@ public class CubridUser extends GenericSchema
                 @NotNull GenericTableBase table,
                 @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
+            
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
-            String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
-            boolean isForeignKey = "YES".equals(JDBCUtils.safeGetString(dbResult, "is_foreign_key"));
-            String showDataType = null;
-            boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
-            String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
-            sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-                dbStat.setString(1, columnName);
-                try (JDBCResultSet result = dbStat.executeQuery()) {
-                    if (result.next()) {
-                        showDataType = JDBCUtils.safeGetString(result, "Type");
-                        autoIncrement = CubridConstants.AUTO_INCREMENT.equals(JDBCUtils.safeGetString(result, "Extra"));
+
+            // Batch load column info if we moved to a new table
+            if (!tableName.equals(lastTableName)) {
+                columnInfoMap.clear();
+                lastTableName = tableName;
+
+                String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName);
+                sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                    try (JDBCResultSet result = dbStat.executeQuery()) {
+                        while (result.next()) {
+                            String field = JDBCUtils.safeGetString(result, "Field");
+                            String type = JDBCUtils.safeGetString(result, "Type");
+                            String extra = JDBCUtils.safeGetString(result, "Extra");
+                            columnInfoMap.put(field, new ColumnExtraInfo(type, extra));
+                        }
                     }
                 }
             }
+
+            ColumnExtraInfo extraInfo = columnInfoMap.get(columnName);
+            String showDataType = (extraInfo != null) ? extraInfo.type : null;
+            boolean autoIncrement = (extraInfo != null) && CubridConstants.AUTO_INCREMENT.equals(extraInfo.extra);
+
+            String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            boolean isForeignKey = "YES".equals(JDBCUtils.safeGetString(dbResult, "is_foreign_key"));
+
             return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, isForeignKey, dbResult);
         }
+
+        private record ColumnExtraInfo(@Nullable String type, @Nullable String extra) {}
+
     }
 
     public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, CubridTableIndex, GenericTableIndexColumn>
