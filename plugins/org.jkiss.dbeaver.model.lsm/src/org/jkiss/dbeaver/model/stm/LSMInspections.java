@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.model.stm;
 
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenSource;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.RuleNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -193,8 +191,32 @@ public class LSMInspections {
         ATN atn = SQLStandardParser._ATN;
 
         Interval range = this.root.getRealInterval();
-        if (position < range.a || this.allNonErrorTerms.isEmpty()) {
+        if (position < range.a) {
             return null;
+        } else if (this.allNonErrorTerms.isEmpty()) {
+            if (this.allTerms.isEmpty()) {
+                return null;
+            } else {
+                // assuming we have a tree but failed to really match anything due to small amount of terms presented,
+                // so don't bother about the ineffectiveness of naive ATN execution in the common case
+
+                // unwrap lexemes until the position of interest
+                List<Token> tokens = this.allTerms.stream()
+                    .map(t -> ((STMTreeTermErrorNode) t.term()).symbol)
+                    .filter(s -> s.getStopIndex() < position)
+                    .toList();
+
+                // execute ATN over these lexemes to predict what might be next
+                var reachedTransitions = runAtn(tokens);
+
+                Set<String> predictedWords = new HashSet<>();
+                Set<Integer> predictedTokenIds = new HashSet<>();
+                collectTokenPredictions(reachedTransitions, predictedTokenIds, predictedWords);
+                return new SyntaxInspectionResult(
+                    predictedTokenIds, predictedWords, Collections.emptyMap(),
+                    false, false, false, false, false, false, false, false
+                );
+            }
         } else {
             int index;
             STMTreeTermNode node;
@@ -264,7 +286,27 @@ public class LSMInspections {
         }            
     }
 
-    private static Set<Integer> KNOWN_ANY_RULES = Set.of(
+    private static void collectTokenPredictions(
+        @NotNull Collection<Transition> reachedTransitions,
+        @NotNull Set<Integer> predictedTokenIds,
+        @NotNull Set<String> predictedWords
+    ) {
+        IntervalSet transitionTokens = getTransitionTokens(reachedTransitions);
+
+        for (Interval interval : transitionTokens.getIntervals()) {
+            int a = interval.a;
+            int b = interval.b;
+            for (int v = a; v <= b; v++) {
+                String word = SQLStandardParser.VOCABULARY.getDisplayName(v);
+                if (word != null && knownReservedWords.contains(word)) {
+                    predictedTokenIds.add(v);
+                    predictedWords.add(word);
+                }
+            }
+        }
+    }
+
+    private static final Set<Integer> KNOWN_ANY_RULES = Set.of(
         SQLStandardParser.RULE_anyWord,
         SQLStandardParser.RULE_anyValue,
         SQLStandardParser.RULE_anyWordWithAnyValue,
@@ -477,19 +519,7 @@ public class LSMInspections {
         reachabilityTestRules.forEach(n -> reachabilityTests.put(n, false));
         Collection<Transition> tt = collectFollowingTerms(stack, initialState, knownReservedWordsExcludeRules, reachabilityTests);
 
-        IntervalSet transitionTokens = getTransitionTokens(tt);
-
-        for (Interval interval : transitionTokens.getIntervals()) {
-            int a = interval.a;
-            int b = interval.b;
-            for (int v = a; v <= b; v++) {
-                String word = SQLStandardParser.VOCABULARY.getDisplayName(v);
-                if (word != null && knownReservedWords.contains(word)) {
-                    predictedTokenIds.add(v);
-                    predictedWords.add(word);
-                }
-            }
-        }
+        collectTokenPredictions(tt, predictedTokenIds, predictedWords);
 
         boolean expectingTableName = reachabilityTests.get(SQLStandardParser.RULE_tableName) || presenceTests.get(SQLStandardParser.RULE_tableName);
         boolean expectingColumnName = reachabilityTests.get(SQLStandardParser.RULE_columnName);
@@ -633,5 +663,72 @@ public class LSMInspections {
                 break;
             }
         }
+    }
+
+    record Step(
+        @NotNull ATNState atnState,
+        int termIndex,
+        @NotNull ListNode<Integer> ruleIdsStack
+    ) {
+    }
+
+
+    @NotNull
+    private static Set<Transition> runAtn(@NotNull List<Token> tokens) {
+        final int maxTokenType = SQLStandardParser._ATN.maxTokenType;
+        HashSet<Pair<ATNState,  Integer>> visited = new HashSet<>();
+        HashSet<Transition> results = new HashSet<>();
+        LinkedList<Step> q = new LinkedList<>();
+        q.addLast(new Step(SQLStandardParser._ATN.ruleToStartState[SQLStandardParser.RULE_sqlQuery], 0, ListNode.of(null)));
+
+        while (!q.isEmpty()) {
+            Step step = q.removeLast();
+            ATNState state = step.atnState;
+            ListNode<Integer> stack = step.ruleIdsStack;
+
+            for (Transition transition : state.getTransitions()) {
+                int termIndex = step.termIndex;
+                ListNode<Integer> transitionStack;
+                switch (transition.getSerializationType()) {
+                    case Transition.ATOM, Transition.RANGE, Transition.SET -> {
+                        if (termIndex < tokens.size() && transition.matches(tokens.get(termIndex).getType(), 0, maxTokenType)) {
+                            transitionStack = stack;
+                            termIndex++;
+                        } else {
+                            results.add(transition);
+                            continue;
+                        }
+                    }
+                    case Transition.NOT_SET, Transition.WILDCARD -> {
+                        continue;
+                    }
+                    case Transition.RULE, Transition.EPSILON, Transition.PREDICATE, Transition.ACTION, Transition.PRECEDENCE -> {
+                        switch (state.getStateType()) {
+                            case ATNState.RULE_STOP -> {
+                                if (stack != null && stack.data != null && stack.next != null && stack.next.data != null
+                                    && transition.target.ruleIndex == stack.next.data
+                                ) {
+                                    transitionStack = stack.next; // pop
+                                } else {
+                                    continue;
+                                }
+                            }
+                            case ATNState.RULE_START -> {
+                                transitionStack = ListNode.push(stack, state.ruleIndex);
+                                if (knownReservedWordsExcludeRules.contains(state.ruleIndex)) {
+                                    continue;
+                                }
+                            }
+                            default -> transitionStack = stack;
+                        }
+                    }
+                    default -> throw new UnsupportedOperationException("Unrecognized ATN transition type.");
+                }
+                if (visited.add(Pair.of(transition.target, termIndex))) {
+                    q.addLast(new Step(transition.target, termIndex, transitionStack));
+                }
+            }
+        }
+        return results;
     }
 }
