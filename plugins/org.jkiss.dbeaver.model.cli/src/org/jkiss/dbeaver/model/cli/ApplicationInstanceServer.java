@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.cli;
 
+import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -26,11 +27,13 @@ import org.jkiss.dbeaver.utils.FileMutex;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
+import org.jkiss.utils.rest.RequestHandlerFactory;
 import org.jkiss.utils.rest.RestServer;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.InetSocketAddress;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +41,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * DBeaver instance controller.
@@ -57,12 +61,19 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
             .builder(controllerClass, controllerClass.cast(this))
             .setFilter(address -> address.getAddress().isLoopbackAddress())
             .setLandingPage(GeneralUtils.getProductTitle())
-            .setHandlerFactory(
-                (cls, object, gson, filter, landingPage)
-                    -> new BearerRequestHandler<>(
-                        cls, object, gson, filter, landingPage, password
-                )
-            )
+            .setHandlerFactory(new RequestHandlerFactory() {
+                @NotNull
+                @Override
+                public <C> RestServer.RequestHandler<C> createHandler(
+                    @NotNull Class<C> cls,
+                    @NotNull C object,
+                    @NotNull Gson gson,
+                    @NotNull Predicate<InetSocketAddress> filter,
+                    @Nullable String landingPage
+                ) {
+                    return new BearerRequestHandler<>(cls, object, gson, filter, landingPage, password);
+                }
+            })
             .create();
 
         long startedAt = ProcessHandle.current()
