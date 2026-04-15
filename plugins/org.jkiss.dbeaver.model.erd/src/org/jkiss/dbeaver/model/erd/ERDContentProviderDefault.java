@@ -37,8 +37,6 @@ public class ERDContentProviderDefault implements ERDContentProvider {
 
     private static final Log log = Log.getLog(ERDContentProviderDefault.class);
 
-    private static final boolean READ_LAZY_DESCRIPTIONS = false;
-
     private final Map<String, Object> attributes = new HashMap<>();
 
     public ERDContentProviderDefault() {
@@ -56,7 +54,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
         @NotNull List<ERDEntity> otherEntities,
         @NotNull ERDEntity erdEntity
     ) throws DBCException {
-        fillEntityFromObject(monitor, diagram, otherEntities, erdEntity, new ERDAttributeSettings(ERDAttributeVisibility.ALL, false));
+        fillEntityFromObject(monitor, diagram, otherEntities, erdEntity, new ERDAttributeSettings(ERDAttributeVisibility.ALL, false, false));
     }
 
     @Override
@@ -68,9 +66,9 @@ public class ERDContentProviderDefault implements ERDContentProvider {
         @NotNull ERDAttributeSettings settings
     ) {
         DBSEntity entity = erdEntity.getObject();
-        if (READ_LAZY_DESCRIPTIONS && entity instanceof DBPObjectWithLazyDescription) {
+        if (settings.isLoadLazyDescriptions() && entity instanceof DBPObjectWithLazyDescription entityWithDescription) {
             try {
-                ((DBPObjectWithLazyDescription) entity).getDescription(monitor);
+                entityWithDescription.getDescription(monitor);
             } catch (DBException e) {
                 log.warn("Unable to load lazy description when filling ERDEntity from object");
             }
@@ -123,6 +121,15 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                         default:
                             break;
                     }
+
+                    if (settings.isLoadLazyDescriptions() && attribute instanceof DBPObjectWithLazyDescription attributeWithDescription) {
+                        try {
+                            attributeWithDescription.getDescription(monitor);
+                        } catch (DBException e) {
+                            log.warn("Unable to load lazy description for attribute: " + attribute.getName(), e);
+                        }
+                    }
+
                     boolean inPrimaryKey = idColumns != null && idColumns.contains(attribute);
                     ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, inPrimaryKey);
                     erdEntity.addAttribute(c1, false);

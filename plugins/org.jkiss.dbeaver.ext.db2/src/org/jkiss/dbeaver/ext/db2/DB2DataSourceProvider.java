@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.db2;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -34,16 +33,12 @@ import java.util.Map;
 /**
  * DB2 DataSource provider ddd
  */
-public class DB2DataSourceProvider extends JDBCDataSourceProvider {
+public class DB2DataSourceProvider extends JDBCDataSourceProvider<DB2DataSource> {
 
-    private static Map<String, String> connectionsProps = new HashMap<>();
+    private static final Map<String, String> connectionsProps = new HashMap<>();
 
-    // ------------
-    // Constructors
-    // ------------
-
-    public DB2DataSourceProvider()
-    {
+    public DB2DataSourceProvider() {
+        super(DB2DataSource.class);
     }
 
     public static Map<String, String> getConnectionsProps()
@@ -95,7 +90,7 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+    public DB2DataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
         return new DB2DataSource(monitor, container);

@@ -53,11 +53,14 @@ public class AIFunctionInternalRegistry {
     @NotNull
     public List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose) {
         return functionsById.values().stream()
-            .filter(f ->
-                f.getPurpose() == AIFunctionPurpose.ALL
-                    || purpose == AIFunctionPurpose.ALL
-                    || f.getPurpose() == purpose)
+            .filter(f -> functionFilter(f, purpose))
             .toList();
+    }
+
+    private boolean functionFilter(@NotNull AIFunctionDescriptor descriptor, @NotNull AIFunctionPurpose purpose) {
+        return descriptor.getPurpose() == purpose
+            || descriptor.getPurpose() == AIFunctionPurpose.ALL
+            || purpose == AIFunctionPurpose.ALL;
     }
 
     @NotNull

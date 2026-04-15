@@ -1311,6 +1311,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 setDiagramRouter(defaultRouter);
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, false);
+            } else if (ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS.equals(event.getProperty())) {
+                refreshDiagram(false, true);
             }
         }
     }

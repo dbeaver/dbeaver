@@ -52,7 +52,7 @@ public interface AIFunctionDescriptor {
     String getCategoryId();
 
     @Nullable
-    String getDescription();
+    String getAiDescription();
 
     /**
      * Function which returns information about surrounding UI (e.g. open windows, active editor, etc)
