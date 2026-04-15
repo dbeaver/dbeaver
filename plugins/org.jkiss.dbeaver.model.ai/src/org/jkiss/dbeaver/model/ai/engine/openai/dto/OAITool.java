@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OAITool {
 
@@ -28,5 +33,25 @@ public class OAITool {
     public boolean strict;
     @NotNull
     public OAIToolParameters parameters = new OAIToolParameters();
+
+    @NotNull
+    public static OAITool fromDescriptor(@NotNull AIFunctionDescriptor fd) {
+        OAITool tool = new OAITool();
+        tool.type = OAITool.TYPE_FUNCTION;
+        tool.name = fd.getFullId();
+        tool.description = fd.getAiDescription();
+        tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+        List<String> requiredFields = new ArrayList<>();
+        for (AIFunctionParameter param : fd.getParameters()) {
+            OAIToolParameter tp = new OAIToolParameter();
+            tp.type = param.getType();
+            tp.description = param.getDescription();
+            tp.enumItems = param.getValidValues();
+            requiredFields.add(param.getName());
+            tool.parameters.properties.put(param.getName(), tp);
+        }
+        tool.parameters.required = requiredFields.toArray(new String[0]);
+        return tool;
+    }
 
 }
