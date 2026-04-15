@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.snowflake.model.auth;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -52,11 +53,11 @@ public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelSnowflakeC
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull Properties connProperties
     ) throws DBException {
-        if (connProperties.getProperty("authenticator") == null) {
+        if (connProperties.getProperty(SnowflakeConstants.PROP_AUTHENTICATOR) == null) {
             // If "authenticator" is already set by user then do not change it
             String authenticator = getAuthenticator(dataSource, credentials, configuration);
             if (!CommonUtils.isEmpty(authenticator)) {
-                connProperties.put("authenticator", authenticator);
+                connProperties.put(SnowflakeConstants.PROP_AUTHENTICATOR, authenticator);
             }
         }
         String roleName = configuration.getAuthProperty(SnowflakeConstants.PROP_AUTH_ROLE);
@@ -90,10 +91,11 @@ public class SnowflakeAuthModelSnowflake<CREDENTIALS extends AuthModelSnowflakeC
         super.endAuthentication(dataSource, configuration, connProperties);
     }
 
+    @Nullable
     protected String getAuthenticator(
-        DBPDataSource dataSource,
-        AuthModelDatabaseNativeCredentials credentials,
-        DBPConnectionConfiguration configuration
+        @NotNull DBPDataSource dataSource,
+        @NotNull AuthModelDatabaseNativeCredentials credentials,
+        @NotNull DBPConnectionConfiguration configuration
     ) {
         return configuration.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
     }

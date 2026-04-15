@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,22 @@ package org.jkiss.dbeaver.model.cli.model.option;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.fs.DBFPath;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.nio.file.Path;
 
 public class AbstractFileOption {
     private static final Log log = Log.getLog(AbstractFileOption.class);
 
 
     @Nullable
-    protected DBFPath getPath(@Nullable String filePath) {
+    protected Path getPath(@Nullable String filePath) {
         if (CommonUtils.isEmpty(filePath)) {
             return null;
         }
         try {
-            return DBFUtils.getDBFPathFromURI(filePath);
+            return DBFUtils.getPathFromURI(filePath);
         } catch (DBException e) {
             log.error("Error getting path from URI: " + filePath + " " + e.getMessage(), e);
         }

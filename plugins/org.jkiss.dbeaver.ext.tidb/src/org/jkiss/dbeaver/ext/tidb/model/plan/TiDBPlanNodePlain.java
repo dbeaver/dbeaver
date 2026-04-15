@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.tidb.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -56,6 +58,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
         this.operatorInfo = JDBCUtils.safeGetString(dbResult, "operator info");
     }
 
+    @Nullable
     @Override
     public TiDBPlanNodePlain getParent() {
         return parent;
@@ -81,6 +84,7 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
         return Double.parseDouble(this.estRows);
     }
 
+    @Nullable
     @Override
     public String getNodeName() {
         return this.accessObject;
@@ -102,11 +106,13 @@ public class TiDBPlanNodePlain extends MySQLPlanNode {
      *
      * @return node type
      */
+    @Nullable
     @Override
     public String getNodeType() {
         return this.id.trim().replaceAll("└", "").replaceAll("─", "");
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBCPlanNode> getNested() {
         return this.nested;

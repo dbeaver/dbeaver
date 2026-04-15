@@ -26,7 +26,7 @@
             </modules>
         </profile>
         <profile>
-            <id>appstore</id>
+            <id>product-dbeaver-ce-msstore</id>
             <modules>
                 <module>appstore</module>
             </modules>

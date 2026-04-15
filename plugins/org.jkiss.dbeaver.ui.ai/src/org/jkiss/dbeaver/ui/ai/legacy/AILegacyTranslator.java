@@ -165,7 +165,7 @@ public class AILegacyTranslator {
                     .setExecutionContext(executionContext);
 
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
-                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
+                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant(workspace);
 
                 AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
                 contextBuilder = sysPromptBuilder.configureDatabaseContext(contextBuilder);
@@ -175,8 +175,7 @@ public class AILegacyTranslator {
                 AIDatabaseContext dbContext = contextBuilder.build();
                 AIAssistantResponse result = aiAssistant.generateText(
                     monitor,
-                    dbContext,
-                    sysPromptBuilder,
+                    new AIFunctionContext(monitor, dbContext, sysPromptBuilder),
                     List.of(userMessage)
                 );
 

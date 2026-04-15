@@ -26,7 +26,9 @@ public record AISchemaGenerationOptions(
     boolean sendConstraints,
     boolean sendForeignKeys,
     boolean sendIndexes,
-    boolean sendFullDDL
+    boolean sendFullDDL,
+    boolean sendReferences,
+    boolean useFQN
 ) {
 
     public static Builder builder() {
@@ -40,7 +42,9 @@ public record AISchemaGenerationOptions(
             .withSendConstraints(sendConstraints)
             .withSendForeignKeys(sendForeignKeys)
             .withSendIndexes(sendIndexes)
-            .withSendFullDDL(sendFullDDL);
+            .withSendFullDDL(sendFullDDL)
+            .withSendFullDDL(sendReferences)
+            .withUseFQN(useFQN);
     }
 
     public static final class Builder {
@@ -50,6 +54,8 @@ public record AISchemaGenerationOptions(
         private boolean sendForeignKeys;
         private boolean sendIndexes;
         private boolean sendFullDDL;
+        private boolean sendReferences;
+        private boolean useFQN;
 
         private Builder() {
             // Init default settings
@@ -93,6 +99,19 @@ public record AISchemaGenerationOptions(
             return this;
         }
 
+        @NotNull
+        public Builder withSendReferences(boolean sendReferences) {
+            this.sendReferences = sendReferences;
+            return this;
+        }
+
+        @NotNull
+        public Builder withUseFQN(boolean useFQN) {
+            this.useFQN = useFQN;
+            return this;
+        }
+
+        @NotNull
         public AISchemaGenerationOptions build() {
             return new AISchemaGenerationOptions(
                 sendObjectComment,
@@ -100,7 +119,9 @@ public record AISchemaGenerationOptions(
                 sendConstraints,
                 sendForeignKeys,
                 sendIndexes,
-                sendFullDDL
+                sendFullDDL,
+                sendReferences,
+                useFQN
             );
         }
     }

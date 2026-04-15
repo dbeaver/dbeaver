@@ -1029,6 +1029,10 @@ public class GeneralUtils {
             return "Class not found: " + cnfe.getMessage();
         } else if (error instanceof NoClassDefFoundError ncdf) {
             return "Class definition not found: " + ncdf.getMessage();
+        } else if (error instanceof IllegalArgumentException iae) {
+            if (!CommonUtils.isEmptyTrimmed(iae.getMessage())) {
+                return "Invalid argument: " + iae.getMessage();
+            }
         }
         String localizedMessage = error.getLocalizedMessage();
         if (CommonUtils.isEmpty(localizedMessage)) {
