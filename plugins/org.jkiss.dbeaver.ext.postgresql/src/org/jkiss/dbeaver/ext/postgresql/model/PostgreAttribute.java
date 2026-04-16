@@ -155,7 +155,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         if (!CommonUtils.isEmpty(defaultValue) && serverType.supportsGeneratedColumns()) {
             String generatedColumn = JDBCUtils.safeGetString(dbResult, "attgenerated");
-            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored. (Other values might be added in the future)"
+            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored, v = virtual. (Other values might be added in the future)"
             if (!CommonUtils.isEmpty(generatedColumn)) {
                 isGeneratedColumn = true;
                 generatedColumnType = generatedColumn;
