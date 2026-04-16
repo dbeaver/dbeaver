@@ -151,6 +151,9 @@ public class AIEngineRequestFactory {
     }
 
     private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIEngineDescriptor engineDescriptor) {
+        if (!assistant.isFunctionSupported()) {
+            return false;
+        }
         AIToolboxManager toolboxManager = assistant.getToolboxManager();
         AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
         return engineDescriptor.isSupportsFunctions() && functionSettings.isFunctionsEnabled();

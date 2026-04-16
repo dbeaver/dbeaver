@@ -11,7 +11,8 @@ Export-Package: org.jkiss.dbeaver.model.cli,
  org.jkiss.dbeaver.model.cli.registry,
  org.jkiss.dbeaver.model.cli.model,
  org.jkiss.dbeaver.model.cli.model.option,
- org.jkiss.dbeaver.model.cli.command
+ org.jkiss.dbeaver.model.cli.command,
+ org.jkiss.dbeaver.model.cli.help
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  picocli;visibility:=reexport,
  com.google.gson;visibility:=reexport
