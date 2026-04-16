@@ -18,18 +18,16 @@ package org.jkiss.dbeaver.ext.denodo.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 public class DenodoArrayDataType extends DenodoDataType {
 
-    private DenodoRegisterDataType componentType;
+    private final DenodoRegisterDataType componentType;
 
     public DenodoArrayDataType(
         @NotNull DenodoDataSource owner,
-        @NotNull int valueType,
+        int valueType,
         @NotNull String name
     ) {
         super(owner, valueType, name, Kind.ARRAY);
@@ -40,11 +38,6 @@ public class DenodoArrayDataType extends DenodoDataType {
     @Override
     public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) {
         return this.componentType;
-    }
-
-    @NotNull
-    public DBSDataType getComponentType() {
-        return this.getComponentType(new VoidProgressMonitor());
     }
 
 }

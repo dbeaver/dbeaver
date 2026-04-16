@@ -35,8 +35,7 @@ public class DenodoDataType extends GenericDataType {
     public enum Kind {
         BUILTIN(null),
         REGISTER(DBPDataKind.STRUCT),
-        ARRAY(DBPDataKind.ARRAY),
-        UNKNOWN(DBPDataKind.UNKNOWN);
+        ARRAY(DBPDataKind.ARRAY);
 
         @Nullable
         public final DBPDataKind dataKind;

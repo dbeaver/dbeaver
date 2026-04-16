@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class DenodoDataTypeCache extends JDBCBasicDataTypeCache<GenericStructContainer, DenodoDataType> {
 
@@ -43,36 +43,27 @@ public class DenodoDataTypeCache extends JDBCBasicDataTypeCache<GenericStructCon
     }
 
     @Override
-    protected synchronized void loadObjects(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull GenericStructContainer dataSource
-    ) throws DBException {
-        super.loadObjects(monitor, dataSource);
-    }
-
-    @Override
     protected void addCustomObjects(
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericStructContainer genericStructContainer,
         @NotNull List<DenodoDataType> dataTypes
     ) throws DBException {
-        Collections.addAll(dataTypes,
-            makeBuiltinDataType(Types.INTEGER, "int", true, 0, 0),
-            makeBuiltinDataType(Types.BIGINT, "long", true, 0, 0),
-            makeBuiltinDataType(Types.FLOAT, "float", true, 0, 0),
-            makeBuiltinDataType(Types.DOUBLE, "double", true,  0, 0),
-            makeBuiltinDataType(Types.BOOLEAN, "boolean", true, 0, 0),
-            makeBuiltinDataType(Types.VARCHAR, "text", true, 0, 0),
-            makeBuiltinDataType(Types.DATE, "date", true, 0, 0),
-            makeBuiltinDataType(Types.TIMESTAMP, "localdate", true, 0, 0),
-            makeBuiltinDataType(Types.TIME, "time", true, 0, 0),
-            makeBuiltinDataType(Types.TIMESTAMP, "timestamp", true, 0, 0),
-            makeBuiltinDataType(Types.TIMESTAMP_WITH_TIMEZONE, "timestamptz", true, 0, 0),
-            makeBuiltinDataType(Types.TIME, "intervaldaysecond", true, 0, 0),
-            makeBuiltinDataType(Types.DATE, "intervalyearmonth", true, 0, 0),
-            makeBuiltinDataType(Types.BLOB, "blob", false, 0, 0),
-            makeBuiltinDataType(Types.SQLXML, "xml", false, 0, 0)
-        );
+        dataTypes.add(makeBuiltinDataType(Types.INTEGER, "int", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.BIGINT, "long", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.FLOAT, "float", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.DOUBLE, "double", true,  0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.BOOLEAN, "boolean", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.VARCHAR, "text", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.DATE, "date", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.TIMESTAMP, "localdate", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.TIME, "time", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.TIMESTAMP, "timestamp", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.TIMESTAMP_WITH_TIMEZONE, "timestamptz", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.TIME, "intervaldaysecond", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.DATE, "intervalyearmonth", true, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.BLOB, "blob", false, 0, 0));
+        dataTypes.add(makeBuiltinDataType(Types.SQLXML, "xml", false, 0, 0));
+
     }
 
     @NotNull
@@ -84,7 +75,7 @@ public class DenodoDataTypeCache extends JDBCBasicDataTypeCache<GenericStructCon
     @Override
     protected DenodoDataType makeDataType(@NotNull JDBCResultSet dbResult, @NotNull String name, int valueType) {
         String denodoTypeKindString = JDBCUtils.safeGetString(dbResult, "vdp_type");
-        assert denodoTypeKindString != null;
+        Objects.requireNonNull(denodoTypeKindString);
         DenodoDataType.Kind kind = DenodoDataType.Kind.fromVdpTypeString(denodoTypeKindString);
         return switch (kind) {
             case ARRAY -> new DenodoArrayDataType(this.owner, valueType, name);
