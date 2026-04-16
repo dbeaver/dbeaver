@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ui.feature"
       label="DBeaver Desktop UI"
-      version="26.0.3.qualifier"
+      version="26.0.4.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
