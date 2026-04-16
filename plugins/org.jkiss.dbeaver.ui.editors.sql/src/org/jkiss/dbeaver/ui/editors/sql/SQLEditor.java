@@ -2657,6 +2657,13 @@ public class SQLEditor extends SQLEditorBase implements
             explainPlanFromQuery(planner, sqlQuery);
             showOutputPanel(true);
         } else {
+            if (getExecutionContext() == null) {
+                DBWorkbench.getPlatformUI().showError(
+                    ModelMessages.error_not_connected_to_database,
+                    ModelMessages.error_not_connected_to_database
+                );
+                return;
+            }
             ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
 
             if (planView != null) {
