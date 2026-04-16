@@ -250,8 +250,10 @@ public class CubridTable extends GenericTable
         ) throws SQLException, DBException {
             String partition_class_name = JDBCUtils.safeGetString(dbResult, "partition_class_name");
             String type = JDBCUtils.safeGetString(dbResult, "partition_type");
-            
-            return new CubridPartition(table, partition_class_name, type, dbResult);
+            if (type != null) {
+                type = type.toUpperCase();
+            }
+            return new CubridPartition(session.getProgressMonitor(), table, partition_class_name, type, dbResult);
         }
             
     }
