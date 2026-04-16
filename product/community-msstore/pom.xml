@@ -30,7 +30,7 @@
                             <id>org.jkiss.dbeaver.core.msstore</id>
                             <archiveFileName>dbeaver-ce-${dbeaver-version}</archiveFileName>
                             <rootFolders>
-                                <macosx>DBeaver.msstore</macosx>
+                                <macosx>DBeaver.app</macosx>
                                 <win32>dbeaver</win32>
                             </rootFolders>
                         </product>
