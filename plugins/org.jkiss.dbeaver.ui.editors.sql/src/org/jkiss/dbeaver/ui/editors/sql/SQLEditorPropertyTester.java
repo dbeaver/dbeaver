@@ -86,7 +86,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
             }
             case PROP_CAN_EXECUTE_NATIVE: {
                 try {
-                    if (editor.getExecutionContext() == null) {
+                    if (!hasConnection) {
                         return false;
                     }
                     SQLNativeExecutorDescriptor executorDescriptor =
