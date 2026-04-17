@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.tool;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -25,35 +25,49 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.registry.driver.DriverLibraryRepository;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactVersion;
+import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * NativeClientDistributionDescriptor
  */
-public class NativeClientDistributionDescriptor {
-    private static final Log log = Log.getLog(NativeClientDistributionDescriptor.class);
+public class NativeClientArtifactDescriptor {
+    private static final Log log = Log.getLog(NativeClientArtifactDescriptor.class);
 
     private final List<NativeClientFileDescriptor> files = new ArrayList<>();
     private final Set<String> supportedDrivers = new HashSet<>();
     private OSDescriptor os;
+    //local resource installation path
     private String targetPath;
+    //path to download from (if not bundled)
     private String remotePath;
+    //path for bundled resources
     private String resourcePath;
 
-    public NativeClientDistributionDescriptor(IConfigurationElement config) {
+    public NativeClientArtifactDescriptor(IConfigurationElement config) {
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
         this.os = osName == null ? null : new OSDescriptor(
             osName,
-            config.getAttribute(RegistryConstants.ATTR_ARCH));
+            config.getAttribute(RegistryConstants.ATTR_ARCH)
+        );
 
         this.targetPath = config.getAttribute("targetPath");
         this.remotePath = config.getAttribute("remotePath");
@@ -158,15 +172,25 @@ public class NativeClientDistributionDescriptor {
                 String taskName = "Download local client file '" + fileName + "'" + " (" + (i + 1) + "/" + filesToDownload.size() + ")";
                 monitor.beginTask(taskName, 1);
                 try {
-                    WebUtils.downloadRemoteFile(monitor,
+                    WebUtils.downloadRemoteFile(
+                        monitor,
                         taskName,
                         externalURL,
                         targetFile.toPath(),
-                        null);
+                        null
+                    );
                 } catch (IOException e) {
                     log.debug("Error downloading file '" + fileName + "'", e);
                     throw new DBException("Error downloading file '" + fileName + "': " + e.getMessage());
                 }
+            } else if (fileRemotePath.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
+                String mavenPath = fileRemotePath.substring(DriverLibraryMavenArtifact.PATH_PREFIX.length())
+                    .replaceAll("/", "");
+                var mavenArtifactRef = new MavenArtifactReference(mavenPath);
+                MavenArtifactVersion version = MavenRegistry.getInstance()
+                    .findArtifact(new LoggingProgressMonitor(), null, mavenArtifactRef);
+                version.getExternalURL("tar.gz");
+                System.out.println();
             }
         }
         return true;

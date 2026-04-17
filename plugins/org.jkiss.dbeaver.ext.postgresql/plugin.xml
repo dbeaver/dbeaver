@@ -650,7 +650,11 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win/17" remotePath="repo:/drivers/postgresql/client/win/17" resourcePath="clients/postgresql/win/17">
+                    <dist os="win32"
+                          targetPath="clients/postgresql/win/17"
+                          remotePath="repo:/drivers/postgresql/client/win/17"
+                          resourcePath="clients/postgresql/win/17"
+                    >
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_dumpall.exe"/>
@@ -664,6 +668,13 @@
                         <file type="lib" name="libssl-3-x64.dll"/>
                         <file type="lib" name="libwinpthread-1.dll"/>
                     </dist>
+                    <dist os="macosx"
+                          targetPath="clients/postgresql/macosx/17"
+                          executionPath="bin"
+                          remotePath="maven:/com.dbeaver.database-client:postgresql-macox:RELEASE[17]"
+                          resourcePath="clients/postgresql/macosx/17/postgresql-macox-17.zip"
+                          type="zip"
+                    />
                 </client>
             </nativeClients>
 

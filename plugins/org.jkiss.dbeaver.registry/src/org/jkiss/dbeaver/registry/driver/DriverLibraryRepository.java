@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * DriverLibraryDescriptor
  */
-public class DriverLibraryRepository extends DriverLibraryLocal
-{
+public class DriverLibraryRepository extends DriverLibraryLocal {
     public static final String PATH_PREFIX = "repo:/";
 
     public DriverLibraryRepository(DriverDescriptor driver, FileType type, String path) {
@@ -68,7 +67,4 @@ public class DriverLibraryRepository extends DriverLibraryLocal
         }
         return primarySource + localPath;
     }
-
-
-
 }
