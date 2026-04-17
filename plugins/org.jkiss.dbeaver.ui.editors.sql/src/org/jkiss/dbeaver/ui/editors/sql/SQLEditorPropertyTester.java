@@ -73,7 +73,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
         if (editorControl == null) {
             return false;
         }
-        boolean hasConnection = editor.getDataSourceContainer() != null;
+        boolean hasConnection = editor.getExecutionContext() != null;
         switch (property) {
             case PROP_CAN_EXECUTE: {
                 var descriptor = editor.getActivePresentationDescriptor();
@@ -86,7 +86,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
             }
             case PROP_CAN_EXECUTE_NATIVE: {
                 try {
-                    if (editor.getDataSourceContainer() == null) {
+                    if (editor.getExecutionContext() == null) {
                         return false;
                     }
                     SQLNativeExecutorDescriptor executorDescriptor =
