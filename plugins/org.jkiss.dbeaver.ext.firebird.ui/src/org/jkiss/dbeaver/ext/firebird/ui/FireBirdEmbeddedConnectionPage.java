@@ -23,8 +23,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.firebird.ui.internal.FireBirdUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,7 +44,7 @@ public class FireBirdEmbeddedConnectionPage extends ConnectionPageAbstract {
     private Text nativeLibPathText;
 
     public FireBirdEmbeddedConnectionPage() {
-        setTitle("Embedded Settings");
+        setTitle(FireBirdUIMessages.page_embedded_title);
     }
 
     @Override
@@ -53,10 +53,7 @@ public class FireBirdEmbeddedConnectionPage extends ConnectionPageAbstract {
         container.setLayout(new GridLayout(1, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Group group = new Group(container, SWT.NONE);
-        group.setText("Native Library");
-        group.setLayout(new GridLayout(3, false));
-        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite group = UIUtils.createTitledComposite(container, FireBirdUIMessages.page_embedded_group_native_library, 3, GridData.FILL_HORIZONTAL);
 
         UIUtils.createControlLabel(group, "Native Library Path");
 
