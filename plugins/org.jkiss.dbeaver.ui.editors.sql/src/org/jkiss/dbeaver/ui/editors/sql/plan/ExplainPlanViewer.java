@@ -20,16 +20,20 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.services.IEvaluationReference;
+import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -104,6 +108,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
     private final DBPContextProvider contextProvider;
     private final ProgressControl planPresentationContainer;
     private final VerticalFolder tabViewFolder;
+    private final VerticalFolder actionFolder;
     private final Composite planViewComposite;
 
     private PlanViewInfo activeViewInfo;
@@ -133,10 +138,17 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         this.planPresentationContainer.getLayout().numColumns = 2;
         this.planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        var folderComposite = new Composite(planPresentationContainer, SWT.NONE);
+        folderComposite.setLayout(GridLayoutFactory.fillDefaults().create());
+        folderComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+
         {
-            tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
-            ((GridLayout)tabViewFolder.getLayout()).marginTop = 20;
-            tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            tabViewFolder = new VerticalFolder(folderComposite, SWT.LEFT);
+            tabViewFolder.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, true));
+
+            actionFolder = new VerticalFolder(folderComposite, SWT.LEFT);
+            actionFolder.setLayoutData(new GridData(SWT.BEGINNING, SWT.END, false, true));
+
             DBPDataSource currentDataSource = null;
             if (this.contextProvider.getExecutionContext() != null) {
                 currentDataSource = this.contextProvider.getExecutionContext().getDataSource();
@@ -164,16 +176,14 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
 //                    .setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
                 for (SQLPlanActionDescriptor actionDescriptor : actionDescriptors) {
-                    VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT | SWT.PUSH);
-                    treeViewButton.setText(actionDescriptor.getLabel());
-                    if (!CommonUtils.isEmpty(actionDescriptor.getDescription())) {
-                        treeViewButton.setToolTipText(actionDescriptor.getDescription());
-                        if (actionDescriptor.getIcon() != null) {
-                            treeViewButton.setImage(DBeaverIcons.getImage(actionDescriptor.getIcon()));
-                        }
+                    VerticalButton button = new VerticalButton(actionFolder, SWT.LEFT | SWT.PUSH);
+                    button.setText(actionDescriptor.getLabel());
+                    button.setToolTipText(actionDescriptor.getDescription());
+                    if (actionDescriptor.getIcon() != null) {
+                        button.setImage(DBeaverIcons.getImage(actionDescriptor.getIcon()));
                     }
-                    treeViewButton.setData(new PlanActionInfo(actionDescriptor));
-                    treeViewButton.setAction(new Action(actionDescriptor.getLabel()) {
+                    button.setData(new PlanActionInfo(actionDescriptor));
+                    button.setAction(new Action(actionDescriptor.getLabel()) {
                         @Override
                         public void run() {
                             try {
@@ -198,6 +208,21 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
                             }
                         }
                     }, true);
+
+                    var evaluationService = Workbench.getInstance().getService(IEvaluationService.class);
+                    var enabledWhen = actionDescriptor.getEnabledWhen();
+                    if (evaluationService != null && enabledWhen != null) {
+                        IPropertyChangeListener listener = event -> {
+                            button.setVisible(CommonUtils.toBoolean(event.getNewValue()));
+                            folderComposite.layout(true, true);
+                        };
+                        final IEvaluationReference reference = evaluationService.addEvaluationListener(
+                            enabledWhen,
+                            listener,
+                            "enabled"
+                        );
+                        button.addDisposeListener(e -> evaluationService.removeEvaluationListener(reference));
+                    }
                 }
             }
 
