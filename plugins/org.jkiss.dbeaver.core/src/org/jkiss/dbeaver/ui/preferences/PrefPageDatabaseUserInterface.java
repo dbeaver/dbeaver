@@ -83,6 +83,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Button statusBarShowBreadcrumbsCheck;
     private Button statusBarShowStatusCheck;
     private Combo statusBarBreadcrumbPositionCombo;
+    private Button zoomRestartPromptCheck;
 
     public PrefPageDatabaseUserInterface()
     {
@@ -254,6 +255,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             2
         );
 
+        Composite displayGroup = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.pref_page_ui_general_group_display,
+            2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+        );
+        zoomRestartPromptCheck = UIUtils.createCheckbox(
+            displayGroup,
+            CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_label,
+            CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_tip,
+            true,
+            2
+        );
+
         setSettings();
         return composite;
     }
@@ -285,6 +300,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         statusBarBreadcrumbPositionCombo.select(breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS ? 1 : 0);
         statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
         statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+        zoomRestartPromptCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
     }
 
     @Override
@@ -308,6 +324,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
         statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+        zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
     }
 
     private boolean isWindowsDesktopClient() {
@@ -358,6 +375,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
             store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
             store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+            store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
 
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
