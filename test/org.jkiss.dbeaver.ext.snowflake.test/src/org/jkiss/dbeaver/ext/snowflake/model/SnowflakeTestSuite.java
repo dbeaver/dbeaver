@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     SnowflakeSQLDialectTest.class
 })
-public class SnowflakeTestSuite {
+public class SnowflakeTestSuite extends ApplicationUnitTest {
 }

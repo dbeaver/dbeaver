@@ -53,6 +53,7 @@ import org.jkiss.utils.RuntimeUtilsTest;
 import org.jkiss.utils.SecurityUtilsTest;
 import org.jkiss.utils.StringUtilsTest;
 import org.jkiss.utils.time.ExtendedDateFormatTest;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;
 
@@ -97,5 +98,5 @@ import org.junit.platform.suite.api.Suite;
     ArrayUtilsTest.class,
     CommonUtilsTest.class
 })
-public class DBeaerTestPlatformSuite {
+public class DBeaerTestPlatformSuite extends ApplicationUnitTest {
 }

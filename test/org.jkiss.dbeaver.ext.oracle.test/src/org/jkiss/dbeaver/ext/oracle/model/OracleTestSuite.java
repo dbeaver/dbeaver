@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.ext.oracle.model.util.ProcedureBodyExtractorTest;
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
@@ -27,5 +28,5 @@ import org.junit.platform.suite.api.Suite;
     OracleDialectFunctionsTest.class,
     OracleAlterTableColumnTest.class
 })
-public class OracleTestSuite {
+public class OracleTestSuite extends ApplicationUnitTest {
 }

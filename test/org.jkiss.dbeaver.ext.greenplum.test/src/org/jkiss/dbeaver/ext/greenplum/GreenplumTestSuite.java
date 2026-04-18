@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.greenplum.model.GreenplumTableTest;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumWithClauseBuilderTest;
 import org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplumTest;
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
@@ -38,5 +39,5 @@ import org.junit.platform.suite.api.Suite;
     PostgreServerGreenplumTest.class,
     GreenplumExternalTableUriLocationsHandlerTest.class
 })
-public class GreenplumTestSuite {
+public class GreenplumTestSuite extends ApplicationUnitTest {
 }

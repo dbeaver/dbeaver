@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtensionBaseTest;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBaseTest;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreIntervalValueHandlerTest;
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
@@ -33,5 +34,5 @@ import org.junit.platform.suite.api.Suite;
     PostgreTableBaseTest.class,
     PostgreIntervalValueHandlerTest.class
 })
-public class PostgreTestSuite {
+public class PostgreTestSuite extends ApplicationUnitTest {
 }

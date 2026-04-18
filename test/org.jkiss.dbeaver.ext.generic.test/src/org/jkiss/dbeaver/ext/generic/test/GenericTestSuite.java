@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.generic.test;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     GenericBaseTableDDLTest.class
 })
-public class GenericTestSuite {
+public class GenericTestSuite extends ApplicationUnitTest {
 }

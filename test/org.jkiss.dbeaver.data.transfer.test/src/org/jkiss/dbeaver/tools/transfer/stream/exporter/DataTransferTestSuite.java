@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     DataExporterDbUnitExpertRowTest.class
 })
-public class DataTransferTestSuite {
+public class DataTransferTestSuite extends ApplicationUnitTest {
 }

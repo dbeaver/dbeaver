@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     MySQLDialectTest.class
 })
-public class MySQLTestSuite {
+public class MySQLTestSuite extends ApplicationUnitTest {
 }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModelsTest;
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
@@ -25,5 +26,5 @@ import org.junit.platform.suite.api.Suite;
     AIMarkdownTest.class,
     OpenAIModelsTest.class
 })
-public class AITestSuite {
+public class AITestSuite extends ApplicationUnitTest {
 }

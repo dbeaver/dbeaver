@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     HANADialectTest.class
 })
-public class HANATestSuite {
+public class HANATestSuite extends ApplicationUnitTest {
 }

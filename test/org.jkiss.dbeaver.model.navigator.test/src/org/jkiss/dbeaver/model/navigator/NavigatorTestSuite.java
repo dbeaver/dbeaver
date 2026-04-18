@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     DBNUtilsTest.class
 })
-public class NavigatorTestSuite {
+public class NavigatorTestSuite extends ApplicationUnitTest {
 }

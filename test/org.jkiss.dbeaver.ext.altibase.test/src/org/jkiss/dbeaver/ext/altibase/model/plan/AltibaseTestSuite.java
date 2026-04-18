@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     AltibaseExplainPlanTest.class
 })
-public class AltibaseTestSuite {
+public class AltibaseTestSuite extends ApplicationUnitTest {
 }

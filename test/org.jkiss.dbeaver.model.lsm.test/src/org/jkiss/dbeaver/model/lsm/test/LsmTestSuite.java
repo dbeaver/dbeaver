@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.lsm.test;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
@@ -24,5 +25,5 @@ import org.junit.platform.suite.api.Suite;
     OffsetKeyedTreeMapTest.class,
     ParseSelectStmtTest.class
 })
-public class LsmTestSuite {
+public class LsmTestSuite extends ApplicationUnitTest {
 }

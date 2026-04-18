@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.sqlite.model;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
@@ -24,5 +25,5 @@ import org.junit.platform.suite.api.Suite;
     SQLiteBaseTableDDLTest.class,
     SQLiteSQLDialectTest.class
 })
-public class SQLiteTestSuite {
+public class SQLiteTestSuite extends ApplicationUnitTest {
 }

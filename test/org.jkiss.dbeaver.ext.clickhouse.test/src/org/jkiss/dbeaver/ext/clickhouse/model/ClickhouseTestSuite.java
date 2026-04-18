@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ext.clickhouse.model;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.jkiss.junit.ApplicationUnitTest;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectClasses({
     ClickhouseDialectTest.class
 })
-public class ClickhouseTestSuite {
+public class ClickhouseTestSuite extends ApplicationUnitTest {
 }
