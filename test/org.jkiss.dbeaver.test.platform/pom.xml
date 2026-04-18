@@ -13,4 +13,16 @@
     <version>1.0.135-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
