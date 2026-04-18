@@ -19,7 +19,7 @@
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-surefire-plugin</artifactId>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <testClass>org.jkiss.dbeaver.test.platform.DBeaerTestPlatformSuite</testClass>
                 </configuration>
             </plugin>
         </plugins>

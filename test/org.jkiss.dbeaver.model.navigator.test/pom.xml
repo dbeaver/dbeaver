@@ -29,4 +29,16 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-surefire-plugin</artifactId>
+                <configuration>
+                    <testClass>org.jkiss.dbeaver.model.navigator.NavigatorTestSuite</testClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
