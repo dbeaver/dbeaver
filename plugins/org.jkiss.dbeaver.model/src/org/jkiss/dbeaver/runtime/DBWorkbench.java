@@ -45,17 +45,33 @@ public class DBWorkbench {
     @NotNull
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
-            try {
-                AbstractApplication.getInstance();
-            } catch (Exception e) {
-                log.debug("Error checking application instance", e);
+            if (AbstractApplication.getInstanceOrNull() == null) {
+                // Try to initialize application instance if possible
+                try {
+                    AbstractApplication.getInstance();
+                } catch (Exception e) {
+                    // Ignore
+                }
             }
-            BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
-            applicationWorkbench = workbenchRef.service();
+            if (AbstractApplication.getInstanceOrNull() == null) {
+                // Still no application instance - try to get service without requirement
+                BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, false);
+                applicationWorkbench = workbenchRef.service();
+            }
             if (applicationWorkbench == null) {
-                throw new IllegalStateException("Internal error: application workbench is not instantiated");
+                // Final attempt - required
+                BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+                applicationWorkbench = workbenchRef.service();
+                if (applicationWorkbench == null) {
+                    throw new IllegalStateException("Internal error: application workbench is not instantiated");
+                }
+                workbenchRef.initializeService();
+            } else {
+                // If it was non-required but worked - we still need to initialize it
+                // We'll call getBundleService(..., true) just to be sure we get the full ref and init it
+                BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+                workbenchRef.initializeService();
             }
-            workbenchRef.initializeService();
             DBPPlatform platform = applicationWorkbench.getPlatform();
 
             // Run init hooks

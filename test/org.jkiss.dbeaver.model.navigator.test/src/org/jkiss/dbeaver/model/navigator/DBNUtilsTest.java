@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ public class DBNUtilsTest extends DBeaverUnitTest {
 
     private final List<String> changedProperties = new ArrayList<>();
 
-    @After
+    @AfterEach
     public void tearDown() {
         var prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         changedProperties.forEach(prefStore::setToDefault);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,10 +52,22 @@ public class TestLauncher implements ApplicationLauncher {
     public Object start(String appID, String[] args) {
         try {
             ((BundleContextImpl) context).getContainer().getConfiguration().setConfiguration("eclipse.application", appID);
-            if (args.length != 0) {
+            if (args != null && args.length != 0) {
                 ((BundleContextImpl) context).getContainer().getConfiguration().setAllArgs(args);
             }
+            // Wait for runnable to be set by Equinox via launch() callback
+            long startTime = System.currentTimeMillis();
+            while (runnable == null && System.currentTimeMillis() - startTime < 30000) {
+                Thread.sleep(100);
+            }
+            if (runnable == null) {
+                throw new RuntimeException("Application launcher runnable was not initialized within 30 seconds. " +
+                    "Equinox did not call launch() for application: " + appID);
+            }
             return runnable.run(context);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while waiting for application launcher", e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

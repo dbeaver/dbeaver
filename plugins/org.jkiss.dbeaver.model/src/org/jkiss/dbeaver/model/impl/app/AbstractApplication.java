@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
 
     public static final Integer EXIT_ERROR_UNSPECIFIED = 1;
 
-    private static DBPApplication INSTANCE;
+    private static volatile DBPApplication INSTANCE;
 
     private String applicationRunId;
     private final long applicationStartTime = System.currentTimeMillis();
@@ -53,6 +53,10 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
+        // Shared instance for tests
+        if (System.getProperty("osgi.instance.area") != null) {
+            System.getProperties().put("dbeaver.app.instance", this);
+        }
     }
 
     public static DBPApplication getInstance() {
@@ -61,12 +65,23 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             try {
                 instance = ApplicationRegistry.getInstance().getApplication().getInstance();
             } catch (Throwable e) {
-                log.error(e);
+                log.debug(e.getMessage());
             }
             if (instance == null) {
                 throw new IllegalStateException("No DBeaver application found");
             }
             INSTANCE = instance;
+        }
+        return INSTANCE;
+    }
+
+    @Nullable
+    public static DBPApplication getInstanceOrNull() {
+        if (INSTANCE == null) {
+            Object instance = System.getProperties().get("dbeaver.app.instance");
+            if (instance instanceof DBPApplication application) {
+                INSTANCE = application;
+            }
         }
         return INSTANCE;
     }

@@ -19,6 +19,7 @@ package org.jkiss.junit.osgi;
 import org.eclipse.equinox.internal.app.CommandLineArgs;
 import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
+import org.eclipse.osgi.launch.EquinoxFactory;
 import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
@@ -31,14 +32,12 @@ import org.jkiss.junit.osgi.behaviors.IAsyncApplication;
 import org.jkiss.junit.osgi.delegate.ProxyFilter;
 import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
+import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.ServiceReference;
+import org.osgi.framework.*;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.BundleWiring;
@@ -72,6 +71,8 @@ import java.util.stream.Collectors;
  */
 public class OSGITestRunner extends BlockJUnit4ClassRunner {
 
+    private static OSGITestRunner instance;
+
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final boolean DEBUG_BUNDLE_LAUNCH = false;
@@ -88,14 +89,14 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     private Object runnerProxy = null;
     private String[] vmArgs;
     private RunWithApplication.Property[] frameworkProperties;
+    private boolean waitForWorkbench;
+    private TestLauncher launcher;
 
     public OSGITestRunner(
-        @NotNull Class<? extends IAsyncApplication> testClass
+        @NotNull Class<?> testClass
     ) throws Exception {
         super(testClass);
-        if (testClass.getAnnotation(RunnerProxy.class) == null) {
-            throw new IllegalArgumentException("RunnerProxy annotation not found");
-        }
+        instance = this;
         this.testClass = testClass;
         if (isRunFromIDEA()) {
             //use UTF-8 for run
@@ -121,10 +122,32 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             getAppBundleFromAnnotation();
             this.framework = initializeFramework();
             startFramework();
-            createProxyInTheBundleClassloader(testBundle.loadClass(testClass.getName()));
+            if (testClass.getAnnotation(RunnerProxy.class) != null) {
+                createProxyInTheBundleClassloader(testBundle.loadClass(testClass.getName()));
+            }
         } else {
-            createProxyInSameClassloader();
+            if (testClass.getAnnotation(RunnerProxy.class) != null) {
+                createProxyInSameClassloader();
+            }
         }
+    }
+
+    @Override
+    protected void collectInitializationErrors(List<Throwable> errors) {
+        // We don't want to validate methods for JUnit 4 test runner because we are using proxy runner.
+        // It avoids "No runnable methods" error when running JUnit 5 tests.
+    }
+
+    @Override
+    public Description getDescription() {
+        if (runnerProxy != null) {
+            try {
+                return (Description) runnerProxy.getClass().getMethod("getDescription").invoke(runnerProxy);
+            } catch (Exception e) {
+                log.error("Error getting description from proxy", e);
+            }
+        }
+        return super.getDescription();
     }
 
     private void getAppBundleFromAnnotation() {
@@ -136,6 +159,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             this.vmArgs = annotation.vmArgs();
             this.frameworkProperties = annotation.properties();
             this.forceDependencies = Arrays.stream(annotation.forceDependencies()).collect(Collectors.toSet());
+            this.waitForWorkbench = annotation.waitForWorkbench();
 
         } else {
             throw new IllegalArgumentException("Application not found");
@@ -168,7 +192,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     private boolean isRunFromIDEA() {
-        return "app".equals(this.getClass().getClassLoader().getName());
+        return FrameworkUtil.getBundle(this.getClass()) == null;
     }
 
     private Path findProduct() {
@@ -198,8 +222,36 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run")).findFirst().orElseThrow()
-                    .invoke(runnerProxy, notifier);
+                Method runMethod = Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run")).findFirst().orElseThrow();
+                ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+                try {
+                    ClassLoader proxyClassLoader = runnerProxy.getClass().getClassLoader();
+                    // Wrap class loader to avoid loading vintage engine from IDEA classpath
+                    // which causes ServiceConfigurationError in OSGi environment
+                    ClassLoader wrappedClassLoader = new ClassLoader(proxyClassLoader) {
+                        @Override
+                        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                            if (name.startsWith("org.junit.vintage")) {
+                                throw new ClassNotFoundException(name);
+                            }
+                            return super.loadClass(name, resolve);
+                        }
+
+                        @Override
+                        public Enumeration<URL> getResources(String name) throws java.io.IOException {
+                            if (name.contains("org.junit.platform.engine.TestEngine") || name.contains("org.junit.vintage")) {
+                                List<URL> urls = Collections.list(super.getResources(name));
+                                urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
+                                return Collections.enumeration(urls);
+                            }
+                            return super.getResources(name);
+                        }
+                    };
+                    Thread.currentThread().setContextClassLoader(wrappedClassLoader);
+                    runMethod.invoke(runnerProxy, notifier);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(oldTCCL);
+                }
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -215,27 +267,131 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         runnerProxy = constructor.newInstance(testClass);
     }
 
+    public void waitUntilReady() {
+        if (testBundle == null) return;
+        ClassLoader testBundleClassLoader = testBundle.adapt(BundleWiring.class).getClassLoader();
+
+        // Wait for BundleContext to be available in system properties
+        long startTime = System.currentTimeMillis();
+        while (System.getProperties().get("dbeaver.osgi.context") == null && System.currentTimeMillis() - startTime < 300000) {
+            try { Thread.sleep(100); } catch (InterruptedException e) {}
+        }
+        BundleContext context = (BundleContext) System.getProperties().get("dbeaver.osgi.context");
+        if (context == null) {
+            log.error("OSGi context not found in system properties");
+            return;
+        }
+
+        if (!IAsyncApplication.class.isAssignableFrom(testClass)) {
+            return;
+        }
+
+        // Wait for DBPApplicationWorkbench service only when the application needs it.
+        // DBeaver headless apps require it before startup; CLI apps (DBVR, etc.) never register it,
+        // so skipping this wait saves ~10 seconds for those test suites.
+        if (waitForWorkbench) {
+            long workbenchWaitDeadline = System.currentTimeMillis() + 10000;
+            while (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") == null
+                    && System.currentTimeMillis() < workbenchWaitDeadline) {
+                try { Thread.sleep(100); } catch (InterruptedException e) { break; }
+            }
+            if (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") != null) {
+                log.info("DBPApplicationWorkbench service is registered.");
+            } else {
+                log.debug("DBPApplicationWorkbench service not registered within 10s.");
+            }
+        }
+
+        // Start the headless application AFTER the DBPApplicationWorkbench wait,
+        // to avoid race condition where DBeaver headless app tries to use services not yet created by Felix SCR
+        if (launcher != null) {
+            log.info("Starting headless application...");
+            Thread appThread = new Thread(() -> launcher.start(appRegistryName, args));
+            appThread.setDaemon(true);
+            appThread.setName("headless-app-launcher");
+            appThread.start();
+        }
+
+        log.info("Waiting for OSGi application to be ready...");
+        try {
+            Class<?> runningClass = testBundle.loadClass(testClass.getName());
+            Object appInstance = null;
+            try {
+                appInstance = runningClass.getConstructor().newInstance();
+            } catch (Exception e) {
+                log.error("Error creating test instance for verifyLaunched", e);
+            }
+            if (appInstance != null) {
+                long appStartTime = System.currentTimeMillis();
+                long endTime = 0;
+                boolean setUpIsDone = false;
+                while (!setUpIsDone && endTime < 300000) {
+                    try {
+                        Method verifyLaunched = runningClass.getMethod("verifyLaunched");
+                        setUpIsDone = (boolean) verifyLaunched.invoke(appInstance);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                    endTime = System.currentTimeMillis() - appStartTime;
+                    if (!setUpIsDone) {
+                        if (endTime > 0 && endTime % 5000 < 100) {
+                            log.info("Still waiting for application... (" + (endTime / 1000) + "s)");
+                        }
+                        Thread.sleep(100);
+                    }
+                }
+                if (setUpIsDone) {
+                    log.info("Application is ready.");
+                } else {
+                    log.error("Application was not ready after 5 minutes.");
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error waiting for application ready", e);
+        }
+    }
+
+    public ClassLoader getTestBundleClassLoader() {
+        if (testBundle == null) return null;
+        return testBundle.adapt(BundleWiring.class).getClassLoader();
+    }
+
     private void runInsideOSGI(RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Class<?> runningClass = testBundle.loadClass(testClass.getName());
-                if (IAsyncApplication.class.isAssignableFrom(testClass)) {
-                    long startTime = System.currentTimeMillis();
-                    long endTime = 0;
-                    boolean setUpIsDone = false;
-                    while (!setUpIsDone && endTime < 300000) {
-                        setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched")
-                            .invoke(runningClass.getConstructor().newInstance());
-                        endTime = System.currentTimeMillis() - startTime;
-                        if (!setUpIsDone) {
-                            Thread.sleep(100);
-                        }
-                    }
-                }
+                waitUntilReady();
                 Method runMethod = Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run"))
                     .findFirst().orElseThrow();
                 Object proxyNotifier = createProxyNotifier(notifier);
-                runMethod.invoke(runnerProxy, proxyNotifier);
+                ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+                try {
+                    ClassLoader proxyClassLoader = runnerProxy.getClass().getClassLoader();
+                    // Wrap class loader to avoid loading vintage engine from IDEA classpath
+                    // which causes ServiceConfigurationError in OSGi environment
+                    ClassLoader wrappedClassLoader = new ClassLoader(proxyClassLoader) {
+                        @Override
+                        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                            if (name.startsWith("org.junit.vintage")) {
+                                throw new ClassNotFoundException(name);
+                            }
+                            return super.loadClass(name, resolve);
+                        }
+
+                        @Override
+                        public Enumeration<URL> getResources(String name) throws java.io.IOException {
+                            if (name.contains("org.junit.platform.engine.TestEngine") || name.contains("org.junit.vintage")) {
+                                List<URL> urls = Collections.list(super.getResources(name));
+                                urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
+                                return Collections.enumeration(urls);
+                            }
+                            return super.getResources(name);
+                        }
+                    };
+                    Thread.currentThread().setContextClassLoader(wrappedClassLoader);
+                    runMethod.invoke(runnerProxy, proxyNotifier);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(oldTCCL);
+                }
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -260,6 +416,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         framework.init();
         // Start the OSGi framework
         BundleContext context = framework.getBundleContext();
+        System.getProperties().put("dbeaver.osgi.context", context);
         // Load and start all bundles
         loadAndStartBundles(context);
         EquinoxConfiguration equinoxConfig = null;
@@ -278,22 +435,35 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             processCommandLine.setAccessible(true);
             processCommandLine.invoke(null, equinoxConfig);
         }
-        TestLauncher launcher = new TestLauncher(context);
+        launcher = new TestLauncher(context);
         context.registerService(ApplicationLauncher.class.getName(), launcher,
             null
         );
-        if (IAsyncApplication.class.isAssignableFrom(testClass)) {
-            Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
-            thread.start();
-        } else {
+        if (!IAsyncApplication.class.isAssignableFrom(testClass)) {
+            // For non-async tests, start the app synchronously now
             launcher.start(appRegistryName, args);
         }
+        // For IAsyncApplication tests the app will be started in waitUntilReady()
+        // after DBPApplicationWorkbench service is confirmed to be registered
     }
 
-    @NotNull
     private void createProxyInTheBundleClassloader(
         @NotNull Class<?> runningClass
     ) throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        // Start all critical bundles to ensure everything is ready
+        for (org.osgi.framework.Bundle bundle : framework.getBundleContext().getBundles()) {
+            String bsn = bundle.getSymbolicName();
+            if (bsn.equals("org.eclipse.equinox.registry") || bsn.startsWith("junit-") || bsn.startsWith("org.junit.") || bsn.equals("org.opentest4j")) {
+                try {
+                    if (bundle.getHeaders().get("Fragment-Host") == null) {
+                        bundle.start(org.osgi.framework.Bundle.START_TRANSIENT);
+                    }
+                } catch (org.osgi.framework.BundleException e) {
+                    log.error("Could not start critical bundle " + bsn, e);
+                }
+            }
+        }
+
         Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class)
             .value()
             .getName()).getConstructor(Class.class);
@@ -337,7 +507,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
 
         // Enable boot delegation, to avoid class loading issues for some classes
         config.put("osgi.compatibility.bootdelegation", "true");
-        FrameworkFactory frameworkFactory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
+        FrameworkFactory frameworkFactory = new EquinoxFactory();
         return frameworkFactory.newFramework(config);
     }
 

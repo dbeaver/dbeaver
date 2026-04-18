@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.utils.rest.RequestMapping;
 import org.jkiss.utils.rest.RequestParameter;
 import org.jkiss.utils.rest.RestClient;
 import org.jkiss.utils.rest.RestServer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Map;
@@ -41,12 +41,12 @@ public class RestTest extends DBeaverUnitTest {
             .builder(URI.create("http://localhost:" + server.getAddress().getPort()), Controller.class)
             .create();
 
-        Assert.assertEquals("1.0", client.getVersion());
-        Assert.assertEquals(Map.of("version", "1.0", "name", "dbeaver"), client.getSettings());
-        Assert.assertEquals("1.0", client.getSetting("version"));
-        Assert.assertEquals("dbeaver", client.getSetting("name"));
-        Assert.assertEquals("cool", client.getSetting("something", "cool"));
-        Assert.assertNull(client.getSetting("something"));
+        Assertions.assertEquals("1.0", client.getVersion());
+        Assertions.assertEquals(Map.of("version", "1.0", "name", "dbeaver"), client.getSettings());
+        Assertions.assertEquals("1.0", client.getSetting("version"));
+        Assertions.assertEquals("dbeaver", client.getSetting("name"));
+        Assertions.assertEquals("cool", client.getSetting("something", "cool"));
+        Assertions.assertNull(client.getSetting("something"));
 
         server.stop();
     }

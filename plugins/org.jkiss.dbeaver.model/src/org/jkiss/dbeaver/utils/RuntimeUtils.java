@@ -713,7 +713,30 @@ public final class RuntimeUtils {
     @NotNull
     public static <T> BundleServiceRef<T> getBundleService(@NotNull Class<T> theClass, boolean required) throws IllegalStateException {
         Bundle bundle = FrameworkUtil.getBundle(theClass);
-        BundleContext bundleContext = bundle.getBundleContext();
+        BundleContext bundleContext = null;
+        if (bundle == null) {
+            // Fallback for cases when theClass is loaded by AppClassLoader (e.g. in tests)
+            // Use RuntimeUtils's own bundle context to find the service
+            bundle = FrameworkUtil.getBundle(RuntimeUtils.class);
+            if (bundle != null) {
+                bundleContext = bundle.getBundleContext();
+            }
+        } else {
+            bundleContext = bundle.getBundleContext();
+        }
+
+        if (bundleContext == null) {
+            // Last resort: try to get context from OSGITestRunner via reflection (for tests in IDEA)
+            bundleContext = getTestBundleContext();
+        }
+
+        if (bundleContext == null) {
+            if (required) {
+                throw new IllegalStateException("Bundle context not found for class '" + theClass.getName() + "'");
+            }
+            return new BundleServiceRef<>(null, null);
+        }
+
         ServiceReference<T> serviceReference = bundleContext.getServiceReference(theClass);
         if (serviceReference == null) {
             if (required) {
@@ -790,6 +813,10 @@ public final class RuntimeUtils {
     // Returns plugin state folder and do not create it (as default Eclipse function does)
     public static Path getPluginStateLocation(Plugin plugin) {
         return InternalPlatform.getDefault().getStateLocation(plugin.getBundle(), false).toPath();
+    }
+
+    private static BundleContext getTestBundleContext() {
+        return (BundleContext) System.getProperties().get("dbeaver.osgi.context");
     }
 
     private enum CommandLineState {
