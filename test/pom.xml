@@ -41,9 +41,6 @@
                 <configuration>
                     <useUIHarness>false</useUIHarness>
                     <useUIThread>false</useUIThread>
-                    <includes>
-                        <include>**/*Test.java</include>
-                    </includes>
                     <application>org.jkiss.dbeaver.headless.application</application>
                     <product>org.jkiss.dbeaver.headless.product</product>
                     <testRuntime>default</testRuntime>
