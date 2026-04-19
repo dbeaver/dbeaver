@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -103,28 +104,19 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    @Nullable
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException
     {
         if (object instanceof JDBCComposite) {
             return copy ? ((JDBCComposite) object).cloneValue(session.getProgressMonitor()) : object;
         }
-
-        String typeName;
-        try {
-            if (object instanceof Struct) {
-                typeName = ((Struct) object).getSQLTypeName();
-            } else {
-                typeName = type.getTypeName();
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, session.getExecutionContext());
-        }
-        DBSDataType dataType = null;
-        try {
-            dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
-        } catch (DBException e) {
-            log.debug("Error resolving data type '" + typeName + "'", e);
-        }
+        DBSDataType dataType = getDbsDataType(session, type, object);
         if (dataType == null) {
             if (object instanceof Struct) {
                 return new JDBCCompositeDynamic(session, (Struct) object, null);
@@ -140,6 +132,33 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
             return new JDBCCompositeMap(session, dataType, (Map<?,?>) object);
         } else {
             return new JDBCCompositeUnknown(session, object);
+        }
+    }
+
+    @Nullable
+    protected DBSDataType getDbsDataType(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object)
+    throws DBCException {
+        if (object == null) {
+            log.debug("Error resolving data type for session [%s], since 'object' is null".formatted(session));
+            return null;
+        }
+        String typeName = getTypeName(session, type, object);
+        DBSDataType dataType = null;
+        try {
+            dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
+        } catch (DBException e) {
+            log.debug("Error resolving data type '" + typeName + "'", e);
+        }
+        return dataType;
+    }
+
+
+    @NotNull
+    private String getTypeName(@NotNull DBCSession session, @NotNull DBSTypedObject type, @NotNull Object object) throws DBCException {
+        try {
+            return object instanceof Struct struct ? struct.getSQLTypeName() : type.getTypeName();
+        } catch (SQLException e) {
+            throw new DBCException(e, session.getExecutionContext());
         }
     }
 
