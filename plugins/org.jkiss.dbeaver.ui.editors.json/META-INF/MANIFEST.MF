@@ -7,8 +7,7 @@ Bundle-Version: 1.0.162.qualifier
 Bundle-Release-Date: 20260504
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.google.gson,
- org.jkiss.dbeaver.ui.editors.base,
+Require-Bundle: org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data
 Export-Package: org.jkiss.dbeaver.ui.editors.json,
  org.jkiss.dbeaver.ui.data.managers.stream

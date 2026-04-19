@@ -4,11 +4,9 @@ Bundle-Name: DBeaver Clickhouse Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse;singleton:=true
 Bundle-Version: 1.0.183.qualifier
 Bundle-Release-Date: 20260504
-Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  org.jkiss.dbeaver.data.gis,
  com.google.guava;resolution:=optional,
- com.google.gson,
  org.antlr.antlr4-runtime
 Export-Package: org.jkiss.dbeaver.ext.clickhouse,
  org.jkiss.dbeaver.ext.clickhouse.model

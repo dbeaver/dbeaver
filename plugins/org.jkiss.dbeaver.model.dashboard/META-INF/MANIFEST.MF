@@ -12,8 +12,6 @@ Export-Package: org.jkiss.dbeaver.model.dashboard,
  org.jkiss.dbeaver.model.dashboard.navigator,
  org.jkiss.dbeaver.model.dashboard.registry
 Require-Bundle: org.eclipse.core.expressions,
- org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.registry;visibility:=reexport,
- com.google.gson
+ org.jkiss.dbeaver.registry;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.dashboard
