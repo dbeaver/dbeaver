@@ -71,6 +71,7 @@ public class ERDUIMessages extends NLS {
     public static String erd_preference_page_title_shows_partitions;
     public static String erd_preference_page_title_routing_combo;
     public static String erd_preference_page_title_notation_combo;
+    public static String erd_preference_page_title_load_lazy_descriptions;
     public static String erd_preference_page_title_color_pref;
     public static String erd_preference_page_title_change_border_colors;
     public static String erd_preference_page_title_change_header_colors;

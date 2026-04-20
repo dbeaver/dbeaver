@@ -80,10 +80,6 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                     String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
                     String description = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.COMMENT);
                     CubridUser user = new CubridUser(dataSource, name, description);
-                    String defaultUser = ((CubridDataSource) dataSource).getCurrentUser();
-                    if (defaultUser.equalsIgnoreCase(user.getName())) {
-                        user.setVirtual(true);
-                    }
                     users.add(user);
 	            }
             }

@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -458,10 +458,7 @@ public class DBeaverLauncher {
 
     private String getFragmentString(String fragmentOS, String fragmentWS, String fragmentArch) {
         StringJoiner buffer = new StringJoiner("."); //$NON-NLS-1$
-        buffer.add(PLUGIN_ID).add(fragmentWS).add(fragmentOS);
-        if (!(fragmentOS.equals(Constants.OS_MACOSX) && !Constants.ARCH_X86_64.equals(fragmentArch))) {
-            buffer.add(fragmentArch);
-        }
+        buffer.add(PLUGIN_ID).add(fragmentWS).add(fragmentOS).add(fragmentArch);
         return buffer.toString();
     }
 

@@ -50,6 +50,12 @@ public class AIToolboxInternalDescriptor implements AIToolboxDescriptor {
         return "DBeaver internal AI toolbox";
     }
 
+    @NotNull
+    @Override
+    public Map<String, Object> getToolboxSettings() {
+        return Map.of();
+    }
+
     @Override
     public boolean isEnabled() {
         return true;
@@ -62,8 +68,8 @@ public class AIToolboxInternalDescriptor implements AIToolboxDescriptor {
 
     @NotNull
     @Override
-    public List<AIFunctionDescriptor> getSupportedFunctions() {
-        return functionRegistry.getAllFunctions(AIFunctionPurpose.ALL);
+    public List<AIFunctionDescriptor> getSupportedFunctions(@NotNull AIFunctionPurpose purpose) {
+        return functionRegistry.getAllFunctions(purpose);
     }
 
     @Nullable

@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 
 import java.util.LinkedHashMap;
@@ -32,9 +31,6 @@ import java.util.Map;
  * AI function registry
  */
 public class AIFunctionInternalRegistry {
-
-    private static final Log log = Log.getLog(AIFunctionInternalRegistry.class);
-    private static AIFunctionInternalRegistry instance;
 
     private final Map<String, AIFunctionDescriptor> functionsById = new LinkedHashMap<>();
 
@@ -57,11 +53,14 @@ public class AIFunctionInternalRegistry {
     @NotNull
     public List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose) {
         return functionsById.values().stream()
-            .filter(f ->
-                f.getPurpose() == AIFunctionPurpose.ALL
-                    || purpose == AIFunctionPurpose.ALL
-                    || f.getPurpose() == purpose)
+            .filter(f -> functionFilter(f, purpose))
             .toList();
+    }
+
+    private boolean functionFilter(@NotNull AIFunctionDescriptor descriptor, @NotNull AIFunctionPurpose purpose) {
+        return descriptor.getPurpose() == purpose
+            || descriptor.getPurpose() == AIFunctionPurpose.ALL
+            || purpose == AIFunctionPurpose.ALL;
     }
 
     @NotNull

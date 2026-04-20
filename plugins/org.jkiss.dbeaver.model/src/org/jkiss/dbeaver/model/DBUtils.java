@@ -329,8 +329,21 @@ public final class DBUtils {
             rootSC = schemaOC;
         } else if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
             // One container name
-            String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
-            DBSObject sc = rootSC.getChild(monitor, containerName);
+            String containerName = CommonUtils.nvl(catalogName, schemaName);
+
+            // Check for side case: when there is catalog and schema with the same name
+            // and only schema name was specified. Then we have to use default catalog.
+            Class<? extends DBSObject> rootChildType = rootSC.getPrimaryChildType(monitor);
+            DBSObjectContainer tryContainer = rootSC;
+            if (DBSCatalog.class.isAssignableFrom(rootChildType) && !CommonUtils.isEmpty(schemaName)) {
+                // Schema name specified but root children are catalogs
+                // We should get default database and look for schema inside
+                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                if (contextDefaults != null && contextDefaults.getDefaultCatalog() != null) {
+                    tryContainer = contextDefaults.getDefaultCatalog();
+                }
+            }
+            DBSObject sc = tryContainer.getChild(monitor, containerName);
             if (!forceConnection && !DBStructUtils.isConnectedContainer(sc)) {
                 sc = null;
             }
@@ -1822,7 +1835,7 @@ public final class DBUtils {
     public static DBSObject getDefaultOrActiveObject(@NotNull DBSInstance object) {
         DBCExecutionContext defaultContext = getDefaultContext(object, true);
         DBSObject activeObject = defaultContext == null ? null : getActiveInstanceObject(defaultContext);
-        return activeObject == null ? object.getDataSource() : activeObject;
+        return CommonUtils.notNull(activeObject, object.getDataSource());
     }
 
     @Nullable
@@ -2245,7 +2258,8 @@ public final class DBUtils {
         @NotNull DBCEntityMetaData entityMeta,
         boolean transformName
     ) throws DBException {
-        final DBPDataSource dataSource = objectContainer.getDataSource();
+        DBPDataSource dataSource = objectContainer.getDataSource();
+        assert dataSource != null;
         String catalogName = entityMeta.getCatalogName();
         String schemaName = entityMeta.getSchemaName();
         String entityName = entityMeta.getEntityName();
@@ -2407,14 +2421,17 @@ public final class DBUtils {
         int suffix = 1;
 
         while (true) {
-            final String name = Objects.requireNonNull(DBObjectNameCaseTransformer.transformName(parent.getDataSource(), NLS.bind(template, suffix)));
+            final String name = Objects.requireNonNull(
+                DBObjectNameCaseTransformer.transformName(parent.getDataSource(), NLS.bind(template, suffix)));
 
             try {
                 boolean exists = extractor.extract(parent, monitor, name) != null;
 
                 if (!exists) {
                     for (DBPObject object : context.getEditedObjects()) {
-                        if (type.isInstance(object) && ((DBSObject) object).getParentObject() == parent && name.equalsIgnoreCase(((DBSObject) object).getName())) {
+                        if (object instanceof DBSObject dbsObject && type.isInstance(object) &&
+                            dbsObject.getParentObject() == parent && name.equalsIgnoreCase(dbsObject.getName())
+                        ) {
                             exists = true;
                             break;
                         }

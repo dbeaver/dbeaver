@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
@@ -81,6 +82,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 
@@ -362,7 +364,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             return false;
         } else {
             CoreFeatures.APP_CLOSE.use();
-            return super.preShutdown();
+            try {
+                return super.preShutdown();
+            } catch (Exception e) {
+                log.trace(e);
+                log.debug("Error during shutdown: " + e.getMessage());
+                //System.exit(120);
+                return true;
+            }
         }
     }
 
@@ -426,6 +435,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         // They are locking resources which are shared between other editors
         // So we need to close them first
         IWorkbenchPage workbenchPage = window.getActivePage();
+        if (workbenchPage == null) {
+            return true;
+        }
         IEditorReference[] editors = workbenchPage.getEditorReferences();
         List<IEditorPart> editorsToRevert = new ArrayList<>();
         for (IEditorReference editor : editors) {
@@ -495,7 +507,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     public void eventLoopException(Throwable exception) {
-        super.eventLoopException(exception);
+
+        if (CommonUtils.hasCause(exception, InterruptedException.class) || CommonUtils.hasCause(exception, DBInterruptedException.class)) {
+            return;
+        }
+        //super.eventLoopException(exception);
         log.error("Event loop exception", exception);
     }
 
