@@ -70,6 +70,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
+        createSaveToFileButton(parent);
         createRefreshButton(parent);
         super.createButtonsForButtonBar(parent);
     }
