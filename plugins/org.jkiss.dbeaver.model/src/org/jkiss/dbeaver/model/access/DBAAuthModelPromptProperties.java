@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.model.access;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPAuthPromptField;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Auth model that can explicitly describe which credential properties
@@ -29,10 +31,22 @@ import java.util.List;
  */
 public interface DBAAuthModelPromptProperties<CREDENTIALS extends DBAAuthCredentials> {
 
+    /**
+     * Builds the list of prompt fields for the given credentials.
+     * Returns empty list if no fields need to be prompted.
+     */
     @NotNull
-    List<String> getConnectionPromptProperties(
+    List<DBPAuthPromptField> buildPromptFields(
         @Nullable DBPDataSourceContainer dataSource,
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull CREDENTIALS credentials
+    );
+
+    /**
+     * Updates credentials object from the values provided by the user.
+     */
+    void updateCredentials(
+        @NotNull CREDENTIALS credentials,
+        @NotNull Map<String, String> promptValues
     );
 }
