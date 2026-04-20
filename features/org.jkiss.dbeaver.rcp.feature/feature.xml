@@ -8,7 +8,6 @@
     <description>Universal Database Manager RCP</description>
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <includes id="org.eclipse.rcp" version="0.0.0"/>
 
