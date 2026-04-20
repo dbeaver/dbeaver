@@ -7,7 +7,6 @@
       plugin="org.jkiss.dbeaver.data.office">
 
    <copyright>DBeaver Corp and others</copyright>
-   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <requires>
       <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
