@@ -8,15 +8,12 @@ Bundle-Release-Date: 20260504
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator
-Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.data.gis,
+Require-Bundle: org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.editors.entity,
  org.jkiss.bundle.gis,
- com.google.gson,
  com.sun.jna,
  com.sun.jna.platform
 Export-Package: org.jkiss.dbeaver.ui.gis
