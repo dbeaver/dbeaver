@@ -14,5 +14,4 @@ Export-Package: org.jkiss.dbeaver.ext.spanner,
  org.jkiss.dbeaver.ext.spanner.auth
 Import-Package: org.slf4j;visibility:=reexport
 Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
- com.google.guava;visibility:=reexport,
- com.google.gson;visibility:=reexport
+ com.google.guava;visibility:=reexport

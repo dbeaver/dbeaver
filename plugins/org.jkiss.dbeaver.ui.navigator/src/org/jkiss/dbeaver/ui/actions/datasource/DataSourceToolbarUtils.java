@@ -82,7 +82,7 @@ public class DataSourceToolbarUtils {
 
             for (MTrimElement element : topTrim.getChildren()) {
                 if (CONNECTION_SELECTOR_TOOLBAR_ID.equals(element.getElementId())) {
-                    if (element instanceof MElementContainer<? extends MUIElement> container) {
+                    if (element instanceof MElementContainer<?> container) {
                         Object widget = element.getWidget();
                         if (widget instanceof Composite controlsPanel) {
                             Control[] childControl = controlsPanel.getChildren();
@@ -92,7 +92,10 @@ public class DataSourceToolbarUtils {
                             }
                         }
 
-                        for (MUIElement tbItem : container.getChildren()) {
+                        for (Object child : container.getChildren()) {
+                            if (!(child instanceof MUIElement tbItem)) {
+                                continue;
+                            }
                             // Handle Eclipse bug. By default, it doesn't update contents of main toolbar elements
                             // So we need to hide/show it to force text update
                             if (showConnectionSelector) {
