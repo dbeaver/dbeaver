@@ -1340,7 +1340,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
                 if (result != null && result.getError() != null) {
                     if (result.isQmdbUnavailable()) {
-                        if (!qmdbUnavailableDialogShown) {
+                        if (!qmdbUnavailableDialogShown && !result.isQmdbIncompatibleDatabase()) {
                             qmdbUnavailableDialogShown = true;
                             DBWorkbench.getPlatformUI().showError(
                                 QMDB_UNAVAILABLE_TITLE,
