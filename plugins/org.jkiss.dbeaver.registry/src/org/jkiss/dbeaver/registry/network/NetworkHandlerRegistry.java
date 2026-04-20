@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -72,11 +73,13 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
         return descList;
     }
 
+    @Nullable
     public NetworkHandlerDescriptor getDescriptor(@NotNull String id) {
         NetworkHandlerDescriptor descriptor = getRawDescriptor(id);
         return descriptor != null && isAvailable(descriptor) ? descriptor : null;
     }
 
+    @Nullable
     public NetworkHandlerDescriptor getRawDescriptor(@NotNull String id) {
         for (NetworkHandlerDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
