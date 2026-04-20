@@ -192,7 +192,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     }
 
     @NotNull
-    List<String> getRequiredPermissions() {
+    public List<String> getRequiredPermissions() {
         return requiredPermissions;
     }
 }
