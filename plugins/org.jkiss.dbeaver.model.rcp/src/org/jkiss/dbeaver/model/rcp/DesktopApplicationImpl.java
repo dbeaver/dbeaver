@@ -67,6 +67,12 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
 
     @NotNull
     @Override
+    public LockManager createLockManager(@NotNull Path metadataFolder, @NotNull String applicationId) throws DBException {
+        return new LocalFileLockManager(metadataFolder);
+    }
+
+    @NotNull
+    @Override
     public LockManager createLockManager() throws DBException {
         return new LocalFileLockManager(GeneralUtils.getMetadataFolder());
     }
