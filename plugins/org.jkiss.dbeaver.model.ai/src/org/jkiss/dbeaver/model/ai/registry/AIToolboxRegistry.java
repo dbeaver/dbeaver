@@ -159,6 +159,22 @@ public class AIToolboxRegistry implements AIToolboxManager {
         return function;
     }
 
+    @Override
+    public void saveToolboxSettings(@NotNull List<? extends AIToolbox> toolboxes) throws DBException {
+        // No-op in base implementation; overridden in Pro
+    }
+
+    /**
+     * Updates the in-memory external toolboxes map.
+     * Called by subclasses after persisting toolbox configuration.
+     */
+    protected void updateExternalToolboxes(@NotNull List<AIToolboxDescriptor> toolboxes) {
+        externalToolboxes.clear();
+        for (AIToolboxDescriptor toolbox : toolboxes) {
+            externalToolboxes.put(toolbox.getToolboxId(), toolbox);
+        }
+    }
+
     @NotNull
     protected List<AIToolboxDescriptor> readExternalToolboxes() throws DBException {
         return Collections.emptyList();
