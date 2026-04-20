@@ -486,7 +486,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 connectionConfig.setHostName("localhost");
                 connectionConfig.setHostPort(configuration.getStringProperty(DBWHandlerConfiguration.PROP_PORT));
                 try {
-                    monitor.subTask("Initialize tunnel");
+                    monitor.subTask("`Initialize tunnel");
                     String authTypeName = configuration.getStringProperty("authType");
                     SSHConstants.AuthType authType = CommonUtils.valueOf(SSHConstants.AuthType.class, authTypeName, SSHConstants.AuthType.PASSWORD);
                     if (!configuration.isSavePassword() && tunnel.getRequiredCredentials(configuration) != DBWTunnel.AuthCredentials.NONE) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -121,7 +120,7 @@ public class SSHTunnelImpl implements DBWTunnel {
             case SSHAuthConfiguration.KeyFile key ->
                 SSHUtils.isKeyFileEncrypted(key.path()) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
             case SSHAuthConfiguration.KeyData key ->
-                SSHUtils.isKeyEncrypted(Base64.decode(key.data())) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
+                SSHUtils.isKeyEncrypted(key.data()) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
             case SSHAuthConfiguration.Agent ignored -> AuthCredentials.NONE;
             default -> AuthCredentials.CREDENTIALS;
         };
