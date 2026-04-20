@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -352,7 +352,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                 case RegistryConstants.TAG_NETWORK_HANDLER:
                     if (curDataSource != null) {
                         String handlerId = attributes.getValue(RegistryConstants.ATTR_ID);
-                        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
+                        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getRawDescriptor(handlerId);
                         if (handlerDescriptor == null) {
                             log.warn("Can't find network handler '" + handlerId + "'");
                             reader.setListener(EMPTY_LISTENER);

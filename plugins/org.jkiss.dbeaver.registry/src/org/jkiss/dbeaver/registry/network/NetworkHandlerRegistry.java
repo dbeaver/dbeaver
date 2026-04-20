@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -72,12 +73,17 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     }
 
     public NetworkHandlerDescriptor getDescriptor(@NotNull String id) {
+        NetworkHandlerDescriptor descriptor = getRawDescriptor(id);
+        return descriptor != null && isAvailable(descriptor) ? descriptor : null;
+    }
+
+    public NetworkHandlerDescriptor getRawDescriptor(@NotNull String id) {
         for (NetworkHandlerDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
                 if (descriptor.getReplacedBy() != null) {
                     descriptor = descriptor.getReplacedBy();
                 }
-                return isAvailable(descriptor) ? descriptor : null;
+                return descriptor;
             }
         }
         return null;
@@ -85,14 +91,22 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
 
     @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDataSourceContainer dataSource) {
-        return getDescriptors(dataSource.getDriver());
+        List<NetworkHandlerDescriptor> result = new ArrayList<>();
+        for (NetworkHandlerDescriptor descriptor : descriptors) {
+            if ((descriptor.getReplacedBy() == null && !descriptor.hasObjectTypes() || descriptor.matches(dataSource.getDriver()))
+                && hasRequiredPermissions(descriptor, dataSource.getProject())) {
+                result.add(descriptor);
+            }
+        }
+        return result;
     }
 
     @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            if ((d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) && hasRequiredPermissions(d)) {
+            if ((d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver))
+                && hasRequiredPermissions(d, DBWorkbench.getPlatform().getWorkspace())) {
                 result.add(d);
             }
         }
@@ -100,12 +114,15 @@ public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     }
 
     private boolean isAvailable(@NotNull NetworkHandlerDescriptor descriptor) {
-        return descriptor.getReplacedBy() == null && hasRequiredPermissions(descriptor);
+        return descriptor.getReplacedBy() == null && hasRequiredPermissions(descriptor, DBWorkbench.getPlatform().getWorkspace());
     }
 
-    private boolean hasRequiredPermissions(@NotNull NetworkHandlerDescriptor descriptor) {
+    private boolean hasRequiredPermissions(
+        @NotNull NetworkHandlerDescriptor descriptor,
+        @NotNull DBAPermissionRealm permissionRealm
+    ) {
         return descriptor.getRequiredPermissions().stream()
-            .allMatch(permission -> DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(permission));
+            .allMatch(permissionRealm::hasRealmPermission);
     }
 
 }
