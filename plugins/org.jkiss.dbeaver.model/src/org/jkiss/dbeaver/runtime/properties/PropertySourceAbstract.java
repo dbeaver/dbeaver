@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,6 +283,10 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     public boolean collectProperties() {
+        return collectProperties(true);
+    }
+
+    public boolean collectProperties(boolean collectLocalizedNames) {
         lazyValues.clear();
         props.clear();
         propValues.clear();
@@ -303,7 +307,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 filter = null;
             }
             List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(
-                this, ObjectPropertyDescriptor.getObjectClass(editableValue), filter, locale);
+                this,
+                ObjectPropertyDescriptor.getObjectClass(editableValue),
+                filter,
+                locale,
+                collectLocalizedNames
+            );
             for (final ObjectPropertyDescriptor desc : annoProps) {
                 if (desc.isPropertyVisible(editableValue, editableValue)) {
                     addProperty(desc);
@@ -409,8 +418,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         {
         }
 
+        @NotNull
         @Override
-        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
+        public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor)
         {
             return monitor;
         }
@@ -438,7 +448,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public void completeLoading(Map<ObjectPropertyDescriptor, Object> result)
+        public void completeLoading(@Nullable Map<ObjectPropertyDescriptor, Object> result)
         {
             completed = true;
             if (result != null) {

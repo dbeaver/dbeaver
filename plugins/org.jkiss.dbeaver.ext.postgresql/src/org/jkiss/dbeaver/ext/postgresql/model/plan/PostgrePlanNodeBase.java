@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,17 +119,20 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         }
     }
 
+    @Nullable
     @Override
     public String getNodeName() {
         return entity;
     }
 
+    @Nullable
     @Override
     @Property(order = 0, viewable = true)
     public String getNodeType() {
         return nodeType;
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return attributes.get(ATTR_FILTER);
@@ -166,6 +169,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         return attributes.get(ATTR_ACTUAL_TOTAL_TIME);
     }
 
+    @Nullable
     @Property(order = 23, viewable = true)
     public String getNodeCondition() {
         String cond = attributes.get(ATTR_INDEX_COND);
@@ -181,12 +185,14 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         return cond;
     }
 
+    @Nullable
     @Override
     public NODE getParent()
     {
         return parent;
     }
 
+    @NotNull
     @Override
     public List<NODE> getNested()
     {
@@ -238,6 +244,7 @@ public abstract class PostgrePlanNodeBase<NODE extends PostgrePlanNodeBase<?>> e
         return title.toString();
     }
     
+    @NotNull
     @Override
     public DBCPlanNodeKind getNodeKind() {
        

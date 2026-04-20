@@ -61,13 +61,13 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         return null;
     }
 
-    public static void configureFilters(Shell shell, DBNDatabaseNode dbNode) {
+    public static void configureFilters(@NotNull Shell shell, @NotNull DBNDatabaseNode dbNode) {
         try {
             DBNDatabaseNode parentNode = !(dbNode instanceof DBNDatabaseFolder) &&
-                                         dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
+                dbNode.getParentNode() instanceof DBNDatabaseNode parent ? parent : dbNode;
             DBXTreeItem itemsMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, parentNode));
             if (itemsMeta != null) {
-                UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.getService(UIServiceFilterConfig.class);
+                UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
                 if (uiServiceFilterConfig == null) {
                     FilterConfigDelegate handler = new FilterConfigDelegate(shell, dbNode, parentNode, itemsMeta);
                     handler.configFilterInDialog();

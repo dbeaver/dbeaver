@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.*;
@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
+public class MySQLDataSourceProvider extends JDBCDataSourceProvider<MySQLDataSource> implements DBPNativeClientLocationManager {
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
     private static final String REGISTRY_ROOT_MYSQL_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";
@@ -55,7 +55,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     @Nullable
     private static Map<String, DBPNativeClientLocation> localClients;
-    private static Map<String,String> connectionsProps;
+    private static final Map<String,String> connectionsProps;
 
     static {
         connectionsProps = new HashMap<>();
@@ -82,8 +82,13 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return connectionsProps;
     }
 
-    public MySQLDataSourceProvider()
-    {
+    @DynamicCall
+    public MySQLDataSourceProvider() {
+        super(MySQLDataSource.class);
+    }
+
+    protected MySQLDataSourceProvider(@NotNull Class<? extends MySQLDataSource> dsClass) {
+        super(dsClass);
     }
 
     @Override
@@ -148,7 +153,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public MySQLDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
