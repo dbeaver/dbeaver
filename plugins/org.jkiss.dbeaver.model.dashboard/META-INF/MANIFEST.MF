@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.dashboard,
  org.jkiss.dbeaver.model.dashboard.data,
- org.jkiss.dbeaver.model.dashboard.navigator,
  org.jkiss.dbeaver.model.dashboard.registry
 Require-Bundle: org.eclipse.core.expressions,
  org.jkiss.dbeaver.registry;visibility:=reexport

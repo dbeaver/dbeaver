@@ -6,7 +6,6 @@
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
-   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <plugin id="org.jkiss.dbeaver.tasks.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.ui.view" version="0.0.0" />
