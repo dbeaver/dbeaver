@@ -9,7 +9,6 @@
     <description>Universal Database Manager Runtime</description>
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <!-- 3rd party -->
     <plugin id="slf4j.api" version="0.0.0" />
