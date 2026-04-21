@@ -73,4 +73,21 @@
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="firebirdUpdateOrInsert"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorUpdateOrInsert"
+            label="UPDATE OR INSERT"
+            description="UPDATE OR INSERT INTO with MATCHING clause"
+            order="7">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
+        <generator id="firebirdExecuteBlock"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorExecuteBlock"
+            label="EXECUTE BLOCK"
+            description="EXECUTE BLOCK with variable declarations"
+            order="8">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
+    </extension>
+
 </plugin>
