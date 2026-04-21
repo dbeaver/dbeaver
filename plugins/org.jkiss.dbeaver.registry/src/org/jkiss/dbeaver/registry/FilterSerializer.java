@@ -93,7 +93,7 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
             }
             json.beginArray();
             for (FilterMapping filter : filterMappings) {
-                DBSObjectFilter defaultFilter = filter.defaultFilter;
+                DBSObjectFilter defaultFilter = filter.globalFilter;
                 if (shouldSerializeFilter(defaultFilter, serialiseCustomUserFilters)) {
                     saveObjectFilter(json, filter.typeName, null, defaultFilter);
                 }

@@ -635,7 +635,7 @@ public class DataSourceDescriptor
         if (filterMapping != null) {
             // Update filter
             if (parentObject == null) {
-                filterMapping.defaultFilter = filter;
+                filterMapping.globalFilter = filter;
             } else {
                 filterMapping.customFilters.put(FilterMapping.getFilterContainerUniqueID(parentObject), filter);
             }
@@ -671,7 +671,7 @@ public class DataSourceDescriptor
             filterMap.put(typeName, filterMapping);
         }
         if (objectID == null) {
-            filterMapping.defaultFilter = filter;
+            filterMapping.globalFilter = filter;
         } else {
             filterMapping.customFilters.put(objectID, filter);
         }
