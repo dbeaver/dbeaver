@@ -16,11 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
@@ -35,18 +33,18 @@ import org.jkiss.utils.HttpConstants;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 public class CopilotClient extends AbstractHttpAIClient {
     private static final Log log = Log.getLog(CopilotClient.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
     protected static final Duration TIMEOUT = Duration.ofSeconds(30);
-    protected static final Gson GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .serializeNulls()
-        .create();
+
 
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
@@ -58,6 +56,7 @@ public class CopilotClient extends AbstractHttpAIClient {
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
     private static final String COPILOT_SESSION_TOKEN_URL = "/copilot_internal/v2/token";
 
+    @NotNull
     private final String baseAuthURL;
 
     public CopilotClient(@NotNull String authProviderBaseURL) {
@@ -67,6 +66,7 @@ public class CopilotClient extends AbstractHttpAIClient {
     /**
      * Request access to the user's account
      */
+    @NotNull
     public DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
         DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
         HttpRequest request = HttpRequest.newBuilder()
@@ -74,10 +74,10 @@ public class CopilotClient extends AbstractHttpAIClient {
             .header("accept", HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(10)) // Set timeout
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(deviceCodeRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(deviceCodeRequest)))
             .build();
 
-        return GSON.fromJson(client.send(monitor, request), DeviceCodeResponse.class);
+        return CopilotUtils.GSON.fromJson(client.send(monitor, request), DeviceCodeResponse.class);
     }
 
     /**
@@ -99,15 +99,17 @@ public class CopilotClient extends AbstractHttpAIClient {
             .header("accept", HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(5)) // Set timeout
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(accessTokenRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(accessTokenRequest)))
             .build();
 
         Duration expiresIn = Duration.ofSeconds(deviceCodeResponse.expiresIn());
         Duration interval = Duration.ofSeconds(deviceCodeResponse.interval());
         Instant start = Instant.now();
 
-        while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
-            var body = GSON.fromJson(client.send(monitor, request), AccessTokenResponse.class);
+        while (Instant.now().isBefore(start.plus(expiresIn)) &&
+            !monitor.isCanceled() && !cancellationToken.isCancelled()) {
+            String responseString = client.send(monitor, request);
+            var body = CopilotUtils.GSON.fromJson(responseString, AccessTokenResponse.class);
             if (CommonUtils.isNotEmpty(body.accessToken())) {
                 return body.accessToken();
             }
@@ -131,8 +133,8 @@ public class CopilotClient extends AbstractHttpAIClient {
      */
     @NotNull
     public CopilotSessionToken requestSessionToken(
-        DBRProgressMonitor monitor,
-        String accessToken
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String accessToken
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
@@ -144,28 +146,29 @@ public class CopilotClient extends AbstractHttpAIClient {
             .timeout(TIMEOUT)
             .build();
 
-        return GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
+        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
     }
 
     /**
      * Chat with Copilot
      */
+    @NotNull
     public CopilotChatResponse chat(
-        DBRProgressMonitor monitor,
-        String token,
-        CopilotChatRequest chatRequest
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String token,
+        @NotNull CopilotChatRequest chatRequest
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
 
         String responseJson = client.send(monitor, request);
-        return GSON.fromJson(responseJson, CopilotChatResponse.class);
+        return CopilotUtils.GSON.fromJson(responseJson, CopilotChatResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -179,35 +182,104 @@ public class CopilotClient extends AbstractHttpAIClient {
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
 
         client.sendAsync(
             request,
-            line -> {
-                if (line.startsWith(DATA_EVENT)) {
-                    String data = line.substring(6).trim();
-                    if (data.equals(DONE_EVENT)) {
-                        listener.completeBlock();
-                        return;
-                    }
-                    try {
-                        CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
-                        List<String> choices = chunk.choices().stream()
-                            .takeWhile(it -> it.delta().content() != null)
-                            .map(it -> it.delta().content())
-                            .toList();
-                        listener.nextChunk(new AIEngineResponseChunk(choices));
-                        listener.usage(chunk.getAIUsage());
-                    } catch (Exception e) {
-                        listener.error(e);
-                    }
-                }
-            },
+            new StreamConsumer(listener),
             listener::error,
             listener::completeBlock
         );
+    }
+
+    private static class StreamConsumer implements Consumer<String> {
+        private static final String FINISH_REASON_TOOL_CALLS = "tool_calls";
+
+        private final AIEngineResponseConsumer listener;
+        private final Map<Integer, CopilotToolCallAccumulator> toolCalls = new HashMap<>();
+
+        private StreamConsumer(@NotNull AIEngineResponseConsumer listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void accept(@NotNull String line) {
+            if (!line.startsWith(DATA_EVENT)) {
+                return;
+            }
+
+            String data = line.substring(DATA_EVENT.length()).trim();
+            if (DONE_EVENT.equals(data)) {
+                return;
+            }
+
+            try {
+                handleChunk(CopilotUtils.GSON.fromJson(data, CopilotChatChunk.class));
+            } catch (Exception e) {
+                listener.error(e);
+            }
+        }
+
+        private void handleChunk(@NotNull CopilotChatChunk chunk) throws DBException {
+            for (CopilotChunkChoice choice : chunk.choices()) {
+                if (FINISH_REASON_TOOL_CALLS.equals(choice.finishReason())) {
+                    flushToolCalls();
+                }
+
+                CopilotChunkDelta delta = choice.delta();
+                if (delta == null) {
+                    continue;
+                }
+
+                if (delta.content() != null) {
+                    listener.nextChunk(new AIEngineResponseChunk(List.of(delta.content())));
+                }
+
+                accumulateToolCalls(delta.toolCalls());
+            }
+
+            listener.usage(chunk.getAIUsage());
+        }
+
+        private void accumulateToolCalls(@Nullable List<CopilotChatResponse.ToolCall> deltaToolCalls) {
+            if (CommonUtils.isEmpty(deltaToolCalls)) {
+                return;
+            }
+
+            for (CopilotChatResponse.ToolCall toolCall : deltaToolCalls) {
+                CopilotToolCallAccumulator accumulator = toolCalls.computeIfAbsent(
+                    toolCall.index(),
+                    key -> new CopilotToolCallAccumulator()
+                );
+                if (toolCall.id() != null) {
+                    accumulator.setId(toolCall.id());
+                }
+
+                CopilotChatResponse.Function function = toolCall.function();
+                if (function == null) {
+                    continue;
+                }
+                if (function.name() != null) {
+                    accumulator.setName(function.name());
+                }
+                if (function.arguments() != null) {
+                    accumulator.appendArguments(function.arguments());
+                }
+            }
+        }
+
+        private void flushToolCalls() throws DBException {
+            if (toolCalls.isEmpty()) {
+                return;
+            }
+
+            for (CopilotToolCallAccumulator accumulator : toolCalls.values()) {
+                listener.nextChunk(new AIEngineResponseChunk(CopilotUtils.createFunctionCall(accumulator)));
+            }
+            toolCalls.clear();
+        }
     }
 
     @NotNull
@@ -236,7 +308,7 @@ public class CopilotClient extends AbstractHttpAIClient {
             .build();
 
         var response = client.send(monitor, request);
-        var models = GSON.fromJson(response, CopilotModelList.class);
+        var models = CopilotUtils.GSON.fromJson(response, CopilotModelList.class);
         return models.data().stream()
             .filter(CopilotModel::isEnabled)
             .toList();
