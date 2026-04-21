@@ -806,6 +806,7 @@ public class SQLScriptParser {
         }
         if (element instanceof SQLQuery) {
             SQLQuery query = (SQLQuery) element;
+            query.setNativeParameterBinding(context.getDialect().needsNativeParameterBinding(query.getText()));
             query.setParameters(parseParametersAndVariables(context, query.getText()));
         }
         return element;
@@ -831,6 +832,17 @@ public class SQLScriptParser {
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
         boolean supportParamsInEmbeddedCode =
             context.getPreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED);
+        // When the dialect requires native parameter binding (e.g. Firebird EXECUTE BLOCK),
+        // '?' must be detected regardless of the user's "anonymous parameters" preference
+        // and independent of the DDL / execute-statement skips below.
+        boolean needsNativeBinding = false;
+        try {
+            needsNativeBinding = sqlDialect.needsNativeParameterBinding(
+                document.get(queryOffset, queryLength));
+        } catch (BadLocationException e) {
+            log.warn(e);
+        }
+        char anonymousMark = syntaxManager.getAnonymousParameterMark();
         boolean execQuery = false;
         boolean ddlQuery = false;
         boolean insideDollarQuote = false;
@@ -839,7 +851,7 @@ public class SQLScriptParser {
         ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
-        if (syntaxManager.isParametersEnabled()) {
+        if (syntaxManager.isParametersEnabled() || needsNativeBinding) {
             for (; ; ) {
                 TPToken token = ruleScanner.nextToken();
                 final int tokenOffset = ruleScanner.getTokenOffset();
@@ -874,13 +886,47 @@ public class SQLScriptParser {
                     insideDollarQuote = !insideDollarQuote;
                 }
 
+                // When the dialect requires native binding, scan non-string/non-comment
+                // tokens for raw '?' characters — the tokenizer doesn't emit them as
+                // T_PARAMETER unless the anonymous-parameters preference is enabled.
+                if (needsNativeBinding
+                    && tokenType != SQLTokenType.T_PARAMETER
+                    && tokenType != SQLTokenType.T_STRING
+                    && tokenType != SQLTokenType.T_COMMENT
+                    && tokenType != SQLTokenType.T_QUOTED
+                    && tokenLength > 0
+                ) {
+                    try {
+                        String tokenText = document.get(tokenOffset, tokenLength);
+                        int idx = tokenText.indexOf(anonymousMark);
+                        while (idx >= 0) {
+                            if (parameters == null) {
+                                parameters = new ArrayList<>();
+                            }
+                            String mark = String.valueOf(anonymousMark);
+                            SQLQueryParameter parameter = new SQLQueryParameter(
+                                syntaxManager,
+                                parameters.size(),
+                                mark,
+                                mark,
+                                tokenOffset + idx - queryOffset,
+                                1);
+                            parameter.setPrevious(getPreviousParameter(parameters, parameter));
+                            parameters.add(parameter);
+                            idx = tokenText.indexOf(anonymousMark, idx + 1);
+                        }
+                    } catch (BadLocationException e) {
+                        log.warn("Can't extract native binding parameter", e);
+                    }
+                }
+
                 if (tokenType == SQLTokenType.T_PARAMETER && tokenLength > 0) {
                     try {
                         String paramName = document.get(tokenOffset, tokenLength);
-                        if (!supportParamsInEmbeddedCode && (ddlQuery || insideDollarQuote)) {
+                        if (!supportParamsInEmbeddedCode && (ddlQuery || insideDollarQuote) && !needsNativeBinding) {
                             continue;
                         }
-                        if (execQuery && paramName.equals(String.valueOf(syntaxManager.getAnonymousParameterMark()))) {
+                        if (execQuery && paramName.equals(String.valueOf(anonymousMark)) && !needsNativeBinding) {
                             // Skip ? parameters for stored procedures (they have special meaning? [DB2])
                             continue;
                         }
@@ -1024,6 +1070,7 @@ public class SQLScriptParser {
             // Parse parameters
             for (SQLScriptElement element : queryList) {
                 if (element instanceof SQLQuery query) {
+                    query.setNativeParameterBinding(parserContext.getDialect().needsNativeParameterBinding(query.getText()));
                     query.setParameters(parseParametersAndVariables(parserContext, query.getOffset(), query.getLength()));
                 }
             }
