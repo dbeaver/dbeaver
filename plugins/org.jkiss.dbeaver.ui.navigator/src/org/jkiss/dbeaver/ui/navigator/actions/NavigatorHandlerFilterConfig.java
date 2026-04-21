@@ -136,7 +136,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
 
         protected boolean isGlobalFilter() {
             return originalNode.getValueObject() instanceof DBPDataSource
-                // if original belongs to databases folder
+                // if the parent node is at datasource level, child is database/catalog
                 || parentNode.getValueObject() instanceof DBPDataSource;
         }
 
@@ -168,7 +168,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (originalNode instanceof DBNDatabaseFolder folder) {
                 childrenClass = folder.getChildrenClass();
             } else {
-                List<DBXTreeNode> childMeta = parentNode.getMeta().getChildren(originalNode);
+                List<DBXTreeNode> childMeta = parentNode.getMeta().getChildren(parentNode);
                 if (!childMeta.isEmpty() && childMeta.getFirst() instanceof DBXTreeItem item) {
                     childrenClass = parentNode.getChildrenClass(item);
                 }
