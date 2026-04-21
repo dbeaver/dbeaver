@@ -94,7 +94,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     protected Path tempFolder;
 
-    protected void initialize() {
+    protected void initialize() throws DBException {
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefStore = getPreferenceStore();
@@ -119,6 +119,13 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
+        DBPApplication application = getApplication();
+        if (application.isHeadlessMode()) {
+            postInitialize();
+        }
+    }
+
+    public void postInitialize() {
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
             activatePluginServices();

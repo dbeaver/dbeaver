@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,30 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.generic.GenericMetaModelRegistry;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
+public class ClickhouseDataSourceProvider extends GenericDataSourceProvider<ClickhouseDataSource> {
 
+    @DynamicCall
     public ClickhouseDataSourceProvider() {
+        super(ClickhouseDataSource.class);
     }
 
-    @Override
-    public long getFeatures() {
-        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
+    protected ClickhouseDataSourceProvider(@NotNull Class<?extends ClickhouseDataSource> dsClass) {
+        super(dsClass);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public ClickhouseDataSource openDataSource(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBPDataSourceContainer container)
             throws DBException {

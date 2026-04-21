@@ -74,10 +74,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
-        return new AIEngineRequestFactory(
-            new AIDatabaseSnapshotService(),
-            new DummyTokenCounter()
-        );
+        return new AIEngineRequestFactory(new DummyTokenCounter());
     }
 
     @NotNull
@@ -161,18 +158,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @Override
     public boolean isFunctionSupported() {
-        AIToolboxManager toolboxManager = this.getToolboxManager();
-        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
-        if (!functionSettings.isFunctionsEnabled()) {
-            return false;
-        }
-        try {
-            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-            return engineDescriptor.isSupportsFunctions();
-        } catch (DBException e) {
-            log.debug(e);
-            return false;
-        }
+        return false;
     }
 
     @NotNull
@@ -236,9 +222,6 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         Map<String, Object> arguments = functionCall.getArguments();
-        if (arguments == null) {
-            arguments = Map.of();
-        }
         log.debug("Call AI function " + function.getId() + "(" +
             arguments.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())
