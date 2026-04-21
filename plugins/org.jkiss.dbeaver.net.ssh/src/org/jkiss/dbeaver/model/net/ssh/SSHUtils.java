@@ -98,7 +98,7 @@ public class SSHUtils {
     }
 
 
-    public static boolean isKeyEncrypted(String privKeyValue) {
+    public static boolean isKeyEncrypted(@NotNull String privKeyValue) {
         // Check whether this key is encrypted
         if (privKeyValue != null) {
             byte[] keyBinary = privKeyValue.getBytes(StandardCharsets.UTF_8);
