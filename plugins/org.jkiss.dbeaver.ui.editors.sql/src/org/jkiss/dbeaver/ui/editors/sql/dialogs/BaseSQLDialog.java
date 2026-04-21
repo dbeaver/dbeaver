@@ -192,11 +192,9 @@ public abstract class BaseSQLDialog extends BaseDialog {
                     NLS.bind(SQLEditorMessages.dialog_view_sql_save_to_file_failure_message, file),
                     e
                 );
-                return false;
             }
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
