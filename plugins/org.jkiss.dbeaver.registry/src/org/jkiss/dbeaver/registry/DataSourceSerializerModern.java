@@ -55,6 +55,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataSourceSerializerModern<T extends DataSourceDescriptor> implements DataSourceSerializer<T> {
 
@@ -624,10 +625,11 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     config.setServerName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_SERVER));
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
-                    {
+
                         final SecureCredentials creds = configurationManager.isSecure() ?
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
+                    if (shouldUpdateCreds(creds)) {
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
@@ -774,17 +776,16 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
+                // Preferences
+                DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+                preferenceStore.clear();
+                Map<String, String> customProperties = JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES);
+                customProperties.forEach(preferenceStore::setValue);
+
                 setCurrentUserSettings(dataSource, conObject);
 
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
-
-                // Preferences
-                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
-                preferenceProperties.clear();
-                preferenceProperties.putAll(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-                );
 
                 {
                     // Extensions
@@ -863,13 +864,24 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
+        DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+        if (userSettings != null) {
+
+            Map<String, String> datasourceUserSettings = userSettings.entrySet().stream()
+                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            preferenceStore.putUserSettings(datasourceUserSettings);
+        }
+
         dataSource.getNavigatorSettings().reset();
 
+        // Navigator settings
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+            dataSource.getNavigatorSettings().setUserSettings(true);
             DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
             dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
@@ -880,6 +892,13 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (!CommonUtils.isEmpty(userSettings)) {
             UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
         }
+    }
+
+    private boolean shouldUpdateCreds(@NotNull SecureCredentials creds) {
+        boolean isCredsResolved = creds.getUserName() != null && creds.getUserPassword() != null;
+        return isCredsResolved
+            // in TE secrets must be resolved by dataSource itself, if not present here
+            || !DBWorkbench.isDistributed();
     }
 
 

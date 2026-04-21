@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.TableFunction;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -633,11 +634,24 @@ public class SQLServerDataSource
     }
 
     /**
-     * Returns true only in case we find the table and this table has clustered COLUMNSTORE index.
-     * These types of tables restrict special reading rules: do not scroll results or use TOP in the SELECT.
+     * Returns true if the query targets a table-valued function (TVF), or if the queried table
+     * has a clustered COLUMNSTORE index. In both cases, TOP-based row limit injection is forced:
+     * TVFs require it because SET ROWCOUNT (the fallback) is a session-level setting that also
+     * limits DML inside multi-statement TVFs, causing the function to return fewer rows than
+     * expected before the outer WHERE/ORDER BY is applied. Clustered COLUMNSTORE index tables
+     * require it because they do not support scrollable result sets.
      */
     @Override
     public boolean isForceTransform(DBCSession session, SQLQuery sqlQuery) {
+        try {
+            Statement statement = SQLSemanticProcessor.parseQuery(this.sqlDialect, sqlQuery.getText());
+            if (statement instanceof PlainSelect plainSelect
+                && plainSelect.getFromItem() instanceof TableFunction) {
+                return true;
+            }
+        } catch (DBException e) {
+            log.debug("Could not parse query to check for table-valued function", e);
+        }
         try {
             SQLServerTableBase table = SQLServerUtils.getTableFromQuery(session, sqlQuery, this);
             return table != null && table.isClustered(session.getProgressMonitor());

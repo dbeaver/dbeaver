@@ -46,7 +46,6 @@ public class AIEngineRequestFactory {
     // Reserved tokens for overhead (API limits, formatting, metadata, etc.)
     private static final int OVERHEAD_TOKEN_RESERVE = 100;
 
-    private final AIDatabaseSnapshotService databaseSnapshotService;
     private final TokenCounter tokenCounter;
 
     protected record RequestFunctions(
@@ -57,11 +56,8 @@ public class AIEngineRequestFactory {
             this(Set.of(), Set.of());
         }
     }
-    public AIEngineRequestFactory(
-        @NotNull AIDatabaseSnapshotService databaseSnapshotService,
-        @NotNull TokenCounter tokenCounter
-    ) {
-        this.databaseSnapshotService = databaseSnapshotService;
+
+    public AIEngineRequestFactory(@NotNull TokenCounter tokenCounter) {
         this.tokenCounter = tokenCounter;
     }
 
@@ -107,19 +103,21 @@ public class AIEngineRequestFactory {
         String dbSnapshot = "";
         boolean isContextTruncated = false;
 
-        if (!engineDescriptor.isSupportsFunctions()) {
-            // Build DB snapshot in first prompt if engine doesn't support functions
-            // (functions provide smart context read)
-            if (databaseContext != null && dbSnapshotTokenBudget > 0) {
-                AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
-                    monitor,
-                    databaseContext,
-                    dbSnapshotTokenBudget
-                );
-                if (dbSnapshotBuilder != null) {
-                    dbSnapshot = dbSnapshotBuilder.toString();
-                    isContextTruncated = dbSnapshotBuilder.isTruncated();
-                }
+        // Build full DB snapshot (t) in first prompt if engine doesn't support functions
+        // (functions provide smart context read)
+        if (databaseContext != null && dbSnapshotTokenBudget > 0) {
+            AIDatabaseSnapshotService databaseSnapshotService = new AIDatabaseSnapshotService();
+
+            boolean functionsEnabled = isFunctionsEnabled(assistant, engineDescriptor);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(
+                monitor,
+                databaseContext,
+                functionsEnabled,
+                dbSnapshotTokenBudget
+            );
+            if (dbSnapshotBuilder != null) {
+                dbSnapshot = dbSnapshotBuilder.build();
+                isContextTruncated = dbSnapshotBuilder.isTruncated();
             }
         }
 
@@ -152,17 +150,26 @@ public class AIEngineRequestFactory {
         return request;
     }
 
+    private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIEngineDescriptor engineDescriptor) {
+        if (!assistant.isFunctionSupported()) {
+            return false;
+        }
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        return engineDescriptor.isSupportsFunctions() && functionSettings.isFunctionsEnabled();
+    }
+
     @NotNull
     protected RequestFunctions determineRequestTools(
         @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIFunctionContext functionContext
     ) {
-        AIToolboxManager toolboxManager = assistant.getToolboxManager();
-        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
-        if (!engineDescriptor.isSupportsFunctions() || !functionSettings.isFunctionsEnabled()) {
+        if (!isFunctionsEnabled(assistant, engineDescriptor)) {
             return new RequestFunctions();
         }
+        AIToolboxManager toolboxManager = assistant.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
 
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
         AIPromptGeneratorDescriptor prompt = AIPromptGeneratorRegistry.getInstance()
@@ -188,7 +195,7 @@ public class AIEngineRequestFactory {
                 continue;
             }
             AIFunctionSettings.ToolboxSettings toolboxSettings = functionSettings.getToolboxSettings(toolbox);
-            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions()) {
+            for (AIFunctionDescriptor function : toolbox.getSupportedFunctions(AIFunctionPurpose.TOOL)) {
                 if (toolboxSettings.isFunctionEnabled(function)) {
                     enabledFunctions.add(function);
                 }

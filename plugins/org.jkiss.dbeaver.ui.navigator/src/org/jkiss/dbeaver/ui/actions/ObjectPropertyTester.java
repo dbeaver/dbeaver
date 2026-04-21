@@ -245,7 +245,10 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if (node.getParentNode() instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+                if (!(node instanceof DBNDatabaseFolder && node.getParentNode() instanceof DBNDataSource) && // Do not show filters for root folders
+                    node.getParentNode() instanceof DBNDatabaseNode dbNode &&
+                    dbNode.getItemsMeta() != null
+                ) {
                     return true;
                 }
                 break;
@@ -257,7 +260,7 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
                     if (filter != null) {
-                        UIServiceFilterConfig service = DBWorkbench.getService(UIServiceFilterConfig.class);
+                        UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
                         boolean isUserChangeable = service == null || service.isUserChangeable(filter);
                         if ("defined".equals(expectedValue)) {
                             return isUserChangeable && !filter.isEmpty();

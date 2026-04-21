@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.help.CLIHelpFactory;
 import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
 import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
@@ -31,8 +32,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -51,6 +50,9 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     //transformers for specific command
     protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
     static {
+        //auto width for terminal
+        System.setProperty("picocli.usage.width", "AUTO");
+
         IExtensionRegistry er = Platform.getExtensionRegistry();
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
@@ -289,6 +291,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         for (CLITransformerDescriptor transformer : globalTransformers) {
             transformer.getTransformer().transform(topLevel.getCommandSpec());
         }
+        topLevel.setHelpFactory(new CLIHelpFactory());
         return topLevel;
     }
 
