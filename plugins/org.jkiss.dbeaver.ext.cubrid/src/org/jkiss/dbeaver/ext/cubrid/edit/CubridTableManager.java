@@ -79,9 +79,8 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     public void appendPartition(DBRProgressMonitor monitor, StringBuilder query, CubridTable table) throws DBException {
         List<CubridPartition> partitions = table.getPartitions(monitor);
-        String type = partitions.getFirst().getTableType().toUpperCase();
+        String type = partitions.getFirst().getTableType();
         String key = partitions.getFirst().getExpression();
-        CubridTableColumn column = (CubridTableColumn) table.getAttribute(monitor, key);
 
         query.append(String.format("PARTITION BY %s (%s)", type, key));
         if ("HASH".equals(type)) {
@@ -98,13 +97,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
                 if ("MAXVALUE".equalsIgnoreCase(value)) {
                     query.append("MAXVALUE");
                 } else {
-                    query.append("(").append(DBPDataKind.NUMERIC == column.getDataKind() ?
-                        value : SQLUtils.quoteString(partition, value)).append(")");
+                    query.append("(").append(value).append(")");
                 }
             } else { //LIST
                 query.append(" VALUES IN ");
-                query.append("(").append(DBPDataKind.NUMERIC == column.getDataKind() ?
-                    value : "'" + value.replaceAll(",\\s*", "', '") + "'").append(")");
+                query.append("(").append(value).append(")");
             }
             if (!CommonUtils.isEmpty(partition.getDescription())) {
                 query.append(" COMMENT ").append(SQLUtils.quoteString(partition, partition.getDescription()));
