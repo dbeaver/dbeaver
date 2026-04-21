@@ -19,6 +19,8 @@
     <extension-point id="org.jkiss.dbeaver.language" name="%extension-point.org.jkiss.dbeaver.language.name" schema="schema/org.jkiss.dbeaver.language.exsd"/>
     <extension-point id="org.jkiss.dbeaver.task" name="%extension-point.org.jkiss.dbeaver.task.name" schema="schema/org.jkiss.dbeaver.task.exsd"/>
     <extension-point id="org.jkiss.dbeaver.productFeature" name="%extension-point.org.jkiss.dbeaver.productFeature.name" schema="schema/org.jkiss.dbeaver.productFeature.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.nativeClient" name="%extension-point.org.jkiss.dbeaver.nativeClient.name"
+                     schema="schema/org.jkiss.dbeaver.nativeClient.exsd"/>
 
     <!-- Language names should be written in their respective languages. Do not localize them -->
     <extension point="org.jkiss.dbeaver.language">
@@ -110,7 +112,7 @@
         <repository id="oss.sonatype.org" snapshot="true" name="%maven.repository.sonatype" url="https://oss.sonatype.org/content/repositories/snapshots/" order="0"/>
         <repository id="dbeaver-local-storage" name="dbeaver-local-storage" url="http://localhost:8081/repository/maven-public/" order="0"
                     artifactory="true"/>
-        <repository id="dbeaver-storage" name="dbeaver-storage" url="https://dbeaver.artifactory.com/repository/maven-public/" order="0"
+        <repository id="dbeaver-storage" name="dbeaver-storage" url="https://artifactory.dbeaver.com/repository/maven-public/" order="0"
                     artifactory="true"/>
 
         <!-- Non-HTTPS Maven Central is no longer alive. Hooray. -->

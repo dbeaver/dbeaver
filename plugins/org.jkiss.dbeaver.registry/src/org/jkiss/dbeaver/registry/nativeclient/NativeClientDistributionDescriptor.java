@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry.tool;
+package org.jkiss.dbeaver.registry.nativeclient;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -36,11 +37,19 @@ import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
+import org.jkiss.dbeaver.registry.maven.MavenRepository;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,8 +58,8 @@ import java.util.Set;
 /**
  * NativeClientDistributionDescriptor
  */
-public class NativeClientArtifactDescriptor {
-    private static final Log log = Log.getLog(NativeClientArtifactDescriptor.class);
+public class NativeClientDistributionDescriptor extends AbstractDescriptor {
+    private static final Log log = Log.getLog(NativeClientDistributionDescriptor.class);
 
     private final List<NativeClientFileDescriptor> files = new ArrayList<>();
     private final Set<String> supportedDrivers = new HashSet<>();
@@ -62,21 +71,32 @@ public class NativeClientArtifactDescriptor {
     //path for bundled resources
     private String resourcePath;
 
-    public NativeClientArtifactDescriptor(IConfigurationElement config) {
+    //executable folder
+    private String executionPath;
+    private String type;
+
+    public NativeClientDistributionDescriptor(IConfigurationElement config) {
+        super(config);
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
         this.os = osName == null ? null : new OSDescriptor(
             osName,
-            config.getAttribute(RegistryConstants.ATTR_ARCH)
-        );
+            config.getAttribute(RegistryConstants.ATTR_ARCH));
 
         this.targetPath = config.getAttribute("targetPath");
         this.remotePath = config.getAttribute("remotePath");
         this.resourcePath = config.getAttribute("resourcePath");
+        this.executionPath = config.getAttribute("executionPath");
+        if (CommonUtils.isNotEmpty(config.getAttribute("executionPath"))) {
+            this.executionPath = this.targetPath + "/" + config.getAttribute("executionPath");
+        } else {
+            this.executionPath = this.targetPath;
+        }
         for (IConfigurationElement fileElement : config.getChildren("file")) {
             if (DriverUtils.matchesBundle(fileElement)) {
                 this.files.add(new NativeClientFileDescriptor(fileElement));
             }
         }
+        this.type = config.getAttribute("type");
         for (IConfigurationElement element : config.getChildren(RegistryConstants.TAG_DRIVER)) {
             supportedDrivers.add(element.getAttribute(RegistryConstants.ATTR_ID));
         }
@@ -94,6 +114,10 @@ public class NativeClientArtifactDescriptor {
         return targetPath;
     }
 
+    public String getExecutionPath() {
+        return executionPath;
+    }
+
     public String getRemotePath() {
         return remotePath;
     }
@@ -104,14 +128,7 @@ public class NativeClientArtifactDescriptor {
 
     public boolean downloadFiles(DBRProgressMonitor monitor, DBPNativeClientLocation location) throws DBException, InterruptedException {
         File targetPath = location.getPath();
-        List<NativeClientFileDescriptor> filesToDownload = new ArrayList<>();
-        for (NativeClientFileDescriptor file : files) {
-            String fileName = file.getName();
-            File targetFile = new File(targetPath, fileName);
-            if (!targetFile.exists()) {
-                filesToDownload.add(file);
-            }
-        }
+        List<DownloadCandidate> filesToDownload = getDownloadCandidates(targetPath);
 
         if (filesToDownload.isEmpty()) {
             return true;
@@ -126,13 +143,11 @@ public class NativeClientArtifactDescriptor {
             if (monitor.isCanceled()) {
                 throw new InterruptedException();
             }
-            NativeClientFileDescriptor file = filesToDownload.get(i);
-            String fileName = file.getName();
-            File targetFile = new File(targetPath, fileName);
+            DownloadCandidate downloadCandidate = filesToDownload.get(i);
 
-            String fileRemotePath = remotePath + "/" + file.getName();
-            String localResourcePath = resourcePath + "/" + file.getName();
-
+            String fileRemotePath = downloadCandidate.remotePath();
+            String localResourcePath = downloadCandidate.localResourcePath();
+            File targetFile = downloadCandidate.targetInstallationPath();
             {
                 // Try to extract local resource file
                 URL url = DataSourceProviderRegistry.getInstance().findResourceURL(localResourcePath);
@@ -162,6 +177,7 @@ public class NativeClientArtifactDescriptor {
             }
             // Try to download remote file
             if (fileRemotePath.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
+                String fileName = targetFile.getName();
                 // Repository file
                 fileRemotePath = fileRemotePath.substring(DriverLibraryRepository.PATH_PREFIX.length());
                 String primarySource = DriverDescriptor.getDriversPrimarySource();
@@ -172,28 +188,87 @@ public class NativeClientArtifactDescriptor {
                 String taskName = "Download local client file '" + fileName + "'" + " (" + (i + 1) + "/" + filesToDownload.size() + ")";
                 monitor.beginTask(taskName, 1);
                 try {
-                    WebUtils.downloadRemoteFile(
-                        monitor,
+                    WebUtils.downloadRemoteFile(monitor,
                         taskName,
                         externalURL,
                         targetFile.toPath(),
-                        null
-                    );
+                        null);
                 } catch (IOException e) {
                     log.debug("Error downloading file '" + fileName + "'", e);
                     throw new DBException("Error downloading file '" + fileName + "': " + e.getMessage());
                 }
             } else if (fileRemotePath.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
-                String mavenPath = fileRemotePath.substring(DriverLibraryMavenArtifact.PATH_PREFIX.length())
-                    .replaceAll("/", "");
+                String mavenPath = fileRemotePath.substring(DriverLibraryMavenArtifact.PATH_PREFIX.length());
                 var mavenArtifactRef = new MavenArtifactReference(mavenPath);
-                MavenArtifactVersion version = MavenRegistry.getInstance()
-                    .findArtifact(new LoggingProgressMonitor(), null, mavenArtifactRef);
-                version.getExternalURL("tar.gz");
-                System.out.println();
+                var mavenRegistry = MavenRegistry.getInstance();
+                MavenArtifactVersion version = mavenRegistry
+                    .findArtifact(
+                        new LoggingProgressMonitor(), null, mavenArtifactRef,
+                        mavenRegistry.getRepositories()
+                            .stream()
+                            .filter(MavenRepository::isArtifactory)
+                            .toList()
+                    );
+                if (version == null) {
+                    throw new DBException("Can't find maven artifact '" + mavenPath + "'");
+                }
+                String externalUrl = CommonUtils.isEmpty(type) ? version.getExternalURL()
+                    : version.getExternalURL(type);
+                try {
+                    Path tempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, "driver-files");
+                    Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localResourcePath));
+                    WebUtils.downloadRemoteFile(
+                        monitor,
+                        "Download native client artifact '" + mavenPath + "'",
+                        externalUrl,
+                        tempFile,
+                        version.getArtifact().getRepository().getAuthInfo()
+                    );
+                    if ("zip".equalsIgnoreCase(type)) {
+                        try (var io = Files.newInputStream(tempFile)) {
+                            IOUtils.extractZipArchive(io, targetFile.toPath());
+                        }
+                    } else {
+                        Files.move(tempFile, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    throw new DBException("Error creating temporary file for '" + localResourcePath + "'", e);
+                }
             }
         }
         return true;
+    }
+
+    @NotNull
+    private List<DownloadCandidate> getDownloadCandidates(File targetPath) {
+        List<DownloadCandidate> filesToDownload = new ArrayList<>();
+        for (NativeClientFileDescriptor file : files) {
+            String fileName = file.getName();
+            File targetFile = new File(targetPath, fileName);
+            if (!targetFile.exists()) {
+                String fileRemotePath = remotePath + "/" + file.getName();
+                String localResourcePath = resourcePath + "/" + file.getName();
+
+                filesToDownload.add(new DownloadCandidate(fileRemotePath, targetFile, localResourcePath));
+            }
+        }
+        if (isMavenArtifact()) {
+            if (!targetPath.exists()) {
+                filesToDownload.add(new DownloadCandidate(remotePath, targetPath, resourcePath));
+            }
+        }
+        return filesToDownload;
+    }
+
+    private record DownloadCandidate(
+        @NotNull String remotePath,
+        @NotNull File targetInstallationPath,
+        @NotNull String localResourcePath
+    ) {
+    }
+
+    private boolean isMavenArtifact() {
+        return remotePath.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX);
     }
 
     @Override

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry.tool;
+package org.jkiss.dbeaver.registry.nativeclient;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
@@ -95,7 +95,6 @@ public class NativeClientDescriptor extends AbstractDescriptor {
             }
         }
         return null;
-
     }
 
     @Override

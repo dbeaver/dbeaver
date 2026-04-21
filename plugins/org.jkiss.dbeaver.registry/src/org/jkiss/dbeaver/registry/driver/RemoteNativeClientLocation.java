@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.tool.NativeClientDescriptor;
-import org.jkiss.dbeaver.registry.tool.NativeClientDistributionDescriptor;
+import org.jkiss.dbeaver.registry.nativeclient.NativeClientDescriptor;
+import org.jkiss.dbeaver.registry.nativeclient.NativeClientDistributionDescriptor;
 
 import java.io.File;
 
