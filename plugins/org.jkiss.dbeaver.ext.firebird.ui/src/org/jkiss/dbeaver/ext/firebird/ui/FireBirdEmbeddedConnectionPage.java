@@ -35,12 +35,6 @@ public class FireBirdEmbeddedConnectionPage extends ConnectionPageAbstract {
 
     private static final String PROP_NATIVE_LIBRARY_PATH = "nativeLibraryPath";
 
-    private static final String TOOLTIP_NATIVE_LIB_PATH =
-        "Directory containing the Firebird client library (fbclient.dll on Windows, " +
-        "libfbclient.so on Linux, libfbclient.dylib on macOS).\n" +
-        "Required for Jaybird 5.x embedded connections. Leave empty if the library " +
-        "is already on the system PATH or jna.library.path.";
-
     private Text nativeLibPathText;
 
     public FireBirdEmbeddedConnectionPage() {
@@ -55,20 +49,18 @@ public class FireBirdEmbeddedConnectionPage extends ConnectionPageAbstract {
 
         Composite group = UIUtils.createTitledComposite(container, FireBirdUIMessages.page_embedded_group_native_library, 3, GridData.FILL_HORIZONTAL);
 
-        UIUtils.createControlLabel(group, "Native Library Path");
+        UIUtils.createControlLabel(group, FireBirdUIMessages.page_embedded_label_native_library_path);
 
         nativeLibPathText = new Text(group, SWT.BORDER | SWT.SINGLE);
         nativeLibPathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        nativeLibPathText.setToolTipText(TOOLTIP_NATIVE_LIB_PATH);
+        nativeLibPathText.setToolTipText(FireBirdUIMessages.page_embedded_label_native_library_path_tip);
 
-        UIUtils.createDialogButton(group, "Browse...", null, TOOLTIP_NATIVE_LIB_PATH, new SelectionAdapter() {
+        UIUtils.createDialogButton(group, FireBirdUIMessages.page_embedded_button_browse, null, FireBirdUIMessages.page_embedded_label_native_library_path_tip, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-                dialog.setText("Select Firebird Library Directory");
-                dialog.setMessage(
-                    "Select the directory containing the Firebird client library " +
-                    "(fbclient.dll on Windows, libfbclient.so on Linux).");
+                dialog.setText(FireBirdUIMessages.page_embedded_dialog_title);
+                dialog.setMessage(FireBirdUIMessages.page_embedded_dialog_message);
                 String current = nativeLibPathText.getText().trim();
                 if (!current.isEmpty()) {
                     dialog.setFilterPath(current);

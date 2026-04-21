@@ -23,6 +23,11 @@ public class FireBirdUIMessages extends NLS {
 
     public static String page_embedded_title;
     public static String page_embedded_group_native_library;
+    public static String page_embedded_label_native_library_path;
+    public static String page_embedded_label_native_library_path_tip;
+    public static String page_embedded_button_browse;
+    public static String page_embedded_dialog_title;
+    public static String page_embedded_dialog_message;
 
     static {
         // initialize resource bundle
