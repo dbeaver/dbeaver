@@ -639,9 +639,9 @@ public class DataSourceDescriptor
             } else {
                 filterMapping.customFilters.put(FilterMapping.getFilterContainerUniqueID(parentObject), filter);
             }
+        } else {
+            setObjectFilter(type.getName(), toObjectID(parentObject), filter);
         }
-
-        updateObjectFilter(type.getName(), toObjectID(parentObject), filter);
     }
 
     @Nullable
@@ -664,7 +664,7 @@ public class DataSourceDescriptor
         filterMap.clear();
     }
 
-    protected void updateObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
+    protected void setObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
             filterMapping = new FilterMapping(typeName);
