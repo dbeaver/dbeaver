@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,23 +33,23 @@ import org.jkiss.utils.CommonUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class BigQueryDataSource extends GenericDataSource {
+public class BQDataSource extends GenericDataSource {
 
-    public BigQueryDataSource(
+    public BQDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container,
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
-        super(monitor, container, metaModel, new BigQuerySQLDialect());
+        super(monitor, container, metaModel, new BQSQLDialect());
     }
 
     @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
-        return new BigQueryExecutionContext(instance, type);
+        return new BQExecutionContext(instance, type);
     }
 
     @Override
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         String connectionURL = super.getConnectionURL(connectionInfo);
         if (CommonUtils.isNotEmpty(connectionURL) &&
             (connectionURL.contains("OAuthPvtKeyPath={server};") || connectionURL.contains("OAuthServiceAcctEmail=;"))
@@ -71,15 +71,15 @@ public class BigQueryDataSource extends GenericDataSource {
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>();
-        props.put(BigQueryConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getDatabaseName());
+        props.put(BQConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getDatabaseName());
         if (connectionInfo.getUserName() != null) {
-            props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
+            props.put(BQConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
         } else {
-            props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, "");
+            props.put(BQConstants.DRIVER_PROP_ACCOUNT, "");
         }
-        String additionalProjects = connectionInfo.getProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
+        String additionalProjects = connectionInfo.getProviderProperty(BQConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
         if (CommonUtils.isNotEmpty(additionalProjects)) {
-            props.put(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
+            props.put(BQConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
         }
 
         return props;
@@ -87,7 +87,7 @@ public class BigQueryDataSource extends GenericDataSource {
 
     @NotNull
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        if (typeName.equals(BigQueryConstants.DATA_TYPE_STRUCT)) {
+        if (typeName.equals(BQConstants.DATA_TYPE_STRUCT)) {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);

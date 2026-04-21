@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.EnumSet;
 /**
  * BigQuery SQL dialect
  */
-public class BigQuerySQLDialect extends GenericSQLDialect {
+public class BQSQLDialect extends GenericSQLDialect {
 
     private static final String[] EXEC_KEYWORDS = {"CALL"};
 
@@ -39,7 +39,7 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
         {"REPEAT", SQLConstants.BLOCK_END + " REPEAT"}
     };
 
-    public BigQuerySQLDialect() {
+    public BQSQLDialect() {
         super("BigQuery", "google_bigquery");
     }
 
@@ -52,6 +52,16 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
     @Override
     public char getStringEscapeCharacter() {
         return '\\';
+    }
+
+    @Override
+    public int getCatalogUsage() {
+        return USAGE_ALL;
+    }
+
+    @Override
+    public int getSchemaUsage() {
+        return USAGE_ALL;
     }
 
     @NotNull
