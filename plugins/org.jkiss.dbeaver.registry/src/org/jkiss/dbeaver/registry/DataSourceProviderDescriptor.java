@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
-    public static final DataSourceProviderDescriptor NULL_PROVIDER = new DataSourceProviderDescriptor(null, "NULL");
+    private static DataSourceProviderDescriptor nullProvider;
 
-    private DataSourceProviderRegistry registry;
+    private final DataSourceProviderRegistry registry;
     private DataSourceProviderDescriptor parentProvider;
     private final String id;
     private ObjectType implType;
@@ -122,6 +122,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.inheritAuthModels = CommonUtils.getBoolean(config.getAttribute("inheritAuthModels"), true);
     }
 
+    @NotNull
+    public static synchronized DataSourceProviderDescriptor getNullProvider() {
+        if (nullProvider == null) {
+            nullProvider = new DataSourceProviderDescriptor(DataSourceProviderRegistry.getInstance(), "NULL");
+        }
+        return nullProvider;
+    }
+
     void linkParentProvider(IConfigurationElement config) {
         String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
         if (!CommonUtils.isEmpty(parentId)) {
@@ -137,7 +145,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     void loadExtraConfig(IConfigurationElement config) {
         {
             // Load tree structure
-            if (treeDescriptor == null && parentProvider != null) {
+            if (treeDescriptor == null && parentProvider != null && parentProvider.getTreeDescriptor() != null) {
                 // Use parent's tree
                 this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.getTreeDescriptor());
             }
@@ -227,7 +235,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
-    DataSourceProviderDescriptor(DataSourceProviderRegistry registry, String id) {
+    DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, String id) {
         super("org.jkiss.dbeaver.registry");
         this.registry = registry;
         this.id = id;
@@ -254,17 +262,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         instance = null;
     }
 
+    @NotNull
     public DataSourceProviderRegistry getRegistry() {
         return registry;
     }
 
+    @Nullable
     @Override
     public DataSourceProviderDescriptor getParentProvider() {
         return parentProvider;
     }
 
     @Override
-    public boolean matchesId(String id) {
+    public boolean matchesId(@NotNull String id) {
         if (id.equals(this.id)) return true;
         if (!inheritAuthModels) {
             return false;
@@ -272,6 +282,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return parentProvider != null && parentProvider.matchesId(id);
     }
 
+    @NotNull
     @Override
     public String getId() {
         return id;
@@ -283,18 +294,20 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return CommonUtils.toString(name, id);
     }
 
+    @Nullable
     @Override
     public String getDescription() {
         return description;
     }
 
+    @Nullable
     @Override
     public DBPImage getIcon() {
         return icon;
     }
 
     @NotNull
-    public DBPDataSourceProvider getInstance(DriverDescriptor driver) {
+    public DBPDataSourceProvider getInstance(@NotNull DriverDescriptor driver) {
         if (instance == null) {
             initProviderBundle(driver);
             try {
@@ -311,11 +324,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return instance;
     }
 
-    void replaceImplClass(IContributor contributor, String providerClass) {
+    void replaceImplClass(@NotNull IContributor contributor, @NotNull String providerClass) {
         this.replaceContributor(contributor);
         this.implType = new ObjectType(providerClass);
     }
 
+    @Nullable
     @Override
     public DBXTreeDescriptor getTreeDescriptor() {
         return treeDescriptor == null ? (parentProvider == null ? null : parentProvider.getTreeDescriptor())
@@ -365,6 +379,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         drivers.removeIf(driver -> driver.isCustom() || driver.isDisabled());
     }
 
+    @NotNull
     public List<DriverDescriptor> getEnabledDrivers() {
         List<DriverDescriptor> eDrivers = new ArrayList<>();
         for (DriverDescriptor driver : drivers) {
@@ -412,23 +427,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return null;
     }
 
+    @NotNull
     public DriverDescriptor createDriver() {
         return createDriver(SecurityUtils.generateGUID(false));
     }
 
-    public DriverDescriptor createDriver(String id) {
+    @NotNull
+    public DriverDescriptor createDriver(@NotNull String id) {
         return new DriverDescriptor(this, id);
     }
 
-    public DriverDescriptor createDriver(DriverDescriptor copyFrom) {
+    @NotNull
+    public DriverDescriptor createDriver(@NotNull DriverDescriptor copyFrom) {
         return new DriverDescriptor(this, SecurityUtils.generateGUID(false), copyFrom);
     }
 
-    public void addDriver(DriverDescriptor driver) {
+    public void addDriver(@NotNull DriverDescriptor driver) {
         this.drivers.add(driver);
     }
 
-    public boolean removeDriver(DriverDescriptor driver) {
+    public boolean removeDriver(@NotNull DriverDescriptor driver) {
         if (!driver.isCustom()) {
             driver.setDisabled(true);
             driver.setModified(true);
@@ -459,6 +477,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     //////////////////////////////////////
     // Native clients
 
+    @NotNull
     public List<NativeClientDescriptor> getNativeClients() {
         if (inheritClients && parentProvider != null) {
             List<NativeClientDescriptor> clients = new ArrayList<>(nativeClients);
@@ -472,9 +491,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     // Internal
 
 
-    private void initProviderBundle(DriverDescriptor driver) {
+    private void initProviderBundle(@NotNull DriverDescriptor driver) {
     }
 
+    @NotNull
     private DBXTreeDescriptor loadTreeInfo(@NotNull IConfigurationElement config) {
         DBXTreeDescriptor treeRoot = new DBXTreeDescriptor(
             this,
@@ -491,7 +511,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return treeRoot;
     }
 
-    private void injectTreeNodes(IConfigurationElement config) {
+    private void injectTreeNodes(@NotNull IConfigurationElement config) {
         String injectPath = config.getAttribute(RegistryConstants.ATTR_PATH);
         if (CommonUtils.isEmpty(injectPath)) {
             return;
@@ -569,7 +589,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
-    private void loadTreeNode(DBXTreeNode parent, IConfigurationElement config, DBXTreeNode afterItem) {
+    private void loadTreeNode(
+        @NotNull DBXTreeNode parent,
+        @NotNull IConfigurationElement config,
+        @Nullable DBXTreeNode afterItem
+    ) {
         DBXTreeNode child = null;
         final String refId = config.getAttribute(RegistryConstants.ATTR_REF);
         if (!CommonUtils.isEmpty(refId)) {
@@ -662,7 +686,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
-    private void loadTreeHandlers(DBXTreeNode node, IConfigurationElement config) {
+    private void loadTreeHandlers(@NotNull DBXTreeNode node, @NotNull IConfigurationElement config) {
         IConfigurationElement[] handlerElements = config.getChildren("handler");
         if (!ArrayUtils.isEmpty(handlerElements)) {
             for (IConfigurationElement iconElement : handlerElements) {
@@ -687,7 +711,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
-    private void loadTreeIcon(DBXTreeNode node, IConfigurationElement config) {
+    private void loadTreeIcon(@NotNull DBXTreeNode node, @NotNull IConfigurationElement config) {
         String defaultIcon = config.getAttribute(RegistryConstants.ATTR_ICON);
         IConfigurationElement[] iconElements = config.getChildren(RegistryConstants.ATTR_ICON);
         if (!ArrayUtils.isEmpty(iconElements)) {
@@ -713,6 +737,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
+    @NotNull
     private DriverDescriptor loadDriver(IConfigurationElement config) {
         return new DriverDescriptor(this, config);
     }
@@ -722,11 +747,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return id;
     }
 
+    @NotNull
     public String getFullIdentifier() {
         return getPluginId() + '/' + id;
     }
 
-    public DriverDescriptor getDriverByName(String category, String name) {
+    @Nullable
+    public DriverDescriptor getDriverByName(@Nullable String category, @NotNull String name) {
         if (category != null && category.isEmpty()) {
             category = null;
         }
@@ -737,15 +764,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
         return null;
-    }
-
-    public static boolean matchesId(DBPDataSourceProviderDescriptor providerDescriptor, String id) {
-        for (DBPDataSourceProviderDescriptor dspd = providerDescriptor; dspd != null; dspd = dspd.getParentProvider()) {
-            if (id.equals(dspd.getId())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void setDriverProviderProperties() {

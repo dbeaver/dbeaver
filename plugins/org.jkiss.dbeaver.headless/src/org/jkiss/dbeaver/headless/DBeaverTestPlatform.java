@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.headless;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
@@ -82,7 +83,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     DBeaverTestPlatform() {
     }
 
-    protected void initialize() {
+    protected void initialize() throws DBException {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Test Platform...");
 
