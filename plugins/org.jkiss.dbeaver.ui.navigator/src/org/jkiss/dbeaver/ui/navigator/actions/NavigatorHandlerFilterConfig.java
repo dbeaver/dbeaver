@@ -121,7 +121,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         }
 
         public void configFilterInDialog() throws DBException {
-            boolean globalFilter = originalNode.getValueObject() instanceof DBPDataSource;
+            boolean globalFilter = isGlobalFilter();
             String dialogObjectTitle = createDialogTitle(globalFilter);
             DBSObjectFilter objectFilter = getObjectFilter();
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
@@ -132,6 +132,12 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 globalFilter
             );
             processDialogResponse(dialog);
+        }
+
+        protected boolean isGlobalFilter() {
+            return originalNode.getValueObject() instanceof DBPDataSource
+                // if original belongs to databases folder
+                || parentNode.getValueObject() instanceof DBPDataSource;
         }
 
         @NotNull
