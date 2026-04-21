@@ -168,9 +168,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (originalNode instanceof DBNDatabaseFolder folder) {
                 childrenClass = folder.getChildrenClass();
             } else {
-                List<DBXTreeNode> childMeta = originalNode.getMeta().getChildren(originalNode);
-                if (!childMeta.isEmpty() && childMeta.get(0) instanceof DBXTreeItem item) {
-                    childrenClass = originalNode.getChildrenClass(item);
+                List<DBXTreeNode> childMeta = parentNode.getMeta().getChildren(originalNode);
+                if (!childMeta.isEmpty() && childMeta.getFirst() instanceof DBXTreeItem item) {
+                    childrenClass = parentNode.getChildrenClass(item);
                 }
             }
             if (childrenClass == null) {
