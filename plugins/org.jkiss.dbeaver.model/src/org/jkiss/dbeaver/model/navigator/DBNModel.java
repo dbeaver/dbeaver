@@ -91,6 +91,7 @@ public class DBNModel {
     private final transient List<DBNEvent> eventCache = new ArrayList<>();
     private final Map<DBSObject, Object> nodeMap = new HashMap<>();
     private final List<Function<DBNNode, Boolean>> nodeFilters = new ArrayList<>();
+    private EventProcessingJob eventProcessingJob;
 
     private SMSessionContext modelAuthContext;
 
@@ -133,12 +134,15 @@ public class DBNModel {
         this.root = new DBNRoot(this);
 
         if (isGlobal()) {
-            new EventProcessingJob().schedule();
+          this.eventProcessingJob =  new EventProcessingJob();
+          this.eventProcessingJob.schedule();
         }
     }
 
     public void dispose() {
-
+        if (this.eventProcessingJob != null) {
+            this.eventProcessingJob.cancel();
+        }
         if (root != null) {
             this.root.dispose(false);
             synchronized (nodeMap) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -53,7 +54,12 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+    protected Object fetchColumnValue(
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
         if (useGetArray(session, type)) {
             return getValueFromObject(session, type, resultSet.getArray(index), false, false);
         } else {
@@ -62,12 +68,17 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
-    {
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
         if (object == null) {
             return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, null);
         } else if (object instanceof JDBCCollection col) {
-            return (JDBCCollection)(copy ? col.cloneValue(session.getProgressMonitor()) : col);
+            return copy ? col.cloneValue(session.getProgressMonitor()) : col;
         } else if (object instanceof Array array) {
             return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, array);
         } else if (object.getClass().isArray()) {
@@ -92,17 +103,17 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     @Override
     public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
         DBSDataType dataType;
-        if (type instanceof DBSDataType) {
-            dataType = (DBSDataType) type;
-        } else if (type instanceof DBSTypedObjectEx) {
-            dataType = ((DBSTypedObjectEx) type).getDataType();
+        if (type instanceof DBSDataType dbsDataType) {
+            dataType = dbsDataType;
+        } else if (type instanceof DBSTypedObjectEx dbsTypedObjectEx) {
+            dataType = dbsTypedObjectEx.getDataType();
         } else {
             throw new DBCException("Can't determine array element data type: " + type.getFullTypeName());
         }
         try {
-            DBSDataType componentType = dataType.getComponentType(session.getProgressMonitor());
+            DBSDataType componentType = dataType == null ? null : dataType.getComponentType(session.getProgressMonitor());
             if (componentType == null) {
-                throw new DBCException("Can't determine component data type from " + dataType.getFullTypeName());
+                throw new DBCException("Can't determine component data type from " + dataType);
             }
             Array array = ((JDBCSession) session).createArrayOf(componentType.getFullTypeName(), new Object[0]);
             return getValueFromObject(session, type, array, false, false);
@@ -113,8 +124,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
     @NotNull
     @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
-    {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof JDBCCollection col) {
             return col.makeArrayString('{', '}');
         }
@@ -123,17 +133,15 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
     @Override
     protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
+        @Nullable Object value
+    ) throws DBCException, SQLException {
         if (value == null) {
             statement.setNull(paramIndex, Types.ARRAY);
-        } else if (value instanceof DBDCollection) {
-            DBDCollection collection = (DBDCollection) value;
+        } else if (value instanceof DBDCollection collection) {
             if (collection.isNull()) {
                 statement.setNull(paramIndex, Types.ARRAY);
             } else if (collection instanceof JDBCCollection) {

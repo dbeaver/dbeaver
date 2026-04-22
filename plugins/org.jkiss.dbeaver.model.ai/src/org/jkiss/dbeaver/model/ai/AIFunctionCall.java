@@ -34,7 +34,7 @@ public class AIFunctionCall {
 
     @NotNull
     private String functionName;
-    @NotNull
+    @Nullable
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
@@ -81,7 +81,7 @@ public class AIFunctionCall {
 
     @NotNull
     public Map<String, Object> getArguments() {
-        return arguments;
+        return arguments != null ? arguments : Map.of();
     }
 
     public void setArguments(@NotNull Map<String, Object> arguments) {
@@ -134,7 +134,7 @@ public class AIFunctionCall {
     ) {
         // In headless apps (server apps) we do not call action functions directly
         // We pass all parameters in the result
-        if (function != null) {
+        if (function != null && arguments != null) {
             Map<String, Object> ta = new LinkedHashMap<>(arguments);
             for (Map.Entry<String, Object> arg : arguments.entrySet()) {
                 String paramName = arg.getKey();

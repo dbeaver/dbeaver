@@ -430,11 +430,11 @@ public class MySQLCatalog implements
         getTableCache().getAllObjects(monitor, this);
         if ((scope & STRUCT_ENTITIES) != 0) {
             indexCache.getAllObjects(monitor, this);
-            cacheTablesAdditionalInfo(monitor);
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
             getTableCache().loadChildren(monitor, this, null);
+            cacheTablesAdditionalInfo(monitor);
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table constraints");
