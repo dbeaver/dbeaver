@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
@@ -91,7 +92,7 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
 
     private static boolean isImageFlipped() {
         // See org.eclipse.ui.internal.Workbench.getImage
-        return Util.isMac() && Integer.parseInt(System.getProperty("os.version").split("\\.")[0]) == 14;
+        return Util.isMac() && RuntimeUtils.getOSVersion().getMajor() == 14;
     }
 
     @Override
