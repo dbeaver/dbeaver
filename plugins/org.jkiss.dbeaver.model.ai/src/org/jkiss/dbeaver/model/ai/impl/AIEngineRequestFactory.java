@@ -143,7 +143,7 @@ public class AIEngineRequestFactory {
         allMessages.addAll(messages);
 
         ChatTruncator.TruncationResult result = chatTruncator.truncate(allMessages);
-        List<AIMessage> toSend = result.getMessages();
+        List<AIMessage> toSend = result.messages();
         AIEngineRequest request = new AIEngineRequest(toSend);
         request.setWasPromptTruncated(isContextTruncated || result.wasTruncated());
         request.setFunctions(new ArrayList<>(requestFunctions.supportedFunctions()));

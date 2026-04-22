@@ -51,23 +51,7 @@ public final class ChatTruncator {
      * Result of a truncation operation.
      * {@link #wasTruncated()} returns {@code true} if any message was dropped or its content was cut.
      */
-    public static final class TruncationResult {
-        private final List<AIMessage> messages;
-        private final boolean wasTruncated;
-
-        private TruncationResult(@NotNull List<AIMessage> messages, boolean wasTruncated) {
-            this.messages = messages;
-            this.wasTruncated = wasTruncated;
-        }
-
-        @NotNull
-        public List<AIMessage> getMessages() {
-            return messages;
-        }
-
-        public boolean wasTruncated() {
-            return wasTruncated;
-        }
+    public record TruncationResult(@NotNull List<AIMessage> messages, boolean wasTruncated) {
     }
 
     /**
