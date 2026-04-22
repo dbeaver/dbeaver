@@ -268,6 +268,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createDataSource(
         @NotNull String id,
@@ -277,6 +278,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return new DataSourceDescriptor(this, id, driver, connConfig);
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createDataSource(
         @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
@@ -1043,7 +1045,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.persistSecrets(secretController);
         }
@@ -1056,7 +1058,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.resolveSecrets(secretController);
         }
@@ -1068,13 +1070,14 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    @NotNull
     public DBPDataSourceContainer createDataSource(
-        DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
-        DBPDataSourceOrigin origin,
-        String id,
-        DBPDriver originalDriver,
-        DBPDriver substitutedDriver,
-        DBPConnectionConfiguration dbpConnectionConfiguration
+        @NotNull DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver originalDriver,
+        @NotNull DBPDriver substitutedDriver,
+        @NotNull DBPConnectionConfiguration dbpConnectionConfiguration
     ) {
         return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
             substitutedDriver, dbpConnectionConfiguration);
