@@ -99,7 +99,7 @@ public interface DBPDriverLibrary {
     boolean isDownloadable();
 
     @Nullable
-    String getExternalURL(DBRProgressMonitor monitor);
+    String getExternalURL(@NotNull DBRProgressMonitor monitor);
 
     @Nullable
     Path getLocalFile();
@@ -114,12 +114,13 @@ public interface DBPDriverLibrary {
     @Nullable
     Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException;
 
-    void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName)
+    void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, @NotNull String taskName)
         throws IOException, InterruptedException;
 
     @NotNull
     Collection<String> getAvailableVersions(@NotNull DBRProgressMonitor monitor) throws IOException;
 
+    @Nullable
     String getPreferredVersion();
 
     boolean isSecureDownload(@NotNull DBRProgressMonitor monitor);

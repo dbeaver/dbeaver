@@ -80,7 +80,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
