@@ -32,8 +32,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDAssociationType;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotation;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotationBase;
@@ -96,7 +99,53 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         }
         conn.setLineWidth(1);
         conn.setLineStyle(SWT.LINE_CUSTOM);
+
+        if (association.getObject() instanceof DBSTableForeignKey) {
+            DBSForeignKeyModifyRule deleteRule = ((DBSTableForeignKey) association.getObject()).getDeleteRule();
+            /*
+            ColorRegistry colorRegistry = UIUtils.getCurrentTheme().getColorRegistry();
+            Color fgColor = colorRegistry.get(getDeleteRuleColorKey(deleteRule));
+
+            conn.setForegroundColor(fgColor);
+             */
+
+            boolean darkTheme = UIUtils.getCurrentTheme().getId().toLowerCase().contains("dark");
+            switch(deleteRule.getId()) {
+                case "NO_ACTION":
+                    conn.setForegroundColor(darkTheme ? new Color(176, 122, 255) : new Color(126, 87, 194));
+                    break;
+                case "CASCADE":
+                    conn.setForegroundColor(darkTheme ? new Color(255, 95, 95) : new Color(198, 40, 40));
+                    break;
+                case "SET_NULL":
+                    conn.setForegroundColor(darkTheme ? new Color(92, 201, 110) : new Color(46, 125, 50));
+                    break;
+                case "SET_DEFAULT":
+                    conn.setForegroundColor(darkTheme ? new Color(100, 181, 246) : new Color(21, 101, 192));
+                    break;
+                case "RESTRICT":
+                    conn.setForegroundColor(darkTheme ? new Color(255, 179, 71) : new Color(239, 108, 0));
+                    break;
+                case "UNKNOWN":
+                default:
+                    conn.setForegroundColor(darkTheme ? new Color(150, 150, 150) : new Color(120, 120, 120));
+            }
+        }
     }
+
+    /*
+    private String getDeleteRuleColorKey(DBSForeignKeyModifyRule rule) {
+        return switch (rule.getId()) {
+            case "UNKNOWN" -> "dbeaver.erd.deleteRule.unknown";
+            case "NO_ACTION" -> "dbeaver.erd.deleteRule.noAction";
+            case "CASCADE" -> "dbeaver.erd.deleteRule.cascade";
+            case "SET_NULL" -> "dbeaver.erd.deleteRule.setNull";
+            case "SET_DEFAULT" -> "dbeaver.erd.deleteRule.setDefault";
+            case "RESTRICT" -> "dbeaver.erd.deleteRule.restrict";
+            default -> "dbeaver.erd.deleteRule.undefined";
+        };
+    }
+     */
 
     private void createSourceDecorator(PolylineConnection conn, Color bckColor, Color frgColor, ERDAssociationType type, String label) {
         CrowsFootPolylineDecoration sourceDecor;
