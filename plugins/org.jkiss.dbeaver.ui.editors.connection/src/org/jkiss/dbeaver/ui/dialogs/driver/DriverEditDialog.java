@@ -938,7 +938,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         // Set props
         drv.setName(driverNameText.getText());
         drv.setDescription(CommonUtils.notEmpty(driverDescText.getText()));
-        drv.setDriverClassName(driverClassText.getText());
+        drv.setDriverClassName(driverClassText.getText(), true);
         drv.setSampleURL(driverURLText.getText());
         drv.setDriverDefaultPort(driverPortText.getText());
         drv.setDriverDefaultDatabase(driverDatabaseText.getText());

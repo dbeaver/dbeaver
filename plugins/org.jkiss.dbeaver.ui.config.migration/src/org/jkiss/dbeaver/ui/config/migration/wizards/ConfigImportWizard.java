@@ -136,7 +136,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
             DriverDescriptor newDriver = genericProvider.createDriver();
             newDriver.setName(driverInfo.getName());
-            newDriver.setDriverClassName(driverInfo.getDriverClass());
+            newDriver.setDriverClassName(driverInfo.getDriverClass(), true);
             newDriver.setSampleURL(driverInfo.getSampleURL());
             newDriver.setConnectionProperties(driverInfo.getProperties());
             newDriver.setDescription(driverInfo.getDescription());

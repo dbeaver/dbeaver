@@ -345,7 +345,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             curDriver.setName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
                         }
                         curDriver.setDescription(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
-                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
+                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()), false);
                         curDriver.setSampleURL(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
                         curDriver.setDriverDefaultPort(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
                         curDriver.setDriverDefaultDatabase(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DEFAULT_DATABASE), curDriver.getDefaultDatabase()));

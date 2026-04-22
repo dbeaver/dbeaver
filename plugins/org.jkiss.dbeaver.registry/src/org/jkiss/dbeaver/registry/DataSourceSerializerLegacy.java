@@ -225,10 +225,10 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     if (curDataSource != null) {
                         DBPDriver driver = curDataSource.getDriver();
                         if (CommonUtils.isEmpty(driver.getName())) {
-                            if (driver instanceof DriverDescriptor) {
+                            if (driver instanceof DriverDescriptor dd) {
                                 // Broken driver - seems to be just created
-                                ((DriverDescriptor)driver).setName(attributes.getValue(RegistryConstants.ATTR_URL));
-                                ((DriverDescriptor)driver).setDriverClassName("java.sql.Driver");
+                                dd.setName(attributes.getValue(RegistryConstants.ATTR_URL));
+                                dd.setDriverClassName("java.sql.Driver", false);
                             }
                         }
                         DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();

@@ -684,7 +684,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return driverClassName;
     }
 
-    public void setDriverClassName(String driverClassName) {
+    public void setDriverClassName(@NotNull String driverClassName, boolean resetInstance) {
+        if (!resetInstance) {
+            this.driverClassName = driverClassName;
+            return;
+        }
         if (this.driverClassName == null || !this.driverClassName.equals(driverClassName)) {
             this.driverClassName = driverClassName;
             resetDriverInstance();
@@ -980,6 +984,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return null;
     }
 
+    @NotNull
     public DBPDriverLibrary addDriverLibrary(String path, DBPDriverLibrary.FileType fileType) {
         for (DBPDriverLibrary lib : libraries) {
             if (lib.getPath().equals(path)) {
@@ -991,7 +996,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return lib;
     }
 
-    public boolean addDriverLibrary(DBPDriverLibrary descriptor, boolean resetCache) {
+    public boolean addDriverLibrary(@NotNull DBPDriverLibrary descriptor, boolean resetCache) {
         if (resetCache && descriptor instanceof DriverLibraryMavenArtifact mavenLib) {
             mavenLib.resetVersion();
             resetDriverInstance();
@@ -1072,7 +1077,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
             }
         }
-        ArrayList<DBPDriverLoader> loaders = new ArrayList<>();
+        List<DBPDriverLoader> loaders = new ArrayList<>();
         loaders.add(getDefaultDriverLoader());
         loaders.addAll(driverLoaders.values());
         return loaders;
@@ -1246,14 +1251,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
 
-        driverCopy.setName(this.getOrigName());
-        driverCopy.setDescription(this.getOrigDescription());
-        driverCopy.setDriverClassName(this.getOrigClassName());
-        driverCopy.setSampleURL(this.getOrigSampleURL());
-        driverCopy.setDriverDefaultHost(this.getDefaultHost());
-        driverCopy.setDriverDefaultPort(this.getDefaultPort());
-        driverCopy.setDriverDefaultDatabase(this.getDefaultDatabase());
-        driverCopy.setDriverDefaultUser(this.getDefaultUser());
+        driverCopy.name = this.origName;
+        driverCopy.description = this.origDescription;
+        driverCopy.driverClassName = this.origClassName;
+        driverCopy.sampleURL = this.origSampleURL;
+        driverCopy.driverDefaultHost = this.origDefaultHost;
+        driverCopy.driverDefaultPort = this.origDefaultPort;
+        driverCopy.driverDefaultDatabase = this.origDefaultDatabase;
+        driverCopy.driverDefaultUser = this.origDefaultUser;
         driverCopy.setConnectionProperties(this.getOriginalConnectionProperties());
         driverCopy.setThreadSafeDriver(this.isOrigThreadSafeDriver());
         return driverCopy;
