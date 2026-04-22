@@ -263,8 +263,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.fileSources.add(new DriverFileSource(fs));
         }
         for (DBPDriverLibrary library : copyFrom.libraries) {
-            if (library instanceof DriverLibraryAbstract) {
-                this.libraries.add(((DriverLibraryAbstract) library).copyLibrary(this));
+            if (library instanceof DriverLibraryAbstract dla) {
+                this.libraries.add(dla.copyLibrary(this));
             } else {
                 this.libraries.add(library);
             }

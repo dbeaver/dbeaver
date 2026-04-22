@@ -20,15 +20,17 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * If driver requires a commercial license then this class is implemented by DBPDriver
  * and provides information about license details.
  */
-public interface DBPDriverCommercial {
+public interface DBPDriverWithLicense {
 
     @NotNull
     String getVendorName();
+
     @NotNull
     String getVendorURL();
 
@@ -41,6 +43,6 @@ public interface DBPDriverCommercial {
     boolean supportsTrialLicense();
 
     @NotNull
-    DBPDriverLicense requestTrialLicense() throws DBException;
+    DBPDriverLicense requestTrialLicense(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

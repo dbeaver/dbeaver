@@ -27,7 +27,9 @@ public interface DBPDriverLicense {
 
     @NotNull
     String getLicenseId();
+
     boolean isValidLicense();
+
     boolean isTrialLicense();
 
 }
