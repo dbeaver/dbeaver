@@ -527,7 +527,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             return list
                 .filter(p -> {
                     String fileName = p.getFileName().toString();
-                    return fileName.endsWith(".jar") || fileName.endsWith(".zip");
+                    return fileName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) || fileName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP);
                 })
                 .collect(Collectors.toList());
         } catch (IOException e) {
@@ -809,7 +809,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             for (Path dirFile : srcDirFiles) {
                 String fileName = dirFile.getFileName().toString();
                 // Skip non-libraries
-                if (fileName.endsWith(".txt")) {
+                if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_TXT)) {
                     continue;
                 }
                 Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName().toString());

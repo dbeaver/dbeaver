@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class DriverUtils {
         List<Path> jarFiles = new ArrayList<>();
         for (Path inputFile : files) {
             jarFiles.add(inputFile);
-            if (!inputFile.getFileName().toString().toLowerCase(Locale.ENGLISH).endsWith(".zip")) {
+            if (!inputFile.getFileName().toString().toLowerCase(Locale.ENGLISH).endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
                 continue;
             }
             // Seems to be a zip. Let's try it.
@@ -109,11 +109,11 @@ public class DriverUtils {
                         try {
                             if (!zipEntry.isDirectory()) {
                                 String zipEntryName = zipEntry.getName();
-                                if (zipEntryName.endsWith(".class")) {
+                                if (zipEntryName.endsWith(DBPDriverLibrary.FILE_EXT_CLASS)) {
                                     // This is a jar with classes. Stop processing.
                                     break;
                                 }
-                                if (zipEntryName.endsWith(".jar") || zipEntryName.endsWith(".zip")) {
+                                if (zipEntryName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) || zipEntryName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
                                     checkAndExtractEntry(inputFile, zipStream, zipEntry, jarFiles);
                                 }
                             }
@@ -134,7 +134,7 @@ public class DriverUtils {
 
     private static void checkAndExtractEntry(Path sourceFile, InputStream zipStream, ZipEntry zipEntry, List<Path> jarFiles) throws IOException {
         String sourceName = sourceFile.getFileName().toString();
-        if (sourceName.endsWith(".zip")) {
+        if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
             sourceName = sourceName.substring(0, sourceName.length() - 4);
         }
         Path localCacheDir = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).resolve(sourceName);
