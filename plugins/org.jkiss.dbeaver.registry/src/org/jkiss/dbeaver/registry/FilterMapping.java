@@ -71,9 +71,9 @@ public class FilterMapping {
         }
         FilterMapping source = (FilterMapping) obj;
         return
-                CommonUtils.equalObjects(typeName, source.typeName) &&
-                    CommonUtils.equalObjects(globalFilter, source.globalFilter) &&
-                        CommonUtils.equalObjects(customFilters, source.customFilters);
+            CommonUtils.equalObjects(typeName, source.typeName) &&
+                CommonUtils.equalObjects(globalFilter, source.globalFilter) &&
+                CommonUtils.equalObjects(customFilters, source.customFilters);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class FilterMapping {
         return
             CommonUtils.hashCode(typeName) +
                 CommonUtils.hashCode(globalFilter) +
-            CommonUtils.hashCode(customFilters);
+                CommonUtils.hashCode(customFilters);
     }
 
     public static String getFilterContainerUniqueID(@Nullable DBSObject parentObject) {
