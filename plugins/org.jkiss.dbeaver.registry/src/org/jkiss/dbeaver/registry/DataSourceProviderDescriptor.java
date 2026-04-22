@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.ProviderPropertyDescriptor;
@@ -77,7 +78,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private boolean driversManageable;
     private boolean supportsDriverMigration;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
-    private final List<DriverDescriptor> drivers = new ArrayList<>();
+    private final List<DBPDriver> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
     private final List<DBPDataSourceProviderDescriptor> childrenProviders = new ArrayList<>();
     private final List<ProviderPropertiesInto> providerProperties = new ArrayList<>();
@@ -195,7 +196,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                         for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
                             mainProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
                         }
-                        List<DriverDescriptor> appDrivers;
+                        List<DBPDriver> appDrivers;
                         if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
                             appDrivers = drivers;
                         } else {
@@ -203,7 +204,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                             appDrivers = drivers.stream()
                                 .filter(d -> ArrayUtils.contains(driverIds, d.getId())).collect(Collectors.toList());
                         }
-                        appDrivers.forEach(d -> d.addMainPropertyDescriptors(mainProperties));
+                        appDrivers.forEach(d -> {
+                            if (d instanceof DriverDescriptor dd) dd.addMainPropertyDescriptors(mainProperties);
+                        });
                     }
                 }
 
@@ -352,10 +355,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     //////////////////////////////////////
     // Drivers
 
+    @Override
     public boolean isDriversManageable() {
         return driversManageable;
     }
 
+    @Override
     public boolean supportsDriverMigration() {
         return supportsDriverMigration;
     }
@@ -376,7 +381,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public synchronized List<DriverDescriptor> getDrivers() {
+    public synchronized List<DBPDriver> getDrivers() {
         if (driverProvider && !driversLoaded) {
             // Load provided drivers
             if (getInstance() instanceof DriverProvider dp) {
@@ -395,9 +400,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public List<DriverDescriptor> getEnabledDrivers() {
-        List<DriverDescriptor> eDrivers = new ArrayList<>();
-        for (DriverDescriptor driver : getDrivers()) {
+    public List<DBPDriver> getEnabledDrivers() {
+        List<DBPDriver> eDrivers = new ArrayList<>();
+        for (DBPDriver driver : getDrivers()) {
             if (!driver.isDisabled() && driver.getReplacedBy() == null && driver.isSupportedByLocalSystem()) {
                 eDrivers.add(driver);
             }
@@ -413,8 +418,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
      */
     @Nullable
     @Override
-    public DriverDescriptor getDriver(@NotNull String id) {
-        for (DriverDescriptor driver : getDrivers()) {
+    public DBPDriver getDriver(@NotNull String id) {
+        for (DBPDriver driver : getDrivers()) {
             if (driver.getId().equals(id)) {
                 while (driver.getReplacedBy() != null) {
                     driver = driver.getReplacedBy();
@@ -432,8 +437,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
      * @return driver or {@code null} if no driver was found
      */
     @Nullable
-    public DriverDescriptor getOriginalDriver(@NotNull String id) {
-        for (DriverDescriptor driver : getDrivers()) {
+    public DBPDriver getOriginalDriver(@NotNull String id) {
+        for (DBPDriver driver : getDrivers()) {
             if (driver.getId().equals(id)) {
                 return driver;
             }
@@ -472,11 +477,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     public synchronized boolean removeDriver(@NotNull String driverId) {
-        return drivers.stream()
-            .filter(d -> d.getId().equals(driverId))
-            .findFirst()
-            .map(this::removeDriver)
-            .orElse(false);
+        DBPDriver driver = getDriver(driverId);
+        if (driver != null) {
+            removeDriver(driverId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @NotNull
@@ -761,11 +768,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     @Nullable
-    public DriverDescriptor getDriverByName(@Nullable String category, @NotNull String name) {
+    public DBPDriver getDriverByName(@Nullable String category, @NotNull String name) {
         if (category != null && category.isEmpty()) {
             category = null;
         }
-        for (DriverDescriptor driver : drivers) {
+        for (DBPDriver driver : drivers) {
             if (CommonUtils.equalObjects(category, driver.getCategory()) && CommonUtils.equalObjects(name,
                 driver.getName())) {
                 return driver;
@@ -777,13 +784,17 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     public void setDriverProviderProperties() {
         providerProperties.forEach(propInfo -> {
             String driversSpec = propInfo.driverIds();
-            Predicate<DriverDescriptor> predicate =
+            Predicate<DBPDriver> predicate =
                 (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*"))
                     ? d -> true
                     : d -> ArrayUtils.contains(driversSpec.split(","), d.getId());
             this.drivers.stream()
                 .filter(predicate)
-                .forEach(d -> d.addProviderPropertyDescriptors(propInfo.providerProperties()));
+                .forEach(d -> {
+                    if (d instanceof DriverDescriptor dd) {
+                        dd.addProviderPropertyDescriptors(propInfo.providerProperties());
+                    }
+                });
         });
     }
 

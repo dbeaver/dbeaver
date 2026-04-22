@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 if (provider.isTemporary()) {
                     continue;
                 }
-                List<DriverDescriptor> drivers = provider.getDrivers().stream().filter(DriverDescriptor::isModified)
+                List<DriverDescriptor> drivers = provider.getDrivers().stream()
+                    .filter(DriverDescriptor.class::isInstance)
+                    .map(DriverDescriptor.class::cast)
+                    .filter(DriverDescriptor::isModified)
                     .collect(Collectors.toList());
                 drivers.removeIf(driverDescriptor -> driverDescriptor.getReplacedBy() != null);
                 if (drivers.isEmpty()) {
@@ -317,7 +320,15 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             return;
                         }
                     }
-                    curDriver = curProvider.getDriver(idAttr);
+                    DBPDriver driver = curProvider.getDriver(idAttr);
+                    if (driver == null) {
+                        curDriver = null;
+                    } else if (driver instanceof DriverDescriptor dd) {
+                        curDriver = dd;
+                    } else {
+                        log.error("Read-only driver " + idAttr + " was changed in the configuration");
+                        break;
+                    }
                     if (curDriver == null) {
                         curDriver = new DriverDescriptor(curProvider, idAttr);
                         curProvider.addDriver(curDriver);

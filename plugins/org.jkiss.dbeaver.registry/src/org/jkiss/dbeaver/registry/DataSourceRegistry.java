@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -1073,8 +1072,8 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
         DBPDataSourceOrigin origin,
         String id,
-        DriverDescriptor originalDriver,
-        DriverDescriptor substitutedDriver,
+        DBPDriver originalDriver,
+        DBPDriver substitutedDriver,
         DBPConnectionConfiguration dbpConnectionConfiguration
     ) {
         return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,

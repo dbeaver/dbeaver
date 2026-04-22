@@ -132,7 +132,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean disabled;
     private boolean temporary;
     private int promoted;
-    private boolean commercial;
 
     private Set<DBPDriverConfigurationType> configurationTypes = new HashSet<>(Collections.singleton(DBPDriverConfigurationType.MANUAL));
     private Set<String> supportedPageFields = new HashSet<>(Set.of(DBConstants.PROP_HOST, DBConstants.PROP_PORT, DBConstants.PROP_DATABASE));
@@ -259,7 +258,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.customEndpointInformation = copyFrom.customEndpointInformation;
         this.instantiable = copyFrom.instantiable;
         this.promoted = copyFrom.promoted;
-        this.commercial = copyFrom.commercial;
         this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
         for (DriverFileSource fs : copyFrom.fileSources) {
             this.fileSources.add(new DriverFileSource(fs));
@@ -311,7 +309,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
         this.customEndpointInformation = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_ENDPOINT), false);
         this.promoted = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_PROMOTED), 0);
-        this.commercial = CommonUtils.toBoolean(config.getAttribute("commercial"));
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.origInstantiable = this.instantiable = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INSTANTIABLE), true);
         this.origEmbedded = this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
@@ -379,11 +376,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (!ArrayUtils.isEmpty(pp)) {
                 String copyFromDriverId = pp[0].getAttribute("copyFrom");
                 if (!CommonUtils.isEmpty(copyFromDriverId)) {
-                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    DBPDriver copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
                     if (copyFromDriver == null) {
                         log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy main properties into '" + getId() + "'");
-                    } else {
-                        this.mainPropertyDescriptors.addAll(copyFromDriver.mainPropertyDescriptors);
+                    } else if (copyFromDriver instanceof DriverDescriptor dd) {
+                        this.mainPropertyDescriptors.addAll(dd.mainPropertyDescriptors);
                     }
                 }
                 this.mainPropertyDescriptors.addAll(
@@ -399,11 +396,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (!ArrayUtils.isEmpty(pp)) {
                 String copyFromDriverId = pp[0].getAttribute("copyFrom");
                 if (!CommonUtils.isEmpty(copyFromDriverId)) {
-                    DriverDescriptor copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
+                    DBPDriver copyFromDriver = providerDescriptor.getDriver(copyFromDriverId);
                     if (copyFromDriver == null) {
                         log.debug("Driver '" + copyFromDriverId + "' not found. Cannot copy provider properties into '" + getId() + "'");
-                    } else {
-                        this.providerPropertyDescriptors.addAll(copyFromDriver.providerPropertyDescriptors);
+                    } else if (copyFromDriver instanceof DriverDescriptor dd) {
+                        this.providerPropertyDescriptors.addAll(dd.providerPropertyDescriptors);
                     }
                 }
                 this.providerPropertyDescriptors.addAll(
@@ -895,11 +892,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public boolean isTemporary() {
         return temporary || providerDescriptor.isTemporary();
-    }
-
-    @Override
-    public boolean isCommercial() {
-        return commercial;
     }
 
     public void setTemporary(boolean temporary) {

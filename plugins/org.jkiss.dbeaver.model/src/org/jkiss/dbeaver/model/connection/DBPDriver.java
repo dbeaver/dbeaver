@@ -138,8 +138,6 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
     boolean isCustom();
     // Temporary driver: used for automatically created drivers when connection  configuration is broken
     boolean isTemporary();
-    // Commercial driver provided by third party vendor
-    boolean isCommercial();
 
     boolean isDisabled();
     @Nullable

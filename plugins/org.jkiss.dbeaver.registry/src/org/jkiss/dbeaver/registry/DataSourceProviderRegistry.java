@@ -330,14 +330,16 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
         // Resolve all driver replacements
         {
-            List<DriverDescriptor> allDrivers = new ArrayList<>();
+            List<DBPDriver> allDrivers = new ArrayList<>();
             for (DataSourceProviderDescriptor provider : dataSourceProviders) {
                 allDrivers.addAll(provider.getDrivers());
             }
-            for (DriverDescriptor driver1 : allDrivers) {
-                for (DriverDescriptor driver2 : allDrivers) {
-                    if (driver1 != driver2 && driver1.replaces(driver2)) {
-                        driver2.setReplacedBy(driver1);
+            for (DBPDriver driver1 : allDrivers) {
+                for (DBPDriver driver2 : allDrivers) {
+                    if (driver1 instanceof DriverDescriptor dd1 && driver2 instanceof DriverDescriptor dd2 &&
+                        driver1 != driver2 && dd1.replaces(dd2)
+                    ) {
+                        dd2.setReplacedBy(dd1);
                     }
                 }
             }
@@ -550,10 +552,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     /**
      * Resolve all jar files in all enabled drivers.
      */
-    public void linkDriverFiles(Path targetFileLocation) throws DBException {
+    public void linkDriverFiles(@NotNull Path targetFileLocation) throws DBException {
         boolean didResolve = false;
         for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
-            for (DriverDescriptor driver : dspd.getDrivers()) {
+            for (DBPDriver driver : dspd.getDrivers()) {
                 if (driver.isDisabled() || driver.getReplacedBy() != null) {
                     continue;
                 }

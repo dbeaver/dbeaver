@@ -40,6 +40,7 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     DBPImage getIcon();
 
     boolean isDriversManageable();
+    boolean supportsDriverMigration();
 
     @NotNull
     List<? extends DBPDriver> getEnabledDrivers();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,11 +162,12 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         return;
                     }
                     String driverId = attributes.getValue(RegistryConstants.ATTR_DRIVER);
-                    DriverDescriptor driver = provider.getDriver(driverId);
+                    DBPDriver driver = provider.getDriver(driverId);
                     if (driver == null) {
                         log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + name + "'. Create new driver");
-                        driver = provider.createDriver(driverId);
-                        provider.addDriver(driver);
+                        DriverDescriptor newDriver = provider.createDriver(driverId);
+                        provider.addDriver(newDriver);
+                        driver = newDriver;
                     }
                     curDataSource = registry.getDataSource(id);
                     boolean newDataSource = (curDataSource == null);
