@@ -96,6 +96,8 @@ public class AltibaseProperty implements DBSObject {
         return description;
     }
 
+    public long getAttribute() { return attr; }
+
     @Override
     public boolean isPersisted() {
         return true;

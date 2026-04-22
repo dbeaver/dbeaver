@@ -34,21 +34,17 @@ public class AltibaseValueHandlerProvider implements DBDValueHandlerProvider {
         String typeName = typedObject.getTypeName();
         AltibaseDataTypeDomain dataTypeDomain = AltibaseDataTypeDomain.getByTypeName(typeName);
 
-        switch (dataTypeDomain) {
-            case BIT:
-            case VARBIT:
-                return AltibaseBitSetValueHandler.INSTANCE;
-            case NIBBLE:
-                return AltibaseNibbleValueHandler.INSTANCE;
-            case DATE:
-                return new AltibaseDateValueHandler(preferences);
-            case GEOMETRY:
-                return AltibaseGeometryValueHandler.INSTANCE;
-            default:
-                // Do nothing
-                ;
-        }
-        
-        return null;
+        if (dataTypeDomain == null)
+            return null;
+
+        return switch (dataTypeDomain) {
+            case BIT, VARBIT -> AltibaseBitSetValueHandler.INSTANCE;
+            case NIBBLE -> AltibaseNibbleValueHandler.INSTANCE;
+            case DATE -> new AltibaseDateValueHandler(preferences);
+            case GEOMETRY -> AltibaseGeometryValueHandler.INSTANCE;
+            case CLOB, JSON -> AltibaseCLOBValueHandler.INSTANCE;
+            default -> null;
+        };
+
     }
 }

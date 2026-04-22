@@ -32,6 +32,8 @@
                      supportedConfigurationTypes="MANUAL,URL">
                      
                     <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[7.1.0.9.0]" bundle="!drivers.altibase"/>
+                    <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[7.3.0.0.3]" bundle="!drivers.altibase"/>
+                    <file type="jar" path="maven:/com.altibase:altibase-jdbc:RELEASE[8.1.0.0.1]" bundle="!drivers.altibase"/>
                     <file type="jar" path="drivers/altibase" bundle="drivers.altibase"/>
                     
                     <!-- PARAM list: public class GenericConstants -->
@@ -355,7 +357,8 @@
             <type name="VARBIT"/>
             <type name="NIBBLE"/>
             <type name="GEOMETRY"/>
-            
+            <type name="CLOB"/>
+            <type name="JSON"/>
             <type name="DATE"/>
         </provider>
     </extension>
