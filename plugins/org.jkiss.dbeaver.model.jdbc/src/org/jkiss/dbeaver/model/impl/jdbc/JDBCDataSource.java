@@ -347,7 +347,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return driverInstance;
     }
 
-    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+    protected void fillConnectionProperties(
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull Properties connectProps
+    ) {
         {
             // Use driver properties
             final Map<String, Object> driverProperties = container.getDriver().getConnectionProperties();
@@ -362,7 +365,12 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @NotNull
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
 
@@ -379,7 +387,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return connectProps;
     }
 
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    @Nullable
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         String url = connectionInfo.getUrl();
         if (CommonUtils.isEmpty(url)) {
             url = getContainer().getDriver().getConnectionURL(connectionInfo);
@@ -646,63 +655,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @NotNull
-    public static DBPDataKind getDataKind(@NotNull String typeName, int valueType)
-    {
-        // HERE!
-        switch (getValueTypeByTypeName(typeName, valueType)) {
-            case Types.BOOLEAN:
-                return DBPDataKind.BOOLEAN;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.NVARCHAR:
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
-                return DBPDataKind.STRING;
-            case Types.BIGINT:
-            case Types.DECIMAL:
-            case Types.DOUBLE:
-            case Types.FLOAT:
-            case Types.INTEGER:
-            case Types.NUMERIC:
-            case Types.REAL:
-            case Types.SMALLINT:
-                return DBPDataKind.NUMERIC;
-            case Types.BIT:
-            case Types.TINYINT:
-                if (typeName.toLowerCase().contains("bool")) {
-                    // Declared as numeric but actually it's a boolean
-                    return DBPDataKind.BOOLEAN;
-                }
-                return DBPDataKind.NUMERIC;
-            case Types.DATE:
-            case Types.TIME:
-            case Types.TIME_WITH_TIMEZONE:
-            case Types.TIMESTAMP:
-            case Types.TIMESTAMP_WITH_TIMEZONE:
-                return DBPDataKind.DATETIME;
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                return DBPDataKind.BINARY;
-            case Types.BLOB:
-            case Types.CLOB:
-            case Types.NCLOB:
-                return DBPDataKind.CONTENT;
-            case Types.SQLXML:
-                return DBPDataKind.CONTENT;
-            case Types.STRUCT:
-                return DBPDataKind.STRUCT;
-            case Types.ARRAY:
-                return DBPDataKind.ARRAY;
-            case Types.ROWID:
-                return DBPDataKind.ROWID;
-            case Types.REF:
-                return DBPDataKind.REFERENCE;
-            case Types.OTHER:
-                // TODO: really?
-                return DBPDataKind.OBJECT;
-        }
-        return DBPDataKind.UNKNOWN;
+    public static DBPDataKind getDataKind(@NotNull String typeName, int valueType) {
+        int typeId = getValueTypeByTypeName(typeName, valueType);
+        return JDBCUtils.getDataKindByTypeID(typeId, typeName);
     }
 
     @Nullable
@@ -743,21 +698,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @NotNull
     protected String getStandardSQLDataTypeName(@NotNull DBPDataKind dataKind) {
-        return switch (dataKind) {
-            case BOOLEAN -> "BOOLEAN";
-            case NUMERIC -> "NUMERIC";
-            case STRING -> "VARCHAR";
-            case DATETIME -> "TIMESTAMP";
-            case BINARY -> "BLOB";
-            case CONTENT -> "BLOB";
-            case STRUCT -> "VARCHAR";
-            case ARRAY -> "VARCHAR";
-            case OBJECT -> "VARCHAR";
-            case REFERENCE -> "VARCHAR";
-            case ROWID -> "ROWID";
-            case ANY -> "VARCHAR";
-            default -> "VARCHAR";
-        };
+        return JDBCUtils.getTypeNameByDataKind(dataKind);
     }
 
     /////////////////////////////////////////////////

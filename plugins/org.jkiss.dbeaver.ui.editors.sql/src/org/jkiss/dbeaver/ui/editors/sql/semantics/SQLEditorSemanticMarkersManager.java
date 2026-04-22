@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class SQLEditorSemanticMarkersManager {
                 try {
                     resource.deleteMarkers(SQLSemanticErrorAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
                 } catch (CoreException e) {
-                    log.error("Error deleting problem markers: " + e.getMessage());
+                    log.debug("Error deleting problem markers: " + e.getMessage());
                 }
                 this.resetAnnotations = false;
             }
@@ -153,7 +153,7 @@ public class SQLEditorSemanticMarkersManager {
                             annotation.getProblemMarkerSeverity() > v.getProblemMarkerSeverity()
                         ) ? annotation : v);
                     } catch (CoreException|BadLocationException e) {
-                        log.error("Error creating problem marker", e);
+                        log.debug("Error creating problem marker", e);
                     }
                 }
                 for (SQLSemanticErrorAnnotation annotation: severestAnnotationsByLine.values()) {
@@ -167,13 +167,13 @@ public class SQLEditorSemanticMarkersManager {
                         try {
                             marker.setAttribute(SQLSemanticErrorAnnotation.MARKER_ATTRIBUTE_NAME, null);
                         } catch (CoreException e) {
-                            log.error("Error dissociating problem marker", e);
+                            log.debug("Error dissociating problem marker", e);
                         }
                         annotationModel.removeAnnotation(annotation);
                         try {
                             marker.delete();
                         } catch (CoreException e) {
-                            log.error("Error deleting problem marker", e);
+                            log.debug("Error deleting problem marker", e);
                         }
                     }
                 }

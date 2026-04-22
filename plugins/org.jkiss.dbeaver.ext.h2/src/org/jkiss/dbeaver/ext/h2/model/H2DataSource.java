@@ -42,7 +42,7 @@ public class H2DataSource extends GenericDataSource {
     }
 
     @Override
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         String url = connectionInfo.getUrl();
         if (url == null || url.startsWith(H2_URL_PREFIX_TCP)) {
             return url;
