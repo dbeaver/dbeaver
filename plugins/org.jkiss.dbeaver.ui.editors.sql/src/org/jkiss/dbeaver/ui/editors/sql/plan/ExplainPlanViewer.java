@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithParam;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -308,10 +309,18 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
     }
 
     public void explainQueryPlan(@NotNull SQLQuery query, @NotNull Object queryId) {
+        explainQueryPlan(query, queryId, null);
+    }
+
+    public void explainQueryPlan(
+        @NotNull SQLQuery query,
+        @NotNull Object queryId,
+        @Nullable DBCQueryPlannerConfiguration configuration
+    ) {
         this.lastQuery = query;
         this.lastQueryId = queryId;
 
-        refresh();
+        refresh(configuration);
     }
 
     @NotNull
@@ -368,6 +377,10 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
 
     @Override
     public void refresh() {
+        refresh(null);
+    }
+
+    public void refresh(@Nullable DBCQueryPlannerConfiguration configuration) {
         DBCQueryPlanner planner;
         DBCExecutionContext executionContext = contextProvider.getExecutionContext();
         if (executionContext != null) {
@@ -380,15 +393,22 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
             );
             return;
         }
-
         if (planner == null) {
-            DBWorkbench.getPlatformUI().showError("No SQL Plan","This datasource doesn't support execution plans");
-        } else {
-            explainService = LoadingJob.createService(
-                new ExplainPlanService(planner, executionContext, lastQuery.getText(), lastQueryId),
-                planPresentationContainer.createVisualizer());
-            explainService.schedule();
+            DBWorkbench.getPlatformUI().showError("No SQL Plan", "This datasource doesn't support execution plans");
+            return;
         }
+        DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator = monitor -> {
+            if (configuration != null) {
+                return configuration;
+            } else {
+                return makeExplainPlanConfiguration(monitor, planner);
+            }
+        };
+        explainService = LoadingJob.createService(
+            new ExplainPlanService(planner, executionContext, configurator, lastQuery.getText(), lastQueryId),
+            planPresentationContainer.createVisualizer()
+        );
+        explainService.schedule();
     }
 
     private void visualizePlan(@NotNull DBCPlan plan) {
@@ -479,13 +499,20 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         private final DBCExecutionContext executionContext;
         private final String query;
         private final Object savedQueryId;
+        private final DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator;
         private DBCPlan plan;
 
-        ExplainPlanService(DBCQueryPlanner planner, DBCExecutionContext executionContext, String query, Object savedQueryId)
-        {
+        ExplainPlanService(
+            @NotNull DBCQueryPlanner planner,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator,
+            @NotNull String query,
+            @Nullable Object savedQueryId
+        ) {
             super("Explain plan", planner.getDataSource());
             this.planner = planner;
             this.executionContext = executionContext;
+            this.configurator = configurator;
             this.query = query;
             this.savedQueryId = savedQueryId;
         }
@@ -493,7 +520,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         @Override
         public DBCPlan evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
-                DBCQueryPlannerConfiguration configuration = makeExplainPlanConfiguration(monitor, planner);
+                var configuration = configurator.runTask(monitor);
                 if (configuration == null) {
                     return null;
                 }
@@ -512,7 +539,6 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
             }
             return plan;
         }
-
     }
 
     private class RefreshPlanAction extends Action {
@@ -528,7 +554,11 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable {
         }
     }
 
-    public static DBCQueryPlannerConfiguration makeExplainPlanConfiguration(DBRProgressMonitor monitor, DBCQueryPlanner planner) {
+    @Nullable
+    public static DBCQueryPlannerConfiguration makeExplainPlanConfiguration(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCQueryPlanner planner
+    ) {
         DBCQueryPlannerConfiguration configuration = new DBCQueryPlannerConfiguration();
         DBEObjectConfigurator<DBCQueryPlannerConfiguration> plannerConfigurator = GeneralUtils.adapt(planner, DBEObjectConfigurator.class);
         if (plannerConfigurator != null) {

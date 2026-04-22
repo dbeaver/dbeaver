@@ -17,31 +17,27 @@
 package org.jkiss.dbeaver.ext.denodo.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 
+public class DenodoArrayDataType extends DenodoDataType {
 
-public class DenodoDataSource extends GenericDataSource {
+    private final DenodoRegisterDataType componentType;
 
-    public DenodoDataSource(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container,
-        @NotNull  DenodoMetaModel metaModel
-    ) throws DBException {
-        super(monitor, container, metaModel, new DenodoSQLDialect());
+    public DenodoArrayDataType(
+        @NotNull DenodoDataSource owner,
+        int valueType,
+        @NotNull String name
+    ) {
+        super(owner, valueType, name, Kind.ARRAY);
+        this.componentType = new DenodoRegisterDataType(this);
     }
 
+    @Nullable
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        this.getDataTypeCache().clearCache();
-        return super.refreshObject(monitor);
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) {
+        return this.componentType;
     }
 
-    @Override
-    protected boolean isPopulateClientAppName() {
-        return false;
-    }
 }
