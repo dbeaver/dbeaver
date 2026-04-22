@@ -95,7 +95,7 @@ public class KingbaseDataSourceProvider extends PostgreDataSourceProvider {
     }
     
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return false;
     }
 
