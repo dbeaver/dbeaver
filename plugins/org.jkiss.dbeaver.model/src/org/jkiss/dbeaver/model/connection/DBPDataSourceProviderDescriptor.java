@@ -58,6 +58,7 @@ public interface DBPDataSourceProviderDescriptor extends DBPNamedObject {
     @Nullable
     DBPDriver getDriver(@NotNull String id);
 
+    @NotNull
     List<? extends DBPDriver> getDrivers();
 
     @Nullable

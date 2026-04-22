@@ -540,7 +540,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     @Override
     public DBPDataSourceProvider<?> getDataSourceProvider() {
-        return providerDescriptor.getInstance(this);
+        return providerDescriptor.getInstance();
     }
 
     @Nullable

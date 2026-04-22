@@ -15,25 +15,19 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.connection;
+package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 import java.util.List;
 
 /**
  * Driver provider
  */
-public interface DBPDriverProvider {
+public interface DriverProvider {
 
     @NotNull
-    String getName();
-
-    @Nullable
-    String getDescription();
-
-    @NotNull
-    List<DBPDriver> getProvidedDrivers();
+    List<DriverDescriptor> getProvidedDrivers(@NotNull DataSourceProviderDescriptor dataSourceProvider);
 
 }
