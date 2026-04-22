@@ -7,7 +7,6 @@
         plugin="org.jkiss.dbeaver.headless.application">
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <url>
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.auth;
+package org.jkiss.dbeaver.ext.bigquery.model;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 
-public class BigQueryAuthModel extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class BQExecutionContext extends GenericExecutionContext {
 
-    public static final String ID = "google_bigquery";
-
-    @Override
-    public boolean isUserPasswordApplicable() {
-        return false;
+    public BQExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
+        super(instance, purpose);
     }
 
     @Override
-    public boolean isUserNameApplicable() {
-        return false;
+    public boolean isSupportsTransactions() {
+        return ((BQDataSource) dataSource).isSessionModeEnabled();
     }
 }

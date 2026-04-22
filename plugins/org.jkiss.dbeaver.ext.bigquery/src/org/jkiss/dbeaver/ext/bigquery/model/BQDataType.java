@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataType;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataKind;
 
-public class BigQueryDataType extends GenericDataType {
-    public BigQueryDataType(GenericStructContainer owner, int valueType, String name, String remarks, boolean unsigned, boolean searchable, int precision, int minScale, int maxScale) {
+public class BQDataType extends GenericDataType {
+    public BQDataType(GenericStructContainer owner, int valueType, String name, String remarks, boolean unsigned, boolean searchable, int precision, int minScale, int maxScale) {
         super(owner, valueType, name, remarks, unsigned, searchable, precision, minScale, maxScale);
     }
 
@@ -32,11 +32,11 @@ public class BigQueryDataType extends GenericDataType {
     @Override
     public DBPDataKind getDataKind() {
         if (getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES)) {
-            if (getName().equals(BigQueryConstants.DATA_TYPE_STRUCT)) {
+            if (getName().equals(BQConstants.DATA_TYPE_STRUCT)) {
                 return DBPDataKind.STRUCT;
-            } else if (getName().equals(BigQueryConstants.DATA_TYPE_ARRAY)) {
+            } else if (getName().equals(BQConstants.DATA_TYPE_ARRAY)) {
                 return DBPDataKind.ARRAY;
-            } else if (getName().equals(BigQueryConstants.DATA_TYPE_GEOGRAPHY)) {
+            } else if (getName().equals(BQConstants.DATA_TYPE_GEOGRAPHY)) {
                 return DBPDataKind.OBJECT;
             }
         }

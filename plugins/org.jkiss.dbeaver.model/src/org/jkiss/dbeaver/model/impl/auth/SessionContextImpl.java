@@ -75,40 +75,48 @@ public class SessionContextImpl implements SMSessionContext {
     @Nullable
     @Override
     public SMAuthSpace getPrimaryAuthSpace() {
-        if (CommonUtils.isEmpty(sessions)) {
-            return null;
+        synchronized (sessions) {
+            if (CommonUtils.isEmpty(sessions)) {
+                return null;
+            }
+            return sessions.getFirst().getSessionSpace();
         }
-        return sessions.getFirst().getSessionSpace();
     }
 
     @Nullable
     @Override
     public SMSession findSpaceSession(@NotNull SMAuthSpace space) {
-        for (SMSession session : sessions) {
-            if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
-                return session;
+        synchronized (sessions) {
+            for (SMSession session : sessions) {
+                if (CommonUtils.equalObjects(session.getSessionSpace(), space)) {
+                    return session;
+                }
             }
         }
         return null;
     }
 
     public void addSession(@NotNull SMSession session) {
-        if (!sessions.contains(session)) {
-            sessions.add(session);
-            //log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
-        } else {
-            log.debug("Session '" + session + "' was added twice");
+        synchronized (sessions) {
+            if (!sessions.contains(session)) {
+                sessions.add(session);
+                //log.debug(">> Session added to context " + this + ", space=" + session.getSessionSpace() + ": " + session, new Exception());
+            } else {
+                log.debug("Session '" + session + "' was added twice");
+            }
         }
     }
 
     @Override
     public boolean removeSession(@NotNull SMSession session) {
-        if (sessions.remove(session)) {
-            //log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
-            return true;
-        } else {
-            log.debug("Session '" + session + "' was removed twice");
-            return false;
+        synchronized (sessions) {
+            if (sessions.remove(session)) {
+                //log.debug(">> Session removed from context " + this + ", space=" + session.getSessionSpace()  + ": " + session, new Exception());
+                return true;
+            } else {
+                log.debug("Session '" + session + "' was removed twice");
+                return false;
+            }
         }
     }
 
@@ -120,12 +128,22 @@ public class SessionContextImpl implements SMSessionContext {
     // Clears all sessions in this context
     // Also closes them
     public void clearContext(boolean closeSessions) {
-        if (closeSessions) {
-            for (SMSession session : sessions) {
-                session.close();
+        List<SMSession> sc = null;
+        synchronized (sessions) {
+            if (closeSessions) {
+                sc = new ArrayList<>(sessions);
+            }
+            sessions.clear();
+        }
+        if (sc != null) {
+            for (SMSession session : sc) {
+                try {
+                    session.close();
+                } catch (Exception e) {
+                    log.error(e);
+                }
             }
         }
-        sessions.clear();
     }
 
 }
