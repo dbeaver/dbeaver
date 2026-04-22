@@ -41,14 +41,19 @@ import org.w3c.dom.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourceConfigXmlService {
+    private static final Pattern DATASOURCE_FRAGMENT_PATTERN = Pattern.compile("(?is)<data-source\\b.*?</data-source>");
 
     public static final DataGripDataSourceConfigXmlServiceImpl INSTANCE = new DataGripDataSourceConfigXmlServiceImpl();
 
@@ -57,8 +62,9 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
     private DataGripDataSourceConfigXmlServiceImpl() {
     }
 
+    @NotNull
     @Override
-    public @NotNull Map<String, Map<String, String>> buildIdeaConfigProps(@NotNull String pathToIdeaFolder) throws Exception {
+    public Map<String, Map<String, String>> buildIdeaConfigProps(@NotNull String pathToIdeaFolder) throws Exception {
         Map<String, Map<String, String>> uuidToDataSourceProps = new HashMap<>();
         Path pathToDataSource = Path.of(pathToIdeaFolder, DataGripConfigXMLConstant.IDEA_FOLDER, DataGripConfigXMLConstant.DATASOURCE_XML_FILENAME);
         Path pathToDataSourceLocal = Path.of(pathToIdeaFolder, DataGripConfigXMLConstant.IDEA_FOLDER, DataGripConfigXMLConstant.DATASOURCE_LOCAL_XML_FILENAME);
@@ -70,6 +76,17 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         Map<String, Map<String, String>> sshIdToSshConfigMap = tryReadIdeaSshConfig(getJetBrainsDirectory());
         uuidToDataSourceProps = mergeSshConfigToIdeaConfigMap(uuidToDataSourceProps, sshIdToSshConfigMap);
         return uuidToDataSourceProps;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Map<String, String>> buildIdeaConfigPropsFromText(@NotNull String rawConfigText) throws Exception {
+        String normalizedXml = normalizeRawConfigText(rawConfigText);
+        Map<String, Map<String, String>> configProps = importXML(XMLUtils.parseDocument(new StringReader(normalizedXml)));
+        if (configProps.isEmpty()) {
+            throw new ImportConfigurationException("No data sources found");
+        }
+        return configProps;
     }
 
     @NotNull
@@ -105,8 +122,9 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         return System.getProperty(StandardConstants.ENV_USER_HOME) + File.separator + osDependencePath;
     }
 
+    @NotNull
     @Override
-    public @NotNull ImportConnectionInfo buildIdeaConnectionFromProps(@NotNull Map<String, String> conProps) {
+    public ImportConnectionInfo buildIdeaConnectionFromProps(@NotNull Map<String, String> conProps) {
 
         ImportDriverInfo driverInfo = buildDriverInfo(conProps);
         String url = conProps.get(DataGripConfigXMLConstant.JDBC_URL_TAG);
@@ -123,7 +141,9 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
             ""
         );
         configureDriverProperties(connectionInfo, conProps);
-        configureSshConfig(connectionInfo, conProps);
+        if (hasSshConfiguration(conProps)) {
+            configureSshConfig(connectionInfo, conProps);
+        }
         log.debug("load connection: " + connectionInfo);
         return connectionInfo;
     }
@@ -197,8 +217,10 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
     }
 
     private void configureSshConfig(ImportConnectionInfo connectionInfo, Map<String, String> conProps) {
-
         NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor(DBWUtils.SSH_TUNNEL);
+        if (sslHD == null) {
+            return;
+        }
         DBWHandlerConfiguration sshHandler = new DBWHandlerConfiguration(sslHD, null);
         sshHandler.setUserName(conProps.get(DataGripConfigXMLConstant.SSH_USERNAME_PATH));
         sshHandler.setSavePassword(true);
@@ -216,6 +238,14 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         sshHandler.setProperty("implementation", "sshj");
         sshHandler.setEnabled(true);
         connectionInfo.addNetworkHandler(sshHandler);
+    }
+
+    private boolean hasSshConfiguration(@NotNull Map<String, String> conProps) {
+        if ("false".equalsIgnoreCase(conProps.get(DataGripConfigXMLConstant.SSH_PROPERTIES_ENABLE_PATH))) {
+            return false;
+        }
+        return !CommonUtils.isEmpty(conProps.get(DataGripConfigXMLConstant.SSH_HOST_PATH)) ||
+            !CommonUtils.isEmpty(conProps.get(DataGripConfigXMLConstant.SSH_PROPERTIES_UUID_PATH));
     }
 
     private Map<String, Map<String, String>> mergeSshConfigToIdeaConfigMap(
@@ -276,7 +306,10 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
     }
 
     private Map<String, Map<String, String>> importXML(Path filePath) throws XMLException {
-        Document document = XMLUtils.parseDocument(filePath.toAbsolutePath().toString());
+        return importXML(XMLUtils.parseDocument(filePath.toAbsolutePath().toString()));
+    }
+
+    private Map<String, Map<String, String>> importXML(Document document) throws XMLException {
         Map<String, String> conProps = new HashMap<>();
         Map<String, Map<String, String>> uuidToDatasourceProps = new HashMap<>();
         // * - for getting all element
@@ -327,8 +360,53 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
                 conProps.put(element.getNodeName(), element.getFirstChild().getNodeValue());
             }
         }
-        uuidToDatasourceProps.put(uuid, conProps);
+        if (uuid != null) {
+            uuidToDatasourceProps.put(uuid, conProps);
+        }
         return uuidToDatasourceProps;
+    }
+
+    @NotNull
+    private String normalizeRawConfigText(@NotNull String rawConfigText) throws XMLException {
+        List<String> dataSourceFragments = extractDataSourceFragments(rawConfigText);
+        if (!dataSourceFragments.isEmpty()) {
+            String wrappedFragments = "<root>\n" + String.join("\n", dataSourceFragments) + "\n</root>";
+            XMLUtils.parseDocument(new StringReader(wrappedFragments));
+            return wrappedFragments;
+        }
+
+        String cleanedText = rawConfigText.lines()
+            .map(String::trim)
+            .filter(line -> !line.startsWith("#"))
+            .filter(line -> !line.isEmpty())
+            .collect(Collectors.joining("\n"))
+            .trim();
+        if (cleanedText.isEmpty()) {
+            return cleanedText;
+        }
+        try {
+            XMLUtils.parseDocument(new StringReader(cleanedText));
+            return cleanedText;
+        } catch (XMLException e) {
+            String wrappedText = "<root>\n" + stripXmlDeclaration(cleanedText) + "\n</root>";
+            XMLUtils.parseDocument(new StringReader(wrappedText));
+            return wrappedText;
+        }
+    }
+
+    @NotNull
+    private List<String> extractDataSourceFragments(@NotNull String rawConfigText) {
+        Matcher matcher = DATASOURCE_FRAGMENT_PATTERN.matcher(rawConfigText);
+        List<String> fragments = new ArrayList<>();
+        while (matcher.find()) {
+            fragments.add(matcher.group().trim());
+        }
+        return fragments;
+    }
+
+    @NotNull
+    private String stripXmlDeclaration(@NotNull String xmlText) {
+        return xmlText.replaceFirst("^\\s*<\\?xml[^>]*\\?>\\s*", "");
     }
 
     private URI parseURL(String url) {
@@ -345,8 +423,19 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
     }
 
     private static boolean isNodeHasTextValue(Node element) {
-        return element.hasChildNodes() && element.getChildNodes().getLength() > 0 &&
-            !element.getFirstChild().getNodeValue().isBlank();
+        if (!element.hasChildNodes() || element.getChildNodes().getLength() == 0) {
+            return false;
+        }
+        Node firstChild = element.getFirstChild();
+        if (firstChild == null) {
+            return false;
+        }
+        short nodeType = firstChild.getNodeType();
+        if (nodeType != Node.TEXT_NODE && nodeType != Node.CDATA_SECTION_NODE) {
+            return false;
+        }
+        String nodeValue = firstChild.getNodeValue();
+        return nodeValue != null && !nodeValue.isBlank();
     }
 
     private ImportDriverInfo buildDriverInfo(Map<String, String> conProps) {

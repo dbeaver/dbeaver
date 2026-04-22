@@ -39,7 +39,7 @@ public record CopilotChatChunk(
             usage.promptTokens(),
             usage.promptTokensDetails() != null ? usage.promptTokensDetails().cachedTokens() : 0,
             usage.completionTokens(),
-            0
+            usage.reasoningTokens()
         );
     }
 }

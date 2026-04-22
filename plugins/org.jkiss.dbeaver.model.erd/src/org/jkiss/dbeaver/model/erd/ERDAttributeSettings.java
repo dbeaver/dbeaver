@@ -21,10 +21,12 @@ import org.jkiss.code.NotNull;
 public class ERDAttributeSettings {
     private final ERDAttributeVisibility visibility;
     private final boolean alphabeticalOrder;
+    private final boolean loadLazyDescriptions;
 
-    public ERDAttributeSettings(@NotNull ERDAttributeVisibility visibility, boolean alphabeticalOrder) {
+    public ERDAttributeSettings(@NotNull ERDAttributeVisibility visibility, boolean alphabeticalOrder, boolean loadLazyDescriptions) {
         this.visibility = visibility;
         this.alphabeticalOrder = alphabeticalOrder;
+        this.loadLazyDescriptions = loadLazyDescriptions;
     }
 
     @NotNull
@@ -34,5 +36,9 @@ public class ERDAttributeSettings {
 
     public boolean isAlphabeticalOrder() {
         return alphabeticalOrder;
+    }
+
+    public boolean isLoadLazyDescriptions() {
+        return loadLazyDescriptions;
     }
 }
