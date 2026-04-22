@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) {
         int position = attribute.getOrdinalPosition();
         if (position >= values.length) {
-            log.debug("Index for attribute '" + attribute.getName() + "' is out of range (" + position + ">=" + values.length + ")");
+            log.trace("Index for attribute '" + attribute.getName() + "' is out of range (" + position + ">=" + values.length + ")");
             return null;
         }
         return values[position];
@@ -200,7 +200,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     }
 
     protected class StructType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
-        public StructType(DBPDataSource dataSource) {
+        public StructType(@NotNull DBPDataSource dataSource) {
             super(dataSource);
         }
 
@@ -367,5 +367,77 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         }
     */
 
+    protected class ArrayType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
+        public ArrayType(@NotNull DBPDataSource dataSource) {
+            super(dataSource);
+        }
+
+        @NotNull
+        @Override
+        public String getTypeName() {
+            return "Array";
+        }
+
+        @Override
+        public int getTypeID() {
+            return Types.ARRAY;
+        }
+
+        @NotNull
+        @Override
+        public DBPDataKind getDataKind() {
+            return DBPDataKind.ARRAY;
+        }
+
+        @NotNull
+        @Override
+        public DBSEntityType getEntityType() {
+            return DBSEntityType.TYPE;
+        }
+
+        @Nullable
+        @Override
+        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
+            return Arrays.asList(attributes);
+        }
+    }
+
+    protected class SimpleType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
+        private final int typeId;
+
+        public SimpleType(@NotNull DBPDataSource dataSource, @Nullable Object value) {
+            super(dataSource);
+            this.typeId = JDBCUtils.getTypeIdFromValue(value);
+        }
+
+        @NotNull
+        @Override
+        public String getTypeName() {
+            return JDBCUtils.getTypeNameByTypeId(typeId);
+        }
+
+        @Override
+        public int getTypeID() {
+            return typeId;
+        }
+
+        @NotNull
+        @Override
+        public DBPDataKind getDataKind() {
+            return JDBCUtils.getDataKindByTypeID(typeId, null);
+        }
+
+        @NotNull
+        @Override
+        public DBSEntityType getEntityType() {
+            return DBSEntityType.TYPE;
+        }
+
+        @Nullable
+        @Override
+        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
+            return Arrays.asList(attributes);
+        }
+    }
 
 }

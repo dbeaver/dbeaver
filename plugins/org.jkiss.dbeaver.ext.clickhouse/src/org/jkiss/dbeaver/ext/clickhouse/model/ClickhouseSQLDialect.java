@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -297,4 +298,12 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
     public boolean isEscapeBackslash() {
         return true;
     }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesQuotedCase() {
+        return DBPIdentifierCase.MIXED;
+    }
+
 }
+
