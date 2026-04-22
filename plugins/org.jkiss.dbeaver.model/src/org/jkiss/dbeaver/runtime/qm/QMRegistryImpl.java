@@ -138,9 +138,10 @@ public class QMRegistryImpl implements QMRegistry {
     }
 
     @Override
-    public void unregisterMetaListener(@NotNull QMMetaListener metaListener)
-    {
-        metaHandler.removeListener(metaListener);
+    public void unregisterMetaListener(@NotNull QMMetaListener metaListener) {
+        if (metaHandler != null) {
+            metaHandler.removeListener(metaListener);
+        }
     }
 
     List<QMExecutionHandler> getHandlers()

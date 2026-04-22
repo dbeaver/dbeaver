@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,9 +85,9 @@ public class SnowflakeDataSource extends GenericDataSource {
     @Override
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        JDBCExecutionContext context,
-        String purpose,
-        DBPConnectionConfiguration connectionInfo
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         final String clientAppName = DBUtils.getClientApplicationName(container, context, null, false);

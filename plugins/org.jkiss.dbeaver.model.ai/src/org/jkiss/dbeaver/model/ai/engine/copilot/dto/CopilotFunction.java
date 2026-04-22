@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.bigquery.model;
+package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAITool;
 
-public class BigQueryExecutionContext extends GenericExecutionContext {
+public class CopilotFunction {
+    @NotNull
+    private final String type = "function";
+    @NotNull
+    private final OAITool function;
 
-    public BigQueryExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
-        super(instance, purpose);
+    public CopilotFunction(@NotNull OAITool function) {
+        this.function = function;
     }
 
-    @Override
-    public boolean isSupportsTransactions() {
-        return ((BigQueryDataSource) dataSource).isSessionModeEnabled();
+    @NotNull
+    public String type() {
+        return type;
+    }
+
+    @NotNull
+    public OAITool function() {
+        return function;
     }
 }
