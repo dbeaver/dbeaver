@@ -80,17 +80,18 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         this.originalPreferredVersion = copyFrom.originalPreferredVersion;
     }
 
+    @Nullable
     public MavenArtifactReference getReference() {
         return reference;
     }
 
-    public void setReference(MavenArtifactReference reference) {
+    public void setReference(@NotNull MavenArtifactReference reference) {
         this.reference = reference;
         this.path = PATH_PREFIX + reference.toString();
         this.localVersion = null;
     }
 
-    private void initArtifactReference(String preferredVersion) {
+    private void initArtifactReference(@Nullable String preferredVersion) {
         if (path.endsWith("]")) {
             int divPos = path.lastIndexOf('[');
             if (divPos != -1) {

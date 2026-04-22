@@ -30,8 +30,7 @@ import java.net.URL;
 /**
  * DriverLibraryRemote
  */
-public class DriverLibraryRemote extends DriverLibraryLocal
-{
+public class DriverLibraryRemote extends DriverLibraryLocal {
     private static final Log log = Log.getLog(DriverLibraryRemote.class);
 
     public static final String DOWNLOAD_DIR = "remote";
@@ -42,7 +41,7 @@ public class DriverLibraryRemote extends DriverLibraryLocal
         "ftp",
     };
 
-    public DriverLibraryRemote(@NotNull  DriverDescriptor driver, FileType type, String url) {
+    public DriverLibraryRemote(@NotNull  DriverDescriptor driver, @NotNull FileType type, @NotNull String url) {
         super(driver, type, url);
     }
 

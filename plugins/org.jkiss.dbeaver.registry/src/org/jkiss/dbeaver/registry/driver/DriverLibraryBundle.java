@@ -45,15 +45,15 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
 
     private Bundle bundle;
 
-    public DriverLibraryBundle(DriverDescriptor driver, String path) {
+    public DriverLibraryBundle(@NotNull DriverDescriptor driver, @NotNull String path) {
         super(driver, FileType.jar, path);
     }
 
-    public DriverLibraryBundle(DriverDescriptor driver, IConfigurationElement config) {
+    public DriverLibraryBundle(@NotNull DriverDescriptor driver, @NotNull IConfigurationElement config) {
         super(driver, config);
     }
 
-    public DriverLibraryBundle(DriverDescriptor driverDescriptor, DriverLibraryBundle copyFrom) {
+    public DriverLibraryBundle(@NotNull DriverDescriptor driverDescriptor, @NotNull DriverLibraryBundle copyFrom) {
         super(driverDescriptor, copyFrom);
     }
 
@@ -127,6 +127,7 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
         return null;
     }
 
+    @Nullable
     private Bundle findBundle() {
         Bundle curBundle = FrameworkUtil.getBundle(getClass());
         if (curBundle == null) {
