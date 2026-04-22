@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,34 +209,20 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         @Override
-        public void onStartScript() {
-
-        }
-
-        @Override
-        public void onStartQuery(DBCSession session, SQLQuery query) {
-
-        }
-
-        @Override
-        public void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics) {
-
-        }
-
-        @Override
-        public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
+        public void onEndScript(@NotNull DBCStatistics statistics, boolean hasErrors) {
             if (isShouldCloseIncludedScript(hasErrors)) {
                 UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             }
         }
 
         @Override
-        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+        public void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {
             this.result.complete(result == SqlJobResult.SUCCESS ? SQLControlResult.success() : SQLControlResult.failure());
         }
 
         private boolean isShouldCloseIncludedScript(boolean hasErrors) {
-            return !hasErrors && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
+            return !hasErrors && editor.getActivePreferenceStore().getBoolean(
+                SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
         }
     }
 

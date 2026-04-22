@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.ext.h2.plan.H2QueryPlanner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -317,4 +319,11 @@ public class H2MetaModel extends GenericMetaModel {
             }
         }
     }
+
+    @Nullable
+    @Override
+    public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
+        return new H2QueryPlanner((H2DataSource) dataSource);
+    }
+
 }

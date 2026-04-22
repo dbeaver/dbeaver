@@ -51,8 +51,6 @@
     swt-selected-tabs-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%;
     swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100%;
     swt-unselected-hot-tab-color-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 50%;
-
-    swt-corner-radius: 6;
 }
 
 CTabFolder {

@@ -59,6 +59,7 @@ import javax.swing.*;
  */
 public class DBeaverLauncher {
 
+    public static final String PROP_ECLIPSE_NET_PROXY_ENABLE = "org.eclipse.net.core.enableProxyService";
     /**
      * Indicates whether this instance is running in debug mode.
      */
@@ -147,7 +148,7 @@ public class DBeaverLauncher {
         }
     }
 
-    private final Thread splashHandler = new SplashHandler();
+    private Thread splashHandler = null;
 
     //splash screen system properties
     public static final String SPLASH_HANDLE = "org.eclipse.equinox.launcher.splash.handle"; //$NON-NLS-1$
@@ -457,10 +458,7 @@ public class DBeaverLauncher {
 
     private String getFragmentString(String fragmentOS, String fragmentWS, String fragmentArch) {
         StringJoiner buffer = new StringJoiner("."); //$NON-NLS-1$
-        buffer.add(PLUGIN_ID).add(fragmentWS).add(fragmentOS);
-        if (!(fragmentOS.equals(Constants.OS_MACOSX) && !Constants.ARCH_X86_64.equals(fragmentArch))) {
-            buffer.add(fragmentArch);
-        }
+        buffer.add(PLUGIN_ID).add(fragmentWS).add(fragmentOS).add(fragmentArch);
         return buffer.toString();
     }
 
@@ -589,6 +587,7 @@ public class DBeaverLauncher {
         checkCompatibleWindowsVersion();
 
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
+        disableDefaultProxyServiceActivation();
         commands = args;
         String[] passThruArgs = processCommandLine(args);
         if (debug) {
@@ -675,6 +674,16 @@ public class DBeaverLauncher {
             System.out.println("Invoking parameters: " + Arrays.toString(passThruArgs));
         }
         invokeFramework(passThruArgs, bootPath);
+    }
+
+    /**
+     * Disable Eclipse proxy service activation
+     * We do it in {@link org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator#activateProxyService}
+     */
+    private static void disableDefaultProxyServiceActivation() {
+        if (System.getProperty(PROP_ECLIPSE_NET_PROXY_ENABLE) == null) {
+            System.setProperty(PROP_ECLIPSE_NET_PROXY_ENABLE, Boolean.FALSE.toString());
+        }
     }
 
     // Verifies that args has any non-standard parameters
@@ -907,30 +916,87 @@ public class DBeaverLauncher {
         Path dbeaverProperties = workspacePath
             .resolve(Constants.METADATA)
             .resolve(Constants.DBEAVER_INSTANCE_PROPS);
+
         if (Files.notExists(dbeaverProperties)) {
             if (debug) {
                 System.out.println("DBeaver properties file not found: " + dbeaverProperties);
             }
             return null;
         }
+
         Properties properties = new Properties();
         try (var is = Files.newInputStream(dbeaverProperties)) {
             properties.load(is);
-            String portProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PORT);
-            if (portProperty == null || portProperty.isBlank()) {
-                if (debug) {
-                    System.out.println("DBeaver server port property not found or blank in properties file: " + dbeaverProperties);
+
+            String prefix = InstanceServerProperties.PROPERTY_INSTANCE + ".";
+            String suffixPort = "." + InstanceServerProperties.PROPERTY_PORT;
+
+            List<Long> pids = properties.stringPropertyNames().stream()
+                .filter(key -> key.startsWith(prefix) && key.endsWith(suffixPort))
+                .map(key -> key.substring(prefix.length(), key.length() - suffixPort.length()))
+                .map(pidText -> {
+                    try {
+                        return Long.parseLong(pidText);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .sorted(Comparator.reverseOrder())
+                .toList();
+
+            for (Long pid : pids) {
+                ProcessHandle handle = ProcessHandle.of(pid).orElse(null);
+                if (handle == null) {
+                    continue;
                 }
-                return null;
-            }
-            String passwordProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PASSWORD);
-            if (passwordProperty == null || passwordProperty.isBlank()) {
-                if (debug) {
-                    System.out.println("DBeaver server password property not found or blank in properties file: " + dbeaverProperties);
+
+                String base = InstanceServerProperties.PROPERTY_INSTANCE + "." + pid;
+                String portProperty = properties.getProperty(base + "." + InstanceServerProperties.PROPERTY_PORT);
+                String passwordProperty = properties.getProperty(base + "." + InstanceServerProperties.PROPERTY_PASSWORD);
+                String startedAtProperty = properties.getProperty(base + "." + InstanceServerProperties.PROPERTY_STARTED_AT);
+
+                if (portProperty == null || portProperty.isBlank()) {
+                    continue;
                 }
-                return null;
+                if (passwordProperty == null || passwordProperty.isBlank()) {
+                    continue;
+                }
+
+                int port;
+                try {
+                    port = Integer.parseInt(portProperty);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                long startedAt;
+                try {
+                    startedAt = startedAtProperty == null || startedAtProperty.isBlank()
+                        ? 0L
+                        : Long.parseLong(startedAtProperty);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                long actualStartedAt = handle.info()
+                    .startInstant()
+                    .map(java.time.Instant::toEpochMilli)
+                    .orElse(-1L);
+
+                boolean alive = startedAt <= 0 || (actualStartedAt > 0 && actualStartedAt == startedAt);
+                if (!alive) {
+                    continue;
+                }
+
+                return new InstanceServerProperties(port, passwordProperty);
             }
-            return new InstanceServerProperties(Integer.parseInt(portProperty), passwordProperty);
+
+            if (debug) {
+                System.out.println("DBeaver server properties not found in workspace: " + workspacePath);
+            }
+
+            return null;
         } catch (Exception e) {
             log(e);
             return null;
@@ -2657,6 +2723,9 @@ public class DBeaverLauncher {
             return;
         }
 
+        if (splashHandler == null) {
+            splashHandler = new SplashHandler();
+        }
         if (showSplash || endSplash != null) {
             // Register the endSplashHandler to be run at VM shutdown. This hook will be
             // removed once the splash screen has been taken down.
@@ -2707,10 +2776,12 @@ public class DBeaverLauncher {
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
 
-        try {
-            Runtime.getRuntime().removeShutdownHook(splashHandler);
-        } catch (Throwable e) {
-            // OK to ignore this, happens when the VM is already shutting down
+        if (splashHandler != null) {
+            try {
+                Runtime.getRuntime().removeShutdownHook(splashHandler);
+            } catch (Throwable e) {
+                // OK to ignore this, happens when the VM is already shutting down
+            }
         }
     }
 

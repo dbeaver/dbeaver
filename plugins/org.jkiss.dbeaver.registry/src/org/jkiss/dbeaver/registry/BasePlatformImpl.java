@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.registry.settings.GlobalSettings;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
@@ -97,7 +94,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     protected Path tempFolder;
 
-    protected void initialize() {
+    protected void initialize() throws DBException {
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefStore = getPreferenceStore();
@@ -122,6 +119,13 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
+        DBPApplication application = getApplication();
+        if (application.isHeadlessMode()) {
+            postInitialize();
+        }
+    }
+
+    public void postInitialize() {
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
             activatePluginServices();
@@ -201,10 +205,15 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public SQLDialectMetadataRegistry getSQLDialectRegistry() {
         if (sqlDialectRegistry == null) {
-            sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class, true);
+            BundleServiceRef<SQLDialectMetadataRegistry> registryRef = RuntimeUtils.getBundleService(
+                SQLDialectMetadataRegistry.class,
+                true
+            );
+            sqlDialectRegistry = registryRef.service();
             if (sqlDialectRegistry == null) {
                 throw new IllegalStateException("Cannot determine SQL dialect registry for " + getClass());
             }
+            registryRef.initializeService();
         }
         return sqlDialectRegistry;
     }

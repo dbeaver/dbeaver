@@ -38,12 +38,15 @@ public interface AIToolbox {
     @Nullable
     String getDescription();
 
+    @NotNull
+    Map<String, Object> getToolboxSettings();
+
     boolean isEnabled();
 
     boolean isAccessible();
 
     @NotNull
-    List<AIFunctionDescriptor> getSupportedFunctions();
+    List<AIFunctionDescriptor> getSupportedFunctions(@NotNull AIFunctionPurpose purpose);
 
     @Nullable
     AIFunctionDescriptor getFunctionById(@NotNull String id);

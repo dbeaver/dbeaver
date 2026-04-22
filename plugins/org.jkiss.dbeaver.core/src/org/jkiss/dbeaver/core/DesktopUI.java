@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 /**
  * DBeaver UI core
@@ -447,12 +448,31 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public String promptProperty(String prompt, String defValue) {
+    @Nullable
+    public String promptProperty(@NotNull String prompt, @Nullable String defValue) {
+        return promptProperty(s -> new EnterNameDialog(s, prompt, defValue));
+    }
+
+    @Override
+    @Nullable
+    public String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue) {
+        return promptProperty(s -> new EnterNameDialog(s, prompt, defValue) {
+            @NotNull
+            @Override
+            protected String createTitle() {
+                return title;
+            }
+        });
+    }
+
+    @Nullable
+    private String promptProperty(@NotNull Function<Shell, EnterNameDialog> dialogFactory) {
         return new UITask<String>() {
             @Override
+            @Nullable
             public String runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
-                final EnterNameDialog dialog = new EnterNameDialog(shell, prompt, defValue);
+                final EnterNameDialog dialog = dialogFactory.apply(shell);
                 if (dialog.open() == IDialogConstants.OK_ID) {
                     return dialog.getResult();
                 } else {

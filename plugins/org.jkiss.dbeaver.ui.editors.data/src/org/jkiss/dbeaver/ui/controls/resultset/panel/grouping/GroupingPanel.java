@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -25,19 +24,21 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.*;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.registry.GroupingRegistry;
 
 /**
  * RSV grouping panel
  */
 public class GroupingPanel extends ResultSetPanelBase {
+
 
     private static final String PANEL_ID = "results-grouping";
 
@@ -69,7 +70,7 @@ public class GroupingPanel extends ResultSetPanelBase {
                 refresh(true);
             }
         };
-        //this.presentation.getController().addListener(ownerListener);
+        // this.presentation.getController().addListener(ownerListener);
 
         return groupingPlaceholder;
     }
@@ -91,7 +92,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
                 @Override
                 public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                    //updateControls();
+                    // updateControls();
                 }
             };
             groupingViewer.addListener(groupingResultsListener);
@@ -99,6 +100,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
         return resultsContainer;
     }
+
     @Override
     public boolean isDirty() {
         return !getGroupingResultsContainer().getGroupAttributes().isEmpty();
@@ -131,7 +133,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
     @Override
     public void setFocus() {
-        //resultsContainer.getResultSetController().getControl().setFocus();
+        // resultsContainer.getResultSetController().getControl().setFocus();
     }
 
     @Override
@@ -164,36 +166,20 @@ public class GroupingPanel extends ResultSetPanelBase {
         sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         contributionManager.add(sortAction);
         contributionManager.add(new DuplicatesOnlyAction(getGroupingResultsContainer()));
-        contributionManager.add(new PercentFromTotalAction(getGroupingResultsContainer()));
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
         contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new ClearGroupingAction(getGroupingResultsContainer()));
+        contributionManager.add(new ToolbarSeparatorContribution(true));
+        addExtensionActions(contributionManager);
     }
 
-    private class PresentationToggleAction extends Action {
-        private final ResultSetPresentationDescriptor presentationDescriptor;
-
-        public PresentationToggleAction(ResultSetPresentationDescriptor presentationDescriptor) {
-            super(presentationDescriptor.getLabel(), Action.AS_RADIO_BUTTON);
-            this.presentationDescriptor = presentationDescriptor;
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(presentationDescriptor.getIcon()));
-            setToolTipText(presentationDescriptor.getDescription());
-            // Icons turns menu into mess - checkboxes are much better
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-        }
-
-        @Override
-        public boolean isChecked() {
-            return presentationDescriptor.matches(
-                getGroupingResultsContainer().getResultSetController().getActivePresentation().getClass());
-        }
-
-        @Override
-        public void run() {
-            ((ResultSetViewer)getGroupingResultsContainer().getResultSetController()).switchPresentation(presentationDescriptor);
-        }
+    private void addExtensionActions(@NotNull IContributionManager contributionManager) {
+        GroupingRegistry.getInstance()
+            .getGroupingDescriptors()
+            .stream()
+            .map(d -> d.createAction(getGroupingResultsContainer()))
+            .forEach(contributionManager::add);
     }
-
 }

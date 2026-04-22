@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationManager;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
-import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
+import org.jkiss.dbeaver.ext.db2.model.plan.DB2ExecutionPlan;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
@@ -475,7 +475,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         if (ptSchemaname == null) {
             throw new DBCException(DB2Messages.dialog_explain_no_tables_found_ex);
         }
-        DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
+        DB2ExecutionPlan plan = new DB2ExecutionPlan(query, ptSchemaname);
         plan.explain((JDBCSession) session);
         return plan;
     }

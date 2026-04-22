@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.altibase.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 
 import java.lang.reflect.Method;
@@ -41,7 +44,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
     
     private AltibaseDataSource dataSource;
     private JDBCSession session;
-    private String query;
+    private final String query;
     private List<AltibasePlanNode> rootNodes;
     private String planQuery;
 
@@ -83,18 +86,33 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
         }
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
-    public String getPlanQueryString() throws DBException {
+    public String getPlanQueryString() {
+        return "";
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.TEXT;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
         return planQuery;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 
@@ -104,21 +122,16 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
     private String getExplainPlan(JDBCSession session, String query) {
         Statement stmt = null;
 
-        Connection conn = null;
-        Class<? extends Connection> clazz = null;
-        Method method = null;
-        ExplainPlan expPlan = null;
-        
         try {
-            conn = session.getOriginal();
-            clazz = conn.getClass();
+            Connection conn = session.getOriginal();
+            Class<? extends Connection> clazz = conn.getClass();
             
             /* 
              * There are two setExplain methods in Connection class: 
              * The first one's argument is boolean, the second one's argument is byte.
              * Here, the second method is required.
             */
-            method = clazz.getMethod(setExplainPlan, byte.class);
+            Method method = clazz.getMethod(setExplainPlan, byte.class);
             
             if (method == null) {
                 throw new NoSuchMethodException(String.format(
@@ -126,7 +139,7 @@ public class AltibaseExecutionPlan extends AbstractExecutionPlan {
                         clazz.getName(), setExplainPlan,  AltibaseDataTypeDomain.BYTE.getTypeName().toLowerCase()));
             }
 
-            expPlan = AltibaseConstants.ExplainPlan.getByIndex(
+            ExplainPlan expPlan = AltibaseConstants.ExplainPlan.getByIndex(
                     dataSource.getContainer().getPreferenceStore().getInt(
                             AltibaseConstants.PREF_EXPLAIN_PLAN_TYPE));
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
@@ -105,6 +107,7 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
     private OraclePlanNode parent;
     protected final List<OraclePlanNode> nested = new ArrayList<>();
     
+     @NotNull
      @Override
     public DBCPlanNodeKind getNodeKind() {
 
@@ -283,26 +286,31 @@ public class OraclePlanNode extends AbstractExecutionPlanNode implements DBCPlan
          this.nested.add(node);
     }
 
+    @Nullable
     @Override
     public OraclePlanNode getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<OraclePlanNode> getNested() {
         return nested;
     }
 
+    @Nullable
     @Override
     public String getNodeName() {
         return objectName;
     }
 
+    @Nullable
     @Override
     public String getNodeType() {
         return operation;
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return null;

@@ -123,8 +123,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -4902,7 +4902,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = selectedRowsIncludingNewRow(newRowIndex);
+                    this.selectedRecords = recordMode ? new int[]{newRowIndex} : selectedRowsIncludingNewRow(newRowIndex);
 
                     newRowIndex++;
                     srcRowIndex++;

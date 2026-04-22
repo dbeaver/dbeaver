@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPInformationProvider;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.access.DBAUserCredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -41,13 +44,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
+public class OracleDataSourceProvider extends JDBCDataSourceProvider<OracleDataSource> implements
     DBAUserCredentialsProvider,
     DBPNativeClientLocationManager,
     DBPInformationProvider {
 
-    public OracleDataSourceProvider()
-    {
+    public OracleDataSourceProvider() {
+        super(OracleDataSource.class);
+    }
+
+    protected OracleDataSourceProvider(@NotNull Class<? extends OracleDataSource> dsClass) {
+        super(dsClass);
     }
 
     @Override
@@ -58,8 +65,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
 
     @NotNull
     @Override
-    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
         if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
@@ -136,7 +142,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public OracleDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {

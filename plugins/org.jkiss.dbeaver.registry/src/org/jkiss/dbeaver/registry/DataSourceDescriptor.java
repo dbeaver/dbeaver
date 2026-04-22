@@ -252,6 +252,9 @@ public class DataSourceDescriptor
         this.sharedCredentials = source.sharedCredentials;
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
+        if (navigatorSettings.isUserSettings()) {
+            navigatorSettings.setOriginalSettings(source.getOriginalNavigatorSettings());
+        }
         this.connectionReadOnly = source.connectionReadOnly;
         this.forceUseSingleConnection = source.forceUseSingleConnection;
         this.driver = source.driver;
@@ -287,6 +290,7 @@ public class DataSourceDescriptor
 
         this.virtualModel = new DBVModel(this, source.virtualModel);
     }
+
 
     public boolean isDisposed() {
         return disposed;
@@ -637,7 +641,12 @@ public class DataSourceDescriptor
             }
         }
 
-        updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+        updateObjectFilter(type.getName(), toObjectID(parentObject), filter);
+    }
+
+    @Nullable
+    protected String toObjectID(@Nullable DBSObject parentObject) {
+        return parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject);
     }
 
     @Nullable
@@ -651,11 +660,11 @@ public class DataSourceDescriptor
         this.clientApplicationName = applicationName;
     }
 
-    void clearFilters() {
+    protected void clearFilters() {
         filterMap.clear();
     }
 
-    void updateObjectFilter(String typeName, @Nullable String objectID, DBSObjectFilter filter) {
+    protected void updateObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
             filterMapping = new FilterMapping(typeName);

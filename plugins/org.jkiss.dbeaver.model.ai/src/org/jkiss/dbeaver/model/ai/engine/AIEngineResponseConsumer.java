@@ -21,7 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 
 /**
- * Subscriber which listens for response stream
+ * Listener which consumer HTTP traffic from AI engines.
+ * Chunk is a streamed text/object.
  */
 public interface AIEngineResponseConsumer {
 

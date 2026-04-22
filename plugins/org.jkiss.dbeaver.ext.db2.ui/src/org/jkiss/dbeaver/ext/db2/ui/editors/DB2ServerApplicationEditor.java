@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +21,8 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationManager;
@@ -54,20 +55,21 @@ public class DB2ServerApplicationEditor extends AbstractSessionEditor {
         super.createEditorControl(parent);
     }
 
+    @NotNull
     @Override
-    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+    protected SessionManagerViewer<?> createSessionViewer(@NotNull DBCExecutionContext executionContext, @NotNull Composite parent) {
         return new SessionManagerViewer<DB2ServerApplication>(this, parent, new DB2ServerApplicationManager((DB2DataSource) executionContext.getDataSource())) {
 
             @Override
             @SuppressWarnings("rawtypes")
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
+            protected void contributeToToolbar(@NotNull DBAServerSessionManager<?> sessionManager, @NotNull IContributionManager contributionManager)
             {
                 contributionManager.add(forceApplicationAction);
                 contributionManager.add(new Separator());
             }
 
             @Override
-            protected void onSessionSelect(DBAServerSession session)
+            protected void onSessionSelect(@Nullable DBAServerSession session)
             {
                 super.onSessionSelect(session);
                 forceApplicationAction.setEnabled(session != null);
