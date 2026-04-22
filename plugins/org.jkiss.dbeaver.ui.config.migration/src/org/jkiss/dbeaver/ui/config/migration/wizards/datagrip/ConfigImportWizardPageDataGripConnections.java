@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,12 +56,22 @@ public class ConfigImportWizardPageDataGripConnections extends ConfigImportWizar
     private void tryLoadConnection(ImportData importData) throws Exception {
 
         ConfigImportWizardDataGrip wizard = (ConfigImportWizardDataGrip) getWizard();
-        Path ideaDirectory = wizard.getInputFile();
-        if (!Files.exists(ideaDirectory)) {
-            return;
-        }
-        Map<String, Map<String, String>> uuidToDataSourceProps = dataGripDataSourceConfigXmlService.buildIdeaConfigProps(
+        Map<String, Map<String, String>> uuidToDataSourceProps;
+        if (wizard.getInputMode() == ConfigImportWizardDataGrip.InputMode.PASTED_CONFIGURATION) {
+            String pastedConfiguration = wizard.getPastedConfiguration();
+            if (pastedConfiguration == null) {
+                return;
+            }
+            uuidToDataSourceProps = dataGripDataSourceConfigXmlService.buildIdeaConfigPropsFromText(
+                pastedConfiguration);
+        } else {
+            Path ideaDirectory = wizard.getInputFile();
+            if (ideaDirectory == null || !Files.exists(ideaDirectory)) {
+                return;
+            }
+            uuidToDataSourceProps = dataGripDataSourceConfigXmlService.buildIdeaConfigProps(
                 ideaDirectory.toString());
+        }
         for (Map<String, String> dataSourceProps : uuidToDataSourceProps.values()) {
             ImportConnectionInfo connectionInfo = dataGripDataSourceConfigXmlService.buildIdeaConnectionFromProps(dataSourceProps);
             importData.addDriver(connectionInfo.getDriverInfo());
