@@ -7,7 +7,6 @@ Bundle-Release-Date: 20260504
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  com.google.guava;visibility:=reexport,
- com.google.gson;visibility:=reexport,
  org.apache.commons.commons-codec;visibility:=reexport,
  org.apache.commons.commons-logging;visibility:=reexport,
  slf4j.api;visibility:=reexport

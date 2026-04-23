@@ -13,7 +13,6 @@ Import-Package: org.jkiss.code,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Export-Package: org.jkiss.dbeaver.ext.duckdb,
- org.jkiss.dbeaver.ext.duckdb.model,
+Export-Package: org.jkiss.dbeaver.ext.duckdb.model,
  org.jkiss.dbeaver.ext.duckdb.model.data
 Automatic-Module-Name: org.jkiss.dbeaver.ext.duckdb

@@ -8,8 +8,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Fragment-Host: org.jkiss.dbeaver.ext.altibase
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.junit,
+Require-Bundle: org.junit,
  org.jkiss.dbeaver.test.platform,
  org.mockito.mockito-core
