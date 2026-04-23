@@ -1822,7 +1822,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
         private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
-        if (attr.getDataKind() == DBPDataKind.STRUCT && controller.isRecordMode()) {
+        if ((attr.getDataKind() == DBPDataKind.STRUCT || attr.getDataKind() == DBPDataKind.ARRAY) && controller.isRecordMode()) {
             return true;
         }
 
@@ -2416,6 +2416,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
             @Nullable int[] rowIndexes,
             boolean retrieveDeepestCollectionElement
         ) {
+            //StringBuilder sb = new StringBuilder();
+            //sb.append("{\n");
+            //sb.append(gridColumn.toString());
+            //sb.append("\n");
+            //sb.append(gridRow.toString());
+            //sb.append("\n}\n");
+            //System.out.println(sb.toString());
+
             if (gridRow.getParent() != null && !spreadsheet.isCellExpanded(gridRow.getParent(), gridColumn)) {
                 return DBDVoid.INSTANCE;
             }
@@ -2755,6 +2763,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         public String getCellToolTip(IGridColumn colElement, IGridRow rowElement) {
             Object cellValue = getCellValue(colElement, rowElement, false);
             StringBuilder toolTip = new StringBuilder();
+            toolTip.append(Objects.toIdentityString(cellValue) + " - " + cellValue);
+            toolTip.append("\n");
+
             toolTip.append(formatValue(colElement, rowElement, cellValue));
 
             // Add tips
@@ -2900,6 +2911,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (gridRow != null && gridRow.getParent() != null) {
             nestedIndexes = new int[gridRow.getLevel()];
             if (controller.isRecordMode()) {
+                if (gridRow.toString().split("\\.").length > 4) {
+                    System.out.println();
+                }
                 // In record mode attributes hierarchy includes struct attributes too
                 // Leave only array indexes. For each row we find it's array attribute
                 // and use it only once
@@ -3070,13 +3084,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             if (item.getElement() instanceof DBDAttributeBinding binding) {
-                return getAttributeText(binding);
+                return getAttributeText(binding) + " ~ ";
             } else if (item.getElement() instanceof DBSAttributeBase attr) {
-                return attr.getName();
+                return attr.getName() + " !! ";
             } else if (item instanceof IGridRow row) {
-                return String.valueOf(row.getRelativeIndex() + 1);
+                return String.valueOf(row.getRelativeIndex() + 1) + " ~r ";
             } else {
-                return String.valueOf(item.getElement());
+                return String.valueOf(item.getElement()) + " ~e ";
             }
         }
 
@@ -3099,9 +3113,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
             if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
                 if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.DATA_TYPE) {
-                    return columnTypeDescriptions.get(attributeBinding);
+                    return columnTypeDescriptions.get(attributeBinding)  + " ~ct~ " + element.toString();
                 }
-                return attributeBinding.getDescription();
+                return attributeBinding.getDescription()  + " ~ab~ " + element.toString();
             } else {
                 return null;
             }
@@ -3125,6 +3139,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         @Override
         public String getToolTipText(IGridItem element) {
+            String tooltip;
             if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();
@@ -3153,9 +3168,20 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         }
                     }
                 }
-                return tip.toString();
+                tooltip = tip.toString();
+            } else {
+                tooltip = null;
             }
-            return null;
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append(Objects.toIdentityString((element)) + " - " + element.toString());
+                sb.append("\n");
+                if (tooltip != null) {
+                    sb.append(tooltip);
+                }
+                tooltip = sb.toString();
+            }
+            return tooltip;
         }
 
         @Nullable

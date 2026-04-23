@@ -430,6 +430,9 @@ public class ResultSetModel implements DBDResultSetModel {
         @Nullable int[] rowIndexes,
         boolean retrieveDeepestCollectionElement
     ) {
+        if (rowIndexes != null &&  rowIndexes.toString().equals("[0, 0, 1]")) {
+            System.out.println();
+        }
         return DBUtils.getAttributeValue(
             attribute,
             attributes,

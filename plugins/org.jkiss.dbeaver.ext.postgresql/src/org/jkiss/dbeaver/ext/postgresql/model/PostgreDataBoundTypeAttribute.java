@@ -51,6 +51,11 @@ public class PostgreDataBoundTypeAttribute<CONTAINER extends DBSEntity & Postgre
         this.member = attr;
     }
 
+    @Override
+    public DBSEntityAttribute getUnderlyingAttribute() {
+        return this.member;
+    }
+
     @NotNull
     @Override
     public String formatMemberReference(
