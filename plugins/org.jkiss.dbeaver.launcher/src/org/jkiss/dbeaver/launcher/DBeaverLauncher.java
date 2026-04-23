@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -148,7 +148,7 @@ public class DBeaverLauncher {
         }
     }
 
-    private final Thread splashHandler = new SplashHandler();
+    private Thread splashHandler = null;
 
     //splash screen system properties
     public static final String SPLASH_HANDLE = "org.eclipse.equinox.launcher.splash.handle"; //$NON-NLS-1$
@@ -2723,6 +2723,9 @@ public class DBeaverLauncher {
             return;
         }
 
+        if (splashHandler == null) {
+            splashHandler = new SplashHandler();
+        }
         if (showSplash || endSplash != null) {
             // Register the endSplashHandler to be run at VM shutdown. This hook will be
             // removed once the splash screen has been taken down.
@@ -2773,10 +2776,12 @@ public class DBeaverLauncher {
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
 
-        try {
-            Runtime.getRuntime().removeShutdownHook(splashHandler);
-        } catch (Throwable e) {
-            // OK to ignore this, happens when the VM is already shutting down
+        if (splashHandler != null) {
+            try {
+                Runtime.getRuntime().removeShutdownHook(splashHandler);
+            } catch (Throwable e) {
+                // OK to ignore this, happens when the VM is already shutting down
+            }
         }
     }
 

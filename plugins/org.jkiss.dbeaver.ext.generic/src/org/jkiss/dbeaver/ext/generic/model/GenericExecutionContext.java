@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -78,13 +79,17 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                     catalogName = session.getCatalog();
                 } catch (Throwable e) {
                     catalogName = null; // Seems to be not supported
-                    log.debug(e);
+                    if (!(e instanceof SQLFeatureNotSupportedException)) {
+                        log.debug(e);
+                    }
                 }
                 try {
                     schemaName = session.getSchema();
                 } catch (Throwable e) {
                     schemaName = null; // Seems to be not supported
-                    log.debug(e);
+                    if (!(e instanceof SQLFeatureNotSupportedException)) {
+                        log.debug(e);
+                    }
                 }
 
                 String selectedObjectType = null;

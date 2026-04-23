@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class DatabricksDataSource extends GenericDataSource {
 
 
     @Override
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         String url = super.getConnectionURL(connectionInfo);
         if (!isLegacyDriver() && url.startsWith(DatabricksConstants.JDBC_LEGACY_URL_SUBPROTOCOL)) {
             log.debug("Detected a legacy connection URL in the Databricks native driver. Updating to the native URL.");
@@ -65,9 +65,9 @@ public class DatabricksDataSource extends GenericDataSource {
     @Override
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        JDBCExecutionContext context,
-        String purpose,
-        DBPConnectionConfiguration connectionInfo
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         String userAgent = GeneralUtils.getProductName().replace(" ", "+") + "/" + GeneralUtils.getProductVersion();
         connectionInfo.setProperty(DatabricksConstants.USER_AGENT_ENTRY, userAgent);

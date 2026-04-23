@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -280,7 +281,12 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         String typeName = attribute.getTypeName();
         if (isInCondition && CommonUtils.isNotEmpty(typeName)) {
             String lowerTypeName = typeName.toLowerCase();
@@ -290,11 +296,19 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
                 return "IPv6StringToNum(" + expression + ")";
             }
         }
-        return super.getTypeCastClause(attribute, expression, isInCondition);
+        return super.getTypeCastClause(attribute, expression, isInCondition, exprIsAttrRef);
     }
 
     @Override
     public boolean isEscapeBackslash() {
         return true;
     }
+
+    @NotNull
+    @Override
+    public DBPIdentifierCase storesQuotedCase() {
+        return DBPIdentifierCase.MIXED;
+    }
+
 }
+

@@ -21,10 +21,8 @@ Bundle-Release-Date: 20260504
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.jkiss.dbeaver.model.ai
-Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.model.jdbc,
+Require-Bundle: org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.registry,
- com.google.gson
+ org.jkiss.dbeaver.registry;visibility:=reexport
 
 

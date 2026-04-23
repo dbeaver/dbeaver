@@ -8,12 +8,9 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Fragment-Host: org.jkiss.dbeaver.ext.clickhouse
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.junit,
+Require-Bundle: org.junit,
  org.mockito.mockito-core,
  org.jkiss.dbeaver.headless,
- org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.test.platform,
  org.jkiss.dbeaver.registry
