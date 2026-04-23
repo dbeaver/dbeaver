@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver CE" uid="org.jkiss.dbeaver.core.appstore" id="org.jkiss.dbeaver.ui.app.standalone.appstore"
-    application="org.jkiss.dbeaver.ui.app.standalone.appstore" version="26.0.4.qualifier" useFeatures="true"
+<product name="DBeaver CE MS Store" uid="org.jkiss.dbeaver.core.msstore" id="org.jkiss.dbeaver.ui.app.standalone.msstore"
+         application="org.jkiss.dbeaver.ui.app.standalone.msstore" version="26.0.4.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -79,7 +79,7 @@
     </plugins>
 
     <features>
-        <feature id="org.jkiss.dbeaver.appstore.feature"/>
+        <feature id="org.jkiss.dbeaver.msstore.feature"/>
     </features>
 
     <configurations>
