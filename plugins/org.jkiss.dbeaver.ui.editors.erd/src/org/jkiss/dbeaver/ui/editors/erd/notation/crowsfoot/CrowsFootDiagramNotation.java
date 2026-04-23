@@ -110,26 +110,14 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
              */
 
             boolean darkTheme = UIUtils.getCurrentTheme().getId().toLowerCase().contains("dark");
-            switch(deleteRule.getId()) {
-                case "NO_ACTION":
-                    conn.setForegroundColor(darkTheme ? new Color(176, 122, 255) : new Color(126, 87, 194));
-                    break;
-                case "CASCADE":
-                    conn.setForegroundColor(darkTheme ? new Color(255, 95, 95) : new Color(198, 40, 40));
-                    break;
-                case "SET_NULL":
-                    conn.setForegroundColor(darkTheme ? new Color(92, 201, 110) : new Color(46, 125, 50));
-                    break;
-                case "SET_DEFAULT":
-                    conn.setForegroundColor(darkTheme ? new Color(100, 181, 246) : new Color(21, 101, 192));
-                    break;
-                case "RESTRICT":
-                    conn.setForegroundColor(darkTheme ? new Color(255, 179, 71) : new Color(239, 108, 0));
-                    break;
-                case "UNKNOWN":
-                default:
-                    conn.setForegroundColor(darkTheme ? new Color(150, 150, 150) : new Color(120, 120, 120));
-            }
+            conn.setForegroundColor(switch (deleteRule.getId()) {
+                case DBSForeignKeyModifyRule.ID.NO_ACTION ->   darkTheme ? new Color(176, 122, 255) : new Color(126,  87, 194);
+                case DBSForeignKeyModifyRule.ID.CASCADE ->     darkTheme ? new Color(255,  95,  95) : new Color(198,  40,  40);
+                case DBSForeignKeyModifyRule.ID.SET_NULL ->    darkTheme ? new Color( 92, 201, 110) : new Color( 46, 125,  50);
+                case DBSForeignKeyModifyRule.ID.SET_DEFAULT -> darkTheme ? new Color(100, 181, 246) : new Color( 21, 101, 192);
+                case DBSForeignKeyModifyRule.ID.RESTRICT ->    darkTheme ? new Color(255, 179,  71) : new Color(239, 108,   0);
+                case DBSForeignKeyModifyRule.ID.UNKNOWN ->     darkTheme ? new Color(150, 150, 150) : new Color(120, 120, 120);
+            });
         }
     }
 
