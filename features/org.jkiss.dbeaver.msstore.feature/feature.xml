@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-        id="org.jkiss.dbeaver.appstore.feature"
-        label="DBeaver AppStore"
+    id="org.jkiss.dbeaver.msstore.feature"
+    label="DBeaver MSStore"
         version="26.0.4.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
@@ -19,6 +19,6 @@
     <plugin id="org.jkiss.dbeaver.ui.config.sample" version="0.0.0" />
 
     <includes id="org.jkiss.dbeaver.ui.extra.feature" version="0.0.0"/>
-    <plugin id="org.jkiss.dbeaver.ui.app.winstore" os="win32" arch="x86_64" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.ui.app.msstore" os="win32" arch="x86_64" version="0.0.0"/>
 
 </feature>

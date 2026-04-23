@@ -8,7 +8,7 @@
     <version>1.0.0-SNAPSHOT</version>
      <relativePath>../</relativePath>
   </parent>
-  <artifactId>org.jkiss.dbeaver.ui.app.winstore</artifactId>
+  <artifactId>org.jkiss.dbeaver.ui.app.msstore</artifactId>
   <version>1.0.103-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>
