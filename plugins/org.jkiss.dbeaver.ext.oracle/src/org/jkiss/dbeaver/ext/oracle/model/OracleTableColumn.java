@@ -37,6 +37,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * OracleTableColumn
@@ -44,6 +46,9 @@ import java.util.Locale;
 public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements
     DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2, DBSTypedObjectExt4<OracleDataType>, DBPObjectWithLazyDescription
 {
+
+    private static final Pattern TYPE_WITH_SEMANTICS = Pattern.compile(
+        "(.+?)\\((\\d+)\\s+(CHAR|BYTE)\\)", Pattern.CASE_INSENSITIVE);
 
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;
@@ -114,13 +119,13 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     @Override
     public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         String normalized = fullTypeName.trim();
-        String upper = normalized.toUpperCase(Locale.ENGLISH);
-        if (upper.endsWith(" CHAR)")) {
-            charSemantics = OracleCharacterSemantics.CHAR;
-            normalized = normalized.substring(0, normalized.length() - 6) + ")";
-        } else if (upper.endsWith(" BYTE)")) {
-            charSemantics = OracleCharacterSemantics.BYTE;
-            normalized = normalized.substring(0, normalized.length() - 6) + ")";
+        Matcher m = TYPE_WITH_SEMANTICS.matcher(normalized);
+        if (m.matches()) {
+            charSemantics = "CHAR".equalsIgnoreCase(m.group(3))
+                ? OracleCharacterSemantics.CHAR
+                : OracleCharacterSemantics.BYTE;
+            normalized = m.group(1) + "(" + m.group(2) + ")";
+            setMaxLength(Long.parseLong(m.group(2)));
         } else {
             String baseName = normalized.replaceAll("\\(.*", "").trim();
             if (!supportsLengthSemantics(baseName)) {
