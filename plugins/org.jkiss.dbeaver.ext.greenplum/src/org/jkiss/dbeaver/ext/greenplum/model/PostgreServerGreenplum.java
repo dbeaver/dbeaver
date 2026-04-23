@@ -62,6 +62,10 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
             return new GreenplumTable(schema, dbResult);
         } else if (kind == PostgreClass.RelKind.m) {
             return new GreenplumMaterializedView(schema, dbResult);
+        } else if (kind == PostgreClass.RelKind.f && isRelationExternal(dbResult)) {
+            // Greenplum 7 / Cloudberry: external tables are stored as foreign tables
+            // backed by the gp_exttable_fdw FDW. Surface them under the External Tables folder.
+            return new GreenplumExternalTable(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
     }
