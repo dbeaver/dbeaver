@@ -16,22 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.bigquery;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.bigquery.model.BQDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.CommonUtils;
 
-public class BigQueryDataSourceProvider extends GenericDataSourceProvider {
+public class BQDataSourceProvider extends GenericDataSourceProvider<BQDataSource> {
 
-    public BigQueryDataSourceProvider()
-    {
+    @DynamicCall
+    public BQDataSourceProvider() {
+        super(BQDataSource.class);
     }
 
-    @Override
-    public void init(@NotNull DBPPlatform platform) {
-
+    protected BQDataSourceProvider(@NotNull Class<? extends BQDataSource> dsClass) {
+        super(dsClass);
     }
 
     @NotNull

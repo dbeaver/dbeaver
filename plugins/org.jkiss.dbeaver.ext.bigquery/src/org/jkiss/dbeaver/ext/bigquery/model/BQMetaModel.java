@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,22 +39,22 @@ import java.util.regex.Pattern;
 /**
  * BigQuery meta model
  */
-public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
+public class BQMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
 
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at \\[([0-9]+)\\:([0-9]+)\\]");
 
-    public BigQueryMetaModel() {
+    public BQMetaModel() {
     }
 
     @NotNull
     @Override
     public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        return new BigQueryDataSource(monitor, container, this);
+        return new BQDataSource(monitor, container, this);
     }
 
     @Override
     public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(@NotNull GenericStructContainer container) {
-        return new BigQueryDataTypeCache(container);
+        return new BQDataTypeCache(container);
     }
 
     @Nullable
