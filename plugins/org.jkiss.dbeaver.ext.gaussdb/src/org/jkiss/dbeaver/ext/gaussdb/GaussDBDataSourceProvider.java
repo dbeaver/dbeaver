@@ -96,7 +96,7 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider<GaussDBDat
     }
 
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return false;
     }
 }

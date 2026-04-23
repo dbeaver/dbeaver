@@ -225,7 +225,11 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     @Override
     protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
-            if (this.getDataSourceContainer() != null && !this.getDataSourceContainer().getDriver().isEmbedded()) {
+            // Persist editor separate-connection preference only when appropriate:
+            // - global preferences (no data-source), or
+            // - data-source-specific preferences when the driver is not embedded.
+            DBPDataSourceContainer dsContainer = this.getDataSourceContainer();
+            if (dsContainer == null || !dsContainer.getDriver().isEmbedded()) {
                 store.setValue(
                     SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
                     editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
