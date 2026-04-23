@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.qm.QMQueryFilter;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -5180,28 +5181,28 @@ public class ResultSetViewer extends Viewer
     }
 
     private static class SimpleFilterManager implements IResultSetFilterManager {
-        private final Map<String, List<String>> filterHistory = new HashMap<>();
+        private final Map<String, List<QMQueryFilter>> filterHistory = new HashMap<>();
+
         @NotNull
         @Override
-        public List<String> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
-            final List<String> filters = filterHistory.get(query);
+        public List<QMQueryFilter> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
+            final List<QMQueryFilter> filters = filterHistory.get(query);
             if (filters != null) {
-                return filters;
+                return List.copyOf(filters);
             }
-            return Collections.emptyList();
+            return List.of();
         }
 
         @Override
-        public void saveQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, @NotNull String filterValue) {
-            List<String> filters = filterHistory.computeIfAbsent(query, k -> new ArrayList<>());
-            filters.add(filterValue);
+        public void saveQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull QMQueryFilter filter) {
+            filterHistory.computeIfAbsent(filter.query(), k -> new ArrayList<>()).add(filter);
         }
 
         @Override
-        public void deleteQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull String query, String filterValue) {
-            List<String> filters = filterHistory.get(query);
+        public void deleteQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull QMQueryFilter filter) {
+            List<QMQueryFilter> filters = filterHistory.get(filter.query());
             if (filters != null) {
-                filters.add(filterValue);
+                filters.add(filter);
             }
         }
     }

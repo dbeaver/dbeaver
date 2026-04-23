@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.qm.QMQueryFilter;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -73,8 +74,8 @@ import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -120,7 +121,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private String activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
 
     private String prevQuery = null;
-    private final List<String> filtersHistory = new ArrayList<>();
+    private final List<QMQueryFilter> filtersHistory = new ArrayList<>();
     private Menu historyMenu;
     private boolean filterExpanded = false;
 
@@ -516,7 +517,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return displayName;
     }
 
-    private void loadFiltersHistory(String query) {
+    private void loadFiltersHistory(@NotNull String query) {
         filtersHistory.clear();
         try {
             if (ResultSetViewer.DEFAULT_QUERY_TEXT.equals(query)) {
@@ -526,8 +527,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (context == null) {
                 return;
             }
-            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(context, query);
-            filtersHistory.addAll(history);
+            filtersHistory.addAll(viewer.getFilterManager().getQueryFilterHistory(context, query));
         } catch (Throwable e) {
             log.debug("Error reading history", e);
         }
@@ -566,15 +566,27 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         //viewer.getControl().setFocus();
     }
 
-    void addFiltersHistory(String whereCondition)
-    {
-        final boolean oldFilter = filtersHistory.remove(whereCondition);
-        filtersHistory.add(whereCondition);
-        if (!oldFilter) {
+    void addFiltersHistory(@NotNull String whereCondition) {
+        var oldFilter = filtersHistory.stream()
+            .filter(f -> f.query().equals(whereCondition))
+            .findFirst().orElse(null);
+        if (oldFilter != null) {
+            // Make it the last
+            filtersHistory.remove(oldFilter);
+            filtersHistory.add(oldFilter);
+        } else {
+            var newFilter = new QMQueryFilter(
+                getActiveSourceQueryNormalized(false),
+                whereCondition,
+                null,
+                Instant.now(),
+                1
+            );
+            filtersHistory.add(newFilter);
             try {
                 DBCExecutionContext context = viewer.getExecutionContext();
                 if (context != null) {
-                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(false), whereCondition);
+                    viewer.getFilterManager().saveQueryFilterValue(context, newFilter);
                 }
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
@@ -961,6 +973,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         private void showFilterHistoryPopup() {
+            var context = viewer.getExecutionContext();
+            if (context != null) {
+                var dialog = new ResultSetFilterDialog(
+                    getShell(),
+                    context,
+                    viewer.getFilterManager(),
+                    getActiveSourceQueryNormalized(false)
+                );
+                dialog.open();
+                return;
+            }
+
             if (popup != null) {
                 closeHistoryPopup();
                 return;
@@ -1027,9 +1051,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             } else {
                 String curFilterValue = filtersText.getText();
                 for (int i = filtersHistory.size(); i > 0; i--) {
-                    String hi = filtersHistory.get(i - 1);
-                    if (!CommonUtils.equalObjects(hi, curFilterValue)) {
-                        new TableItem(historyTable, SWT.NONE).setText(hi);
+                    QMQueryFilter hi = filtersHistory.get(i - 1);
+                    if (!hi.query().equals(curFilterValue)) {
+                        new TableItem(historyTable, SWT.NONE).setText(hi.query());
                     }
                 }
                 //historyTable.deselectAll();
@@ -1062,22 +1086,22 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     if (item != null && !item.isDisposed()) {
                         switch (e.keyCode) {
                             case SWT.DEL:
-                                final String filterValue = item.getText();
-                                try {
-                                    DBCExecutionContext context = viewer.getExecutionContext();
-                                    if (context != null) {
-                                        viewer.getFilterManager().deleteQueryFilterValue(
-                                            context,
-                                            getActiveSourceQueryNormalized(true),
-                                            filterValue
-                                        );
-                                    }
-                                } catch (DBException e1) {
-                                    log.warn("Error deleting filter value [" + filterValue + "]", e1);
-                                }
-                                filtersHistory.remove(filterValue);
-                                item.dispose();
-                                hoverItem = null;
+                                // FIXME
+                                // final String filterValue = item.getText();
+                                // try {
+                                //     DBCExecutionContext context = viewer.getExecutionContext();
+                                //     if (context != null) {
+                                //         viewer.getFilterManager().deleteQueryFilterValue(
+                                //             context,
+                                //             filterValue
+                                //         );
+                                //     }
+                                // } catch (DBException e1) {
+                                //     log.warn("Error deleting filter value [" + filterValue + "]", e1);
+                                // }
+                                // filtersHistory.remove(filterValue);
+                                // item.dispose();
+                                // hoverItem = null;
                                 break;
                             case SWT.CR:
                             case SWT.SPACE:
