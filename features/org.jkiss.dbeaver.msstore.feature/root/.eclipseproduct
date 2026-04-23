@@ -1,5 +1,5 @@
 name=${dbeaver-product}
-id=org.jkiss.dbeaver.core.appstore
+id=org.jkiss.dbeaver.core.winstore
 version=${dbeaver-version}
 snapshot=${dbeaver-version}-${build-timestamp}
 branch=${sourceBranch}

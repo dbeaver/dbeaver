@@ -106,7 +106,7 @@
                 <module>org.jkiss.dbeaver.core</module>
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>
-                <module>org.jkiss.dbeaver.ui.app.winstore</module>
+                <module>org.jkiss.dbeaver.ui.app.msstore</module>
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
