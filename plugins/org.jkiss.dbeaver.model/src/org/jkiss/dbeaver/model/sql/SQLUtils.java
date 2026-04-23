@@ -1242,10 +1242,10 @@ public final class SQLUtils {
         for (String delimiter : scriptDelimiters) {
             if (!delimiter.isEmpty()) {
                 if (Character.isLetterOrDigit(delimiter.charAt(0))) {
-                    if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
-                        if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
-                            return true;
-                        }
+                    if (query.toUpperCase().endsWith(delimiter.toUpperCase())
+                        && isDelimiterStandalone(query, delimiter))
+                    {
+                        return true;
                     }
                 } else {
                     return !query.endsWith(delimiter);
@@ -1261,10 +1261,10 @@ public final class SQLUtils {
             if (!delimiter.isEmpty() && query.contains(delimiter)) {
                 String queryWithoutDelimiter = query.substring(0, query.lastIndexOf(delimiter));
                 if (Character.isLetterOrDigit(delimiter.charAt(0))) {
-                    if (query.toUpperCase().endsWith(delimiter.toUpperCase())) {
-                        if (!Character.isLetterOrDigit(query.charAt(query.length() - delimiter.length() - 1))) {
-                            return queryWithoutDelimiter;
-                        }
+                    if (query.toUpperCase().endsWith(delimiter.toUpperCase())
+                        && isDelimiterStandalone(query, delimiter))
+                    {
+                        return queryWithoutDelimiter;
                     }
                 } else if (query.endsWith(delimiter)) {
                     return queryWithoutDelimiter;
@@ -1272,6 +1272,24 @@ public final class SQLUtils {
             }
         }
         return query;
+    }
+
+    /**
+     * Checks that the character immediately preceding the trailing delimiter in
+     * {@code query} is not a letter or digit — i.e. the delimiter is tokenised
+     * as its own SQL token and is not a tail of a bigger identifier.
+     *
+     * <p>If the query is exactly the delimiter (no preceding character), the
+     * delimiter is considered standalone and this method returns {@code true}.
+     * Without this guard, callers computed {@code query.charAt(query.length() -
+     * delimiter.length() - 1)} which evaluates to {@code charAt(-1)} in the
+     * query-equals-delimiter case and threw {@link StringIndexOutOfBoundsException}
+     * — crashing the query transformer for single-token scripts such as a bare
+     * {@code GO} against SQL Server.
+     */
+    private static boolean isDelimiterStandalone(String query, String delimiter) {
+        int precedingIndex = query.length() - delimiter.length() - 1;
+        return precedingIndex < 0 || !Character.isLetterOrDigit(query.charAt(precedingIndex));
     }
 
     public static String getDefaultScriptDelimiter(SQLDialect sqlDialect) {
