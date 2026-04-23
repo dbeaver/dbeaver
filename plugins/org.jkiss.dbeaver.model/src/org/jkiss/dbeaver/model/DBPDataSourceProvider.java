@@ -94,7 +94,7 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
         return am;
     }
 
-    default boolean providesDriverClasses() {
+    default boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return true;
     }
 

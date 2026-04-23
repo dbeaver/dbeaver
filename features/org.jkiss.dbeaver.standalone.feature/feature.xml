@@ -7,7 +7,6 @@
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <includes id="org.jkiss.dbeaver.app.base.feature" version="0.0.0"/>
 

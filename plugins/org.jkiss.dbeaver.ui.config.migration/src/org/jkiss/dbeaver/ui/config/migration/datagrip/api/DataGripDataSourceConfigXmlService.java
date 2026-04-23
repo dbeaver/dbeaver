@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,20 @@ public interface DataGripDataSourceConfigXmlService {
      *
      * @param pathToIdeaFolder path to project folder which consist .idea folder.
      */
-    @NotNull Map<String, Map<String, String>> buildIdeaConfigProps(@NotNull String pathToIdeaFolder) throws Exception;
+    @NotNull
+    Map<String, Map<String, String>> buildIdeaConfigProps(@NotNull String pathToIdeaFolder) throws Exception;
+
+    /**
+     * Build a map where key is uuid of the datasource against config from raw JetBrains copied text or XML.
+     */
+    @NotNull
+    Map<String, Map<String, String>> buildIdeaConfigPropsFromText(@NotNull String rawConfigText) throws Exception;
 
     /**
      * Build a ImportConnectionInfo by single entry of {@link DataGripDataSourceConfigXmlService#buildIdeaConfigProps(String)}
      */
-    @NotNull ImportConnectionInfo buildIdeaConnectionFromProps(@NotNull Map<String, String> conProps);
+    @NotNull
+    ImportConnectionInfo buildIdeaConnectionFromProps(@NotNull Map<String, String> conProps);
 
     /**
      * Trying to extract a path to most recent project folder by iterating idea folder in JetBrains home folder
