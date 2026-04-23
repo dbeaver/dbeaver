@@ -142,10 +142,10 @@ public class AIEngineRequestFactory {
         allMessages.add(systemMessage);
         allMessages.addAll(messages);
 
-        ChatTruncator.TruncationResult result = chatTruncator.truncate(allMessages);
-        List<AIMessage> toSend = result.messages();
+        List<AIMessage> truncated = chatTruncator.tryTruncate(allMessages);
+        List<AIMessage> toSend = truncated != null ? truncated : allMessages;
         AIEngineRequest request = new AIEngineRequest(toSend);
-        request.setWasPromptTruncated(isContextTruncated || result.wasTruncated());
+        request.setWasPromptTruncated(isContextTruncated || truncated != null);
         request.setFunctions(new ArrayList<>(requestFunctions.supportedFunctions()));
 
         return request;

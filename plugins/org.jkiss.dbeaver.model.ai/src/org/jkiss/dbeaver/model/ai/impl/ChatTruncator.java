@@ -48,24 +48,17 @@ public final class ChatTruncator {
     }
 
     /**
-     * Result of a truncation operation.
-     * {@link #wasTruncated()} returns {@code true} if any message was dropped or its content was cut.
-     */
-    public record TruncationResult(@NotNull List<AIMessage> messages, boolean wasTruncated) {
-    }
-
-    /**
-     * Truncate the conversation to fit into (maxDbSnapshotTokens - reserves).
-     * Ordering in the result is chronological (SYSTEM first, then oldest->newest).
+     * Attempts to truncate the conversation so it fits within the configured token budget.
      *
-     * @return a {@link TruncationResult} that carries the resulting message list
-     *         and a flag indicating whether anything was actually truncated.
+     * @param input the full conversation history (may be unordered with respect to SYSTEM messages)
+     * @return the truncated message list if anything was cut or dropped,
+     *         or {@code null} if the entire input already fits within the budget unchanged
      */
-    @NotNull
-    public TruncationResult truncate(@NotNull List<AIMessage> input) {
+    @Nullable
+    public List<AIMessage> tryTruncate(@NotNull List<AIMessage> input) {
         List<AIMessage> messages = filterNonEmpty(input);
         if (messages.isEmpty()) {
-            return new TruncationResult(List.of(), false);
+            return null;
         }
 
         // 1) Extract and merge SYSTEM messages
@@ -190,7 +183,7 @@ public final class ChatTruncator {
         }
 
         result.addAll(pickedReverse);
-        return new TruncationResult(result, truncated);
+        return truncated ? result : null;
     }
 
     @NotNull
