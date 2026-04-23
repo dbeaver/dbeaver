@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.winstore;
+package org.jkiss.dbeaver.msstore;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.IEnvironmentPathMapper;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.StandardConstants;
@@ -31,21 +32,28 @@ public class WinStoreEnvPathMapper implements IEnvironmentPathMapper {
     private static final String APP_DATA_ROAMING_PATH_STRING = System.getenv("AppData");
     private static final String LOCAL_APP_DATA_PATH_STRING = System.getenv("LOCALAPPDATA");
     private static final String USER_HOME_PATH_STRING = System.getProperty(StandardConstants.ENV_USER_HOME);
+    public static final String WINDOWS_APP_LOCAL_DATA_PACKAGE_SUFFIX = "1b7tdvn0p0f9y";
     
     private final Path realVirtualizedRoot;
-    
-    public WinStoreEnvPathMapper() {
+
+    public WinStoreEnvPathMapper() throws DBCException {
         Path localAppDataPath = LOCAL_APP_DATA_PATH_STRING != null
             ? Path.of(LOCAL_APP_DATA_PATH_STRING)
             : Path.of(USER_HOME_PATH_STRING, "AppData", "Local");
         
         realVirtualizedRoot = localAppDataPath.resolve("Packages")
-            .resolve(WINDOWS_APP_LOCAL_DATA_PACKAGE_PREFIX + localAppFullId()).resolve("LocalCache").resolve("Roaming");
+            .resolve(createPackageFullName()).resolve("LocalCache").resolve("Roaming");
     }
 
     @NotNull
-    protected String localAppFullId() {
-        return "DBeaverCE_1b7tdvn0p0f9y";
+    private String createPackageFullName() throws DBCException {
+        return WINDOWS_APP_LOCAL_DATA_PACKAGE_PREFIX + localAppPath() + "_" + WINDOWS_APP_LOCAL_DATA_PACKAGE_SUFFIX;
+    }
+
+
+    @NotNull
+    protected String localAppPath() throws DBCException {
+        return "DBeaverCE";
     }
 
     @Override

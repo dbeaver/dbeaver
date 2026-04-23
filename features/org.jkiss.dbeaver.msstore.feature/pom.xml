@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
-    <artifactId>org.jkiss.dbeaver.appstore.feature</artifactId>
+    <artifactId>org.jkiss.dbeaver.msstore.feature</artifactId>
     <version>26.0.4-SNAPSHOT</version>
     <packaging>eclipse-feature</packaging>
 
