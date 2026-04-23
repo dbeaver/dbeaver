@@ -78,81 +78,43 @@ public final class ChatTruncator {
         int budget = Math.max(0, headroom - systemCap);
 
         // 2) Walk from newest to oldest.
-        //    The very last (most recent) message is ALWAYS included – even if the budget is
-        //    exhausted – because it carries the user's actual intent.  Without it the model
-        //    has no idea what is being asked.
-        ArrayList<AIMessage> pickedReverse = new ArrayList<>(rest.size());
+        List<AIMessage> pickedReverse = new ArrayList<>(rest.size());
         int used = 0;
         boolean truncated = false;
-        boolean messagesOmitted = false;
 
         if (!rest.isEmpty()) {
-            // Find indices of messages that must always be present:
-            //  - last USER message  (carries the actual question)
-            //  - last ASSISTANT message (gives the model conversational context)
-            int pinnedUserIdx = -1;
-            int pinnedAssistantIdx = -1;
-            for (int i = rest.size() - 1; i >= 0; i--) {
-                AIMessageType role = rest.get(i).getRole();
-                if (pinnedUserIdx < 0 && role == AIMessageType.USER) {
-                    pinnedUserIdx = i;
-                }
-                if (pinnedAssistantIdx < 0 && role == AIMessageType.ASSISTANT) {
-                    pinnedAssistantIdx = i;
-                }
-                if (pinnedUserIdx >= 0 && pinnedAssistantIdx >= 0) {
-                    break;
-                }
-            }
-
-            // Reserve space for pinned messages first (truncate if budget is tight, but never drop)
-            // We use a small helper map: originalIndex -> message to include
-            LinkedHashMap<Integer, AIMessage> pinned = new LinkedHashMap<>();
-            for (int idx : new int[]{pinnedUserIdx, pinnedAssistantIdx}) {
+            int[] pinnedIndexes = getLastUserAndAssistantMessage(rest);
+            Map<Integer, AIMessage> pinned = new LinkedHashMap<>();
+            for (int idx : pinnedIndexes) {
                 if (idx < 0) {
                     continue;
                 }
                 AIMessage m = rest.get(idx);
-                int t = counter.count(m.getContent());
-                if (used + t <= budget) {
-                    pinned.put(idx, m);
-                    used += t;
-                } else {
-                    int remaining = Math.max(0, budget - used);
-                    AIMessage cut = truncateToTokens(m, remaining);
-                    cut = cut.withContent(cut.getContent() + DEFAULT_TRUNCATED_SUFFIX);
-                    used += counter.count(cut.getContent());
-                    truncated = true;
-                }
+                AIMessage truncatedMessage = tryTruncateMessage(m, Math.max(0, budget - used));
+                AIMessage pickedMessage = truncatedMessage == null ? m : truncatedMessage;
+                pinned.put(idx, pickedMessage);
+                used += counter.count(pickedMessage.getContent());
+                truncated = truncated | truncatedMessage != null;
             }
 
-            // Greedily fill remaining budget from newest to oldest, skipping pinned indices
-            LinkedHashMap<Integer, AIMessage> extra = new LinkedHashMap<>();
+            Map<Integer, AIMessage> extra = new LinkedHashMap<>();
             for (int i = rest.size() - 1; i >= 0; i--) {
                 if (pinned.containsKey(i)) {
                     continue;
                 }
                 AIMessage m = rest.get(i);
-                int t = counter.count(m.getContent());
-                if (used + t <= budget) {
+                AIMessage truncatedMessage = tryTruncateMessage(m, budget - used);
+                if (truncatedMessage == null) {
                     extra.put(i, m);
-                    used += t;
+                    used += counter.count(m.getContent());
                 } else {
-                    int remaining = budget - used;
                     truncated = true;
-                    if (remaining <= 0) {
-                        messagesOmitted = true;
+                    int contentTokens = countTokensWithoutTruncatedSuffix(truncatedMessage);
+                    if (contentTokens <= 0) {
                         break;
                     }
-                    AIMessage cut = truncateToTokens(m, remaining);
-                    int cutTokens = counter.count(cut.getContent());
-                    if (cutTokens > 0) {
-                        cut = cut.withContent(cut.getContent() + DEFAULT_TRUNCATED_SUFFIX);
-                        extra.put(i, cut);
-                        used += cutTokens;
-                    } else {
-                        messagesOmitted = true;
-                    }
+                    extra.put(i, truncatedMessage);
+                    used += contentTokens;
                     break;
                 }
             }
@@ -167,16 +129,32 @@ public final class ChatTruncator {
         ArrayList<AIMessage> result = new ArrayList<>(pickedReverse.size() + 2);
         if (mergedSystem != null) {
             int remainingForSystem = Math.max(0, headroom - used);
-            AIMessage truncatedSystem = truncateToTokens(mergedSystem, remainingForSystem);
-            if (!truncatedSystem.getContent().equals(mergedSystem.getContent())) {
-                truncated = true;
-                truncatedSystem = truncatedSystem.withContent(truncatedSystem.getContent() + DEFAULT_TRUNCATED_SUFFIX);
-            }
-            result.add(truncatedSystem);
+            AIMessage truncatedSystem = tryTruncateMessage(mergedSystem, remainingForSystem);
+            truncated = truncated || truncatedSystem != null;
+            result.add(truncatedSystem == null ? mergedSystem : truncatedSystem);
         }
 
         result.addAll(pickedReverse);
         return truncated ? result : null;
+    }
+
+    @NotNull
+    private static int[] getLastUserAndAssistantMessage(@NotNull List<AIMessage> rest) {
+        int pinnedUserIdx = -1;
+        int pinnedAssistantIdx = -1;
+        for (int i = rest.size() - 1; i >= 0; i--) {
+            AIMessageType role = rest.get(i).getRole();
+            if (pinnedUserIdx < 0 && role == AIMessageType.USER) {
+                pinnedUserIdx = i;
+            }
+            if (pinnedAssistantIdx < 0 && role == AIMessageType.ASSISTANT) {
+                pinnedAssistantIdx = i;
+            }
+            if (pinnedUserIdx >= 0 && pinnedAssistantIdx >= 0) {
+                break;
+            }
+        }
+        return new int[]{pinnedUserIdx, pinnedAssistantIdx};
     }
 
     @NotNull
@@ -237,6 +215,23 @@ public final class ChatTruncator {
             }
         }
         return best;
+    }
+
+    @Nullable
+    private AIMessage tryTruncateMessage(@NotNull AIMessage message, int maxTokens) {
+        if (maxTokens >= counter.count(message.getContent())) {
+            return null;
+        }
+        AIMessage truncatedMessage = truncateToTokens(message, maxTokens);
+        return truncatedMessage.withContent(truncatedMessage.getContent() + DEFAULT_TRUNCATED_SUFFIX);
+    }
+
+    private int countTokensWithoutTruncatedSuffix(@NotNull AIMessage message) {
+        String content = message.getContent();
+        if (!content.endsWith(DEFAULT_TRUNCATED_SUFFIX)) {
+            return counter.count(content);
+        }
+        return counter.count(content.substring(0, content.length() - DEFAULT_TRUNCATED_SUFFIX.length()));
     }
 
     @NotNull
