@@ -20,6 +20,8 @@ import org.eclipse.core.databinding.conversion.text.NumberToStringConverter;
 import org.eclipse.core.databinding.conversion.text.StringToNumberConverter;
 import org.eclipse.core.internal.databinding.validation.StringToIntegerValidator;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 
 import java.text.NumberFormat;
@@ -226,5 +228,16 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         @NotNull Function<? super T, String> converter
     ) {
         return comboBox(binding, converter, identityConsumer());
+    }
+
+    @NotNull
+    UIRowBuilder control(
+        @NotNull Function<Composite, Control> factory,
+        @NotNull Consumer<? super UIControlBuilder.ControlBuilder> handler
+    );
+
+    @NotNull
+    default UIRowBuilder control(@NotNull Function<Composite, Control> factory) {
+        return control(factory, identityConsumer());
     }
 }

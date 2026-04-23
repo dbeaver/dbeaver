@@ -38,6 +38,14 @@ public class AIMessages extends NLS {
     public static String ai_execute_command_confirm_ddl_message;
     public static String ai_execute_command_confirm_other_message;
     public static String ai_empty_engine_response;
+    public static String ai_command_not_connected;
+    public static String ai_command_empty_prompt;
+    public static String ai_command_confirm_usage_title;
+    public static String ai_command_confirm_usage_message;
+    public static String ai_command_services_restricted;
+    public static String ai_command_generate_sql;
+    public static String ai_command_process_generated_sql;
+    public static String ai_command_empty_response;
 
     static {
         // initialize resource bundle
