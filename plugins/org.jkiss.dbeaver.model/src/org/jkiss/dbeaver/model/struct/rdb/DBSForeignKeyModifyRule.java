@@ -25,25 +25,27 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
  */
 public class DBSForeignKeyModifyRule implements DBPNamedObject
 {
-    public static final DBSForeignKeyModifyRule UNKNOWN = new DBSForeignKeyModifyRule("UNKNOWN", "?", null); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBSForeignKeyModifyRule NO_ACTION = new DBSForeignKeyModifyRule("NO_ACTION", ModelMessages.model_struct_No_Action, null); //$NON-NLS-1$
-    public static final DBSForeignKeyModifyRule CASCADE = new DBSForeignKeyModifyRule("CASCADE", ModelMessages.model_struct_Cascade, "CASCADE"); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBSForeignKeyModifyRule SET_NULL = new DBSForeignKeyModifyRule("SET_NULL", ModelMessages.model_struct_Set_NULL, "SET NULL"); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBSForeignKeyModifyRule SET_DEFAULT = new DBSForeignKeyModifyRule("SET_DEFAULT", ModelMessages.model_struct_Set_Default, "SET DEFAULT"); //$NON-NLS-1$ //$NON-NLS-3$
-    public static final DBSForeignKeyModifyRule RESTRICT = new DBSForeignKeyModifyRule("RESTRICT", ModelMessages.model_struct_Restrict, "RESTRICT"); //$NON-NLS-1$ //$NON-NLS-3$
+    public enum ID { UNKNOWN, NO_ACTION, CASCADE, SET_NULL, SET_DEFAULT, RESTRICT, };
 
-    private final String id;
+    public static final DBSForeignKeyModifyRule UNKNOWN = new DBSForeignKeyModifyRule(ID.UNKNOWN, "?", null); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBSForeignKeyModifyRule NO_ACTION = new DBSForeignKeyModifyRule(ID.NO_ACTION, ModelMessages.model_struct_No_Action, null); //$NON-NLS-1$
+    public static final DBSForeignKeyModifyRule CASCADE = new DBSForeignKeyModifyRule(ID.CASCADE, ModelMessages.model_struct_Cascade, "CASCADE"); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBSForeignKeyModifyRule SET_NULL = new DBSForeignKeyModifyRule(ID.SET_NULL, ModelMessages.model_struct_Set_NULL, "SET NULL"); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBSForeignKeyModifyRule SET_DEFAULT = new DBSForeignKeyModifyRule(ID.SET_DEFAULT, ModelMessages.model_struct_Set_Default, "SET DEFAULT"); //$NON-NLS-1$ //$NON-NLS-3$
+    public static final DBSForeignKeyModifyRule RESTRICT = new DBSForeignKeyModifyRule(ID.RESTRICT, ModelMessages.model_struct_Restrict, "RESTRICT"); //$NON-NLS-1$ //$NON-NLS-3$
+
+    private final ID id;
     private final String name;
     private final String clause;
 
-    public DBSForeignKeyModifyRule(String id, String name, String clause)
+    public DBSForeignKeyModifyRule(ID id, String name, String clause)
     {
         this.id = id;
         this.name = name;
         this.clause = clause;
     }
 
-    public String getId()
+    public ID getId()
     {
         return id;
     }
@@ -63,6 +65,6 @@ public class DBSForeignKeyModifyRule implements DBPNamedObject
     @Override
     public String toString()
     {
-        return id;
+        return id.toString();
     }
 }
