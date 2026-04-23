@@ -226,7 +226,11 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     private boolean supportsLengthSemantics(@NotNull String typeName) {
         return switch (typeName.toUpperCase(Locale.ENGLISH)) {
-            case "CHAR", "VARCHAR", OracleConstants.TYPE_NAME_VARCHAR2, "NCHAR", "NVARCHAR2" -> true;
+            case OracleConstants.TYPE_NAME_CHAR,
+                 OracleConstants.TYPE_NAME_VARCHAR,
+                 OracleConstants.TYPE_NAME_VARCHAR2,
+                 OracleConstants.TYPE_NAME_NCHAR,
+                 OracleConstants.TYPE_NAME_NVARCHAR2 -> true;
             default -> false;
         };
     }
