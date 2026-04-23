@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.erd;
 
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class ERDColors {
@@ -55,4 +56,16 @@ public class ERDColors {
         return UIUtils.getColorRegistry().get(EXTRA_HEADER_COLORS[index]);
     }
 
+    public static Color getForeignKeyModifyRuleColor(DBSForeignKeyModifyRule.ID id) {
+        return UIUtils.getColorRegistry().get(
+            switch (id) {
+                case DBSForeignKeyModifyRule.ID.NO_ACTION   -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_NO_ACTION;
+                case DBSForeignKeyModifyRule.ID.CASCADE     -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_CASCADE;
+                case DBSForeignKeyModifyRule.ID.SET_NULL    -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_SET_NULL;
+                case DBSForeignKeyModifyRule.ID.SET_DEFAULT -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_SET_DEFAULT;
+                case DBSForeignKeyModifyRule.ID.RESTRICT    -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_RESTRICT;
+                case DBSForeignKeyModifyRule.ID.UNKNOWN     -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_UNKNOWN;
+            }
+        );
+    }
 }
