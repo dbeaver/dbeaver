@@ -25,8 +25,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.bigquery.auth.BigQueryAuthModel;
-import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
+import org.jkiss.dbeaver.ext.bigquery.auth.BQAuthModel;
+import org.jkiss.dbeaver.ext.bigquery.model.BQConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.BigQueryActivator;
 import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -40,9 +40,9 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Locale;
 
 /**
- * BigQueryConnectionPage
+ * BQConnectionPage
  */
-public class BigQueryConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
+public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Text projectText;
     private Text extraProjectsText;
@@ -53,7 +53,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
     private static final ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png"); //$NON-NLS-1$
     private final DriverPropertiesDialogPage driverPropsPage;
 
-    public BigQueryConnectionPage() {
+    public BQConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
     }
 
@@ -99,13 +99,14 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
                 GridData.FILL_HORIZONTAL
             );
 
-            hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
+            hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BQConstants.DEFAULT_HOST_NAME);
             hostText.addModifyListener(textListener);
             UIUtils.setDefaultTextControlWidthHint(hostText);
 
-            portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
-            GridData gd = (GridData) portText.getLayoutData();
+            portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BQConstants.DEFAULT_PORT));
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
+            portText.setLayoutData(gd);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
@@ -143,8 +144,8 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             projectText.setText(databaseName);
         }
         String additionalProjects = CommonUtils.toString(
-            connectionInfo.getProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS),
-            connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS) // backward compatibility
+            connectionInfo.getProviderProperty(BQConstants.DRIVER_PROP_ADDITIONAL_PROJECTS),
+            connectionInfo.getProperty(BQConstants.DRIVER_PROP_ADDITIONAL_PROJECTS) // backward compatibility
         );
         if (additionalProjects != null) {
             extraProjectsText.setText(additionalProjects);
@@ -152,7 +153,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
 
         if (hostText != null) {
             if (CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                hostText.setText(BigQueryConstants.DEFAULT_HOST_NAME);
+                hostText.setText(BQConstants.DEFAULT_HOST_NAME);
             } else {
                 hostText.setText(connectionInfo.getHostName());
             }
@@ -176,7 +177,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             connectionInfo.setDatabaseName(projectText.getText().trim());
         }
         if (extraProjectsText != null) {
-            connectionInfo.setProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
+            connectionInfo.setProviderProperty(BQConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
         }
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -190,7 +191,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
     @NotNull
     @Override
     protected String getDefaultAuthModelId(DBPDataSourceContainer dataSource) {
-        return BigQueryAuthModel.ID;
+        return BQAuthModel.ID;
     }
 
     @Override

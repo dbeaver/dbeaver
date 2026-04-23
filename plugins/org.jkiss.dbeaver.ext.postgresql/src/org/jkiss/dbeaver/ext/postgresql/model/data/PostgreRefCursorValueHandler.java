@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -31,11 +32,16 @@ import java.sql.SQLException;
  * PostgreArrayValueHandler
  */
 public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
-    private static final Log log = Log.getLog(PostgreRefCursorValueHandler.class);
+
     public static final PostgreRefCursorValueHandler INSTANCE = new PostgreRefCursorValueHandler();
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+    protected Object fetchColumnValue(
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
         String cursorName = resultSet.getString(index);
         return new PostgreRefCursor((JDBCSession) session, cursorName);
 /*
@@ -59,13 +65,12 @@ public class PostgreRefCursorValueHandler extends JDBCStructValueHandler {
 
     @Override
     protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
+        @Nullable Object value
+    ) throws DBCException, SQLException {
         throw new DBCException("Cursor value binding not supported");
     }
 
