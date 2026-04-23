@@ -130,8 +130,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     protected void createAdditionalSettings(@NotNull Composite parent) {
         legacyApiCheck = UIUtils.createCheckbox(
             parent,
-            "Use legacy API",
-            "Use legacy OpenAI API (chat). May be useful if you use OpenAI compatible engine which doesn't support 'responses' API.",
+            AIUIMessages.openai_configurator_legacy_api_label,
+            AIUIMessages.openai_configurator_legacy_api_tip,
             false,
             2
         );
@@ -140,8 +140,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         ));
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write AI queries to debug log",
-            "Write AI queries with metadata info in debug logs",
+            AIUIMessages.openai_configurator_log_query_label,
+            AIUIMessages.openai_configurator_log_query_tip,
             false,
             2
         );
@@ -183,13 +183,13 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
-        temperatureText.setToolTipText("Lower temperatures give more precise results");
+        temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
     private List<AIModel> fetchOpenAiModels(DBRProgressMonitor monitor) throws DBException {
         if (token == null || token.isEmpty()) {
-            throw new DBException("Token is not set");
+            throw new DBException(AIUIMessages.openai_configurator_token_required);
         }
 
         OpenAIProperties properties = new OpenAIProperties();
@@ -212,7 +212,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         gd.widthHint = 150;
         tokenText.setLayoutData(gd);
         tokenText.addModifyListener((e -> token = tokenText.getText()));
-        tokenText.setMessage("API access token");
+        tokenText.setMessage(AIUIMessages.openai_configurator_token_placeholder);
         createURLInfoLink(parent);
     }
 
