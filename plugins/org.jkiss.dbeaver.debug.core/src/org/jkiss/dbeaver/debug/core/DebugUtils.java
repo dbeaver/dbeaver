@@ -203,7 +203,7 @@ public class DebugUtils {
     public static DBPDataSourceContainer getDataSourceContainer(@NotNull ILaunchConfiguration configuration) throws CoreException {
         String projectName = configuration.getAttribute(DBGConstants.ATTR_PROJECT_NAME, (String)null);
         String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String)null);
-        if (projectName == null || datasourceId == null) {
+        if (datasourceId == null) {
             throw new CoreException(newErrorStatus("Datasource not specified in debug configuration"));
         }
         DBPDataSourceContainer datasourceDescriptor = DBUtils.findDataSource(projectName, datasourceId);
