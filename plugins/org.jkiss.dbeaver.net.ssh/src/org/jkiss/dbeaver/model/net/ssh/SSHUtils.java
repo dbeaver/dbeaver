@@ -98,9 +98,10 @@ public class SSHUtils {
     }
 
 
-    public static boolean isKeyEncrypted(@NotNull String privKeyValue) {
+    public static boolean isKeyEncrypted(@Nullable String privKeyValue) {
         // Check whether this key is encrypted
         if (privKeyValue != null) {
+            // no need to decode key value, @see com.jcraft.jsch.KeyPair.load(com.jcraft.jsch.JSch, byte[], byte[])
             byte[] keyBinary = privKeyValue.getBytes(StandardCharsets.UTF_8);
             try {
                 JSch testSch = new JSch();
