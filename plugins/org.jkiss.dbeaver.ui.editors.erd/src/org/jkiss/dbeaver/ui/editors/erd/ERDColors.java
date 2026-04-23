@@ -56,15 +56,15 @@ public class ERDColors {
         return UIUtils.getColorRegistry().get(EXTRA_HEADER_COLORS[index]);
     }
 
-    public static Color getForeignKeyModifyRuleColor(DBSForeignKeyModifyRule.ID id) {
+    public static Color getForeignKeyModifyRuleColor(DBSForeignKeyModifyRule rule) {
         return UIUtils.getColorRegistry().get(
-            switch (id) {
-                case DBSForeignKeyModifyRule.ID.NO_ACTION   -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_NO_ACTION;
-                case DBSForeignKeyModifyRule.ID.CASCADE     -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_CASCADE;
-                case DBSForeignKeyModifyRule.ID.SET_NULL    -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_SET_NULL;
-                case DBSForeignKeyModifyRule.ID.SET_DEFAULT -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_SET_DEFAULT;
-                case DBSForeignKeyModifyRule.ID.RESTRICT    -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_RESTRICT;
-                case DBSForeignKeyModifyRule.ID.UNKNOWN     -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_UNKNOWN;
+            switch (rule) {
+                case DBSForeignKeyModifyRule.NO_ACTION   -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_NO_ACTION;
+                case DBSForeignKeyModifyRule.CASCADE     -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_CASCADE;
+                case DBSForeignKeyModifyRule.SET_NULL    -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_SET_NULL;
+                case DBSForeignKeyModifyRule.SET_DEFAULT -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_SET_DEFAULT;
+                case DBSForeignKeyModifyRule.RESTRICT    -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_RESTRICT;
+                case DBSForeignKeyModifyRule.UNKNOWN     -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_UNKNOWN;
             }
         );
     }
