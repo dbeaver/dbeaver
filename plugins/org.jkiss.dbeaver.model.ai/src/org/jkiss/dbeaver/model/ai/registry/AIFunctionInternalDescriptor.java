@@ -55,6 +55,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean global;
     private final boolean hidden;
     private final boolean ui;
+    private final boolean desktop;
     private final boolean enabledByDefault;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
@@ -76,6 +77,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
+        this.desktop = !Boolean.FALSE.toString().equalsIgnoreCase(config.getAttribute("isDesktop"));
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
         this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
@@ -146,6 +148,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean isUI() {
         return ui;
+    }
+
+    @Override
+    public boolean isDesktop() {
+        return desktop;
     }
 
     /**

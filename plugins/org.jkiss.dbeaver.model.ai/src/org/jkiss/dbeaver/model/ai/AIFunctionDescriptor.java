@@ -59,6 +59,10 @@ public interface AIFunctionDescriptor {
      */
     boolean isUI();
 
+    default boolean isDesktop() {
+        return true;
+    }
+
     /**
      * Global functions are passed in ALL requests
      */

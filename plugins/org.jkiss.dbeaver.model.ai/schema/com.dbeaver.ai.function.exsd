@@ -53,6 +53,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="isDesktop" type="boolean" default="true">
+            <annotation>
+               <documentation>
+                  Whether this function is intended for desktop products. Defaults to true for existing functions.
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="category" type="string">
             <annotation>
                <documentation>
