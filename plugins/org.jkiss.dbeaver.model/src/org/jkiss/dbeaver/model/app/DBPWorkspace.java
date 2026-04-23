@@ -76,7 +76,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
      * Initializes workspace state.
      * Called once during workspace instantiation. Mustn't be called directly by user.
      */
-    void initializeProjects();
+    void initializeProjects() throws DBException;
 
     /**
      * Disposes workspace caches.

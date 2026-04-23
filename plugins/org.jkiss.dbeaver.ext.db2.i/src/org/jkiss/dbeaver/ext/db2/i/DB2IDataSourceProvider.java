@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.i;
 
+import org.jkiss.dbeaver.ext.db2.i.model.DB2IDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
-public class DB2IDataSourceProvider extends GenericDataSourceProvider {
+public class DB2IDataSourceProvider extends GenericDataSourceProvider<DB2IDataSource> {
 
-    public DB2IDataSourceProvider()
-    {
+    public DB2IDataSourceProvider() {
+        super(DB2IDataSource.class);
     }
 
 }
