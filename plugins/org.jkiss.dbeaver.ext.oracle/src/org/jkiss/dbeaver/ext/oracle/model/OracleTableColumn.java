@@ -47,7 +47,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;
-    private String charUsed;
+    private OracleCharacterSemantics charSemantics;
     private String comment;
     private boolean hidden;
 
@@ -82,8 +82,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         if (typeMod == OracleDataTypeModifier.REF) {
             this.valueType = Types.REF;
         }
-        this.charUsed = JDBCUtils.safeGetString(dbResult, "CHAR_USED");
-        setMaxLength(JDBCUtils.safeGetLong(dbResult, "C".equals(this.charUsed) ? "CHAR_LENGTH" : "DATA_LENGTH"));
+        this.charSemantics = OracleCharacterSemantics.resolve(JDBCUtils.safeGetString(dbResult, "CHAR_USED"));
+        setMaxLength(JDBCUtils.safeGetLong(dbResult, this.charSemantics == OracleCharacterSemantics.CHAR ? "CHAR_LENGTH" : "DATA_LENGTH"));
         setRequired(!OracleConstants.RESULT_YES_VALUE.equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
         Integer scale = JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE");
         if (scale == null) {
@@ -116,15 +116,15 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         String normalized = fullTypeName.trim();
         String upper = normalized.toUpperCase(Locale.ENGLISH);
         if (upper.endsWith(" CHAR)")) {
-            charUsed = "C";
+            charSemantics = OracleCharacterSemantics.CHAR;
             normalized = normalized.substring(0, normalized.length() - 6) + ")";
         } else if (upper.endsWith(" BYTE)")) {
-            charUsed = "B";
+            charSemantics = OracleCharacterSemantics.BYTE;
             normalized = normalized.substring(0, normalized.length() - 6) + ")";
         } else {
             String baseName = normalized.replaceAll("\\(.*", "").trim();
             if (!supportsLengthSemantics(baseName)) {
-                charUsed = null;
+                charSemantics = null;
             }
         }
         super.setFullTypeName(normalized);
@@ -155,17 +155,17 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     public void setTypeName(@NotNull String typeName) throws DBException {
         super.setTypeName(typeName);
         if (!supportsLengthSemantics(typeName)) {
-            this.charUsed = null;
+            this.charSemantics = null;
         }
     }
 
     @Nullable
-    public String getCharUsed() {
-        return charUsed;
+    public OracleCharacterSemantics getCharSemantics() {
+        return charSemantics;
     }
 
-    public void setCharUsed(@Nullable String charUsed) {
-        this.charUsed = charUsed;
+    public void setCharSemantics(@Nullable OracleCharacterSemantics charSemantics) {
+        this.charSemantics = charSemantics;
     }
 
     @Property(viewable = true, order = 30)

@@ -284,7 +284,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
     @Test
     public void generateAlterTableModifyColumnWithCharSemantics() throws Exception {
-        testColumnVarchar.setCharUsed("C");
+        testColumnVarchar.setCharSemantics(OracleCharacterSemantics.CHAR);
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
@@ -303,7 +303,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
     @Test
     public void generateAlterTableModifyColumnWithByteSemantics() throws Exception {
-        testColumnVarchar.setCharUsed("B");
+        testColumnVarchar.setCharSemantics(OracleCharacterSemantics.BYTE);
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
@@ -322,14 +322,14 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
     @Test
     public void fullTypeNameIncludesCharSemantics() {
-        testColumnVarchar.setCharUsed("C");
+        testColumnVarchar.setCharSemantics(OracleCharacterSemantics.CHAR);
         testColumnVarchar.setMaxLength(255);
         Assert.assertEquals("VARCHAR(255 CHAR)", testColumnVarchar.getFullTypeName());
     }
 
     @Test
     public void fullTypeNameWithoutCharSemantics() {
-        testColumnVarchar.setCharUsed(null);
+        testColumnVarchar.setCharSemantics(null);
         testColumnVarchar.setMaxLength(100);
         Assert.assertEquals("VARCHAR(100)", testColumnVarchar.getFullTypeName());
     }

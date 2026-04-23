@@ -577,11 +577,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
             case OracleConstants.TYPE_NAME_NCHAR:
             case OracleConstants.TYPE_NAME_NVARCHAR2:
                 if (column instanceof OracleTableColumn oracleColumn) {
-                    String charUsed = oracleColumn.getCharUsed();
-                    if ("C".equals(charUsed) || "B".equals(charUsed)) {
+                    OracleCharacterSemantics charSemantics = oracleColumn.getCharSemantics();
+                    if (charSemantics != null) {
                         long maxLength = column.getMaxLength();
                         if (maxLength > 0 && maxLength != Integer.MAX_VALUE && maxLength != Long.MAX_VALUE) {
-                            return "(" + maxLength + ("C".equals(charUsed) ? " CHAR" : " BYTE") + ")";
+                            return "(" + maxLength + " " + charSemantics.getKeyword() + ")";
                         }
                     }
                 }
