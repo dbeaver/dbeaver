@@ -361,6 +361,48 @@
                 value="225, 221, 252">
         </colorDefinition>
 
+        <!-- Colors for arrows, depending on "onDelete" -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.arrow.label" id="org.jkiss.dbeaver.ui.presentation.erd.arrow" parentId="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.erd.arrow.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.arrow.color.no-action.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.arrow"
+                id="org.jkiss.dbeaver.ui.presentation.erd.arrow.color.no-action"
+                value="126,87,194">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.arrow.color.cascade.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.arrow"
+                id="org.jkiss.dbeaver.ui.presentation.erd.arrow.color.cascade"
+                value="198,40,40">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.arrow.color.set-null.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.arrow"
+                id="org.jkiss.dbeaver.ui.presentation.erd.arrow.color.set-null"
+                value="46,125,50">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.arrow.color.set-default.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.arrow"
+                id="org.jkiss.dbeaver.ui.presentation.erd.arrow.color.set-default"
+                value="21,101,192">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.arrow.color.restrict.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.arrow"
+                id="org.jkiss.dbeaver.ui.presentation.erd.arrow.color.restrict"
+                value="239,108,0">
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.arrow.color.unknown.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd.arrow"
+                id="org.jkiss.dbeaver.ui.presentation.erd.arrow.color.unknown"
+                value="120,120,120">
+        </colorDefinition>
+
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">

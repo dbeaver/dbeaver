@@ -78,6 +78,13 @@ public class ERDUIConstants {
     public static final String COLOR_ERD_HEADER_COLOR_6 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.6"; //$NON-NLS-1$
     public static final String COLOR_ERD_HEADER_COLOR_7 = "org.jkiss.dbeaver.ui.presentation.erd.headers.color.7"; //$NON-NLS-1$
 
+    public static final String COLOR_ERD_ARROW_COLOR_NO_ACTION = "org.jkiss.dbeaver.ui.presentation.erd.arrow.color.no-action"; //$NON-NLS-1$
+    public static final String COLOR_ERD_ARROW_COLOR_CASCADE = "org.jkiss.dbeaver.ui.presentation.erd.arrow.color.cascade"; //$NON-NLS-1$
+    public static final String COLOR_ERD_ARROW_COLOR_SET_NULL = "org.jkiss.dbeaver.ui.presentation.erd.arrow.color.set-null"; //$NON-NLS-1$
+    public static final String COLOR_ERD_ARROW_COLOR_SET_DEFAULT = "org.jkiss.dbeaver.ui.presentation.erd.arrow.color.set-default"; //$NON-NLS-1$
+    public static final String COLOR_ERD_ARROW_COLOR_RESTRICT = "org.jkiss.dbeaver.ui.presentation.erd.arrow.color.restrict"; //$NON-NLS-1$
+    public static final String COLOR_ERD_ARROW_COLOR_UNKNOWN = "org.jkiss.dbeaver.ui.presentation.erd.arrow.color.unknown"; //$NON-NLS-1$
+
     public static final String CMD_SAVE_AS = "org.jkiss.dbeaver.erd.diagram.saveAs";
     public static final String CONFIRM_OPEN_EXPORTED_FILE = "erd_open_exported_file";
 
