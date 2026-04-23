@@ -291,6 +291,7 @@ public class DataSourceDescriptor
         this.virtualModel = new DBVModel(this, source.virtualModel);
     }
 
+
     public boolean isDisposed() {
         return disposed;
     }
