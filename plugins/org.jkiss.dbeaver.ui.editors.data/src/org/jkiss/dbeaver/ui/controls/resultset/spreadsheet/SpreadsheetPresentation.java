@@ -133,7 +133,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private boolean supportsAttributeFilter;
     private boolean autoFetchSegments;
     private boolean showAttributeIcons;
-    private boolean showAttributeDescription;
+    private ResultSetPreferences.ColumnHeaderExtraContent columnHeaderExtra;
+    private Map<DBDAttributeBinding, String> columnTypeDescriptions = Collections.emptyMap();
     private boolean calcColumnWidthByValue;
 
     private boolean rightJustifyNumbers = true;
@@ -916,7 +917,36 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         showAttrOrdering = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
         showAttributeIcons = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS);
-        showAttributeDescription = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
+        String headerExtraStr = getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA);
+        if (CommonUtils.isEmpty(headerExtraStr)) {
+            // Backward compatibility: check old boolean preference
+            if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION)) {
+                columnHeaderExtra = ResultSetPreferences.ColumnHeaderExtraContent.DESCRIPTION;
+            } else {
+                columnHeaderExtra = ResultSetPreferences.ColumnHeaderExtraContent.NOTHING;
+            }
+        } else {
+            columnHeaderExtra = CommonUtils.valueOf(
+                ResultSetPreferences.ColumnHeaderExtraContent.class,
+                headerExtraStr,
+                ResultSetPreferences.ColumnHeaderExtraContent.NOTHING
+            );
+        }
+        if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.DATA_TYPE) {
+            Map<DBDAttributeBinding, String> typeDescs = new HashMap<>();
+            for (DBDAttributeBinding binding : controller.getModel().getVisibleAttributes()) {
+                String typeName = DBUtils.getFullTypeName(binding.getDataSource(), binding);
+                DBDRowIdentifier rowIdentifier = binding.getRowIdentifier();
+                if (rowIdentifier != null && rowIdentifier.hasAttribute(binding)
+                    && rowIdentifier.getUniqueKey().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                    typeName = "PK " + typeName;
+                }
+                typeDescs.put(binding, typeName);
+            }
+            columnTypeDescriptions = typeDescs;
+        } else {
+            columnTypeDescriptions = Collections.emptyMap();
+        }
         supportsAttributeFilter =
             controller.getDataContainer() != null &&
                 (controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0 &&
@@ -3063,11 +3093,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Nullable
         @Override
-        public String getDescription(IGridItem element) {
-            if (!showAttributeDescription || element.getParent() != null) {
+        public String getDescription(@NotNull IGridItem element) {
+            if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.NOTHING || element.getParent() != null) {
                 return null;
             }
             if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
+                if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.DATA_TYPE) {
+                    return columnTypeDescriptions.get(attributeBinding);
+                }
                 return attributeBinding.getDescription();
             } else {
                 return null;
