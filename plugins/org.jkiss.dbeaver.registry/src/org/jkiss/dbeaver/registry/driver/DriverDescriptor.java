@@ -580,6 +580,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return new ArrayList<>(categories);
     }
 
+    public void setCategories(@NotNull List<String> categories) {
+        this.categories.clear();
+        this.categories.addAll(categories);
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
@@ -621,6 +626,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return iconPlain;
     }
 
+    public void setIconPlain(DBPImage iconPlain) {
+        this.iconPlain = iconPlain;
+        makeIconExtensions();
+    }
+
     /**
      * Driver icon, includes overlays for driver conditions (custom, invalid, etc)..
      *
@@ -644,6 +654,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DBPImage getIconBig() {
         return iconBig == null ? DBIcon.DATABASE_BIG_DEFAULT : iconBig;
+    }
+
+    public void setIconBig(@Nullable DBPImage iconBig) {
+        this.iconBig = iconBig;
     }
 
     @Nullable
@@ -762,16 +776,28 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return webURL;
     }
 
+    public void setWebURL(@Nullable String webURL) {
+        this.webURL = webURL;
+    }
+
     @Nullable
     @Override
     public String getPropertiesWebURL() {
         return propertiesWebURL;
     }
 
+    public void setPropertiesWebURL(@Nullable String propertiesWebURL) {
+        this.propertiesWebURL = propertiesWebURL;
+    }
+
     @Nullable
     @Override
     public String getDatabaseDocumentationSuffixURL() {
         return databaseDocumentationSuffixURL;
+    }
+
+    public void setDatabaseDocumentationSuffixURL(@Nullable String databaseDocumentationSuffixURL) {
+        this.databaseDocumentationSuffixURL = databaseDocumentationSuffixURL;
     }
 
     @NotNull
@@ -788,6 +814,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return providerDescriptor.getScriptDialect();
     }
 
+    public void setScriptDialect(@NotNull String dialectId) {
+        this.dialectId = dialectId;
+    }
+
     @Override
     public boolean isClientRequired() {
         return clientRequired;
@@ -796,6 +826,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public boolean supportsDriverProperties() {
         return this.supportsDriverProperties;
+    }
+
+    public void setSupportsDriverProperties(boolean supportsDriverProperties) {
+        this.supportsDriverProperties = supportsDriverProperties;
     }
 
     @Override
@@ -818,6 +852,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public boolean isSingleConnection() {
         return singleConnection;
+    }
+
+    public void setSingleConnection(boolean singleConnection) {
+        this.singleConnection = singleConnection;
     }
 
     @Override
@@ -870,18 +908,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return useURLTemplate;
     }
 
+    void setUseURLTemplate(boolean useURLTemplate) {
+        this.useURLTemplate = useURLTemplate;
+    }
+
     @Override
     public boolean isCustomEndpointInformation() {
         return customEndpointInformation;
     }
 
-    void setUseURL(boolean useURLTemplate) {
-        this.useURLTemplate = useURLTemplate;
-    }
-
     @Override
     public int getPromotedScore() {
         return promoted;
+    }
+
+    public void setPromoted(int promoted) {
+        this.promoted = promoted;
     }
 
     @Override
@@ -965,6 +1007,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.libraries.addAll(libs);
     }
 
+    @NotNull
     public List<DBPDriverLibrary> getEnabledDriverLibraries() {
         List<DBPDriverLibrary> filtered = new ArrayList<>();
         for (DBPDriverLibrary lib : libraries) {
@@ -975,7 +1018,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return filtered;
     }
 
-    public DBPDriverLibrary getDriverLibrary(String path) {
+    @Nullable
+    public DBPDriverLibrary getDriverLibrary(@NotNull String path) {
         for (DBPDriverLibrary lib : libraries) {
             if (lib.getPath().equals(path)) {
                 return lib;
@@ -985,7 +1029,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @NotNull
-    public DBPDriverLibrary addDriverLibrary(String path, DBPDriverLibrary.FileType fileType) {
+    public DBPDriverLibrary addDriverLibrary(@NotNull String path, @NotNull DBPDriverLibrary.FileType fileType) {
         for (DBPDriverLibrary lib : libraries) {
             if (lib.getPath().equals(path)) {
                 return lib;
@@ -1045,7 +1089,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
      * For internal use only.
      */
     @Nullable
-    public DriverLoaderDescriptor preCreateDriverLoader(String loaderId) {
+    public DriverLoaderDescriptor preCreateDriverLoader(@NotNull String loaderId) {
         if (driverLoaders == null) {
             driverLoaders = new LinkedHashMap<>();
         }
@@ -1135,15 +1179,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return originalConnectionProperties;
     }
 
-    public void setConnectionProperty(String name, String value) {
+    public void setConnectionProperty(@NotNull String name, @NotNull String value) {
         customConnectionProperties.put(name, value);
     }
 
-    public void setConnectionProperties(Map<String, Object> parameters) {
+    public void setConnectionProperties(@NotNull Map<String, Object> parameters) {
         customConnectionProperties.clear();
         customConnectionProperties.putAll(parameters);
     }
 
+    @NotNull
     public Map<String, Object> getDefaultDriverParameters() {
         return defaultParameters;
     }
@@ -1156,7 +1201,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
-    public Object getDriverParameter(String name) {
+    public Object getDriverParameter(@NotNull String name) {
         Object value = customParameters.get(name);
         if (value == null) {
             DBPPropertyDescriptor defProperty = providerDescriptor.getDriverProperty(name);
@@ -1167,7 +1212,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return value;
     }
 
-    public void setDriverParameter(String name, String value, boolean setDefault) {
+    public void setDriverParameter(@NotNull String name, @NotNull String value, boolean setDefault) {
         DBPPropertyDescriptor prop = getProviderDescriptor().getDriverProperty(name);
         Object valueObject = prop == null ? value : GeneralUtils.convertString(value, prop.getDataType());
         customParameters.put(name, valueObject);
@@ -1176,7 +1221,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    public void setDriverParameters(Map<String, Object> parameters) {
+    public void setDriverParameters(@NotNull Map<String, Object> parameters) {
         customParameters.clear();
         customParameters.putAll(parameters);
     }
@@ -1264,7 +1309,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return driverCopy;
     }
 
-    boolean acceptLicense(String licenseText) {
+    boolean acceptLicense(@NotNull String licenseText) {
         // Check registry
         DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
         String acceptedStr = prefs.getString(LICENSE_ACCEPT_KEY + getId());
@@ -1283,34 +1328,42 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
 
+    @NotNull
     public String getOrigName() {
         return origName;
     }
 
+    @Nullable
     public String getOrigDescription() {
         return origDescription;
     }
 
+    @Nullable
     public String getOrigClassName() {
         return origClassName;
     }
 
+    @Nullable
     public String getOrigDefaultPort() {
         return origDefaultPort;
     }
 
+    @Nullable
     public String getOrigDefaultDatabase() {
         return origDefaultDatabase;
     }
 
+    @Nullable
     public String getOrigDefaultServer() {
         return origDefaultServer;
     }
 
+    @Nullable
     public String getOrigDefaultUser() {
         return origDefaultUser;
     }
 
+    @Nullable
     public String getOrigSampleURL() {
         return origSampleURL;
     }

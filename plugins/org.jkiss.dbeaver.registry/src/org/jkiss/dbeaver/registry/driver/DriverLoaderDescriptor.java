@@ -301,12 +301,13 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
+                        if (file.getFile() == null) {
+                            continue;
+                        }
                         if (!IOUtils.isFileFromDefaultFS(file.getFile())) {
                             copyLibsFromExternalStorage(library, file.getFile(), result);
-                        } else {
-                            if (file.getFile() != null && !result.contains(file.getFile())) {
-                                result.add(file.getFile());
-                            }
+                        } else if (!result.contains(file.getFile())) {
+                            result.add(file.getFile());
                         }
                     }
                 }

@@ -363,7 +363,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false)));
                     }
                     if (attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
-                        curDriver.setUseURL((
+                        curDriver.setUseURLTemplate((
                             CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
                     }
                     if (attributes.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {

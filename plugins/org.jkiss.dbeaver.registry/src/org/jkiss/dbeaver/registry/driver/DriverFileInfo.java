@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 
 import java.nio.file.Path;
@@ -29,7 +30,13 @@ public class DriverFileInfo {
     private final String fileLocation;
     private long fileCRC;
 
-    public DriverFileInfo(@NotNull String id, String version, DBPDriverLibrary.FileType type, Path file, String fileLocation) {
+    public DriverFileInfo(
+        @NotNull String id,
+        @Nullable String version,
+        @NotNull DBPDriverLibrary.FileType type,
+        @NotNull Path file,
+        @NotNull String fileLocation
+    ) {
         this.id = id;
         this.version = version;
         this.file = file;
@@ -46,6 +53,7 @@ public class DriverFileInfo {
         this.fileCRC = library.getFileCRC();
     }
 
+    @Nullable
     public Path getFile() {
         return file;
     }
