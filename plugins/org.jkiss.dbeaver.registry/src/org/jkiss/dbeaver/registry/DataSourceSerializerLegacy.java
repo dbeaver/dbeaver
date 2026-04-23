@@ -172,11 +172,11 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     curDataSource = registry.getDataSource(id);
                     boolean newDataSource = (curDataSource == null);
                     if (newDataSource) {
-                        curDataSource = new DataSourceDescriptor(
-                            registry,
+                        curDataSource = registry.createDataSource(
                             storage,
                             DataSourceOriginLocal.INSTANCE,
                             id,
+                            driver,
                             driver,
                             new DBPConnectionConfiguration());
                     } else {
