@@ -571,6 +571,21 @@ public class OracleSQLDialect extends JDBCSQLDialect
             case OracleConstants.TYPE_INTERVAL_YEAR_MONTH:
                 // Don't add modifiers to these types
                 return "";
+            case "CHAR":
+            case "VARCHAR":
+            case OracleConstants.TYPE_NAME_VARCHAR2:
+            case "NCHAR":
+            case "NVARCHAR2":
+                if (column instanceof OracleTableColumn oracleColumn) {
+                    String charUsed = oracleColumn.getCharUsed();
+                    if ("C".equals(charUsed) || "B".equals(charUsed)) {
+                        long maxLength = column.getMaxLength();
+                        if (maxLength > 0 && maxLength != Integer.MAX_VALUE && maxLength != Long.MAX_VALUE) {
+                            return "(" + maxLength + ("C".equals(charUsed) ? " CHAR" : " BYTE") + ")";
+                        }
+                    }
+                }
+                break;
         }
         return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
