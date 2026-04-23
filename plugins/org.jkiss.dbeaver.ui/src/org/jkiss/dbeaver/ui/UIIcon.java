@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,6 +131,8 @@ public class UIIcon {
     public static final DBIcon LOAD = new DBIcon("load", "file/load.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RESET = new DBIcon("reset", "file/reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon COMPARE = new DBIcon("compare", "file/compare.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon MOVE = new DBIcon("sql_move", "sql/sql_move.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COPY = new DBIcon("sql_copy", "sql/sql_copy.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ACCEPT = new DBIcon("accept", "sql/accept.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon REJECT = new DBIcon("reject", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon REVERT = new DBIcon("revert", "sql/revert.svg"); //$NON-NLS-1$ //$NON-NLS-2$

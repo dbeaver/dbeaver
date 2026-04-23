@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -34,19 +35,28 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+
 public abstract class BaseSQLDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(BaseSQLDialog.class);
+
+    private static final int SAVE_TO_FILE_BUTTON_ID = IDialogConstants.CLIENT_ID + 1;
 
     private final IEditorSite subSite;
     private SQLEditorBase sqlViewer;
@@ -155,16 +165,45 @@ public abstract class BaseSQLDialog extends BaseDialog {
         createButton(parent, IDialogConstants.RETRY_ID, SQLEditorMessages.dialog_view_sql_button_refresh, false);
     }
 
-    protected void saveToClipboard()
-    {
+    protected void createSaveToFileButton(@NotNull Composite parent) {
+        createButton(parent, SAVE_TO_FILE_BUTTON_ID, ModelMessages.model_jdbc_save_to_file_, false);
+    }
+
+    protected void saveToClipboard() {
         CharSequence text = getSQLText();
         UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
     }
 
+    protected boolean saveToFile() {
+        final File file = DialogUtils.selectFileForSave(
+            this.getShell(),
+            this.getTitle() + " : " + ModelMessages.model_jdbc_save_to_file_,
+            new String[]{"*.sql", "*.txt", "*", "*.*"},
+            null
+        );
+        if (file != null) {
+            CharSequence sqlText = getSQLText();
+            try {
+                Files.writeString(file.toPath(), sqlText);
+                return true;
+            } catch (IOException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    SQLEditorMessages.dialog_view_sql_save_to_file_failure_title,
+                    NLS.bind(SQLEditorMessages.dialog_view_sql_save_to_file_failure_message, file),
+                    e
+                );
+            }
+        }
+        return false;
+    }
+
     @Override
-    protected void buttonPressed(int buttonId)
-    {
-        if (buttonId == IDialogConstants.DETAILS_ID) {
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == SAVE_TO_FILE_BUTTON_ID) {
+            if (saveToFile()) {
+                close();
+            }
+        } else if (buttonId == IDialogConstants.DETAILS_ID) {
             saveToClipboard();
             super.buttonPressed(IDialogConstants.CANCEL_ID);
         } else {
@@ -192,8 +231,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         return super.close();
     }
 
-    protected void updateSQL()
-    {
+    protected void updateSQL() {
         try {
             this.sqlInput.setText(getSQLText());
             if (sqlViewer.getSite() != null) {
