@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 public final class ChatTruncator {
 
     private static final String DEFAULT_TRUNCATED_SUFFIX  = "\n[...truncated, don't try again]";
-    private static final String DEFAULT_OMITTED_NOTICE =
-        "[Note: some earlier messages were omitted due to context length limits.]";
 
     private final int maxTokens;
     private final int reserveForSystem;
@@ -122,8 +120,7 @@ public final class ChatTruncator {
                 } else {
                     int remaining = Math.max(0, budget - used);
                     AIMessage cut = truncateToTokens(m, remaining);
-                    cut = cut.withContent(cut.getContent() + ChatTruncator.DEFAULT_TRUNCATED_SUFFIX);
-                    pinned.put(idx, cut);
+                    cut = cut.withContent(cut.getContent() + DEFAULT_TRUNCATED_SUFFIX);
                     used += counter.count(cut.getContent());
                     truncated = true;
                 }
@@ -150,7 +147,7 @@ public final class ChatTruncator {
                     AIMessage cut = truncateToTokens(m, remaining);
                     int cutTokens = counter.count(cut.getContent());
                     if (cutTokens > 0) {
-                        cut = cut.withContent(cut.getContent() + ChatTruncator.DEFAULT_TRUNCATED_SUFFIX);
+                        cut = cut.withContent(cut.getContent() + DEFAULT_TRUNCATED_SUFFIX);
                         extra.put(i, cut);
                         used += cutTokens;
                     } else {
@@ -173,13 +170,9 @@ public final class ChatTruncator {
             AIMessage truncatedSystem = truncateToTokens(mergedSystem, remainingForSystem);
             if (!truncatedSystem.getContent().equals(mergedSystem.getContent())) {
                 truncated = true;
-                truncatedSystem = truncatedSystem.withContent(truncatedSystem.getContent() + ChatTruncator.DEFAULT_TRUNCATED_SUFFIX);
+                truncatedSystem = truncatedSystem.withContent(truncatedSystem.getContent() + DEFAULT_TRUNCATED_SUFFIX);
             }
             result.add(truncatedSystem);
-        }
-
-        if (messagesOmitted) {
-            result.add(AIMessage.systemMessage(DEFAULT_OMITTED_NOTICE));
         }
 
         result.addAll(pickedReverse);
