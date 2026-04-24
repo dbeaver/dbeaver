@@ -62,6 +62,15 @@ public final class OsgiUtils {
             return List.of();
         }
 
+        return collectBundlePaths(bundle, excludeSystemBundle);
+    }
+
+    @NotNull
+    public static Collection<Path> collectBundlePaths(
+        @NotNull Bundle bundle,
+        boolean excludeSystemBundle
+    ) throws IOException {
+
         BundleWiring root = bundle.adapt(BundleWiring.class);
         if (root == null) {
             return List.of();
