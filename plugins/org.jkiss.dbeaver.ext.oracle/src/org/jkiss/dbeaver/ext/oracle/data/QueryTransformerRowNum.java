@@ -48,14 +48,9 @@ public class QueryTransformerRowNum implements DBCQueryTransformer {
         if (query.isPlainSelect()) {
             try {
                 Statement statement = query.getStatement();
-                if (statement instanceof Select) {
-                    Select select = (Select) statement;
-                    if (select.getSelectBody() instanceof PlainSelect) {
-                        SQLSemanticProcessor.addWhereToSelect(
-                            (PlainSelect) select.getSelectBody(),
-                            "ROWNUM <= " + totalRows);
-                        return statement.toString();
-                    }
+                if (statement instanceof PlainSelect select) {
+                    SQLSemanticProcessor.addWhereToSelect(select, "ROWNUM <= " + totalRows);
+                    return statement.toString();
                 }
             } catch (Throwable e) {
                 // ignore

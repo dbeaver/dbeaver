@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,24 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.osgi.framework.Version;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.sql.SQLException;
-
 
 public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
     public static final DuckDBGeometryValueHandler INSTANCE = new DuckDBGeometryValueHandler();
+    private static final Version STANDARD_WKB_STORAGE_VERSION = new Version(1, 5, 0);
 
     @Override
     protected Object fetchColumnValue(
@@ -35,6 +42,30 @@ public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
         DBSTypedObject type,
         int index
     ) throws DBCException, SQLException {
-        return getValueFromObject(session, type, resultSet.getObject(index), false, false);
+        try {
+            return getValueFromObject(session, type, resultSet.getBytes(index), false, false);
+        } catch (Exception e) {
+            return getValueFromObject(session, type, resultSet.getString(index), false, false);
+        }
+    }
+
+    @Override
+    protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+        if (session != null && isStandardWkbStorage(session)) {
+            return super.convertGeometryFromBinaryFormat(session, object);
+        }
+
+        try {
+            var buffer = ByteBuffer.wrap(object).order(ByteOrder.LITTLE_ENDIAN);
+            var factory = new GeometryFactory(new PrecisionModel());
+            return DuckDBGeometryConverter.deserialize(buffer, factory);
+        } catch (Exception e) {
+            return super.convertGeometryFromBinaryFormat(session, object);
+        }
+    }
+
+    private boolean isStandardWkbStorage(@NotNull DBCSession session) {
+        Version version = session.getDataSource().getInfo().getDatabaseVersion();
+        return version != null && version.compareTo(STANDARD_WKB_STORAGE_VERSION) >= 0;
     }
 }

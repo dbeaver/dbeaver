@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 
 /**
  * Notifications utilities
  */
-public class DBeaverNotifications
-{
+public class DBeaverNotifications {
 
     public static final String NT_COMMIT = "commit";
     public static final String NT_DISCONNECT_IDLE = "disconnect.idle";
@@ -34,19 +34,37 @@ public class DBeaverNotifications
     public static final String NT_RECONNECT_SUCCESS = "reconnect.success";
     public static final String NT_RECONNECT_FAILURE = "reconnect.failure";
     public static final String NT_GENERIC = "generic";
+    public static final String NT_PERSPECTIVE_RESET = "perspective.reset";
 
     @NotNull
     private static NotificationHandler notificationHandler = new ConsoleHandler();
 
-    public static void showNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType) {
+    public static void showNotification(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String id,
+        @NotNull String text,
+        @Nullable DBPMessageType messageType
+    ) {
         showNotification(dataSource, id, text, messageType, null);
     }
 
-    public static void showNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
+    public static void showNotification(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String id,
+        @NotNull String text,
+        @Nullable DBPMessageType messageType,
+        @Nullable Runnable feedback
+    ) {
         notificationHandler.sendNotification(dataSource, id, text, messageType, feedback);
     }
 
-    public static void showNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
+    public static void showNotification(
+        @NotNull String id,
+        @NotNull String title,
+        @NotNull String text,
+        @Nullable DBPMessageType messageType,
+        @Nullable Runnable feedback
+    ) {
         notificationHandler.sendNotification(id, title, text, messageType, feedback);
     }
 
@@ -56,21 +74,45 @@ public class DBeaverNotifications
 
     public interface NotificationHandler {
 
-        void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback);
+        void sendNotification(
+            @NotNull DBPDataSource dataSource,
+            @NotNull String id,
+            @NotNull String text,
+            @Nullable DBPMessageType messageType,
+            @Nullable Runnable feedback
+        );
 
-        void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback);
+        void sendNotification(
+            @NotNull String id,
+            @NotNull String title,
+            @NotNull String text,
+            @Nullable DBPMessageType messageType,
+            @Nullable Runnable feedback
+        );
 
     }
 
     private static class ConsoleHandler implements NotificationHandler {
 
         @Override
-        public void sendNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
+        public void sendNotification(
+            @NotNull DBPDataSource dataSource,
+            @NotNull String id,
+            @NotNull String text,
+            @Nullable DBPMessageType messageType,
+            @Nullable Runnable feedback
+        ) {
             System.out.println(text);
         }
 
         @Override
-        public void sendNotification(String id, String title, String text, DBPMessageType messageType, Runnable feedback) {
+        public void sendNotification(
+            @NotNull String id,
+            @NotNull String title,
+            @NotNull String text,
+            @Nullable DBPMessageType messageType,
+            @Nullable Runnable feedback
+        ) {
             System.out.println(title + "\n\t" + text);
         }
     }

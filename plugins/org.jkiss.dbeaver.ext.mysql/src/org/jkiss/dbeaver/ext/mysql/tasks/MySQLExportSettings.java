@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +62,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     private DumpMethod method = DumpMethod.NORMAL;
     private boolean noCreateStatements;
+    private boolean compressed;
     private boolean addDropStatements = true;
     private boolean disableKeys = true;
     private boolean extendedInserts = true;
@@ -100,6 +100,14 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     public void setNoCreateStatements(boolean noCreateStatements) {
         this.noCreateStatements = noCreateStatements;
+    }
+
+    public boolean isCompressed() {
+        return compressed;
+    }
+
+    public void setCompressed(boolean compressed) {
+        this.compressed = compressed;
     }
 
     public boolean isAddDropStatements() {
@@ -235,6 +243,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
         method = CommonUtils.valueOf(DumpMethod.class, store.getString("MySQL.export.method"), DumpMethod.NORMAL);
         noCreateStatements = CommonUtils.getBoolean(store.getString("MySQL.export.noCreateStatements"), false);
+        compressed = CommonUtils.getBoolean(store.getString("MySQL.export.compressed"), false);
         addDropStatements = CommonUtils.getBoolean(store.getString("MySQL.export.addDropStatements"), true);
         disableKeys = CommonUtils.getBoolean(store.getString("MySQL.export.disableKeys"), true);
         extendedInserts = CommonUtils.getBoolean(store.getString("MySQL.export.extendedInserts"), true);
@@ -307,6 +316,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         super.saveSettings(runnableContext, store);
         store.setValue("MySQL.export.method", method.name());
         store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
+        store.setValue("MySQL.export.compressed", compressed);
         store.setValue("MySQL.export.addDropStatements", addDropStatements);
         store.setValue("MySQL.export.disableKeys", disableKeys);
         store.setValue("MySQL.export.extendedInserts", extendedInserts);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ public class SQLDocumentSyntaxContext {
             this.lastTokenAccessOffset = offset;
         } else {
             SQLScriptItemAtOffset scriptItem = this.findScriptItem(offset);
-            SQLTokenEntryAtOffset token = scriptItem == null ? null : scriptItem.item.findToken(offset - scriptItem.offset);
+            SQLTokenEntryAtOffset token = scriptItem == null || scriptItem.item == null ? null : scriptItem.item.findToken(offset - scriptItem.offset);
 
             this.lastTokenAccessOffset = offset;
             if (token != null) {

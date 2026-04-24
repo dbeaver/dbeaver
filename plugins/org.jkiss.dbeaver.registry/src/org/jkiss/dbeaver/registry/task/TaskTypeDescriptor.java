@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,8 +71,9 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         return config.getAttribute(RegistryConstants.ATTR_NAME);
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return config.getAttribute(RegistryConstants.ATTR_LABEL, locale);
     }
 
@@ -149,6 +150,13 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_REQUIRES_MUTABILITY), false);
     }
 
+    /**
+     * Defines if task execution is prohibited if disable export policy turned on
+     */
+    public boolean requiresExportPrivileges() {
+        return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_REQUIRES_EXPORT_PRIVILEGES), false);
+    }
+
     @Nullable
     @Override
     public String confirmationMessageIfNeeded() {
@@ -160,7 +168,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
             return matchesEntityElements;
         }
         for (AbstractDescriptor.ObjectType ot : getObjectTypes()) {
-            if (DBSEntityElement.class.isAssignableFrom(ot.getObjectClass())) {
+            if (ot.matchesType(DBSEntityElement.class)) {
                 matchesEntityElements = true;
                 break;
             }

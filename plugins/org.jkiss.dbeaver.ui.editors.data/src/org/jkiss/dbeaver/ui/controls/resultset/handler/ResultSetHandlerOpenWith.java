@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.ICommandService;
@@ -41,12 +42,13 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -60,6 +62,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -80,8 +83,16 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
     public static final String PREF_OPEN_WITH_DEFAULT_PROCESSOR = "org.jkiss.dbeaver.core.resultset.openWith.defaultprocessor";
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
+            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
+                UIMessages.dialog_policy_data_export_title,
+                UIMessages.dialog_policy_data_export_msg,
+                SWT.ICON_WARNING
+            );
+            return null;
+        }
+
         IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             return null;
@@ -159,8 +170,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 setSystem(false);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     Path tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "data-files");
                     Path tempFile = tempDir.resolve(new SimpleDateFormat(
@@ -168,10 +180,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     tempFile.toFile().deleteOnExit();
 
                     IDataTransferProcessor processorInstance = processor.getInstance();
-                    if (!(processorInstance instanceof IStreamDataExporter)) {
+                    if (!(processorInstance instanceof IStreamDataExporter exporter)) {
                         return Status.CANCEL_STATUS;
                     }
-                    IStreamDataExporter exporter = (IStreamDataExporter) processorInstance;
 
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();
@@ -183,7 +194,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     Map<String, Object> properties = new HashMap<>();
                     // Default values from wizard
                     IDialogSettings dtSettings = DataTransferWizard.getWizardDialogSettings();
-                    IDialogSettings procListSection = dtSettings.getSection("processors");
+                    IDialogSettings procListSection = dtSettings.getSection(DTConstants.PROP_PROCESSORS_LIST);
                     IDialogSettings procSettings = null;
                     if (procListSection != null) {
                         procSettings = procListSection.getSection("stream_consumer:" + processor.getId());
@@ -211,8 +222,14 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producerSettings.setQueryRowCount(false);
                     // disable OpenNewconnection by default (#6432)
                     producerSettings.setOpenNewConnections(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+
+                    boolean selectedRowsOnly = !CommonUtils.isEmpty(options.getSelectedRows());
+                    boolean selectedColumnsOnly = !CommonUtils.isEmpty(options.getSelectedColumns());
+                    if (selectedRowsOnly || selectedColumnsOnly) {
+                        producerSettings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly));
+                    } else {
+                        producerSettings.setFetchedRowsPolicy(null);
+                    }
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 
@@ -308,9 +325,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            if (!BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
+            if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
+                    IResultSetCommands.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {
                     {
                         setChecked(CommonUtils.isEmpty(getDefaultOpenWithProcessor()));
@@ -392,7 +409,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         final ICommandService service = PlatformUI.getWorkbench().getService(ICommandService.class);
 
         if (service != null) {
-            service.refreshElements(ResultSetHandlerMain.CMD_EXPORT, null);
+            service.refreshElements(IResultSetCommands.CMD_EXPORT, null);
             controller.updateToolbar();
         }
     }

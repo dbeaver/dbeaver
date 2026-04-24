@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Data source provider
  */
-public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObject
-{
+public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends DBPDataSourceURLProvider, DBPObject {
     long FEATURE_NONE        = 0;
     long FEATURE_CATALOGS    = 1;
     long FEATURE_SCHEMAS     = 2;
     long FEATURE_CATALOGS_ONLY = 4;
-
 
     /**
      * Initializes data source provider
@@ -56,11 +54,19 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
      * @param connectionInfo connection information   @return property group which contains all supported properties
      * @throws DBException on any error
      */
+    @NotNull
     DBPPropertyDescriptor[] getConnectionProperties(
-        DBRProgressMonitor monitor,
-        DBPDriver driver,
-        DBPConnectionConfiguration connectionInfo)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo)
         throws DBException;
+
+    /**
+     * Class of datasource.
+     * It is used for static examining of database structure
+     */
+    @NotNull
+    Class<? extends DATASOURCE> getDataSourceClass();
 
     /**
      * Opens new data source
@@ -70,16 +76,25 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
      * @throws DBException on any error
      */
     @NotNull
-    DBPDataSource openDataSource(
+    DATASOURCE openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container)
         throws DBException;
 
-    default DBPAuthModelDescriptor detectConnectionAuthModel(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-        return connectionInfo.getAuthModelDescriptor();
+    @NotNull
+    default DBPAuthModelDescriptor detectConnectionAuthModel(
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        DBPAuthModelDescriptor am = connectionInfo.getAuthModelDescriptor();
+        DBPAuthModelDescriptor ram = am.getReplacedBy(driver);
+        if (ram != null) {
+            return ram;
+        }
+        return am;
     }
 
-    default boolean providesDriverClasses() {
+    default boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return true;
     }
 

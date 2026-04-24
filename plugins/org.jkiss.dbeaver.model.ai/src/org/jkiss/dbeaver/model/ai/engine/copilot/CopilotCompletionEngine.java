@@ -1,0 +1,202 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.ai.engine.copilot;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAITool;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
+
+    protected final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
+        @NotNull
+        @Override
+        protected CopilotClient initialize() throws DBException {
+            return createClient(getProperties().getBaseAuthUrl());
+        }
+
+        @Override
+        protected void onDispose(@NotNull CopilotClient disposedValue) {
+            disposedValue.close();
+        }
+    };
+    private CopilotSessionToken sessionToken;
+
+    public CopilotCompletionEngine(@NotNull P properties) {
+        super(properties);
+    }
+
+    @NotNull
+    @Override
+    public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return client.getInstance().loadModels(monitor, requestSessionToken(monitor).token()).stream()
+            .map(model -> CopilotModels.getModelByName(model.id()).orElse(
+                new AIModel(model.id(), null, Set.of())
+            ))
+            .toList();
+    }
+
+    @NotNull
+    @Override
+    public AIEngineResponse requestCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngineRequest request
+    ) throws DBException {
+        CopilotChatResponse chatResponse = client.getInstance().chat(
+            monitor,
+            requestSessionToken(monitor).token(),
+            createChatRequest(request, false)
+        );
+
+        return toEngineResponse(chatResponse);
+    }
+
+    @Override
+    public void requestCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
+    ) throws DBException {
+        client.getInstance().createChatCompletionStream(
+            monitor,
+            requestSessionToken(monitor).token(),
+            createChatRequest(request, true),
+            listener
+        );
+    }
+
+    @Override
+    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        Integer contextWindowSize = properties.getContextWindowSize();
+        if (contextWindowSize != null) {
+            return contextWindowSize;
+        }
+
+        throw new DBException("Context window size is not defined in Copilot properties. " +
+            "Please set it explicitly or use a known model with a predefined context window size.");
+    }
+
+    @Override
+    public void close() throws DBException {
+        client.dispose();
+    }
+
+    @NotNull
+    protected CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (sessionToken != null) {
+            return sessionToken;
+        }
+
+        synchronized (this) {
+            if (sessionToken == null) {
+                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getToken());
+            }
+        }
+        return sessionToken;
+    }
+
+    public String getModelName() throws DBException {
+        return CommonUtils.toString(
+            properties.getModel(),
+            OpenAIConstants.DEFAULT_MODEL
+        );
+    }
+
+    @NotNull
+    private CopilotChatRequest createChatRequest(
+        @NotNull AIEngineRequest request,
+        boolean stream
+    ) throws DBException {
+        return CopilotChatRequest.builder()
+            .withModel(getModelName())
+            .withMessages(toCopilotMessages(request.getMessages()))
+            .withTools(request.getFunctions().stream()
+                .map(OAITool::fromDescriptor)
+                .map(CopilotFunction::new)
+                .toList())
+            .withTemperature(properties.getTemperature())
+            .withStream(stream)
+            .withIntent(false)
+            .withTopP(1)
+            .withN(1)
+            .build();
+    }
+
+    @NotNull
+    private AIEngineResponse toEngineResponse(@NotNull CopilotChatResponse response) throws DBException {
+        AIUsage usage = response.getAIUsage();
+        CopilotChatResponse.ToolCall toolCall = getFirstToolCall(response);
+        if (toolCall != null) {
+            return new AIEngineResponse(CopilotUtils.createFunctionCall(toolCall), usage);
+        }
+
+        List<String> variants = response.choices().stream()
+            .map(CopilotChatResponse.Choice::message)
+            .map(CopilotChatResponse.Message::content)
+            .filter(CommonUtils::isNotEmpty)
+            .toList();
+        if (variants.isEmpty()) {
+            variants = List.of(AIMessages.ai_empty_engine_response);
+        }
+
+        return new AIEngineResponse(AIMessageType.ASSISTANT, variants, usage);
+    }
+
+    @Nullable
+    private static CopilotChatResponse.ToolCall getFirstToolCall(@NotNull CopilotChatResponse response) {
+        return response.choices().stream()
+            .map(CopilotChatResponse.Choice::message)
+            .filter(Objects::nonNull)
+            .map(CopilotChatResponse.Message::toolCalls)
+            .filter(calls -> calls != null && !calls.isEmpty())
+            .map(List::getFirst)
+            .findFirst()
+            .orElse(null);
+    }
+
+    @NotNull
+    private static List<CopilotMessage> toCopilotMessages(@NotNull List<AIMessage> messages) {
+        return messages.stream()
+            .flatMap(message -> CopilotMessage.from(message).stream())
+            .toList();
+    }
+
+    @NotNull
+    protected CopilotClient createClient(@NotNull String baseAuthUrl) throws DBException {
+        String token = properties.getToken();
+        if (token == null || token.isEmpty()) {
+            throw new DBException("Copilot API token is not set");
+        }
+
+        return new CopilotClient(baseAuthUrl);
+    }
+}

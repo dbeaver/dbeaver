@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,14 +92,17 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
     ) throws IOException {
         super.fillProcessParameters(settings, arg, cmd);
 
-        if (settings.isCleanFirst()) {
-            cmd.add("--clean");
-        }
-        if (settings.isNoOwner()) {
-            cmd.add("--no-owner");
-        }
-        if (settings.isCreateDatabase()) {
-            cmd.add("--create");
+        // only supported by pg_restore
+        if (settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
+            if (settings.isCleanFirst()) {
+                cmd.add("--clean");
+            }
+            if (settings.isNoOwner()) {
+                cmd.add("--no-owner");
+            }
+            if (settings.isCreateDatabase()) {
+                cmd.add("--create");
+            }
         }
     }
 
@@ -117,10 +120,17 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             cmd.add("--format=" + settings.getFormat().getId());
         }
         cmd.add("--dbname=" + settings.getRestoreInfo().getDatabase()); // database name here can be used without quotes
-        if (!isUseStreamTransfer(settings.getInputFile()) ||
-            settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY
-        ) {
-            cmd.add(settings.getInputFile());
+
+        if (settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.PLAIN) {
+            if (!isUseStreamTransfer(settings.getInputFile())) {
+                cmd.add("--file=" + settings.getInputFile());
+            }
+        } else {
+            if (!isUseStreamTransfer(settings.getInputFile()) ||
+                settings.getFormat() == PostgreBackupRestoreSettings.ExportFormat.DIRECTORY
+            ) {
+                cmd.add(settings.getInputFile());
+            }
         }
 
         return cmd;
@@ -143,7 +153,7 @@ public class PostgreDatabaseRestoreHandler extends PostgreNativeToolHandler<Post
             throw new IOException("File '" + inputFile + "' doesn't exist");
         }
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
-        if (isUseStreamTransfer(inputFile.toString()) && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
+        if (isUseStreamTransfer(inputFile.toUri().toString()) && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             new BinaryFileTransformerJob(monitor, task, inputFile, process.getOutputStream(), log).start();
         }
     }

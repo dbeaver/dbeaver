@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPAutoCloser;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
 /**
  * DBCStatement
  */
-@DPIObject
-public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject {
+public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject, DBPAutoCloser {
 
     /**
      * Statement's context
@@ -138,4 +138,6 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
     default boolean isStatementClosed() throws DBCException {
         return false;
     }
+
+    void close() throws DBException;
 }

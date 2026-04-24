@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSetting;
@@ -35,6 +36,7 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
         return true;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "PostgreSQL";
@@ -92,7 +94,22 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsJobs() {
+        return true;
+    }
+
+    @Override
     public boolean supportsEventTriggers() {
         return dataSource.isServerVersionAtLeast(9, 3);
+    }
+
+    @Override
+    public boolean supportsAlterStorageStrategy() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsStorageModifier() {
+        return dataSource.isServerVersionAtLeast(16, 0);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,15 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -54,7 +55,7 @@ public interface DBPPlatformUI {
         STOP,
         RETRY,
     }
-    
+
     class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
@@ -129,12 +130,20 @@ public interface DBPPlatformUI {
     /**
      * Asks for password change. Returns null if user canceled this action.
      */
+    @Nullable
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword, boolean userEditable, boolean oldPasswordVisible);
 
     /**
      * Ask user to enter some property value
      */
-    String promptProperty(String prompt, String defValue);
+    @Nullable
+    String promptProperty(@NotNull String prompt, @Nullable String defValue);
+
+    /**
+     * Ask user to enter some property value
+     */
+    @Nullable
+    String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue);
 
     /**
      * Ask user to enter a multiline value
@@ -161,9 +170,7 @@ public interface DBPPlatformUI {
     void executeProcess(@NotNull DBRProcessDescriptor processDescriptor);
 
     // Execute some action in UI thread
-    void executeWithProgress(@NotNull Runnable runnable);
-
-    void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException;
+    void executeInMainThread(@NotNull Runnable runnable);
 
     /**
      * Execute runnable task synchronously while displaying job indicator if needed
@@ -171,20 +178,21 @@ public interface DBPPlatformUI {
     @NotNull
     <T> Future<T> executeWithProgressBlocking(@NotNull String operationDescription, @NotNull DBRRunnableWithResult<Future<T>> runnable);
 
+    /**
+     * Runs task with system progress monitor
+     */
+    <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException;
+
+    <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException, InvocationTargetException, InterruptedException;
+
     @NotNull
     <RESULT> Job createLoadingService(
-        ILoadService<RESULT> loadingService,
-        ILoadVisualizer<RESULT> visualizer);
+        @NotNull ILoadService<RESULT> loadingService,
+        @NotNull ILoadVisualizer<RESULT> visualizer);
 
-    /**
-     * FIXME: this is a hack. We need to call platform (workbench) to refresh part's contexts (enabled commands).
-     * There is no such thing as part in abstract UI. Need some better solution.
-     */
-    void refreshPartState(Object part);
+    void copyTextToClipboard(@NotNull String text, boolean htmlFormat);
 
-    void copyTextToClipboard(String text, boolean htmlFormat);
-
-    void executeShellProgram(String shellCommand);
+    void executeShellProgram(@NotNull String shellCommand);
 
     void showInSystemExplorer(@NotNull String path);
 
@@ -197,4 +205,5 @@ public interface DBPPlatformUI {
         String defaultValue);
 
     boolean readAndDispatchEvents();
+
 }

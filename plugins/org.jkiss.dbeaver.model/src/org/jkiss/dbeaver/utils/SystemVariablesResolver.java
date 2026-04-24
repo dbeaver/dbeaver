@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -52,8 +55,9 @@ public class SystemVariablesResolver implements IVariableResolver {
         return true;
     }
 
+    @Nullable
     @Override
-    public String get(String name) {
+    public String get(@NotNull String name) {
         //name = name.toLowerCase(Locale.ENGLISH);
         switch (name) {
             case VAR_APP_NAME:
@@ -88,6 +92,7 @@ public class SystemVariablesResolver implements IVariableResolver {
         }
     }
 
+    @NotNull
     public static String getInstallPath() {
         if (installPath == null) {
             installPath = getPlainPath(Platform.getInstallLocation().getURL());
@@ -95,22 +100,25 @@ public class SystemVariablesResolver implements IVariableResolver {
         return installPath;
     }
 
+    @NotNull
     public static String getWorkspacePath() {
         if (DBWorkbench.isPlatformStarted()) {
-            return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().toString();
+            return DBFUtils.convertPathToString(DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
         } else {
             return getPlainPath(Platform.getInstanceLocation().getURL());
         }
     }
 
+    @NotNull
     public static String getUserHome() {
         return System.getProperty(StandardConstants.ENV_USER_HOME);
     }
 
-    private static String getPlainPath(URL url) {
+    @NotNull
+    private static String getPlainPath(@NotNull URL url) {
         try {
-            File file = RuntimeUtils.getLocalFileFromURL(url);
-            return file.getAbsolutePath();
+            Path file = RuntimeUtils.getLocalFileFromURL(url);
+            return file.toAbsolutePath().toString();
         } catch (Exception e) {
             return url.toString();
         }

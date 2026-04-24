@@ -57,21 +57,28 @@ public enum SQLServerObjectType implements DBSObjectType {
 	U ("U", SQLServerTable.class, DBIcon.TREE_TABLE, "Table"),
 	UQ ("UQ", SQLServerTableUniqueKey.class, DBIcon.TREE_CONSTRAINT, "UNIQUE constraint"),
 	V ("V", SQLServerView.class, DBIcon.TREE_VIEW, "View"),
-	X ("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure");
+    X("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure"),
+    SCHEMA("SCHEMA", SQLServerSchema.class, DBIcon.TREE_SCHEMA, "Schema", false);
 
 
     private final String type;
     private final String description;
     private final Class<? extends DBSObject> theClass;
     private final DBPImage icon;
+    private final boolean isRealType;
 
     private static final Log log = Log.getLog(SQLServerObjectType.class);
 
     SQLServerObjectType(String type, Class<? extends DBSObject> theClass, DBPImage icon, String description) {
+        this(type, theClass, icon, description, true);
+    }
+
+    SQLServerObjectType(String type, Class<? extends DBSObject> theClass, DBPImage icon, String description, boolean isRealType) {
         this.type = type;
         this.theClass = theClass;
         this.icon = icon;
         this.description = description;
+        this.isRealType = isRealType;
     }
 
     @Override
@@ -98,18 +105,34 @@ public enum SQLServerObjectType implements DBSObjectType {
         return type;
     }
 
+    public boolean isRealType() {
+        return isRealType;
+    }
+
     @Override
     public String toString() {
         return type;
     }
 
-    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerSchema schema, String objectName) throws DBException {
+    /**
+     * Finds and retrieves an object by name from the given SQL Server schema based on its type.
+     * If the object type is unsupported or the schema is null, returns {@code null} and logs a debug message.
+     *
+     * @param monitor    the progress monitor for tracking progress of the operation.
+     * @param schema     the schema to search in, can be {@code null}.
+     * @param objectName the name of the object to find.
+     * @return the found object, or {@code null} if not found or unsupported.
+     * @throws DBException if an error occurs during the search.
+     */
+    public DBSObject findObject(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
         if (schema == null) {
             log.debug("Null schema in table " + objectName + " search (" + name() + ")");
             return null;
         }
 
-        if (SQLServerTableBase.class.isAssignableFrom(theClass)) {
+        if (SQLServerSchema.class.isAssignableFrom(theClass)) {
+            return schema;
+        } else if (SQLServerTableBase.class.isAssignableFrom(theClass)) {
             return schema.getChild(monitor, objectName);
         } else if (SQLServerProcedure.class.isAssignableFrom(theClass)) {
             return schema.getProcedure(monitor, objectName);

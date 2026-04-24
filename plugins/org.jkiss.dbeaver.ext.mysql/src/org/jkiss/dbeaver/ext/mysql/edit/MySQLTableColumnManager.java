@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -41,12 +36,11 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * MySQL table column manager
@@ -119,6 +113,15 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
+    protected long getDDLFeatures(MySQLTableColumn object) {
+        long features = 0;
+        if (object.getDataSource().supportsAlterTableAddColumn()) {
+            features |= FEATURE_ALTER_TABLE_ADD_COLUMN;
+        }
+        return features;
+    }
+
+    @Override
     public StringBuilder getNestedDeclaration(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableBase owner, @NotNull DBECommandAbstract<MySQLTableColumn> command, @NotNull Map<String, Object> options)
     {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
@@ -127,6 +130,17 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             (CommonUtils.isEmpty(column.getExtraInfo()) || !column.getExtraInfo().toLowerCase(Locale.ENGLISH).contains(MySQLConstants.EXTRA_AUTO_INCREMENT)))
         {
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
+        }
+        try {
+            Collection<? extends DBSTableConstraint> constraints = command.getObject().getParentObject().getConstraints(monitor);
+            if (options.get(DBPScriptObject.OPTION_COMPOSITE_OBJECT) == null &&
+                constraints != null && constraints.stream().anyMatch(c -> c instanceof  MySQLTableConstraint tc &&
+                MySQLConstraintManager.tryGetColumnOfPrimaryKeyConstraintForAutoincrementColumn(monitor, tc, false) == column)
+            ) {
+                decl.append(" PRIMARY KEY");
+            }
+        } catch (DBException ex) {
+            log.error(ex);
         }
         if (!CommonUtils.isEmpty(column.getComment())) {
             decl.append(" COMMENT ").append(SQLUtils.quoteString(column, column.getComment())); //$NON-NLS-1$

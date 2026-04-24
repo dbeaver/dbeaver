@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -358,8 +357,9 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose,
-                                                    DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @NotNull
+													String purpose,
+													@NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
     	
     	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     	
@@ -416,7 +416,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 
 	@Override
-	public <T> T getAdapter(Class<T> adapter)
+	public <T> T getAdapter(@NotNull Class<T> adapter)
 	{
 		if (adapter == DBSStructureAssistant.class) {
 			return adapter.cast(new ExasolStructureAssistant(this));
@@ -841,6 +841,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	
 	
 
+	@NotNull
 	@Override
 	public Collection<? extends DBSDataType> getLocalDataTypes()
 	{
@@ -853,7 +854,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 	
     @Override
-    public String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         //Default Port
         String port = ":8563";
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
@@ -908,7 +909,8 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     }
 	
 
-	@Override
+	@Nullable
+    @Override
 	public DBSDataType getLocalDataType(String typeName)
 	{
 		try {
@@ -944,6 +946,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         return super.createQueryTransformer(type);
     }
     
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
     	// exasol has no sqlstates 

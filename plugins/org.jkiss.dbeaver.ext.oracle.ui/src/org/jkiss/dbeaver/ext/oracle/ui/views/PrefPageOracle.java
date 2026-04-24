@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +33,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageOracle
  */
-public class PrefPageOracle extends TargetPrefPage
-{
+public class PrefPageOracle extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.oracle.general"; //$NON-NLS-1$
 
     private Text explainTableText;
@@ -48,6 +46,7 @@ public class PrefPageOracle extends TargetPrefPage
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
     private Button searchInSynonyms;
+    private Button searchInSequences;
     private Button showDateAsDate;
 
     public PrefPageOracle()
@@ -70,6 +69,7 @@ public class PrefPageOracle extends TargetPrefPage
             store.contains(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS) ||
             store.contains(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY) ||
             store.contains(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS) ||
+            store.contains(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES) ||
             store.contains(OracleConstants.PROP_SHOW_DATE_AS_DATE)
             ;
     }
@@ -83,10 +83,10 @@ public class PrefPageOracle extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group planGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_execution_plan, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite planGroup = UIUtils.createTitledComposite(composite, OracleUIMessages.pref_page_oracle_legend_execution_plan, 2, GridData.FILL_HORIZONTAL);
 
             Label descLabel = new Label(planGroup, SWT.WRAP);
             descLabel.setText(OracleUIMessages.pref_page_oracle_label_by_default_plan_table);
@@ -98,7 +98,7 @@ public class PrefPageOracle extends TargetPrefPage
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_misc, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(composite, OracleUIMessages.pref_page_oracle_legend_misc, 1, GridData.FILL_HORIZONTAL);
             rowidSupportCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_use_rowid_to_identify_rows, true);
             enableDbmsOutputCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_enable_dbms_output, true);
             readAllSynonymsCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_read_all_synonyms, OracleUIMessages.pref_page_oracle_label_if_unchecked_java_classes, true, 1);
@@ -108,12 +108,11 @@ public class PrefPageOracle extends TargetPrefPage
         DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Composite performanceGroup = UIUtils.createControlGroup(
+            Composite performanceGroup = UIUtils.createTitledComposite(
                 composite,
                 OracleUIMessages.pref_page_oracle_legend_performance,
                 1,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
 
             useRuleHint = UIUtils.createCheckbox(
@@ -151,16 +150,21 @@ public class PrefPageOracle extends TargetPrefPage
                 globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
             );
             searchInSynonyms.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip);
+
+            searchInSequences = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_sequences,
+                globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES)
+            );
+            searchInSequences.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_sequences_tooltip);
         }
 
         {
-            final Group dataGroup = UIUtils.createControlGroup(
+            Composite dataGroup = UIUtils.createTitledComposite(
                 composite,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             showDateAsDate = UIUtils.createCheckbox(
                 dataGroup,
@@ -187,6 +191,7 @@ public class PrefPageOracle extends TargetPrefPage
         useSimpleConstraints.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
         useAlternativeTableMetadataQuery.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
         searchInSynonyms.setSelection(store.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        searchInSequences.setSelection(store.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
 
         showDateAsDate.setSelection(store.getBoolean(OracleConstants.PROP_SHOW_DATE_AS_DATE));
     }
@@ -205,6 +210,7 @@ public class PrefPageOracle extends TargetPrefPage
         store.setValue(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS, useSimpleConstraints.getSelection());
         store.setValue(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, useAlternativeTableMetadataQuery.getSelection());
         store.setValue(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, searchInSynonyms.getSelection());
+        store.setValue(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, searchInSequences.getSelection());
 
         store.setValue(OracleConstants.PROP_SHOW_DATE_AS_DATE, showDateAsDate.getSelection());
 
@@ -225,6 +231,7 @@ public class PrefPageOracle extends TargetPrefPage
         store.setToDefault(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS);
         store.setToDefault(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY);
         store.setToDefault(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
+        store.setToDefault(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES);
 
         store.setToDefault(OracleConstants.PROP_SHOW_DATE_AS_DATE);
     }
@@ -242,10 +249,12 @@ public class PrefPageOracle extends TargetPrefPage
         useSimpleConstraints.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
         useAlternativeTableMetadataQuery.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
         searchInSynonyms.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        searchInSequences.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
         showDateAsDate.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SHOW_DATE_AS_DATE));
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID()
     {

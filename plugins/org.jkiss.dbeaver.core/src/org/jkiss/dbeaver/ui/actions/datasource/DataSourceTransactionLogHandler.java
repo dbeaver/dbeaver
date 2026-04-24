@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,23 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
+import org.jkiss.utils.CommonUtils;
 
-public class DataSourceTransactionLogHandler extends AbstractDataSourceHandler
-{
+public class DataSourceTransactionLogHandler extends AbstractDataSourceHandler {
+
+    // Command parameter
+    public static final String PARAM_SHOW_ALL = "showAll";
+
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
         DBCExecutionContext context = null;
-        if (editor instanceof DBPContextProvider) {
-            context = ((DBPContextProvider) editor).getExecutionContext();
+        if (editor instanceof DBPContextProvider contextProvider) {
+            context = contextProvider.getExecutionContext();
         }
-        TransactionLogDialog.showDialog(activeShell, context);
+        boolean showAll = CommonUtils.toBoolean(event.getParameters().get(PARAM_SHOW_ALL));
+        TransactionLogDialog.showDialog(activeShell, context, false, showAll);
         return null;
     }
 

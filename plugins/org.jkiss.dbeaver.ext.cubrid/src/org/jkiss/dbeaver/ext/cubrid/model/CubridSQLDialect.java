@@ -19,10 +19,16 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -30,8 +36,14 @@ import java.util.Arrays;
 public class CubridSQLDialect extends GenericSQLDialect
 {
     public static final String CUBRID_DIALECT_ID = "cubrid";
+    private static final String PROP_SHARD_TYPE = "shardType";
+    private static final String PROP_SHARD_VALUE = "shardValue";
+    private static final String PROP_IS_SHARD = "isShard";
+    private static final String SHARD_TYPE_ID = "SHARD ID";
+    private static final String DEFAULT_SHARD_VALUE = "0";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
-    
+    private boolean isShard = false;
+
     private static final String[] CUBRID_KEYWORD = {
             "BIT", "CONNECT_BY_ISCYCLE", "CONNECT_BY_ISLEAF", "CONNECT_BY_ROOT", "CURRENT_DATE", "CURRENT_DATETIME", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "DATA_TYPE",
             "DATABASE", "DATETIME", "DAY_HOUR", "DAY_MILLISECOND", "DAY_MINUTE", "DAY_SECOND", "DISTINCTROW", "DIV", "DO", "DUPLICATE",
@@ -39,7 +51,7 @@ public class CubridSQLDialect extends GenericSQLDialect
             "ROWNUM", "SECOND_MILLISECOND", "SIBLINGS", "SQLCODE", "SQLERROR", "STATISTICS", "SYS_CONNECT_BY_PATH", "SYSDATE",
             "SYSDATETIME", "SYSTIME", "TRUNCATE", "VALUE", "XOR", "YEAR_MONTH"
     };
-    
+
     private static final String[] REMOVE_KEYWORD = {
             "ALIAS", "ALWAYS", "ARRAY", "ASENSITIVE", "ASSIGNMENT", "ASYMMETRIC", "ATOMIC",
             "AUTHORIZATION", "BINARY", "CALLED", "CARDINALITY", "CHAIN", "CHARACTERISTICS",
@@ -49,7 +61,7 @@ public class CubridSQLDialect extends GenericSQLDialect
             "EXCLUDE", "EXCLUDING", "FILTER", "FINAL", "FOLLOWING", "FREE", "FUSION", "GENERATED",
             "GRANTED", "GROUPING", "HIERARCHY", "HOLD", "IMPLEMENTATION", "INCLUDING", "INCREMENT", "INSENSITIVE", "INSTANCE", "INSTANTIABLE",
             "INVOKER", "KEY_TYPE", "LAST_DAY", "LATERAL", "LDB", "LN", "LOCATOR", "LPAD",
-            "MAP", "MATCHED", "MAXVALUE", "MEMBER", "MODIFIES", 
+            "MAP", "MATCHED", "MAXVALUE", "MEMBER", "MODIFIES",
             "MORE", "MUMPS", "NESTING", "NEW", "NOMAXVALUE", "NOMINVALUE", "NORMALIZE", "NORMALIZED",
             "NULLS", "OLD", "OPERATION", "OPERATORS", "OPTIONS", "ORDERING", "ORDINALITY",
             "OTHERS", "OVERLAY", "OVERRIDING", "PARAMETER", "PATH", "PENDANT", "PERCENTILE_CONT",
@@ -64,7 +76,6 @@ public class CubridSQLDialect extends GenericSQLDialect
             "VIRTUAL", "VISIBLE", "WAIT", "WIDTH_BUCKET", "WINDOW", "WITHIN"
     };
 
-
     public CubridSQLDialect() {
         super("Cubrid", "cubrid");
     }
@@ -76,10 +87,10 @@ public class CubridSQLDialect extends GenericSQLDialect
             @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
+        detectAndApplyShardSettings(session, source);
         source.setSupportMultiSchema(isSupportMultiSchema(session));
         source.setEOLVersion(isEOLVersion(session));
-
-        for(String removeKeyWord: REMOVE_KEYWORD) {
+        for (String removeKeyWord : REMOVE_KEYWORD) {
             this.removeSQLKeyword(removeKeyWord);
         }
         this.addSQLKeywords(Arrays.asList(CUBRID_KEYWORD));
@@ -116,5 +127,44 @@ public class CubridSQLDialect extends GenericSQLDialect
     @Override
     public int getSchemaUsage() {
         return SQLDialect.USAGE_ALL;
+    }
+
+    @Override
+    public boolean supportsAlterTableStatement() {
+        return !isShard;
+    }
+
+    private void detectAndApplyShardSettings(JDBCSession session, CubridDataSource source) {
+        try {
+            Object conn = session.getExecutionContext().getConnection(session.getProgressMonitor());
+            isShard = (boolean) BeanUtils.invokeObjectMethod(conn, PROP_IS_SHARD);
+
+            DBPConnectionConfiguration connectionInfo = source.getContainer().getConnectionConfiguration();
+            connectionInfo.setProperty(PROP_IS_SHARD, Boolean.toString(isShard));
+            source.setShard(isShard);
+
+            if (isShard) {
+                String shardType = connectionInfo.getProperty(PROP_SHARD_TYPE);
+                String shardValue = connectionInfo.getProperty(PROP_SHARD_VALUE);
+                if (CommonUtils.isEmpty(shardType)) {
+                    connectionInfo.setProperty(PROP_SHARD_TYPE, SHARD_TYPE_ID);
+                    connectionInfo.setProperty(PROP_SHARD_VALUE, DEFAULT_SHARD_VALUE);
+                } else {
+                    source.setShardType(shardType);
+                    source.setShardVal(shardValue);
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Failed to get connection:", e);
+        } catch (Throwable e) {
+            log.debug("Failed to invoke isShard method:", e);
+        }
+    }
+
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if ("VARCHAR".equalsIgnoreCase(typeName)) {
+            return "(" + column.getMaxLength() + ")";
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 }

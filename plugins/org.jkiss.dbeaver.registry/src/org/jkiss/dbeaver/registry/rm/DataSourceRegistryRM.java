@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.rm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
@@ -48,13 +49,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     ) {
         super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore);
         this.rmController = rmController;
-
-        // We shouldn't refresh config on update events
-//        addDataSourceListener(event -> {
-//            if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() instanceof DBPDataSourceContainer) {
-//                refreshConfig();
-//            }
-//        });
     }
 
     @Override
@@ -132,15 +126,14 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting rm data folder create", e);
-            return null;
+            throw new DBRuntimeException("Error persisting rm data folder create", e);
         }
         return createFolder(parent, name);
     }
 
 
     @Override
-    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException {
         if (getProject().isInMemory()) {
             super.moveFolder(oldPath, newPath);
             return;
@@ -179,4 +172,5 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     private String getRemoteProjectId() {
         return getProject().getId();
     }
+
 }

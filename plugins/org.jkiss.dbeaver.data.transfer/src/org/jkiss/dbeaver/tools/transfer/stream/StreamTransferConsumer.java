@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -274,7 +274,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public void close() {
-        columnBindings = null;
     }
     
     private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {
@@ -368,7 +367,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
             // Open output streams
             boolean outputClipboard = settings.isOutputClipboard();
-            if (parameters.isBinary || !outputClipboard) {
+            if (parameters.exportToStream == null && (parameters.isBinary || !outputClipboard)) {
                 outputFile = makeOutputFile(session.getProgressMonitor());
                 outputFiles.add(outputFile);
             } else {
@@ -477,35 +476,40 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     private void openOutputStreams(DBRProgressMonitor monitor) throws IOException {
         final boolean truncate;
-
-        boolean fileExists = Files.exists(outputFile);
-        if (fileExists && !Files.isDirectory(outputFile)) {
-            DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
-            switch (behavior) {
-                case APPEND -> truncate = false;
-                case PATCHNAME -> {
-                    outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
-                    truncate = false;
-                    fileExists = false;
-                }
-                case OVERWRITE -> truncate = true;
-                default -> throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
-            }
-        } else {
-            truncate = true;
-        }
-
         OutputStream stream;
-        if (!fileExists) {
-            log.debug("Export to the new file \"" + outputFile + "\"");
-            stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+        if (parameters.exportToStream != null) {
+            stream = parameters.exportToStream;
         } else {
-            log.debug("Export to the existing file \"" + outputFile + "\"");
-            stream = Files.newOutputStream(
-                outputFile,
-                StandardOpenOption.WRITE,
-                (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND));
+            boolean fileExists = Files.exists(outputFile);
+            if (fileExists && !Files.isDirectory(outputFile)) {
+                DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
+                switch (behavior) {
+                    case APPEND -> truncate = false;
+                    case PATCHNAME -> {
+                        outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
+                        truncate = false;
+                        fileExists = false;
+                    }
+                    case OVERWRITE -> truncate = true;
+                    default -> throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
+                }
+            } else {
+                truncate = true;
+            }
+
+            if (!fileExists) {
+                log.debug("Export to the new file \"" + outputFile + "\"");
+                stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+            } else {
+                log.debug("Export to the existing file \"" + outputFile + "\"");
+                stream = Files.newOutputStream(
+                    outputFile,
+                    StandardOpenOption.WRITE,
+                    (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND)
+                );
+            }
         }
+
         this.outputStream = new BufferedOutputStream(stream, OUT_FILE_BUFFER_SIZE);
         this.outputStream = this.statStream = new StatOutputStream(outputStream);
 
@@ -606,8 +610,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     @Override
     public void setRuntimeParameters(Object runtimeParameters) {
-        if (runtimeParameters instanceof ConsumerRuntimeParameters) {
-            this.runtimeParameters = (ConsumerRuntimeParameters) runtimeParameters;
+        if (runtimeParameters instanceof ConsumerRuntimeParameters crp) {
+            this.runtimeParameters = crp;
         } else {
             throw new IllegalStateException("Unsupported stream transfer consumer runtime parameters " + runtimeParameters);
         }
@@ -676,6 +680,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public String getObjectName() {
         return settings.isOutputClipboard() ? "Clipboard" : getOutputFileName();
+    }
+
+    @Override
+    public String getObjectFullName(@NotNull DBRProgressMonitor monitor) throws IOException {
+        if (settings.isOutputClipboard()) {
+            return getObjectName();
+        }
+        return DBFUtils.convertPathToString(makeOutputFile(monitor));
     }
 
     @Override

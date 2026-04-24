@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -81,20 +82,25 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) throws DBException{
+    protected String beginCreateTableStatement(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) throws DBException {
+
         String statement = "CREATE " + getCreateTableType(table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
-        if (table.isPartition() && table instanceof PostgreTable) {
-            PostgreTable postgreTable = (PostgreTable) table;
+        if (table.isPartition() && table instanceof PostgreTable postgreTable) {
             List<PostgreTableBase> superTables = postgreTable.getSuperTables(monitor);
             if (superTables == null || superTables.size() != 1) {
                 log.error("Cant't read partition parent table name for table " + table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             } else {
                 String parent = superTables.get(0).getFullyQualifiedName(DBPEvaluationContext.DDL);
                 String range = postgreTable.getPartitionRange(monitor);
-                return statement + tableName + " PARTITION OF " + parent + " " + range;//$NON-NLS-1$ //$NON-NLS-2$
+                return statement + tableName + " PARTITION OF " + parent + " " + range; //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
-        return statement + tableName + " (" + GeneralUtils.getDefaultLineSeparator();//$NON-NLS-1$
+        boolean isCompact = Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
+        return statement + tableName + " (" + (isCompact ? "" : GeneralUtils.getDefaultLineSeparator()); //$NON-NLS-1$
     }
 
     @Override
@@ -174,8 +180,15 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
-        ddl.append(tableBase.getDataSource().getServerType().getTableModifiers(monitor, tableBase, alter));
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        PostgreTableBase tableBase,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
+
+        ddl.append(tableBase.getDataSource().getServerType().getTableModifiers(monitor, tableBase, alter, getDelimiter(options)));
     }
 
     @Override

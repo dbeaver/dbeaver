@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,9 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
     }
 
     public void dispose() {
-        DataSourceProviderRegistry.getInstance().removeDataSourceRegistryListener(this);
+        if (DataSourceProviderRegistry.isInstantiated()) {
+            DataSourceProviderRegistry.getInstance().removeDataSourceRegistryListener(this);
+        }
 
         for (DBPDataSourceRegistry registry : this.handledRegistries) {
             registry.removeDataSourceListener(this);
@@ -133,14 +135,14 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
 
     public void setActivePart(@Nullable IWorkbenchPart part) {
         activePart = part;
-        if (activePart instanceof IEditorPart) {
+        {
             updateToolbar();
         }
         DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
     @Override
-    public void handleDataSourceEvent(final DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull final DBPEvent event) {
         if (workbenchWindow.getWorkbench().isClosing()) {
             return;
         }

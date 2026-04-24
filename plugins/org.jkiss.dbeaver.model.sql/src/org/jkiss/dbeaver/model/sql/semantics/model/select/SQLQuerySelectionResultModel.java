@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -39,8 +40,6 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
 
     @NotNull
     private final List<SQLQuerySelectionResultSublistSpec> sublists;
-    @Nullable
-    private SQLQueryDataContext dataContext = null;
 
     public SQLQuerySelectionResultModel(@NotNull STMTreeNode syntaxNode, int capacity) {
         super(syntaxNode.getRealInterval(), syntaxNode);
@@ -52,18 +51,6 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         return this.sublists;
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-    
     private void registerSublist(SQLQuerySelectionResultSublistSpec sublist) {
         this.sublists.add(sublist);
         super.registerSubnode(sublist);
@@ -73,7 +60,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
      * Add single column to the selection result model
      */
     public void addColumnSpec(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryValueExpression valueExpression) {
-        this.registerSublist(new SQLQuerySelectionResultColumnSpec(this, syntaxNode, valueExpression));
+        this.registerSublist(new SQLQuerySelectionResultColumnSpec(syntaxNode, valueExpression));
     }
 
 
@@ -85,7 +72,7 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
         @Nullable SQLQueryValueExpression valueExpression,
         @Nullable SQLQuerySymbolEntry alias
     ) {
-        this.registerSublist(new SQLQuerySelectionResultColumnSpec(this, syntaxNode, valueExpression, alias));
+        this.registerSublist(new SQLQuerySelectionResultColumnSpec(syntaxNode, valueExpression, alias));
     }
 
 
@@ -93,14 +80,14 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
      * Add several columns of some table to the selection result model
      */
     public void addTupleSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryValueTupleReferenceExpression tupleRef) {
-        this.registerSublist(new SQLQuerySelectionResultTupleSpec(this, syntaxNode, tupleRef));
+        this.registerSublist(new SQLQuerySelectionResultTupleSpec(syntaxNode, tupleRef));
     }
 
     /**
      * Add all columns of some table to the selection result model
      */
-    public void addCompleteTupleSpec(@NotNull STMTreeNode syntaxNode) {
-        this.registerSublist(new SQLQuerySelectionResultCompleteTupleSpec(this, syntaxNode));
+    public void addCompleteTupleSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryTupleRefEntry tupleRefEntry) {
+        this.registerSublist(new SQLQuerySelectionResultCompleteTupleSpec(syntaxNode, tupleRefEntry));
     }
 
     /**
@@ -108,14 +95,13 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
      */
     @NotNull
     public List<SQLQueryResultColumn> expandColumns(
-        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsDataContext knownValues,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.dataContext = context;
         LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
         for (SQLQuerySelectionResultSublistSpec sublist : this.sublists) {
-            sublist.collectColumns(context, rowsSourceModel, statistics, resultColumns);
+            sublist.collectColumns(knownValues, rowsSourceModel, statistics, resultColumns);
         }
         return List.copyOf(resultColumns);
     }

@@ -80,9 +80,11 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
             SQLQuerySymbolEntry token = context.findToken(offset);
             if (token != null) {
                 final IRegion refRegion = new Region(context.getLastAccessedTokenOffset(), token.getInterval().length());
-                SQLQuerySymbolEntry symbolEntry = token.getDefinition() instanceof SQLQuerySymbolEntry def ? def
-                    : token.getDefinition() instanceof SQLQueryRowsTableDataModel tab && tab.getTable() != null ? tab.getName().entityName 
-                    : null; 
+                SQLQuerySymbolEntry symbolEntry = token.getDefinition() instanceof SQLQuerySymbolEntry def
+                    ? def
+                    : token.getDefinition() instanceof SQLQueryRowsTableDataModel tab && tab.getTable() != null && tab.getName() != null
+                        ? tab.getName().parts.getLast()
+                        : null;
                 
                 if (symbolEntry != null) {
                     // TODO consider multiple definitions

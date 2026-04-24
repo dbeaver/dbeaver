@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,9 @@ public class DB2IMetaModel extends GenericMetaModel
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DB2IDataSource(monitor, container, this);
     }
 
@@ -61,8 +62,9 @@ public class DB2IMetaModel extends GenericMetaModel
         return "QSYS".equals(schemaName) || "QSYS2".equals(schemaName) || "SYSIBM".equals(schemaName) || "SYSPROC".equals(schemaName) || "SYSTOOLS".equals(schemaName);
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(@NotNull GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
         }
@@ -125,7 +127,7 @@ public class DB2IMetaModel extends GenericMetaModel
     }
 
     @Override
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) {
         String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         if ("UNIQUE".equals(constraintType)) {
             return DBSEntityConstraintType.UNIQUE_KEY;
@@ -135,8 +137,9 @@ public class DB2IMetaModel extends GenericMetaModel
         return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
+    @NotNull
     @Override
-    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+    public GenericUniqueKey createConstraintImpl(@NotNull GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
         String checkClause = null;
         if (dbResult != null) {
             checkClause = JDBCUtils.safeGetString(dbResult, "CHECK_CLAUSE");
@@ -155,7 +158,7 @@ public class DB2IMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read DB2 for i procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,23 +26,27 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * DBUtils
@@ -86,7 +90,10 @@ public final class DBStructUtils {
     }
 
     @Nullable
-    public static DBSEntity getAssociatedEntity(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityConstraint constraint) throws DBException {
+    public static DBSEntity getAssociatedEntity(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityConstraint constraint
+    ) throws DBException {
         if (constraint instanceof DBSEntityAssociationLazy associationLazy) {
             return associationLazy.getAssociatedEntity(monitor);
         } else if (constraint instanceof DBSEntityAssociation association) {
@@ -95,7 +102,13 @@ public final class DBStructUtils {
         return null;
     }
 
-    public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
+    @NotNull
+    public static String generateTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        @NotNull Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager tableManager) {
@@ -106,7 +119,13 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(table.getDataSource(), "Can't generate DDL: table editor not found for " + table.getClass().getName());
     }
 
-    public static String generateObjectDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, Map<String, Object> options, boolean addComments) throws DBException {
+    @NotNull
+    public static String generateObjectDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject object,
+        @NotNull Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(object.getClass(), SQLObjectEditor.class);
         if (entityEditor != null) {
@@ -119,7 +138,12 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(object.getDataSource(), "Can't generate DDL: object editor not found for " + object.getClass().getName());
     }
 
-    public static String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
+    public static String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         if (table instanceof DBPScriptObject scriptObject) {
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
@@ -191,8 +215,12 @@ public final class DBStructUtils {
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
-            sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source));
-            addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
+            String objectNameComment = getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source);
+            String tableDDL = DBStructUtils.getTableDDL(monitor, table, options, addComments);
+            if (!tableDDL.startsWith(objectNameComment)) {
+                sql.append(objectNameComment);
+            }
+            addDDLLine(sql, tableDDL);
         }
         monitor.done();
     }
@@ -215,7 +243,7 @@ public final class DBStructUtils {
             " " + comment + lf + lf;
     }
 
-    private static void addDDLLine(StringBuilder sql, String ddl) {
+    public static void addDDLLine(@NotNull StringBuilder sql, @NotNull String ddl) {
         ddl = ddl.trim();
         if (!CommonUtils.isEmpty(ddl)) {
             sql.append(ddl);
@@ -227,7 +255,13 @@ public final class DBStructUtils {
         }
     }
 
-    public static <T extends DBSEntity> void sortTableList(DBRProgressMonitor monitor, Collection<T> input, List<T> simpleTables, List<T> cyclicTables, List<T> views) throws DBException {
+    public static <T extends DBSEntity> void sortTableList(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<T> input,
+        @NotNull List<T> simpleTables,
+        @NotNull List<T> cyclicTables,
+        @NotNull List<T> views
+    ) throws DBException {
         monitor.beginTask("Sorting table list", input.size());
         List<T> realTables = new ArrayList<>();
         for (T entity : input) {
@@ -295,6 +329,7 @@ public final class DBStructUtils {
         monitor.done();
     }
 
+    @NotNull
     public static String mapTargetDataType(
         @Nullable DBSObject objectContainer,
         @NotNull DBSTypedObject srcTypedObject,
@@ -515,4 +550,178 @@ public final class DBStructUtils {
     public static boolean isConnectedContainer(DBPObject parent) {
         return !(parent instanceof DBSInstanceLazy il) || il.isInstanceConnected();
     }
+
+    public static List<DBSObject> getRelatedDBSEntities(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject dbsObject
+    ) throws DBException {
+        var result = new LinkedHashSet<DBSObject>();
+        if (dbsObject instanceof DBSEntity mainEntity) {
+            result.add(mainEntity);
+            try {
+                var associations = DBVUtils.getAllAssociations(monitor, mainEntity);
+                for (var assoc : associations) {
+                    var associatedEntity = assoc.getAssociatedEntity();
+                    if (associatedEntity != null) {
+                        result.add(associatedEntity);
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Can't load associations for " + mainEntity.getName(), e);
+            }
+            var references = DBVUtils.getAllReferences(monitor, mainEntity);
+            for (var ref : references) {
+                var parent = ref.getParentObject();
+                result.add(parent);
+            }
+        } else if (dbsObject instanceof DBSObjectContainer container) {
+            var children = container.getChildren(monitor);
+            if (children != null) {
+                for (var child : children) {
+                    if (child instanceof DBSEntity resultChild) {
+                        result.add(resultChild);
+                    }
+                }
+            }
+        }
+
+        return result.stream().toList();
+    }
+
+    public static boolean isSchemasSupported(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
+        if (defaultContext != null) {
+            DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
+            if (contextDefaults != null) {
+                if (contextDefaults.getDefaultSchema() != null || contextDefaults.getDefaultCatalog() != null ||
+                    contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange()
+                ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    public static DBSSchema getObjectSchema(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSSchema schema) {
+            return schema;
+        }
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSSchema schema) {
+                return schema;
+            }
+            parent = parent.getParentObject();
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the schema name associated with the provided database object.
+     */
+    @Nullable
+    public static String getObjectSchemaName(@NotNull DBSObject dbsObject) {
+        DBSSchema schema = getObjectSchema(dbsObject);
+        return schema == null ? null : schema.getName();
+    }
+
+    @Nullable
+    public static DBSCatalog getObjectCatalog(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSCatalog catalog) {
+            return catalog;
+        } else if (dbsObject instanceof DBSSchema) {
+            DBSObject parent = dbsObject.getParentObject();
+            if (parent instanceof DBSCatalog catalog) {
+                return catalog;
+            }
+        }
+
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSCatalog catalog) {
+                return catalog;
+            }
+            parent = parent.getParentObject();
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves the catalog name associated with the provided database object.
+     */
+    @Nullable
+    public static String getObjectCatalogName(@NotNull DBSObject dbsObject) {
+        DBSCatalog catalog = getObjectCatalog(dbsObject);
+        return catalog == null ? null : catalog.getName();
+    }
+
+    public static boolean isPrimaryKey(@NotNull DBSTableColumn column) {
+        var monitor = new VoidProgressMonitor();
+        try {
+            return matchesColumnInRefs(
+                monitor,
+                column,
+                referrers(column.getParentObject().getConstraints(monitor), DBSEntityConstraintType.PRIMARY_KEY)
+            );
+        } catch (DBException e) {
+            log.debug("Error reading primary key constraints for column: " + column.getName(), e);
+            return false;
+        }
+    }
+
+    public static boolean isForeignKey(@NotNull DBSTableColumn column) {
+        var monitor = new VoidProgressMonitor();
+        try {
+            return matchesColumnInRefs(
+                monitor,
+                column,
+                referrers(column.getParentObject().getAssociations(monitor), DBSEntityConstraintType.FOREIGN_KEY)
+            );
+        } catch (DBException e) {
+            log.debug("Error reading foreign key associations for column: " + column.getName(), e);
+            return false;
+        }
+    }
+
+    private static boolean matchesColumnInRefs(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBSTableColumn column,
+        @NotNull Stream<DBSEntityReferrer> referrers
+    ) {
+        return referrers
+            .flatMap(ref -> safeRefs(monitor, ref))
+            .anyMatch(r -> r.getAttribute() == column);
+    }
+
+    @NotNull
+    private static Stream<? extends DBSEntityAttributeRef> safeRefs(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer ref
+    ) {
+        try {
+            List<? extends DBSEntityAttributeRef> refs = ref.getAttributeReferences(monitor);
+            return refs == null ? Stream.empty() : refs.stream();
+        } catch (DBException e) {
+            log.debug("Failed to read attribute references for constraint: " + ref.getName(), e);
+            return Stream.empty();
+        }
+    }
+
+    @NotNull
+    private static Stream<DBSEntityReferrer> referrers(
+        @Nullable Collection<? extends DBSEntityConstraint> refs,
+        @NotNull DBSEntityConstraintType filter)  {
+
+        if (refs == null || refs.isEmpty()) {
+            return Stream.empty();
+        }
+        return refs.stream()
+            .filter(a -> a.getConstraintType() == filter)
+            .filter(DBSEntityReferrer.class::isInstance)
+            .map(DBSEntityReferrer.class::cast);
+    }
+
 }

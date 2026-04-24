@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
-    implements DBTTaskSettings<BASE_OBJECT>, DBTTaskSettingsInput<BASE_OBJECT> {
+    implements DBTTaskSettings, DBTTaskSettingsInput<BASE_OBJECT> {
 
     private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
 
@@ -282,7 +282,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     }
     
     @Override
-    public void loadSettingsFromInput(List<BASE_OBJECT> inputObjects) {
+    public void loadSettingsFromInput(@NotNull List<BASE_OBJECT> inputObjects, @NotNull Map<String, Object> options) {
         databaseObjects.addAll(inputObjects);
     }
 
@@ -297,7 +297,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
         int queryStartPos = outputFolder.lastIndexOf("?");
         if (queryStartPos != -1) {
             query = outputFolder.substring(queryStartPos);
-            outputFolder = outputFolder.substring(0, queryStartPos - 1);
+            outputFolder = outputFolder.substring(0, queryStartPos);
         }
         if (!outputFolder.endsWith("/")) outputFolder += "/";
         String outFile = outputFolder + outputFileName;

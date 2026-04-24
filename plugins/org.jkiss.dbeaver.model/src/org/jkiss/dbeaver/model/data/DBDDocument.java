@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.io.Reader;
+import java.io.Writer;
 
 /**
  * Document.
@@ -69,23 +68,20 @@ public interface DBDDocument extends DBDValue {
     /**
      * Serializes document into stream
      *
-     * @param monitor   progress monitor
-     * @param stream    stream
-     * @param charset  stream encoding
-     * @throws DBException
+     * @param monitor progress monitor
+     * @param writer  writer to serialize document into
+     * @throws DBException on DB error
+     * @throws IOException on IO error
      */
-    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, @Nullable Charset charset)
-        throws IOException, DBException;
+    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull Writer writer) throws IOException, DBException;
 
     /**
      * Updates document from stream
      *
-     * @param monitor   progress monitor
-     * @param stream    stream
-     * @param charset  stream encoding
-     * @throws DBException
+     * @param monitor progress monitor
+     * @param reader  reader to read document from
+     * @throws DBException on DB error
+     * @throws IOException on IO error
      */
-    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, @Nullable Charset charset)
-        throws IOException, DBException;
-
+    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull Reader reader) throws IOException, DBException;
 }

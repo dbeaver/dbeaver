@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.exec.jdbc;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -25,6 +27,9 @@ import java.sql.SQLException;
  * Manageable connection metadata
  */
 public interface JDBCDatabaseMetaData extends DatabaseMetaData {
+
+    @NotNull
+    JDBCDataSource getDataSource();
 
     @Override
     JDBCResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern)

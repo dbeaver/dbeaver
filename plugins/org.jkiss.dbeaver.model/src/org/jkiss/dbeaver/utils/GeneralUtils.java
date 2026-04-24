@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.UnresolvedAddressException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -107,10 +109,7 @@ public class GeneralUtils {
         return UTF8_ENCODING;
     }
 
-    public static String getDefaultLocalFileEncoding() {
-        return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
-    }
-
+    @NotNull
     public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
         if (CommonUtils.isEmpty(consoleEncoding)) {
@@ -122,11 +121,20 @@ public class GeneralUtils {
         return consoleEncoding;
     }
 
+    @NotNull
     public static String getDefaultLineSeparator() {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
     }
 
-    public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
+    /**
+     * Replaces all line separators with system line separators
+     */
+    @NotNull
+    public static String normalizeLineSeparators(@NotNull String str) {
+        return str.replaceAll("\r\n|\r|\n", getDefaultLineSeparator());
+    }
+
+    public static void writeBytesAsHex(@NotNull Writer out, @NotNull byte[] buf, int off, int len) throws IOException {
         for (int i = 0; i < len; i++) {
             byte b = buf[off + i];
             int v = b & 0xFF;
@@ -135,7 +143,8 @@ public class GeneralUtils {
         }
     }
 
-    public static String convertToString(byte[] bytes, int offset, int length) {
+    @NotNull
+    public static String convertToString(@NotNull byte[] bytes, int offset, int length) {
         if (length == 0) {
             return "";
         }
@@ -153,7 +162,8 @@ public class GeneralUtils {
      * Converts string to byte array.
      * This is loosy algorithm because it gets only first byte from each char.
      */
-    public static byte[] convertToBytes(String strValue) {
+    @NotNull
+    public static byte[] convertToBytes(@NotNull String strValue) {
         int length = strValue.length();
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; i++) {
@@ -166,7 +176,8 @@ public class GeneralUtils {
         return bytes;
     }
 
-    public static Object makeDisplayString(Object object) {
+    @NotNull
+    public static Object makeDisplayString(@Nullable Object object) {
         if (object == null) {
             return ""; //$NON-NLS-1$
         }
@@ -198,7 +209,8 @@ public class GeneralUtils {
         return object;
     }
 
-    public static Object convertString(String value, Class<?> valueType) {
+    @Nullable
+    public static Object convertString(@Nullable String value, @Nullable Class<?> valueType) {
         try {
             if (CommonUtils.isEmpty(value)) {
                 return null;
@@ -244,13 +256,14 @@ public class GeneralUtils {
         }
     }
 
-    private static String normalizeIntegerString(String value) {
+    @NotNull
+    private static String normalizeIntegerString(@NotNull String value) {
         int divPos = value.lastIndexOf('.');
         return divPos == -1 ? value : value.substring(0, divPos);
     }
 
     @NotNull
-    public static IStatus makeInfoStatus(String message) {
+    public static IStatus makeInfoStatus(@NotNull String message) {
         return new Status(
             IStatus.INFO,
             ModelPreferences.PLUGIN_ID,
@@ -259,7 +272,7 @@ public class GeneralUtils {
     }
 
     @NotNull
-    public static IStatus makeErrorStatus(String message) {
+    public static IStatus makeErrorStatus(@NotNull String message) {
         return new Status(
             IStatus.ERROR,
             ModelPreferences.PLUGIN_ID,
@@ -409,7 +422,8 @@ public class GeneralUtils {
         return Platform.getProduct().getProperty("earlyAccessURL");
     }
 
-    public static String getExpressionParseMessage(Exception e) {
+    @NotNull
+    public static String getExpressionParseMessage(@NotNull Exception e) {
         String message = e.getMessage();
         if (message == null) {
             return e.getClass().getName();
@@ -418,7 +432,8 @@ public class GeneralUtils {
         return divPos == -1 ? message : message.substring(divPos + 1);
     }
 
-    public static String trimAllWhitespaces(String str) {
+    @NotNull
+    public static String trimAllWhitespaces(@NotNull String str) {
         int len = str.length();
         int st = 0;
         while (st < len && isWhitespaceExt(str.charAt(st))) {
@@ -435,25 +450,27 @@ public class GeneralUtils {
         return c <= ' ' || c == 0x160;
     }
 
+    @NotNull
+    public static String findJavaExecutable() throws IOException {
+        String javaHome = System.getProperty("java.home");
+        if (javaHome == null) {
+            throw new IOException("java.home is not set");
+        }
+
+        Path java = Path.of(javaHome, "bin", RuntimeUtils.isWindows() ? "java.exe" : "java");
+        if (!Files.isExecutable(java)) {
+            throw new IOException("Java executable not found at " + java);
+        }
+
+        return java.toAbsolutePath().toString();
+    }
+
     public interface IParameterHandler {
         boolean setParameter(String name, String value);
     }
 
-    public static class MapResolver implements IVariableResolver {
-        private final Map<String, Object> variables;
-
-        public MapResolver(Map<String, Object> variables) {
-            this.variables = variables;
-        }
-
-        @Override
-        public String get(String name) {
-            Object value = variables.get(name);
-            return value == null ? null : CommonUtils.toString(value);
-        }
-    }
-
-    public static String replaceSystemPropertyVariables(String string) {
+    @Nullable
+    public static String replaceSystemPropertyVariables(@Nullable String string) {
         if (string == null) {
             return null;
         }
@@ -461,11 +478,11 @@ public class GeneralUtils {
     }
 
     @NotNull
-    public static String variablePattern(String name) {
+    public static String variablePattern(@NotNull String name) {
         return "${" + name + "}";
     }
 
-    public static boolean isVariablePattern(String pattern) {
+    public static boolean isVariablePattern(@NotNull String pattern) {
         return pattern.startsWith("${") && pattern.endsWith("}");
     }
 
@@ -481,9 +498,7 @@ public class GeneralUtils {
         for (int i = 0; i < vars.length; i++) {
             text.append(varPatterns[i]);
             // Indent
-            for (int k = 0; k < patternMaxLength - varPatterns[i].length(); k++) {
-                text.append(' ');
-            }
+            text.append(" ".repeat(Math.max(0, patternMaxLength - varPatterns[i].length())));
             text.append(" - ").append(vars[i][1]).append("\n");
         }
         return text.toString();
@@ -505,13 +520,43 @@ public class GeneralUtils {
         return name;
     }
 
+    public record VariableEntryInfo(
+        @NotNull String name,
+        int start,
+        int end
+    ) {
+    }
+
+    /**
+     * Returns information about all variable entries in the provided text
+     */
     @NotNull
-    public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
+    public static List<VariableEntryInfo> findAllVariableEntries(@NotNull String string) {
+        if (CommonUtils.isEmpty(string)) {
+            return Collections.emptyList();
+        }
+        List<VariableEntryInfo> variables = new LinkedList<>();
+        try {
+            Matcher matcher = GeneralUtils.VAR_PATTERN.matcher(string);
+            int pos = 0;
+            while (matcher.find(pos)) {
+                pos = matcher.end();
+                String varName = matcher.group(2);
+                variables.add(new VariableEntryInfo(varName, matcher.start(), matcher.end()));
+            }
+        } catch (Exception e) {
+            log.warn("Error matching regex", e);
+        }
+        return variables;
+    }
+
+    @NotNull
+    public static String replaceVariables(@NotNull String string, @NotNull IVariableResolver resolver) {
         return replaceVariables(string, resolver, false);
     }
 
     @NotNull
-    public static String replaceVariables(@NotNull String string, IVariableResolver resolver, boolean isUpperCaseVarName) {
+    public static String replaceVariables(@NotNull String string, @NotNull IVariableResolver resolver, boolean isUpperCaseVarName) {
         if (CommonUtils.isEmpty(string)) {
             return string;
         }
@@ -570,16 +615,28 @@ public class GeneralUtils {
         }
     }
 
-    public static IStatus makeExceptionStatus(Throwable ex) {
+    @Nullable
+    public static <T extends Throwable> T findNestedException(@NotNull Throwable ex, @NotNull Class<T> theClass) {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            if (theClass.isInstance(e)) {
+                return theClass.cast(e);
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    public static IStatus makeExceptionStatus(@NotNull Throwable ex) {
         return makeExceptionStatus(IStatus.ERROR, ex);
     }
 
-    public static IStatus makeExceptionStatus(int severity, Throwable ex) {
+    @NotNull
+    public static IStatus makeExceptionStatus(int severity, @NotNull Throwable ex) {
         return makeExceptionStatus(severity, ex, false);
     }
 
+    @NotNull
     public static IStatus transformExceptionsToStatus(@NotNull List<Throwable> exceptions) {
-
         if (exceptions.isEmpty()) {
             return new Status(IStatus.ERROR, (Class<?>) null, "Empty exceptions list");
         }
@@ -608,12 +665,13 @@ public class GeneralUtils {
         return prev;
     }
 
-    private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
-        if (ex instanceof InvocationTargetException) {
-            ex = ((InvocationTargetException) ex).getTargetException();
+    @NotNull
+    private static IStatus makeExceptionStatus(int severity, @NotNull Throwable ex, boolean nested) {
+        if (ex instanceof InvocationTargetException ite) {
+            ex = ite.getTargetException();
         }
-        if (ex instanceof CoreException) {
-            return ((CoreException) ex).getStatus();
+        if (ex instanceof CoreException ce) {
+            return ce.getStatus();
         }
         // Skip chain of nested DBExceptions. Show only last message
         while (ex.getCause() != null && ex.getMessage() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
@@ -621,10 +679,10 @@ public class GeneralUtils {
         }
         Throwable cause = ex.getCause();
         SQLException nextError = null;
-        if (ex instanceof SQLException) {
-            nextError = ((SQLException) ex).getNextException();
-        } else if (cause instanceof SQLException) {
-            nextError = ((SQLException) cause).getNextException();
+        if (ex instanceof SQLException sqlException) {
+            nextError = sqlException.getNextException();
+        } else if (cause instanceof SQLException sqlException) {
+            nextError = sqlException.getNextException();
         }
         if (cause == null && nextError == null) {
             return new Status(
@@ -663,11 +721,13 @@ public class GeneralUtils {
         }
     }
 
-    public static IStatus makeExceptionStatus(String message, Throwable ex) {
+    @NotNull
+    public static IStatus makeExceptionStatus(@Nullable String message, @NotNull Throwable ex) {
         return makeExceptionStatus(IStatus.ERROR, message, ex);
     }
 
-    public static IStatus makeExceptionStatus(int severity, String message, Throwable ex) {
+    @NotNull
+    public static IStatus makeExceptionStatus(int severity, @Nullable String message, @NotNull Throwable ex) {
         if (CommonUtils.equalObjects(message, ex.getMessage())) {
             return makeExceptionStatus(severity, ex);
         }
@@ -679,7 +739,8 @@ public class GeneralUtils {
             null);
     }
 
-    public static IStatus getRootStatus(IStatus status) {
+    @NotNull
+    public static IStatus getRootStatus(@NotNull IStatus status) {
         IStatus[] children = status.getChildren();
         if (children == null || children.length == 0) {
             return status;
@@ -688,47 +749,16 @@ public class GeneralUtils {
         }
     }
 
-    public static String getStatusText(IStatus status) {
+    @NotNull
+    public static String getStatusText(@NotNull IStatus status) {
         StringBuilder text = new StringBuilder(status.getMessage());
         IStatus[] children = status.getChildren();
-        if (children != null && children.length > 0) {
+        if (children != null) {
             for (IStatus child : children) {
                 text.append("\n").append(getStatusText(child));
             }
         }
         return text.toString();
-    }
-
-    /**
-     * Returns first non-null and non-empty message from this exception or it's cause
-     */
-    public static String getFirstMessage(Throwable ex) {
-        for (Throwable e = ex; e != null; e = e.getCause()) {
-            String message = e.getMessage();
-            if (!CommonUtils.isEmpty(message)) {
-                return message;
-            }
-        }
-        return null;
-    }
-
-    public static String getExceptionMessage(@NotNull Throwable ex) {
-/*
-        StringBuilder msg = new StringBuilder(*/
-        /*CommonUtils.getShortClassName(ex.getClass())*//*
-);
-        msg.append(ex.getClass().getSimpleName());
-        if (ex.getMessage() != null) {
-            msg.append(": ").append(ex.getMessage());
-        }
-        return msg.toString().trim();
-*/
-        try {
-            ex.getClass().getDeclaredMethod("toString");
-            return ex.toString();
-        } catch (NoSuchMethodException e) {
-            return ex.getMessage();
-        }
     }
 
     @NotNull
@@ -745,7 +775,8 @@ public class GeneralUtils {
         }
     }
 
-    public static Object deserializeObject(String text) {
+    @Nullable
+    public static Object deserializeObject(@NotNull String text) {
         try {
             final byte[] bytes = Base64.decode(text);
             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
@@ -758,6 +789,7 @@ public class GeneralUtils {
         }
     }
 
+    @NotNull
     public static Path getMetadataFolder() {
         Path workspacePath;
         if (!DBWorkbench.isPlatformStarted()) {
@@ -770,7 +802,7 @@ public class GeneralUtils {
         } else {
             DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             if (workspace == null) {
-                log.warn("Metadata is read before workspace initialization");
+                log.debug("Metadata is read before workspace initialization");
                 try {
                     workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
                 } catch (IOException e) {
@@ -791,7 +823,8 @@ public class GeneralUtils {
         return metaDir;
     }
 
-    public static Path getMetadataFolder(Path workspaceFolder) {
+    @NotNull
+    public static Path getMetadataFolder(@NotNull Path workspaceFolder) {
         return workspaceFolder.resolve(DBPWorkspace.METADATA_FOLDER);
     }
 
@@ -819,7 +852,8 @@ public class GeneralUtils {
     // Adapters
     // Copy-pasted from org.eclipse.core.runtime.Adapters to support Eclipse Mars (#46667)
 
-    public static <T> T adapt(Object sourceObject, Class<T> adapter, boolean allowActivation) {
+    @Nullable
+    public static <T> T adapt(@Nullable Object sourceObject, @NotNull Class<T> adapter, boolean allowActivation) {
         if (sourceObject == null) {
             return null;
         }
@@ -860,11 +894,13 @@ public class GeneralUtils {
         return null;
     }
 
-    public static <T> T adapt(Object sourceObject, Class<T> adapter) {
+    @Nullable
+    public static <T> T adapt(@Nullable Object sourceObject, @NotNull Class<T> adapter) {
         return adapt(sourceObject, adapter, true);
     }
 
-    public static Object queryAdapterManager(Object sourceObject, String adapterId, boolean allowActivation) {
+    @Nullable
+    public static Object queryAdapterManager(@NotNull Object sourceObject, @NotNull String adapterId, boolean allowActivation) {
         Object result;
         AdapterManager adapterManager = AdapterManager.getDefault();
         if (adapterManager == null) {
@@ -878,7 +914,8 @@ public class GeneralUtils {
         return result;
     }
 
-    public static byte[] getBytesFromUUID(UUID uuid) {
+    @NotNull
+    public static byte[] getBytesFromUUID(@NotNull UUID uuid) {
         ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
         bb.putLong(uuid.getMostSignificantBits());
         bb.putLong(uuid.getLeastSignificantBits());
@@ -886,7 +923,8 @@ public class GeneralUtils {
         return bb.array();
     }
 
-    public static UUID getUUIDFromBytes(byte[] bytes) throws IllegalArgumentException {
+    @NotNull
+    public static UUID getUUIDFromBytes(@NotNull byte[] bytes) throws IllegalArgumentException {
         if (bytes.length < 16) {
             throw new IllegalArgumentException("UUID length must be at least 16 bytes (actual length = " + bytes.length + ")");
         }
@@ -894,7 +932,7 @@ public class GeneralUtils {
         return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
     }
 
-    public static UUID getMixedEndianUUIDFromBytes(byte[] bytes) {
+    public static UUID getMixedEndianUUIDFromBytes(@NotNull byte[] bytes) {
         ByteBuffer source = ByteBuffer.wrap(bytes);
         ByteBuffer target = ByteBuffer.allocate(16).
             order(ByteOrder.LITTLE_ENDIAN).
@@ -913,11 +951,11 @@ public class GeneralUtils {
      * @param name the resource name to validate
      * @throws DBException if the resource name is invalid
      */
-    public static void validateResourceName(String name) throws DBException {
+    public static void validateResourceName(@NotNull String name) throws DBException {
         if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return;
         }
-        validateResourceNameUnconditionally(name);
+        validateResourceNameUnconditionally(name.trim());
     }
 
     /**
@@ -926,9 +964,12 @@ public class GeneralUtils {
      * @param name resource name to validate
      * @throws DBException if resource name is invalid
      */
-    public static void validateResourceNameUnconditionally(String name) throws DBException {
+    public static void validateResourceNameUnconditionally(@NotNull String name) throws DBException {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
+        }
+        if (name.endsWith(".")) {
+            throw new DBException("Resource name '" + name + "' can't end with dot");
         }
 
         String forbiddenSymbols = name.replaceAll(RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX, "");
@@ -951,4 +992,53 @@ public class GeneralUtils {
     public static String normalizeLineEndings(@NotNull String text) {
         return text.replaceAll("(\r\n)|\r", "\n");
     }
+
+    /**
+     * Returns first non-null and non-empty message from this exception or it's cause
+     */
+    @Nullable
+    public static String getFirstMessage(@Nullable Throwable ex) {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            String message = makeStandardErrorMessage(e);
+            if (!CommonUtils.isEmpty(message)) {
+                return message;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    public static String getExceptionMessage(@NotNull Throwable ex) {
+        try {
+            ex.getClass().getDeclaredMethod("toString");
+            return ex.toString();
+        } catch (NoSuchMethodException e) {
+            return makeStandardErrorMessage(ex);
+        }
+    }
+
+    @NotNull
+    public static String makeStandardErrorMessage(@NotNull Throwable error) {
+        if (error instanceof UnknownHostException) {
+            return "Unknown host " + CommonUtils.notEmpty(error.getMessage());
+        } else if (error instanceof UnresolvedAddressException) {
+            return "Cannot resolve target address " + CommonUtils.notEmpty(error.getMessage());
+        } else if (error instanceof NullPointerException) {
+            return "Internal error (NPE)";
+        } else if (error instanceof ClassNotFoundException cnfe) {
+            return "Class not found: " + cnfe.getMessage();
+        } else if (error instanceof NoClassDefFoundError ncdf) {
+            return "Class definition not found: " + ncdf.getMessage();
+        } else if (error instanceof IllegalArgumentException iae) {
+            if (!CommonUtils.isEmptyTrimmed(iae.getMessage())) {
+                return "Invalid argument: " + iae.getMessage();
+            }
+        }
+        String localizedMessage = error.getLocalizedMessage();
+        if (CommonUtils.isEmpty(localizedMessage)) {
+            return error.getClass().getSimpleName();
+        }
+        return localizedMessage;
+    }
+
 }

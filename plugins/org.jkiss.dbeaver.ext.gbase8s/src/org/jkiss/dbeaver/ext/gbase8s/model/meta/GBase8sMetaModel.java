@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,42 +17,16 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model.meta;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.gbase8s.GBase8sConstants;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sCatalog;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sDataTypeCache;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sProcedure;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSchema;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSynonym;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTable;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableTrigger;
+import org.jkiss.dbeaver.ext.gbase8s.model.*;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
-import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -65,9 +39,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * @author Chao Tian
@@ -76,10 +54,19 @@ public class GBase8sMetaModel extends GenericMetaModel {
 
     private static final Log log = Log.getLog(GBase8sMetaModel.class);
 
-    private static final String[] VALID_TABLE_TYPES = { "TABLE", "VIEW", "SYSTEM TABLE" };
+    // TABLE_TYPE: String {@code =>} table type. ('TABLE', 'VIEW', 'SYSTEM TABLE')
+    private static final String[] VALID_TABLE_TYPES = { "T", "V" };
+    // TABLE_TYPE: String {@code =>} table type. ('SYNONYM')
+    private static final String[] VALID_SYNONYM_TYPES = { "S" };
 
     public GBase8sMetaModel() {
         super();
+    }
+
+    @Override
+    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(
+            @NotNull GenericStructContainer container) {
+        return new GBase8sDataTypeCache(container);
     }
 
     /**
@@ -90,18 +77,18 @@ public class GBase8sMetaModel extends GenericMetaModel {
         return new GBase8sCatalog(dataSource, catalogName);
     }
 
-    @Override
-    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(
-            @NotNull GenericStructContainer container) {
-        return new GBase8sDataTypeCache(container);
-    }
-
     /**
      * Procedure
      */
-    public GenericProcedure createProcedureImpl(GenericStructContainer container, String procedureName,
-            String specificName, String remarks, DBSProcedureType procedureType,
-            GenericFunctionResultType functionResultType) {
+    @NotNull
+    public GenericProcedure createProcedureImpl(
+        @NotNull GenericStructContainer container,
+        @NotNull String procedureName,
+        String specificName,
+        String remarks,
+        @NotNull DBSProcedureType procedureType,
+        GenericFunctionResultType functionResultType
+    ) {
         return new GBase8sProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
     }
 
@@ -138,15 +125,21 @@ public class GBase8sMetaModel extends GenericMetaModel {
     /**
      * Table/View
      */
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName,
-            @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(
+        @NotNull GenericStructContainer container, @Nullable String tableName,
+        @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
         }
         return new GBase8sTable(container, tableName, tableType, dbResult);
     }
 
+    /**
+     * Table Trigger
+     */
+    @NotNull
     @Override
     public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @NotNull GenericTableBase genericTableBase, String triggerName,
@@ -162,7 +155,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         return GBase8sUtils.getProcedureSource(monitor, sourceObject);
     }
 
@@ -185,8 +178,104 @@ public class GBase8sMetaModel extends GenericMetaModel {
         return GBase8sUtils.getViewDDL(monitor, sourceObject);
     }
 
+    //////////////////////////////////////////////////////
+    // Constraints
+
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @Nullable GenericTableBase forParent) throws SQLException, DBException {
+        String tableName = forParent == null ? owner.getDataSource().getAllObjectsPattern()
+                : JDBCUtils.escapeWildCards(session, forParent.getName());
+        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+        String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
+        boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
+        String ownerPattern = """
+                %s%s""".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String sql = """
+                SELECT
+                    t.tabname AS TABLE_NAME,
+                    c.constrname AS CONSTRAINT_NAME,
+                    c.constrtype AS CONSTRAINT_TYPE,
+                    c.idxname AS INDEX_NAME,
+                    c.constrname AS PK_NAME,
+                    col.colname AS COLUMN_NAME,
+                    trim(ck.checktext) AS CHECK_TEXT,
+                    CASE WHEN c.constrtype != 'C' THEN ROW_NUMBER() OVER (PARTITION BY c.tabid, c.constrname ORDER BY col.colno) ELSE NULL END AS KEY_SEQ
+                FROM (
+                    SELECT constrid, constrname, tabid, constrtype, idxname
+                    FROM %ssysconstraints 
+                    WHERE constrtype IN ('U', 'P', 'C')
+                ) c
+                LEFT JOIN %ssystables t ON c.tabid = t.tabid
+                LEFT JOIN (
+                    SELECT constrid, checktext
+                    FROM %ssyschecks 
+                    WHERE type IN ('T') AND seqno = 0
+                ) ck ON c.constrid = ck.constrid
+                LEFT JOIN %ssyscoldepend cd ON c.constrid = cd.constrid
+                LEFT JOIN %ssysindexes i ON c.idxname = i.idxname
+                LEFT JOIN %ssyscolumns col ON c.tabid = col.tabid
+                WHERE
+                    t.tabname = ?
+                    AND (
+                        col.colno IN (
+                            i.part1, i.part2, i.part3, i.part4, i.part5, i.part6, 
+                            i.part7, i.part8, i.part9, i.part10, i.part11, i.part12, 
+                            i.part13, i.part14, i.part15, i.part16
+                        ) 
+                        OR (c.constrtype = 'C' AND col.colno = cd.colno)
+                    )
+                ORDER BY col.tabid, c.constrid, KEY_SEQ;
+                """.formatted(ownerPattern, ownerPattern, ownerPattern, ownerPattern, ownerPattern, ownerPattern);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, tableName);
+        return dbStat;
+    }
+
+    @NotNull
+    public GBase8sUniqueKey createConstraintImpl(
+        @NotNull GenericTableBase table,
+        String constraintName,
+        DBSEntityConstraintType constraintType,
+        JDBCResultSet dbResult,
+        boolean persisted) {
+        if (dbResult == null || !constraintType.isUnique()) {
+            String checkText = dbResult != null ? JDBCUtils.safeGetString(dbResult, GBase8sConstants.CHECK_CLAUSE)
+                    : null;
+            return new GBase8sCheckConstraint(table, constraintName, null, constraintType, checkText, persisted);
+        }
+        return new GBase8sUniqueKey(table, constraintName, null, constraintType, persisted);
+    }
+
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
+        String constraintType = JDBCUtils.safeGetString(dbResult, GBase8sConstants.CONSTRAINT_TYPE);
+        if (constraintType == null) {
+            log.warn("Can't get column '" + GBase8sConstants.CONSTRAINT_TYPE + "': No such column name");
+            return DBSEntityConstraintType.PRIMARY_KEY;
+        }
+        switch (constraintType) {
+        case GBase8sConstants.CONSTRAINT_TYPE_UNIQUE_KEY:
+            return DBSEntityConstraintType.UNIQUE_KEY;
+        case GBase8sConstants.CONSTRAINT_TYPE_CHECK:
+            return DBSEntityConstraintType.CHECK;
+        default:
+            return DBSEntityConstraintType.PRIMARY_KEY;
+        }
+    }
+
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return true;
+    }
+
+    @Override
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
             throws DBException {
 
         Map<String, GenericProcedure> funcMap = new LinkedHashMap<>();
@@ -199,9 +288,11 @@ public class GBase8sMetaModel extends GenericMetaModel {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
             if (hasProcedureSupport()) {
                 // Read procedures/functions
-                String query = "SELECT procid, procname, isproc, specificname, type, procflags, paramtypes::LVARCHAR AS columntypenames,"
-                        + " mode FROM sysprocedures ";
-                dbState = session.prepareStatement(query);
+                String sql = """
+                        SELECT procid, procname, isproc, specificname, type, procflags, paramtypes::LVARCHAR AS columntypenames, mode
+                        FROM sysprocedures
+                        """;
+                dbState = session.prepareStatement(sql);
                 dbResult = dbState.executeQuery();
 
                 while (dbResult.next()) {
@@ -251,8 +342,9 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public List<GBase8sTableTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container,
-            @Nullable GenericTableBase table) throws DBException {
+    public List<GBase8sTableTrigger> loadTriggers(
+        @NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container,
+        @Nullable GenericTableBase table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             String query = "SELECT T1.trigname FROM systriggers AS T1, systables AS T2 WHERE T2.tabid = T1.tabid AND T2.tabname = ?";
@@ -279,7 +371,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container) throws SQLException {
-        return prepareTSObjectLoadStatement(session, container, null, "%", new String[] { "SYNONYM" });
+        return prepareTSObjectLoadStatement(session, container, null, "%", VALID_SYNONYM_TYPES);
     }
 
     @Override
@@ -289,16 +381,82 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
+    public JDBCStatement prepareTableColumnLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @Nullable GenericTableBase forTable) throws SQLException {
+        String tableName = forTable == null ? owner.getDataSource().getAllObjectsPattern()
+                : JDBCUtils.escapeWildCards(session, forTable.getName());
+        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+        String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
+        boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
+        String ownerPattern = "%s%s".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String sql = """
+                SELECT
+                    t.tabname::VARCHAR(128) AS TABLE_NAME,
+                    c.colname::VARCHAR(128) AS COLUMN_NAME,
+                    get_data_type(c.coltype, c.extended_id, 0)::SMALLINT AS DATA_TYPE,
+                    0::SMALLINT AS SOURCE_DATA_TYPE,
+                    schema_coltypename(c.coltype, c.extended_id)::VARCHAR(128) AS TYPE_NAME,
+                    schema_precision(c.coltype, c.extended_id, c.collength)::INTEGER AS COLUMN_SIZE,
+                    schema_numscale(c.coltype, c.collength)::INTEGER AS DECIMAL_DIGITS,
+                    schema_numprecradix(c.coltype)::INTEGER AS NUM_PREC_RADIX,
+                    CASE d.type
+                        WHEN 'L' THEN get_default_value(c.coltype, c.extended_id, c.collength, d.default::lvarchar(256))::VARCHAR(254)
+                        WHEN 'E' THEN read_defaultstr(c.tabid, c.colno, c.coltype, c.collength, c.extended_id)::VARCHAR(32731)
+                        WHEN 'C' THEN 'current' || replace(get_colname(c.coltype, c.collength, c.extended_id, 1), schema_coltypename(c.coltype, c.extended_id), '')::VARCHAR(254)
+                        WHEN 'S' THEN 'dbservername'::VARCHAR(254)
+                        WHEN 'U' THEN 'user'::VARCHAR(254)
+                        WHEN 'T' THEN 'today'::VARCHAR(254)
+                        WHEN 'N' THEN 'null'::VARCHAR(10)
+                        ELSE null::VARCHAR(254)
+                    END AS COLUMN_DEF,
+                    cc.comments AS REMARKS,
+                    schema_isnullable(c.coltype)::INTEGER AS NULLABLE,
+                    schema_nullable(c.coltype)::VARCHAR(3) AS ISNULLABLE,
+                    c.coltype::INTEGER AS SQL_DATA_TYPE,
+                    schema_datetype(c.coltype, c.collength)::INTEGER AS DB_DATA_TYPE,
+                    schema_charlen(c.coltype, c.extended_id, c.collength)::INTEGER AS CHAR_OCTET_LENGTH,
+                    c.colno::integer AS ORDINAL_POSITION,
+                    schema_isautoincr(c.coltype)::VARCHAR(3) AS IS_AUTOINCREMENT,
+                    null::VARCHAR(254) AS IS_GENERATEDCOLUMN,
+                    c.extended_id::INTEGER AS EXTENDED_ID,
+                    c.colattr::INTEGER AS COLATTR,
+                    c.coltype
+                FROM
+                    %ssystables t,
+                    OUTER %ssysdefaults d,
+                    %ssyscolumns c,
+                    OUTER %ssyscolcomms cc
+                WHERE
+                    t.tabid = c.tabid
+                    AND d.tabid = t.tabid
+                    AND c.colno = d.colno
+                    AND t.tabid = cc.tabid
+                    AND c.colno = cc.colno
+                    AND t.tabname = ?
+                """
+                .formatted(ownerPattern, ownerPattern, ownerPattern, ownerPattern);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, tableName);
+        return dbStat;
+    }
+
+    @NotNull
+    @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
-        String query = "SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER FROM systriggers AS T1, systables AS T2 "
-                + "WHERE T2.tabid = T1.tabid " + (table != null ? "AND T2.tabname = ?" : "");
-
+        String query = """
+                SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER
+                FROM systriggers AS T1, systables AS T2
+                WHERE T2.tabid = T1.tabid
+                %s
+                """.formatted(table != null ? "AND T2.tabname = ?" : "");
         JDBCPreparedStatement dbStat = session.prepareStatement(query);
         if (table != null) {
             dbStat.setString(1, table.getName());
         }
-
         return dbStat;
     }
 
@@ -323,12 +481,40 @@ public class GBase8sMetaModel extends GenericMetaModel {
         }
 
         String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
-        String schemaPattern = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+        String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
                 : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
-
-        return session.getMetaData().getTables(isOracleMode ? catalog : schemaPattern,
-                isOracleMode ? schemaPattern : catalog, tableNamePattern, types).getSourceStatement();
+        String ownerPattern = "%s%s".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String sql = """
+                SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS
+                    %s,
+                    CASE
+                        WHEN t.tabtype = 'T' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE'
+                        WHEN t.tabtype = 'V' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM VIEW'
+                        WHEN t.tabtype = 'T' THEN 'TABLE'
+                        WHEN t.tabtype = 'V' THEN 'VIEW'
+                        ELSE 'SYNONYM'
+                    END AS TABLE_TYPE,
+                    c.comments AS REMARKS
+                FROM %ssystables t
+                LEFT JOIN %ssyscomms c ON t.tabid = c.tabid
+                WHERE t.tabname LIKE ?
+                %s
+                """
+                .formatted(isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG", ownerPattern, ownerPattern,
+                        (types != null
+                                ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?"))
+                                        + ")"
+                                : ""));
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        int paramIndex = 1;
+        dbStat.setString(paramIndex++, tableNamePattern);
+        if (types != null) {
+            for (String type : types) {
+                dbStat.setString(paramIndex++, type);
+            }
+        }
+        return dbStat;
     }
 
     @Override
@@ -348,6 +534,16 @@ public class GBase8sMetaModel extends GenericMetaModel {
 
     @Override
     public boolean hasFunctionSupport() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableCommentEditable() {
+        return true;
+    }
+
+    @Override
+    public boolean isTableColumnCommentEditable() {
         return true;
     }
 

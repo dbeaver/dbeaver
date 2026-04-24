@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,16 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,13 +45,14 @@ public abstract class SQLQueryNodeModel {
     @Nullable
     private List<SQLQueryNodeModel> subnodes; // TODO validate that subnodes are being registered correctly for all nodes
     @Nullable
-    private List<SQLQueryLexicalScope> lexicalScopes  = null;
+    private List<SQLQueryLexicalScope> lexicalScopes = null;
+    @Nullable
+    private SQLQuerySymbolOrigin tailOrigin = null;
 
-    
-    protected SQLQueryNodeModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
+    protected SQLQueryNodeModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel... subnodes) {
         this.region = region;
         this.syntaxNode = syntaxNode;
-        
+
         if (subnodes == null || subnodes.length == 0) {
             this.subnodes = null;
         } else {
@@ -55,6 +61,20 @@ public abstract class SQLQueryNodeModel {
                 .collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
             this.subnodes.sort(Comparator.comparingInt(n -> n.region.a));
         }
+    }
+
+    @Nullable
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return null;
+    }
+
+    protected void setTailOrigin(SQLQuerySymbolOrigin tailOrigin) {
+        this.tailOrigin = tailOrigin;
+    }
+
+    @Nullable
+    public SQLQuerySymbolOrigin getTailOrigin() {
+        return this.tailOrigin;
     }
 
     /**
@@ -81,19 +101,19 @@ public abstract class SQLQueryNodeModel {
                 }
             }
         }
-        
+
         return null;
     }
 
     protected void registerSubnode(@NotNull SQLQueryNodeModel subnode) {
         this.subnodes = STMUtils.orderedInsert(this.subnodes, n -> n.region.a, subnode, Comparator.comparingInt(x -> x));
-    }  
+    }
 
     @NotNull
     public final Interval getInterval() {
         return this.region;
     }
-    
+
     @NotNull
     public final STMTreeNode getSyntaxNode() {
         return this.syntaxNode;
@@ -107,34 +127,66 @@ public abstract class SQLQueryNodeModel {
     }
 
     protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg);
-    
+
     protected SQLQueryNodeModel findChildNodeContaining(int position) { // TODO check it
         if (this.subnodes != null) {
             if (this.subnodes.size() == 1) {
+                // ...[node:...]...
+                //    │          └── tail scope of the one and only node
+                //    └── region.a of this node
                 SQLQueryNodeModel node = this.subnodes.get(0);
-                return node.region.a <= position && node.region.b >= position - 1 ? node : null;
+                return node.region.a <= position ? node : null;
             } else {
                 int index = STMUtils.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
-                if (index >= 0) {
+                if (index >= 0) { // Index belongs to the node in question.
+                    // ...[...]...[node:...]...[...]...
+                    //            └── exact region.a position match
                     SQLQueryNodeModel node = this.subnodes.get(index);
                     int i = index + 1;
                     while (i < this.subnodes.size()) {
+                        // Excluding overlapping regions by following forward through unwanted ones.
+                        // May happen when range.a position shared between a few nodes for some reason.
+                        // For example scenarios with 0-width regions [][..] due to parse errors for incomplete queries.
                         SQLQueryNodeModel next = this.subnodes.get(i++);
                         if (next.region.a > position - 1) {
                             break;
                         } else {
                             node = next;
-                            i++;   
+                            i++;
                         }
                     }
                     return node;
-                } else {
-                    for (int i = ~index - 1; i >= 0; i--) {
-                        SQLQueryNodeModel node = this.subnodes.get(i);
-                        if (node.region.a <= position && node.region.b >= position - 1) {
-                            return node;
-                        } else if (node.region.b < position) {
-                            break;
+                } else { // Insertion point index belongs to the next node after the node in question.
+                    if (~index == 0) {
+                        // When the insertion point is the first node:
+                        //  - either no nodes presented at all,
+                        //  - or all the children nodes' range.a>position,
+                        //  so no children node covering the position.
+                        return null;
+                    } else if (~index == this.subnodes.size()) {
+                        // When the insertion point is after the last existing node, the node in question is the last one.
+                        // ...[...]...[...]...[node:...]...
+                        //                           │   └── position belongs to the tail scope of the last node
+                        //                           └── or the actually covered region
+                        // So taking the last node.
+                        SQLQueryNodeModel node = this.subnodes.getLast();
+                        return node.region.a <= position ? node : null;
+                    } else {
+                        // When the insertion point belongs to the existing index, the node in question is the previous one,
+                        // because the existing would have been to the right of the inserted at the insertion point itself.
+                        // So taking existing at indexToInsertAt-1.
+                        // ...[...]...[node:...]...[]...[...]...
+                        //                   └── position belongs to the actually covered region
+                        // Ignoring tail scopes because we are in the middle of the known text fragment,
+                        // which should be correctly described by the known node intervals.
+                        for (int i = ~index - 1; i >= 0; i--) {
+                            SQLQueryNodeModel node = this.subnodes.get(i);
+                            if (node.region.a <= position && node.region.b >= position - 1) { // if it actually contains position, then ok
+                                return node;
+                            } else if (node.region.b < position) { // if not, then its region is actually ends earlier than the position
+                                break;
+                            }
+                            // otherwise try previous, because the current one may be of zero-length
                         }
                     }
                 }
@@ -144,239 +196,169 @@ public abstract class SQLQueryNodeModel {
     }
 
     /**
-     * Get initial data context
+     * The query model node having extra control over its children traverse handling
      */
-    @Nullable
-    public abstract SQLQueryDataContext getGivenDataContext();
+    public interface NodeSubtreeTraverseControl<N extends SQLQueryNodeModel, C>  {
+        /**
+         * Handle only the first child immediately, queue others until the first traverse is finished
+         */
+        default boolean delayRestChildren() {
+            return false;
+        }
+
+        /**
+         * Returns "logical" children of the current node, not necessarily actual children
+         */
+        @Nullable
+        default List<SQLQueryNodeModel> getChildren() {
+            return null;
+        }
+
+        /**
+         * Returns true when non-default query context should be used for the specified child subtree
+         */
+        default boolean overridesContextForChild(@NotNull N child) {
+            return false;
+        }
+
+        /**
+         * Returns query context for the specified child subtree
+         */
+        @Nullable
+        default C getContextForChild(@NotNull N child, @Nullable C defaultContext) {
+            return defaultContext;
+        }
+    }
+
+    private record NodeExtraContext<N extends SQLQueryNodeModel, C>(
+        @NotNull NodeSubtreeTraverseControl<N, C> provider,
+        @NotNull N key
+    ) {
+    }
+
+    private record NodeEntry<N extends SQLQueryNodeModel, C>(
+        @Nullable NodeExtraContext<N, C> context,
+        @NotNull N node
+    ){
+    }
+
+    protected static <N extends SQLQueryNodeModel, C> void traverseSubtreeSmart(
+        @NotNull N subroot,
+        @NotNull Class<N> childrenType,
+        @Nullable C context,
+        @NotNull BiConsumer<N, C> action,
+        @NotNull BooleanSupplier cancellationChecker
+    ) {
+        Set<SQLQueryNodeModel> queued = new HashSet<>();
+        queued.add(subroot);
+        ListNode<NodeEntry<N, C>> queue = ListNode.of(new NodeEntry<>(null, subroot));
+
+        while (queue != null && !cancellationChecker.getAsBoolean()) {
+            ListNode<NodeEntry<N, C>>  stack = ListNode.of(queue.data);
+            queue = queue.next;
+            while (stack != null) {
+                if (stack.data != null) {  // first time handling node
+                    NodeEntry<N, C> entry = stack.data;
+                    N node = entry.node;
+                    List<SQLQueryNodeModel> subnodes = ((SQLQueryNodeModel) node).subnodes;
+                    if (subnodes != null) { // children presented, push and handle them at first
+                        stack = ListNode.push(stack, null); // push null to separate parent-to-handle from its already processed children
+                        boolean delayChildren;
+                        List<SQLQueryNodeModel> children;
+                        NodeSubtreeTraverseControl<N, C> localContextProvider;
+                        if (node instanceof NodeSubtreeTraverseControl<?, ?> c) {
+                            //noinspection unchecked
+                            localContextProvider = (NodeSubtreeTraverseControl<N, C>) c;
+                            delayChildren = c.delayRestChildren();
+                            children = c.getChildren();
+                            if (children == null) {
+                                children = subnodes;
+                            }
+                        } else {
+                            localContextProvider = null;
+                            delayChildren = false;
+                            children = subnodes;
+                        }
+                        if (!delayChildren) {
+                            children = new ArrayList<>(children);
+                            Collections.reverse(children);
+                        }
+                        int index = 0;
+                        for (SQLQueryNodeModel childNode : children) {
+                            if (childrenType.isInstance(childNode)) {
+                                //noinspection unchecked
+                                N child = (N) childNode;
+                                NodeExtraContext<N, C> extraContext = localContextProvider != null && localContextProvider.overridesContextForChild(child)
+                                    ? new NodeExtraContext<N, C>(localContextProvider, child)
+                                    : entry.context;
+                                NodeEntry<N, C> childEntry = new NodeEntry<>(extraContext, child);
+                                if (delayChildren) {
+                                    if (index == 0) {
+                                        stack = ListNode.push(stack, childEntry);
+                                    } else {
+                                        if (queued.add(child)) {
+                                            queue = ListNode.push(queue, childEntry);
+                                        }
+                                    }
+                                } else {
+                                    stack = ListNode.push(stack, childEntry);
+                                }
+                            }
+                            index++;
+                        }
+                    } else { // no children, handle immediately
+                        applyActionForNode(stack.data, context, action);
+                        stack = stack.next;
+                    }
+                } else { // children already handled, handle the node
+                    stack = stack.next;
+                    applyActionForNode(stack.data, context, action);
+                    stack = stack.next;
+                }
+            }
+        }
+    }
+
+    private static <N extends SQLQueryNodeModel, C> void applyActionForNode(
+        @NotNull NodeEntry<N, C> entry,
+        @Nullable C context,
+        @NotNull BiConsumer<N, C> action
+    ) {
+        C currContext = entry.context == null ? context : entry.context.provider.getContextForChild(entry.context.key, context);
+        action.accept(entry.node, currContext);
+    }
+
 
     /**
-     * Get result data context
+     * Just traverse the tree to call action on each node
      */
-    @Nullable
-    public abstract SQLQueryDataContext getResultDataContext();
-
-    /**
-     * Debugging stuff
-     */
-    public String collectScopesHierarchyDebugView() {
-        interface ITextBlock {
-            Interval getInterval();
-
-            String prepareText(int widthToFill);
-        }
-
-        class ColumnInfo {
-            public final int position;
-            public int width = 0;
-
-            public ColumnInfo(int position) {
-                this.position = position;
-            }
-        }
-
-        class TextBlocksColumnsMap {
-            private final TreeMap<Integer, ColumnInfo> columns = new TreeMap<>();
-            
-            public TextBlocksColumnsMap() {
-                this.columns.put(0, new ColumnInfo(0));
-            }
-
-            public void register(int position) {
-                this.columns.put(position, new ColumnInfo(position));
-            }
-        }
-
-        class TextBlockInfo {
-            public final ITextBlock block;
-            public final int contentWidth;
-            public NavigableMap<Integer, ColumnInfo> columns = null;
-            
-            public TextBlockInfo(ITextBlock block, int contentWidth) {
-                this.block = block;
-                this.contentWidth = contentWidth;
-            }
-        }
-
-        class TextBlocksLine {
-            private final List<TextBlockInfo> blocks = new ArrayList<>();
-            
-            public void add(ITextBlock block, int width) {
-                this.blocks.add(new TextBlockInfo(block, width));
-            }
-            
-            public void collectColumns(TextBlocksColumnsMap columns) {
-                for (var b : this.blocks) {
-                    Interval r = b.block.getInterval();
-                    columns.register(r.a); // 7
-                    columns.register((r.b + r.a) / 2);
-                    columns.register(r.b + 1); // 8
-                    b.columns = columns.columns.subMap(r.a, true, r.b + 1, false); // [7,8)
-                    System.out.println(r + " : " +  b.columns.size());
-                }
-            }
-            
-            public void adjustComlumns() {
-                for (var b : this.blocks) {
-                    // TODO b.columns.values().stream().mapToInt(c -> c.width).sum() >= b.contentWidth
-                    var currWidth = b.columns.values().stream().mapToInt(c -> c.width).sum();
-                    var delta = b.contentWidth - currWidth;
-                    if (delta > 0) {
-                        System.out.println("adjusting " + currWidth + " to " + b.contentWidth);
-                        var eqstep = delta / b.columns.size();
-                        var rest = b.contentWidth;
-                        for (var c : b.columns.values()) {
-                            if (c.width < eqstep) {
-                                c.width = eqstep;
-                                System.out.println("  column " + c.position + " for " + c.width);
-                            }
-                            rest -= c.width;
-                        }
-                        if (rest > 0) {
-                            b.columns.lastEntry().getValue().width += rest;
-                            System.out.println("  +rest " + rest);
+    protected static <N extends SQLQueryNodeModel, C> void traverseSubtreeSimple(
+        @NotNull N subroot,
+        @NotNull Class<N> childrenType,
+        @NotNull Consumer<N> action,
+        @NotNull BooleanSupplier cancellationChecker
+    ) {
+        ListNode<N> stack = ListNode.of(subroot);
+        while (stack != null && !cancellationChecker.getAsBoolean()) {
+            if (stack.data != null) {  // first time handling node
+                SQLQueryNodeModel node = stack.data;
+                if (node.subnodes != null) { // children presented, push and handle them at first
+                    stack = ListNode.push(stack, null);
+                    for (SQLQueryNodeModel child : node.subnodes) {
+                        if (childrenType.isInstance(child)) {
+                            //noinspection unchecked
+                            stack = ListNode.push(stack, (N) child);
                         }
                     }
-//                    if (range.a == pos) {
-//                        column += 1;
-//                    } else if (range.a > pos){
-//                        column += 2;
-//                    } else {
-//                        throw new IllegalStateException();
-//                    }
+                } else { // no children, handle immediately
+                    action.accept(stack.data);
+                    stack = stack.next;
                 }
-            }
-
-            public void collectContents(StringBuilder sb, TextBlocksColumnsMap columns) {
-                sb.append("|");
-                var currColumn = columns.columns.firstEntry().getValue();
-                for (var b : this.blocks) {
-                    var headColumnPos = b.columns.firstEntry().getValue().position;
-                    if (currColumn.position < headColumnPos) {
-                        int indent = columns.columns.subMap(0, true, headColumnPos, false).values().stream().mapToInt(c -> c.width).sum();
-                        sb.append(" ".repeat(indent));
-                        sb.append("|");
-                    }
-                    int width = b.columns.values().stream().mapToInt(c -> c.width).sum();
-                    sb.append(b.block.prepareText(width));
-                    sb.append("|");    
-                    currColumn = b.columns.lastEntry().getValue();
-                }
+            } else { // children already handled, handle the node
+                stack = stack.next;
+                action.accept(stack.data);
+                stack = stack.next;
             }
         }
-
-        class TextBlocks {
-            private final List<TextBlocksLine> lines = new ArrayList<>();
-            
-            public String getContents() {
-                TextBlocksColumnsMap columnsMap = new TextBlocksColumnsMap();
-                for (var l : this.lines) {
-                    l.collectColumns(columnsMap);
-                }
-                for (var l : this.lines) {
-                    l.adjustComlumns();
-                }
-                StringBuilder sb = new StringBuilder();
-                for (var l : this.lines) {
-                    l.collectContents(sb, columnsMap);
-                    sb.append(System.lineSeparator());
-                }
-                return sb.toString();
-            }
-            
-            public TextBlocksLine appendLine() {
-                TextBlocksLine line = new TextBlocksLine();
-                this.lines.add(line);
-                return line;
-            }
-        }
-
-        class Range implements ITextBlock {
-            public final String label;
-            public final Interval interval;
-            public final List<List<Range>> subranges = new ArrayList<>();
-            
-            public Range(String label, Interval interval) {
-                this.label = label;
-                this.interval = interval;
-            }
-            
-            public Interval getInterval() {
-                return this.interval;
-            }
-            
-            public String prepareText(int widthToFill) {
-                String a = Integer.toString(this.interval.a);
-                String b = Integer.toString(this.interval.b);
-                int minWidth = a.length() + 1 + this.label.length() + 1 + b.length();
-                int space = Math.max(0,  widthToFill - minWidth); 
-                int space1 = space / 2;
-                int space2 = space - space1;
-                return a +
-                    " ".repeat(1 + space1) +
-                    this.label +
-                    " ".repeat(1 + space2) +
-                    b;
-            }
-            
-            public List<Range> createSubrangesLayer() {
-                List<Range> ranges = new ArrayList<>();
-                this.subranges.add(ranges);
-                return ranges;
-            }
-
-            public int collectText(TextBlocks text) {
-                return this.collectTextInternal(text, text.appendLine());
-            }
-
-            private int collectTextInternal(TextBlocks text, TextBlocksLine line) {
-                int width = this.prepareText(0).length();
-                for (List<Range> rr : this.subranges) {
-                    TextBlocksLine l = text.appendLine();
-                    int lineWidth = rr.size() - 1;
-                    for (Range r : rr) {
-                        lineWidth += r.collectTextInternal(text, l);
-                    }
-                    width = Math.max(lineWidth, width);
-                }
-                line.add(this, width);
-                return width;
-            }
-        }
-        
-        var local = new Object() {
-            public Range collectModel(SQLQueryNodeModel node) {
-                if (node.getGivenDataContext() != null) {
-                    var range = new Range(
-                        node.getClass().getSimpleName() + ": " + node.getGivenDataContext().getClass().getSimpleName(),
-                        node.getInterval()
-                    );
-                    if (node.lexicalScopes != null && node.lexicalScopes.size() > 0) {
-                        List<Range> layer = range.createSubrangesLayer();
-                        for (var s : node.lexicalScopes) {
-                            if (s.getContext() != null) {
-                                layer.add(new Range("lexical: " + s.getContext().getClass().getSimpleName(), s.getInterval()));
-                            }
-                        }
-                    }
-                    if (node.subnodes != null && node.subnodes.size() > 0) {
-                        List<Range> layer = range.createSubrangesLayer();
-                        for (var n : node.subnodes) {
-                            layer.add(collectModel(n));
-                        }
-                    }
-                    return range;
-                }
-                return null;
-            }
-        };
-        
-        Range root = local.collectModel(this);
-        
-        TextBlocks text = new TextBlocks();
-        if (root != null) {
-            root.collectText(text);
-        }
-        
-        return text.getContents();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * DB application.
@@ -65,11 +65,15 @@ public interface DBPApplication {
 
     boolean isDetachedProcess();
 
+    @NotNull
+    Map<String, String> getAdditionalApplicationProperties();
+
     /**
      * Application information details.
      * Like license info or some custom produce info
      */
-    String getInfoDetails(DBRProgressMonitor monitor);
+    @Nullable
+    String getInfoDetails();
 
     /**
      * Default project name, e.g. 'General'.
@@ -146,7 +150,6 @@ public interface DBPApplication {
         return false;
     }
 
-
     /**
      * Returns last user activity time
      * @return -1 by default
@@ -155,4 +158,8 @@ public interface DBPApplication {
         return -1;
     }
 
+    @Nullable
+    default String defaultDistributedDriversFolderName() {
+        return null;
+    }
 }

@@ -28,7 +28,7 @@ public class QueryManagerClearHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         QueryManagerView view = UIUtils.findView(HandlerUtil.getActiveWorkbenchWindow(event), QueryManagerView.class);
         if (view != null) {
-            view.getQueryLogViewer().clearLog();
+            view.clearLog();
         }
         return null;
     }

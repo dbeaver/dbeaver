@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,43 @@ package org.jkiss.dbeaver.model.ai;
  * GPT preference constants
  */
 public class AIConstants {
-    public static final String CORE_FORMATTER = "core";
 
-    public static final String OPENAI_ENGINE = "openai";
+    // Misc
 
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
-    public static final String AI_LOG_QUERY = "gpt.log.query";
+    public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
+    public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
 
-    public static final int MAX_RESPONSE_TOKENS = 2000;
+    public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
+    public static final String AI_RESPONSE_LANGUAGE = "ai.language";
+
+    // Metadata send default properties
+
+    public static final String AI_SEND_FOREIGN_KEYS = "ai.useForeignKeys";
+    public static final String AI_SEND_CONSTRAINTS = "ai.useConstraints";
+    public static final String AI_SEND_INDEXES = "ai.useIndexes";
+    public static final String AI_SEND_TYPE_INFO = "ai.completion.sendType";
+    public static final String AI_SEND_DESCRIPTION = "ai.completion.description";
+
+    // Confirmations
+
+    public static final String AI_CONFIRM_SQL = "ai.confirmation.sql";
+    public static final String AI_CONFIRM_DML = "ai.confirmation.dml";
+    public static final String AI_CONFIRM_DDL = "ai.confirmation.ddl";
+    public static final String AI_CONFIRM_OTHER = "ai.confirmation.other";
+    public static final String AI_JOIN_RULE = "ai.joinRule";
+    public static final int DEFAULT_CONTEXT_WINDOW_SIZE = 16384;
+
+    // Engine settings
+
+    public static final String AI_MODEL_PROPERTY = "model";
+    public static final String AI_CONTEXT_SIZE_PROPERTY = "contextWindowSize";
+    public static final String AI_TEMPERATURE_PROPERTY = "temperature";
+
+    public static final String AI_MODEL_PLUGIN_ID = "org.jkiss.dbeaver.model.ai";
+
+    // Toolbox
+    public static final String INTERNAL_TOOLBOX_ID = "db";
+
+
 }
 

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -234,8 +233,9 @@ public class DB2Table extends DB2TableBase
     {
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         boolean includeViews = CommonUtils.getOption(options, OPTION_SCRIPT_INCLUDE_VIEWS);
         return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this, includeViews);
     }
@@ -251,8 +251,9 @@ public class DB2Table extends DB2TableBase
         return tableTriggerCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Association
-    public Collection<DB2TablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TablePartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         // TODO DF: beurk: Consequences of "Integrated cache" that can not be created in class def= NPE with managers
         if (partitionCache == null) {

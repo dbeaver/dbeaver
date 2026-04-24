@@ -54,10 +54,16 @@ public class SQLServerTableTypeManager extends SQLServerBaseTableManager<SQLServ
     }
 
     @Override
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, SQLServerTableType table, String tableName, Map<String, Object> options) throws DBException {
+    protected String beginCreateTableStatement(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerTableType table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) throws DBException {
+
         if (!options.isEmpty() && options.containsKey(DBPScriptObject.OPTION_USE_SPECIAL_NAME)) {
             return "CREATE TYPE " + options.get(DBPScriptObject.OPTION_USE_SPECIAL_NAME) + " AS TABLE (\n";
         }
+
         return "CREATE TYPE " + tableName + " AS TABLE\n (";
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentXML;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.utils.BeanUtils;
 
 import java.io.IOException;
@@ -83,7 +83,7 @@ public class OracleContentXML extends JDBCContentXML {
     {
         try {
             return BeanUtils.invokeStaticMethod(
-                DBUtils.getDriverClass(session.getExecutionContext().getDataSource(), OracleConstants.XMLTYPE_CLASS_NAME),
+                DriverUtils.getDriverClass(session.getExecutionContext().getDataSource(), OracleConstants.XMLTYPE_CLASS_NAME),
                 "createXML",
                 new Class[] {java.sql.Connection.class, java.io.InputStream.class},
                 new Object[] {session.getOriginal(), stream});

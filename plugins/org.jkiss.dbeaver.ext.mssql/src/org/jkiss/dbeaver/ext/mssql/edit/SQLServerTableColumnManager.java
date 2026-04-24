@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    public boolean canEditObject(SQLServerTableColumn object) {
+    public boolean canEditObject(@NotNull SQLServerTableColumn object) {
         return !isTableType(object) && super.canEditObject(object);
     }
 
@@ -142,7 +142,9 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
         final SQLServerTableColumn column = new SQLServerTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));
-        column.setDataType((SQLServerDataType) columnType);
+        if (columnType instanceof SQLServerDataType dt) {
+            column.setDataType(dt);
+        }
         column.setTypeName(columnType == null ? "varchar" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.VARCHAR : columnType.getTypeID());

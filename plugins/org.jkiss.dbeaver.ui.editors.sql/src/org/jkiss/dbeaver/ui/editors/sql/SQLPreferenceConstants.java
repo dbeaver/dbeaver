@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLPreferenceConstants {
 
@@ -47,18 +48,11 @@ public class SQLPreferenceConstants {
             return NOTHING;
         }
         public static EmptyScriptCloseBehavior getByName(String name) {
-            switch (name) {
-                case "true":
-                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW;
-                case "false":
-                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING;
-                default:
-                    try {
-                        return SQLPreferenceConstants.EmptyScriptCloseBehavior.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return NOTHING;
-                    }
-            }
+            return switch (name) {
+                case "true" -> EmptyScriptCloseBehavior.DELETE_NEW;
+                case "false" -> EmptyScriptCloseBehavior.NOTHING;
+                default -> CommonUtils.valueOf(EmptyScriptCloseBehavior.class, name, NOTHING);
+            };
         }
 
     }
@@ -84,15 +78,7 @@ public class SQLPreferenceConstants {
         }
 
         public static SQLAutocompletionMode valueByName(String name) {
-            if (name == null) {
-                return DEFAULT;
-            }  else {
-                try {
-                    return SQLAutocompletionMode.valueOf(name);
-                } catch (IllegalArgumentException e) {
-                    return SQLAutocompletionMode.DEFAULT;
-                }
-            }
+            return CommonUtils.valueOf(SQLAutocompletionMode.class, name, DEFAULT);
         }
 
         @NotNull
@@ -163,6 +149,7 @@ public class SQLPreferenceConstants {
     public static final String AUTOCOMPLETION_MODE                     = SQLModelPreferences.AUTOCOMPLETION_MODE;
     public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
+    public static final String VALIDATE_FUNCTIONS                      = SQLModelPreferences.VALIDATE_FUNCTIONS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
@@ -176,6 +163,7 @@ public class SQLPreferenceConstants {
     public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures";
     public static final String SHOW_SERVER_HELP_TOPICS                 = "SQLEditor.ContentAssistant.show.helpTopics";
     public static final String SHOW_VALUES                             = "SQLEditor.ContentAssistant.show.values";
+    public static final String QUALIFIED_COLUMN_NAMES                  = "SQLEditor.ContentAssistant.qualified.column.names";
 
     public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
     public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
@@ -235,7 +223,8 @@ public class SQLPreferenceConstants {
 
     public static final String SCRIPT_DELETE_EMPTY                      = "script.delete.empty"; //$NON-NLS-1$
     public static final String SCRIPT_AUTO_FOLDERS                      = "script.auto.folders"; //$NON-NLS-1$
-    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS         = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS = "script.auto.connection.attach"; //$NON-NLS-1$
     public static final String SCRIPT_TITLE_PATTERN                     = "script.title.pattern"; //$NON-NLS-1$
     public static final String SCRIPT_FILE_NAME_PATTERN                 = "script.file.name.pattern";
 
@@ -260,9 +249,6 @@ public class SQLPreferenceConstants {
     public static final String EDITOR_CONNECT_ON_ACTIVATE               = "database.editor.connect.on.activate"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_EXECUTE                = "database.editor.connect.on.execute"; //$NON-NLS-1$
 
-    public static final String CONFIRM_DANGER_SQL                       = "dangerous_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_DROP_SQL                         = "drop_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_MASS_PARALLEL_SQL                = "mass_parallel_sql"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE              = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_RESULT_TABS_CLOSE                = "close_result_tabs"; //$NON-NLS-1$
     public static final String CONFIRM_SAVE_SQL_CONSOLE                 = "save_sql_console"; //$NON-NLS-1$
@@ -297,18 +283,11 @@ public class SQLPreferenceConstants {
             return StatisticsTabOnExecutionBehavior.NEVER;
         }
         public static StatisticsTabOnExecutionBehavior getByName(String name) {
-            switch (name) {
-                case "true":
-                    return StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
-                case "false":
-                    return StatisticsTabOnExecutionBehavior.NEVER;
-                default:
-                    try {
-                        return StatisticsTabOnExecutionBehavior.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return StatisticsTabOnExecutionBehavior.NEVER;
-                    }
-            }
+            return switch (name) {
+                case "true" -> StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
+                case "false" -> StatisticsTabOnExecutionBehavior.NEVER;
+                default -> CommonUtils.valueOf(StatisticsTabOnExecutionBehavior.class, name, NEVER);
+            };
         }
 
     }

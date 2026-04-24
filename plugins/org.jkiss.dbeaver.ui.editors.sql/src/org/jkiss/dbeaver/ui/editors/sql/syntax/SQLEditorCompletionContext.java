@@ -127,6 +127,11 @@ public class SQLEditorCompletionContext implements SQLCompletionContext {
     }
 
     @Override
+    public boolean isForceQualifiedColumnNames() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES);
+    }
+
+    @Override
     public SQLCompletionProposalBase createProposal(
         @NotNull SQLCompletionRequest request,
         @NotNull String displayString,

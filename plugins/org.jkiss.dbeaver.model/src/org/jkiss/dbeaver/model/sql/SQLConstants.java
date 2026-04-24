@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ public class SQLConstants {
     public static final String DOT = ".";
 
     public static final String KEYWORD_SELECT = "SELECT";
+    public static final String KEYWORD_SEL = "SEL";
     public static final String KEYWORD_INSERT = "INSERT";
     public static final String KEYWORD_UPDATE = "UPDATE";
     public static final String KEYWORD_DELETE = "DELETE";
@@ -86,6 +87,7 @@ public class SQLConstants {
     public static final String KEYWORD_USING = "USING";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
+    public static final String DATA_TYPE_NVARCHAR = "nvarchar";
     public static final String DATA_TYPE_BIGINT = "BIGINT";
     public static final String DATA_TYPE_BINARY = "BINARY";
     public static final String DATA_TYPE_BOOLEAN = "BOOLEAN";
@@ -163,8 +165,6 @@ public class SQLConstants {
         "CASCADED",
         KEYWORD_CASE,
         "CAST",
-        "CEIL",
-        "CEILING",
         "CHARACTER",
         "CHECK",
         "CLOSE",
@@ -324,6 +324,7 @@ public class SQLConstants {
         "SEARCH",
         "SECOND",
         KEYWORD_SELECT,
+        KEYWORD_SEL,
         "SENSITIVE",
         "SESSION_USER",
         KEYWORD_SET,
@@ -684,26 +685,6 @@ public class SQLConstants {
     };
 
     public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
-    public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
-    public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
-    public static final String CONFIG_COLOR_FUNCTION = "org.jkiss.dbeaver.sql.editor.color.function.foreground";
-    public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
-    public static final String CONFIG_COLOR_TABLE = "org.jkiss.dbeaver.sql.editor.color.table.foreground";
-    public static final String CONFIG_COLOR_TABLE_ALIAS = "org.jkiss.dbeaver.sql.editor.color.table.alias.foreground";
-    public static final String CONFIG_COLOR_COLUMN = "org.jkiss.dbeaver.sql.editor.color.column.foreground";
-    public static final String CONFIG_COLOR_COLUMN_DERIVED = "org.jkiss.dbeaver.sql.editor.color.column.derived.foreground";
-    public static final String CONFIG_COLOR_SCHEMA = "org.jkiss.dbeaver.sql.editor.color.schema.foreground";
-    public static final String CONFIG_COLOR_COMPOSITE_FIELD = "org.jkiss.dbeaver.sql.editor.color.composite.field.foreground";
-    public static final String CONFIG_COLOR_SQL_VARIABLE = "org.jkiss.dbeaver.sql.editor.color.sqlVariable.foreground";
-    public static final String CONFIG_COLOR_SEMANTIC_ERROR = "org.jkiss.dbeaver.sql.editor.color.semanticError.foreground";
-    public static final String CONFIG_COLOR_NUMBER = "org.jkiss.dbeaver.sql.editor.color.number.foreground";
-    public static final String CONFIG_COLOR_COMMENT = "org.jkiss.dbeaver.sql.editor.color.comment.foreground";
-    public static final String CONFIG_COLOR_DELIMITER = "org.jkiss.dbeaver.sql.editor.color.delimiter.foreground";
-    public static final String CONFIG_COLOR_PARAMETER = "org.jkiss.dbeaver.sql.editor.color.parameter.foreground";
-    public static final String CONFIG_COLOR_COMMAND = "org.jkiss.dbeaver.sql.editor.color.command.foreground";
-    public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
-    public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
-    public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
 
     public static final char DEFAULT_PARAMETER_MARK = '?';
     public static final char DEFAULT_PARAMETER_PREFIX = ':';

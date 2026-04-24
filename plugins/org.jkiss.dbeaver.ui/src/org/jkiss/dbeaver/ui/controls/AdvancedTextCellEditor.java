@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,7 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     private Text textEditor;
     private FocusAdapter textFocusListener;
 
-    public AdvancedTextCellEditor(Composite parent)
-    {
+    public AdvancedTextCellEditor(Composite parent) {
         super(parent);
     }
 
@@ -56,8 +55,7 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     }
 
     @Override
-    protected Object doGetValue()
-    {
+    protected Object doGetValue() {
         final Object value;
         if (textEditor == null || textEditor.isDisposed()) {
             value = super.doGetValue();
@@ -72,8 +70,7 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     }
 
     @Override
-    protected void doSetValue(Object value)
-    {
+    protected void doSetValue(Object value) {
         if (value == null) {
             wasNull = true;
         }
@@ -121,7 +118,7 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
             return;
         }
         if (value != null) {
-            textEditor.setText((String)value);
+            textEditor.setText((String) value);
             textEditor.selectAll();
         }
     }
@@ -129,7 +126,11 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     @Override
     protected Object openDialogBox(Control cellEditorWindow) {
         textEditor.removeFocusListener(textFocusListener);
-        String value = EditTextDialog.editText(cellEditorWindow.getShell(), UIMessages.edit_text_dialog_title_edit_value, (String) getValue());
+        String value = EditTextDialog.editText(
+            cellEditorWindow.getShell(),
+            UIMessages.edit_text_dialog_title_edit_value,
+            (String) getValue()
+        );
         textEditor.addFocusListener(textFocusListener);
 
         return value;
@@ -139,16 +140,8 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
         return 0;
     }
 
-    @Override
-    public void activate() {
-        super.activate();
+    public Text getTextEditor() {
+        return textEditor;
     }
 
-    @Override
-    public void deactivate() {
-//        if (!UIUtils.hasFocus(textEditor)) {
-//            focusLost();
-//        }
-        super.deactivate();
-    }
 }

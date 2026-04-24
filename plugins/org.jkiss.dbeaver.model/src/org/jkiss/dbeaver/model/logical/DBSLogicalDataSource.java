@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 
 import java.util.List;
 
@@ -38,10 +40,34 @@ public class DBSLogicalDataSource implements DBPDataSourceContainerProvider, DBP
     private String currentCatalog;
     private String currentSchema;
 
-    public DBSLogicalDataSource(DBPDataSourceContainer dataSourceContainer, String name, String description) {
+    public DBSLogicalDataSource(@NotNull DBPDataSourceContainer dataSourceContainer, String name, String description) {
         this.dataSourceContainer = dataSourceContainer;
         this.name = name;
         this.description = description;
+    }
+
+    public DBSLogicalDataSource(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        this(dataSourceContainer, "DS Wrapper", null);
+    }
+
+    @NotNull
+    public static DBSLogicalDataSource createLogicalDataSource(
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable DBCExecutionContext executionContext
+    ) {
+        DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "AI logical wrapper", null);
+        if (executionContext != null) {
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            if (contextDefaults != null) {
+                if (contextDefaults.getDefaultCatalog() != null) {
+                    lDataSource.setCurrentCatalog(contextDefaults.getDefaultCatalog().getName());
+                }
+                if (contextDefaults.getDefaultSchema() != null) {
+                    lDataSource.setCurrentSchema(contextDefaults.getDefaultSchema().getName());
+                }
+            }
+        }
+        return lDataSource;
     }
 
     @NotNull

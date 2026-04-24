@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject
-{
+public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject {
     private List<CubridProcedureParameter> proColumns;
     private DBSProcedureType procedureType;
     private String returnType;
@@ -52,22 +51,17 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
             @NotNull String procedureName,
             @Nullable String description,
             @NotNull DBSProcedureType procedureType,
+            @Nullable String source,
             @NotNull String returnType) {
-        super(container, procedureName, description, procedureType, null, true);
+        super(container, procedureName, description, procedureType, source, true);
         this.procedureType = procedureType;
         this.returnType = returnType;
+        this.source = source;
     }
 
     public CubridProcedure(@NotNull GenericStructContainer container, DBSProcedureType procedureType) {
         super(container, null, null, procedureType, null, false);
         this.procedureType = procedureType;
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return super.getName();
     }
 
     @NotNull
@@ -134,16 +128,18 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
         return proColumns;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null) {
             if (!persisted) {
-                this.source = "CREATE OR REPLACE " + getProcedureType().name() + " " + getName() + "()";
+                this.source = "CREATE OR REPLACE " + getProcedureType().name() + " ";
+                this.source += getFullyQualifiedName(DBPEvaluationContext.DDL) + "()";
                 this.source += (getProcedureType() == DBSProcedureType.FUNCTION) ? " RETURN int" : "";
                 this.source += "\nAS LANGUAGE JAVA NAME";
             } else {
-                this.source = "-- Procedure definition not available";
+                this.source = "-- Java procedure definition not available";
             }
         }
         return source;
@@ -167,13 +163,14 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        return getName();
+        return DBUtils.getFullQualifiedName(getDataSource(), this);
     }
 
     @Override
     public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure parameter")) {
             String stmt = "select * from db_stored_procedure_args where sp_name = ?";
+            stmt = ((CubridDataSource) getDataSource()).wrapShardQuery(stmt);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -182,7 +179,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
                         String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
                         String mode = JDBCUtils.safeGetString(dbResult, "mode");
                         String comment = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-                        addColumn(new CubridProcedureParameter(this, getName(), argName, dataType, mode, comment));
+                        addColumn(new CubridProcedureParameter(this, argName, dataType, mode, comment));
                     }
                 }
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
@@ -50,8 +49,8 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreToolWizardPag
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group inputGroup = UIUtils.createControlGroup(
-            composite, PostgreMessages.tool_script_label_input, 3, GridData.FILL_HORIZONTAL, 0);
+        Composite inputGroup = UIUtils.createTitledComposite(
+            composite, PostgreMessages.tool_script_label_input, 3, GridData.FILL_HORIZONTAL);
         TextWithOpenFile inputText = new TextWithOpenFileRemote(
             inputGroup,
             PostgreMessages.tool_script_label_input_file,

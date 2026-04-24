@@ -120,6 +120,13 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         contents = null;
     }
 
+    @Override
+    public String toString() {
+        return contents.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(", "));
+    }
+
     private class EntryType extends AbstractStructDataType<ClickhouseDataSource> implements DBSEntity {
         public EntryType(@NotNull ClickhouseDataSource dataSource) {
             super(dataSource);
@@ -247,6 +254,11 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         @Override
         public void release() {
             // do nothing
+        }
+
+        @Override
+        public String toString() {
+            return String.format("{%s : %s}", key, value);
         }
     }
 }

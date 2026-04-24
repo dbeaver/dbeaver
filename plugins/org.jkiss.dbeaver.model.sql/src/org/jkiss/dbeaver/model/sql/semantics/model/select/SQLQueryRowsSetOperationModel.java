@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -25,14 +26,16 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
  * Describes set operations (for example, join or corresponding subquery)
  */
 public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceModel {
+    @NotNull
     protected final SQLQueryRowsSourceModel left;
+    @Nullable
     protected final SQLQueryRowsSourceModel right;
 
     public SQLQueryRowsSetOperationModel(
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
-        @NotNull SQLQueryRowsSourceModel right
+        @Nullable SQLQueryRowsSourceModel right
     ) {
         super(range, syntaxNode, left, right);
         this.left = left;
@@ -44,7 +47,7 @@ public abstract class SQLQueryRowsSetOperationModel extends SQLQueryRowsSourceMo
         return left;
     }
 
-    @NotNull
+    @Nullable
     public SQLQueryRowsSourceModel getRight() {
         return right;
     }

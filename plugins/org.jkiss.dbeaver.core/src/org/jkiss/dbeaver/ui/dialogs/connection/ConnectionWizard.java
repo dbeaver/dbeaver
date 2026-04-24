@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
@@ -72,7 +73,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
-        //setDefaultPageImageDescriptor(DBeaverActivator.getImageDescriptor("icons/driver-logo.png"));
     }
 
     @Override
@@ -108,6 +108,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     abstract DBPProject getSelectedProject();
 
+    @NotNull
     abstract DBNBrowseSettings getSelectedNavigatorSettings();
 
     public abstract ConnectionPageSettings getPageSettings();
@@ -234,6 +235,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     }
                 });
 
+                var oldUserPassword = activeDataSource.getActualConnectionConfiguration().getUserPassword();
+                var newUserPassword = targetDataSource.getActualConnectionConfiguration().getUserPassword();
+                if (newUserPassword != null && !newUserPassword.equals(oldUserPassword)) {
+                    DBUtils.fireObjectUpdate(activeDataSource, targetDataSource.getActualConnectionConfiguration());
+                }
+
                 new ConnectionTestDialog(
                     getShell(),
                     targetDataSource,
@@ -247,11 +254,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
-                String msg = GeneralUtils.getExceptionMessage(ex);
+                Throwable targetException = ex.getTargetException();
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    msg,
-                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+                    GeneralUtils.getExceptionMessage(targetException),
+                    GeneralUtils.makeExceptionStatus(targetException)
+                );
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,

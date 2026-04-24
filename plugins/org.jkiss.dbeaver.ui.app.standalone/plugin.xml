@@ -1,27 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?eclipse version="3.2"?>
 
-
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.commandLine" name="Command line extension" schema="schema/org.jkiss.dbeaver.commandLine.exsd"/>
 
     <extension point="org.eclipse.core.runtime.applications" id="standalone" name="%extension.standalone.name">
         <application visible="true">
@@ -38,7 +19,7 @@
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.ui.app.standalone.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="© 2024 DBeaver Corp"/>
+            <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
@@ -47,42 +28,38 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="112,228"/>
+            <property name="versionInfoCoord" value="154,53"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="60,273,240,21"/>
-            <property name="startupProgressRect" value="0,295,601,6"/>
-            <property name="startupForegroundColor" value="FFFFFF"/>
+            <property name="startupMessageRect" value="60,270,270,21"/>
+            <property name="startupProgressRect" value="3,291,594,6"/>
+            <property name="startupForegroundColor" value="231,231,231"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/$nl$/tips.xml"/>
         </product>
     </extension>
 
     <extension point="org.eclipse.core.runtime.products" id="appstore">
         <product application="org.jkiss.dbeaver.ui.app.standalone.appstore" description="%productSubTitle" name="DBeaver CE">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="© 2024 DBeaver Corp"/>
+            <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
-            <property name="versionInfoCoord" value="112,228"/>
+            <property name="versionInfoCoord" value="154,53"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="versionInfoColor" value="255,255,255"/>
-            <property name="startupMessageRect" value="60,273,240,21"/>
-            <property name="startupProgressRect" value="0,295,601,6"/>
-            <property name="startupForegroundColor" value="FFFFFF"/>
+            <property name="startupMessageRect" value="60,270,270,21"/>
+            <property name="startupProgressRect" value="3,291,594,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/$nl$/tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
         </product>
     </extension>
 
@@ -114,50 +91,63 @@
                 name="%command.org.jkiss.dbeaver.ui.try.pro.name"
                 description="%command.org.jkiss.dbeaver.ui.try.pro.description"
                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command
+                id="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup"
+                name="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name"
+                description="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.description"
+                categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command
+                id="org.jkiss.dbeaver.ui.window.minimize"
+                name="Minimize Window"
+                description="Minimize the current window"
+                categoryId="org.eclipse.ui.category.window"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.eclipse.ui.file.save" icon="icons/eclipse/save.png" disabledIcon="icons/eclipse/save_d.png"/>
-        <image commandId="org.eclipse.ui.file.saveAs" icon="icons/eclipse/save_as.png" disabledIcon="icons/eclipse/save_as_d.png"/>
-        <image commandId="org.eclipse.ui.file.saveAll" icon="icons/eclipse/saveall.png" disabledIcon="icons/eclipse/saveall_d.png"/>
-        <image commandId="org.eclipse.ui.file.refresh" icon="icons/eclipse/refresh.png" disabledIcon="icons/eclipse/refresh.png"/>
+        <image commandId="org.eclipse.ui.edit.text.openLocalFile" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/open.png"/>
+        <image commandId="org.eclipse.ui.file.save" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save.svg"/>
+        <image commandId="org.eclipse.ui.file.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.svg"/>
+        <image commandId="org.eclipse.ui.file.saveAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/saveall.svg"/>
+        <image commandId="org.eclipse.ui.file.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
         <image commandId="org.eclipse.ui.file.revert" icon="icons/eclipse/revert.png" disabledIcon="icons/eclipse/revert_d.png"/>
-        <image commandId="org.eclipse.ui.file.import" icon="icons/eclipse/import.png" disabledIcon="icons/eclipse/import_d.png"/>
-        <image commandId="org.eclipse.ui.file.export" icon="icons/eclipse/export.png" disabledIcon="icons/eclipse/export_d.png"/>
-        <image commandId="org.eclipse.ui.edit.delete" icon="icons/eclipse/delete.png" disabledIcon="icons/eclipse/delete_d.png"/>
-        <image commandId="org.eclipse.ui.edit.rename" icon="icons/eclipse/rename.png" disabledIcon="icons/eclipse/rename_d.png"/>
-        <image commandId="org.eclipse.ui.edit.copy" icon="icons/eclipse/copy.png" disabledIcon="icons/eclipse/copy_d.png"/>
-        <image commandId="org.eclipse.ui.edit.cut" icon="icons/eclipse/cut.png" disabledIcon="icons/eclipse/cut_d.png"/>
-        <image commandId="org.eclipse.ui.edit.paste" icon="icons/eclipse/paste.png" disabledIcon="icons/eclipse/paste_d.png"/>
-        <image commandId="org.eclipse.ui.edit.undo" icon="icons/eclipse/undo.png" disabledIcon="icons/eclipse/undo_d.png"/>
-        <image commandId="org.eclipse.ui.edit.redo" icon="icons/eclipse/redo.png" disabledIcon="icons/eclipse/redo_d.png"/>
+        <image commandId="org.eclipse.ui.file.import" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.svg"/>
+        <image commandId="org.eclipse.ui.file.export" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.svg"/>
+        <image commandId="org.eclipse.ui.file.properties" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"/>
+        <image commandId="org.eclipse.ui.edit.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.svg"/>
+        <image commandId="org.eclipse.ui.edit.rename" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/rename.svg"/>
+        <image commandId="org.eclipse.ui.edit.copy" icon="icons/eclipse/copy.svg"/>
+        <image commandId="org.eclipse.ui.edit.cut" icon="icons/eclipse/cut.svg"/>
+        <image commandId="org.eclipse.ui.edit.paste" icon="icons/eclipse/paste.svg"/>
+        <image commandId="org.eclipse.ui.edit.undo" icon="icons/eclipse/undo.svg"/>
+        <image commandId="org.eclipse.ui.edit.redo" icon="icons/eclipse/redo.svg"/>
 
         <image commandId="org.eclipse.ui.newWizard" icon="icons/eclipse/new_object.png" disabledIcon="icons/eclipse/new_object_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="icons/eclipse/last_edit_location.png" disabledIcon="icons/eclipse/last_edit_location_d.png"/>
-        <image commandId="org.eclipse.search.ui.openSearchDialog" icon="icons/eclipse/search.png" disabledIcon="icons/eclipse/search_d.png"/>
+        <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/back.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.gotoNextEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/forward.svg"/>
+        <image commandId="org.eclipse.search.ui.openSearchDialog" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg"/>
 
-        <image commandId="org.eclipse.ui.navigate.collapseAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/collapse_all.png" disabledIcon="icons/eclipse/collapse_all_d.png"/>
-        <image commandId="org.eclipse.ui.navigate.expandAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/expand_all.png" disabledIcon="icons/eclipse/expand_all_d.png"/>
+        <image commandId="org.eclipse.ui.navigate.collapseAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/collapse_all.svg"/>
+        <image commandId="org.eclipse.ui.navigate.expandAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/expand_all.svg"/>
 
-        <image commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" icon="icons/eclipse/quick_search.png" disabledIcon="icons/eclipse/quick_search_d.png"/>
+        <image commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" icon="icons/eclipse/quick_search.svg" disabledIcon="icons/eclipse/quick_search_d.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
         <view id="org.eclipse.ui.views.ProgressView"
-            icon="icons/progress_view.png"
+            icon="icons/progress_view.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.ExtensionFactory:progressView"
             name="%view.progress.title"/>
         <view id="org.eclipse.ui.texteditor.TemplatesView"
             name="%view.templates.title"
-            icon="icons/templates_view.png"
+            icon="icons/templates_view.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
         <view
             name="%view.errorLog.name"
-            icon="icons/error_view.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/status/error_small.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.internal.views.log.LogView"
             id="org.eclipse.pde.runtime.LogView">
@@ -166,13 +156,13 @@
             allowMultiple="true"
             category="org.eclipse.ui"
             class="org.eclipse.ui.views.properties.PropertySheet"
-            icon="icons/properties_view.png"
+            icon="icons/properties_view.svg"
             id="org.eclipse.ui.views.PropertySheet"
             name="%view.properties.title">
         </view>
         <view
             name="%view.search.title"
-            icon="icons/eclipse/search.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg"
             category="org.eclipse.ui"
             class="org.eclipse.search2.internal.ui.SearchView"
             allowMultiple="true"
@@ -187,7 +177,7 @@
                 name="Help"/-->
         <view
             name="%view.outline.title"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.views.contentoutline.ContentOutline"
             id="org.eclipse.ui.views.ContentOutline">
@@ -209,7 +199,9 @@
         />
         <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.ShowTipOfTheDayHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.window.minimize" class="org.jkiss.dbeaver.ui.app.standalone.actions.MinimizeWindowHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -254,6 +246,12 @@
                         <visibleWhen checkEnabled="true"/>
                     </command>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.spaces">
+                        <visibleWhen checkEnabled="true"/>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces">
+                        <visibleWhen checkEnabled="true"/>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces">
                         <visibleWhen checkEnabled="true"/>
                     </command>
                 </menu>
@@ -343,6 +341,10 @@
                 </visibleWhen>
             </command>
         </menuContribution>
+        <!-- Edit menu -->
+        <menuContribution allPopups="false" locationURI="menu:help?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" label="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name"/>
+        </menuContribution>
 
         <!-- Main toolbar -->
 
@@ -372,6 +374,9 @@
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
+        
+        <!-- Minimize window on macOS -->
+        <key commandId="org.jkiss.dbeaver.ui.window.minimize" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="COMMAND+M"/>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -415,6 +420,11 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.globalNetworkProfiles" class="org.jkiss.dbeaver.ui.preferences.PrefPageGlobalProjectNetworkProfiles" name="%pref.page.name.network.profiles">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.network.profiles"/>
+        </page>
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.drivers.maven" class="org.jkiss.dbeaver.ui.preferences.PrefPageDriversMaven" name="%pref.page.name.drivers.maven">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
@@ -452,7 +462,7 @@
 
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="checkbox bool boolean holiday decoration christmas snow"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol ssl tls net debug"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">
@@ -466,19 +476,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
-    </extension>
-
-    <extension point="org.eclipse.ui.activities">
-        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
-          <enabledWhen>
-            <with variable="activePartId">
-              <equals value="nonExistentPartId"/>
-            </with>
-          </enabledWhen>
-        </activity>
-        <!-- Hide Eclipse userstorage activities -->
-        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayInitializer" order="4"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.update.WorkbenchInitializerUpdateCheck" order="5"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">
@@ -486,22 +485,30 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.commandLine">
-        <parameter name="translateSQL"
-            longName="translate-sql-script"
-            description="Translates sql script from one dialect to another."
+        <parameter
             exitAfterExecute="true"
-            hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
-        <parameter name="databaseList"
-            longName="database-driver-list"
-            description="Show list of supported database drivers in json format."
-            exitAfterExecute="true"
+        <parameter exitAfterExecute="true"
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
     </extension>
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->
     <extension point="org.eclipse.ui.activities">
+        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
+            <enabledWhen>
+                <with variable="activePartId">
+                    <equals value="nonExistentPartId"/>
+                </with>
+            </enabledWhen>
+        </activity>
+        <!-- Hide Eclipse userstorage activities -->
+        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
+        <!-- Hide E4 view: Welcome, Bookmarks, Palette, Thumbnail -->
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.internal.introview"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.gef.ui.palette_view"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.graphiti.ui.internal.editor.thumbnailview"/>
+
         <activity id="dbeaver.app.StandaloneActivity" name="DBeaver standalone application activity"/>
         <category id="dbeaver.app.StandaloneCategory" name="DBeaver standalone application activity category"/>
 
@@ -520,6 +527,7 @@
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
             <editorOnboardingCommand id="org.jkiss.dbeaver.core.new.connection"/>
             <editorOnboardingCommand id="org.jkiss.dbeaver.core.sql.editor.recent"/>
+            <editorOnboardingCommand id="org.eclipse.ui.edit.text.openLocalFile"/>
             <editorOnboardingCommand id="org.eclipse.ui.window.showKeyAssist"/>
             <editorOnboardingCommand id="org.eclipse.ui.window.quickAccess"/>
         </perspectiveExtension>

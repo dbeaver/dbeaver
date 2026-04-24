@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017 Liu, Yuanyuan (liuyuanyuan@highgo.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class PostgreMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$
@@ -31,6 +30,7 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_object_description;
     public static String wizard_backup_page_object_group_object;
     public static String wizard_backup_page_object_checkbox_show_view;
+    public static String wizard_backup_page_object_checkbox_complete_backup;
     public static String wizard_backup_page_setting_title_setting;
     public static String wizard_backup_page_setting_title;
     public static String wizard_backup_page_setting_description;
@@ -159,6 +159,8 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_read_all_data_types_tip;
     public static String dialog_setting_connection_read_keys_with_columns;
     public static String dialog_setting_connection_read_keys_with_columns_tip;
+    public static String dialog_setting_connection_replace_legacy_timezone;
+    public static String dialog_setting_connection_replace_legacy_timezone_tip;
     public static String dialog_setting_group_sql;
     public static String dialog_setting_sql_dd_plain_label;
     public static String dialog_setting_sql_dd_plain_tip;

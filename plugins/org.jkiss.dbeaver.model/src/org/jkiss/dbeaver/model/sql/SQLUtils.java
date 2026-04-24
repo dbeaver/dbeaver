@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,16 +72,6 @@ public final class SQLUtils {
 //        }
     }
 
-    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query)
-    {
-        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
-        return stripComments(
-            query,
-            multiLineComments == null ? null : multiLineComments.getFirst(),
-            multiLineComments == null ? null : multiLineComments.getSecond(),
-            dialect.getSingleLineComments());
-    }
-
     public static boolean isCommentLine(SQLDialect dialect, String line) {
         for (String slc : dialect.getSingleLineComments()) {
             if (line.startsWith(slc)) {
@@ -89,37 +81,177 @@ public final class SQLUtils {
         return false;
     }
 
-    public static String stripComments(@NotNull String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
-    {
-        String leading = "", trailing = "";
-        {
-            int startPos, endPos;
-            for (startPos = 0; startPos < query.length(); startPos++) {
-                if (!Character.isWhitespace(query.charAt(startPos))) {
-                    break;
+    /**
+     * Comment text fragment location information
+     *
+     * @param start comment position in the original SQL text
+     * @param length if the comment fragment
+     * @param accumulatedOffset total amount of comment characters dropped after this comment,
+     *                          e.g. difference between the non-commented text positions in original vs clean SQL text
+     * @param cleanPosition position of the corresponding location in the clean SQL text,
+     *                      e.g. start-prevComment.accumulatedOffset
+     * */
+    public record CommentEntry(
+        int start,
+        int length,
+        int accumulatedOffset,
+        int cleanPosition
+    ){
+    }
+
+    /**
+     * SQL comments collection result
+     *
+     * @param originalSqlText containing comments
+     * @param cleanSqlText the same as original but with comments extracted
+     * @param comments extracted comment entries from the original text augmented with position's mapping information
+     */
+    public record CommentsCollectionResult(
+        @NotNull
+        String originalSqlText,
+        @NotNull
+        String cleanSqlText,
+        @NotNull
+        CommentEntry[] comments
+    ) {
+    }
+
+    @NotNull
+    public static CommentsCollectionResult collectComments(
+        @NotNull String sqlText,
+        @Nullable Pair<String, String> mlComments,
+        @Nullable String[] slComments
+    ) {
+        // prepare regex pattern to match all the comments according to dialect
+        List<String> subpatterns = new ArrayList<>();
+        if (mlComments != null) {
+            String prefix = Pattern.quote(mlComments.getFirst());
+            String suffix = Pattern.quote(mlComments.getSecond());
+            subpatterns.add(prefix + "(((?!" + suffix + ")(.|[\\r\\n]))*)" + suffix);
+        }
+        if (slComments != null) {
+            for (String prefix : slComments) {
+                subpatterns.add(Pattern.quote(prefix) + "[^\\n\\r]*");
+            }
+        }
+        String anyCommentPattern = "((" + String.join(")|(", subpatterns) + "))";
+        Pattern p = Pattern.compile(anyCommentPattern + "([\\r\\n\\s]" + anyCommentPattern + ")*+");
+
+        // extract all the comments and collect their location info in one go
+        Matcher m = p.matcher(sqlText);
+        List<CommentEntry> comments = new LinkedList<>();
+        String cleanSqlText = m.replaceAll(
+            new Function<>() {
+                private int accumulatedOffset = 0;
+
+                @NotNull
+                @Override
+                public String apply(@NotNull MatchResult mr) {
+                    int length = mr.end() - mr.start();
+                    int cleanPosition = mr.start() - this.accumulatedOffset;
+                    this.accumulatedOffset += length;
+                    comments.add(new CommentEntry(mr.start(), length, this.accumulatedOffset, cleanPosition));
+                    return "";
                 }
             }
-            for (endPos = query.length() - 1; endPos > startPos; endPos--) {
-                if (!Character.isWhitespace(query.charAt(endPos))) {
-                    break;
-                }
+        );
+
+        return new CommentsCollectionResult(sqlText, cleanSqlText, comments.toArray(CommentEntry[]::new));
+    }
+
+    @NotNull
+    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query) {
+        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
+        return stripComments(
+            query,
+            multiLineComments == null ? null : multiLineComments.getFirst(),
+            multiLineComments == null ? null : multiLineComments.getSecond(),
+            dialect.getSingleLineComments());
+    }
+
+    @NotNull
+    public static String[] extractComments(@NotNull SQLDialect dialect, @NotNull String query) {
+        if (query.isEmpty()) {
+            return new String[0];
+        }
+
+        SQLCommentScanner scanner = new SQLCommentScanner(
+            dialect.getMultiLineComments(),
+            dialect.getSingleLineComments(),
+            query
+        );
+
+        List<String> comments = new ArrayList<>();
+        while (scanner.hasNext()) {
+            comments.add(scanner.next());
+        }
+        return comments.toArray(new String[0]);
+    }
+
+
+    /**
+     * Removes both multi-line and single-line comments from an SQL query
+     */
+    public static String stripComments(
+        @NotNull String query,
+        @Nullable String mlCommentStart,
+        @Nullable String mlCommentEnd,
+        String[] slComments
+    ) {
+        int startPos;
+        int endPos;
+        for (startPos = 0; startPos < query.length(); startPos++) {
+            if (!Character.isWhitespace(query.charAt(startPos))) {
+                break;
             }
-            if (startPos > 0) {
-                leading = query.substring(0, startPos);
+        }
+        for (endPos = query.length() - 1; endPos > startPos; endPos--) {
+            if (!Character.isWhitespace(query.charAt(endPos))) {
+                break;
             }
-            if (endPos < query.length() - 1) {
-                trailing = query.substring(endPos + 1);
-            }
+        }
+
+        String leading = "";
+        String trailing = "";
+        if (startPos > 0) {
+            leading = query.substring(0, startPos);
+        }
+        if (endPos < query.length() - 1) {
+            trailing = query.substring(endPos + 1);
         }
         query = query.trim();
-        if (mlCommentStart != null && mlCommentEnd != null && query.startsWith(mlCommentStart)) {
-            int endPos = query.indexOf(mlCommentEnd);
-            if (endPos != -1) {
-                query = query.substring(endPos + mlCommentEnd.length());
+        query = removeMlComments(query, mlCommentStart, mlCommentEnd);
+        query = removeSlComments(query, slComments);
+        if ((mlCommentStart != null && query.startsWith(mlCommentStart))) { //for remove if there's comments after comments
+            query = stripComments(query, mlCommentStart, mlCommentEnd, slComments);
+        }
+        return leading + query + trailing;
+    }
+
+    private static String removeMlComments(
+        @NotNull String query,
+        @Nullable String mlCommentStart,
+        @Nullable String mlCommentEnd
+    ) {
+        if (mlCommentStart != null && mlCommentEnd != null) {
+            int startPos = query.indexOf(mlCommentStart);
+            while (startPos != -1) {
+                int endPos = query.indexOf(mlCommentEnd, startPos + mlCommentStart.length());
+                if (endPos != -1) { //remove multiline comment
+                    query = query.substring(0, startPos) + query.substring(endPos + mlCommentEnd.length());
+                } else { //non closed comment
+                    query = query.substring(0, startPos); // to prevent infinity recursion
+                    break;
+                }
+                startPos = query.indexOf(mlCommentStart);
             }
         }
-        for (int i = 0; i < slComments.length; i++) {
-            while (query.startsWith(slComments[i])) {
+        return query;
+    }
+
+    private static String removeSlComments(@NotNull String query, String[] slComments) {
+        for (String slComment : slComments) {
+            while (query.startsWith(slComment)) {
                 int crPos = query.indexOf('\n');
                 if (crPos == -1) {
                     // Query is comment line - return empty
@@ -130,7 +262,7 @@ public final class SQLUtils {
                 }
             }
         }
-        return leading + query + trailing;
+        return query;
     }
 
     public static List<String> splitFilter(String filter)
@@ -162,12 +294,19 @@ public final class SQLUtils {
 
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
-            if (c == '*') result.append(".*");
-            else if (c == '?' || c == '_') result.append(".");
-            else if (c == '%') result.append(".*");
-            else if (Character.isLetterOrDigit(c)) result.append(c);
-            else if (c == '(' || c == ')' || c == '[' || c == ']') result.append('\\').append(c);
-            else if (c == '\\') {
+            if (c == '*') {
+                result.append(".*");
+            } else if (c == '?' || c == '_') {
+                result.append(".");
+            } else if (c == '%') {
+                result.append(".*");
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            } else if (c == '(' || c == ')' || c == '[' || c == ']') {
+                result.append('\\').append(c);
+            } else if (c == '+' || c == '^' || c == '$' || c == '.' || c == '|' || c == '{' || c == '}') {
+                result.append('\\').append(c);
+            } else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
                     if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
@@ -177,8 +316,7 @@ public final class SQLUtils {
                         result.append("\\");
                     }
                 }
-            }
-            else {
+            } else {
                 result.append(c);
             }
         }
@@ -591,16 +729,17 @@ public final class SQLUtils {
         DBPDataKind dataKind = attribute.getDataKind();
         switch (dataKind) {
             case CONTENT:
-                if (value instanceof DBDContent) {
-                    String contentType = ((DBDContent) value).getContentType();
+                if (value instanceof DBDContent contentValue) {
+                    String contentType = contentValue.getContentType();
                     if (contentType != null && !contentType.startsWith("text")) {
                         return strValue;
                     }
                 }
                 // Text content. Fall down
             case STRING:
+                return sqlDialect.getQuotedString(strValue);
             case ROWID:
-                if (sqlDialect != null) {
+                if (!sqlDialect.isQuotedString(strValue)) {
                     return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
@@ -643,7 +782,7 @@ public final class SQLUtils {
         return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
-    public static String getScriptDescripion(@NotNull String sql) {
+    public static String getScriptDescription(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
@@ -662,27 +801,29 @@ public final class SQLUtils {
             return name;
         }
 
+        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
+            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(c, false));
             if (!Character.isLetter(c)) {
                 prevNonLetter = true;
             } else {
-                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (isValidChar && (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c)))) {
                     buf.append(c);
                 }
                 prevNonLetter = false;
             }
             prevChar = c;
         }
-        String alias;
-        if(!CommonUtils.isEmpty(buf)) {
-            alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        }
-        else{
-            alias = "t";
+        String alias = "t";
+        if (!CommonUtils.isEmpty(buf)) {
+            String generatedAlias = buf.toString();
+            if (dialect.getReservedWords().stream().noneMatch(kw -> kw.equalsIgnoreCase(generatedAlias))) {
+                alias = generatedAlias.toLowerCase(Locale.ENGLISH);
+            }
         }
 
         String result = alias;
@@ -976,9 +1117,7 @@ public final class SQLUtils {
 
         // In reverse order
         sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
-        if (sql != null) return sql;
-
-        return null;
+        return sql;
     }
 
     private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
@@ -1022,11 +1161,10 @@ public final class SQLUtils {
         boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
-            if (ar instanceof DBSTableForeignKeyColumn) {
+            if (ar instanceof DBSTableForeignKeyColumn fkc) {
                 if (hasCriteria) {
                     joinSQL.append(" AND ");
                 }
-                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
                     .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
                     .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
@@ -1174,5 +1312,99 @@ public final class SQLUtils {
         }
         actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
         return actualIdentifierString;
+    }
+
+    /**
+     * <p>Removes parameter names and preserves type details and nesting.</p>
+     *
+     * <pre>{@code
+     * Input : "(x ARRAY, y OBJECT)"
+     * Output: "(ARRAY, OBJECT)"
+     * }</pre>
+     */
+    public static String extractProcedureParameterTypes(@Nullable String sig) {
+        if (CommonUtils.isEmpty(sig)) {
+            return "()";
+        }
+        String s = sig.trim();
+        if (s.startsWith("(") && s.endsWith(")")) {
+            s = s.substring(1, s.length() - 1).trim();
+        }
+        if (s.isEmpty()) {
+            return "()";
+        }
+        List<String> parts = extractParts(s);
+        List<String> types = new ArrayList<>(parts.size());
+        for (String p : parts) {
+            int spaceIndex = p.lastIndexOf(' ');
+            String type = spaceIndex >= 0 ? p.substring(spaceIndex + 1) : p;
+            types.add(type.toUpperCase());
+        }
+        return "(" + String.join(", ", types) + ")";
+    }
+
+    @NotNull
+    private static List<String> extractParts(String s) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        int depth = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                depth++;
+            }
+            if (c == ')') {
+                depth = Math.max(0, depth - 1);
+            }
+            if (c == ',' && depth == 0) {
+                parts.add(cur.toString().trim());
+                cur.setLength(0);
+            } else {
+                cur.append(c);
+            }
+        }
+        if (!cur.isEmpty()) {
+            parts.add(cur.toString().trim());
+        }
+        return parts;
+    }
+
+    public static void addMultiStatementDDL(
+        @NotNull SQLDialect sqlDialect,
+        @NotNull StringBuilder sql,
+        @Nullable String ddl
+    ) {
+        if (CommonUtils.isEmpty(ddl)) {
+            return;
+        }
+
+        String[] lines = ddl.trim().split("\\r?\\n");
+        boolean hasStatements = false;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (CommonUtils.isEmpty(trimmed)) {
+                continue;
+            }
+
+            hasStatements = true;
+            boolean hasDelimiter = false;
+            for (String scriptDelimiter : sqlDialect.getScriptDelimiters()) {
+                if (trimmed.endsWith(scriptDelimiter)) {
+                    hasDelimiter = true;
+                    break;
+                }
+            }
+            sql.append(trimmed);
+            if (!hasDelimiter) {
+                sql.append(getDefaultScriptDelimiter(sqlDialect));
+            }
+
+            sql.append("\n");
+        }
+
+        if (hasStatements) {
+            sql.append("\n");
+        }
     }
 }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
@@ -42,30 +43,28 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
         this.editorMeta = meta;
     }
 
+    @Nullable
     public DBXTreeObject getEditorMeta() {
         if (editorMeta != null) {
             return editorMeta;
-        } else {
-            return ((DBXTreeObject)getNavigatorNode().getMeta());
         }
-    }
-
-    @Override
-    public ImageDescriptor getImageDescriptor()
-    {
         DBNDatabaseNode node = getNavigatorNode();
-//        IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
-//        if (editorDescriptor != null) {
-//            return editorDescriptor.getImageDescriptor();
-//        } else {
-            return DBeaverIcons.getImageDescriptor(getEditorMeta().getDefaultIcon());
-//        }
+        if (node != null && node.getMeta() instanceof DBXTreeObject meta) {
+            return meta;
+        }
+        return null;
     }
 
     @Override
-    public String getToolTipText()
-    {
-        return getEditorMeta().getDescription();
+    public ImageDescriptor getImageDescriptor() {
+        DBXTreeObject meta = getEditorMeta();
+        return meta == null ? null : DBeaverIcons.getImageDescriptor(meta.getDefaultIcon());
+    }
+
+    @Override
+    public String getToolTipText() {
+        DBXTreeObject meta = getEditorMeta();
+        return meta == null ? "" : meta.getDescription();
     }
 
     @Override

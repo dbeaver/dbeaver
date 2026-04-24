@@ -38,6 +38,9 @@
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true"/>
                                     </items>
+                                </folder>                                
+                                <folder type="org.jkiss.dbeaver.ext.hana.model.HANAPartition" label="%tree.partitions.node.name" icon="#partitions">
+                                    <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition"/>
                                 </folder>
                                 <folder label="%tree.references.node.name" icon="#references" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
@@ -123,9 +126,8 @@
                     webURL="https://help.sap.com/viewer/0eec0d68141541d1b07893a39944924e/latest/en-US/ff15928cf5594d78b841fbbe649f04b4.html"
                     categories="sql">
                     <file type="jar" path="maven:/com.sap.cloud.db.jdbc:ngdbc:RELEASE" bundle="!drivers.hana"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hana"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/hana" bundle="drivers.hana"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hana"/>
                     <replace provider="generic" driver="sap_hana"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
@@ -166,6 +168,7 @@
 
             <datasource id="hana"/>
 
+            <type name="half_vector"/>
             <type name="real_vector"/>
             <type name="ST_Geometry"/>
             <type name="ST_Point"/>

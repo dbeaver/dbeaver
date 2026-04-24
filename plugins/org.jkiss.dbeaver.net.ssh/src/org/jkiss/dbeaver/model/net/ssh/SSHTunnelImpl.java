@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,8 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +69,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull DBPConnectionConfiguration connectionInfo
-    ) throws DBException, IOException {
+    ) throws DBException {
         this.configuration = configuration;
 
         String implId = configuration.getStringProperty(SSHConstants.PROP_IMPLEMENTATION);
@@ -117,17 +115,15 @@ public class SSHTunnelImpl implements DBWTunnel {
         final SSHHostConfiguration[] hosts = SSHUtils.loadHostConfigurations(configuration, false);
         final SSHHostConfiguration host = hosts[hosts.length - 1];
 
-        if (host.auth() instanceof SSHAuthConfiguration.WithPassword password && password.savePassword()) {
-            return AuthCredentials.NONE;
-        } else if (host.auth() instanceof SSHAuthConfiguration.KeyFile key) {
-            return SSHUtils.isKeyFileEncrypted(key.path()) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
-        } else if (host.auth() instanceof SSHAuthConfiguration.KeyData key) {
-            return SSHUtils.isKeyEncrypted(Base64.decode(key.data())) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
-        } else if (host.auth() instanceof SSHAuthConfiguration.Agent) {
-            return AuthCredentials.NONE;
-        } else {
-            return AuthCredentials.CREDENTIALS;
-        }
+        return switch (host.auth()) {
+            case SSHAuthConfiguration.WithPassword password when password.savePassword() -> AuthCredentials.NONE;
+            case SSHAuthConfiguration.KeyFile key ->
+                SSHUtils.isKeyFileEncrypted(key.path()) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
+            case SSHAuthConfiguration.KeyData key ->
+                SSHUtils.isKeyEncrypted(key.data()) ? AuthCredentials.PASSWORD : AuthCredentials.NONE;
+            case SSHAuthConfiguration.Agent ignored -> AuthCredentials.NONE;
+            default -> AuthCredentials.CREDENTIALS;
+        };
     }
 
     @Override
@@ -164,11 +160,15 @@ public class SSHTunnelImpl implements DBWTunnel {
     @Override
     public void closeTunnel(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (session != null) {
-            final DBPDataSourceContainer container = configuration.getDataSource();
-            final int timeout = container != null
+            DBPDataSourceContainer container = configuration.getDataSource();
+            int timeout = container != null
                 ? container.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT)
                 : 0;
-            controller.release(monitor, session, configuration, timeout);
+            try {
+                controller.release(monitor, session, configuration, timeout);
+            } catch (DBException e) {
+                log.debug("Error releasing SSH session controller", e);
+            }
         }
         for (Runnable listener : this.listeners) {
             listener.run();

@@ -37,7 +37,7 @@ public class ProviderPropertyDescriptor extends PropertyDescriptor {
         super(category, config);
         var configurationTypes = config.getAttribute(ATTR_SUPPORTED_CONFIGURATION_TYPES);
         if (CommonUtils.isEmpty(configurationTypes)) {
-            this.configurationTypes = Set.of(DBPDriverConfigurationType.MANUAL); // by default
+            this.configurationTypes = Set.of(DBPDriverConfigurationType.MANUAL, DBPDriverConfigurationType.URL); // by default
         } else {
             String[] supportedConfigurationTypes = CommonUtils.split(configurationTypes, ",");
             this.configurationTypes = Stream.of(supportedConfigurationTypes)

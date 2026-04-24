@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -66,7 +69,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
 
     public SQLServerConnectionPage() {
         LOGO_AZURE = createImage("icons/azure_logo.png");
-        LOGO_BABELFISH = createImage("icons/bbfsh_logo.png");
+        LOGO_BABELFISH = createImage("icons/babelfish_logo.png");
         LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
         LOGO_SYBASE = createImage("icons/sybase_logo.png");
     }
@@ -97,12 +100,11 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         GridData gd = new GridData(GridData.FILL_BOTH);
         settingsGroup.setLayoutData(gd);
 
-        Group addrGroup = UIUtils.createControlGroup(
+        Composite addrGroup = UIUtils.createTitledComposite(
             settingsGroup,
             UIConnectionMessages.dialog_connection_server_label,
             4,
-            GridData.FILL_HORIZONTAL,
-            0
+            GridData.FILL_HORIZONTAL
         );
 
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
@@ -136,6 +138,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
@@ -164,9 +167,9 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             dbText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 270;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(dbText);
             dbText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
         }
@@ -176,10 +179,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
 
         {
-            Group secureGroup = new Group(settingsGroup, SWT.NONE);
-            secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
-            secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            secureGroup.setLayout(new GridLayout(1, false));
+            Composite secureGroup = UIUtils.createTitledComposite(settingsGroup, SQLServerUIMessages.dialog_setting_connection_settings, 1, GridData.FILL_HORIZONTAL);
 
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 1);

@@ -515,8 +515,7 @@ public class ComplexObjectEditor extends TreeViewer {
             return cache.get(object);
         }
 
-        if (object instanceof Collection<?>) {
-            final Collection<?> collection = (Collection<?>) object;
+        if (object instanceof Collection<?> collection) {
             final CollectionElement element;
 
             if (parent == null) {
@@ -557,6 +556,14 @@ public class ComplexObjectEditor extends TreeViewer {
 
             cache.put(object, element);
 
+            return element;
+        }
+
+        if (parent == null) {
+            CollectionElement element = new CollectionRootElement(new ArrayList<>());
+            element.items.add(new CollectionElement.Item(element, object));
+
+            cache.put(object, element);
             return element;
         }
 

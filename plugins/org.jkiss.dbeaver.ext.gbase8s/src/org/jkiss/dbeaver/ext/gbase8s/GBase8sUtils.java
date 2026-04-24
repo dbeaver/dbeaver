@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.gbase8s;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -30,7 +29,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -67,16 +66,25 @@ public class GBase8sUtils {
     }
 
     public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
-        final DBPDriver driver = container.getDriver();
-        Map<String, Object> cprops = driver.getConnectionProperties();
-        for (Map.Entry<String, Object> entry : cprops.entrySet()) {
-            if (Objects.equals(entry.getKey().toLowerCase(), "sqlmode")) {
-                if (Objects.equals(entry.getValue().toString().trim().toLowerCase(), "oracle")) {
-                    return true;
-                }
+        DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
+        String sqlMode = getSqlModeValue(configuration.getProperties());
+        if (sqlMode != null) {
+            return GBase8sConstants.JDBC_SQL_MODE_ORACLE.equalsIgnoreCase(sqlMode);
+        }
+        return GBase8sConstants.JDBC_SQL_MODE_ORACLE
+                .equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
+    }
+
+    private static String getSqlModeValue(Map<String, ?> properties) {
+        if (properties == null || properties.isEmpty()) {
+            return null;
+        }
+        for (Map.Entry<String, ?> entry : properties.entrySet()) {
+            if (GBase8sConstants.JDBC_SQL_MODE.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue() != null ? entry.getValue().toString().trim() : null;
             }
         }
-        return false;
+        return null;
     }
 
     public static String listToString(List<String> value, String delimiter) {

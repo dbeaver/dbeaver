@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,7 @@ public abstract class SQLGroupingAttribute {
         @NotNull
         @Override
         public String prepareSqlString(@Nullable String subqueryAlias) {
-            return StandardSQLDialectQueryGenerator.getConstraintAttributeName(
+            return StandardSQLDialectQueryGenerator.INSTANCE.getConstraintAttributeName(
                 this.getDataSource(),
                 subqueryAlias,
                 new DBDAttributeConstraint(this.binding),
@@ -208,6 +208,11 @@ public abstract class SQLGroupingAttribute {
         @Override
         public Expression prepareExpression() {
             return new Column(this.prepareSqlString(null));
+        }
+
+        @NotNull
+        public String getBindingName() {
+            return binding.getName();
         }
 
         @Override

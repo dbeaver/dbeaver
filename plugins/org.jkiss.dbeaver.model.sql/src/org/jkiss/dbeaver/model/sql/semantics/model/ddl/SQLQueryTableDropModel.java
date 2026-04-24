@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -39,9 +40,6 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
     private final List<SQLQueryRowsTableDataModel> tables;
     private final boolean isView;
     private final boolean ifExists;
-
-    @Nullable
-    private SQLQueryDataContext dataContext = null;
 
     @NotNull
     public static SQLQueryModelContent recognize(
@@ -79,27 +77,29 @@ public class SQLQueryTableDropModel extends SQLQueryModelContent {
         return isView;
     }
 
-    @Nullable
     @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
-    }
-
-    @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        this.dataContext = dataContext;
-        if (ifExists) {
-            recognitionContext.setTreatErrorAsWarnings(true);
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if  (this.tables != null) {
+            if (this.ifExists) {
+                statistics.setTreatErrorAsWarnings(true);
+            }
+            this.tables.forEach(t -> t.resolveObjectAndRowsReferences(context, statistics));
+            if (this.ifExists) {
+                statistics.setTreatErrorAsWarnings(false);
+            }
         }
-        this.tables.forEach(t -> t.propagateContext(dataContext, recognitionContext));
-        if (ifExists) {
-            recognitionContext.setTreatErrorAsWarnings(false);
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if  (this.tables != null) {
+            if (this.ifExists) {
+                statistics.setTreatErrorAsWarnings(true);
+            }
+            this.tables.forEach(t -> t.resolveValueRelations(context, statistics));
+            if (this.ifExists) {
+                statistics.setTreatErrorAsWarnings(false);
+            }
         }
     }
 

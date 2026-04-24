@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgrePrivilegeType.CONNECT,
         PostgrePrivilegeType.TEMPORARY,
         PostgrePrivilegeType.EXECUTE,
-        PostgrePrivilegeType.USAGE
+        PostgrePrivilegeType.USAGE,
+        PostgrePrivilegeType.MAINTAIN
     };
 
     private DatabaseCache databaseCache;
@@ -95,6 +96,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     protected String serverVersion;
+    private boolean shouldShowStatistics;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
@@ -105,8 +107,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     {
         super(monitor, container, new PostgreDialect());
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
             PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
@@ -115,8 +116,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                              @NotNull SQLDialect dialect) throws DBException {
         super(monitor, container, dialect);
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration()
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration()
                     .getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
@@ -143,6 +143,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
             default -> super.getDataSourceFeature(featureId);
         };
+    }
+
+    public void readDatabaseServerVersion(JDBCSession session) throws SQLException {
+        super.readDatabaseServerVersion(session, session.getMetaData());
     }
 
     @Override
@@ -185,7 +189,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
             // Read server version info here - it is needed during database metadata fetch (#8061)
-            readDatabaseServerVersion(bootstrapConnection.getMetaData());
+            readDatabaseServerVersion(bootstrapConnection, bootstrapConnection.getMetaData());
 
             // Get all databases
             try (PreparedStatement dbStat = prepareReadDatabaseListStatement(monitor, bootstrapConnection, configuration)) {
@@ -478,10 +482,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             this.isConnectionRefreshing = true;
             this.databaseCache.clearCache();
             this.activeDatabaseName = null;
+            this.hasStatistics = false;
             this.initializeRemoteInstance(monitor);
         } finally {
             this.isConnectionRefreshing = false;
         }
+        getDefaultInstance().checkInstanceConnection(monitor, false);
+
         this.initialize(monitor);
 
         return this;
@@ -527,7 +534,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
             // new timezone, which will lead to the error while connecting, there is no way to know before connecting
             // so to be sure we will use the old name
-            if (legacyTimezoneOverridden != null) {
+            if (isNeedToReplaceLegacyTimezone() && legacyTimezoneOverridden != null) {
                 TimezoneRegistry.setDefaultZone(ZoneId.of(legacyTimezoneOverridden), false);
             }
 
@@ -580,7 +587,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (legacyTimezoneOverridden != null) {
+            if (isNeedToReplaceLegacyTimezone() && legacyTimezoneOverridden != null) {
                 TimezoneRegistry.setDefaultZone(ZoneId.of(currentTimezoneId), false);
             }
         }
@@ -599,7 +606,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter)
+    public <T> T getAdapter(@NotNull Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
@@ -642,23 +649,27 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
 
+    @NotNull
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
         return getDefaultInstance().getLocalDataTypes();
     }
 
+    @Nullable
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
         return getDefaultInstance().getLocalDataType(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return getDefaultInstance().getLocalDataType(typeID);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
@@ -750,11 +761,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public boolean isStatisticsCollected() {
-        return hasStatistics;
+        return !shouldShowStatistics || hasStatistics;
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (!shouldShowStatistics) {
+            return;
+        }
+        
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -857,11 +872,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreJdbcFactory();
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
-            if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
+            if (PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                return ErrorType.EXECUTION_CANCELED;
+            } else if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
             } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
                 return ErrorType.TRANSACTION_ABORTED;
@@ -901,6 +919,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportsReadingKeysWithColumns() {
         return CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
+
+    public boolean isNeedToReplaceLegacyTimezone() {
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE));
     }
 
     public boolean isSupportsEnumTable() {

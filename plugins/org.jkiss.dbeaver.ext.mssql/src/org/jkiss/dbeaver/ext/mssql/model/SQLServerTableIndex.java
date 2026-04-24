@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
     public boolean isUnique()
     {
         return unique;
@@ -131,6 +131,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
 
     public void setUnique(boolean unique) {
         this.unique = unique;
+        ddl = null;
     }
 
     @Override
@@ -157,7 +158,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
-    public List<SQLServerTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
+    public List<SQLServerTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return columns;
     }
@@ -182,15 +183,16 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             this);
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (!isPersisted() || SQLServerUtils.isDriverBabelfish(getDataSource().getContainer().getDriver())) {
             return null;
         }
@@ -203,12 +205,20 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     // Index DDL gen script taken from MS technet
     // https://gallery.technet.microsoft.com/scriptcenter/SQL-Server-Generate-Index-fa790441
     private String readIndexDefinition(DBRProgressMonitor monitor) throws DBCException {
+        String needToInsertUnique = unique ? "    'UNIQUE ' +\n" : "";
+        SQLServerDatabase database = this.getContainer().getDatabase();
+        String databaseNamePrefix = "";
+        if (database != null) {
+            databaseNamePrefix = "'" + database.getName() + ".' +";
+        }
+        String indexName = DBUtils.getQuotedIdentifier(this);
+
         String sql =
             "SELECT ' CREATE ' + \n" +
-                "    CASE WHEN I.is_unique = 1 THEN ' UNIQUE ' ELSE '' END  +  \n" +
+                needToInsertUnique +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
-                "    I.name  + ' ON '  +  \n" +
-                "    Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
+                "    '" + indexName + "' + ' ON '  +  \n" +
+                "   " + databaseNamePrefix + "Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
                 "    KeyColumns + ' )  ' + \n" +
                 "    ISNULL('\n\t INCLUDE ('+IncludedColumns+' ) ','') + \n" +
                 "    ISNULL('\n\t WHERE  '+I.Filter_definition,'') + '\n\t WITH ( ' + \n" +

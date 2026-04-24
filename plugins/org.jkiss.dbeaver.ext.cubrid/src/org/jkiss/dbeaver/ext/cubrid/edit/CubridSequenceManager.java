@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -40,13 +43,25 @@ public class CubridSequenceManager extends GenericSequenceManager {
 
     public static final String BASE_SERIAL_NAME = "new_serial";
 
-    @NotNull
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        return true;
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
+        boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
+        return supportsMultiSchema || isCurrentUser || !dataSource.isShard();
     }
 
-    @NotNull
+    @Override
+    public boolean canEditObject(GenericSequence object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericSequence object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
     @Override
     public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
@@ -55,16 +70,17 @@ public class CubridSequenceManager extends GenericSequenceManager {
     @NotNull
     @Override
     protected GenericSequence createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @Nullable Object container,
-            @Nullable Object copyFrom,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         return new CubridSequence((GenericStructContainer) container, BASE_SERIAL_NAME);
     }
 
     @NotNull
-    public String buildStatement(@NotNull CubridSequence sequence, @NotNull boolean forUpdate) {
+    public String buildStatement(@NotNull CubridSequence sequence, boolean forUpdate, boolean hasComment) {
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
             sb.append("ALTER SERIAL ");
@@ -73,7 +89,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
         }
         sb.append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
         buildBody(sequence, sb);
-        buildOtherValue(sequence, sb);
+        buildOtherValue(sequence, sb, hasComment);
         return sb.toString();
     }
 
@@ -92,61 +108,68 @@ public class CubridSequenceManager extends GenericSequenceManager {
         }
     }
 
-    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb) {
+    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb, boolean hasComment) {
         if (sequence.getCycle()) {
             sb.append(" CYCLE");
-        }
-        else {
+        } else {
             sb.append(" NOCYCLE");
         }
         if (sequence.getCachedNum() != 0) {
             sb.append(" CACHE ").append(sequence.getCachedNum());
         }
-        if (sequence.getDescription() != null) {
+        if (hasComment || sequence.getDescription() != null) {
             sb.append(" COMMENT ").append(SQLUtils.quoteString(sequence, CommonUtils.notEmpty(sequence.getDescription())));
         }
     }
 
     @Override
     protected void addObjectCreateActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectCreateCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridSequence sequence = (CubridSequence) command.getObject();
-        actions.add(new SQLDatabasePersistAction("Create Serial", buildStatement(sequence, false)));
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
+        actions.add(new SQLDatabasePersistAction("Create Serial", buildStatement(sequence, false, hasComment)));
     }
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridSequence sequence = (CubridSequence) command.getObject();
-        actionList.add(new SQLDatabasePersistAction("Alter Serial", buildStatement(sequence, true)));
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
+        actionList.add(new SQLDatabasePersistAction("Alter Serial", buildStatement(sequence, true, hasComment)));
     }
 
     @Override
     protected void addObjectDeleteActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull SQLObjectEditor<GenericSequence, GenericStructContainer>.ObjectDeleteCommand command,
-            @NotNull Map<String, Object> options) {
-        actions.add(new SQLDatabasePersistAction("Drop Serial",
-        "DROP SERIAL " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull SQLObjectEditor<GenericSequence, GenericStructContainer>.ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        actions.add(new SQLDatabasePersistAction(
+            "Drop Serial",
+            "DROP SERIAL " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
+        ));
     }
 
     @Override
     protected void addObjectExtraActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull NestedObjectCommand<GenericSequence, SQLObjectEditor<GenericSequence, GenericStructContainer>.PropertyHandler> command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericSequence, SQLObjectEditor<GenericSequence, GenericStructContainer>.PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) {
         /* This body intentionally empty. */
     }
 }

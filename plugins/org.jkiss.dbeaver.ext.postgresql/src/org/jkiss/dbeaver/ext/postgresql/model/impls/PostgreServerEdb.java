@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 public class PostgreServerEdb extends PostgreServerExtensionBase {
 
     public static final String TYPE_ID = "edb";
+    public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
 
     private Boolean isNspParentColumnExists;
 
@@ -45,6 +46,7 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
         return true;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "EnterpriseDB";
@@ -65,8 +67,9 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
         return dataSource.isServerVersionAtLeast(10, 0);
     }
 
+    @NotNull
     @Override
-    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
         return new EDBSchemaCache();
     }
 
@@ -85,6 +88,12 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
             }
             return false;
         }
+    }
+
+    @Override
+    public boolean isPGObject(@NotNull Object object) {
+        String className = object.getClass().getName();
+        return EDB_OBJECT_CLASS.equals(className);
     }
 }
 

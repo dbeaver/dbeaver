@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,38 +25,48 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 /**
  * GenericTableConstraint
  */
-public abstract class GenericTableConstraint extends JDBCTableConstraint<GenericTableBase, GenericTableConstraintColumn>
-{
-    protected GenericTableConstraint(GenericTableBase table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
-    {
+public abstract class GenericTableConstraint extends JDBCTableConstraint<GenericTableBase, GenericTableConstraintColumn> {
+    protected GenericTableConstraint(
+        @NotNull GenericTableBase table,
+        String name,
+        String remarks,
+        DBSEntityConstraintType constraintType,
+        boolean persisted
+    ) {
         super(table, name, remarks, constraintType, persisted);
     }
 
     /**
      * Copy constructor
+     *
      * @param constraint source
      */
-    protected GenericTableConstraint(GenericTableConstraint constraint)
-    {
-        super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
+    protected GenericTableConstraint(@NotNull GenericTableConstraint constraint) {
+        super(
+            constraint.getTable(),
+            constraint.getName(),
+            constraint.getDescription(),
+            constraint.getConstraintType(),
+            constraint.isPersisted()
+        );
     }
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return getTable().getDataSource();
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             getTable().getCatalog(),
             getTable().getSchema(),
             getTable(),
-            this);
+            this
+        );
     }
 
 }

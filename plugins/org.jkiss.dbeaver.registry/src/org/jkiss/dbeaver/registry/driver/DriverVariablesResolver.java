@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 class DriverVariablesResolver extends SystemVariablesResolver {
     static final String VAR_DRIVERS_HOME = "drivers_home";
 
+    @Nullable
     @Override
-    public String get(String name) {
+    public String get(@NotNull String name) {
         if (name.equalsIgnoreCase(VAR_DRIVERS_HOME)) {
             return DriverDescriptor.getCustomDriversHome().toAbsolutePath().toString();
         } else {

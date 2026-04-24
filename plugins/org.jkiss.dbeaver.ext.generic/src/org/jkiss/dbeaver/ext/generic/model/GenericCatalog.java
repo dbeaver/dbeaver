@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -37,8 +38,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
-{
+public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBPSystemObject {
     private final String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
@@ -61,6 +61,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return null;
     }
 
+    @NotNull
     @Override
     public GenericCatalog getObject()
     {
@@ -169,9 +170,15 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return super.refreshObject(monitor);
     }
 
+    @Override
+    public boolean isSystem() {
+        return false;
+    }
+
     public static class CatalogNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {
+        @Nullable
         @Override
-        public String transform(DBSObject object, String value) throws IllegalArgumentException {
+        public String transform(@NotNull DBSObject object, @Nullable String value) throws IllegalArgumentException {
             String catalogTerm = object.getDataSource().getInfo().getCatalogTerm();
             if (!CommonUtils.isEmpty(catalogTerm)) {
                 return catalogTerm + " " + ModelMessages.model_navigator_Name;

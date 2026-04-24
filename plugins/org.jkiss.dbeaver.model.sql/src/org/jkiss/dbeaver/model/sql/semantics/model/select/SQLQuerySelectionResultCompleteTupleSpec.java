@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,14 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -30,19 +34,34 @@ import java.util.LinkedList;
  */
 public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionResultSublistSpec {
 
-    public SQLQuerySelectionResultCompleteTupleSpec(@NotNull SQLQuerySelectionResultModel resultModel, @NotNull STMTreeNode syntaxNode) {
-        super(resultModel, syntaxNode);
+    @NotNull
+    private final SQLQueryTupleRefEntry tupleRefEntry;
+
+    public SQLQuerySelectionResultCompleteTupleSpec(
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryTupleRefEntry tupleRefEntry
+    ) {
+        super(syntaxNode);
+        this.tupleRefEntry = tupleRefEntry;
     }
 
-    @NotNull
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return null;
+    }
+
     @Override
     protected void collectColumns(
-        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsDataContext knownValues,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
-        this.collectForeignColumns(context.getColumnsList(), rowsSourceModel, resultColumns);
+        this.tupleRefEntry.setOrigin(
+            new SQLQuerySymbolOrigin.ExpandableRowsTupleRef(this.tupleRefEntry.getSyntaxNode(), knownValues, null)
+        );
+        this.collectForeignColumns(knownValues.getColumnsList(), rowsSourceModel, resultColumns);
     }
 
     @Override

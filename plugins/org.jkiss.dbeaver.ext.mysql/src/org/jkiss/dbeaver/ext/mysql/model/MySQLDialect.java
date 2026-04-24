@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
-import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -60,7 +57,9 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         "COLUMNS",
         "ALGORITHM",
         "REPAIR",
-        "ENGINE"
+        "ENGINE",
+        "MANUAL",
+        "STRAIGHT_JOIN"
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
@@ -268,7 +267,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         return escapeString(string, null);
     }
 
@@ -352,16 +351,21 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public boolean validIdentifierStart(char c) {
-        return Character.isLetterOrDigit(c);
+        return c == '_' || SQLUtils.isLatinLetter(c);
     }
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return "CAST(" + expression + " AS JSON)";
         } else {
-            return super.getTypeCastClause(attribute, expression, isInCondition);
+            return super.getTypeCastClause(attribute, expression, isInCondition, exprIsAttrRef);
         }
     }
 
@@ -451,6 +455,15 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public boolean supportsAlterHasColumn() {
-        return true;
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public String getColumnCharsetModifier(@NotNull ColumnCharset charset) {
+        if (charset == ColumnCharset.ASCII) {
+            return "CHARACTER SET latin1";
+        }
+        return null;
     }
 }

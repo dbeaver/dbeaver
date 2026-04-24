@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 public class CubridTable extends GenericTable
@@ -48,13 +47,14 @@ public class CubridTable extends GenericTable
     private CubridCollation collation;
     private Integer autoIncrement;
     private boolean reuseOID = true;
+    private boolean partitioned = false;
 
     public CubridTable(
             @NotNull GenericStructContainer container,
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(container, tableName != null ? tableName.toLowerCase() : null, tableType, dbResult);
 
         String collationName;
         if (tableType.equals("TABLE") && dbResult != null) {
@@ -62,6 +62,7 @@ public class CubridTable extends GenericTable
             this.reuseOID = (JDBCUtils.safeGetString(dbResult, CubridConstants.REUSE_OID)).equals("YES");
             collationName = JDBCUtils.safeGetString(dbResult, CubridConstants.COLLATION);
             autoIncrement = JDBCUtils.safeGetInteger(dbResult, CubridConstants.AUTO_INCREMENT_VAL);
+            partitioned = (JDBCUtils.safeGetString(dbResult, "partitioned")).equals("YES");
             if (type != null) {
                 this.setSystem(type.equals("YES"));
             }
@@ -73,6 +74,11 @@ public class CubridTable extends GenericTable
         this.owner = (CubridUser) container;
         this.charset = getDataSource().getCharset(charsetName);
         this.collation = getDataSource().getCollation(collationName);
+    }
+
+    @Override
+    public void setName(@NotNull String name) {
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
     @NotNull
@@ -105,8 +111,7 @@ public class CubridTable extends GenericTable
     }
     
     @NotNull
-    public Collection<CubridPartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
-
+    public List<CubridPartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
         return partitionCache.getAllObjects(monitor, this);
     }
 
@@ -116,9 +121,13 @@ public class CubridTable extends GenericTable
         return (List<CubridTrigger>) super.getTriggers(monitor);
     }
 
+    public boolean isEnableSchema() {
+        return getDataSource().getSupportMultiSchema() || getDataSource().isDBAGroup();
+    }
+
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
+    @Property(viewable = true, editableExpr = "object.enableSchema", updatableExpr = "object.enableSchema", listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
     public GenericSchema getSchema() {
         return owner;
     }
@@ -166,6 +175,11 @@ public class CubridTable extends GenericTable
         this.reuseOID = reuseOID;
     }
 
+    @Property(viewable = true, order = 53)
+    public boolean isPartitioned() {
+        return partitioned;
+    }
+
     @Nullable
     @Property(viewable = true, editable = true, updatable = true, order = 10)
     public Integer getAutoIncrement() {
@@ -178,11 +192,11 @@ public class CubridTable extends GenericTable
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        if (this.isSystem()) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        if (this.isSystem() || !getDataSource().getSupportMultiSchema()) {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
-            return DBUtils.getFullQualifiedName(getDataSource(), this.getSchema(), this);
+            return DBUtils.getQuotedIdentifier(this.getSchema()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         }
     }
 
@@ -200,7 +214,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.getDataSource().getSchemas().toArray();
@@ -210,6 +224,7 @@ public class CubridTable extends GenericTable
     static class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition> {
 
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridTable table) throws SQLException {
            
@@ -217,6 +232,7 @@ public class CubridTable extends GenericTable
             if(table.getDataSource().getSupportMultiSchema()) {
                 sql.append(" and owner_name = ?");
             }
+            sql = table.getDataSource().wrapShardQuery(sql);
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, table.getName());
             if(table.getDataSource().getSupportMultiSchema()) {
@@ -234,8 +250,10 @@ public class CubridTable extends GenericTable
         ) throws SQLException, DBException {
             String partition_class_name = JDBCUtils.safeGetString(dbResult, "partition_class_name");
             String type = JDBCUtils.safeGetString(dbResult, "partition_type");
-            
-            return new CubridPartition(table, partition_class_name, type, dbResult);
+            if (type != null) {
+                type = type.toUpperCase();
+            }
+            return new CubridPartition(session.getProgressMonitor(), table, partition_class_name, type, dbResult);
         }
             
     }
@@ -248,7 +266,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.getDataSource().getCharsets().toArray();
@@ -262,7 +280,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.charset.getCollations().toArray();

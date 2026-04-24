@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
-import java.sql.SQLException;
-import java.sql.Types;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -29,12 +27,15 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-public class HANAVectorValueHandler extends JDBCArrayValueHandler {
+import java.sql.SQLException;
+import java.sql.Types;
 
-    public static final HANAVectorValueHandler INSTANCE = new HANAVectorValueHandler();
+public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
 
-    private static DBCLogicalOperator[] SUPPORTED_OPERATORS = { DBCLogicalOperator.IS_NOT_NULL,
-            DBCLogicalOperator.IS_NULL };
+    private static DBCLogicalOperator[] SUPPORTED_OPERATORS = {
+        DBCLogicalOperator.IS_NOT_NULL,
+        DBCLogicalOperator.IS_NULL
+    };
 
     @Override
     protected boolean useGetArray(DBCSession session, DBSTypedObject type) {
@@ -51,19 +52,7 @@ public class HANAVectorValueHandler extends JDBCArrayValueHandler {
             if (collection.isNull()) {
                 statement.setNull(paramIndex, Types.ARRAY);
             } else if (collection instanceof JDBCCollection) {
-                JDBCCollection jc = (JDBCCollection) collection;
-                if (jc.getComponentType().getTypeID() != Types.REAL) {
-                    throw new DBCException("Only REAL numbers are allowed in vectors");
-                }
-                float[] nvals = new float[jc.size()];
-                for (int i = 0; i < nvals.length; ++i) {
-                    Float val = (Float) jc.get(i);
-                    if (val == null) {
-                        throw new DBCException("NULL elements are not allowed in vectors");
-                    }
-                    nvals[i] = val;
-                }
-                statement.setObject(paramIndex, nvals);
+                bindVectorParameter(statement, paramIndex, (JDBCCollection) collection);
             } else {
                 throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
             }
@@ -71,6 +60,10 @@ public class HANAVectorValueHandler extends JDBCArrayValueHandler {
             throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
         }
     }
+
+    protected abstract void bindVectorParameter(@NotNull JDBCPreparedStatement statement, int paramIndex,
+            @NotNull JDBCCollection collection)
+            throws DBCException, SQLException;
 
     @Override
     public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {

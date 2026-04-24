@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.model.fs.event;
+
+import org.jkiss.code.NotNull;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -35,17 +37,17 @@ public class DBFEventManager {
     }
 
 
-    public void addListener(DBFEventListener listener) {
+    public void addListener(@NotNull DBFEventListener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeListener(DBFEventListener listener) {
+    public void removeListener(@NotNull DBFEventListener listener) {
         this.listeners.remove(listener);
     }
 
-    public void fireFSEvent() {
+    public void fireFileSystemEvent(@NotNull DBFEvent event) {
         for (DBFEventListener listener : this.listeners) {
-            listener.handleFSEvent();
+            listener.handleFileSystemEvent(event);
         }
     }
 }

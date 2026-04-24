@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Control command result.
  *
@@ -25,24 +28,43 @@ package org.jkiss.dbeaver.model.sql;
  */
 public class SQLControlResult {
 
-    public static SQLControlResult success() {
-        return new SQLControlResult();
-    }
+    private final boolean isSuccess;
 
-    public static SQLControlResult transform(SQLScriptElement element) {
-        return new SQLControlResult(element);
-    }
-
+    @Nullable
     private SQLScriptElement transformed;
 
-    private SQLControlResult() {
+    @NotNull
+    public static SQLControlResult success() {
+        return new SQLControlResult(true);
     }
 
-    private SQLControlResult(SQLScriptElement transformed) {
+    @NotNull
+    public static SQLControlResult failure() {
+        return new SQLControlResult(false);
+    }
+
+    @NotNull
+    public static SQLControlResult transform(@NotNull SQLScriptElement element) {
+        return new SQLControlResult(element, true);
+    }
+
+
+    private SQLControlResult(boolean isSuccess) {
+        this.isSuccess = isSuccess;
+    }
+
+    private SQLControlResult(@NotNull SQLScriptElement transformed, boolean isSuccess) {
         this.transformed = transformed;
+        this.isSuccess = isSuccess;
     }
 
+    @Nullable
     public SQLScriptElement getTransformed() {
         return transformed;
     }
+
+    public boolean isSuccess() {
+        return isSuccess;
+    }
+
 }

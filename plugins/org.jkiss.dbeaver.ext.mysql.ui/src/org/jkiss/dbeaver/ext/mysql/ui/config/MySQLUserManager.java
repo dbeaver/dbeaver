@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,12 +140,22 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
         @Override
         public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
-            if (CommonUtils.isEmpty(getObject().getUserName())) {
+            final String username = getObject().getUserName();
+            if (CommonUtils.isEmpty(username)) {
                 throw new DBException("Can't create user with empty name");
             }
-            if (CommonUtils.isEmpty(getObject().getHost())) {
+
+            final String host = getObject().getHost();
+            if (CommonUtils.isEmpty(host)) {
                 throw new DBException("Can't create user with empty host name");
             }
+
+            if (getObject().getDataSource().getUsers(monitor)
+                .stream()
+                .anyMatch(u -> username.equals(u.getUserName()) && host.equals(u.getHost()))) {
+                throw new DBException("Cannot create user: user '%s'@'%s' already exists".formatted(username, host));
+            }
+
             super.validateCommand(monitor, options);
         }
     }
@@ -279,7 +289,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
     private class ReflectorRenameUser implements DBECommandReflector<MySQLUser, CommandRenameUser> {
         @Override
-        public void redoCommand(CommandRenameUser command) {
+        public void redoCommand(@NotNull CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getNewUserName());
             setHost(user, command.getNewHost());
@@ -298,7 +308,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         }
 
         @Override
-        public void undoCommand(CommandRenameUser command) {
+        public void undoCommand(@NotNull CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getOldUserName());
             setHost(user, command.getOldHost());

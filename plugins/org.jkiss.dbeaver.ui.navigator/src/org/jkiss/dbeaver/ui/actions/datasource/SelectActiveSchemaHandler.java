@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -72,7 +73,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(HandlerUtil.getActiveEditor(event)) == null) {
+        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(activeEditor) == null) {
             return null;
         }
 
@@ -82,8 +84,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DBCExecutionContext executionContext = getExecutionContextFromPart(HandlerUtil.getActiveEditor(event));
+        DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
         ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
+        contextDefaultObjectsReader.setReadNodes(true);
         try {
             UIUtils.runInProgressService(contextDefaultObjectsReader);
         } catch (InvocationTargetException e) {
@@ -102,25 +105,33 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 }
             }
         }
-        DBNDatabaseNode selectedNode = selectedDB == null ? null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
+        DBNDatabaseNode selectedNode = selectedDB == null ?
+            null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
         SelectDatabaseDialog dialog = new SelectDatabaseDialog(
             HandlerUtil.getActiveShell(event),
             dataSourceContainer,
             contextDefaultObjectsReader.getDefaultCatalogName(),
             contextDefaultObjectsReader.getNodeList(),
-            selectedNode == null ? null : Collections.singletonList(selectedNode));
+            selectedNode == null ? Collections.emptyList() : Collections.singletonList(selectedNode));
         dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return null;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null && node.getObject() != defaultObject) {
-            // Change current schema
-            changeDataBaseSelection(dataSourceContainer,
-                executionContext,
-                contextDefaultObjectsReader.getDefaultCatalogName(),
-                dialog.getCurrentInstanceName(),
-                node.getNodeDisplayName());
+        if (node != null) {
+            DBSObject selObject = node.getObject();
+            if (selObject != defaultObject) {
+                String schemaName = selObject instanceof DBSSchema ? selObject.getName() : null;
+                // Change current schema
+                changeDataBaseSelection(
+                    activeEditor,
+                    dataSourceContainer,
+                    executionContext,
+                    contextDefaultObjectsReader.getDefaultCatalogName(),
+                    dialog.getCurrentInstanceName(),
+                    schemaName
+                );
+            }
         }
 
         return null;
@@ -143,7 +154,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
 
         String schemaName = "< N/A >";
-        DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
+        DBIcon schemaIcon = DBIcon.TYPE_OBJECT;
         String schemaTooltip = UIUtils.getCatalogSchemaTerms(dataSource, true);
 
         if (dataSource != null && dataSource.isConnected()) {
@@ -176,7 +187,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 }
             } else {
                 DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
-                DBCExecutionContextDefaults contextDefaults = null;
+                DBCExecutionContextDefaults<?, ?> contextDefaults = null;
                 if (executionContext != null) {
                     contextDefaults = executionContext.getContextDefaults();
                 }
@@ -184,8 +195,13 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                     DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
                     if (defaultCatalog != null && (defaultSchema != null || contextDefaults.supportsSchemaChange())) {
-                        schemaName = defaultSchema == null ? "?": defaultSchema.getName() + "@" + defaultCatalog.getName();
-                        schemaIcon = DBIcon.TREE_SCHEMA;
+                        if (defaultSchema != null) {
+                            schemaName = defaultSchema.getName() + "@" + defaultCatalog.getName();
+                            schemaIcon = DBIcon.TREE_SCHEMA;
+                        } else {
+                            schemaName = defaultCatalog.getName();
+                            schemaIcon = DBIcon.TREE_DATABASE;
+                        }
                     } else if (defaultCatalog != null) {
                         schemaName = defaultCatalog.getName();
                         schemaIcon = DBIcon.TREE_DATABASE;
@@ -201,15 +217,23 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         element.setTooltip(schemaTooltip);
     }
 
-    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newObjectName) {
+    private static void changeDataBaseSelection(
+        @Nullable IEditorPart activeEditor,
+        DBPDataSourceContainer dsContainer,
+        DBCExecutionContext executionContext,
+        @Nullable String curInstanceName,
+        @Nullable String newInstanceName,
+        @Nullable String newObjectName
+    ) {
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
                 {
                     setUser(true);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
                         DBExecUtils.setExecutionContextDefaults(monitor, dataSource, executionContext, newInstanceName, curInstanceName, newObjectName);
                         return Status.OK_STATUS;
@@ -228,9 +252,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         @Override
         protected void fillContributionItems(List<IContributionItem> menuItems) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-            if (workbenchWindow.getActivePage() == null ||
-                SelectActiveDataSourceHandler.getDataSourceContainerProvider(workbenchWindow.getActivePage().getActiveEditor()) == null)
-            {
+            IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(activeEditor) == null) {
                 return;
             }
             DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
@@ -238,14 +261,14 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 return;
             }
 
-            DBCExecutionContext executionContext = getExecutionContextFromPart(workbenchWindow.getActivePage().getActiveEditor());
+            DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
             ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
             contextDefaultObjectsReader.setReadNodes(true);
             RuntimeUtils.runTask(contextDefaultObjectsReader, "Read database list", DB_LIST_READ_TIMEOUT);
 
             DBSObject[] defObjects = null;
             if (executionContext != null) {
-                DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     defObjects = new DBSObject[] { contextDefaults.getDefaultCatalog(), contextDefaults.getDefaultSchema() };
                 }
@@ -270,6 +293,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         @Override
                         public void run() {
                             changeDataBaseSelection(
+                                activeEditor,
                                 dataSourceContainer,
                                 executionContext,
                                 contextDefaultObjectsReader.getDefaultCatalogName(),

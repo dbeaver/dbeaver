@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ClickhouseCatalog extends GenericCatalog implements DBPObjectStatisticsCollector, DBPSystemObject {
-    private boolean hasStatistics = true;
+    private boolean hasStatistics = false;
 
 
     public ClickhouseCatalog(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
@@ -46,12 +46,12 @@ public class ClickhouseCatalog extends GenericCatalog implements DBPObjectStatis
     }
 
     @Override
-    public List<ClickhouseTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+    public List<ClickhouseTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<ClickhouseTable>) super.getPhysicalTables(monitor);
     }
 
     @Override
-    public List<ClickhouseTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    public List<ClickhouseTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return (List<ClickhouseTable>) super.getTables(monitor);
     }
 
@@ -71,8 +71,11 @@ public class ClickhouseCatalog extends GenericCatalog implements DBPObjectStatis
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh)
-    throws DBException {
+    public void collectObjectStatistics(
+        @NotNull DBRProgressMonitor monitor,
+        boolean totalSizeOnly,
+        boolean forceRefresh
+    ) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -89,8 +92,8 @@ public class ClickhouseCatalog extends GenericCatalog implements DBPObjectStatis
                     while (dbResult.next()) {
                         String tableName = dbResult.getString(1);
                         GenericTableBase table = getTable(monitor, tableName);
-                        if (table instanceof ClickhouseTable) {
-                            ((ClickhouseTable) table).fetchStatistics(dbResult);
+                        if (table instanceof ClickhouseTable cht) {
+                            cht.fetchStatistics(dbResult);
                         }
                     }
                 }

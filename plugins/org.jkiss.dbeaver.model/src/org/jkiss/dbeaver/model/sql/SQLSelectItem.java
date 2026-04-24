@@ -32,38 +32,33 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLSelectItem {
     private final SQLQuery query;
-    private final SelectItem source;
+    private final SelectItem<?> source;
     private final Table table;
     private final String name;
     private boolean plainColumn;
 
-    SQLSelectItem(SQLQuery query, SelectItem item) {
+    SQLSelectItem(SQLQuery query, SelectItem<?> item) {
         this.query = query;
         this.source = item;
-        if (item instanceof SelectExpressionItem) {
-            final Expression itemExpression = ((SelectExpressionItem) item).getExpression();
-            if (itemExpression instanceof Column) {
-                table = ((Column) itemExpression).getTable();
-                name = ((Column) itemExpression).getColumnName();
-                plainColumn = true;
-            } else {
-                table = null;
-                final Alias alias = ((SelectExpressionItem) item).getAlias();
-                if (alias != null) {
-                    name = alias.getName();
-                } else {
-                    name = item.toString();
-                }
-            }
-        } else if (item instanceof AllColumns) {
-            table = null;
+        Expression itemExpression = item.getExpression();
+        if (itemExpression instanceof Column) {
+            table = ((Column) itemExpression).getTable();
+            name = ((Column) itemExpression).getColumnName();
+            plainColumn = true;
+        } else if (itemExpression instanceof AllTableColumns atc) {
+            table = atc.getTable();
             name = "*";
-        } else if (item instanceof AllTableColumns) {
-            table = ((AllTableColumns) item).getTable();
+        } else if (itemExpression instanceof AllColumns) {
+            table = null;
             name = "*";
         } else {
             table = null;
-            name = "?";
+            final Alias alias = item.getAlias();
+            if (alias != null) {
+                name = alias.getName();
+            } else {
+                name = item.toString();
+            }
         }
     }
 

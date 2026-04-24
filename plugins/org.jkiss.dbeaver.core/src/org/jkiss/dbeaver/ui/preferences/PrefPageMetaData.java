@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +19,17 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -83,17 +86,16 @@ public class PrefPageMetaData extends TargetPrefPage
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         {
-            Group metadataGroup = UIUtils.createControlGroup(
+            Composite metadataGroup = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_database_general_group_metadata,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0);
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
                 CoreMessages.pref_page_database_general_separate_meta_connection,
-                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, PrefUtils.collectSingleConnectionDrivers()),
+                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
             if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
@@ -103,7 +105,7 @@ public class PrefPageMetaData extends TargetPrefPage
                     .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             }
             separateMetaConnectionCombo.setToolTipText(
-                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, PrefUtils.collectSingleConnectionDrivers())
+                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers())
             );
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
             caseSensitiveNamesCheck = UIUtils.createCheckbox(
@@ -127,12 +129,11 @@ public class PrefPageMetaData extends TargetPrefPage
         }
 
         {
-            Group performanceGroup = UIUtils.createControlGroup(
+            Composite performanceGroup = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_database_general_group_performance,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0);
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             disableExtraMetadataRead = UIUtils.createCheckbox(
                 performanceGroup,
@@ -174,10 +175,12 @@ public class PrefPageMetaData extends TargetPrefPage
     {
         try {
             store.setValue(ModelPreferences.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
-            store.setValue(
-                ModelPreferences.META_SEPARATE_CONNECTION,
-                metaUseSeparateConnectionValues.get(separateMetaConnectionCombo.getSelectionIndex()).name()
-            );
+            if (separateMetaConnectionCombo.isEnabled()) {
+                store.setValue(
+                    ModelPreferences.META_SEPARATE_CONNECTION,
+                    metaUseSeparateConnectionValues.get(separateMetaConnectionCombo.getSelectionIndex()).name()
+                );
+            }
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
             store.setValue(ModelPreferences.META_DISABLE_EXTRA_READ, disableExtraMetadataRead.getSelection());
             store.setValue(ModelPreferences.META_EXTRA_DDL_INFO, addExtraDDLInfo.getSelection());

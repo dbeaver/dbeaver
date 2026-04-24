@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,19 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools.toad;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.config.migration.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ext.config.migration.wizards.ImportConnectionInfo;
-import org.jkiss.dbeaver.ext.config.migration.wizards.ImportData;
-import org.jkiss.dbeaver.ext.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
+import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
+import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
+import org.jkiss.dbeaver.ui.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -118,7 +119,7 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                         String sshRemotePort = attrMap.get("SSHRemotePort");
                                         String sshRemoteHost = attrMap.get("SSHRemoteHost");
 
-                                        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+                                        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor(DBWUtils.SSH_TUNNEL);
                                         sshHandler = new DBWHandlerConfiguration(sslHD, null);
                                         sshHandler.setUserName(sshUser);
                                         sshHandler.setSavePassword(true);

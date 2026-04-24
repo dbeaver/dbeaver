@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
@@ -45,11 +46,11 @@ import java.util.List;
  */
 public class PrivilegeTableControl extends Composite {
 
-    private boolean isStatic;
+    private final boolean isStatic;
 
-    private TableViewer tableViewer;
-    private ViewerColumnController<Object, Object> columnsController;
-    private Table privTable;
+    private final TableViewer tableViewer;
+    private final ViewerColumnController<Object, Object> columnsController;
+    private final Table privTable;
 
     private List<MySQLPrivilege> privileges;
     private List<MySQLObjectPrivilege> currentPrivileges = new ArrayList<>();
@@ -65,16 +66,14 @@ public class PrivilegeTableControl extends Composite {
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        Composite privsGroup = UIUtils.createControlGroup(this, title, 1, GridData.FILL_BOTH, 0);
-        GridData gd = (GridData) privsGroup.getLayoutData();
-        gd.horizontalSpan = 2;
+        Composite privsGroup = UIUtils.createTitledComposite(this, title, 1, GridData.FILL_BOTH, 0, 2);
 
         tableViewer = new TableViewer(privsGroup, SWT.BORDER | SWT.UNDERLINE_SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
         privTable = tableViewer.getTable();
         privTable.setHeaderVisible(true);
         privTable.setLinesVisible(true);
-        gd = new GridData(GridData.FILL_BOTH);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 300;
         privTable.setLayoutData(gd);
 
@@ -116,8 +115,7 @@ public class PrivilegeTableControl extends Composite {
 
             @Override
             protected void setValue(Object element, Object value) {
-                if (element instanceof MySQLObjectPrivilege) {
-                    MySQLObjectPrivilege elementPriv = (MySQLObjectPrivilege) element;
+                if (element instanceof MySQLObjectPrivilege elementPriv) {
                     if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                         elementPriv.enabled = Boolean.TRUE.equals(value);
                         boolean withGrantOption = false;
@@ -183,8 +181,8 @@ public class PrivilegeTableControl extends Composite {
         super.notifyListeners(SWT.Modify, event);
     }
 
-    public void fillPrivileges(List<MySQLPrivilege> privs) {
-        this.privileges = privs;
+    public void fillPrivileges(@NotNull List<MySQLPrivilege> privs) {
+        this.privileges = new ArrayList<>(privs);
         boolean hasGrantOption = false;
         for (MySQLPrivilege privilege : privileges) {
             if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
@@ -196,7 +194,7 @@ public class PrivilegeTableControl extends Composite {
             // Add "With Grant Option" manually. We will use this option to expand grant statements on the "WITH GRANT STATEMENT" string
             MySQLDataSource dataSource = null;
             if (!CommonUtils.isEmpty(privileges)) {
-                dataSource = (MySQLDataSource) privileges.get(0).getDataSource();
+                dataSource = (MySQLDataSource) privileges.getFirst().getDataSource();
             }
             privileges.add(new MySQLPrivilege(
                 dataSource,
@@ -205,6 +203,8 @@ public class PrivilegeTableControl extends Composite {
                 "To give to other users those privileges you possess",
                 MySQLPrivilege.Kind.DDL));
         }
+        // Remove the "Usage" privilege - it has no real privileges.
+        privileges.removeIf(p -> p.getName().equals(MySQLConstants.PRIVILEGE_USAGE_NAME));
     }
 
     public void fillGrants(List<MySQLGrant> grants, boolean editable) {
@@ -273,9 +273,9 @@ public class PrivilegeTableControl extends Composite {
         drawColumns(currentPrivileges);
     }
 
-    private class MySQLObjectPrivilege {
+    private static class MySQLObjectPrivilege {
 
-        private MySQLPrivilege privilege;
+        private final MySQLPrivilege privilege;
         private boolean enabled;
 
         MySQLObjectPrivilege(MySQLPrivilege privilege, boolean enabled) {

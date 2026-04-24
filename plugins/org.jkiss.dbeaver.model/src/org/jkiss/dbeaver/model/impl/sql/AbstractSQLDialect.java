@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,8 +261,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isKeywordStart(@NotNull String word) {
-        SortedMap<String, KeywordHolder> map = allKeywords.tailMap(word.toUpperCase(DEF_LOCALE));
-        return !map.isEmpty() && map.firstKey().startsWith(word);
+        String upperCaseWord = word.toUpperCase(DEF_LOCALE);
+        SortedMap<String, KeywordHolder> map = allKeywords.tailMap(upperCaseWord);
+        return !map.isEmpty() && map.firstKey().startsWith(upperCaseWord);
     }
 
     @Override
@@ -425,7 +426,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         return expression;
     }
 
@@ -480,14 +486,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
             if (!this.useCaseInsensitiveNameLookup()) {
                 // See how unquoted identifiers are stored
                 // If passed identifier case differs from unquoted then we need to escape it
-                switch (this.storesUnquotedCase()) {
-                    case UPPER:
-                        hasBadChars = !str.equals(str.toUpperCase());
-                        break;
-                    case LOWER:
-                        hasBadChars = !str.equals(str.toLowerCase());
-                        break;
-                }
+                hasBadChars = switch (this.storesUnquotedCase()) {
+                    case UPPER -> !str.equals(str.toUpperCase());
+                    case LOWER -> !str.equals(str.toLowerCase());
+                    default -> hasBadChars;
+                };
             }
         }
 
@@ -539,23 +542,25 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean isQuotedString(String string) {
+    public boolean isQuotedString(@NotNull String string) {
         return string.length() >= 2 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'';
     }
 
+    @NotNull
     @Override
-    public String getQuotedString(String string) {
+    public String getQuotedString(@NotNull String string) {
         return '\'' + escapeString(string) + '\'';
     }
 
+    @NotNull
     @Override
-    public String getUnquotedString(String string) {
+    public String getUnquotedString(@NotNull String string) {
         return isQuotedString(string) ? unEscapeString(string.substring(1, string.length() - 1)) : string;
     }
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         return string.replace("'", "''");
     }
 
@@ -640,7 +645,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsAliasInHaving() {
-        return true;
+        return false;
     }
 
     @Override

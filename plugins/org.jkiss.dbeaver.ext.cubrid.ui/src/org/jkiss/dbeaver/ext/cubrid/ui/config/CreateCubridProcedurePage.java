@@ -51,7 +51,7 @@ public class CreateCubridProcedurePage extends CreateProcedurePage {
     }
 
     public String getProcedureName() {
-        return DBObjectNameCaseTransformer.transformName(procedure.getDataSource(), name);
+        return name;
     }
 
     @Override

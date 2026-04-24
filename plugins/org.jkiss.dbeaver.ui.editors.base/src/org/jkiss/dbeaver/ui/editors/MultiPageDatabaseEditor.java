@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 
 
 /**
@@ -68,6 +68,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         listener = new DatabaseEditorListener(this);
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return getEditorInput().getExecutionContext();
@@ -85,7 +86,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         super.setContainerStyles();
         Composite container = getContainer();
         if (container instanceof CTabFolder && !container.isDisposed()){
-            CSSUtils.setCSSClass(container, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(container);
         }
     }
 

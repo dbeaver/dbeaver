@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -52,16 +51,17 @@ public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
         this.dataSourceDescriptor = dataSourceDescriptor;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
         {
-            Group miscGroup = UIUtils.createControlGroup(
+            Composite miscGroup = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_ui_general_group_general,
-                1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            miscGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
 
             showSystemObjects = UIUtils.createCheckbox(
                 miscGroup,

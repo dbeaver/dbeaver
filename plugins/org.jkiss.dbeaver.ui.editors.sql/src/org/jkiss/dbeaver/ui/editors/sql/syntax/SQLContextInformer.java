@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 
@@ -112,8 +111,10 @@ public class SQLContextInformer
         return !CommonUtils.isEmpty(objectReferences);
     }
 
-    public void searchInformation(IRegion region)
-    {
+    public void searchInformation(@Nullable IRegion region) {
+        this.objectReferences = Collections.emptyList();
+        this.keywords = new String[0];
+
         ITextViewer textViewer = editor.getTextViewer();
         final DBCExecutionContext executionContext = editor.getExecutionContext();
         if (region == null || textViewer == null || executionContext == null) {
@@ -236,7 +237,7 @@ public class SQLContextInformer
                 // Register disconnect listener
                 DBPEventListener dbpEventListener = new DBPEventListener() {
                     @Override
-                    public void handleDataSourceEvent(DBPEvent event) {
+                    public void handleDataSourceEvent(@NotNull DBPEvent event) {
                         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && Boolean.FALSE.equals(event.getEnabled())) {
                             synchronized (LINKS_CACHE) {
                                 LINKS_CACHE.remove(container.getId());
@@ -273,17 +274,14 @@ public class SQLContextInformer
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor)
+        protected IStatus run(@NotNull DBRProgressMonitor monitor)
         {
             boolean[] result = new boolean[1];
             try {
                 DBExecUtils.tryExecuteRecover(monitor, getExecutionContext().getDataSource(), param -> {
-                    try {
-                        result[0] = findTables(monitor);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    result[0] = findTables(monitor);
                 });
             } catch (DBException e) {
                 log.warn(e);

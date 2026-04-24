@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -45,23 +46,17 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
 
     private final IWorkbenchPart activeEditor;
     protected QueryLogViewer logViewer;
-    private Button showAllCheck;
+    protected Button showAllCheck;
     protected Button showPreviousCheck;
 
-    TransactionInfoDialog(Shell parentShell, String title, IWorkbenchPart activeEditor)
-    {
+    TransactionInfoDialog(@NotNull Shell parentShell, @NotNull String title, @NotNull IWorkbenchPart activeEditor) {
         super(parentShell, title);
         this.activeEditor = activeEditor;
     }
 
-    @Override
-    protected boolean isResizable() {
-    	return true;
-    }
-
     protected abstract DBCExecutionContext getCurrentContext();
 
-    protected void createTransactionLogPanel(Composite composite) {
+    protected void createTransactionLogPanel(@NotNull Composite composite) {
         DBCExecutionContext context = getCurrentContext();
         QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
         logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false, true);
@@ -71,7 +66,13 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
             ((GridData) gd).heightHint = logViewer.getControl().getHeaderHeight() + logViewer.getControl().getItemHeight() * 5;
         }
 
-        showAllCheck = UIUtils.createCheckbox(composite, CoreMessages.transaction_info_dialog_checkbox_show_all_queries, CoreMessages.transaction_info_dialog_label_show_all_transaction_queries, false, 1);
+        showAllCheck = UIUtils.createCheckbox(
+            composite,
+            CoreMessages.transaction_info_dialog_checkbox_show_all_queries,
+            CoreMessages.transaction_info_dialog_label_show_all_transaction_queries,
+            false,
+            1
+        );
         showAllCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -79,7 +80,13 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
             }
         });
 
-        showPreviousCheck = UIUtils.createCheckbox(composite, CoreMessages.transaction_info_dialog_checkbox_show_previous_transactions, CoreMessages.transaction_info_dialog_label_otherwise, false, 1);
+        showPreviousCheck = UIUtils.createCheckbox(
+            composite,
+            CoreMessages.transaction_info_dialog_checkbox_show_previous_transactions,
+            CoreMessages.transaction_info_dialog_label_otherwise,
+            false,
+            1
+        );
         showPreviousCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -107,10 +114,9 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
         final QMMConnectionInfo currentSession = QMUtils.getCurrentConnection(executionContext);
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
 
-        QMEventFilter filter = event -> {
+        return event -> {
             QMMObject object = event.getObject();
-            if (object instanceof QMMStatementExecuteInfo) {
-                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
+            if (object instanceof QMMStatementExecuteInfo exec) {
                 if (!showPrevious && !CommonUtils.equalObjects(exec.getSavepoint(), currentSP)) {
                     return false;
                 }
@@ -125,12 +131,10 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
             }
             return false;
         };
-        return filter;
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
     }
 

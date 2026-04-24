@@ -62,41 +62,7 @@ public class SyntaxParserTest {
             + "USING(ProductCategoryID)\r\n"
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
-//        inputText = "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
-        
-        inputText = "\n"
-                + "SELECT BusinessEntityID, TerritoryID,   \n"
-                + "    CONVERT(VARCHAR(20),SUM(SalesYTD) OVER ("
-                + "          PARTITION BY TerritoryID   \n"
-                + "          ORDER BY DATEPART(yy,ModifiedDate)   \n"
-                + "          ROWS BETWEEN current_row AND 1 FOLLOWING \n"
-                + "    ),1) AS CumulativeTotal  \n"
-                + "FROM Sales.SalesPerson  \n"
-                + "WHERE TerritoryID IS NULL OR TerritoryID < 5";
 
-        inputText = "select "
-                + " c.id"
-                + " c.name,"
-                + " c.title,"
-                + " c.updated,"
-                + " c.name "
-                + ",(select json_aggr(distinct aafe order by 2 limit 50 separator 'f')\n"
-                + "   from order_products_rewards\n"
-                + "   where order_id = c.order_id\n"
-                + "   group by order_id) fdi\n"
-                + " from contracts c"
-                + "where date(c.updated) = date(sysdate())\n"
-                + "";
-        
-        inputText = "SELECT City, STRING_AGG(CONVERT(NVARCHAR(max), EmailAddress)s ';') FILTER (where a < b) AS Emails \n"
-                + " FROM Person.BusinessEntityAddress AS BEA  \n"
-                + " INNER JOIN Person.Address AS A ON BEA.AddressID = A.AddressID\n"
-                + " INNER JOIN Person.EmailAddress AS EA ON BEA.BusinessEntityID = EA.BusinessEntityID \n"
-                + " GROUP BY City";
-
-        inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
-
-        inputText = "select * from test. ";
 
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(

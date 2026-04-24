@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.util.SQLEditorTestUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,18 +87,23 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
 
     @Test
     public void parseFromCursorPositionBeginTransaction() throws DBException {
-        String query = "begin transaction;\nselect 1 from dual;";
+        String query = """
+            begi<-|n transaction;<-|
+            select 1 from dual;
+            """;
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
         SQLScriptElement element;
-        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
-        int[] positions = new int[]{4, 18};
+        SQLParserContext context = createParserContext(setDialect("snowflake"), modifiedQuery);
         for (int pos : positions) {
-            element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
+            element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), pos, false, false);
             Assert.assertEquals("begin transaction", element.getText());
         }
     }
 
     @Test
-    public void parseQueryWithCommentsBeforeBlockDeclaration() throws DBException {
+    public void parseQueryBeforeBlockDeclaration() throws DBException {
         SQLDialect hanaDialect = setDialect("sap_hana");
         Assert.assertTrue(hanaDialect.isStripCommentsBeforeBlocks());
         {
@@ -372,6 +378,25 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
             end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), text, 0);
             Assert.assertEquals(varNames.get(i), text.substring(0, end).trim());
         }
+    }
+
+
+    @Test
+    public void parseMultilineParametersFromSetCommand() throws DBException {
+        String commandText = """
+            @@set myVar=the first line
+            and the second line
+            works@@""";
+        SQLParserContext context = createParserContext(setDialect("snowflake"), commandText);
+        assert context.getDataSource() != null;
+        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), commandText);
+        Assert.assertEquals(1, elements.size());
+        SQLScriptElement sqlScriptElement = elements.get(0);
+        Assert.assertTrue(sqlScriptElement instanceof SQLControlCommand);
+        SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
+        Assert.assertEquals(commandText, cmd.getText());
+        int end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), cmd.getParameter(), 0);
+        Assert.assertEquals("myVar", cmd.getParameter().substring(0, end).trim());
     }
 
 

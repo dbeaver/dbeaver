@@ -31,7 +31,7 @@ public class WorksheetUtils {
 
     private static final Log log = Log.getLog(WorksheetUtils.class);
 
-    public static final String DEFAULT_SHEET_NAME = "Sheet";
+    public static final String DEFAULT_SHEET_NAME = "CustomQuery";
 
     private static final Set<String> RESERVED_WORDS = Set.of("History");
     private static final int MAX_NAME_LENGTH = 31;

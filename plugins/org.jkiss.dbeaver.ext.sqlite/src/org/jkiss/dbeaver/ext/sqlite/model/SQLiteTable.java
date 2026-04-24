@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.sqlite.internal.SQLiteMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -32,15 +30,16 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,8 +68,14 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
     private DBDPseudoAttribute[] allPseudoAttributes = null;
 
+    private boolean hasStrictTyping;
+
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
+        hasStrictTyping = dbResult != null &&
+            this.getDataSource() instanceof SQLiteDataSource dataSource &&
+            dataSource.supportsStrictTyping() &&
+            JDBCUtils.safeGetBoolean(dbResult, "STRICT"); //$NON-NLS-1$
     }
 
     @Override
@@ -168,6 +173,15 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         return false;
     }
 
+    @Property(visibleIf = TableStrictTypingValidator.class, viewable = true, editable = true, order = 40)
+    public boolean isHasStrictTyping() {
+        return hasStrictTyping;
+    }
+
+    public void setHasStrictTyping(boolean hasStrictTyping) {
+        this.hasStrictTyping = hasStrictTyping;
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
@@ -184,5 +198,34 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     @Override
     public SQLiteTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
+    }
+
+    @Override
+    public Collection<SQLiteTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor.isForceCacheUsage()) {
+            return new ArrayList<>();
+        }
+        List<SQLiteTableForeignKey> list = new ArrayList<>();
+        for (GenericTableBase table : getDataSource().getTables(monitor)) {
+            Collection<? extends GenericTableForeignKey> tableForeignKeys = table.getAssociations(monitor);
+            if (Objects.nonNull(tableForeignKeys)) {
+                tableForeignKeys
+                    .stream()
+                    .filter(fk -> fk instanceof SQLiteTableForeignKey)
+                    .map(fk -> (SQLiteTableForeignKey) fk)
+                    .filter(fk -> fk.refersToTable(this))
+                    .forEach(list::add);
+            }
+        }
+        return list;
+    }
+
+    public static class TableStrictTypingValidator implements IPropertyValueValidator<SQLiteTable, Object> {
+
+        @Override
+        public boolean isValidValue(@NotNull SQLiteTable object, @Nullable Object value) throws IllegalArgumentException {
+            return object.getDataSource() instanceof SQLiteDataSource dataSource &&
+                dataSource.supportsStrictTyping();
+        }
     }
 }

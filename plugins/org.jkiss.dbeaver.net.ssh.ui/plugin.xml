@@ -18,7 +18,7 @@
             id="com.dbeaver.ssh.tunnels"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.net.ssh.SSHTunnelView"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.svg"
             name="SSH tunnel explorer">
             <description>SSH tunnel explorer. Allows to view and manage SSH tunnels.</description>
         </view>

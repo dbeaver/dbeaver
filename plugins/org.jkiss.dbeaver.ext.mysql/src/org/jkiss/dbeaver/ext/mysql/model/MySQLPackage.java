@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ public class MySQLPackage
         return persisted;
     }
 
+    @NotNull
     @Property(viewable = true, order = 1)
     @Override
     public String getName() {
@@ -94,7 +95,7 @@ public class MySQLPackage
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getCatalog(),
             this);
@@ -110,9 +111,10 @@ public class MySQLPackage
         return catalog;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = readSource(monitor, false);
@@ -125,9 +127,10 @@ public class MySQLPackage
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getExtendedDefinitionText(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = readSource(monitor, true);

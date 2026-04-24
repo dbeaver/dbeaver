@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@
 
 package org.jkiss.dbeaver.ext.gaussdb;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceURLProvider;
 import org.jkiss.dbeaver.model.DatabaseURL;
@@ -41,13 +38,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
-
-    private static Map<String, String> connectionsProps;
+public class GaussDBDataSourceProvider extends JDBCDataSourceProvider<GaussDBDataSource> {
 
     static {
-        connectionsProps = new HashMap<>();
-
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (preferenceStore != null) {
             PrefUtils.setDefaultPreferenceValue(preferenceStore, PostgreConstants.PROP_DD_PLAIN_STRING, false);
@@ -55,8 +48,8 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
         }
     }
 
-    public static Map<String, String> getConnectionsProps() {
-        return connectionsProps;
+    public GaussDBDataSourceProvider() {
+        super(GaussDBDataSource.class);
     }
 
     @Override
@@ -64,13 +57,15 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
     @Override
-    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GaussDBDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new GaussDBDataSource(monitor, container);
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         DBAAuthModel<DBAAuthCredentials> authModel = connectionInfo.getAuthModel();
         if (authModel instanceof DBPDataSourceURLProvider) {
             String connectionURL = ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
@@ -101,7 +96,7 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return false;
     }
 }

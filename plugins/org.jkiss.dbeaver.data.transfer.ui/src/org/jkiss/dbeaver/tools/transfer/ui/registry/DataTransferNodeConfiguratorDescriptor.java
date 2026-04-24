@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,22 +24,19 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * DataTransferNodeDescriptor
  */
-public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
-{
+public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor {
     private static final Log log = Log.getLog(DataTransferNodeConfiguratorDescriptor.class);
 
     @NotNull
     private final String id;
     private final List<DataTransferPageDescriptor> pageTypes = new ArrayList<>();
 
-    DataTransferNodeConfiguratorDescriptor(IConfigurationElement config)
-    {
+    DataTransferNodeConfiguratorDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("node");
@@ -47,9 +44,34 @@ public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
     }
 
     void loadNodeConfigurations(IConfigurationElement config) {
-        for (IConfigurationElement pageConfig : ArrayUtils.safeArray(config.getChildren("page"))) {
-            pageTypes.add(new DataTransferPageDescriptor(pageConfig));
+        // Own descriptors by their id
+        Map<String, DataTransferPageDescriptor> pagesById = new HashMap<>();
+        // Remember all replacement pairs to apply in a second pass
+        List<Map.Entry<String, DataTransferPageDescriptor>> replacements = new ArrayList<>();
+
+        for (IConfigurationElement pageCfg : ArrayUtils.safeArray(config.getChildren("page"))) {
+            String id = pageCfg.getAttribute("id");
+            if (id == null || id.isEmpty()) {
+                log.warn("Page descriptor without id: " + config.getContributor().getName());
+            }
+
+            DataTransferPageDescriptor descriptor = new DataTransferPageDescriptor(pageCfg);
+            pagesById.put(id, descriptor);      // own id always wins
+
+            String replaces = pageCfg.getAttribute("replaces");
+            if (replaces != null && !replaces.isEmpty()) {
+                replacements.add(Map.entry(replaces, descriptor));
+            }
         }
+
+        // Second pass: apply all declared replacements so they override whatever was there
+        for (Map.Entry<String, DataTransferPageDescriptor> r : replacements) {
+            pagesById.put(r.getKey(), r.getValue());
+        }
+
+        // Deduplicate before exporting
+        pageTypes.clear();
+        pageTypes.addAll(new HashSet<>(pagesById.values()));
     }
 
     @NotNull

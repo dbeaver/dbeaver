@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.IntervalSet;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.tree.RuleNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.*;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -36,9 +39,18 @@ import java.util.stream.StreamSupport;
 public class LSMInspections {
 
     private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
+    private static final Pattern anyWordHeadPattern = Pattern.compile("^\\w+");
 
     public static boolean matchesAnyWord(String str) {
         return anyWordPattern.matcher(str).matches();
+    }
+
+    /**
+     * Returns the information about the location of the first found match of any word in the provided string
+     */
+    public static Interval matchAnyWordHead(String str) {
+        Matcher m = anyWordHeadPattern.matcher(str);
+        return m.find() ? new Interval(m.start(), m.end() - 1) : null;
     }
 
     private static final Set<Integer> KNOWN_IDENTIFIER_PART_TOKENS = Set.of(
@@ -130,14 +142,28 @@ public class LSMInspections {
     @NotNull
     private final STMTreeNode root;
 
+    private enum TermNodeKind {
+        IDENTIFIER,
+        PERIOD,
+        OTHER
+    }
+
+    private record TermItem(
+        @NotNull
+        STMTreeNode term,
+        @NotNull
+        TermNodeKind kind
+    ) {
+    }
+
     @NotNull
-    private final List<STMTreeNode> allTerms;
+    private final List<TermItem> allTerms;
     private final List<STMTreeTermNode> allNonErrorTerms;
 
     public LSMInspections(@NotNull SQLDialect dialect, @NotNull STMTreeNode root) {
         this.dialect = dialect;
         this.root = root;
-        Pair<List<STMTreeNode>, List<STMTreeTermNode>> termLists = this.prepareTerms(root);
+        Pair<List<TermItem>, List<STMTreeTermNode>> termLists = this.prepareTerms(root);
         this.allTerms = termLists.getFirst();
         this.allNonErrorTerms = termLists.getSecond();
     }
@@ -150,31 +176,56 @@ public class LSMInspections {
     }
 
     @NotNull
-    public static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
+    private static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
         ATNState initialState = atn.states.get(atn.ruleToStartState[SQLStandardParser.RULE_sqlQueries].stateNumber);
         return inspectAbstractSyntaxAtState(null, emptyStack, initialState);
     }
 
+    /**
+     * Returns information about the syntax tree state in the specified position, providing info about expected tokens
+     */
     @Nullable
     public SyntaxInspectionResult prepareAbstractSyntaxInspection(int position) {
-        STMTreeNode subroot = this.root;
         ATN atn = SQLStandardParser._ATN;
 
-        Interval range = subroot.getRealInterval();
+        Interval range = this.root.getRealInterval();
         if (position < range.a) {
-            return prepareOffquerySyntaxInspection();
+            return null;
+        } else if (this.allNonErrorTerms.isEmpty()) {
+            if (this.allTerms.isEmpty()) {
+                return null;
+            } else {
+                // assuming we have a tree but failed to really match anything due to small amount of terms presented,
+                // so don't bother about the ineffectiveness of naive ATN execution in the common case
+
+                // unwrap lexemes until the position of interest
+                List<Token> tokens = this.allTerms.stream()
+                    .map(t -> ((STMTreeTermErrorNode) t.term()).symbol)
+                    .filter(s -> s.getStopIndex() < position)
+                    .toList();
+
+                // execute ATN over these lexemes to predict what might be next
+                var reachedTransitions = runAtn(tokens);
+
+                Set<String> predictedWords = new HashSet<>();
+                Set<Integer> predictedTokenIds = new HashSet<>();
+                collectTokenPredictions(reachedTransitions, predictedTokenIds, predictedWords);
+                return new SyntaxInspectionResult(
+                    predictedTokenIds, predictedWords, Collections.emptyMap(),
+                    false, false, false, false, false, false, false, false
+                );
+            }
         } else {
             int index;
             STMTreeTermNode node;
             ATNState initialState;
 
-            if (position > range.b) {
+            if (position > range.b + 1) {
                 if (this.allNonErrorTerms.size() > 0) {
                     index = this.allNonErrorTerms.size() - 1;
                     node = this.allNonErrorTerms.get(index);
-                    subroot = node.getParentNode();
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
                 } else {
                     return SyntaxInspectionResult.EMPTY;
@@ -185,17 +236,23 @@ public class LSMInspections {
                     index = ~index - 1;
                 }
 
-                node = this.allNonErrorTerms.get(index);
-                subroot = node.getParentNode();
-                Interval nodeRange = node.getRealInterval();
-                if (nodeRange.a <= position) {
-                    if (nodeRange.b >= position) {
+                // TODO consider when to take previous term to get correct inspected keywords
+
+                node = this.allNonErrorTerms.isEmpty() || index >= this.allNonErrorTerms.size()
+                    ? null
+                    : this.allNonErrorTerms.get(index);
+                Interval nodeRange = node == null ? null : node.getRealInterval();
+                if (nodeRange != null && nodeRange.a <= position) {
+                    if (nodeRange.b + 1 >= position) {
                         // containing term found
-                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType())) {
+                        STMTreeTermNode prevNode = index <= 0 ? null : this.allNonErrorTerms.get(index - 1);
+                        if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
+                            node = prevNode;
+                            initialState =  atn.states.get(node.getAtnState()).getTransitions()[0].target;
+                        } else if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
                             // we need target state of the previous term
                             node = this.allNonErrorTerms.get(index - 1);
                             initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
-                            subroot = node.getParentNode();
                         } else {
                             // we need its start state
                             initialState = atn.states.get(node.getAtnState());
@@ -206,51 +263,124 @@ public class LSMInspections {
                     }
                 } else if (index > 0) {
                     // use previous node, its rule end state
+                    if (node == null) {
+                        index = this.allNonErrorTerms.size() - 1;
+                    }
                     node = this.allNonErrorTerms.get(index - 1);
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
-                    subroot = node.getParentNode();
                 } else {
+                    if (node == null) {
+                        return SyntaxInspectionResult.EMPTY;
+                    }
                     // subroot itself contains given position, use its rule start state
-                    initialState = atn.states.get(subroot.getAtnState());
+                    STMTreeNode parent = node.getParentNode();
+                    if (parent != null) {
+                        initialState = atn.states.get(parent.getAtnState());
+                    } else {
+                        return SyntaxInspectionResult.EMPTY;
+                    }
                 }
             }
 
-            return inspectAbstractSyntaxAtTreeState(subroot, initialState);
+            return inspectAbstractSyntaxAtTreeState(node, initialState);
         }            
     }
 
+    private static void collectTokenPredictions(
+        @NotNull Collection<Transition> reachedTransitions,
+        @NotNull Set<Integer> predictedTokenIds,
+        @NotNull Set<String> predictedWords
+    ) {
+        IntervalSet transitionTokens = getTransitionTokens(reachedTransitions);
+
+        for (Interval interval : transitionTokens.getIntervals()) {
+            int a = interval.a;
+            int b = interval.b;
+            for (int v = a; v <= b; v++) {
+                String word = SQLStandardParser.VOCABULARY.getDisplayName(v);
+                if (word != null && knownReservedWords.contains(word)) {
+                    predictedTokenIds.add(v);
+                    predictedWords.add(word);
+                }
+            }
+        }
+    }
+
+    private static final Set<Integer> KNOWN_ANY_RULES = Set.of(
+        SQLStandardParser.RULE_anyWord,
+        SQLStandardParser.RULE_anyValue,
+        SQLStandardParser.RULE_anyWordWithAnyValue,
+        SQLStandardParser.RULE_anyProperty,
+        SQLStandardParser.RULE_anyWordsWithProperty,
+        SQLStandardParser.RULE_anyUnexpected
+    );
+
+    private static boolean isAnySomething(STMTreeNode node) {
+        for (STMTreeNode n = node; n != null; n = n.getParentNode()) {
+            if (KNOWN_ANY_RULES.contains(n.getNodeKindId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @NotNull
-    public static Pair<List<STMTreeNode>, List<STMTreeTermNode>> prepareTerms(@NotNull STMTreeNode root) {
-        List<STMTreeNode> allTerms = new ArrayList<>();
+    private static TermNodeKind classifyTermNode(@NotNull STMTreeNode term, boolean isAnySomething) {
+        if (term instanceof STMTreeTermNode t && t.symbol.getType() == SQLStandardLexer.Period) {
+            return TermNodeKind.PERIOD;
+        } else if (term instanceof STMTreeTermNode t && KNOWN_IDENTIFIER_PART_TOKENS.contains(t.symbol.getType())
+            || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+            || (term instanceof STMTreeTermErrorNode e && anyWordPattern.matcher(e.getText()).matches())
+            || isAnySomething
+        ) {
+            return TermNodeKind.IDENTIFIER;
+        } else {
+            return TermNodeKind.OTHER;
+        }
+    }
+
+    private static boolean isAnySomethingNode(@NotNull STMTreeNode node) {
+        return KNOWN_ANY_RULES.contains(node.getNodeKindId());
+    }
+
+    @NotNull
+    public static Pair<List<TermItem>, List<STMTreeTermNode>> prepareTerms(@NotNull STMTreeNode root) {
+        List<TermItem> allTerms = new ArrayList<>();
         List<STMTreeTermNode> allNonErrorTerms = new ArrayList<>();
 
-        ListNode<STMTreeNode> stack = ListNode.of(root);
-        while (ListNode.hasAny(stack)) {
-            STMTreeNode node = stack.data;
+        record NodesStackItem(STMTreeNode node, boolean isAnySomething, NodesStackItem next) { }
+        NodesStackItem stack = new NodesStackItem(root, false, null);
+        while (stack != null) {
+            NodesStackItem nodeItem = stack;
+            STMTreeNode node = nodeItem.node();
             stack = stack.next;
 
             if (node instanceof STMTreeTermNode term) {
-                allTerms.add(term);
-                allNonErrorTerms.add(term);
+                if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
+                    allTerms.add(new TermItem(term, classifyTermNode(term, nodeItem.isAnySomething())));
+                    allNonErrorTerms.add(term);
+                }
             } else if (node instanceof STMTreeTermErrorNode err) {
-                allTerms.add(err);
+                if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
+                    allTerms.add(new TermItem(err, classifyTermNode(err, nodeItem.isAnySomething())));
+                }
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
-                    stack = ListNode.push(stack, node.getChildNode(i));
+                    STMTreeNode childNode = node.getChildNode(i);
+                    boolean isAnySomething = nodeItem.isAnySomething || isAnySomethingNode(childNode);
+                    stack = new NodesStackItem(childNode, isAnySomething, stack);
                 }
             }
         }
         return Pair.of(allTerms, allNonErrorTerms);
     }
 
-    @Nullable
+    @NotNull
     private static SyntaxInspectionResult inspectAbstractSyntaxAtTreeState(@NotNull STMTreeNode node, @NotNull ATNState initialState) {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node instanceof TerminalNode ? node.getParentNode() : node;
-                 n instanceof RuleNode rn;
-                 n = n.getParentNode()) {
+            for (STMTreeNode n = node.getParentNode(); n instanceof RuleNode rn; n = n.getParentNode()) {
                 path.addFirst(rn);
             }
             for (RuleNode rn : path) {
@@ -259,8 +389,8 @@ public class LSMInspections {
         }
 
         int atnStateIndex = node.getAtnState();
-        if (atnStateIndex < 0) { 
-            return null;  // TODO error node met, consider using previous valid node 
+        if (atnStateIndex < 0) {
+            return SyntaxInspectionResult.EMPTY; // TODO error node met, consider using previous valid node
         } else {
             return inspectAbstractSyntaxAtState(node, stack, initialState);
         }
@@ -311,46 +441,43 @@ public class LSMInspections {
 
     public NameInspectionResult collectNameNodes(int position) {
         ArrayDeque<STMTreeNode> nameNodes = new ArrayDeque<>();
-        int index = STMUtils.binarySearchByKey(this.allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+        int index = STMUtils.binarySearchByKey(this.allTerms, t -> t.term.getRealInterval().a, position, Comparator.comparingInt(k -> k));
         if (index < 0) {
             index = ~index - 1;
         }
 
         int positionToInspect = position;
         boolean hasPeriod = false;
-        STMTreeNode currentTerm = null;
+        TermItem currentTerm = null;
         if (index >= 0) {
-            STMTreeNode immTerm = allTerms.get(index);
+            TermItem immItem = allTerms.get(index);
             // position is actually considered to be right _after_ the term of interest,
             // so use we the previous one on the exact match
-            if (immTerm.getRealInterval().a >= position) {
+            if (immItem.term.getRealInterval().a >= position) {
                 if (index > 0) {
-                    immTerm = allTerms.get(index - 1);
+                    immItem = allTerms.get(index - 1);
                     index--;
                 } else  {
-                    immTerm = null;
+                    immItem = null;
                 }
             }
-            if (immTerm != null && immTerm.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
-                if (anyWordPattern.matcher(immTerm.getTextContent()).matches()) {
-                    currentTerm = immTerm;
+            if (immItem != null && immItem.term.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
+                if (anyWordPattern.matcher(immItem.term.getTextContent()).matches()) {
+                    currentTerm = immItem;
                 }
-                if (dialect.getReservedWords().contains(immTerm.getTextContent().toUpperCase())) {
-                    positionToInspect = immTerm.getRealInterval().a;
+                if (dialect.getReservedWords().contains(immItem.term.getTextContent().toUpperCase())) {
+                    positionToInspect = immItem.term.getRealInterval().a;
                 }
-                if (immTerm instanceof STMTreeTermNode t && t.symbol.getType() == SQLStandardLexer.Period) {
+                if (immItem.kind == TermNodeKind.PERIOD) {
                     hasPeriod = true;
                     index--; // skip identifier separator immediately before the cursor
                 }
                 for (int i = index; i >= 0; i--) {
-                    STMTreeNode term = allTerms.get(i);
-                    if (term instanceof STMTreeTermNode t && KNOWN_IDENTIFIER_PART_TOKENS.contains(t.symbol.getType())
-                        || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
-                        || term instanceof STMTreeTermErrorNode
-                    ) {
-                        nameNodes.addFirst(term);
+                    TermItem item = allTerms.get(i);
+                    if (item.kind == TermNodeKind.IDENTIFIER) {
+                        nameNodes.addFirst(item.term);
                         i--;
-                        if (i < 0 || (allTerms.get(i) instanceof STMTreeTermNode t && t.symbol.getType() != SQLStandardLexer.Period)) {
+                        if (i < 0 || allTerms.get(i).kind == TermNodeKind.PERIOD) {
                             break; // not followed by an identifier separator part
                         }
                     } else {
@@ -360,7 +487,7 @@ public class LSMInspections {
             }
         }
 
-        return new NameInspectionResult(nameNodes, hasPeriod, currentTerm, positionToInspect);
+        return new NameInspectionResult(nameNodes, hasPeriod, currentTerm != null ? currentTerm.term : null, positionToInspect);
     }
 
     private static Map<Integer, Boolean> performPresenceTests(ListNode<Integer> stateStack) {
@@ -392,19 +519,7 @@ public class LSMInspections {
         reachabilityTestRules.forEach(n -> reachabilityTests.put(n, false));
         Collection<Transition> tt = collectFollowingTerms(stack, initialState, knownReservedWordsExcludeRules, reachabilityTests);
 
-        IntervalSet transitionTokens = getTransitionTokens(tt);
-
-        for (Interval interval : transitionTokens.getIntervals()) {
-            int a = interval.a;
-            int b = interval.b;
-            for (int v = a; v <= b; v++) {
-                String word = SQLStandardParser.VOCABULARY.getDisplayName(v);
-                if (word != null && knownReservedWords.contains(word)) {
-                    predictedTokenIds.add(v);
-                    predictedWords.add(word);
-                }
-            }
-        }
+        collectTokenPredictions(tt, predictedTokenIds, predictedWords);
 
         boolean expectingTableName = reachabilityTests.get(SQLStandardParser.RULE_tableName) || presenceTests.get(SQLStandardParser.RULE_tableName);
         boolean expectingColumnName = reachabilityTests.get(SQLStandardParser.RULE_columnName);
@@ -548,5 +663,72 @@ public class LSMInspections {
                 break;
             }
         }
+    }
+
+    record Step(
+        @NotNull ATNState atnState,
+        int termIndex,
+        @NotNull ListNode<Integer> ruleIdsStack
+    ) {
+    }
+
+
+    @NotNull
+    private static Set<Transition> runAtn(@NotNull List<Token> tokens) {
+        final int maxTokenType = SQLStandardParser._ATN.maxTokenType;
+        HashSet<Pair<ATNState,  Integer>> visited = new HashSet<>();
+        HashSet<Transition> results = new HashSet<>();
+        LinkedList<Step> q = new LinkedList<>();
+        q.addLast(new Step(SQLStandardParser._ATN.ruleToStartState[SQLStandardParser.RULE_sqlQuery], 0, ListNode.of(null)));
+
+        while (!q.isEmpty()) {
+            Step step = q.removeLast();
+            ATNState state = step.atnState;
+            ListNode<Integer> stack = step.ruleIdsStack;
+
+            for (Transition transition : state.getTransitions()) {
+                int termIndex = step.termIndex;
+                ListNode<Integer> transitionStack;
+                switch (transition.getSerializationType()) {
+                    case Transition.ATOM, Transition.RANGE, Transition.SET -> {
+                        if (termIndex < tokens.size() && transition.matches(tokens.get(termIndex).getType(), 0, maxTokenType)) {
+                            transitionStack = stack;
+                            termIndex++;
+                        } else {
+                            results.add(transition);
+                            continue;
+                        }
+                    }
+                    case Transition.NOT_SET, Transition.WILDCARD -> {
+                        continue;
+                    }
+                    case Transition.RULE, Transition.EPSILON, Transition.PREDICATE, Transition.ACTION, Transition.PRECEDENCE -> {
+                        switch (state.getStateType()) {
+                            case ATNState.RULE_STOP -> {
+                                if (stack != null && stack.data != null && stack.next != null && stack.next.data != null
+                                    && transition.target.ruleIndex == stack.next.data
+                                ) {
+                                    transitionStack = stack.next; // pop
+                                } else {
+                                    continue;
+                                }
+                            }
+                            case ATNState.RULE_START -> {
+                                transitionStack = ListNode.push(stack, state.ruleIndex);
+                                if (knownReservedWordsExcludeRules.contains(state.ruleIndex)) {
+                                    continue;
+                                }
+                            }
+                            default -> transitionStack = stack;
+                        }
+                    }
+                    default -> throw new UnsupportedOperationException("Unrecognized ATN transition type.");
+                }
+                if (visited.add(Pair.of(transition.target, termIndex))) {
+                    q.addLast(new Step(transition.target, termIndex, transitionStack));
+                }
+            }
+        }
+        return results;
     }
 }

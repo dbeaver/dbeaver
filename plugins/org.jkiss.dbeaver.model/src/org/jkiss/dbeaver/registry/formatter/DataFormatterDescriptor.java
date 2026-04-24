@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.registry.formatter;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
@@ -34,15 +36,14 @@ public class DataFormatterDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataFormatter"; //$NON-NLS-1$
 
-    private String id;
-    private String name;
-    private String description;
-    private DBPPropertyDescriptor[] properties;
+    private final String id;
+    private final String name;
+    private final String description;
+    private final DBPPropertyDescriptor[] properties;
     private DBDDataFormatterSample sample;
-    private ObjectType formatterType;
+    private final ObjectType formatterType;
 
-    public DataFormatterDescriptor(IConfigurationElement config)
-    {
+    public DataFormatterDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
@@ -51,38 +52,44 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         this.description = config.getAttribute("description");
         this.properties = PropertyDescriptor.extractPropertyGroups(config);
 
-        Class<?> objectClass = getObjectClass(config.getAttribute("sampleClass"));
         try {
-            sample = (DBDDataFormatterSample)objectClass.getDeclaredConstructor().newInstance();
+            Class<?> objectClass = getImplClass(config.getAttribute("sampleClass"));
+            sample = (DBDDataFormatterSample) objectClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             log.error("Can't instantiate data formatter '" + getId() + "' sample");
         }
     }
 
+    @NotNull
     public String getId()
     {
         return id;
     }
 
+    @NotNull
     public String getName()
     {
         return name;
     }
 
+    @Nullable
     public String getDescription()
     {
         return description;
     }
 
+    @NotNull
     public DBDDataFormatterSample getSample()
     {
         return sample;
     }
 
+    @NotNull
     public DBPPropertyDescriptor[] getProperties() {
         return properties;
     }
 
+    @NotNull
     public DBDDataFormatter createFormatter() throws ReflectiveOperationException
     {
         Class<? extends DBDDataFormatter> clazz = formatterType.getObjectClass(DBDDataFormatter.class);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,18 @@ import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Metadata search utils
  */
-public class SQLSearchUtils
-{
+public class SQLSearchUtils {
     private static final Log log = Log.getLog(SQLSearchUtils.class);
 
     @Nullable
@@ -51,7 +53,9 @@ public class SQLSearchUtils
         boolean useAssistant,
         @NotNull SQLIdentifierDetector identifierDetector
     ) {
-        return findObjectByFQN(monitor, objectContainer, executionContext, nameList, useAssistant, identifierDetector, false);
+        return getFirstIfPresented(
+            findObjectsByFQN(monitor, objectContainer, executionContext, nameList, useAssistant, identifierDetector, false, false)
+        );
     }
 
     @Nullable
@@ -61,29 +65,53 @@ public class SQLSearchUtils
         @Nullable SQLCompletionRequest request,
         @NotNull List<String> nameList
     ) {
-        return findObjectByFQN(
+        return getFirstIfPresented(findObjectsByFQN(
             monitor,
             objectContainer,
             request.getContext().getExecutionContext(),
             nameList,
             !request.isSimpleMode(),
             request.getWordDetector(),
-            request.getContext().isSearchGlobally()
-        );
+            request.getContext().isSearchGlobally(),
+            false
+        ));
     }
 
     @Nullable
-    public static DBSObject findObjectByFQN(
+    private static <T> T getFirstIfPresented(@Nullable List<T> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        } else {
+            return list.getFirst();
+        }
+    }
+
+    @NotNull
+    public static List<? extends DBSObject> findObjectsByFQN(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBSObjectContainer objectContainer,
         @Nullable DBCExecutionContext executionContext,
         @NotNull List<String> nameList,
         boolean useAssistant,
         @NotNull SQLIdentifierDetector identifierDetector,
-        boolean isGlobalSearch
+        boolean anyObject
+    ) {
+        return findObjectsByFQN(monitor, objectContainer, executionContext, nameList, useAssistant, identifierDetector, false, anyObject);
+    }
+
+    @NotNull
+    public static List<? extends DBSObject> findObjectsByFQN(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBSObjectContainer objectContainer,
+        @Nullable DBCExecutionContext executionContext,
+        @NotNull List<String> nameList,
+        boolean useAssistant,
+        @NotNull SQLIdentifierDetector identifierDetector,
+        boolean isGlobalSearch,
+        boolean anyObject
     ) {
         if (nameList.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         DBPDataSource dataSource = objectContainer == null ? null : objectContainer.getDataSource();
         if (executionContext == null && dataSource != null) {
@@ -93,7 +121,7 @@ public class SQLSearchUtils
             dataSource = executionContext.getDataSource();
         }
         if (dataSource == null) {
-            return null;
+            return Collections.emptyList();
         }
         DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ?
             monitor : new LocalCacheProgressMonitor(monitor);
@@ -103,8 +131,10 @@ public class SQLSearchUtils
                 unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
             }
 
-            DBSObject result = findObjectByPath(mdMonitor, executionContext, objectContainer, unquotedNames, identifierDetector, useAssistant, isGlobalSearch);
-            if (result != null) {
+            List<? extends DBSObject> result = findObjectsByPath(
+                mdMonitor, executionContext, objectContainer, unquotedNames, identifierDetector, useAssistant, isGlobalSearch, anyObject
+            );
+            if (!result.isEmpty()) {
                 return result;
             }
         }
@@ -121,7 +151,7 @@ public class SQLSearchUtils
                 }
                 transformedNameList.set(i, name);
             }
-            return findObjectByPath(mdMonitor, executionContext, objectContainer, transformedNameList, identifierDetector, useAssistant, isGlobalSearch);
+            return findObjectsByPath(mdMonitor, executionContext, objectContainer, transformedNameList, identifierDetector, useAssistant, isGlobalSearch, anyObject);
         }
     }
 
@@ -134,30 +164,38 @@ public class SQLSearchUtils
         @NotNull SQLIdentifierDetector identifierDetector,
         boolean useAssistant
     ) {
-        return findObjectByPath(monitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, false);
+        return getFirstIfPresented(
+            findObjectsByPath(monitor, executionContext, objectContainer, nameList, identifierDetector, useAssistant, false, false)
+        );
     }
 
-    @Nullable
-    public static DBSObject findObjectByPath(
+    @NotNull
+    public static List<? extends DBSObject> findObjectsByPath(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer sc,
         @NotNull List<String> nameList,
         @NotNull SQLIdentifierDetector identifierDetector,
         boolean useAssistant,
-        boolean isGlobalSearch
+        boolean isGlobalSearch,
+        boolean anyObject
     ) {
         try {
             // Find using context defaults
             if (!nameList.isEmpty()) {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if (nameList.size() == 1) {
                         DBSObjectContainer defaultSchema = contextDefaults.getDefaultSchema();
                         if (defaultSchema != null) {
                             DBSObject entity = defaultSchema.getChild(monitor, nameList.get(0));
                             if (entity != null) {
-                                return entity;
+                                return List.of(entity);
+                            } else if (anyObject && defaultSchema instanceof DBSProcedureContainer procsContainer) {
+                                List<? extends DBSObject> objs = findProcedures(monitor, procsContainer, nameList.get(0));
+                                if (objs.size() > 0) {
+                                    return objs;
+                                }
                             }
                         }
                     }
@@ -167,15 +205,27 @@ public class SQLSearchUtils
                             DBSObject childObject = catalog.getChild(monitor, nameList.get(0));
                             if (childObject != null) {
                                 if (nameList.size() == 1) {
-                                    return childObject;
+                                    return List.of(childObject);
                                 }
-                                if (childObject instanceof DBSObjectContainer schema) {
-                                    if (nameList.size() == 2) {
+                                if (nameList.size() == 2) {
+                                    if (childObject instanceof DBSObjectContainer schema) {
                                         DBSObject entity = schema.getChild(monitor, nameList.get(1));
                                         if (entity != null) {
-                                            return entity;
+                                            return List.of(entity);
                                         }
                                     }
+                                    if (anyObject && childObject instanceof DBSProcedureContainer childProcsContainer) {
+                                        List<? extends DBSObject> objs = findProcedures(monitor, childProcsContainer, nameList.get(1));
+                                        if (objs.size() > 0) {
+                                            return objs;
+                                        }
+                                    }
+                                }
+                            }
+                            if (anyObject && catalog instanceof DBSProcedureContainer childProcsContainer) {
+                                List<? extends DBSObject> objs = findProcedures(monitor, childProcsContainer, nameList.get(0));
+                                if (!objs.isEmpty()) {
+                                    return objs;
                                 }
                             }
                         }
@@ -184,10 +234,10 @@ public class SQLSearchUtils
             }
 
             // Find structu containers
-            DBSObject childObject = null;
+            List<? extends DBSObject> childObject = null;
             while (childObject == null) {
-                childObject = findNestedObject(monitor, executionContext, sc, nameList);
-                if (childObject == null) {
+                childObject = findNestedObjects(monitor, executionContext, sc, nameList, anyObject);
+                if (childObject.isEmpty()) {
                     DBSObjectContainer parentSc = DBUtils.getParentAdapter(DBSObjectContainer.class, sc);
                     if (parentSc == null) {
                         break;
@@ -195,7 +245,7 @@ public class SQLSearchUtils
                     sc = parentSc;
                 }
             }
-            if (childObject == null && nameList.size() <= 1) {
+            if (childObject.isEmpty() && nameList.size() <= 1) {
                 if (useAssistant && !monitor.isForceCacheUsage()) {
                     // No such object found - may be it's start of table name
                     DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
@@ -211,27 +261,28 @@ public class SQLSearchUtils
                         params.setGlobalSearch(isGlobalSearch);
                         Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(monitor, executionContext, params);
                         if (!tables.isEmpty()) {
-                            return tables.iterator().next().resolveObject(monitor);
+                            return List.of(tables.iterator().next().resolveObject(monitor)); // consider all matching tables
                         }
                     }
                 }
-                return null;
+                return Collections.emptyList();
             } else {
                 return childObject;
             }
         } catch (DBException e) {
             log.error(e);
-            return null;
+            return Collections.emptyList();
         }
     }
 
-    @Nullable
-    public static DBSObject findNestedObject(
+    @NotNull
+    public static List<? extends DBSObject> findNestedObjects(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer parent,
-        @NotNull List<String> names)
-        throws DBException {
+        @NotNull List<String> names,
+        boolean anyObject
+    ) throws DBException {
         for (int i = 0; i < names.size(); i++) {
             if (monitor.isCanceled()) {
                 break;
@@ -242,11 +293,19 @@ public class SQLSearchUtils
             if (!DBStructUtils.isConnectedContainer(child)) {
                 child = null;
             }
+            if (anyObject && child == null && parent instanceof DBSProcedureContainer procsContainer
+                && parent.getDataSource().getInfo().supportsStoredCode()
+            ) {
+                List<? extends DBSObject> objs = findProcedures(monitor, procsContainer, childName);
+                if (objs.size() > 0) {
+                    return objs;
+                }
+            }
             if (child == null) {
                 break;
             }
             if (i == names.size() - 1) {
-                return child;
+                return List.of(child);
             }
             if (child instanceof DBSObjectContainer oc) {
                 parent = oc;
@@ -254,7 +313,35 @@ public class SQLSearchUtils
                 break;
             }
         }
-        return null;
+        return Collections.emptyList();
     }
 
+    @NotNull
+    private static List<? extends DBSProcedure> findProcedures(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSProcedureContainer procsContainer,
+        @NotNull String procedureName
+    ) throws DBException {
+        try {
+            DBSProcedure child = procsContainer.getProcedure(monitor, procedureName);
+            if (child != null) {
+                return List.of(child);
+            } else {
+                Collection<? extends DBSProcedure> procs = procsContainer.getProcedures(monitor);
+                if (procs != null) {
+                    List<? extends DBSProcedure> matchedProcs = procs.stream().filter(p -> p.getName().equals(procedureName)).toList();
+                    if (!matchedProcs.isEmpty()) {
+                        return matchedProcs;
+                    } else {
+                        return Collections.emptyList();
+                    }
+                } else {
+                    return Collections.emptyList();
+                }
+            }
+        } catch (DBException e) {
+            log.debug("Error loading procedures for semantic analysis", e);
+            return Collections.emptyList();
+        }
+    }
 }

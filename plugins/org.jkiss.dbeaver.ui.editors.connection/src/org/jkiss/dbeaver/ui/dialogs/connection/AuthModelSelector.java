@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,33 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.IElementFilter;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -48,7 +58,7 @@ import java.util.List;
  * ConnectionPageWithAuth
  */
 
-public class AuthModelSelector extends Composite {
+public class AuthModelSelector extends Composite implements DBPEventListener {
 
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
@@ -65,7 +75,7 @@ public class AuthModelSelector extends Composite {
     private final Runnable changeListener;
     private Combo authModelCombo;
     private boolean authSettingsEnabled = true;
-    private boolean isEnableSharedConfigurator = true;
+    private final boolean isEnableSharedConfigurator;
     private final DBPConnectionEditIntention intention;
 
     public AuthModelSelector(
@@ -76,14 +86,14 @@ public class AuthModelSelector extends Composite {
         DBPConnectionEditIntention intention
     ) {
         super(parent, SWT.NONE);
-        setLayout(new FillLayout());
+        setLayout(new GridLayout(1, false));
 
         this.panelExtender = panelExtender;
         this.changeListener = changeListener;
         this.isEnableSharedConfigurator = enableShared;
         this.intention = intention;
 
-        modelConfigPlaceholder = UIUtils.createControlGroup(
+        modelConfigPlaceholder = UIUtils.createTitledComposite(
             this,
             UIConnectionMessages.dialog_connection_auth_group,
             2,
@@ -100,6 +110,12 @@ public class AuthModelSelector extends Composite {
                 log.error("Error creating shared configurator", e);
             }
         }
+
+        addDisposeListener(e -> {
+            if (activeDataSource != null) {
+                activeDataSource.getRegistry().removeDataSourceListener(this);
+            }
+        });
     }
 
     public DBPAuthModelDescriptor getSelectedAuthModel() {
@@ -127,20 +143,39 @@ public class AuthModelSelector extends Composite {
     }
 
     public void loadSettings(
-        DBPDataSourceContainer dataSourceContainer,
-        DBPAuthModelDescriptor activeAuthModel,
-        String defaultAuthModelId
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable DBPAuthModelDescriptor activeAuthModel,
+        @Nullable String defaultAuthModelId
     ) {
+        if (this.activeDataSource != null) {
+            this.activeDataSource.getRegistry().removeDataSourceListener(this);
+        }
         this.activeDataSource = dataSourceContainer;
+        this.activeDataSource.getRegistry().addDataSourceListener(this);
+
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
-        this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
+
+        DBPDriver driver = null;
+        if (activeDataSource.getDriverSubstitution() != null) {
+            var driverSubstitution = activeDataSource.getDriverSubstitution();
+            var dataSourceProvider = DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                .getDataSourceProvider(driverSubstitution.getProviderId());
+            if (dataSourceProvider != null) {
+                driver = dataSourceProvider.getDriver(driverSubstitution.getDriverId());;
+            }
+        }
+        if (driver == null) {
+            driver = activeDataSource.getDriver();
+        }
+
+        this.allAuthModels = driver == DriverDescriptor.NULL_DRIVER ?
             DataSourceProviderRegistry.getInstance().getAllAuthModels() :
-            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
+            DataSourceProviderRegistry.getInstance().getApplicableAuthModels(driver);
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
-            o1.isDefaultModel() ? -1 :
-                o2.isDefaultModel() ? 1 :
+            o1.isDefaultModel() && !o2.isDefaultModel() ? -1 :
+                o2.isDefaultModel() && !o1.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
         if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
@@ -153,7 +188,7 @@ public class AuthModelSelector extends Composite {
             }
             if (selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) {
                 // First one
-                selectedAuthModel = allAuthModels.get(0);
+                selectedAuthModel = allAuthModels.getFirst();
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
@@ -164,12 +199,34 @@ public class AuthModelSelector extends Composite {
         changeAuthModel();
     }
 
+    @Override
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
+        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
+            event.getData() instanceof DBPConnectionConfiguration newConfig &&
+            event.getObject() == activeDataSource
+        ) {
+            UIUtils.asyncExec(() -> {
+                DBPConnectionConfiguration currentConfig = activeDataSource.getConnectionConfiguration();
+                currentConfig.setUserName(newConfig.getUserName());
+                currentConfig.setUserPassword(newConfig.getUserPassword());
+                currentConfig.setUrl(newConfig.getUrl());
+                currentConfig.setAuthProperties(newConfig.getAuthProperties());
+                currentConfig.setProviderProperties(newConfig.getProviderProperties());
+
+                if (authModelConfigurator != null && !isDisposed()) {
+                    authModelConfigurator.loadSettings(activeDataSource);
+                }
+            });
+        }
+    }
+
+
     private void changeAuthModel() {
         showAuthModelSettings();
     }
 
     protected void showAuthModelSettings() {
-        Composite parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, TabFolder.class);
+        Composite parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, CTabFolder.class);
         if (parentFolder == null) {
             parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, Shell.class);
         }
@@ -223,7 +280,7 @@ public class AuthModelSelector extends Composite {
         boolean authSelectorVisible = this.intention.authModelSelectionEnabled && allAuthModels.size() >= 2;
         UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
-        ((Group) modelConfigPlaceholder).setText(authSelectorVisible
+        UIUtils.updateTitledComposite(modelConfigPlaceholder, authSelectorVisible
             ? UIConnectionMessages.dialog_connection_auth_group
             : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 
@@ -315,7 +372,4 @@ public class AuthModelSelector extends Composite {
         }
     }
 
-    public void setEnableSharedConfigurator(boolean isEnable) {
-        this.isEnableSharedConfigurator = isEnable;
-    }
 }

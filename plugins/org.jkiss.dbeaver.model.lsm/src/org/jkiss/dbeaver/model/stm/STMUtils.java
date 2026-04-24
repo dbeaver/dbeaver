@@ -96,7 +96,20 @@ public class STMUtils {
 
 
     /**
-     * Perform binary search by the key in the sorted collection
+     * Perform binary search by the key in the sorted collection.
+     * Return value follows standard convention of the binary search implementations 
+     * (see {@link Arrays#binarySearch(Object[], Object, Comparator) Arrays::binarySearch} and 
+     *      {@link Collections#binarySearch(List, Object, Comparator) Collections::binarySearch} ).
+     * <br />
+     * <a href="https://stackoverflow.com/a/64748510">See also a nice note on the use case</a>:
+     * <pre>
+     *   int foundPos = Arrays.binarySearch(array, key);
+     *   if (foundPos < 0) {
+     *     // Not found:
+     *     int insertPos = ~foundPos;
+     *   }
+     * </pre>
+     * A positive result gives the found position/index. A negative result gives the one's complement of the insert position.
      *
      * @param list - list to search in
      * @param keyGetter - Function to apply to the element of the collection before comparison

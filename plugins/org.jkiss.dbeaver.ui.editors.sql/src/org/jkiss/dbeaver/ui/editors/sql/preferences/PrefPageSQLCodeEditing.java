@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +46,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     private Button csProblemMarkersEnabled;
     private Button advancedHighlightingEnabled;
     private Button readMetadataForSemanticValidationEnabled;
+    private Button validateFunctionsEnabled;
     // Auto-close
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
@@ -66,7 +66,12 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
         // Miscellaneous
         {
-            Composite miscellaneousGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite miscellaneousGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_completion_group_misc,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             csFoldingEnabled = UIUtils.createCheckbox(miscellaneousGroup, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 1);
             csSmartWordsIterator = UIUtils.createCheckbox(miscellaneousGroup, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator_tip, false, 1);
@@ -77,12 +82,11 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         }
         // Query analysis
         {
-            Composite analysisGroup = UIUtils.createControlGroup(
+            Composite analysisGroup = UIUtils.createTitledComposite(
                 composite,
                 SQLEditorMessages.pref_page_code_editor_group_analysis,
                 1,
-                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_FILL,
-                0
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_FILL
             );
 
             advancedHighlightingEnabled = UIUtils.createCheckbox(
@@ -99,17 +103,40 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
                 false,
                 1
             );
+            validateFunctionsEnabled = UIUtils.createCheckbox(
+                analysisGroup,
+                SQLEditorMessages.pref_page_code_editor_label_validate_functions_enabled,
+                SQLEditorMessages.pref_page_code_editor_label_validate_functions_enabled_tip,
+                false,
+                1
+            );
             advancedHighlightingEnabled.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     readMetadataForSemanticValidationEnabled.setEnabled(advancedHighlightingEnabled.getSelection());
+                    validateFunctionsEnabled.setEnabled(
+                        advancedHighlightingEnabled.getSelection() && readMetadataForSemanticValidationEnabled.getSelection()
+                    );
+                }
+            });
+            readMetadataForSemanticValidationEnabled.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    validateFunctionsEnabled.setEnabled(
+                        advancedHighlightingEnabled.getSelection() && readMetadataForSemanticValidationEnabled.getSelection()
+                    );
                 }
             });
         }
 
         // Autoclose
         {
-            Composite acGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_format_group_auto_close, 1, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite acGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_format_group_auto_close,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_single_quotes, false);
             acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_double_quotes, false);
@@ -118,7 +145,12 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
         {
             // Formatting
-            Composite afGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_format_group_auto_format, 1, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite afGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_format_group_auto_format,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
+            );
             afKeywordCase = UIUtils.createCheckbox(
                 afGroup,
                 SQLEditorMessages.pref_page_sql_format_label_convert_keyword_case,
@@ -145,7 +177,11 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         advancedHighlightingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE));
         readMetadataForSemanticValidationEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS));
         readMetadataForSemanticValidationEnabled.setEnabled(advancedHighlightingEnabled.getSelection());
-        
+        validateFunctionsEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.VALIDATE_FUNCTIONS));
+        validateFunctionsEnabled.setEnabled(
+            readMetadataForSemanticValidationEnabled.getSelection() && advancedHighlightingEnabled.getSelection()
+        );
+
         acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
         acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
         acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -163,7 +199,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         store.setValue(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, csProblemMarkersEnabled.getSelection());
         store.setValue(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE, advancedHighlightingEnabled.getSelection());
         store.setValue(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS, readMetadataForSemanticValidationEnabled.getSelection());
-        
+        store.setValue(SQLPreferenceConstants.VALIDATE_FUNCTIONS, validateFunctionsEnabled.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
@@ -181,6 +217,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED);
         store.setToDefault(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE);
         store.setToDefault(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
+        store.setToDefault(SQLPreferenceConstants.VALIDATE_FUNCTIONS);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
@@ -200,6 +237,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         csProblemMarkersEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
         advancedHighlightingEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE));
         readMetadataForSemanticValidationEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS));
+        validateFunctionsEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.VALIDATE_FUNCTIONS));
         acSingleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
         acDoubleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
         acBracketsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -218,6 +256,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
             || store.contains(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
             || store.contains(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
             || store.contains(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
+            || store.contains(SQLPreferenceConstants.VALIDATE_FUNCTIONS)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)
@@ -230,6 +269,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         return true;
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PrefPageSQLCodeEditing.PAGE_ID;

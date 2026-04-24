@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,10 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -40,27 +37,34 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
     @Nullable
     private final SQLQuerySymbolEntry alias;
 
+    @Nullable
+    private SQLQuerySymbol columnName;
+
     public SQLQuerySelectionResultColumnSpec(
-        @NotNull SQLQuerySelectionResultModel resultModel,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryValueExpression valueExpression
     ) {
-        this(resultModel, syntaxNode, valueExpression, null);
+        this(syntaxNode, valueExpression, null);
     }
 
     public SQLQuerySelectionResultColumnSpec(
-        @NotNull SQLQuerySelectionResultModel resultModel,
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryValueExpression valueExpression,
         @Nullable SQLQuerySymbolEntry alias
     ) {
-        super(resultModel, syntaxNode);
+        super(syntaxNode);
         this.valueExpression = valueExpression;
         this.alias = alias;
 
         if (valueExpression != null) {
             this.registerSubnode(valueExpression);
         }
+    }
+
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.columnName);
     }
 
     @Nullable
@@ -75,15 +79,23 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
 
     @Override
     protected void collectColumns(
-        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsDataContext knownValues,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         if (this.valueExpression != null) {
-            this.valueExpression.propagateContext(context, statistics);
+            this.valueExpression.resolveRowSources(knownValues.getRowsSources(), statistics);
+            this.valueExpression.resolveValueRelations(knownValues, statistics);
         }
 
+        this.collectColumnImpl(rowsSourceModel, resultColumns);
+    }
+
+    protected void collectColumnImpl(
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    ) {
         SQLQuerySymbol columnName;
         SQLQueryResultColumn underlyingColumn;
         if (this.alias != null) {
@@ -107,6 +119,8 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
                 columnName = new SQLQuerySymbol("?");
             }
         }
+
+        this.columnName = columnName;
 
         SQLQueryExprType type = valueExpression == null ? SQLQueryExprType.UNKNOWN : valueExpression.getValueType();
         resultColumns.add(underlyingColumn == null

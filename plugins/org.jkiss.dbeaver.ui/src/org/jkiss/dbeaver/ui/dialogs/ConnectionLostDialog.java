@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -30,7 +32,12 @@ public class ConnectionLostDialog extends StandardErrorDialog {
 
     private final String stopButtonName;
 
-    public ConnectionLostDialog(Shell parentShell, DBPDataSourceContainer container, Throwable error, String stopButtonName) {
+    public ConnectionLostDialog(
+        @Nullable Shell parentShell,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull Throwable error,
+        @NotNull String stopButtonName
+    ) {
         super(
             parentShell,
             "Connection lost",
@@ -41,11 +48,9 @@ public class ConnectionLostDialog extends StandardErrorDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(parent, IDialogConstants.STOP_ID, stopButtonName, true);
         createButton(parent, IDialogConstants.RETRY_ID, IDialogConstants.RETRY_LABEL, false);
-        createButton(parent, IDialogConstants.IGNORE_ID, IDialogConstants.IGNORE_LABEL, false);
-        createDetailsButton(parent);
     }
 
     @Override

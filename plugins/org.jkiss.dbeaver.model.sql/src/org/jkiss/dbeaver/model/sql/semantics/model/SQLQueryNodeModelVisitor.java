@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
@@ -42,6 +41,12 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitValueFlatExpr(@NotNull SQLQueryValueFlattenedExpression flattenedExpr, T arg);
 
     /**
+     * Visit value expressions tree
+     */
+    @Nullable
+    R visitValueFunctionExpr(@NotNull SQLQueryValueFunctionExpression funcExpr, T arg);
+
+    /**
      * Visit script variable
      */
     @Nullable
@@ -58,6 +63,11 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      */
     @Nullable
     R visitValueTupleRefExpr(@NotNull SQLQueryValueTupleReferenceExpression tupleRefExpr, T arg);
+
+    /**
+     * Visit column or its member reference
+     */
+    R visitValueReferenceExpr(@NotNull SQLQueryValueReferenceExpression valueRefExpr, T arg);
 
     /**
      * Visit a member access to the element of the composite type
@@ -108,6 +118,12 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitRowsTableValue(@NotNull SQLQueryRowsTableValueModel tableValue, T arg);
 
     /**
+     * Visit a rows-producing procedure call
+     */
+    @Nullable
+    R visitRowsTableProc(@NotNull SQLQueryRowsTableProcModel tableProc, T arg);
+
+    /**
      * Visit cross join clause
      */
     @Nullable
@@ -136,12 +152,6 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      */
     @Nullable
     R visitRowsSetCorrespondingOp(@NotNull SQLQueryRowsSetCorrespondingOperationModel correspondingOp, T arg);
-
-    /**
-     * Visit table definition
-     */
-    @Nullable
-    R visitDummyTableRowsSource(@NotNull DummyTableRowsSource dummyTable, T arg);
 
     /**
      * Visit all columns of the table of a selection result
@@ -220,4 +230,22 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitRowsProjectionInto(SQLQuerySelectIntoModel selectIntoStatement, T arg);
 
     R visitRowsProjectionIntoTargetsList(SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList, T arg);
+
+    /**
+     * Visit CALL, EXEC, EXECUTE queries
+     */
+    @Nullable
+    R visitCallStatement(@NotNull SQLQueryCallModel callStatement, T arg);
+
+    /**
+     * Visit DBeaver control command (like @echo, @set, @export and so on)
+     */
+    @Nullable
+    R visitCommand(@NotNull SQLCommandModel command, T arg);
+
+    /**
+     * Visit DBeaver variable used in the DBeaver control command
+     */
+    @Nullable
+    R visitCommandVariable(@NotNull SQLCommandModel.VariableNode variable, T arg);
 }

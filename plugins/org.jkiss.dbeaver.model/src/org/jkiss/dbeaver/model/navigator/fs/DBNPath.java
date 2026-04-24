@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -35,7 +37,6 @@ public class DBNPath extends DBNPathBase implements DBNStreamData {
     private static final Log log = Log.getLog(DBNPath.class);
 
     private Path path;
-    private Boolean isDirectory;
 
     public DBNPath(DBNNode parentNode, Path path) {
         super(parentNode);
@@ -63,38 +64,34 @@ public class DBNPath extends DBNPathBase implements DBNStreamData {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
-        return NodePathType.dbvfs.name() + (allowsChildren() ? ".folder" : ".file");
+        return NodePathType.dbvfs.name() + (isDirectory() ? ".folder" : ".file");
     }
 
+    @NotNull
     @Override
     public String getNodeTypeLabel() {
-        return allowsChildren() ? ModelMessages.fs_folder : ModelMessages.fs_file;
+        return isDirectory() ? ModelMessages.fs_folder : ModelMessages.fs_file;
     }
 
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return null;
     }
 
+    @NotNull
     @Override
     public String getNodeTargetName() {
         return super.getNodeTargetName();
     }
 
+    @Nullable
     @Override
-    public boolean allowsChildren() {
-        if (isDirectory == null) {
-            // Cache it. It is called very frequently
-            isDirectory = Files.isDirectory(path);
-        }
-        return isDirectory;
-    }
-
-    @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
 
         return super.refreshNode(monitor, source);
     }
@@ -109,7 +106,7 @@ public class DBNPath extends DBNPathBase implements DBNStreamData {
 
     @Override
     public boolean supportsStreamData() {
-        return !allowsChildren();
+        return !isDirectory();
     }
 
     @Override
@@ -119,7 +116,7 @@ public class DBNPath extends DBNPathBase implements DBNStreamData {
 
     @Override
     public InputStream openInputStream() throws IOException {
-        if (allowsChildren()) {
+        if (isDirectory()) {
             return null;
         }
         return Files.newInputStream(path);

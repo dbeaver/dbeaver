@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -60,15 +63,15 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- *  Dialog with tabs to change target table properties and table columns mapping
+ * Dialog with tabs to change target table properties and table columns mapping
  */
 public class ConfigureMetadataStructureDialog extends BaseDialog {
 
-    private DataTransferWizard wizard;
-    private DatabaseConsumerSettings settings;
-    private DatabaseMappingContainer mapping;
+    private final DataTransferWizard wizard;
+    private final DatabaseConsumerSettings settings;
+    private final DatabaseMappingContainer mapping;
     private DBSObject tableObject;
-    private TabFolder configTabs;
+    private CTabFolder configTabs;
     private final DatabaseConsumerPageMapping pageMapping;
     private UIServiceSQL serviceSQL;
     private Object sqlPanel;
@@ -77,11 +80,12 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
 
     private PropertySourceEditable propertySource;
 
-    public ConfigureMetadataStructureDialog(@NotNull DataTransferWizard wizard,
-                                            @NotNull DatabaseConsumerSettings settings,
-                                            @NotNull DatabaseMappingContainer mapping,
-                                            @NotNull DatabaseConsumerPageMapping pageMapping)
-    {
+    public ConfigureMetadataStructureDialog(
+        @NotNull DataTransferWizard wizard,
+        @NotNull DatabaseConsumerSettings settings,
+        @NotNull DatabaseMappingContainer mapping,
+        @NotNull DatabaseConsumerPageMapping pageMapping
+    ) {
         super(wizard.getShell(), DTUIMessages.page_configure_metadata_title, null);
         this.wizard = wizard;
         this.settings = settings;
@@ -89,16 +93,17 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         this.pageMapping = pageMapping;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         composite.setLayoutData(gd);
 
-        configTabs = new TabFolder(composite, SWT.TOP | SWT.FLAT);
+        configTabs = new CTabFolder(composite, SWT.TOP | SWT.FLAT);
         configTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        TabItem columnsMappingTab = new TabItem(configTabs, SWT.NONE);
+        CTabItem columnsMappingTab = new CTabItem(configTabs, SWT.NONE);
         columnsMappingTab.setText(DTUIMessages.columns_mapping_dialog_shell_text);
         ColumnsMappingDialog columnsMappingDialog = new ColumnsMappingDialog(settings, mapping);
         columnsMappingDialog.createControl(configTabs);
@@ -111,120 +116,134 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         }
         final DBSObjectContainer container = settings.getContainer();
         if (container != null && mapping.hasNewTargetObject()) {
-            TabItem tablePropertiesTab = new TabItem(configTabs, SWT.NONE);
+            CTabItem tablePropertiesTab = new CTabItem(configTabs, SWT.NONE);
             tablePropertiesTab.setText(DTUIMessages.page_configure_table_properties_tab_title);
             DBPDataSource dataSource = container.getDataSource();
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-            try {
-                wizard.getRunnableContext().run(true, true, monitor -> {
-                    monitor.beginTask("Generate new table object", 1);
-                    try {
-                        tableObject = DatabaseTransferUtils.generateStructTableDDL(
-                            monitor,
-                            executionContext,
-                            container,
-                            mapping,
-                            new ArrayList<>(),
-                            mapping.getChangedPropertiesMap());
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                    monitor.done();
-                });
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError(
-                    DTUIMessages.database_consumer_page_mapping_title_target_table,
-                    DTUIMessages.database_consumer_page_mapping_message_error_generating_target_table,
-                    e);
-            } catch (InterruptedException e) {
-                // do nothing
-            }
-            if (tableObject != null) {
-                propertySource = new PropertySourceEditable(null, tableObject, tableObject);
-                propertySource.collectProperties();
-
-                for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
-                    if (prop instanceof ObjectPropertyDescriptor) {
-                        final ObjectPropertyDescriptor obj = (ObjectPropertyDescriptor) prop;
-                        if (!obj.isEditPossible(tableObject) || obj.isNameProperty()) {
-                            propertySource.removeProperty(prop);
-                        }
-                    }
-                }
-
-                if (!ArrayUtils.isEmpty(propertySource.getProperties())) {
-                    if (!CommonUtils.isEmpty(mapping.getChangedPropertiesMap())) {
-                        // First check properties that could already be applied to this object
-                        // (this means that this dialogue was already opened by the user, and the changes have been applied to the target)
-                        propertySource.setChangedPropertiesMap(mapping.getChangedPropertiesMap());
-                    } else if (!CommonUtils.isEmpty(mapping.getRawChangedPropertiesMap())) {
-                        // Or maybe we have task with saved properties map
-                        // But this map has only the id of ObjectPropertyDescriptor
-                        // So we should find the correct properties and bound them
-                        Map<String, Object> rawChangedPropertiesMap = mapping.getRawChangedPropertiesMap();
-                        for (Map.Entry<String, Object> entry : rawChangedPropertiesMap.entrySet()) {
-                            DBPPropertyDescriptor property = propertySource.getProperty(entry.getKey());
-                            if (property != null) {
-                                propertySource.addChangedProperties(property, entry.getValue());
-                            }
-                        }
-                        // Update table properties
-                        DatabaseTransferUtils.applyPropertyChanges(
-                            null,
-                            propertySource.getChangedPropertiesValues(),
-                            null,
-                            null,
-                            (DBSEntity) tableObject);
-                    }
-
-                    final Composite propertiesComposite = new Composite(configTabs, SWT.NONE);
-                    propertiesComposite.setLayout(new GridLayout(1, false));
-                    propertiesComposite.setLayoutData(gd);
-
-                    UIUtils.createLabel(propertiesComposite, DTUIMessages.page_configure_table_properties_text);
-
-                    PropertyTreeViewer propertyViewer = new PropertyTreeViewer(propertiesComposite, SWT.BORDER);
-                    propertyViewer.getControl().setLayoutData(gd);
-                    propertyViewer.loadProperties(propertySource);
-
-                    propertyViewer.changeColumnsWidth();
-
-                    tablePropertiesTab.setControl(propertiesComposite);
-                } else {
-                    createCompositeWithMessage(gd, tablePropertiesTab, DTUIMessages.page_configure_table_properties_no_properties);
-                }
-            } else {
-                createCompositeWithMessage(gd, tablePropertiesTab, DTUIMessages.page_configure_table_properties_info_text);
+            if (executionContext != null) {
+                detectTargetObjects(executionContext, container, tablePropertiesTab);
             }
         }
 
-        TabItem showDDLTab = new TabItem(configTabs, SWT.NONE);
+        CTabItem showDDLTab = new CTabItem(configTabs, SWT.NONE);
         showDDLTab.setText(DTMessages.data_transfer_wizard_page_ddl_name);
         showDDL(showDDLTab);
 
         configTabs.setSelection(0);
-        configTabs.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (ddlTabNeedRefresh) {
-                    final int selectionIndex = configTabs.getSelectionIndex();
-                    final Control[] tabList = configTabs.getTabList();
-                    if (tabList.length > 0 && selectionIndex == tabList.length - 1) {
-                        // Refresh DDL tab - it is the last
-                        final DBSObjectContainer container = settings.getContainer();
-                        if (container != null) {
-                            DBPDataSource dataSource = container.getDataSource();
-                            setNewTextToDDLTab(container, dataSource);
-                        }
+        configTabs.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            if (ddlTabNeedRefresh) {
+                final int selectionIndex = configTabs.getSelectionIndex();
+                final Control[] tabList = configTabs.getTabList();
+                if (tabList.length > 0 && selectionIndex == tabList.length - 1) {
+                    // Refresh DDL tab - it is the last
+                    final DBSObjectContainer objContainer = settings.getContainer();
+                    if (objContainer != null) {
+                        DBPDataSource dataSource = objContainer.getDataSource();
+                        setNewTextToDDLTab(objContainer, dataSource);
                     }
                 }
             }
-        });
+        }));
 
         return composite;
     }
 
-    private void createCompositeWithMessage(GridData gd, TabItem tablePropertiesTab, String message) {
+    private void detectTargetObjects(
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer container,
+        @NotNull CTabItem tablePropertiesTab
+    ) {
+        try {
+            wizard.getRunnableContext().run(true, true, monitor -> {
+                monitor.beginTask("Generate new table object", 1);
+                try {
+                    tableObject = DatabaseTransferUtils.generateStructTableDDL(
+                        monitor,
+                        executionContext,
+                        container,
+                        mapping,
+                        new ArrayList<>(),
+                        mapping.getChangedPropertiesMap());
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+                monitor.done();
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(
+                DTUIMessages.database_consumer_page_mapping_title_target_table,
+                DTUIMessages.database_consumer_page_mapping_message_error_generating_target_table,
+                e);
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+        if (tableObject != null) {
+            propertySource = new PropertySourceEditable(null, tableObject, tableObject);
+            propertySource.collectProperties();
+
+            for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
+                if (prop instanceof ObjectPropertyDescriptor obj) {
+                    if (!obj.isEditPossible(tableObject) || obj.isNameProperty()) {
+                        propertySource.removeProperty(prop);
+                    }
+                }
+            }
+
+            if (!ArrayUtils.isEmpty(propertySource.getProperties())) {
+                if (!CommonUtils.isEmpty(mapping.getChangedPropertiesMap())) {
+                    // First check properties that could already be applied to this object
+                    // (this means that this dialogue was already opened by the user, and the changes have been applied to the target)
+                    propertySource.setChangedPropertiesMap(mapping.getChangedPropertiesMap());
+                } else if (!CommonUtils.isEmpty(mapping.getRawChangedPropertiesMap())) {
+                    // Or maybe we have task with saved properties map
+                    // But this map has only the id of ObjectPropertyDescriptor
+                    // So we should find the correct properties and bound them
+                    Map<String, Object> rawChangedPropertiesMap = mapping.getRawChangedPropertiesMap();
+                    for (Map.Entry<String, Object> entry : rawChangedPropertiesMap.entrySet()) {
+                        DBPPropertyDescriptor property = propertySource.getProperty(entry.getKey());
+                        if (property != null) {
+                            propertySource.addChangedProperties(property, entry.getValue());
+                        }
+                    }
+                    // Update table properties
+                    DatabaseTransferUtils.applyPropertyChanges(
+                        null,
+                        propertySource.getChangedPropertiesValues(),
+                        null,
+                        null,
+                        (DBSEntity) tableObject);
+                }
+
+                final Composite propertiesComposite = new Composite(configTabs, SWT.NONE);
+                propertiesComposite.setLayout(new GridLayout(1, false));
+                propertiesComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                UIUtils.createLabel(propertiesComposite, DTUIMessages.page_configure_table_properties_text);
+
+                PropertyTreeViewer propertyViewer = new PropertyTreeViewer(propertiesComposite, SWT.BORDER);
+                propertyViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+                propertyViewer.loadProperties(propertySource);
+
+                propertyViewer.changeColumnsWidth();
+
+                tablePropertiesTab.setControl(propertiesComposite);
+            } else {
+                createCompositeWithMessage(
+                    new GridData(GridData.FILL_BOTH),
+                    tablePropertiesTab,
+                    DTUIMessages.page_configure_table_properties_no_properties
+                );
+            }
+        } else {
+            createCompositeWithMessage(
+                new GridData(GridData.FILL_BOTH),
+                tablePropertiesTab,
+                DTUIMessages.page_configure_table_properties_info_text
+            );
+        }
+    }
+
+    private void createCompositeWithMessage(GridData gd, CTabItem tablePropertiesTab, String message) {
         Composite compositeEmpty = new Composite(configTabs, SWT.NONE);
         compositeEmpty.setLayout(new GridLayout(1, false));
         compositeEmpty.setLayoutData(gd);
@@ -236,7 +255,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         tablePropertiesTab.setControl(compositeEmpty);
     }
 
-    private void showDDL(@NotNull TabItem showDDLTab) {
+    private void showDDL(@NotNull CTabItem showDDLTab) {
         final DBSObjectContainer container = settings.getContainer();
         if (container == null) {
             return;
@@ -304,29 +323,29 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                     null);
                 persistButton.setLayoutData(gridData);
                 persistButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            if (UIUtils.confirmAction(
-                                getShell(),
-                                DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
-                                DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
-                                // Create target objects
-                                if (applySchemaChanges(container, mapping)) {
-                                    pageMapping.autoAssignMappings();
-                                }
-                                close();
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
+                            DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
+                            // Create target objects
+                            if (applySchemaChanges(container, mapping)) {
+                                pageMapping.autoAssignMappings();
                             }
+                            close();
                         }
-                    });
+                    }
+                });
             }
             final Button copyButton = UIUtils.createPushButton(buttonsBar, DTUIMessages.page_configure_table_DDL_button_copy, null);
             copyButton.setLayoutData(gridData);
             copyButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialogText);
-                    }
-                });
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialogText);
+                }
+            });
             showDDLTab.setControl(viewerComposite);
         }
     }
@@ -339,12 +358,15 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                 monitor.beginTask(DTUIMessages.database_consumer_page_mapping_monitor_task, 1);
                 try {
                     DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
-                    ddl[0] = DatabaseTransferUtils.generateTargetTableDDL(
-                        monitor,
-                        executionContext,
-                        container,
-                        mapping,
-                        propertySource != null ? propertySource.getChangedPropertiesValues() : mapping.getChangedPropertiesMap());
+                    if (executionContext != null) {
+                        ddl[0] = DatabaseTransferUtils.generateTargetTableDDL(
+                            monitor,
+                            executionContext,
+                            container,
+                            mapping,
+                            propertySource != null ? propertySource.getChangedPropertiesValues() : mapping.getChangedPropertiesMap()
+                        );
+                    }
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -404,11 +426,6 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         if (serviceSQL != null) {
             serviceSQL.setSQLPanelText(sqlPanel, dialogText);
         }
-    }
-
-    @Override
-    protected boolean isResizable() {
-        return true;
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -70,8 +69,12 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
         addrGroup.setLayoutData(gd);
 
         {
-            Group hostGroup = UIUtils.createControlGroup(addrGroup,
-                    OceanbaseMessages.oceanbase_connection_page_label_connection, 4, GridData.FILL_HORIZONTAL, 0);
+            Composite hostGroup = UIUtils.createTitledComposite(
+                addrGroup,
+                OceanbaseMessages.oceanbase_connection_page_label_connection,
+                4,
+                GridData.FILL_HORIZONTAL
+            );
 
             Label hostLabel = UIUtils.createControlLabel(hostGroup,
                     OceanbaseMessages.oceanbase_connection_page_label_host);
@@ -81,6 +84,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
 
             Label portLabel = UIUtils.createControlLabel(hostGroup,
@@ -103,6 +107,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             databaseText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(databaseText);
             databaseText.addModifyListener(textListener);
 
             Label tenantLabel = UIUtils.createControlLabel(hostGroup,
@@ -114,6 +119,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             tenantText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(tenantText);
             tenantText.addModifyListener(textListener);
         }
 

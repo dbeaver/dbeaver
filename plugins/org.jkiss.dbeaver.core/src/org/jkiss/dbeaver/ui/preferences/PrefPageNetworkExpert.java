@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -39,6 +36,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private Combo prefIpStackCombo;
     private Combo prefIpAddressesCombo;
+    private Button debugNetworkConnectionsCheck;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -88,6 +86,14 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
         prefIpAddressesCombo.setLayoutData(new GridData());
         prefIpAddressesCombo.select(ModelPreferences.IPType.getPreferredAddresses().ordinal());
 
+        debugNetworkConnectionsCheck = UIUtils.createCheckbox(
+            composite,
+            CoreMessages.pref_page_network_expert_debug_net_label,
+            CoreMessages.pref_page_network_expert_debug_net_tip,
+            ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_DEBUG_NETWORK_CONNECTIONS),
+            2
+        );
+
         UIUtils.createInfoLabel(composite, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart, SWT.NONE, 2);
 
         return composite;
@@ -95,13 +101,19 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
 
     @Override
     public boolean performOk() {
-        ModelPreferences.IPType stack = ModelPreferences.IPType.values()[prefIpStackCombo.getSelectionIndex()];
-        ModelPreferences.IPType addresses = ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()];
+        DBPPreferenceStore store = ModelPreferences.getPreferences();
 
-        if (stack != ModelPreferences.IPType.getPreferredStack() || addresses != ModelPreferences.IPType.getPreferredAddresses()) {
-            DBPPreferenceStore store = ModelPreferences.getPreferences();
-            store.setValue(ModelPreferences.PROP_PREFERRED_IP_STACK, stack.name());
-            store.setValue(ModelPreferences.PROP_PREFERRED_IP_ADDRESSES, addresses.name());
+        var preferredIpStack = ModelPreferences.IPType.values()[prefIpStackCombo.getSelectionIndex()];
+        var preferredAddresses = ModelPreferences.IPType.values()[prefIpAddressesCombo.getSelectionIndex()];
+        var debugNetwork = debugNetworkConnectionsCheck.getSelection();
+
+        if (preferredIpStack != ModelPreferences.IPType.getPreferredStack() ||
+            preferredAddresses != ModelPreferences.IPType.getPreferredAddresses() ||
+            debugNetwork != ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_DEBUG_NETWORK_CONNECTIONS)
+        ) {
+            store.setValue(ModelPreferences.PROP_PREFERRED_IP_STACK, preferredIpStack.name());
+            store.setValue(ModelPreferences.PROP_PREFERRED_IP_ADDRESSES, preferredAddresses.name());
+            store.setValue(ModelPreferences.PROP_DEBUG_NETWORK_CONNECTIONS, debugNetwork);
 
             if (UIUtils.confirmAction(
                 getShell(),
@@ -119,6 +131,7 @@ public class PrefPageNetworkExpert extends AbstractPrefPage implements IWorkbenc
     protected void performDefaults() {
         prefIpStackCombo.select(ModelPreferences.IPType.AUTO.ordinal());
         prefIpAddressesCombo.select(ModelPreferences.IPType.AUTO.ordinal());
+        debugNetworkConnectionsCheck.setSelection(false);
         super.performDefaults();
     }
 }

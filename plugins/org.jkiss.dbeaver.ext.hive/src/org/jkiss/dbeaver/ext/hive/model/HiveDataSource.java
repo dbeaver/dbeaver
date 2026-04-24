@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.hive.model.jdbc.HiveJdbcFactory;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -56,6 +57,7 @@ public class HiveDataSource extends GenericDataSource {
         return new HiveJdbcFactory();
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (error instanceof SQLException && CONNECTION_CLOSED_MESSAGE.equals(error.getMessage())) {
@@ -76,5 +78,12 @@ public class HiveDataSource extends GenericDataSource {
             return new QueryTransformerLimit(true, false);
         }
         return null;
+    }
+
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        return adapter == DBDValueHandlerProvider.class
+            ? adapter.cast(new HiveValueHandlerProvider())
+            : super.getAdapter(adapter);
     }
 }

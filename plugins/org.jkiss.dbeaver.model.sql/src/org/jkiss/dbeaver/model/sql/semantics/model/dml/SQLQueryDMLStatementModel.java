@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -31,11 +30,7 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 public abstract class SQLQueryDMLStatementModel extends SQLQueryModelContent {
     @Nullable
     private final SQLQueryRowsTableDataModel tableModel;
-    @Nullable
-    private SQLQueryDataContext givenContext = null;
-    @Nullable
-    private SQLQueryDataContext resultContext = null;
-    
+
     public SQLQueryDMLStatementModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel
@@ -50,25 +45,19 @@ public abstract class SQLQueryDMLStatementModel extends SQLQueryModelContent {
     }
 
     @Override
-    protected final void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.givenContext = context;
+    public final void resolveObjectAndRowsReferences(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         if (this.tableModel != null) {
-            this.resultContext = this.tableModel.propagateContext(context, statistics);
-            this.propagateContextImpl(this.resultContext, statistics);
+            SQLQueryRowsSourceContext rowsContext = this.tableModel.resolveRowSources(context, statistics);
+            this.resolveRowsReferencesImpl(rowsContext, statistics);
         }
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.givenContext;
-    }
+    protected abstract void resolveRowsReferencesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.resultContext;
-    }
-
-    protected abstract void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
 }

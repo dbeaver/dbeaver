@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -44,13 +42,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * PostgreTable
@@ -225,8 +221,9 @@ public abstract class PostgreTable extends PostgreTableReal
         return getSchema().getIndexes(monitor, this);
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
     }
 
@@ -269,7 +266,7 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (monitor == null) {
+        if (monitor == null || monitor.isForceCacheUsage()) {
             return null;
         }
         List<DBSEntityAssociation> refs = new ArrayList<>(
@@ -343,6 +340,9 @@ public abstract class PostgreTable extends PostgreTableReal
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted() && monitor != null) {
+            if (monitor.isForceCacheUsage()) {
+                return Collections.emptyList();
+            }
             superTables = initSuperTables(monitor);
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
@@ -503,7 +503,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         if (hasPartitions && DBPScriptObject.OPTION_INCLUDE_PARTITIONS.equals(option)) {
             return true;
         }
@@ -532,14 +532,14 @@ public abstract class PostgreTable extends PostgreTableReal
     public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {
 
         @Override
-        public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreTable object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsHasOidsColumn();
         }
     }
 
     public static class PostgreColumnHasRowLevelSecurity implements IPropertyValueValidator<PostgreTable, Object> {
         @Override
-        public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreTable object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRowLevelSecurity();
         }
     }

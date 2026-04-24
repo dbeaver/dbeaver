@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.json;
 
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
-import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.SQLEditorThemeSettings;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -41,14 +38,9 @@ public class JSONScanner extends RuleBasedScanner {
     }
 
     private void initScanner() {
-        ColorRegistry colorRegistry = UIUtils.getColorRegistry();
-        Color colorKey = colorRegistry.get(SQLConstants.CONFIG_COLOR_KEYWORD);
-        Color colorString = colorRegistry.get(SQLConstants.CONFIG_COLOR_STRING);
-        Color colorValue = colorRegistry.get(SQLConstants.CONFIG_COLOR_NUMBER);
-
-        IToken string = new Token(new TextAttribute(colorString));
-        IToken value = new Token(new TextAttribute(colorValue));
-        IToken defaultText = new Token(new TextAttribute(colorKey));
+        IToken string = new Token(new TextAttribute(SQLEditorThemeSettings.instance.editorKeywordColor));
+        IToken value = new Token(new TextAttribute(SQLEditorThemeSettings.instance.editorNumberColor));
+        IToken defaultText = new Token(new TextAttribute(SQLEditorThemeSettings.instance.editorStringColor));
         //IToken nullValue = new Token(new TextAttribute(colorKey));
 
         List<IRule> rules = new LinkedList<>();

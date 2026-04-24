@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,8 +76,74 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
+    }
+
+    @Override
+    public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
+        if (!(session.getDataSource() instanceof SQLiteDataSource dataSource) || ! dataSource.supportsStrictTyping()) {
+            return super.prepareTableLoadStatement(session, owner, object, objectName);
+        }
+
+        String sql = """
+            SELECT
+                NULL AS TABLE_CAT,
+                NULL AS TABLE_SCHEM,
+                TABLES.NAME AS TABLE_NAME,
+                TABLES.TYPE AS TABLE_TYPE,
+                NULL AS REMARKS,
+                NULL AS TYPE_CAT,
+                NULL AS TYPE_SCHEM,
+                NULL AS TYPE_NAME,
+                NULL AS SELF_REFERENCING_COL_NAME,
+                NULL AS REF_GENERATION,
+                INFOS.STRICT AS STRICT
+            FROM
+                (
+                SELECT
+                    'sqlite_schema' AS NAME,
+                    'SYSTEM TABLE' AS TYPE
+                UNION ALL
+                SELECT
+                    NAME,
+                    UPPER(TYPE) AS TYPE
+                FROM
+                    sqlite_schema
+                WHERE
+                    NAME NOT LIKE 'sqlite\\_%' ESCAPE '\\'
+                    AND UPPER(TYPE) IN ('TABLE', 'VIEW')
+                UNION ALL
+                SELECT
+                    NAME,
+                    'GLOBAL TEMPORARY' AS TYPE
+                FROM
+                    sqlite_temp_master
+                UNION ALL
+                SELECT
+                    NAME,
+                    'SYSTEM TABLE' AS TYPE
+                FROM
+                    sqlite_schema
+                WHERE
+                    NAME LIKE 'sqlite\\_%' ESCAPE '\\'
+                ) AS TABLES
+                LEFT OUTER JOIN pragma_table_list AS INFOS
+                    ON INFOS.NAME = TABLES.NAME
+            """;
+
+        if (object == null && objectName == null) {
+            sql += "ORDER BY TABLE_TYPE, TABLE_NAME";
+        } else {
+            sql += "WHERE TABLE_NAME = ?";
+        }
+
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        if (object != null || objectName != null) {
+            dbStat.setString(1, (object != null ? object.getName() : objectName));
+        }
+
+        return dbStat;
     }
 
     @Override
@@ -95,6 +161,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return false;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT name as TRIGGER_NAME, tbl_name as OWNER FROM "
@@ -106,6 +173,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return dbStat;
     }
 
+    @NotNull
     @Override
     public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
         if (CommonUtils.isEmpty(triggerName)) {
@@ -115,7 +183,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<? extends GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             return Collections.emptyList();
         }
@@ -149,8 +217,9 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return null;
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new SQLiteDataSource(monitor, container, this);
     }
 
@@ -159,8 +228,9 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return new SQLiteDataTypeCache(container);
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(@NotNull GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new SQLiteView(container, tableName, tableType, dbResult);
         } else {
@@ -169,7 +239,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public boolean isSystemTable(GenericTableBase table) {
+    public boolean isSystemTable(@NotNull GenericTableBase table) {
         return table.getName().startsWith("sqlite_");
     }
 
@@ -216,7 +286,26 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     }
 
     @Override
-    public GenericTableColumn createTableColumnImpl(@NotNull DBRProgressMonitor monitor, JDBCResultSet dbResult, @NotNull GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) {
+    public GenericTableColumn createTableColumnImpl(
+        @NotNull DBRProgressMonitor monitor,
+        JDBCResultSet dbResult,
+        @NotNull GenericTableBase table,
+        String columnName,
+        String typeName,
+        int valueType,
+        int sourceType,
+        int ordinalPos,
+        long columnSize,
+        long charLength,
+        Integer scale,
+        Integer precision,
+        int radix,
+        boolean notNull,
+        String remarks,
+        String defaultValue,
+        boolean autoIncrement,
+        boolean autoGenerated
+    ) {
         // Check for type length modifier
         Matcher matcher = TYPE_WITH_LENGTH_PATTERN.matcher(typeName);
         if (matcher.matches()) {
@@ -236,7 +325,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @NotNull
     @Override
-    public GenericTableForeignKey createTableForeignKeyImpl(GenericTableBase table, String name, @Nullable String remarks, DBSEntityReferrer referencedKey, DBSForeignKeyModifyRule deleteRule, DBSForeignKeyModifyRule updateRule, DBSForeignKeyDeferability deferability, boolean persisted) {
+    public GenericTableForeignKey createTableForeignKeyImpl(@NotNull GenericTableBase table, String name, @Nullable String remarks, DBSEntityReferrer referencedKey, DBSForeignKeyModifyRule deleteRule, DBSForeignKeyModifyRule updateRule, DBSForeignKeyDeferability deferability, boolean persisted) {
         return new SQLiteTableForeignKey(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
     }
 
@@ -252,5 +341,10 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Override
     protected String getDefaultTypeName() {
         return "ANY"; //$NON-NLS-1$
+    }
+
+    @Override
+    public boolean hasProcedureSupport() {
+        return false;
     }
 }

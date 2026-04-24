@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControlCreator;
 import org.jkiss.utils.CommonUtils;
@@ -259,14 +259,14 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         if (getProposalType() == DBPKeywordType.LITERAL) {
             StyledString styledString = new StyledString();
             styledString.append(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_STRING, null));
+                StyledString.createColorRegistryStyler(ThemeConstants.SQL_EDITOR_COLOR_STRING, null));
             return styledString;
         } else if (getProposalType() == DBPKeywordType.KEYWORD) {
             return new StyledString(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_KEYWORD, null));
+                StyledString.createColorRegistryStyler(ThemeConstants.SQL_EDITOR_COLOR_KEYWORD, null));
         } else if (getProposalType() == DBPKeywordType.FUNCTION) {
             return new StyledString(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLConstants.CONFIG_COLOR_FUNCTION, null));
+                StyledString.createColorRegistryStyler(ThemeConstants.SQL_EDITOR_COLOR_FUNCTION, null));
         } else {
             return new StyledString(getDisplayString());
         }

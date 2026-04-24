@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
@@ -626,6 +625,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "tsvector_update_trigger_column"
     };
 
+    public static String[] POSTGRE_FUNCTIONS_BUILTIN = new String[] {
+        "count"
+    };
+
+
     public static String[] POSTGRE_FUNCTIONS_XML = new String[]{
         "xmlcomment",
         "xmlconcat",
@@ -758,6 +762,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
+        "format",
         "to_char",
         "to_date",
         "to_number",
@@ -828,6 +833,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "TYPE",
             "USER",
             "COMMENT",
+            "LATERAL",
             "MATERIALIZED",
             "ILIKE",
             "ELSIF",
@@ -888,8 +894,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_TRIGGER);
         addExtraFunctions(POSTGRE_FUNCTIONS_WINDOW);
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
+        addExtraFunctions(POSTGRE_FUNCTIONS_BUILTIN);
 
         removeSQLKeyword("LENGTH");
+        removeSQLKeyword("JSON");
+        removeSQLKeyword("TEXT");
+        removeSQLKeyword("FORMAT");
+        removeSQLKeyword("WORK");
 
         if (dataSource instanceof PostgreDataSource) {
             serverExtension = ((PostgreDataSource) dataSource).getServerType();
@@ -959,6 +970,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    public boolean validIdentifierStart(char c) {
+        return super.validIdentifierStart(c) || c == '_';
+    }
+
+    @Override
     public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
         // This method actually works for special data types like JSON and XML.
         // Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
@@ -975,7 +991,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         // Some data for some types of columns data types must be cast. It can be simple casting only with data type name like "::pg_class" or casting with fully qualified names for user defined types like "::schemaName.testType".
         // Or very special clauses with JSON and XML columns, when we have to cast both column data and column name to text.
         return getCastedString(attribute, expression, isInCondition, false);
@@ -997,13 +1018,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-        if (PostgreUtils.isPGObject(value)
+        boolean isPgObject = serverExtension != null && serverExtension.isPGObject(value);
+        if (isPgObject
             || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName())
             || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
             || attribute.getTypeID() == Types.OTHER
             || attribute.getTypeID() == Types.ARRAY
-            || attribute.getTypeID() == Types.STRUCT)
-        {
+            || attribute.getTypeID() == Types.STRUCT) {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';
@@ -1114,7 +1135,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
-        String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+        String typeName = sourceTypedObject.getTypeName();
+        if (typeName == null) {
+            return null;
+        }
+        String externalTypeName = typeName.toLowerCase(Locale.ENGLISH);
         String localDataType = null, dataTypeModifies = null;
 
         switch (externalTypeName) {
@@ -1261,6 +1286,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public boolean isEscapeBackslash() {
-        return true;
+        return serverExtension != null && serverExtension.supportsBackslashStringEscape();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,8 +75,9 @@ public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> im
     }
 
     
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
             ddl = ((AltibaseMetaModel) getDataSource().getMetaModel()).getDirectoryDDL(monitor, this, options) + ";";
         }
@@ -85,7 +86,7 @@ public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> im
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         AltibaseSchema schema = (AltibaseSchema) getParentObject();
         return schema.getDirectoryCache().refreshObject(monitor, schema, this);
     }

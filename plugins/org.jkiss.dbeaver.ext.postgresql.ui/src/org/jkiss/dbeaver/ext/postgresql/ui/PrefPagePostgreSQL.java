@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -47,6 +48,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     private Button showDatabaseStatistics;
     private Button readAllDataTypes;
     private Button readKeysWithColumns;
+    private Button replaceLegacyTimezone;
 
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
@@ -60,20 +62,18 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite cfgGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        cfgGroup.setLayout(gl);
+        Composite cfgGroup = UIUtils.createComposite(parent, 1);
         cfgGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Group secureGroup = new Group(cfgGroup, SWT.NONE);
-            secureGroup.setText(PostgreMessages.dialog_setting_connection_settings);
-            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            secureGroup.setLayout(new GridLayout(2, false));
+            Composite secureGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_connection_settings,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             showNonDefault = UIUtils.createCheckbox(secureGroup,
                 PostgreMessages.dialog_setting_connection_nondefaultDatabase,
@@ -117,13 +117,20 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns_tip,
                 globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
                 2);
+            replaceLegacyTimezone = UIUtils.createCheckbox(secureGroup,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone_tip,
+                globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
+                2);
         }
 
         {
-            Group secureGroup = new Group(cfgGroup, SWT.NONE);
-            secureGroup.setText(PostgreMessages.dialog_setting_group_sql);
-            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            secureGroup.setLayout(new GridLayout(2, false));
+            Composite secureGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_group_sql,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             ddPlainBehaviorCombo = UIUtils.createLabelCombo(secureGroup, PostgreMessages.dialog_setting_sql_dd_plain_label, PostgreMessages.dialog_setting_sql_dd_plain_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
             ddPlainBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);
@@ -158,6 +165,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS, String.valueOf(readKeysWithColumns.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE, String.valueOf(replaceLegacyTimezone.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);
@@ -174,6 +182,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         showDatabaseStatistics.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
         readAllDataTypes.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
         readKeysWithColumns.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+        replaceLegacyTimezone.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE));
         ddPlainBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_PLAIN_STRING));
         ddTagBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_TAG_STRING));
         setCheckboxesState();

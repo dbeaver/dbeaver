@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
@@ -79,7 +78,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         }
 
         if (dbResult != null) {
-            this.description = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.REMARKS);
+            this.description = GenericUtils.safeGetString(container.getTableCache().getTableObject(), dbResult, JDBCConstants.REMARKS);
         }
 
         final GenericMetaModel metaModel = container.getDataSource().getMetaModel();
@@ -88,8 +87,8 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
         boolean mergeEntities = container.getDataSource().isMergeEntities();
         if (mergeEntities && dbResult != null) {
-            tableCatalogName = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.TABLE_CATALOG);
-            tableSchemaName = GenericUtils.safeGetString(container.getTableCache().tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
+            tableCatalogName = GenericUtils.safeGetString(container.getTableCache().getTableObject(), dbResult, JDBCConstants.TABLE_CATALOG);
+            tableSchemaName = GenericUtils.safeGetString(container.getTableCache().getTableObject(), dbResult, JDBCConstants.TABLE_SCHEM);
         } else {
             tableCatalogName = null;
             tableSchemaName = null;
@@ -132,7 +131,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (isView() && context == DBPEvaluationContext.DDL && !getDataSource().getMetaModel().useCatalogInObjectNames()) {
             // [SQL Server] workaround. You can't use catalog name in operations with views.
             return DBUtils.getFullQualifiedName(
@@ -166,6 +165,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Property(viewable = true, optional = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
+    @Nullable
     public GenericCatalog getCatalog() {
         if (!CommonUtils.isEmpty(tableCatalogName)) {
             getDataSource().getCatalog(tableCatalogName);
@@ -218,10 +218,6 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         this.getContainer().getTableCache().getChildrenCache(this).cacheObject(column);
     }
 
-    public void removeAttribute(GenericTableColumn column) {
-        this.getContainer().getTableCache().getChildrenCache(this).removeObject(column, false);
-    }
-
     @ForTest
     public List<? extends GenericTableColumn> getCachedAttributes() {
         final DBSObjectCache<GenericTableBase, GenericTableColumn> childrenCache =
@@ -244,9 +240,13 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
-        if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
+    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBPDataSourceInfo dataSource = getDataSource().getInfo();
+        boolean supportsUniqueKeys = getContainer().getDataSource().getMetaModel().supportsUniqueKeys();
+        if (dataSource.supportsReferentialIntegrity() ||
+            dataSource.supportsIndexes() ||
+            supportsUniqueKeys
+        ) {
             // ensure all columns are already cached
             getAttributes(monitor);
             return getContainer().getConstraintKeysCache().getObjects(monitor, getContainer(), this);
@@ -268,7 +268,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return loadReferences(monitor);
@@ -400,7 +400,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException {
-        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor == null) {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor == null || monitor.isForceCacheUsage()) {
             return new ArrayList<>();
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
@@ -415,21 +415,12 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
             for (ForeignKeyInfo info : fkInfos) {
                 DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
                 DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
-                DBSForeignKeyDeferability deferability;
-                switch (info.deferabilityNum) {
-                    case DatabaseMetaData.importedKeyInitiallyDeferred:
-                        deferability = DBSForeignKeyDeferability.INITIALLY_DEFERRED;
-                        break;
-                    case DatabaseMetaData.importedKeyInitiallyImmediate:
-                        deferability = DBSForeignKeyDeferability.INITIALLY_IMMEDIATE;
-                        break;
-                    case DatabaseMetaData.importedKeyNotDeferrable:
-                        deferability = DBSForeignKeyDeferability.NOT_DEFERRABLE;
-                        break;
-                    default:
-                        deferability = DBSForeignKeyDeferability.UNKNOWN;
-                        break;
-                }
+                DBSForeignKeyDeferability deferability = switch (info.deferabilityNum) {
+                    case DatabaseMetaData.importedKeyInitiallyDeferred -> DBSForeignKeyDeferability.INITIALLY_DEFERRED;
+                    case DatabaseMetaData.importedKeyInitiallyImmediate -> DBSForeignKeyDeferability.INITIALLY_IMMEDIATE;
+                    case DatabaseMetaData.importedKeyNotDeferrable -> DBSForeignKeyDeferability.NOT_DEFERRABLE;
+                    default -> DBSForeignKeyDeferability.UNKNOWN;
+                };
 
                 if (CommonUtils.isEmpty(info.fkTableName)) {
                     log.debug("Null FK table name");
@@ -512,7 +503,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
             return fkList;
         } catch (SQLException ex) {
-            if (ex instanceof SQLFeatureNotSupportedException) {
+            if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), ex)) {
                 log.debug("Error reading references: " + ex.getMessage());
                 return Collections.emptyList();
             } else {

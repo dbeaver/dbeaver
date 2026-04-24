@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -75,18 +76,13 @@ public class EditMavenArtifactDialog extends BaseDialog {
     private Text fieldText;
 
     private CLabel errorLabel;
-    private TabFolder tabFolder;
+    private CTabFolder tabFolder;
     private boolean isReadOnly = false;
 
     public EditMavenArtifactDialog(@NotNull Shell shell, @NotNull DriverDescriptor driver, @Nullable DriverLibraryMavenArtifact library) {
         super(shell, UIConnectionMessages.dialog_edit_driver_edit_maven_title, DBIcon.TREE_USER);
         this.driver = driver;
         this.originalArtifact = library;
-    }
-
-    @Override
-    protected boolean isResizable() {
-        return true;
     }
 
     @NotNull
@@ -101,13 +97,14 @@ public class EditMavenArtifactDialog extends BaseDialog {
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = UIUtils.getFontHeight(composite.getFont()) * 40;
 
-            tabFolder = new TabFolder(composite, SWT.TOP | SWT.FLAT);
+            tabFolder = new CTabFolder(composite, SWT.TOP | SWT.FLAT);
             tabFolder.setLayoutData(gd);
             tabFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     artifacts.clear();
-                    if (tabFolder.getSelection()[0].getData() == TabType.DEPENDENCY_DECLARATION){
+                    CTabItem selection = tabFolder.getSelection();
+                    if (selection != null && selection.getData() == TabType.DEPENDENCY_DECLARATION){
                         UIUtils.asyncExec(EditMavenArtifactDialog.this::parseArtifactText);
                     }
                 }
@@ -118,7 +115,12 @@ public class EditMavenArtifactDialog extends BaseDialog {
             createDeclareArtifactManuallyTab(tabFolder);
         }
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_edit_driver_edit_maven_settings, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite settingsGroup = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.dialog_edit_driver_edit_maven_settings,
+                1,
+                GridData.FILL_HORIZONTAL
+            );
 
             Button ignoreDependenciesCheckbox = UIUtils.createCheckbox(settingsGroup,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_ignore_transient_dependencies,
@@ -175,7 +177,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
     }
 
     private void setStatus(boolean error, String message) {
-        getButton(IDialogConstants.OK_ID).setEnabled(!error);
+        enableButton(IDialogConstants.OK_ID, !error);
         errorLabel.setVisible(!message.isEmpty());
         if (!message.isEmpty()) {
             errorLabel.setImage(DBeaverIcons.getImage(error ? DBIcon.SMALL_ERROR : DBIcon.SMALL_INFO));
@@ -183,7 +185,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
     }
 
-    private void createDependencyDeclarationTab(@NotNull TabFolder folder) {
+    private void createDependencyDeclarationTab(@NotNull CTabFolder folder) {
 
         Composite container = new Composite(folder, SWT.NONE);
         container.setLayout(new GridLayout(1, true));
@@ -203,13 +205,13 @@ public class EditMavenArtifactDialog extends BaseDialog {
 
         //UIUtils.asyncExec(() -> setStatus(false, UIConnectionMessages.dialog_edit_driven_edit_maven_field_text_message));
 
-        TabItem item = new TabItem(folder, SWT.NONE);
+        CTabItem item = new CTabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_raw);
         item.setControl(container);
         item.setData(TabType.DEPENDENCY_DECLARATION);
     }
 
-    private void createDeclareArtifactManuallyTab(@NotNull TabFolder folder) {
+    private void createDeclareArtifactManuallyTab(@NotNull CTabFolder folder) {
         Composite container = new Composite(folder, SWT.NONE);
         container.setLayout(new GridLayout(2, false));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -251,7 +253,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
             UIUtils.createInfoLabel(container, "Predefined Maven artifacts are read-only", GridData.FILL_HORIZONTAL, 2);
         }
 
-        TabItem item = new TabItem(folder, SWT.NONE);
+        CTabItem item = new CTabItem(folder, SWT.NONE);
         item.setText(UIConnectionMessages.dialog_edit_driver_edit_maven_manual);
         item.setControl(container);
         item.setData(TabType.DECLARE_ARTIFACT_MANUALLY);
@@ -271,7 +273,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(
+        enableButton(IDialogConstants.OK_ID,
             !CommonUtils.isEmpty(groupText.getText()) &&
                 !CommonUtils.isEmpty(artifactText.getText()) &&
                 !CommonUtils.isEmpty(fallbackVersionText.getText())
@@ -337,7 +339,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String name, Attributes atts) {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String name, @NotNull Attributes attributes) {
             if (state.isEmpty() && "dependencies".equals(name)) {
                 state.offer(State.DEPENDENCIES);
             } else if ((state.isEmpty() || state.element() == State.DEPENDENCIES) && "dependency".equals(name)) {
@@ -358,7 +360,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String name) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String name) {
             if (state.peekLast() == State.DEPENDENCY && "dependency".equals(name)) {
                 DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", version);
                 lib.setReference(new MavenArtifactReference(groupId, artifactId, classifier, MavenArtifactReference.VERSION_PATTERN_RELEASE, version));
@@ -375,7 +377,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
             if (state.isEmpty()) {
                 return;
             }
@@ -419,7 +421,8 @@ public class EditMavenArtifactDialog extends BaseDialog {
             super.okPressed();
             return;
         }
-        if (tabFolder.getSelection()[0].getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
+        CTabItem selection = tabFolder.getSelection();
+        if (selection != null && selection.getData() == TabType.DECLARE_ARTIFACT_MANUALLY) {
             if (originalArtifact != null) {
                 originalArtifact.setReference(new MavenArtifactReference(
                     groupText.getText(),

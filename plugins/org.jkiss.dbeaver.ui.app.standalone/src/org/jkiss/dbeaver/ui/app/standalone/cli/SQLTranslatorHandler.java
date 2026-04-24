@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,32 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.cli;
 
-import org.apache.commons.cli.CommandLine;
+
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
-import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import picocli.CommandLine;
 
 import java.io.FileReader;
 import java.io.IOException;
 
-public class SQLTranslatorHandler implements CommandLineParameterHandler {
+@CommandLine.Command(name = "translateSQL", aliases = {"-translateSQL", "-translate-sql-script"},
+    description = "Translate SQL script from one dialect to another")
+public class SQLTranslatorHandler extends CLIAbstractSubcommand {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
+    @CommandLine.Parameters(index = "0", description = "Parameter in the form dialect=filePath", arity = "1")
+    private String value;
+
     @Override
-    public void handleParameter(CommandLine commandLine, String name, String value) {
+    public void run() {
         String[] args = value.split(",");
         if (args.length != 2) {
             throw new IllegalStateException("Input parameter format: dialect,<input-file-path>");

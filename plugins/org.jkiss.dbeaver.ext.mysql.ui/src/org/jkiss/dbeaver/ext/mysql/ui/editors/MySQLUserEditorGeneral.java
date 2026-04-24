@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +19,11 @@ package org.jkiss.dbeaver.ext.mysql.ui.editors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -44,9 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * MySQLUserEditorGeneral
@@ -75,7 +74,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
         newUser = !getDatabaseObject().isPersisted();
         {
-            Composite loginGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite loginGroup = UIUtils.createTitledComposite(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL);
 
             userNameText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getUserName());
             userNameText.setEditable(newUser);
@@ -98,7 +97,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
 
         {
-            Composite limitsGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite limitsGroup = UIUtils.createTitledComposite(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.FILL_HORIZONTAL);
 
             Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_queries, getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
@@ -134,14 +133,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                         privilege),
                     new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed()) {
                                 privTable.checkPrivilege(privilege, grant);
                             }
                         }
                         @Override
-                        public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed()) {
                                 privTable.checkPrivilege(privilege, !grant);
@@ -157,6 +156,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         DBECommandContext context = getEditorInput().getCommandContext();
         if (context != null) {
             context.addCommandListener(commandlistener);
+        }
+
+        if (newUser) {
+            triggerModifyEvent(userNameText);
         }
     }
 
@@ -176,24 +179,24 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             return;
         }
         DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext != null) {
+        if (executionContext == null) {
             return;
         }
         isLoaded = true;
         LoadingJob.createService(
             new DatabaseLoadService<>(
                 MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges,
-                getExecutionContext()
+                executionContext
             ) {
                 @Override
-                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
-                        var dbObj = getDatabaseObject();
-                        if (dbObj == null) {
+                        MySQLUser user = getDatabaseObject();
+                        if (user == null) {
                             isLoaded = false;
                             return null;
                         }
-                        return dbObj.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN)
+                        return user.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN)
                             .stream()
                             .filter(p -> !p.getName().equalsIgnoreCase("proxy"))
                             .toList();
@@ -226,14 +229,20 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         return RefreshResult.IGNORED;
     }
 
+    private void triggerModifyEvent(Text text) {
+        Event event = new Event();
+        event.widget = text;
+        text.notifyListeners(SWT.Modify, event);
+    }
+
     private class PageControl extends UserPageControl {
         public PageControl(Composite parent) {
             super(parent);
         }
         public ProgressVisualizer<List<MySQLPrivilege>> createLoadVisualizer() {
-            return new ProgressVisualizer<List<MySQLPrivilege>>() {
+            return new ProgressVisualizer<>() {
                 @Override
-                public void completeLoading(List<MySQLPrivilege> privs) {
+                public void completeLoading(@Nullable List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     privTable.fillPrivileges(privs);
                     loadGrants();
@@ -249,20 +258,16 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         {
             if (newUser && getDatabaseObject().isPersisted()) {
                 newUser = false;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        userNameText.setEditable(false);
-                        hostText.setEditable(false);
-                    }
+                UIUtils.asyncExec(() -> {
+                    userNameText.setEditable(false);
+                    hostText.setEditable(false);
                 });
             }
         }
 
         @Override
         public void onCommandChange(DBECommand<?> command) {
-            if (command instanceof MySQLUserManager.CommandRenameUser) {
-                MySQLUserManager.CommandRenameUser mysqlCommand = (MySQLUserManager.CommandRenameUser) command;
+            if (command instanceof MySQLUserManager.CommandRenameUser mysqlCommand) {
                 setUsernameAndHost(mysqlCommand.getNewUserName(), mysqlCommand.getNewHost());
             }
         }

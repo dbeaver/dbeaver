@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,7 +209,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         boolean updated;
         try {
             updated = controller.updateCellValue(
-                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, true);
+                cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, updatePresentation);
         } catch (Exception e) {
             UIUtils.asyncExec(() -> {
                 DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e);

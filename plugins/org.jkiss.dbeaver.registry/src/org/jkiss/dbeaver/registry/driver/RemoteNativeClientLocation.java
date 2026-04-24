@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
@@ -30,11 +31,14 @@ import java.io.File;
  */
 public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     private final NativeClientDescriptor clientDescriptor;
+    private final DBPDriver driver;
 
-    public RemoteNativeClientLocation(NativeClientDescriptor clientDescriptor) {
+    public RemoteNativeClientLocation(@NotNull NativeClientDescriptor clientDescriptor, @NotNull DBPDriver driver) {
         this.clientDescriptor = clientDescriptor;
+        this.driver = driver;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return clientDescriptor.getId();
@@ -43,7 +47,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     @NotNull
     @Override
     public File getPath() {
-        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
+        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution(driver);
         if (distribution != null) {
             File driversHome = DriverDescriptor.getCustomDriversHome().toFile();
             return new File(driversHome, distribution.getTargetPath());
@@ -58,8 +62,8 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     }
 
     @Override
-    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException, InterruptedException {
-        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
+    public boolean validateFilesPresence(@NotNull DBRProgressMonitor progressMonitor) throws DBException, InterruptedException {
+        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution(driver);
         if (distribution != null) {
             return distribution.downloadFiles(progressMonitor, this);
         }

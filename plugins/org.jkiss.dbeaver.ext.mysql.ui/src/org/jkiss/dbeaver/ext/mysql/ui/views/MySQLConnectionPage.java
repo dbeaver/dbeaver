@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -32,37 +35,27 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.registry.DBConnectionConstants;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
-import java.util.TimeZone;
 
 /**
  * MySQLConnectionPage
  */
-public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider
-{
-    // disable Server time zone manage - it confuses users and makes very little sense
-    // as now we use server timestamp format by default
-    private static final boolean MANAGE_SERVER_TIME_ZONE = true;
+public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Text urlText;
     private Text hostText;
     private Text portText;
     private Text dbText;
-    private ClientHomesSelector homesSelector;
+    private Button showAllDatabases;
     private boolean activated = false;
-
-    private Combo serverTimezoneCombo;
 
     private final Image LOGO_MYSQL;
     private final Image LOGO_MARIADB;
@@ -74,8 +67,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
         UIUtils.dispose(LOGO_MYSQL);
         UIUtils.dispose(LOGO_MARIADB);
@@ -111,12 +103,12 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        Group serverGroup = UIUtils.createControlGroup(
+        Composite serverGroup = UIUtils.createTitledComposite(
             addrGroup,
             UIConnectionMessages.dialog_connection_server_label,
             4,
-            GridData.FILL_HORIZONTAL,
-            0);
+            GridData.FILL_HORIZONTAL
+        );
 
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
@@ -139,13 +131,16 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         DBPDriver driver = getSite().getDriver();
         needsPort = CommonUtils.getBoolean(driver.getDriverParameter("needsPort"), true);
 
-        Label hostLabel = UIUtils.createControlLabel(serverGroup,
-            needsPort ? MySQLUIMessages.dialog_connection_host : MySQLUIMessages.dialog_connection_instance);
+        Label hostLabel = UIUtils.createControlLabel(
+            serverGroup,
+            needsPort ? MySQLUIMessages.dialog_connection_host : MySQLUIMessages.dialog_connection_instance
+        );
 
         hostText = new Text(serverGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(hostText);
         hostText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
@@ -165,39 +160,19 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         dbText = new Text(serverGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(dbText);
         dbText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
+        showAllDatabases = UIUtils.createCheckbox(
+            serverGroup,
+            MySQLUIMessages.dialog_connection_show_all_databases,
+            MySQLUIMessages.dialog_connection_show_all_databases_tip,
+            false,
+            2
+        );
 
         createAuthPanel(addrGroup, 1);
-
-        Group advancedGroup = UIUtils.createControlGroup(
-            addrGroup,
-            MySQLUIMessages.dialog_connection_group_advanced,
-            2,
-            GridData.HORIZONTAL_ALIGN_BEGINNING,
-            0);
-
-        if (MANAGE_SERVER_TIME_ZONE) {
-            serverTimezoneCombo = UIUtils.createLabelCombo(advancedGroup, MySQLUIMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
-            serverTimezoneCombo.add(MySQLUIMessages.dialog_connection_auto_detect);
-            {
-                String[] tzList = TimeZone.getAvailableIDs();
-                for (String tzID : tzList) {
-                    //TimeZone timeZone = TimeZone.getTimeZone(tzID);
-                    serverTimezoneCombo.add(tzID);
-                }
-            }
-            serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        }
-
-        boolean supportsClients = CommonUtils.getBoolean(driver.getDriverParameter(MySQLConstants.DRIVER_PARAM_CLIENTS), true);
-        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && supportsClients) {
-            homesSelector = new ClientHomesSelector(advancedGroup, MySQLUIMessages.dialog_connection_local_client, false);
-            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            homesSelector.getPanel().setLayoutData(gd);
-        }
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
@@ -248,21 +223,17 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
             }
         }
         if (dbText != null) {
-            dbText.setText(CommonUtils.toString(connectionInfo.getDatabaseName(), CommonUtils.notEmpty(site.getDriver().getDefaultDatabase())));
+            dbText.setText(CommonUtils.toString(
+                connectionInfo.getDatabaseName(),
+                CommonUtils.notEmpty(site.getDriver().getDefaultDatabase())
+            ));
         }
-        if (serverTimezoneCombo != null) {
-            String tzProp = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
-            if (CommonUtils.isEmpty(tzProp)) {
-                serverTimezoneCombo.select(0);
-            } else {
-                serverTimezoneCombo.setText(tzProp);
-            }
+        if (showAllDatabases != null) {
+            showAllDatabases.setSelection(CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
+                MySQLConstants.PROP_SHOW_ALL_DBS_DEFAULT
+            ));
         }
-
-        if (homesSelector != null) {
-            homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
-        }
-
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
@@ -274,8 +245,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (typeURLRadio != null) {
             connectionInfo.setConfigurationType(
@@ -290,16 +260,11 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
-        if (serverTimezoneCombo != null) {
-            String serverTimeZone = serverTimezoneCombo.getText();
-            if (CommonUtils.isEmpty(serverTimeZone) || serverTimeZone.equals(MySQLUIMessages.dialog_connection_auto_detect)) {
-                connectionInfo.removeProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
-            } else {
-                connectionInfo.setProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE, serverTimeZone);
-            }
-        }
-        if (homesSelector != null) {
-            connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
+        if (showAllDatabases != null) {
+            connectionInfo.setProviderProperty(
+                MySQLConstants.PROP_SHOW_ALL_DBS,
+                String.valueOf(showAllDatabases.getSelection())
+            );
         }
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
             connectionInfo.setUrl(urlText.getText());
@@ -309,9 +274,9 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
-    {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {
+            new MySQLConnectionPageAdvanced(),
             new DriverPropertiesDialogPage(this)
         };
     }

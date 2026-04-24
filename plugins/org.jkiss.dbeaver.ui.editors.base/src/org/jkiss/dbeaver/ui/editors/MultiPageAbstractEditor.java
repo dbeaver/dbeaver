@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,28 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.Layout;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
-import org.jkiss.dbeaver.ui.UIFonts;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +46,8 @@ import java.util.List;
  * MultiPageAbstractEditor
  */
 public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
+    private static final Log log = Log.getLog(MultiPageAbstractEditor.class);
+
     private ImageDescriptor curTitleImage;
     private final List<Image> oldImages = new ArrayList<>();
     private int activePageIndex = -1;
@@ -60,6 +61,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
             // Pages re-initialization. Do not call init because it recreates selection provider
             setSite(site);
             setInput(input);
+            firePropertyChange(PROP_INPUT);
         }
         setPartName(input.getName());
         setTitleImage(input.getImageDescriptor());
@@ -125,9 +127,13 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     protected CTabFolder createContainer(Composite parent) {
         CTabFolder container = super.createContainer(parent);
 
+        // Add small margin on top so part's tab doesn't touch editor's tabs
+        parent.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(0, 0, 2, 0).create());
+        container.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
+
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
-            s -> container.setFont(BaseThemeSettings.instance.baseFont),
+            UIFonts.Eclipse.PART_TITLE_FONT,
+            s -> container.setFont(BaseThemeSettings.instance.partTitleFont),
             container
         );
         return container;
@@ -136,39 +142,39 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     protected void setContainerStyles() {
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder tabFolder && !pageContainer.isDisposed()) {
-            tabFolder.setFont(BaseThemeSettings.instance.baseFont);
+            tabFolder.setFont(BaseThemeSettings.instance.partTitleFont);
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
             tabFolder.setTabPosition(SWT.TOP);
             Control topRight = createTopRightControl(tabFolder);
+
+            int tabHeight = getDefaultTabHeight(tabFolder);
             if (topRight != null) {
-                Point trSize = topRight.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                tabFolder.setTabHeight(trSize.y);
                 tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
+                tabHeight = Math.max(tabHeight, topRight.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             }
-
-            /*
-             * final Accessible accessible = tabFolder.getAccessible();
-             * accessible.addAccessibleListener(new AccessibleAdapter() { public void
-             * getName(AccessibleEvent e) { if (e.childID < 0) { CTabItem selection =
-             * tabFolder.getSelection(); if (selection != null) { e.result = "Tab " +
-             * selection.getText(); } } } });
-             */
-
-//            tabFolder.setSimple(false);
-            // tabFolder.setBorderVisible(true);
-            Layout parentLayout = tabFolder.getParent().getLayout();
-            if (parentLayout instanceof FillLayout) {
-                ((FillLayout) parentLayout).marginHeight = 0;
-//                ((FillLayout)parentLayout).marginWidth = 5;
-            }
+            tabFolder.setTabHeight(tabHeight);
         }
+        CSSUtils.markConnectionTypeColor(pageContainer);
+    }
+
+    private static int getDefaultTabHeight(@NotNull CTabFolder tabFolder) {
+        // Sample toolbar's height as it fits quite nicely.
+        ToolBar toolBar = new ToolBar(tabFolder, SWT.FLAT | SWT.RIGHT);
+
+        // Add a dummy item as empty toolbars are considered {0, 0} on some platforms
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        item.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+
+        Point size = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        toolBar.dispose();
+
+        return size.y;
     }
 
     protected void setPageToolTip(int index, String toolTip) {
         Composite pageContainer = getContainer();
-        if (pageContainer instanceof CTabFolder) {
-            CTabFolder tabFolder = (CTabFolder) pageContainer;
+        if (pageContainer instanceof CTabFolder tabFolder) {
             if (index < tabFolder.getItemCount()) {
                 tabFolder.getItem(index).setToolTipText(toolTip);
             }
@@ -227,6 +233,22 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
 
     protected Control createTopRightControl(Composite composite) {
         return null;
+    }
+
+    /**
+     * Causes the top right control to be updated.
+     */
+    protected void updateTopRightControl() {
+        if (!(getContainer() instanceof CTabFolder folder) || folder.isDisposed()) {
+            return;
+        }
+        try {
+            Method updateFolder = CTabFolder.class.getDeclaredMethod("updateFolder", int.class);
+            updateFolder.setAccessible(true);
+            updateFolder.invoke(folder, 10 /*UPDATE_TAB_HEIGHT | REDRAW*/);
+        } catch (ReflectiveOperationException e) {
+            log.error("Error updating CTabFolder top right control", e);
+        }
     }
 
     public void recreatePages() {

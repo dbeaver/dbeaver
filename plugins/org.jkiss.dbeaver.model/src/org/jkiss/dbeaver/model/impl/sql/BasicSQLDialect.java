@@ -63,15 +63,16 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
     };
 
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
-        SQLConstants.KEYWORD_SELECT,
+        SQLConstants.KEYWORD_SELECT
     };
     protected static final String[] DML_KEYWORDS = new String[]{
-            SQLConstants.KEYWORD_INSERT,
-            SQLConstants.KEYWORD_DELETE,
-            SQLConstants.KEYWORD_UPDATE,
-            SQLConstants.KEYWORD_MERGE,
-            SQLConstants.KEYWORD_UPSERT,
-            SQLConstants.KEYWORD_TRUNCATE};
+        SQLConstants.KEYWORD_INSERT,
+        SQLConstants.KEYWORD_DELETE,
+        SQLConstants.KEYWORD_UPDATE,
+        SQLConstants.KEYWORD_MERGE,
+        SQLConstants.KEYWORD_UPSERT,
+        SQLConstants.KEYWORD_TRUNCATE
+    };
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
@@ -212,7 +213,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         if (isEscapeBackslash()) {
             string = string.replace("\\", "\\\\");
         }

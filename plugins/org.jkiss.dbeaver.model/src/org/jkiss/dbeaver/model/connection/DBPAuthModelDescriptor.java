@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 /**
  * Data source provider descriptor
  */
-public interface DBPAuthModelDescriptor extends DBPNamedObject {
+public interface DBPAuthModelDescriptor extends DBPNamedObject, DBPDriverLibraryProvider {
 
     @NotNull
     String getId();
@@ -45,8 +45,8 @@ public interface DBPAuthModelDescriptor extends DBPNamedObject {
     // Model works in desktop application only
     boolean isDesktopModel();
 
-    // Model works in cloud mode only
-    boolean isCloudModel();
+    // Model works in application that uses servers only
+    boolean requiresServerApplication();
 
     // Model needs a configuration on a local FS
     boolean requiresLocalConfiguration();

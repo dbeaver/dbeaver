@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -33,19 +35,27 @@ public class TransactionLogDialog extends TransactionInfoDialog {
 
     private final DBCExecutionContext context;
     private final boolean showPreviousTxn;
+    private final boolean showAllQueries;
 
-    private TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor, boolean showPreviousTxn)
-    {
-        super(parentShell,
-            NLS.bind(CoreMessages.transaction_log_dialog_header_transaction_log, context.getDataSource().getContainer().getName(), context.getContextName()),
-            activeEditor);
+    private TransactionLogDialog(
+        @NotNull Shell parentShell,
+        @NotNull DBCExecutionContext context,
+        @NotNull IWorkbenchPart activeEditor,
+        boolean showPreviousTxn,
+        boolean showAllQueries
+    ) {
+        super(
+            parentShell,
+            NLS.bind(
+                CoreMessages.transaction_log_dialog_header_transaction_log,
+                context.getDataSource().getContainer().getName(),
+                context.getContextName()
+            ),
+            activeEditor
+        );
         this.context = context;
         this.showPreviousTxn = showPreviousTxn;
-    }
-
-    @Override
-    protected boolean isResizable() {
-    	return true;
+        this.showAllQueries = showAllQueries;
     }
 
     @Override
@@ -53,40 +63,57 @@ public class TransactionLogDialog extends TransactionInfoDialog {
         return context;
     }
 
-    protected IDialogSettings getDialogBoundsSettings()
-    {
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
         super.createTransactionLogPanel(composite);
 
+        showAllCheck.setSelection(showAllQueries);
         showPreviousCheck.setSelection(showPreviousTxn);
         updateTransactionFilter();
 
         return parent;
     }
 
-    public static void showDialog(Shell shell, DBCExecutionContext executionContext) {
+    public static void showDialog(@NotNull Shell shell, @Nullable DBCExecutionContext executionContext) {
         showDialog(shell, executionContext, false);
     }
 
-    public static void showDialog(Shell shell, DBCExecutionContext executionContext, boolean showPreviousTxn) {
+    public static void showDialog(@NotNull Shell shell, @Nullable DBCExecutionContext executionContext, boolean showPreviousTxn) {
+        showDialog(shell, executionContext, showPreviousTxn, false);
+    }
+
+    public static void showDialog(
+        @NotNull Shell shell,
+        @Nullable DBCExecutionContext executionContext,
+        boolean showPreviousTxn,
+        boolean showAllQueries
+    ) {
         IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
             DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.transaction_log_dialog_error_no_editor,
-                CoreMessages.transaction_log_dialog_error_open_database);
+                CoreMessages.transaction_log_dialog_error_no_editor,
+                CoreMessages.transaction_log_dialog_error_open_database
+            );
         } else if (executionContext == null) {
             DBWorkbench.getPlatformUI().showError(
                 CoreMessages.transaction_log_dialog_error_not_connected,
-                CoreMessages.transaction_log_dialog_error_connect_to_a_database);
+                CoreMessages.transaction_log_dialog_error_connect_to_a_database
+            );
         } else {
-            final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
+            final TransactionLogDialog dialog = new TransactionLogDialog(
+                shell,
+                executionContext,
+                activeEditor,
+                showPreviousTxn,
+                showAllQueries
+            );
             dialog.setModeless(true);
             dialog.open();
         }

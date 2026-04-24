@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.ConnectionLabelUtils;
 import org.jkiss.dbeaver.ui.SearchCellLabelProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -88,16 +90,27 @@ public class DBeaverPartList extends BasicPartList {
         }
     }
 
+    @Nullable
+    private String getPattern() {
+        final SearchPattern matcher = getMatcher();
+        if (matcher == null) {
+            return null;
+        }
+        // A newer version of Eclipse introduced a change so the pattern is regex-like now.
+        // Judging by the code, it just adds leading and trailing asterisks, so remove them.
+        return matcher.getPattern().replaceAll("^\\*|\\*$", "");
+    }
+
     private class NamePatternFilter extends ViewerFilter {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            final SearchPattern matcher = getMatcher();
-            if (matcher == null) {
+            String pattern = getPattern();
+            if (pattern == null) {
                 return true;
             }
-            final ILabelProvider provider = (ILabelProvider) ((ContentViewer) viewer).getLabelProvider();
-            final String name = provider.getText(element);
-            return SearchCellLabelProvider.matches(matcher.getPattern(), name);
+            final CellLabelProvider provider = (CellLabelProvider) ((ContentViewer) viewer).getLabelProvider();
+            final String name = provider.getFilterText(element);
+            return SearchCellLabelProvider.matches(pattern, name);
         }
     }
 
@@ -111,24 +124,34 @@ public class DBeaverPartList extends BasicPartList {
         }
 
         @Nullable
-        @Override
-        public String getPattern() {
-            final SearchPattern matcher = getMatcher();
-            if (matcher != null) {
-                return matcher.getPattern();
-            } else {
+        private DBPDataSourceContainer resolveContainer(@NotNull Object element) {
+            if (!(element instanceof MPart part)) {
                 return null;
             }
+            return DBeaverEditorPartUtils.getDataSourceContainer(part);
+        }
+
+        @NotNull
+        String getFilterText(@NotNull Object element) {
+            return ConnectionLabelUtils.appendConnectionSuffix(getText(element), resolveContainer(element));
+        }
+
+        @Nullable
+        @Override
+        public String getPattern() {
+            return DBeaverPartList.this.getPattern();
         }
 
         @NotNull
         @Override
         public String getText(@NotNull Object element) {
-            if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
-                return "*" + ((MUILabel) element).getLocalizedLabel();
-            } else {
-                return ((MUILabel) element).getLocalizedLabel();
+            if (!(element instanceof MUILabel label)) {
+                return "";
             }
+            if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
+                return "*" + label.getLocalizedLabel();
+            }
+            return label.getLocalizedLabel();
         }
 
         @Nullable
@@ -160,6 +183,12 @@ public class DBeaverPartList extends BasicPartList {
         @Override
         public String getToolTipText(Object element) {
             return renderer.getToolTip((MUILabel) element);
+        }
+
+        @Override
+        public void update(@NotNull ViewerCell cell) {
+            super.update(cell);
+            ConnectionLabelUtils.applyConnectionInfo(cell, resolveContainer(cell.getElement()));
         }
 
         @Override

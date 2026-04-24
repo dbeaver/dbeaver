@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
-import org.jkiss.dbeaver.ext.generic.model.TableCache;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -40,14 +31,17 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class CubridUser extends GenericSchema
 {
@@ -66,6 +60,12 @@ public class CubridUser extends GenericSchema
     }
 
     @NotNull
+    @Override
+    public CubridDataSource getDataSource() {
+        return (CubridDataSource) super.getDataSource();
+    }
+
+    @NotNull
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
@@ -79,12 +79,12 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsSystemTable() {
-        return name.equals("DBA");
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
     public boolean supportsSystemView() {
-        return name.equals("DBA");
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
@@ -94,18 +94,23 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsSynonym() {
-        return ((CubridDataSource) this.getDataSource()).getSupportMultiSchema();
+        return getDataSource().getSupportMultiSchema();
     }
 
     @NotNull
     public boolean supportsTrigger() {
-        return CubridConstants.DBA.equals(getDataSource().getContainer().getConnectionConfiguration().getUserName());
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
     @Override
     public TableCache createTableCache(@NotNull GenericDataSource datasource) {
         return new CubridTableCache(datasource);
+    }
+
+    @Override
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        return getTable(monitor, childName.toLowerCase());
     }
 
     @NotNull
@@ -170,8 +175,10 @@ public class CubridUser extends GenericSchema
         return indexes;
     }
 
-    public class CubridTableCache extends TableCache
-    {
+    public class CubridTableCache extends TableCache {
+        private String lastTableName;
+        private final Map<String, ColumnExtraInfo> columnInfoMap = new HashMap<>();
+
         protected CubridTableCache(@NotNull GenericDataSource dataSource) {
             super(dataSource);
         }
@@ -184,23 +191,41 @@ public class CubridUser extends GenericSchema
                 @NotNull GenericTableBase table,
                 @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
+            
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
-            String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
-            String showDataType = null;
-            boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
-            String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-                dbStat.setString(1, columnName);
-                try (JDBCResultSet result = dbStat.executeQuery()) {
-                    if (result.next()) {
-                        showDataType = JDBCUtils.safeGetString(result, "Type");
-                        autoIncrement = CubridConstants.AUTO_INCREMENT.equals(JDBCUtils.safeGetString(result, "Extra"));
+
+            // Batch load column info if we moved to a new table
+            if (!tableName.equals(lastTableName)) {
+                columnInfoMap.clear();
+                lastTableName = tableName;
+
+                String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName);
+                sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                    try (JDBCResultSet result = dbStat.executeQuery()) {
+                        while (result.next()) {
+                            String field = JDBCUtils.safeGetString(result, "Field");
+                            String type = JDBCUtils.safeGetString(result, "Type");
+                            String extra = JDBCUtils.safeGetString(result, "Extra");
+                            columnInfoMap.put(field, new ColumnExtraInfo(type, extra));
+                        }
                     }
                 }
             }
-            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, dbResult);
+
+            ColumnExtraInfo extraInfo = columnInfoMap.get(columnName);
+            String showDataType = (extraInfo != null) ? extraInfo.type : null;
+            boolean autoIncrement = (extraInfo != null) && CubridConstants.AUTO_INCREMENT.equals(extraInfo.extra);
+
+            String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            boolean isForeignKey = "YES".equals(JDBCUtils.safeGetString(dbResult, "is_foreign_key"));
+
+            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, isForeignKey, dbResult);
         }
+
+        private record ColumnExtraInfo(@Nullable String type, @Nullable String extra) {}
+
     }
 
     public class CubridIndexCache extends JDBCCompositeCache<GenericStructContainer, CubridTable, CubridTableIndex, GenericTableIndexColumn>
@@ -219,11 +244,11 @@ public class CubridUser extends GenericSchema
         @Nullable
         @Override
         protected CubridTableIndex fetchObject(
-                @NotNull JDBCSession session,
-                @NotNull GenericStructContainer owner,
-                @Nullable CubridTable parent,
-                @Nullable String indexName,
-                @NotNull JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @NotNull CubridTable parent,
+            @NotNull String indexName,
+            @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
             boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
             String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
@@ -281,9 +306,9 @@ public class CubridUser extends GenericSchema
 
         @Override
         protected void cacheChildren(
-                @NotNull DBRProgressMonitor monitor,
-                @Nullable CubridTableIndex object,
-                @Nullable List<GenericTableIndexColumn> children) {
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull CubridTableIndex object,
+            @NotNull List<GenericTableIndexColumn> children) {
             object.setColumns(children);
         }
     }

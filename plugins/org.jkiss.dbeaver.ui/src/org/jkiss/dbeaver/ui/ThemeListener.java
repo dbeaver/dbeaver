@@ -22,12 +22,14 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.Field;
@@ -52,6 +54,7 @@ public class ThemeListener {
 
         IPropertyChangeListener themeChangeListener = this::updateThemeProperty;
         themeManager.addPropertyChangeListener(themeChangeListener);
+
 
         for (Field field : getClass().getFields()) {
             String propId = null;
@@ -133,9 +136,22 @@ public class ThemeListener {
                     }
                     field.set(this, font);
                 } else if (param != null && param.bold()) {
-                    Font font = currentTheme.getFontRegistry().getBold(property);
-                    if (font == null) {
-                        log.error("Font '" + property + "' (bold) not found in registry");
+                    Font font;
+                    if (RuntimeUtils.isMacOS()) {
+                        // Create bold here because default getBold is broken on MacOS
+                        // getBold implementation differs from our makeBoldFont
+                        // because it doesn't copy all font metrics
+                        Object oldValue = field.get(this);
+                        if (oldValue instanceof Font oldFont) {
+                            oldFont.dispose();
+                        }
+                        Font normalFont = currentTheme.getFontRegistry().get(property);
+                        font = UIUtils.makeBoldFont(normalFont);
+                        if (normalFont.getDevice() instanceof Display display) {
+                            display.disposeExec(font::dispose);
+                        }
+                    } else {
+                        font = currentTheme.getFontRegistry().getBold(property);
                     }
                     field.set(this, font);
                 } else {

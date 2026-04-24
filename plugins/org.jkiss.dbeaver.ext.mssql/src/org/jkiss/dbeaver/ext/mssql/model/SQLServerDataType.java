@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -173,9 +174,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return ((SQLServerDataSource) owner).getDefaultDatabase(new VoidProgressMonitor()); // Monitor is not significant here, so we can use Void monitor
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
         if (tableTypeId == 0) {
@@ -183,7 +185,8 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             SQLServerDataType systemDataType = getSystemDataType();
             String typeName = systemDataType.getName();
             sql.append(typeName.toUpperCase(Locale.ENGLISH));
-            SQLServerTypedObject serverTypedObjects = new SQLServerTypedObject(typeName, getDataTypeIDByName(typeName), dataKind, scale, precision, maxLength);
+            int displayMaxLength = SQLServerUtils.getDisplayMaxLength(getDataSource(), typeName, maxLength);
+            SQLServerTypedObject serverTypedObjects = new SQLServerTypedObject(typeName, getDataTypeIDByName(typeName), dataKind, scale, precision, displayMaxLength);
             String modifiers = SQLUtils.getColumnTypeModifiers(getDataSource(), serverTypedObjects, typeName, dataKind);
             if (modifiers != null) {
                 sql.append(modifiers);
@@ -251,7 +254,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     @Override
     @Property(order = 22)
     public long getMaxLength() {
-        return maxLength;
+        return SQLServerUtils.getDisplayMaxLength(getDataSource(), getSystemDataType().getName(), maxLength);
     }
 
     @Override
@@ -295,7 +298,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 
@@ -328,7 +331,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return owner instanceof SQLServerSchema ?
             DBUtils.getFullQualifiedName(getDataSource(), ((SQLServerSchema) owner).getDatabase(), owner, this) :
             name;
@@ -390,10 +393,10 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
                 return DBPDataKind.STRING;
 
             case SQLServerConstants.TYPE_GEOGRAPHY:
-            case SQLServerConstants.TYPE_GEOMETRY:
             case SQLServerConstants.TYPE_HIERARCHYID:
                 return DBPDataKind.BINARY;
 
+            case SQLServerConstants.TYPE_GEOMETRY:
             case SQLServerConstants.TYPE_SQL_VARIANT:
                 return DBPDataKind.OBJECT;
 

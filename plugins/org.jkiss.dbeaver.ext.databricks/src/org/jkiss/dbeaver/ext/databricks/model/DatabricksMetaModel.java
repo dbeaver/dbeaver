@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.databricks.DatabricksConstants;
 import org.jkiss.dbeaver.ext.databricks.DatabricksDataSource;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -62,8 +66,9 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         return null;
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DatabricksDataSource(monitor, container, this);
     }
 
@@ -74,6 +79,32 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @NotNull String schemaName
     ) {
         return new DatabricksSchema(dataSource, catalog, schemaName);
+    }
+
+    @Nullable
+    @Override
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    ) throws DBException {
+        List<GenericSchema> schemas = new ArrayList<>();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SHOW SCHEMAS" + (catalog == null ? "" : " IN " + catalog.getName())
+        )) {
+            dbStat.executeStatement();
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                while (dbResult.next()) {
+                    String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, DatabricksConstants.SCHEMA_NAME);
+                    schemas.add(new DatabricksSchema(dataSource, catalog, schemaName));
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Cannot load schemas with query", e);
+            return super.loadSchemas(session, dataSource, catalog);
+        }
+
+        return schemas;
     }
 
     @Override
@@ -88,57 +119,62 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @Nullable GenericTableBase object,
         @Nullable String objectName
     ) throws SQLException {
-        boolean catalogChanged = false;
-        DBSCatalog originalDefaultCatalog = null;
-        final DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
+        DBSCatalog originalCatalog = null;
         try {
-            // First we need to get views list, because for some reason they are in the tables list with the TABLE type.
-            // But this query we can use only in the default catalog
+            var contextDefaults = session.getExecutionContext().getContextDefaults();
             if (contextDefaults != null) {
-                originalDefaultCatalog = contextDefaults.getDefaultCatalog();
-                if (originalDefaultCatalog != owner.getCatalog()) {
+                originalCatalog = contextDefaults.getDefaultCatalog();
+                if (contextDefaults.getDefaultCatalog() == null) {
                     contextDefaults.setDefaultCatalog(session.getProgressMonitor(), owner.getCatalog(), null);
-                    catalogChanged = true;
                 }
             }
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VIEWS IN " + DBUtils.getQuotedIdentifier(owner))) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String namespace = JDBCUtils.safeGetString(dbResult, "namespace");
-                        if (CommonUtils.isEmpty(namespace)) {
-                            // Probably temporary view
-                            continue;
-                        }
-                        String viewName = JDBCUtils.safeGetString(dbResult, "viewName");
-                        if (CommonUtils.isNotEmpty(viewName)) {
-                            tempViewsList.add(new ViewInfo(owner, viewName));
+        } catch (DBCException e) {
+            log.debug("Can't read current views list", e);
+        }
+
+        try {
+            try (JDBCStatement statement = session.createStatement()) {
+                statement.execute("USE CATALOG " + DBUtils.getQuotedIdentifier(owner.getCatalog()));
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VIEWS IN " + DBUtils.getQuotedIdentifier(owner))) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            String namespace = JDBCUtils.safeGetString(dbResult, "namespace");
+                            if (CommonUtils.isEmpty(namespace)) {
+                                // Probably temporary view
+                                continue;
+                            }
+                            String viewName = JDBCUtils.safeGetString(dbResult, "viewName");
+                            if (CommonUtils.isNotEmpty(viewName)) {
+                                tempViewsList.add(new ViewInfo(owner, viewName));
+                            }
                         }
                     }
                 }
             }
-        } catch (SQLException | DBCException e) {
+        } catch (SQLException e) {
             log.debug("Can't read current views list", e);
         } finally {
-            if (catalogChanged && originalDefaultCatalog != null) {
-                try {
-                    contextDefaults.setDefaultCatalog(session.getProgressMonitor(), originalDefaultCatalog, null);
-                } catch (DBCException e) {
-                    log.debug("Can't set original default catalog", e);
+            if (originalCatalog != null && originalCatalog != owner.getCatalog()) {
+                try (JDBCStatement statement = session.createStatement()) {
+                    statement.execute("USE CATALOG " + DBUtils.getQuotedIdentifier(originalCatalog));
+                } catch (SQLException e) {
+                    log.debug("Can't restore original catalog", e);
                 }
             }
         }
+
         return super.prepareTableLoadStatement(session, owner, object, objectName);
     }
 
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
-        @Nullable JDBCResultSet dbResult)
-    {
+        @Nullable JDBCResultSet dbResult) {
         if ((CommonUtils.isNotEmpty(tableName) && !tempViewsList.isEmpty()
-            && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
+             && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
             tableType != null && isView(tableType))
         {
             return new DatabricksView(
@@ -156,7 +192,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,7 +36,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -55,8 +58,9 @@ public class DamengMetaModel extends GenericMetaModel {
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DamengDataSource(monitor, container, this);
     }
 
@@ -70,8 +74,9 @@ public class DamengMetaModel extends GenericMetaModel {
         return new DamengSchema(dataSource, schemaName, true);
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(@NotNull GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(
                     container,
@@ -93,7 +98,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public JDBCStatement prepareSequencesLoadStatement(JDBCSession session, GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT " +
             "SEQ_OBJ.NAME, " +
             "SEQ_OBJ.INFO4 AS INCREMENT, " +
@@ -142,9 +147,10 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(
-        JDBCSession session,
+        @NotNull JDBCSession session,
         @NotNull GenericStructContainer container,
         GenericTableBase table
     ) throws SQLException {
@@ -162,8 +168,10 @@ public class DamengMetaModel extends GenericMetaModel {
         return dbStat;
     }
 
+    @NotNull
     @Override
-    public GenericTrigger createTableTriggerImpl(JDBCSession session, GenericStructContainer genericStructContainer, GenericTableBase genericTableBase, String triggerName, JDBCResultSet resultSet) throws DBException {
+    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull
+    GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
         if (CommonUtils.isEmpty(triggerName)) {
             triggerName = JDBCUtils.safeGetString(resultSet, "TRIGGER_NAME");
         }
@@ -171,7 +179,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public JDBCStatement prepareContainerTriggersLoadStatement(JDBCSession session, GenericStructContainer forParent) throws SQLException {
+    public JDBCStatement prepareContainerTriggersLoadStatement(@NotNull JDBCSession session, GenericStructContainer forParent) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement("SELECT TABTRIG_OBJ_INNER.NAME " +
                 "FROM " +
                 "SYSOBJECTS TABTRIG_OBJ_INNER, " +
@@ -185,7 +193,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public GenericTrigger createContainerTriggerImpl(GenericStructContainer container, JDBCResultSet resultSet) throws DBException {
+    public GenericTrigger createContainerTriggerImpl(@NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(resultSet, DamengConstants.NAME);
         if (name == null) {
             return null;
@@ -194,7 +202,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger sourceObject) throws DBException {
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger sourceObject) throws DBException {
         if (sourceObject.getContainer() instanceof DamengTable) {
             return DamengUtils.getDDL(monitor, sourceObject, DamengConstants.ObjectType.TRIGGER, ((DamengTable) sourceObject.getContainer()).getContainer().getName());
         }
@@ -207,13 +215,120 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public DamengTableColumn createTableColumnImpl(@NotNull DBRProgressMonitor monitor, JDBCResultSet dbResult, @NotNull GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
+    public DamengTableColumn createTableColumnImpl(
+        @NotNull DBRProgressMonitor monitor,
+        JDBCResultSet dbResult,
+        @NotNull GenericTableBase table,
+        String columnName,
+        String typeName,
+        int valueType,
+        int sourceType,
+        int ordinalPos,
+        long columnSize,
+        long charLength,
+        Integer scale,
+        Integer precision,
+        int radix,
+        boolean notNull,
+        String remarks,
+        String defaultValue,
+        boolean autoIncrement,
+        boolean autoGenerated
+    ) {
         return new DamengTableColumn(table, columnName, typeName, valueType, sourceType, ordinalPos, columnSize,
                 charLength, scale, precision, radix, notNull, remarks, defaultValue, autoIncrement, autoGenerated);
     }
 
     @Override
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, GenericStructContainer container, GenericTableBase table) throws DBException {
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException, DBException {
+        JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
+                "SYSCONS.ID,\n" +
+                "CONS_OBJ.NAME AS PK_NAME,\n" +
+                "SYSCONS.VALID,\n" +
+                "SYSCONS.TYPE$,\n" +
+                "SYSCONS.CHECKINFO,\n" +
+                "CONS_OBJ.CRTDATE,\n" +
+                "SYSINDEXES.XTYPE & 0x01,\n" +
+                "SYSCONS.ID AS KEY_SEQ,\n" +
+                "LISTAGG(CASE WHEN SYSINDEXES.ID IS NULL THEN NULL ELSE SYSCOLUMNS.NAME END, ',') " +
+                "WITHIN GROUP (ORDER BY SYSCOLUMNS.ID) AS COLUMN_LIST\n" +
+                "FROM\n" +
+                "SYSOBJECTS CONS_OBJ,\n" +
+                "SYSCOLUMNS SYSCOLUMNS,\n" +
+                "SYSOBJECTS TAB_OBJ,\n" +
+                "SYSOBJECTS SCH_OBJ,\n" +
+                "SYSCONS SYSCONS\n" +
+                "LEFT JOIN SYSINDEXES SYSINDEXES ON\n" +
+                "SYSINDEXES.ID = SYSCONS.INDEXID\n" +
+                "WHERE\n" +
+                "CONS_OBJ.ID = SYSCONS.ID\n" +
+                "AND SYSCOLUMNS.ID = SYSCONS.TABLEID\n" +
+                "AND CONS_OBJ.PID = TAB_OBJ.ID\n" +
+                "AND CONS_OBJ.SUBTYPE$ = 'CONS'\n" +
+                "AND (SF_COL_IS_IDX_KEY(SYSINDEXES.KEYNUM, SYSINDEXES.KEYINFO, SYSCOLUMNS.COLID)= 1\n" +
+                "OR SYSINDEXES.ID IS NULL)\n" +
+                "AND TAB_OBJ.SCHID = SCH_OBJ.ID\n" +
+                "AND SCH_OBJ.NAME = ?\n" +
+                "AND TAB_OBJ.NAME = ?\n" +
+                "GROUP BY\n" +
+                "SYSCONS.ID,\n" +
+                "SYSCONS.VALID,\n" +
+                "CONS_OBJ.NAME,\n" +
+                "SYSCONS.TYPE$,\n" +
+                "SYSCONS.CHECKINFO,\n" +
+                "CONS_OBJ.CRTDATE,\n" +
+                "SYSINDEXES.XTYPE");
+        dbStat.setString(1, owner.getName());
+        dbStat.setString(2, forParent.getName());
+        return dbStat;
+    }
+
+    @Override
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
+        return switch (dbResult.getString(DamengConstants.TYPE$)) {
+            case "P" -> DBSEntityConstraintType.PRIMARY_KEY;
+            case "U" -> DBSEntityConstraintType.UNIQUE_KEY;
+            case "F" -> DBSEntityConstraintType.FOREIGN_KEY;
+            case "C" -> DBSEntityConstraintType.CHECK;
+            default -> DBSEntityConstraintType.UNIQUE_KEY;
+        };
+    }
+
+    @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsCheckConstraints() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public GenericUniqueKey createConstraintImpl(@NotNull GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+        return new DamengTableConstraint(table, constraintName, constraintType, dbResult, persisted);
+    }
+
+    @Nullable
+    @Override
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(@NotNull JDBCSession session, @NotNull GenericTableBase parent, @NotNull
+    GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+        String columnListStr = JDBCUtils.safeGetString(dbResult, "COLUMN_LIST");
+        List<String> columnNameList = CommonUtils.splitString(columnListStr, ',');
+        List<GenericTableConstraintColumn> columns = new ArrayList<>(columnNameList.size());
+        for (String columnName : columnNameList) {
+            GenericTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
+            if (column == null) {
+                throw new DBException("Column '" + columnName + "' not found in table " + parent.getName());
+            }
+            columns.add(new GenericTableConstraintColumn(object, column, 0));
+        }
+        return ArrayUtils.toArray(GenericTableConstraintColumn.class, columns);
+    }
+
+    @Override
+    public List<? extends GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, GenericTableBase table) throws DBException {
         if (table == null) {
             return Collections.emptyList();
         }
@@ -245,7 +360,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         GenericDataSource dataSource = container.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read Dameng procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -301,7 +416,7 @@ public class DamengMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         DBSProcedureType procedureType = sourceObject.getProcedureType();
         DamengConstants.ObjectType objectType = switch (procedureType) {
             case PROCEDURE -> DamengConstants.ObjectType.PROCEDURE;

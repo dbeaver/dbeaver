@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.utils.ArrayUtils;
@@ -28,13 +29,13 @@ import java.util.List;
  * DataSourceFolder
  */
 public class DataSourceFolder implements DBPDataSourceFolder {
-    private final DataSourceRegistry registry;
+    private final DataSourceRegistry<?> registry;
     private DataSourceFolder parent;
-    private List<DataSourceFolder> children = new ArrayList<>();
+    private final List<DataSourceFolder> children = new ArrayList<>();
     private String name;
     private String description;
 
-    public DataSourceFolder(DataSourceRegistry registry, DataSourceFolder parent, String name, String description) {
+    public DataSourceFolder(DataSourceRegistry<?> registry, DataSourceFolder parent, String name, String description) {
         this.registry = registry;
         this.name = name;
         this.description = description;
@@ -48,10 +49,11 @@ public class DataSourceFolder implements DBPDataSourceFolder {
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
+    @Nullable
     @Override
     public String getDescription() {
         return description;
@@ -61,12 +63,13 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         this.description = description;
     }
 
+    @Nullable
     @Override
     public DataSourceFolder getParent() {
         return parent;
     }
 
-    public void setParent(DBPDataSourceFolder parent) {
+    public void setParent(@Nullable DBPDataSourceFolder parent) {
         if (this.parent != null) {
             this.parent.children.remove(this);
         }
@@ -76,18 +79,20 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         }
     }
 
+    @NotNull
     @Override
     public DataSourceFolder[] getChildren() {
         return ArrayUtils.toArray(DataSourceFolder.class, children);
     }
 
+    @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         return registry;
     }
 
     @Override
-    public boolean canMoveTo(DBPDataSourceFolder folder) {
+    public boolean canMoveTo(@NotNull DBPDataSourceFolder folder) {
         return folder != this && !this.isParentOf(folder);
     }
 
@@ -109,6 +114,7 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         return null;
     }
 
+    @NotNull
     @Override
     public String getFolderPath() {
         String path = null;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,16 +25,14 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,23 +71,27 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name() + ".path";
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
         return getPath().getFileName().toString();
     }
 
+    @Nullable
     @Override
 //    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         return null;
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         return getOwnerProject().getWorkspace().getResourceIcon(this);
@@ -97,12 +99,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean allowsChildren() {
-        return Files.isDirectory(getPath());
+        return isDirectory();
     }
 
+    public boolean isDirectory() {
+        DBNFileSystemRoot rootNode = getFileSystemRoot();
+        return rootNode != null && rootNode.getRoot().getFileSystem().isDirectory(getPath());
+    }
+
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (children == null && allowsChildren() && !monitor.isForceCacheUsage()) {
+        if (children == null && isDirectory() && !monitor.isForceCacheUsage()) {
             this.children = readChildNodes(monitor);
         }
         return children;
@@ -111,7 +119,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         List<DBNNode> result;
         Path path = getPath();
-        if (allowsChildren() && Files.exists(path)) {
+        if (isDirectory() && Files.exists(path)) {
             try {
                 try (Stream<Path> fileList = Files.list(path)) {
                     result = new ArrayList<>();
@@ -187,12 +195,13 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     }
 
     @Override
-    public boolean isManagable() {
+    public boolean isManageable() {
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         children = null;
         size = null;
         lastModified = null;
@@ -201,6 +210,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return this;
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -209,53 +219,55 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean supportsRename() {
-        return false;
+        return true;
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         Path path = getPath();
         try {
             setPath(Files.move(path, path.getParent().resolve(newName)));
         } catch (IOException e) {
-            throw new DBException("Can't rename resource", e);
+            throw new DBException("Cannot rename resource '" + getPath() + "'", e);
+        } catch (UnsupportedOperationException e) {
+            throw new DBException("File rename is not supported by file system '" + path.getFileSystem().provider().getScheme(), e);
         }
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode) {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         if (otherNode == null) {
             return true;
         }
 
-        if (Files.isRegularFile(getPath())) {
+        if (!this.isDirectory()) {
             return getParentNode().supportsDrop(otherNode);
         }
 
         if (getOwnerProject() instanceof DBFResourceAdapter rm) {
             // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
-            return otherNode.getAdapter(Path.class) != null
-                   && otherNode != this
-                   && otherNode.getParentNode() != this
-                   && !this.isChildOf(otherNode);
+            return (otherNode.getAdapter(Path.class) != null || (otherNode instanceof DBNStreamData source && source.supportsStreamData()))
+                && otherNode != this
+                && otherNode.getParentNode() != this
+                && !this.isChildOf(otherNode);
         }
         return false;
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         Path folder;
         Path thisResource = getPath();
         if (thisResource == null) {
             return;
         }
-        if (Files.isDirectory(thisResource)) {
+        DBNNode nodeToRefresh = this;
+        if (isDirectory()) {
             folder = thisResource;
         } else {
             folder = thisResource.getParent();
-        }
-        if (!Files.isDirectory(folder)) {
-            throw new DBException("Can't drop files into non-folder '" + folder + "'");
+            nodeToRefresh = getParentNode();
         }
         if (nodes.isEmpty()) {
             return;
@@ -281,7 +293,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     break;
                 }
                 Path resource = node.getAdapter(Path.class);
-                if (resource == null || !Files.exists(resource)) {
+                if (resource == null) {
+                    try (InputStream inputStream = node.getAdapter(InputStream.class)) {
+                        if (inputStream != null) {
+                            monitor.subTask("Copy file");
+                            Files.copy(inputStream, folder.resolve(node.getNodeDisplayName()));
+                        }
+                    } finally {
+                        monitor.worked(1);
+                    }
+                    continue;
+                }
+                if (Files.notExists(resource)) {
                     log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }
@@ -293,7 +316,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     // Already in this container
                     continue;
                 }
-               boolean doCopy = !isTheSameFileSystem(node);
+                boolean doCopy = !isTheSameFileSystem(node);
                 boolean doDelete = false;
                 monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource);
                 try {
@@ -333,7 +356,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 }
             }
             // Refresh folder
-            refreshNode(monitor, this);
+            nodeToRefresh.refreshNode(monitor, this);
         } catch (Exception e) {
             throw new DBException("Error creating NIO resource", e);
         } finally {
@@ -351,12 +374,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     protected void sortChildren(DBNNode[] list) {
         Arrays.sort(list, (o1, o2) -> {
-            if (o1 instanceof DBNPathBase && o2 instanceof DBNPathBase) {
-                Path res1 = ((DBNPathBase) o1).getPath();
-                Path res2 = ((DBNPathBase) o2).getPath();
-                if (Files.isDirectory(res1) && !Files.isDirectory(res2)) {
+            if (o1 instanceof DBNPathBase p1 && o2 instanceof DBNPathBase p2) {
+                if (p1.isDirectory() && !p2.isDirectory()) {
                     return -1;
-                } else if (Files.isDirectory(res2) && !Files.isDirectory(res1)) {
+                } else if (p2.isDirectory() && !p1.isDirectory()) {
                     return 1;
                 }
             }
@@ -414,7 +435,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         }
@@ -435,6 +456,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             DBNUtils.getParentOfType(DBNFileSystemRoot.class, this);
     }
 
+    @NotNull
     @Override
     public String toString() {
         Path path = getPath();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ public interface DBSSecretController {
     String getPrivateSecretValue(@NotNull String secretId) throws DBException;
 
 
-    @Deprecated
     void setPrivateSecretValue(@NotNull String secretId, @Nullable String secretValue) throws DBException;
 
     default void setPrivateSecretValue(@NotNull DBSSecretObject secretObject, @NotNull DBSSecretValue secretValue)
@@ -105,7 +104,7 @@ public interface DBSSecretController {
         if (secretController != null) {
             return secretController;
         }
-        throw new IllegalStateException("Session secret controller not found");
+        throw new DBException("Session secret controller not found");
     }
 
     @Nullable

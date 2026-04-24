@@ -102,7 +102,7 @@
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.session_manager.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg"
                 class="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"
                 id="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor"
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
@@ -110,7 +110,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution editorId="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.mssql.ui.editors.SQLServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg">
             <supports dataSource="sqlserver"/>
         </editorContribution>
     </extension>

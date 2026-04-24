@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.runtime.properties;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -44,9 +46,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 {
     private static final Log log = Log.getLog(PropertySourceAbstract.class);
 
-    private Object sourceObject;
-    private Object object;
-    private boolean loadLazyProps;
+    private final Object sourceObject;
+    private final Object object;
+    private final boolean loadLazyProps;
     private final List<DBPPropertyDescriptor> props = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesValues = new HashMap<>();
     private final Map<Object, Object> propValues = new HashMap<>();
@@ -60,16 +62,14 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
      * constructs property source
      * @param object object
      */
-    public PropertySourceAbstract(Object sourceObject, Object object, boolean loadLazyProps)
-    {
+    public PropertySourceAbstract(Object sourceObject, Object object, boolean loadLazyProps) {
         this.sourceObject = sourceObject;
         this.object = object;
         this.loadLazyProps = loadLazyProps;
     }
 
-    public synchronized void addProperty(DBPPropertyDescriptor prop)
-    {
-        if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isHidden()) {
+    public synchronized void addProperty(@NotNull DBPPropertyDescriptor prop) {
+        if (prop instanceof ObjectPropertyDescriptor opd && opd.isHidden()) {
             // Do not add it to property list
         } else {
             props.add(prop);
@@ -83,15 +83,13 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         propValues.put(id, value);
     }
 
-    public synchronized void removeProperty(DBPPropertyDescriptor prop)
-    {
+    public synchronized void removeProperty(DBPPropertyDescriptor prop) {
         propValues.remove(prop.getId());
         lazyValues.remove(prop.getId());
         props.remove(prop);
     }
 
-    public synchronized void clearProperties()
-    {
+    public synchronized void clearProperties() {
         props.clear();
         propValues.clear();
         lazyValues.clear();
@@ -121,42 +119,31 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return sourceObject;
     }
 
+    @NotNull
     @Override
     public Object getEditableValue()
     {
         return object;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
-/*
-    public IPropertyDescriptor getPropertyDescriptor(final Object id)
-    {
-        for (IPropertyDescriptor prop : props) {
-            if (CommonUtils.equalObjects(prop.getId(), id)) {
-                return prop;
-            }
-        }
-        return null;
-    }
-*/
 
     @Override
-    public boolean isPropertySet(String id)
-    {
+    public boolean isPropertySet(@NotNull String id) {
         Object value = propValues.get(id);
-        if (value instanceof ObjectPropertyDescriptor) {
-            return isPropertySet(getEditableValue(), (ObjectPropertyDescriptor) value);
+        if (value instanceof ObjectPropertyDescriptor opd) {
+            return isPropertySet(getEditableValue(), opd);
         } else {
             return value != null;
         }
     }
 
     @Override
-    public boolean isPropertySet(Object object, ObjectPropertyDescriptor prop)
-    {
+    public boolean isPropertySet(@NotNull Object object, @NotNull ObjectPropertyDescriptor prop) {
         try {
             return !prop.isLazy(object, true) && prop.readValue(object, null, false) != null;
         } catch (Exception e) {
@@ -165,20 +152,24 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
     }
 
+    @Nullable
     @Override
-    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final String id)
-    {
+    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull final String id) {
         Object value = propValues.get(id);
-        if (value instanceof ObjectPropertyDescriptor) {
-            value = getPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value, true);
+        if (value instanceof ObjectPropertyDescriptor opd) {
+            value = getPropertyValue(monitor, getEditableValue(), opd, true);
         }
         return value;
     }
 
 
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object object, final ObjectPropertyDescriptor prop, boolean formatValue)
-    {
+    public Object getPropertyValue(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull Object object,
+        @NotNull ObjectPropertyDescriptor prop,
+        boolean formatValue
+    ) {
         try {
             if (monitor == null && prop.isLazy(object, true) && !prop.supportsPreview()) {
                 final Object value = lazyValues.get(prop.getId());
@@ -224,8 +215,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 return prop.readValue(object, monitor, formatValue);
             }
         } catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException) e).getTargetException();
+            if (e instanceof InvocationTargetException ite) {
+                e = ite.getTargetException();
             }
             log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return e.getMessage();
@@ -233,11 +224,10 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public boolean isPropertyResettable(String id)
-    {
+    public boolean isPropertyResettable(@NotNull String id) {
         Object value = propValues.get(id);
-        if (value instanceof ObjectPropertyDescriptor) {
-            return isPropertyResettable(getEditableValue(), (ObjectPropertyDescriptor) value);
+        if (value instanceof ObjectPropertyDescriptor opd) {
+            return isPropertyResettable(getEditableValue(), opd);
         } else {
             // No by default
             return false;
@@ -245,14 +235,13 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop)
+    public boolean isPropertyResettable(@NotNull Object object, @NotNull ObjectPropertyDescriptor prop)
     {
         return false;
     }
 
     @Override
-    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
-    {
+    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
             resetPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
@@ -262,18 +251,17 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor id)
-    {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull Object object, @NotNull ObjectPropertyDescriptor id) {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     @Override
-    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
+    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value)
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
@@ -285,13 +273,20 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop, Object value)
-    {
+    public void setPropertyValue(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull Object object,
+        @NotNull ObjectPropertyDescriptor prop,
+        @Nullable Object value
+    ) {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
     }
 
-    public boolean collectProperties()
-    {
+    public boolean collectProperties() {
+        return collectProperties(true);
+    }
+
+    public boolean collectProperties(boolean collectLocalizedNames) {
         lazyValues.clear();
         props.clear();
         propValues.clear();
@@ -312,14 +307,18 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 filter = null;
             }
             List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(
-                this, ObjectPropertyDescriptor.getObjectClass(editableValue), filter, locale);
+                this,
+                ObjectPropertyDescriptor.getObjectClass(editableValue),
+                filter,
+                locale,
+                collectLocalizedNames
+            );
             for (final ObjectPropertyDescriptor desc : annoProps) {
                 if (desc.isPropertyVisible(editableValue, editableValue)) {
                     addProperty(desc);
                 }
             }
-            if (editableValue instanceof DBPPropertySource) {
-                DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
+            if (editableValue instanceof DBPPropertySource ownPropSource) {
                 DBPPropertyDescriptor[] ownProperties = ownPropSource.getProperties();
                 if (!ArrayUtils.isEmpty(ownProperties)) {
                     for (DBPPropertyDescriptor prop : ownProperties) {
@@ -363,16 +362,14 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 
-        public static final String TEXT_LOADING = "...";
-
         public PropertyValueLoadService()
         {
-            super(TEXT_LOADING);
+            super(ModelMessages.model_navigator_load_);
         }
 
         @Override
-        public Map<ObjectPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
+        public Map<ObjectPropertyDescriptor, Object> evaluate(@NotNull DBRProgressMonitor monitor)
+            throws InvocationTargetException
         {
             try {
                 Map<ObjectPropertyDescriptor, Object> result = new IdentityHashMap<>();
@@ -384,8 +381,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 }
                 return result;
             } catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException)ex;
+                if (ex instanceof InvocationTargetException ite) {
+                    throw ite;
                 } else {
                     throw new InvocationTargetException(ex);
                 }
@@ -421,8 +418,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         {
         }
 
+        @NotNull
         @Override
-        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
+        public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor)
         {
             return monitor;
         }
@@ -450,7 +448,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public void completeLoading(Map<ObjectPropertyDescriptor, Object> result)
+        public void completeLoading(@Nullable Map<ObjectPropertyDescriptor, Object> result)
         {
             completed = true;
             if (result != null) {

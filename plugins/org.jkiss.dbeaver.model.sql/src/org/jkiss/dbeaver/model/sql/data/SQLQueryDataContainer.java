@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,11 +55,13 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         this.log = log;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return contextProvider.getExecutionContext();
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures() {
         return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT, FEATURE_DATA_FILTER};
@@ -81,7 +83,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBCException
+    ) throws DBException
     {
         DBCStatistics statistics = new DBCStatistics();
         // Modify query (filters + parameters)
@@ -110,8 +112,15 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
             syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
             SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
             ruleManager.loadRules(dataSource, false);
-            SQLParserContext parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, new Document(query.getText()));
-            sqlQuery.setParameters(SQLScriptParser.parseParametersAndVariables(parserContext, 0, sqlQuery.getLength()));
+            // parse sql text when the filters are applied, because filters may change the parameters positions
+            SQLParserContext parserContext = new SQLParserContext(
+                getDataSource(),
+                syntaxManager,
+                ruleManager,
+                new Document(sqlQuery.getText())
+            );
+            // parse parameters from the final query text
+            sqlQuery.setParameters(SQLScriptParser.parseParametersAndVariables(parserContext, 0, sqlQuery.getText().length()));
             if (!scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return statistics;
@@ -155,9 +164,9 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
                     monitor.subTask("Fetch result set");
                     DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-                    dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+                    DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
 
-                    try {
+                    try (resultSet) {
                         long fetchStartTime = System.currentTimeMillis();
 
                         // Fetch all rows
@@ -166,19 +175,6 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
                             fetchProgress.monitorRowFetch();
                         }
                         statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
-                    }
-                    finally {
-                        try {
-                            resultSet.close();
-                        } catch (Throwable e) {
-                            log.error("Error while closing resultset", e);
-                        }
-                        try {
-                            dataReceiver.fetchEnd(session, resultSet);
-                        } catch (Throwable e) {
-                            log.error("Error while handling end of result set fetch", e);
-                        }
-                        dataReceiver.close();
                     }
 
                     if (executeResult != null) {
@@ -221,7 +217,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

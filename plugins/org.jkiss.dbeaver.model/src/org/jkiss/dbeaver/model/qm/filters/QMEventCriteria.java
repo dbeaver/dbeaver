@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ public class QMEventCriteria {
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
     @NotNull
     private Set<String> projectIds = Collections.emptySet();
+    @NotNull
+    private Set<String> dataSourceIds = Collections.emptySet();
     @NotNull
     private Set<String> schemas = Collections.emptySet();
     @NotNull
@@ -186,11 +188,11 @@ public class QMEventCriteria {
     }
 
     @Nullable
-    public QMDateRange getStartDateRange() {
+    public QMDateRange getDateRange() {
         return startDateRange;
     }
 
-    public void setStartDateRange(@Nullable QMDateRange startDateRange) {
+    public void setDateRange(@Nullable QMDateRange startDateRange) {
         this.startDateRange = startDateRange;
     }
 
@@ -218,6 +220,15 @@ public class QMEventCriteria {
 
     public boolean hasProjectIds() {
         return !projectIds.isEmpty();
+    }
+
+    @NotNull
+    public Set<String> getDataSourceIds() {
+        return dataSourceIds;
+    }
+
+    public void setDataSourceIds(@NotNull Set<String> dataSourceIds) {
+        this.dataSourceIds = dataSourceIds;
     }
 
     @NotNull

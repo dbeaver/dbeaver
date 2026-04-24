@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -46,14 +46,12 @@ import org.jkiss.utils.CommonUtils;
 /**
  * SQLPlanTreeViewer
  */
-public class SQLPlanTreeViewer extends Viewer
-{
-    //static final Log log = Log.getLog(ResultSetViewer.class);
+public class SQLPlanTreeViewer extends Viewer {
 
-    private SashForm planPanel;
-    private Text sqlText;
-    private PlanNodesTree planTree;
-    private PropertyTreeViewer planProperties;
+    private final SashForm planPanel;
+    private final Text sqlText;
+    private final PlanNodesTree planTree;
+    private final PropertyTreeViewer planProperties;
 
     private SQLQuery query;
     private ToggleViewAction toggleViewAction;
@@ -90,14 +88,14 @@ public class SQLPlanTreeViewer extends Viewer
 
             sqlText = new Text(leftPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
 
-            leftPanel.setWeights(new int[] {80, 20});
+            leftPanel.setWeights(80, 20);
             //leftPanel.setMaximizedControl(planTree);
         }
         {
             planProperties = new PropertyTreeViewer(planPanel, SWT.H_SCROLL | SWT.V_SCROLL);
         }
 
-        planPanel.setWeights(new int[] {70, 30});
+        planPanel.setWeights(70, 30);
         //planPanel.setMaximizedControl(planTree);
 
         planTree.getControl().addPaintListener(e -> {
@@ -210,7 +208,7 @@ public class SQLPlanTreeViewer extends Viewer
         private ToggleViewAction()
         {
             super(SQLEditorMessages.editors_sql_explain_refresh_tree_viewer_plan_toggle_view_text, 
-                DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
+                DBeaverIcons.getImageDescriptor(DBIcon.SQL_TEXT));
         }
 
         @Override

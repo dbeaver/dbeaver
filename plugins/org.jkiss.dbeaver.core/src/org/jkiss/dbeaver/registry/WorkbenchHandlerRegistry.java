@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,40 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 public class WorkbenchHandlerRegistry
 {
-    private static final Log log = Log.getLog(WorkbenchHandlerRegistry.class);
-
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.workbenchHandler"; //$NON-NLS-1$
     public static final String WORKBENCH_WINDOW_INITIALIZER = "workbenchWindowInitializer";
 
     private static WorkbenchHandlerRegistry instance = null;
 
-    private class HandlerDescriptor extends AbstractDescriptor {
-
+    public static class InitializerDescriptor extends AbstractDescriptor {
         private final ObjectType type;
+        private final int order;
 
-        protected HandlerDescriptor(IConfigurationElement config) {
+        private InitializerDescriptor(IConfigurationElement config) {
             super(config);
             type = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+            order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), Integer.MAX_VALUE);
+        }
+
+        public IWorkbenchWindowInitializer newInstance() throws DBException {
+            return type.createInstance(IWorkbenchWindowInitializer.class);
+        }
+
+        public int getOrder() {
+            return order;
         }
     }
 
@@ -54,34 +64,19 @@ public class WorkbenchHandlerRegistry
         return instance;
     }
 
-    private final Map<Integer, List<IWorkbenchWindowInitializer>> wwInitializers = new TreeMap<>();
+    private final List<InitializerDescriptor> initializers;
 
     private WorkbenchHandlerRegistry(IExtensionRegistry registry)
     {
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            if (ext.getName().equals(WORKBENCH_WINDOW_INITIALIZER)) {
-                HandlerDescriptor handlerDescriptor = new HandlerDescriptor(ext);
-                try {
-
-                    IWorkbenchWindowInitializer wwInit = handlerDescriptor.type.createInstance(IWorkbenchWindowInitializer.class);
-                    int key = CommonUtils.toInt(ext.getAttribute("priority"), Integer.MAX_VALUE);
-                    wwInitializers.computeIfAbsent(key, k -> new ArrayList<>());
-                    wwInitializers.get(key).add(wwInit);
-                } catch (DBException e) {
-                    log.error("Can't create workbench window initializer", e);
-                }
-            }
-        }
+        initializers = Arrays.stream(registry.getConfigurationElementsFor(EXTENSION_ID))
+            .filter(ext -> ext.getName().equals(WORKBENCH_WINDOW_INITIALIZER))
+            .map(InitializerDescriptor::new)
+            .sorted(Comparator.comparingInt(InitializerDescriptor::getOrder))
+            .toList();
     }
 
-    public Collection<IWorkbenchWindowInitializer> getWorkbenchWindowInitializers()
-    {
-        List<IWorkbenchWindowInitializer> list = new ArrayList<>();
-        for (List<IWorkbenchWindowInitializer> iWorkbenchWindowInitializers : wwInitializers.values()) {
-            list.addAll(iWorkbenchWindowInitializers);
-        }
-        return list;
+    @NotNull
+    public Collection<InitializerDescriptor> getWorkbenchWindowInitializers() {
+        return initializers;
     }
-    
 }

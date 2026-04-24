@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,20 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 
-import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -85,6 +88,11 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     @NotNull
     private final FiltersData<SQLQueryLexicalScope> filterScopes;
 
+    @Nullable
+    private final SQLQueryLexicalScope fromScope;
+    @Nullable
+    private final SQLQueryLexicalScope tailScope;
+
     public SQLQueryRowsProjectionModel(
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryLexicalScope selectListScope,
@@ -92,7 +100,8 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         @Nullable SQLQueryLexicalScope fromScope,
         @NotNull FiltersData<SQLQueryValueExpression> filterExprs,
         @NotNull FiltersData<SQLQueryLexicalScope> filterScopes,
-        @NotNull SQLQuerySelectionResultModel result
+        @NotNull SQLQuerySelectionResultModel result,
+        @Nullable SQLQueryLexicalScope tailScope
     ) {
         super(syntaxNode, fromSource, result, filterExprs.whereClause, filterExprs.havingClause, filterExprs.groupByClause, filterExprs.orderByClause);
         this.result = result;
@@ -107,6 +116,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         }
         Stream.of(filterScopes.whereClause, filterScopes.havingClause, filterScopes.groupByClause, filterScopes.orderByClause)
             .filter(Objects::nonNull).forEach(this::registerLexicalScope);
+
+        this.fromScope = fromScope;
+        this.tailScope = tailScope;
     }
 
     @NotNull
@@ -139,43 +151,81 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         return this.filterExprs.orderByClause;
     }
 
-    @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryDataContext unresolvedResult = this.fromSource.propagateContext(context, statistics);
-        this.selectListScope.setContext(unresolvedResult);
-        EnumSet<ProjectionAliasVisibilityScope> aliasScope = context.getDialect().getProjectionAliasVisibilityScope();
+        if (this.fromScope != null) {
+            this.fromScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
+        }
+
+        SQLQueryRowsSourceContext resolvedContext = this.fromSource.resolveRowSources(context, statistics).setCteSourcesFrom(context);
+
+        if (this.filterExprs.whereClause != null) {
+            this.filterExprs.whereClause.resolveRowSources(resolvedContext, statistics);
+        }
+        if (this.filterExprs.havingClause != null) {
+            this.filterExprs.havingClause.resolveRowSources(resolvedContext, statistics);
+        }
+        if (this.filterExprs.groupByClause != null) {
+            this.filterExprs.groupByClause.resolveRowSources(resolvedContext, statistics);
+        }
+        if (this.filterExprs.orderByClause != null) {
+            this.filterExprs.orderByClause.resolveRowSources(resolvedContext, statistics);
+        }
+        return resolvedContext.reset();
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryRowsDataContext unresolvedResult = context.combine(this.fromSource.getRowsDataContext());
+        this.selectListScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(unresolvedResult));
+        EnumSet<ProjectionAliasVisibilityScope> aliasVisibilities = this.getRowsSources().getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()
             .filter(s -> s.propagationPolicy.projected).toList();
-        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(this, resultColumns, resultPseudoColumns);
+        SQLQueryRowsDataContext resolvedResult = this.getRowsSources().makeTuple(this, resultColumns, resultPseudoColumns);
 
-        SQLQueryDataContext filtersContext = unresolvedResult.combine(resolvedResult);
+        SQLQueryRowsDataContext filtersContext = unresolvedResult.combine(resolvedResult);
         if (this.filterExprs.whereClause != null) {
-            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult;
-            this.filterExprs.whereClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.whereClause.setContext(clauseCtx);
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.whereClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
         if (this.filterExprs.havingClause != null) {
-            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult;
-            this.filterExprs.havingClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.havingClause.setContext(clauseCtx);
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.havingClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
         if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
-            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult;
-            this.filterExprs.groupByClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.groupByClause.setContext(clauseCtx);
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.groupByClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
         if (this.filterExprs.orderByClause != null) {
-            SQLQueryDataContext clauseCtx = aliasScope.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult;
-            this.filterExprs.orderByClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.orderByClause.setContext(clauseCtx);
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.orderByClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
-        return resolvedResult.hideSources();
+
+        if (this.tailScope != null) {
+            this.setTailOrigin(this.tailScope == this.fromScope ? this.fromSource.getTailOrigin() : this.tailScope.getSymbolsOrigin());
+        }
+
+        return resolvedResult;
     }
 
     @Override
@@ -200,7 +250,8 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             @Nullable SQLQueryLexicalScope fromScope,
             @NotNull FiltersData<SQLQueryValueExpression> filterExprs,
             @NotNull FiltersData<SQLQueryLexicalScope> filterScopes,
-            @NotNull SQLQuerySelectionResultModel result
+            @NotNull SQLQuerySelectionResultModel result,
+            @Nullable SQLQueryLexicalScope tailScope
         );
     }
 
@@ -233,12 +284,17 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             for (STMTreeNode selectSublist : selectSublists) {
                 STMTreeNode sublistNode = selectSublist.findFirstNonErrorChild();
                 if (sublistNode != null) {
-                    switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
+                    switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn)? anyUnexpected??;
                         case SQLStandardParser.RULE_derivedColumn -> {
                             // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                             STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
-                            SQLQueryValueExpression expr = exprNode == null ? null : recognizer.collectValueExpression(exprNode);
+                            SQLQueryValueExpression expr = exprNode == null
+                                ? null
+                                : recognizer.collectValueExpression(exprNode, selectListScope);
                             if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
+                                if (tupleRef.getTupleRefEntry() != null) {
+                                    recognizer.registerScopeItem(tupleRef.getTupleRefEntry());
+                                }
                                 resultModel.addTupleSpec(sublistNode, tupleRef);
                             } else {
                                 STMTreeNode asClauseNode = sublistNode.findLastChildOfName(STMKnownRuleNames.asClause);
@@ -246,7 +302,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                                     STMTreeNode columnNameNode = asClauseNode.findLastChildOfName(STMKnownRuleNames.columnName);
                                     SQLQuerySymbolEntry asColumnName = columnNameNode == null
                                         ? null
-                                        : recognizer.collectIdentifier(columnNameNode);
+                                        : recognizer.collectIdentifier(columnNameNode, null);
                                     resultModel.addColumnSpec(sublistNode, expr, asColumnName);
                                 } else {
                                     resultModel.addColumnSpec(sublistNode, expr);
@@ -258,12 +314,22 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                             // error in query text, ignoring it
                         }
                         default -> {
-                            resultModel.addCompleteTupleSpec(sublistNode);
+                            if (STMKnownRuleNames.ASTERISK_TERM.equals(sublistNode.getNodeName())) {
+                                SQLQueryTupleRefEntry tupleRefEntry = new SQLQueryTupleRefEntry(sublistNode);
+                                recognizer.registerScopeItem(tupleRefEntry);
+                                resultModel.addCompleteTupleSpec(sublistNode, tupleRefEntry);
+                            }
                         }
                     }
                 }
             }
         }
+
+        STMTreeNode setQuantifierNode = syntaxNode.findFirstChildOfName(STMKnownRuleNames.setQuantifier);
+        // keyword itself should not be included to the scope
+        // antlr give us interval end as the pos of the las symbol of the keyword
+        // so, move completion context to the place after the keyword and space
+        int selectListScopeStart = (setQuantifierNode != null ? setQuantifierNode : selectKeywordNode).getRealInterval().b + 2;
 
         SQLQueryRowsSourceModel source = sourceModels.isEmpty()
             ? SQLQueryExpressionMapper.makeEmptyRowsModel(syntaxNode)
@@ -271,7 +337,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         STMTreeNode tableExpr = syntaxNode.findFirstChildOfName(STMKnownRuleNames.tableExpression);
         SQLQueryRowsSourceModel projectionModel;
         if (tableExpr != null) {
-            selectListScope.setInterval(Interval.of(selectKeywordNode.getRealInterval().a, tableExpr.getRealInterval().a));
+            selectListScope.setInterval(Interval.of(selectListScopeStart, tableExpr.getRealInterval().a - 1));
             SQLQueryLexicalScope fromScope = new SQLQueryLexicalScope();
             STMTreeNode[] filterNodes = new STMTreeNode[]{
                 tableExpr.findFirstChildOfName(STMKnownRuleNames.whereClause),
@@ -292,7 +358,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                     int scopeIndex = i + 1;
                     if (filterNode != null) {
                         try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = recognizer.openScope()) {
-                            filterExprs[i] = recognizer.collectValueExpression(filterNode);
+                            filterExprs[i] = recognizer.collectValueExpression(filterNode, exprScope.lexicalScope);
                             nextScopeNodes[prevScopeIndex] = filterNode;
                             scopes[scopeIndex] = exprScope.lexicalScope;
                             prevScopes[scopeIndex] = scopes[prevScopeIndex];
@@ -301,27 +367,70 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                     }
                 }
             }
+            SQLQueryLexicalScope tailScope = null;
             for (int i = 0; i < scopes.length; i++) {
                 SQLQueryLexicalScope scope = scopes[i];
                 if (scope != null) {
-                    int from = prevScopes[i].getInterval().b;
+                    tailScope = scope;
+
+                    Interval leadingKeywordInterval = null;
+                    STMTreeNode leadingNode;
+                    if (i == 0) {
+                        leadingNode = tableExpr.findFirstNonErrorChild();
+                    } else {
+                        leadingNode = filterNodes[i - 1];
+                    }
+                    if (leadingNode != null) {
+                        leadingKeywordInterval = findLeadingKeywordsInterval(leadingNode);
+                    }
+
+                    int from;
+                    if (leadingKeywordInterval != null) {
+                        // interval end points to the last keyword character
+                        // so we need to assume this last character and space after to find next position
+                        from = leadingKeywordInterval.b + 2;
+                    } else {
+                        from = prevScopes[i].getInterval().b;
+                    }
                     int to = nextScopeNodes[i] != null ? nextScopeNodes[i].getRealInterval().a : Integer.MAX_VALUE;
                     scope.setInterval(Interval.of(from, to));
                 }
+            }
+
+            STMTreeNode limitNode = tableExpr.findFirstChildOfName(STMKnownRuleNames.limitClause);
+            if (limitNode != null) {
+                tailScope = null;
             }
 
             projectionModel = ctor.apply(
                 syntaxNode, selectListScope, source, fromScope,
                 SQLQueryRowsProjectionModel.FiltersData.of(filterExprs[0], filterExprs[1], filterExprs[2], filterExprs[3]),
                 SQLQueryRowsProjectionModel.FiltersData.of(scopes[1], scopes[2], scopes[3], scopes[4]),
-                resultModel
+                resultModel, tailScope
             );
         } else {
+            selectListScope.setInterval(Interval.of(selectListScopeStart, syntaxNode.getRealInterval().b));
             projectionModel = ctor.apply(
-                syntaxNode, selectListScope, source, null, FiltersData.empty(), FiltersData.empty(), resultModel
+                syntaxNode, selectListScope, source, null, FiltersData.empty(), FiltersData.empty(), resultModel, selectListScope
             );
         }
 
         return projectionModel;
+    }
+
+    @Nullable
+    private static Interval findLeadingKeywordsInterval(@NotNull STMTreeNode node) {
+        Iterator<STMTreeNode> it = node.getChildren().iterator();
+        if (it.hasNext() && it.next() instanceof STMTreeTermNode t1) {
+            Interval i = t1.getRealInterval();
+            int from = i.a;
+            int to = i.b;
+            while (it.hasNext() && it.next() instanceof STMTreeTermNode t) {
+                to = t.getRealInterval().b;
+            }
+            return Interval.of(from, to);
+        } else {
+            return null;
+        }
     }
 }

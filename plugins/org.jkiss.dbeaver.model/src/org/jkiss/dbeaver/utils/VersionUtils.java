@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.utils;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 
 import java.util.Collection;
 import java.util.StringTokenizer;
@@ -27,8 +26,6 @@ import java.util.StringTokenizer;
  * VersionUtils
  */
 public class VersionUtils {
-    private static final Log log = Log.getLog(VersionUtils.class);
-
 
     public static boolean isBetaVersion(@NotNull String versionInfo) {
         return versionInfo.contains("beta") || versionInfo.contains("alpha");

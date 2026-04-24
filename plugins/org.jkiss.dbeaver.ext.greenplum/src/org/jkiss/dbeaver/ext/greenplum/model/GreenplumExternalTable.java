@@ -1,10 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
- * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
- * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
- * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +17,7 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
@@ -334,6 +331,7 @@ public class GreenplumExternalTable extends PostgreTable {
             return false;
         }
 
+        @Nullable
         public Object[] getPossibleValues(GreenplumExternalTable object) {
             Predicate<FormatType> excludeCustomTypes = formatType -> !formatType.equals(FormatType.b);
 
@@ -348,6 +346,7 @@ public class GreenplumExternalTable extends PostgreTable {
             return false;
         }
 
+        @Nullable
         public Object[] getPossibleValues(GreenplumExternalTable object) {
             return Arrays.stream(GreenplumCharacterSet.values())
                     .map(GreenplumCharacterSet::getCharacterSetValue).toArray();
@@ -356,9 +355,11 @@ public class GreenplumExternalTable extends PostgreTable {
 
     public static class ExternalTableUriLocationsRenderer
             implements IPropertyValueTransformer<GreenplumExternalTable, String> {
+        @Nullable
         @Override
-        public String transform(GreenplumExternalTable greenplumExternalTable,
-                                String commaSeparatedListUriLocations) throws IllegalArgumentException {
+        public String transform(
+            @NotNull GreenplumExternalTable greenplumExternalTable,
+            @Nullable String commaSeparatedListUriLocations) throws IllegalArgumentException {
             return greenplumExternalTable.uriLocationsHandler.getLineFeedSeparatedList();
         }
     }

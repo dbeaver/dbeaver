@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,6 +268,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return PostgreConstants.SERIAL_TYPES.containsKey(getFullTypeName());
     }
 
+    @NotNull
     @Override
     public DBSDataType getBaseDataType() {
         String baseTypeName = PostgreConstants.SERIAL_TYPES.get(getFullTypeName());
@@ -359,6 +360,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
       return OID_TYPES;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
@@ -440,6 +442,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(viewable = true, optional = true, order = 13)
     public PostgreDataType getElementType(DBRProgressMonitor monitor) {
+        if (typeType == PostgreTypeType.d) {
+            return getBaseType(monitor).getElementType(monitor);
+        }
         return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
     }
 
@@ -520,7 +525,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(category = CAT_MODIFIERS)
     public PostgreCollation getCollationId(DBRProgressMonitor monitor) throws DBException {
-        if (collationId != 0) {
+        if (collationId != 0 && getDataSource().getServerType().supportsCollations()) {
             return getDatabase().getCollation(monitor, collationId);
         }
         return null;
@@ -553,6 +558,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return arrayDelimiter;
     }
 
+    /**
+     * Returns array type whose element is this type
+     */
     @Property(category = CAT_ARRAY)
     public PostgreDataType getArrayItemType(DBRProgressMonitor monitor) {
         return arrayItemTypeId == 0 ? null : getDatabase().getDataType(monitor, arrayItemTypeId);
@@ -578,7 +586,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return DBSEntityType.TYPE;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public List<? extends DBSContextBoundAttribute> bindAttributesToContext(
         @NotNull DBRProgressMonitor monitor,
@@ -626,7 +634,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         if (dataKind == DBPDataKind.STRING) {
             if (typeCategory == PostgreTypeCategory.S || typeCategory == PostgreTypeCategory.E || typeCategory == PostgreTypeCategory.X) {
                 return new DBCLogicalOperator[]{
@@ -689,7 +697,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
         if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
@@ -707,8 +715,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return null;
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
 
         if (typeType == PostgreTypeType.d) {
@@ -1130,7 +1139,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     public static class EnumTypeValidator implements IPropertyValueValidator<PostgreDataType, Object> {
         @Override
-        public boolean isValidValue(PostgreDataType object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreDataType object, @Nullable Object value) throws IllegalArgumentException {
             return object.getTypeCategory() == PostgreTypeCategory.E;
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
@@ -32,115 +33,112 @@ import java.util.Map;
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     @Override
-    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
-    {
+    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
 
     }
 
     @Override
-    public void handleContextClose(@NotNull DBCExecutionContext context)
-    {
+    public void handleContextUpdate(@NotNull DBCExecutionContext context, boolean transactional) {
 
     }
 
     @Override
-    public void handleSessionOpen(@NotNull DBCSession session)
-    {
+    public void handleContextClose(@NotNull DBCExecutionContext context) {
 
     }
 
     @Override
-    public void handleSessionClose(@NotNull DBCSession session)
-    {
+    public void handleSessionOpen(@NotNull DBCSession session) {
 
     }
 
     @Override
-    public void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
-    {
+    public void handleSessionClose(@NotNull DBCSession session) {
 
     }
 
     @Override
-    public void handleTransactionIsolation(@NotNull DBCExecutionContext context, @NotNull DBPTransactionIsolation level)
-    {
+    public void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
 
     }
 
     @Override
-    public void handleTransactionCommit(@NotNull DBCExecutionContext context)
-    {
+    public void handleTransactionIsolation(@NotNull DBCExecutionContext context, @NotNull DBPTransactionIsolation level) {
 
     }
 
     @Override
-    public void handleTransactionSavepoint(@NotNull DBCSavepoint savepoint)
-    {
+    public void handleTransactionCommit(@NotNull DBCExecutionContext context) {
 
     }
 
     @Override
-    public void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
-    {
+    public void handleTransactionSavepoint(@NotNull DBCSavepoint savepoint) {
 
     }
 
     @Override
-    public void handleStatementOpen(@NotNull DBCStatement statement)
-    {
+    public void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
 
     }
 
     @Override
-    public void handleStatementExecuteBegin(@NotNull DBCStatement statement)
-    {
+    public void handleStatementOpen(@NotNull DBCStatement statement) {
 
     }
 
     @Override
-    public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error)
-    {
+    public void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
+
+    }
+
+    @Override
+    public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error) {
         
     }
 
     @Override
-    public void handleStatementBind(@NotNull DBCStatement statement, Object column, Object value)
-    {
+    public void handleStatementBind(@NotNull DBCStatement statement, Object column, Object value) {
 
     }
 
     @Override
-    public void handleStatementClose(@NotNull DBCStatement statement, long rows)
-    {
+    public void handleStatementClose(@NotNull DBCStatement statement, long rows) {
 
     }
 
     @Override
-    public void handleResultSetOpen(@NotNull DBCResultSet resultSet)
-    {
+    public void handleResultSetOpen(@NotNull DBCResultSet resultSet) {
 
     }
 
     @Override
-    public void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount)
-    {
+    public void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount) {
 
     }
 
     @Override
-    public void handleScriptBegin(@NotNull DBCSession session)
-    {
+    public void handleFetchError(@NotNull DBCResultSet resultSet, @NotNull Throwable error) {
 
     }
 
     @Override
-    public void handleScriptEnd(@NotNull DBCSession session)
-    {
+    public void handleScriptBegin(@NotNull DBCSession session) {
+
+    }
+
+    @Override
+    public void handleScriptEnd(@NotNull DBCSession session) {
 
     }
 
     @Override
     public void handleFeatureUsage(@NotNull DBRFeature feature, @Nullable Map<String, Object> parameters) {
+
+    }
+
+    @Override
+    public void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
 
     }
 }

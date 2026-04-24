@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Google Spanner Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.spanner;singleton:=true
-Bundle-Version: 1.0.134.qualifier
-Bundle-Release-Date: 20250120
+Bundle-Version: 1.0.165.qualifier
+Bundle-Release-Date: 20260504
 Require-Bundle: org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.spanner
 Export-Package: org.jkiss.dbeaver.ext.spanner,
@@ -14,5 +14,4 @@ Export-Package: org.jkiss.dbeaver.ext.spanner,
  org.jkiss.dbeaver.ext.spanner.auth
 Import-Package: org.slf4j;visibility:=reexport
 Require-Bundle: org.jkiss.dbeaver.ext.generic;visibility:=reexport,
- com.google.guava;visibility:=reexport,
- com.google.gson;visibility:=reexport
+ com.google.guava;visibility:=reexport

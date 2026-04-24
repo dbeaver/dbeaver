@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.jkiss.dbeaver.ui.extra.feature"
-      label="%featureName"
-      version="24.3.3.qualifier"
-      provider-name="%providerName">
+      label="DBeaver Desktop UI Extras"
+      version="26.0.4.qualifier"
+      provider-name="DBeaver Corp">
 
-   <description>
-      %description
-   </description>
+   <copyright>DBeaver Corp and others</copyright>
 
-   <copyright>
-      %copyright
-   </copyright>
-
-   <plugin id="org.jkiss.dbeaver.ext.ui.locks" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.ui.view" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.native.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.sql.ui" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.config.migration" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.config.migration" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.cmp.simple.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ui.dashboard" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.editors.locks" version="0.0.0" />
 
 </feature>

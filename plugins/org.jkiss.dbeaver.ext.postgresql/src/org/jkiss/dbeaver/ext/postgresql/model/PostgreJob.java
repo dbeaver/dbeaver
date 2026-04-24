@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -272,6 +272,7 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull PostgreJob object) {
             // Classes are already loaded at this moment, so we are free to use void monitor here

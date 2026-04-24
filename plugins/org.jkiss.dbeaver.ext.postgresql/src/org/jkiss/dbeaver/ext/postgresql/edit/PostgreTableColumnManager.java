@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreStorageModifier = (monitor, column, sql, command) -> {
+        if (!column.hasDefaultStorage()) {
+            sql.append(" STORAGE ");
+            sql.append(column.getStorage());
+        }
+    };
+
     protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (monitor, column, sql, command) -> {
         String defaultValue = column.getDefaultValue();
         if (!CommonUtils.isEmpty(defaultValue) && defaultValue.startsWith("nextval")) {
@@ -128,12 +135,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreGeneratedModifier = (monitor, column, sql, command) -> {
         String generatedValue = column.getGeneratedValue();
         if (!CommonUtils.isEmpty(generatedValue)) {
-            sql.append(" GENERATED ALWAYS AS (").append(generatedValue).append(") STORED");
+            sql.append(" GENERATED ALWAYS AS (").append(generatedValue).append(") ")
+                .append(column.getGeneratedColumnTypeName());
         }
     };
 
     @Override
-    public boolean canEditObject(PostgreTableColumn object) {
+    public boolean canEditObject(@NotNull PostgreTableColumn object) {
         return true;
     }
 
@@ -159,6 +167,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }
+        if (column.getDataSource().getServerType().supportsStorageModifier()) {
+            modifiers = ArrayUtils.insertArea(ColumnModifier.class, modifiers, 1, new ColumnModifier[]{PostgreStorageModifier});
+        }
         return modifiers;
     }
 
@@ -181,7 +192,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             column = new PostgreTableColumn(table);
             column.setName(getNewColumnName(monitor, context, table));
             final PostgreDataType dataType = table.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
-            column.setDataType(dataType); //$NON-NLS-1$
+            if (dataType != null) {
+                column.setDataType(dataType);
+            }
             column.setOrdinalPosition(-1);
         }
         return column;
@@ -194,6 +207,11 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         String sql = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + " ADD " +
             getNestedDeclaration(monitor, table, command, options);
         actions.add(new SQLDatabasePersistAction("Create new table column", sql));
+        if (command.getObject().getStorage() != null
+            && table.getDataSource().getServerType().supportsAlterStorageStrategy()
+            && !table.getDataSource().getServerType().supportsStorageModifier()) {
+            addColumnStorageAction(actions, command.getObject());
+        }
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject());
         }
@@ -229,6 +247,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (command.hasProperty(DBConstants.PROP_ID_REQUIRED)) {
             actionList.add(new SQLDatabasePersistActionAtomic("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL", isAtomic));
         }
+        if (command.hasProperty("storage") && column.getStorage() != null) {
+            addColumnStorageAction(actionList, column);
+        }
 
         if (command.hasProperty(DBConstants.PROP_ID_DEFAULT_VALUE)) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
@@ -237,9 +258,16 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 actionList.add(new SQLDatabasePersistActionAtomic("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue(), isAtomic));
             }
         }
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             addColumnCommentAction(actionList, column);
         }
+    }
+
+    public static void addColumnStorageAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
+        PostgreTableBase table = (PostgreTableBase) column.getTable();
+        String prefix = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
+            " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
+        actionList.add(new SQLDatabasePersistActionAtomic("Set column storage", prefix + "SET STORAGE " + column.getStorage(), column.getDataSource().getServerType().isAlterTableAtomic()));
     }
 
     public static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
@@ -274,7 +302,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 

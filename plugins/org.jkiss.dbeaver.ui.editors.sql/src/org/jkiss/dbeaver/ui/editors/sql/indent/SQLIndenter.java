@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ public class SQLIndenter {
             int indentLength = nonWS - lineOffset;
             StringBuilder indent = createIndent();
             if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength() - 1)) {
-                SQLScriptElement currentQuery = SQLScriptParser.extractQueryAtPos(context, offset);
+                SQLScriptElement currentQuery = SQLScriptParser.extractQueryAtPos(context, offset, false);
 
                 nonWS = currentQuery.getOffset();
                 lineOffset = document.getLineInformationOfOffset(currentQuery.getOffset()).getOffset();

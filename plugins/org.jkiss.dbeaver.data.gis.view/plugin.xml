@@ -21,14 +21,14 @@
         <geometryViewer
                 label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.label"
                 description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISTextViewer.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.svg"
                 id="text"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISTextViewer"
                 supportsInline="true"/>
         <geometryViewer
                 label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.label"
                 description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.description"
-                icon="icons/map.png"
+                icon="icons/map.svg"
                 id="browser"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
@@ -84,7 +84,7 @@
                 id="results.geometry"
                 label="%presentation.geometry.name"
                 description="%presentation.geometry.description"
-                icon="icons/map.png"
+                icon="icons/map.svg"
                 class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
                 type="transformer"
                 supportsRecordMode="false"

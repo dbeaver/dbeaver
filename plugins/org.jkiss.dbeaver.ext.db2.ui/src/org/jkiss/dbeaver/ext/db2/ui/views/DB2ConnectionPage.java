@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,9 +84,12 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         };
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, DB2Messages.db2_connection_page_tab_database, 4, 0, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            addrGroup.setLayoutData(gd);
+            Composite addrGroup = UIUtils.createTitledComposite(
+                control,
+                DB2Messages.db2_connection_page_tab_database,
+                4,
+                GridData.FILL_HORIZONTAL
+            );
 
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
@@ -99,7 +102,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
 
             UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
             urlText = new Text(addrGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
             gd.widthHint = 355;
@@ -114,6 +117,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, hostText);
 
@@ -139,6 +143,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(dbText);
             dbText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, dbText);
         }

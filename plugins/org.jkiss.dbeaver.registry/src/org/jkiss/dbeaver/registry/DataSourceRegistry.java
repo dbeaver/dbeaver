@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -43,8 +45,8 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -69,11 +71,14 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     private final List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
     private final Map<String, T> dataSources = new LinkedHashMap<>();
-    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
     private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
+
+    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
+    private final List<DBPEvent> dataSourceEvents = new ArrayList<>();
+    private final EventProcessJob eventsJob = new EventProcessJob();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
@@ -93,7 +98,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true);
+        boolean isLoaded = loadDataSources(true) != null;
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
             addDataSourceListener(modelChangeListener);
@@ -259,12 +264,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
+    public DataSourceDescriptor createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(
+    public DataSourceDescriptor createDataSource(
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connConfig
@@ -272,8 +278,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return new DataSourceDescriptor(this, id, driver, connConfig);
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(
+    public DataSourceDescriptor createDataSource(
         @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
         @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
@@ -285,10 +292,23 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source) {
+    public DataSourceDescriptor createDataSource(@NotNull DBPDataSourceContainer source) {
         DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source, this);
         newDS.setId(DataSourceDescriptor.generateNewId(source.getDriver()));
         return newDS;
+    }
+
+    @NotNull
+    public DataSourceDescriptor createDataSource(
+        @NotNull DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver originalDriver,
+        @NotNull DBPDriver substitutedDriver,
+        @NotNull DBPConnectionConfiguration dbpConnectionConfiguration
+    ) {
+        return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
+            substitutedDriver, dbpConnectionConfiguration);
     }
 
     @NotNull
@@ -348,12 +368,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException {
         DBPDataSourceFolder folder = getFolder(oldPath);
         var result = Path.of(newPath);
         var newName = result.getFileName().toString();
         var parent = result.getParent();
         var parentFolder = parent == null ? null : getFolder(parent.toString().replace("\\", "/"));
+        if (folder == parentFolder) {
+            throw new DBException("Cannot move folder inside itself");
+        }
         folder.setParent(parentFolder);
         if (!CommonUtils.equalObjects(folder.getName(), newName)) {
             folder.setName(newName);
@@ -375,7 +398,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return findFolderByPath(path, true, null);
     }
 
-    DataSourceFolder findFolderByPath(String path, boolean create, ParseResults results) {
+    DataSourceFolder findFolderByPath(String path, boolean create, DataSourceParseResults results) {
         DataSourceFolder parent = null;
         for (String name : path.split("/")) {
             DataSourceFolder folder = parent == null ? findRootFolder(name) : parent.getChild(name);
@@ -495,6 +518,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             secretController.setPrivateSecretValue(
                 profile.getSecretKeyId(),
                 null);
+            secretController.flushChanges();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
         }
@@ -562,6 +586,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                 secretController.setPrivateSecretValue(
                     profile.getSecretKeyId(),
                     null);
+                secretController.flushChanges();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing auth profile credentials from secret storage", e);
             }
@@ -717,26 +742,38 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     public void notifyDataSourceListeners(@NotNull final DBPEvent event) {
-        final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
+            dataSourceEvents.add(event);
+        }
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            // In headless mode we process events immediately
+            eventsJob.run(new NullProgressMonitor());
+        } else {
+            eventsJob.schedule(20);
+        }
+    }
+
+    /**
+     * Flushes all pending data source events. This is a blocking operation.
+     */
+    public void flushDataSourceEvents() {
+        final DBPEventListener[] listeners;
+        final DBPEvent[] events;
+        synchronized (dataSourceListeners) {
+            events = dataSourceEvents.toArray(new DBPEvent[0]);
+            dataSourceEvents.clear();
+
             if (dataSourceListeners.isEmpty()) {
                 return;
             }
-            listeners = new ArrayList<>(dataSourceListeners);
+            listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
         }
-        new Job("Notify datasource events") {
-            {
-                setSystem(true);
-            }
 
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-                return Status.OK_STATUS;
+        for (DBPEvent event : events) {
+            for (DBPEventListener listener : listeners) {
+                listener.handleDataSourceEvent(event);
             }
-        }.schedule();
+        }
     }
 
     @Nullable
@@ -779,7 +816,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    private boolean loadDataSources(boolean refresh) {
+    private DataSourceParseResults loadDataSources(boolean refresh) {
        return loadDataSources(
             configurationManager.getConfigurationStorages(),
             configurationManager,
@@ -789,30 +826,27 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public boolean loadDataSources(
+    public DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     ) {
-        // need this to show is the data source was updated
-        boolean configChanged = false;
         if (!project.isOpen() || project.isInMemory()) {
-            return false;
+            return null;
         }
         // Clear filters before reload
         savedFilters.clear();
 
         // Parse datasources
-        ParseResults parseResults = new ParseResults();
+        DataSourceParseResults parseResults = new DataSourceParseResults();
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
             if (loadDataSources(cfgStorage, manager, dataSourceIds, parseResults)) {
-                configChanged = true;
             } else {
                 if (lastError != null) {
-                    return false;
+                    return null;
                 }
             }
         }
@@ -831,27 +865,25 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
 
             if (purgeUntouched) {
-                List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
                 for (DataSourceDescriptor ds : dataSources.values()) {
                     if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
                         !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
                     {
-                        removedDataSource.add(ds);
+                        parseResults.removedDataSources.add(ds);
                     }
                 }
-                for (DataSourceDescriptor ds : removedDataSource) {
+                for (DBPDataSourceContainer ds : parseResults.removedDataSources) {
                     this.dataSources.remove(ds.getId());
                     this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
                     ds.dispose();
                 }
 
-                List<DataSourceFolder> removedFolder = new ArrayList<>();
                 for (DataSourceFolder folder : dataSourceFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
-                        removedFolder.add(folder);
+                        parseResults.removedFolders.add(folder);
                     }
                 }
-                for (DataSourceFolder folder : removedFolder) {
+                for (DBPDataSourceFolder folder : parseResults.removedFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)
                         && !DataSourceUtils.isFolderHasTemporaryDataSources(folder)
                     ) {
@@ -864,14 +896,14 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         updateProjectNature();
 
-        return configChanged;
+        return parseResults;
     }
 
     protected boolean loadDataSources(
         @NotNull DBPDataSourceConfigurationStorage storage,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
-        @NotNull ParseResults parseResults
+        @NotNull DataSourceParseResults parseResults
     ) {
         boolean configChanged = false;
         try {
@@ -958,7 +990,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    protected void updateProjectNature() {
+    private void updateProjectNature() {
+        if (project instanceof BaseProjectImpl bp) {
+            bp.updateProjectNature();
+        }
     }
 
     @NotNull
@@ -1023,7 +1058,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.persistSecrets(secretController);
         }
@@ -1036,7 +1071,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.resolveSecrets(secretController);
         }
@@ -1048,23 +1083,18 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
-    public DBPDataSourceContainer createDataSource(
-        DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
-        DBPDataSourceOrigin origin,
-        String id,
-        DriverDescriptor originalDriver,
-        DriverDescriptor substitutedDriver,
-        DBPConnectionConfiguration dbpConnectionConfiguration
-    ) {
-        return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
-            substitutedDriver, dbpConnectionConfiguration);
-    }
+    private class EventProcessJob extends Job {
 
-    protected static class ParseResults {
-        public Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
-        public Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
-        public Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
-        public Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
+        public EventProcessJob() {
+            super("Notify datasource events");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            flushDataSourceEvents();
+            return Status.OK_STATUS;
+        }
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {
@@ -1110,8 +1140,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         ConfigSaver() {
             super("Datasource configuration save");
         }
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (DataSourceRegistry.this) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 saveDataSources(monitor);

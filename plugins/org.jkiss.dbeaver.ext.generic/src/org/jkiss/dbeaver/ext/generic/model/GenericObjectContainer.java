@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -36,10 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * GenericEntityContainer
@@ -78,36 +76,43 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return new TableCache(datasource);
     }
 
+    @NotNull
     @Override
     public final TableCache getTableCache() {
         return tableCache;
     }
 
+    @NotNull
     @Override
     public final IndexCache getIndexCache() {
         return indexCache;
     }
 
+    @NotNull
     @Override
     public final ConstraintKeysCache getConstraintKeysCache() {
         return constraintKeysCache;
     }
 
+    @NotNull
     @Override
     public final ForeignKeysCache getForeignKeysCache() {
         return foreignKeysCache;
     }
 
+    @NotNull
     @Override
     public TableTriggerCache getTableTriggerCache() {
         return tableTriggerCache;
     }
 
+    @NotNull
     @Override
     public GenericSequenceCache getSequenceCache() {
         return sequenceCache;
     }
 
+    @NotNull
     public GenericSynonymCache getSynonymCache() {
         return synonymCache;
     }
@@ -125,7 +130,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<GenericView> filtered = new ArrayList<>();
@@ -140,7 +145,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<GenericTable> filtered = new ArrayList<>();
@@ -160,19 +165,17 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public GenericTableBase getTable(DBRProgressMonitor monitor, String name) throws DBException {
+    public GenericTableBase getTable(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return tableCache.getObject(monitor, this, name);
     }
 
     @Override
-    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException {
+    public Collection<GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheIndexes(monitor, true);
         return indexCache.getObjects(monitor, this, null);
     }
 
-    private void cacheIndexes(DBRProgressMonitor monitor, boolean readFromTables)
-        throws DBException {
+    private void cacheIndexes(DBRProgressMonitor monitor, boolean readFromTables) throws DBException {
         // Cache indexes (read all tables, all columns and all indexes in this container)
         // This doesn't work for generic datasource because metadata facilities
         // allows index query only by certain table name
@@ -229,14 +232,15 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                         }
                     }
                 }
+                newIndexCache.sort(Comparator.comparing((GenericTableIndex o) -> o.getTable().getName())
+                    .thenComparing(JDBCTableIndex::getName));
                 indexCache.setCache(newIndexCache);
             }
         }
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         // Cache tables
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
@@ -295,16 +299,14 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
-        throws DBException {
+    public Collection<GenericPackage> getPackages(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
         }
         return packages;
     }
 
-    public GenericPackage getPackage(DBRProgressMonitor monitor, String name)
-        throws DBException {
+    public GenericPackage getPackage(DBRProgressMonitor monitor, String name) throws DBException {
         return DBUtils.findObject(getPackages(monitor), name);
     }
 
@@ -313,8 +315,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
-        throws DBException {
+    public List<GenericProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (procedures == null) {
             loadProcedures(monitor);
         }
@@ -322,7 +323,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public GenericProcedure getProcedure(@NotNull DBRProgressMonitor monitor, @NotNull String uniqueName) throws DBException {
         for (GenericProcedure procedure : CommonUtils.safeCollection(getProcedures(monitor))) {
             if (uniqueName.equals(procedure.getUniqueName())) {
                 return procedure;
@@ -332,13 +333,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
-        throws DBException {
+    public List<GenericProcedure> getProcedures(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return DBUtils.findObjects(getProcedures(monitor), name);
     }
 
     @Override
-    public List<? extends GenericProcedure> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericProcedure> getProceduresOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (!dataSource.splitProceduresAndFunctions()) {
             return getProcedures(monitor);
         }
@@ -352,7 +352,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericProcedure> getFunctionsOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<GenericProcedure> filteredProcedures = new ArrayList<>();
         for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
             if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
@@ -363,8 +363,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
-        return monitor == null ? sequenceCache.getCachedObjects() : sequenceCache.getAllObjects(monitor, this);
+    public Collection<? extends GenericSequence> getSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return sequenceCache.getAllObjects(monitor, this);
     }
 
     public GenericSequence getSequence(DBRProgressMonitor monitor, String name) throws DBException {
@@ -381,30 +381,29 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public Collection<? extends GenericTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger<?>> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getMetaModel().supportsDatabaseTriggers(getDataSource()) ? containerTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 
     @Override
-    public Collection<? extends GenericTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger<?>> getTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ? tableTriggerCache.getAllObjects(monitor, this) : Collections.emptyList();
     }
 
     @Association
     @Nullable
-    public GenericTrigger getTableTrigger(@NotNull DBRProgressMonitor monitor, String triggerName) throws DBException {
+    public GenericTrigger<?> getTableTrigger(@NotNull DBRProgressMonitor monitor, String triggerName) throws DBException {
         return getDataSource().getMetaModel().supportsTriggers(getDataSource()) ?
             tableTriggerCache.getObject(monitor, this, triggerName) : null;
     }
 
     @Association
-    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDataSource().getDataTypes(monitor);
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSObject> childrenList = new ArrayList<>(getTables(monitor));
         if (dataSource.getMetaModel().supportsSynonyms(dataSource)) {
             childrenList.addAll(getSynonyms(monitor));
@@ -413,8 +412,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return getTable(monitor, childName);
     }
 
@@ -446,8 +444,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         return getName() == null ? GenericMessages.generic_object_container_none : getName();
     }
 
-    private synchronized void loadProcedures(DBRProgressMonitor monitor)
-        throws DBException {
+    private synchronized void loadProcedures(DBRProgressMonitor monitor) throws DBException {
         dataSource.getMetaModel().loadProcedures(monitor, this);
 
         // Order procedures
@@ -486,7 +483,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         packages.add(procedurePackage);
     }
 
-    public class ContainerTriggerCache extends JDBCObjectCache<GenericStructContainer, GenericTrigger> {
+    public static class ContainerTriggerCache extends JDBCObjectCache<GenericStructContainer, GenericTrigger<?>> {
 
         @NotNull
         @Override
@@ -496,12 +493,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
 
         @Nullable
         @Override
-        protected GenericTrigger fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected GenericTrigger<?> fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return container.getDataSource().getMetaModel().createContainerTriggerImpl(container, resultSet);
         }
     }
 
-    class GenericSequenceCache extends JDBCObjectCache<GenericObjectContainer, GenericSequence> {
+    public class GenericSequenceCache extends JDBCObjectCache<GenericObjectContainer, GenericSequence> {
 
         @NotNull
         @Override
@@ -516,12 +513,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             return getDataSource().getMetaModel().handleSequenceCacheReadingError(error);
         }
     }
 
-    class GenericSynonymCache extends JDBCObjectCache<GenericObjectContainer, GenericSynonym> {
+    public static class GenericSynonymCache extends JDBCObjectCache<GenericObjectContainer, GenericSynonym> {
 
         @NotNull
         @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,23 +43,22 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAlias;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
-import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -76,7 +75,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
-    private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
+    private static final String FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.connected"; //$NON-NLS-1$
+    private static final String FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.type"; //$NON-NLS-1$
     private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
     private static final boolean INLINE_RENAME_ENABLED = false;
 
@@ -85,14 +85,13 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private TreeEditor treeEditor;
     private boolean checkEnabled;
     private INavigatorFilter navigatorFilter;
+    private TreeFilter treeFilter;
     private Text filterControl;
     private INavigatorItemRenderer itemRenderer;
 
     private boolean filterShowConnected = false;
-    private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
-    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.connection;
     private volatile ProgressPainter treeLoadingListener;
-    ;
 
     // It is static to share loading nodes between all tree controls
     private static final Set<DBNNode> nodeInLoadingProcess = new HashSet<>();
@@ -133,9 +132,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
-        if (filterPlaceholderText != null) {
-            this.filterPlaceholderText = filterPlaceholderText;
-        }
         this.model = DBWorkbench.getPlatform().getNavigatorModel();
         assert this.model != null;
         this.model.addListener(this);
@@ -147,6 +143,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         });
 
         treeViewer = doCreateTreeViewer(this, style);
+        updateFilterMessage();
 
         Tree tree = treeViewer.getTree();
         tree.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -172,23 +169,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         {
             tree.addListener(SWT.PaintItem, event -> onPaintItem(tree, event));
-            tree.getHorizontalBar().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> tree.redraw()));
-            if (false) {
-                // See comments for StatisticsNavigatorNodeRenderer.PAINT_ACTION_HOVER
-                Listener mouseListener = e -> {
-                    TreeItem item = tree.getItem(new Point(e.x, e.y));
-                    if (item != null) {
-                        Rectangle itemBounds = item.getBounds();
-                        Point treeSize = tree.getSize();
-                        tree.redraw(itemBounds.x, itemBounds.y, treeSize.x, treeSize.y, false);
-                    }
-                };
-
-                tree.addListener(SWT.MouseMove, mouseListener);
-                //tree.addListener(SWT.MouseHover, mouseListener);
-                tree.addListener(SWT.MouseEnter, mouseListener);
-                tree.addListener(SWT.MouseExit, mouseListener);
-            }
+            // FIXME: this is a weird workaround of paint problems
+            // FIXME: whenever we click on already selected item in the tree paint breaks
+            // FIXME: (only the item is paintedm the rest is whitespace)
+            tree.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> UIUtils.asyncExec(tree::redraw)));
             {
                 Listener mouseListener = e -> {
                     TreeItem item = tree.getItem(new Point(e.x, e.y));
@@ -233,12 +217,22 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this.filterShowConnected = filterShowConnected;
     }
 
+    @NotNull
     public DatabaseNavigatorTreeFilterObjectType getFilterObjectType() {
         return filterObjectType;
     }
 
-    public void setFilterObjectType(DatabaseNavigatorTreeFilterObjectType filterObjectType) {
-        this.filterObjectType = filterObjectType;
+    public void setFilterObjectType(@NotNull DatabaseNavigatorTreeFilterObjectType filterObjectType) {
+        if (this.filterObjectType != filterObjectType) {
+            this.filterObjectType = filterObjectType;
+            updateFilterMessage();
+        }
+    }
+
+    private void updateFilterMessage() {
+        if (filterControl != null) {
+            filterControl.setMessage(filterObjectType.getDescription());
+        }
     }
 
     public ILabelDecorator getLabelDecorator() {
@@ -261,7 +255,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (itemRenderer != null) {
             Object element = event.item.getData();
             if (element instanceof DBNNode node) {
-                itemRenderer.paintNodeDetails(node, tree, event.gc, event);
+                try {
+                    itemRenderer.paintNodeDetails(node, tree, event.gc, event);
+                } catch (Exception e) {
+                    log.debug("Error in node '" + node + "' paint", e);
+                }
             }
         }
     }
@@ -416,6 +414,24 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     @NotNull
     public CheckboxTreeViewer getCheckboxViewer() {
         return (CheckboxTreeViewer) treeViewer;
+    }
+
+    public boolean isFilterActive() {
+        return treeFilter != null && treeFilter.isActive();
+    }
+
+    public boolean isMatchingNeeded(@NotNull Object element) {
+        return treeFilter != null && treeFilter.isMatchingNeeded(element);
+    }
+
+    public void resetFilter() {
+        if (filterControl != null) {
+            filterControl.setText("");
+        }
+        if (treeFilter != null) {
+            treeFilter.setPattern("");
+        }
+        treeViewer.refresh(true);
     }
 
     @Override
@@ -586,21 +602,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    public static final Image[] IMG_LOADING = new Image[]{
-        DBeaverIcons.getImage(UIIcon.LOADING0),
-        DBeaverIcons.getImage(UIIcon.LOADING1),
-        DBeaverIcons.getImage(UIIcon.LOADING2),
-        DBeaverIcons.getImage(UIIcon.LOADING3),
-        DBeaverIcons.getImage(UIIcon.LOADING4),
-        DBeaverIcons.getImage(UIIcon.LOADING5),
-        DBeaverIcons.getImage(UIIcon.LOADING6),
-        DBeaverIcons.getImage(UIIcon.LOADING7)
-    };
-
     private class NodeLoadersPainter extends UIJob {
         private static final long REPAINT_DELAY = 100;
         private static final long WAIT_DELAY = 500;
-        private static final Image[] LOADING_ICONS = IMG_LOADING;
 
         private int ticksCount = 0;
 
@@ -633,8 +637,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         private Image getCurrentImage() {
-            int imgIndex = (ticksCount % LOADING_ICONS.length);
-            return LOADING_ICONS[imgIndex];
+            int imgIndex = (ticksCount % UIIcon.LOADING.size());
+            return DBeaverIcons.getImage(UIIcon.LOADING.get(imgIndex));
         }
 
     }
@@ -698,8 +702,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 super("Rename ");
             }
 
+            @NotNull
             @Override
-            protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
                 try {
                     if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
                         final TreeItem itemToRename = selection;
@@ -833,27 +838,42 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             return super.wordMatches(text);
         }
 
+        @Override
         public boolean isElementVisible(Viewer viewer, Object element) {
             if (filterShowConnected && element instanceof DBNDataSource dataSource && !dataSource.getDataSourceContainer().isConnected()) {
                 return false;
             }
             if ((filterShowConnected ||
-                 getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection ||
-                 (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder) {
+                (hasPattern && getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection) ||
+                (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder
+            ) {
                 return hasVisibleConnections(viewer, (DBNLocalFolder) element);
             }
             if (!filter.select(element)) {
                 return false;
             }
 
+            if (!isMatchingNeeded(element)) {
+                return true;
+            }
+            String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
+            if (labelText == null) {
+                return false;
+            }
+            return isPatternMatched(labelText, element);
+        }
+
+        public boolean isActive() {
+            return matcher != null && !matcher.match("");
+        }
+
+        public boolean isMatchingNeeded(Object element) {
             boolean needToMatch = filter.filterObjectByPattern(element);
             if (!needToMatch && element instanceof DBNDatabaseNode node) {
                 DBSObject object = node.getObject();
                 switch (filterObjectType) {
-                    case connection:
-                        needToMatch = (object instanceof DBPDataSourceContainer);
-                        break;
-                    case container:
+                    case connection -> needToMatch = (object instanceof DBPDataSourceContainer);
+                    case container -> {
                         needToMatch = object instanceof DBSSchema || object instanceof DBSCatalog;
                         if (needToMatch) {
                             try {
@@ -863,28 +883,15 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 log.debug(e);
                             }
                         }
-                        break;
-                    default:
-                        needToMatch =
-                            object instanceof DBSEntity ||
-                            object instanceof DBSProcedure ||
-                            object instanceof DBSTableIndex ||
-                            object instanceof DBSTrigger ||
-                            object instanceof DBSPackage ||
-                            object instanceof DBSSequence ||
-                            object instanceof DBSAlias ||
-                            object instanceof DBAUser;
-                        break;
+                    }
+                    default -> needToMatch = !(object instanceof DBPDataSourceContainer) &&
+                        !(object instanceof DBSSchema) &&
+                        !(object instanceof DBSCatalog) &&
+                        !(object instanceof DBNDatabaseFolder) &&
+                        !(object instanceof DBSTableColumn);
                 }
             }
-            if (!needToMatch) {
-                return true;
-            }
-            String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
-            if (labelText == null) {
-                return false;
-            }
-            return isPatternMatched(labelText, element);
+            return needToMatch;
         }
 
         private boolean isPatternMatched(String labelText, Object element) {
@@ -954,7 +961,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class CustomFilteredTree extends FilteredTree {
 
         CustomFilteredTree(int treeStyle) {
-            super(DatabaseNavigatorTree.this, treeStyle, new TreeFilter(DatabaseNavigatorTree.this.navigatorFilter), true);
+            super(
+                DatabaseNavigatorTree.this,
+                treeStyle,
+                new TreeFilter(DatabaseNavigatorTree.this.navigatorFilter),
+                true,
+                true);
             try {
                 if (treeViewer != null) {
                     treeViewer.setUseHashlookup(true);
@@ -962,39 +974,45 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             } catch (Throwable e) {
                 // May happen in old Eclipse versions
             }
-
-            setInitialText(getFilterPlaceholderText());
             ((GridLayout) getLayout()).verticalSpacing = 0;
 
             UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
+
+            treeFilter = (TreeFilter) super.getPatternFilter();
         }
 
         @Override
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter dnf && !dnf.isConnectionsOnly()) {
                 ((GridLayout) parent.getLayout()).numColumns++;
 
-                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-
-                ToolBarManager filterManager = new ToolBarManager();
+                final ToolBarManager filterManager = new ToolBarManager();
                 filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+                IWorkbenchWindow workbenchWindow = UIUtils.findWorkbenchWindow(parent);
+                if (workbenchWindow == null) {
+                    workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                }
+
+                var supportedObjectTypes = dnf.getSupportedObjectTypes();
                 final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
-                if (menuService != null) {
-                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
+                if (menuService != null && !CommonUtils.isEmpty(supportedObjectTypes) && supportedObjectTypes.size() > 1) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID);
+                    if (!supportedObjectTypes.contains(filterObjectType)) {
+                        ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_OBJECT_TYPE);
+                    }
+                }
+                if (menuService != null && supportedObjectTypes.contains(DatabaseNavigatorTreeFilterObjectType.connection)) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID);
                 }
 
                 filterManager.createControl(parent);
-
                 parent.addDisposeListener(e -> filterManager.dispose());
             }
 
             return parent;
-        }
-
-        protected Text doCreateFilterText(Composite parent) {
-            return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
         }
 
         @Override
@@ -1050,10 +1068,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
             };
         }
-    }
-
-    protected String getFilterPlaceholderText() {
-        return filterPlaceholderText;
     }
 
     // Called by filtering job

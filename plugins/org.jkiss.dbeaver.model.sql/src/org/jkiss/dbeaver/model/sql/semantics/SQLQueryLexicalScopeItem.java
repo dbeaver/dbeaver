@@ -17,11 +17,15 @@
 package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 public abstract class SQLQueryLexicalScopeItem {
     @NotNull
     protected final STMTreeNode syntaxNode;
+
+    @Nullable
+    private SQLQuerySymbolOrigin origin = null;
 
     public SQLQueryLexicalScopeItem(@NotNull STMTreeNode syntaxNode) {
         super();
@@ -33,12 +37,20 @@ public abstract class SQLQueryLexicalScopeItem {
         return this.syntaxNode;
     }
 
-    /**
-     * Return syntax tree nodes corresponding to this lexical scope
-     */
-    @NotNull
-    public abstract STMTreeNode[] getSyntaxComponents();
-
-    @NotNull
+    @Nullable
     public abstract SQLQuerySymbolClass getSymbolClass();
+
+
+    @Nullable
+    public SQLQuerySymbolOrigin getOrigin() {
+        return this.origin;
+    }
+
+    public void setOrigin(SQLQuerySymbolOrigin origin) {
+        if (this.origin != null) {
+            throw new UnsupportedOperationException("Symbol entry origin has already been set");
+        } else {
+            this.origin = origin;
+        }
+    }
 }

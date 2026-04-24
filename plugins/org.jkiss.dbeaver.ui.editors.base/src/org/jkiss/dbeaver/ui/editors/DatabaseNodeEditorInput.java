@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,12 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
         this.nodePath = dbnDatabaseNode.getNodeUri();
         this.nodeName = dbnDatabaseNode.getNodeDisplayName();
     }
+
+    @Nullable
+    @Override
+    public String getNodePath() {
+        return nodePath;
+    }
     
     @Override
     public <T> T getAdapter(Class<T> adapter) {
@@ -60,8 +66,11 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     }
 
     @Override
-    public String getToolTipText()
-    {
+    public String getToolTipText() {
+        if (getNavigatorNode() == null) {
+            return "";
+        }
+
         StringBuilder toolTip = new StringBuilder();
 
         for (DBNNode node = getNavigatorNode(); node != null; node = node.getParentNode()) {
@@ -97,6 +106,7 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
             nodeName,
             getDefaultPageId(),
             getDefaultFolderId(),
+            getConnectionColor(),
             container.getId(),
             getClass().getName(),
             container.getProject(),

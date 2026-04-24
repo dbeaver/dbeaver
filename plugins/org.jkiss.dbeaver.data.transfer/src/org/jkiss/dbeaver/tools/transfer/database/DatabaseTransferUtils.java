@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,11 @@ public class DatabaseTransferUtils {
 
     private static final Pair<DBPDataKind, String> DATA_TYPE_UNKNOWN = new Pair<>(DBPDataKind.UNKNOWN, null);
     private static final Pair<DBPDataKind, String> DATA_TYPE_INTEGER = new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_BIGINT = new Pair<>(DBPDataKind.NUMERIC, "BIGINT");
     private static final Pair<DBPDataKind, String> DATA_TYPE_REAL = new Pair<>(DBPDataKind.NUMERIC, "REAL");
     private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_NATIONAL_STRING = new Pair<>(DBPDataKind.STRING, "NVARCHAR");
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Refresh database model");
@@ -80,6 +82,7 @@ public class DatabaseTransferUtils {
         DBSObjectContainer container = consumerSettings.getContainer();
         if (container == null) {
             log.debug("Null target container");
+            return;
         }
         if (containerMapping == null) {
             log.debug("Null container mapping");
@@ -88,8 +91,6 @@ public class DatabaseTransferUtils {
 
         // Reflect database changes in mappings
         {
-            monitor.subTask("Refresh database mappings");
-
             boolean updateMappingTarget = false;
             boolean updateMappingAttributes = false;
 
@@ -108,6 +109,8 @@ public class DatabaseTransferUtils {
             }
 
             if (updateMappingTarget || force) {
+                monitor.subTask("Refresh database mappings");
+
                 DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
@@ -546,7 +549,7 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBCException {
+    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBException {
         if (actions.length == 0) {
             return;
         }
@@ -585,27 +588,51 @@ public class DatabaseTransferUtils {
         commandContext.saveChanges(monitor, options);
     }
 
-    public static Pair<DBPDataKind, String> getDataType(String value) {
+    @NotNull
+    public static Pair<DBPDataKind, String> getDataType(@Nullable String value) {
         if (CommonUtils.isEmpty(value)) {
             return DATA_TYPE_UNKNOWN;
         }
+
         char firstChar = value.charAt(0);
-        if (Character.isDigit(firstChar) || firstChar == '+' || firstChar == '-' || firstChar == '.') {
-            try {
-                Long.parseLong(value);
-                return DATA_TYPE_INTEGER;
-            } catch (NumberFormatException ignored) {
-            }
-            try {
-                Double.parseDouble(value);
-                return DATA_TYPE_REAL;
-            } catch (NumberFormatException ignored) {
+        if (isNumericStart(firstChar)) {
+            Pair<DBPDataKind, String> numeric = tryClassifyNumber(value);
+            if (numeric != null) {
+                return numeric;
             }
         }
+
         if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
             return DATA_TYPE_BOOLEAN;
         }
+        if (!SQLUtils.isLatinLetter(firstChar)) {
+            return DATA_TYPE_NATIONAL_STRING;
+        }
         return DATA_TYPE_STRING;
+    }
+
+    private static boolean isNumericStart(char c) {
+        return Character.isDigit(c) || c == '+' || c == '-' || c == '.';
+    }
+
+    @Nullable
+    private static Pair<DBPDataKind, String> tryClassifyNumber(@NotNull String value) {
+        try {
+            Integer.parseInt(value);
+            return DATA_TYPE_INTEGER;
+        } catch (NumberFormatException ignore) {
+        }
+        try {
+            Long.parseLong(value);
+            return DATA_TYPE_BIGINT;
+        } catch (NumberFormatException ignore) {
+        }
+        try {
+            Double.parseDouble(value);
+            return DATA_TYPE_REAL;
+        } catch (NumberFormatException ignore) {
+            return null;
+        }
     }
 
     private static void ensureHasEditMetadataPermission(@NotNull DBPDataSourceContainer container) throws DBCException {

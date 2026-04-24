@@ -29,6 +29,7 @@ public class HANAConstants {
     public static final String SCHEMA_PUBLIC = "PUBLIC";
 
     // Data type names
+    public static final String DATA_TYPE_NAME_HALF_VECTOR = "HALF_VECTOR";
     public static final String DATA_TYPE_NAME_REAL_VECTOR = "REAL_VECTOR";
     public static final String DATA_TYPE_NAME_ST_GEOMETRY = "ST_GEOMETRY";
     public static final String DATA_TYPE_NAME_ST_POINT = "ST_POINT";

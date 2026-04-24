@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
@@ -43,11 +42,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -56,8 +57,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
@@ -69,10 +70,14 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.load.ContextMenuTreeNodeSpecial;
 import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDragSourceListener;
 import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDropTargetListener;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -82,6 +87,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -90,16 +96,17 @@ import java.util.*;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-    public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
-    {
+
+    @Nullable
+    public static DBNNode getSelectedNode(@Nullable ISelectionProvider selectionProvider) {
         if (selectionProvider == null) {
             return null;
         }
         return getSelectedNode(selectionProvider.getSelection());
     }
 
-    public static DBNNode getSelectedNode(ISelection selection)
-    {
+    @Nullable
+    public static DBNNode getSelectedNode(@NotNull ISelection selection) {
         if (selection.isEmpty()) {
             return null;
         }
@@ -109,6 +116,20 @@ public class NavigatorUtils {
                 return (DBNNode) selectedObject;
             } else if (selectedObject != null) {
                 return RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static ContextMenuTreeNodeSpecial getSelectedSpecialNode(@Nullable ISelection selection) {
+        if (selection == null || selection.isEmpty()) {
+            return null;
+        }
+        if (selection instanceof IStructuredSelection structuredSelection) {
+            Object selectedObject = structuredSelection.getFirstElement();
+            if (selectedObject instanceof ContextMenuTreeNodeSpecial node) {
+                return node;
             }
         }
         return null;
@@ -140,8 +161,8 @@ public class NavigatorUtils {
      * @param element ui element
      * @return node or null
      */
-    public static DBNNode getSelectedNode(UIElement element)
-    {
+    @Nullable
+    public static DBNNode getSelectedNode(@NotNull UIElement element) {
         ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
         if (selectionProvider != null) {
             return NavigatorUtils.getSelectedNode(selectionProvider);
@@ -150,23 +171,23 @@ public class NavigatorUtils {
         }
     }
 
-    public static DBSObject getSelectedObject(ISelection selection)
-    {
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+    @Nullable
+    public static DBSObject getSelectedObject(@NotNull ISelection selection) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection ss)) {
             return null;
         }
-        return DBUtils.getFromObject(((IStructuredSelection)selection).getFirstElement());
+        return DBUtils.getFromObject(ss.getFirstElement());
     }
 
-    public static List<DBSObject> getSelectedObjects(ISelection selection)
-    {
+    @NotNull
+    public static List<DBSObject> getSelectedObjects(@NotNull ISelection selection) {
         if (selection.isEmpty()) {
             return Collections.emptyList();
         }
         List<DBSObject> result = new ArrayList<>();
-        if (selection instanceof IStructuredSelection) {
-            for (Iterator iter = ((IStructuredSelection)selection).iterator(); iter.hasNext(); ) {
-                DBSObject selectedObject = DBUtils.getFromObject(iter.next());
+        if (selection instanceof IStructuredSelection ss) {
+            for (Object o : ss) {
+                DBSObject selectedObject = DBUtils.getFromObject(o);
                 if (selectedObject != null) {
                     result.add(selectedObject);
                 }
@@ -204,33 +225,35 @@ public class NavigatorUtils {
         @Nullable final IWorkbenchSite workbenchSite,
         @NotNull final Viewer viewer,
         @NotNull final ISelectionProvider selectionProvider,
-        @Nullable final IMenuListener menuListener)
-    {
+        @Nullable final IMenuListener menuListener
+    ) {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
-        menu.addMenuListener(new MenuListener()
-        {
+
+        menu.addMenuListener(new MenuListener() {
             @Override
-            public void menuHidden(MenuEvent e)
-            {
+            public void menuHidden(MenuEvent e) {
             }
 
             @Override
-            public void menuShown(MenuEvent e)
-            {
+            public void menuShown(MenuEvent e) {
                 Menu menu = (Menu) e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
                 removeUnrelatedMenuItems(menu, node);
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
-                    String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
+                    String commandID = NavigatorUtils.getNodeActionCommand(
+                        DBXTreeNodeHandler.Action.open,
+                        node,
+                        NavigatorCommands.CMD_OBJECT_OPEN
+                    );
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
                     try {
                         for (MenuItem item : menu.getItems()) {
                             Object itemData = item.getData();
-                            if (itemData instanceof IContributionItem) {
-                                String contribId = ((IContributionItem)itemData).getId();
+                            if (itemData instanceof IContributionItem contributionItem) {
+                                String contribId = contributionItem.getId();
                                 if (contribId != null && contribId.equals(commandID)) {
                                     menu.setDefaultItem(item);
                                 }
@@ -243,6 +266,15 @@ public class NavigatorUtils {
             }
         });
         menuMgr.addMenuListener(manager -> {
+            ContextMenuTreeNodeSpecial specialNode = getSelectedSpecialNode(viewer.getSelection());
+            if (specialNode != null) {
+                DatabaseNavigatorTree navigatorTree = getNavigatorTree(workbenchSite);
+                if (navigatorTree != null) {
+                    specialNode.fillContextMenu(menuMgr, navigatorTree);
+                }
+                return;
+            }
+
             ViewerColumnController<?, ?> columnController = ViewerColumnController.getFromControl(control);
             if (columnController != null && columnController.isClickOnHeader()) {
                 columnController.fillConfigMenu(manager);
@@ -366,12 +398,12 @@ public class NavigatorUtils {
                 EditorInputTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
-            
-            if (RuntimeUtils.isGtk()) { 
-                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+
+            if (RuntimeUtils.isWayland()) {
+                // TextTransfer should be the last when using Wayland
                 ArrayUtils.reverse(dragTransferTypes);
             }
-            
+
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
@@ -410,6 +442,7 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
+            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -441,6 +474,7 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
+                    nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
                 }
             }
             // Save folders
@@ -451,12 +485,17 @@ public class NavigatorUtils {
                 targetNode.setNodeFilter(
                     nodeMeta,
                     entry.getValue(),
-                    false);
+                    false
+                );
                 changedContainers.add(targetNode.getDataSourceContainer());
             }
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
-                ds.persistConfiguration();
+                if (isSaveAsCurrentUserFilterOnly) {
+                    UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
+                } else {
+                    ds.persistConfiguration();
+                }
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
@@ -531,35 +570,43 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
-        IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
-        if (resource instanceof IFile) {
-            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-            if (serviceSQL != null) {
-                serviceSQL.openResource(resource);
-            }
-        } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
-            if (node instanceof DBNObjectNode) {
-                INavigatorObjectManager objectManager = GeneralUtils.adapt(((DBNObjectNode) node).getNodeObject(), INavigatorObjectManager.class);
-                if (objectManager != null) {
-                    if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
-                        try {
-                            objectManager.openObjectEditor(window, (DBNObjectNode) node);
-                        } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Error opening object",
-                                "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
-                                e);
-                        }
-                    }
-                    return;
+        try {
+            if (node instanceof DBNResource resource) {
+                DBPResourceHandler resourceHandler = resource.getHandler();
+                resourceHandler.openResource(resource.getResource());
+            } else if (node instanceof DBNPathBase dbnPath) {
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false, dbnPath)) {
+                    openEntityEditor(node, window, parameters);
                 }
+            } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
+                openEntityEditor(node, window, parameters);
+            } else {
+                throw new DBException("Do not know how to open node '" + node + "'");
             }
-            Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
-            NavigatorHandlerObjectOpen.openEntityEditor(
-                (DBNNode) node,
-                CommonUtils.toString(activePage, null),
-                window);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error opening object",
+                "Error while opening object '" + node + "'",
+                e);
         }
+    }
+
+
+    private static void openEntityEditor(Object node, IWorkbenchWindow window, Map<?, ?> parameters) throws DBException {
+        if (node instanceof DBNObjectNode objectNode) {
+            INavigatorObjectManager objectManager = GeneralUtils.adapt(objectNode.getNodeObject(), INavigatorObjectManager.class);
+            if (objectManager != null) {
+                if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
+                    objectManager.openObjectEditor(window, objectNode);
+                }
+                return;
+            }
+        }
+        Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
+        NavigatorHandlerObjectOpen.openEntityEditor(
+            (DBNNode) node,
+            CommonUtils.toString(activePage, null),
+            window);
     }
 
     @Nullable
@@ -601,8 +648,8 @@ public class NavigatorUtils {
             }
         }
         if (activeProject == null) {
-            if (activePart instanceof DBPContextProvider) {
-                DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
+            if (activePart instanceof DBPContextProvider contextProvider) {
+                DBCExecutionContext executionContext = contextProvider.getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
                 } else if (activePart instanceof DBPDataSourceContainerProvider) {
@@ -672,4 +719,39 @@ public class NavigatorUtils {
         }
     }
 
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@NotNull ExecutionEvent event) {
+        return getNavigatorTree(HandlerUtil.getActiveWorkbenchWindow(event));
+    }
+
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@Nullable IServiceLocator locator) {
+        DatabaseNavigatorTree tree = DatabaseNavigatorTree.getFromShell(Display.getCurrent());
+        if (tree != null) {
+            return tree;
+        }
+        if (locator != null) {
+            IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(locator);
+            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView view) {
+                return view.getNavigatorTree();
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBSObject getCurrentDatabaseObject() {
+        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        IEditorPart activeEditor = activePage.getActiveEditor();
+        if (activeEditor instanceof ObjectPropertiesEditor editor) {
+            return editor.getDatabaseObject();
+        } else if (activeEditor instanceof EntityEditor editor) {
+            IEditorPart mainEditor = editor.getActiveEditor();
+            if (mainEditor instanceof ObjectPropertiesEditor objectPropertiesEditor) {
+                return objectPropertiesEditor.getDatabaseObject();
+            }
+        }
+
+        return null;
+    }
 }

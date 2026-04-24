@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,6 +54,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         this.disposeFileSystems();
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name();
@@ -63,11 +66,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return NodePathType.dbvfs.name();
     }
 
+    @NotNull
     @Override
     public String getNodeTypeLabel() {
         return ModelMessages.fs_root;
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
@@ -80,12 +85,14 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return NodePathType.dbvfs.name();
     }
 
+    @Nullable
     @Override
 //    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         return "All virtual file systems";
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         return DBIcon.TREE_FILE;
@@ -110,15 +117,27 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     public DBNFileSystemRoot getRootFolder(@NotNull DBRProgressMonitor monitor, @NotNull String id) throws DBException {
-        for (DBNFileSystem fsNode : getChildren(monitor)) {
-            DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
-            if (rootFolder != null) {
-                return rootFolder;
+        Throwable firstError = null;
+        for (DBNFileSystem fsNode : ArrayUtils.safeArray(getChildren(monitor))) {
+            try {
+                DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
+                if (rootFolder != null) {
+                    return rootFolder;
+                }
+            } catch (Throwable e) {
+                firstError = e;
             }
+        }
+        if (firstError != null) {
+            if (firstError instanceof DBException dbe) {
+                throw dbe;
+            }
+            throw new DBException("Error reading file system roots", firstError);
         }
         return null;
     }
 
+    @Nullable
     @Override
     public DBNFileSystem[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
@@ -144,7 +163,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
         DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
 
-        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
+        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems(monitor)) {
             DBNFileSystem newChild = null;
             if (mergeWith != null) {
                 for (DBNFileSystem oldFS : mergeWith) {
@@ -185,9 +204,20 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         } catch (URISyntaxException e) {
             throw new DBException("Bad path: " + path, e);
         }
+        // Detect file system and path
+        String fsId = DBFUtils.getQueryParameters(uri.getRawQuery()).get(DBFFileSystemManager.QUERY_PARAM_FS_ID);
+        if (fsId != null) {
+            curPath = getFileSystem(uri.getScheme(), fsId);
+        }
+
         String plainPath = uri.getSchemeSpecificPart();
+        int divPos = plainPath.lastIndexOf('?');
+        if (divPos != -1) {
+            // Cut off query part
+            plainPath = plainPath.substring(0, divPos);
+        }
         for (String name : plainPath.split("/")) {
-            if (name.isEmpty() || (curPath == null && name.endsWith(":"))) {
+            if (name.isEmpty()) {
                 continue;
             }
             {
@@ -215,12 +245,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     @Override
-    public boolean isManagable() {
+    public boolean isManageable() {
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         refreshFileSystems(monitor);
         return this;
     }
@@ -241,6 +272,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -257,6 +289,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return true;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "FileSystems(" + getOwnerProject().getName()  +")";

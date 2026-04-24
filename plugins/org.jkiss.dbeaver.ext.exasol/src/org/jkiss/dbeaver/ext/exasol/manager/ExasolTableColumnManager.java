@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +72,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     }
 
     @Override
-    public boolean canEditObject(ExasolTableColumn object) {
+    public boolean canEditObject(@NotNull ExasolTableColumn object) {
         // Edit is only available for ExasolTable and not for other kinds of tables (View, MQTs, Nicknames..)
         ExasolTableBase exasolTableBase = object.getParentObject();
         if ((exasolTableBase != null) && (exasolTableBase.getClass().equals(ExasolTable.class))) {

@@ -17,9 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IOverviewRuler;
@@ -31,9 +29,11 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.Iterator;
@@ -43,8 +43,13 @@ import java.util.function.Supplier;
 
 public class SQLEditorSourceViewer extends ProjectionViewer {
 
+    private static final Log log = Log.getLog(SQLEditorSourceViewer.class);
+
     private final LinkedList<VerifyKeyListener> verifyKeyListeners = new LinkedList<>();
     private final Supplier<DBPPreferenceStore> currentPrefStoreSupplier;
+
+    @NotNull
+    private final SQLEditorBase sqlEditor;
     
     /**
      * Creates an instance of this class with the given parameters.
@@ -54,21 +59,29 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
      * @param overviewRuler the overview ruler
      * @param showsAnnotationOverview <code>true</code> if the overview ruler should be shown
      * @param styles the SWT style bits
+     * @param sqlEditor editor
      */
     public SQLEditorSourceViewer(
-            @NotNull Composite parent,
-            @Nullable IVerticalRuler ruler,
-            @Nullable IOverviewRuler overviewRuler,
-            boolean showsAnnotationOverview,
-            int styles,
-            @NotNull Supplier<DBPPreferenceStore> currentPrefStoreSupplier
-        ) {
-        super( parent, ruler, overviewRuler, showsAnnotationOverview, styles );
+        @NotNull Composite parent,
+        @Nullable IVerticalRuler ruler,
+        @Nullable IOverviewRuler overviewRuler,
+        boolean showsAnnotationOverview,
+        int styles,
+        @NotNull Supplier<DBPPreferenceStore> currentPrefStoreSupplier,
+        @NotNull SQLEditorBase sqlEditor
+    ) {
+        super(parent, ruler, overviewRuler, showsAnnotationOverview, styles);
         this.currentPrefStoreSupplier = currentPrefStoreSupplier;
+        this.sqlEditor = sqlEditor;
     }
 
-    void refreshTextSelection(){
-        ITextSelection selection = (ITextSelection)getSelection();
+    @NotNull
+    public SQLEditorBase getSqlEditor() {
+        return this.sqlEditor;
+    }
+
+    void refreshTextSelection() {
+        ITextSelection selection = (ITextSelection) getSelection();
         fireSelectionChanged(selection.getOffset(), selection.getLength());
     }
 
@@ -149,26 +162,78 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     public void setHyperlinkPresenter(IHyperlinkPresenter hyperlinkPresenter) throws IllegalStateException {
         if (fHyperlinkManager != null) {
             fHyperlinkManager.uninstall();
-            fHyperlinkManager= null;
+            fHyperlinkManager = null;
         }
         super.setHyperlinkPresenter(hyperlinkPresenter);
     }
     
     @Override
     public void prependVerifyKeyListener(VerifyKeyListener listener) {
-        verifyKeyListeners.addFirst(listener);
+        if (listener != null) {
+            verifyKeyListeners.addFirst(listener);
+        }
         super.prependVerifyKeyListener(listener);
     }
     
     @Override
     public void appendVerifyKeyListener(VerifyKeyListener listener) {
-        verifyKeyListeners.addLast(listener);
+        if (listener != null) {
+            verifyKeyListeners.addLast(listener);
+        }
         super.appendVerifyKeyListener(listener);
     }
     
     @Override
     public void removeVerifyKeyListener(VerifyKeyListener listener) {
-        verifyKeyListeners.remove(listener);
+        if (listener != null) {
+            verifyKeyListeners.remove(listener);
+        }
         super.removeVerifyKeyListener(listener);
+    }
+
+    @Override
+    public boolean canDoOperation(int operation) {
+        if (getTextWidget() == null) {
+            return false;
+        }
+        if (operation == COPY) {
+            return true;
+        }
+        if (operation == CUT) {
+            return isEditable();
+        }
+        return super.canDoOperation(operation);
+    }
+
+    @Override
+    protected void copyMarkedRegion(boolean delete) {
+        Point selection = getSelectedRange();
+
+        if (selection.y != 0) {
+            super.copyMarkedRegion(delete);
+            return;
+        }
+
+        try {
+            IDocument document = getDocument();
+            int caretOffset = selection.x;
+            int line = document.getLineOfOffset(caretOffset);
+
+            IRegion lineInfo = document.getLineInformation(line);
+
+            String lineDelimiter = document.getLineDelimiter(line);
+            int delimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+
+            setSelectedRange(lineInfo.getOffset(), lineInfo.getLength() + delimiterLength);
+
+            if (delete) {
+                getTextWidget().cut();
+            } else {
+                getTextWidget().copy();
+            }
+        } catch (BadLocationException e) {
+            log.error("Error selecting current line for copy/cut operation", e);
+            super.copyMarkedRegion(delete);
+        }
     }
 }

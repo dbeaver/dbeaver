@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,14 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentialsForm;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -50,9 +53,10 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private DBPImage icon;
     private final boolean defaultModel;
     private final boolean isDesktop;
-    private final boolean isCloud;
+    private final boolean requiresServerApplication;
     private final boolean requiresLocalConfiguration;
     private final Map<String, String[]> replaces = new HashMap<>();
+    private final List<DBPDriverLibrary> libraries;
     private boolean hasCondReplaces = false;
 
     private DBAAuthModel<?> instance;
@@ -70,7 +74,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         }
         this.defaultModel = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_DEFAULT));
         this.isDesktop = CommonUtils.toBoolean(config.getAttribute("desktop"));
-        this.isCloud = CommonUtils.toBoolean(config.getAttribute("cloud"));
+        this.requiresServerApplication = CommonUtils.toBoolean(config.getAttribute("requiresServerApplication"));
         this.requiresLocalConfiguration = CommonUtils.toBoolean(config.getAttribute("requiresLocalConfiguration"));
         this.requiredAuthProvider = CommonUtils.toString(config.getAttribute("requiredAuthProvider"));
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
@@ -79,6 +83,15 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             String[] replFor = CommonUtils.isEmpty(forAttr) ? new String[0] : forAttr.split(",");
             this.replaces.put(replModel, replFor);
             this.hasCondReplaces = hasCondReplaces || !ArrayUtils.isEmpty(replFor);
+        }
+
+        this.libraries = new ArrayList<>();
+        for (IConfigurationElement libConfig : config.getChildren(RegistryConstants.TAG_FILE)) {
+            DriverLibraryAbstract lib = DriverLibraryAbstract.createFromConfig(null, libConfig);
+            if (lib != null) {
+                lib.setCustom(false);
+                libraries.add(lib);
+            }
         }
     }
 
@@ -121,8 +134,8 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     }
 
     @Override
-    public boolean isCloudModel() {
-        return isCloud;
+    public boolean requiresServerApplication() {
+        return requiresServerApplication;
     }
 
     @Override
@@ -171,11 +184,9 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @NotNull
     @Override
     public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) {
-        DBAAuthModel<?> instance = getInstance();
-        DBAAuthCredentials credentials = dataSource == null || configuration == null ?
-            instance.createCredentials() :
-            instance.loadCredentials(dataSource, configuration);
-        PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
+        DBAAuthModel<DBAAuthCredentials> instance = getInstance();
+        DBAAuthCredentialsForm credentialsForm = instance.createCredentialsForm(dataSource, configuration);
+        PropertyCollector propertyCollector = new PropertyCollector(credentialsForm, false);
         propertyCollector.collectProperties();
         return propertyCollector;
     }
@@ -208,6 +219,12 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         } else {
             return replaces.keySet();
         }
+    }
+
+    @NotNull
+    @Override
+    public List<? extends DBPDriverLibrary> getDriverLibraries() {
+        return libraries;
     }
 
     @Override

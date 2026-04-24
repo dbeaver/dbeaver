@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -32,12 +33,13 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -79,12 +81,13 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     @Override
-    public final void initializeProjects() {
+    public final void initializeProjects() throws DBException {
         initializeWorkspaceSession();
         try {
             loadWorkspaceProjects();
         } catch (DBException ex) {
-            log.error("Can't load workspace projects", ex);
+            //DBWorkbench.getPlatformUI().showError("Error loading projects", "Error loading workspace projects", ex);
+            throw new DBRuntimeException(ex);
         }
         
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) && isDefaultProjectNeeded() && !isReadOnly()) {
@@ -115,8 +118,7 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         this.activeProject = project;
 
         if (!CommonUtils.equalObjects(oldActiveProject, project)) {
-            platform.getPreferenceStore().setValue(
-                PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
+            setActiveProjectName(project.getName());
 
             fireActiveProjectChange(oldActiveProject, this.activeProject);
         }
@@ -185,13 +187,18 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     protected void loadWorkspaceProjects() throws DBException {
-        String activeProjectName = getPlatform().getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        String activeProjectName = getActiveProjectName();
 
         IWorkspaceRoot root = getEclipseWorkspace().getRoot();
         IProject[] allProjects = root.getProjects();
         if (ArrayUtils.isEmpty(allProjects)) {
             try {
-                reloadWorkspace(new LoggingProgressMonitor(log));
+                DBWorkbench.getPlatformUI().executeWithProgressBlocking("Reload", new DBRRunnableWithResult<>() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        reloadWorkspace(monitor);
+                    }
+                });
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -205,7 +212,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 }
                 this.projects.put(project, projectMetadata);
 
-                if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
+                if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && projectMetadata.getName()
+                    .equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
                 projectMetadata.hideConfigurationFiles();
@@ -350,7 +358,10 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
     }
 
     protected String initWorkspaceId() {
-        return readWorkspaceId(getAbsolutePath());
+        // Try to read workspace config from workspace root and from metadata
+        // Metedata is the default path but we keep backward compatibility
+        // and read from workspace if config exists
+        return readWorkspaceId(getWorkspaceConfigFolder(this));
     }
 
     public boolean isAdmin() {

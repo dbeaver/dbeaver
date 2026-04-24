@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,6 @@ import java.util.stream.Collectors;
 
 public class NewConnectionFromUrlDialog extends BaseDialog {
     private static final int INPUT_DELAY_BEFORE_REFRESH = 300;
-    private static final String GENERIC_URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
 
     private TreeViewer driverViewer;
     private CLabel errorLabel;
@@ -98,8 +97,9 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
             errorLabel.setVisible(false);
 
             final AbstractJob refreshJob = new AbstractJob("Refresh suitable drivers timeout") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     UIUtils.asyncExec(() -> {
                         final var drivers = getSuitableDrivers(urlText.getText());
 
@@ -172,16 +172,16 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                     continue;
                 }
 
-                if (DatabaseURL.getPattern(driver.getSampleURL()).matcher(url).matches()) {
+                if (DatabaseURL.getPattern(driver.getSampleURL()).matcher(url).find()) {
                     drivers.add(new DriverInfo(driver, driver.getSampleURL(), true));
                     scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                     continue;
                 }
 
-                final Matcher matcher = DatabaseURL.getPattern(GENERIC_URL_TEMPLATE).matcher(url);
+                final Matcher matcher = DatabaseURL.getPattern(DatabaseURL.GENERIC_URL_TEMPLATE).matcher(url);
 
-                if (matcher.matches() && driver.getId().contains(matcher.group("driver"))) {
-                    drivers.add(new DriverInfo(driver, GENERIC_URL_TEMPLATE, false));
+                if (matcher.find() && driver.getId().contains(matcher.group("driver"))) {
+                    drivers.add(new DriverInfo(driver, DatabaseURL.GENERIC_URL_TEMPLATE, false));
                     scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                 }
             }

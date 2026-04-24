@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,30 +46,53 @@ import java.util.stream.Stream;
 /**
  * Describes table definition
  */
-public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implements SQLQuerySymbolDefinition {
+public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
+    implements SQLQuerySymbolDefinition, SQLQueryNodeModel.NodeSubtreeTraverseControl<SQLQueryRowsSourceModel, SQLQueryRowsDataContext> {
 
     private static final Log log = Log.getLog(SQLQueryRowsTableDataModel.class);
+
     @Nullable
-    private final SQLQueryQualifiedName name;
+    private final SQLQueryComplexName name;
     @Nullable
     private DBSEntity table = null;
+    @Nullable
+    private DBSObject immediateTargetObject = null;
 
     private final boolean forDdl;
 
-    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name, boolean forDdl) {
+    @Nullable
+    protected SQLQueryRowsSourceModel referencedSource = null;
+
+    public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryComplexName name, boolean forDdl) {
         super(syntaxNode);
         this.name = name;
         this.forDdl = forDdl;
     }
 
     @Nullable
-    public SQLQueryQualifiedName getName() {
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.name);
+    }
+
+    @Nullable
+    public SQLQueryComplexName getName() {
         return this.name;
     }
 
     @Nullable
     public DBSEntity getTable() {
         return this.table;
+    }
+
+    @Nullable
+    public DBSObject getImmediateTargetObject() {
+        return this.immediateTargetObject;
+    }
+
+    @Nullable
+    public SQLQueryRowsSourceModel getReferencedSource() {
+        return this.referencedSource;
     }
 
     @NotNull
@@ -80,173 +102,159 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
     }
 
     @NotNull
-    private static SQLQuerySymbol prepareColumnSymbol(@NotNull SQLQueryDataContext context, @NotNull DBSEntityAttribute attr) {
-        String name = SQLUtils.identifierToCanonicalForm(context.getDialect(), attr.getName(), false, true);
-        SQLQuerySymbol symbol = new SQLQuerySymbol(name);
-        symbol.setDefinition(new SQLQuerySymbolByDbObjectDefinition(attr, SQLQuerySymbolClass.COLUMN));
-        return symbol;
-
-    }
-
-    @NotNull
     protected Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> prepareResultColumnsList(
-        @NotNull SQLQuerySymbolEntry cause,
-        @NotNull SQLQueryDataContext attrsContext,
+        @NotNull STMTreeNode cause,
+        @NotNull SQLDialect dialect,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull List<? extends DBSEntityAttribute> attributes
     ) {
-        return prepareResultColumnsList(cause, this, this.table, attrsContext, statistics, attributes);
+        return SQLQuerySemanticUtils.prepareResultColumnsList(cause, this, this.table, dialect, statistics, attributes);
     }
 
-    @NotNull
-    public static Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> prepareResultColumnsList(
-        @NotNull SQLQuerySymbolEntry cause,
-        @NotNull SQLQueryRowsSourceModel rowsSourceModel,
-        @Nullable DBSEntity table,
-        @NotNull SQLQueryDataContext attrsContext,
-        @NotNull SQLQueryRecognitionContext statistics,
-        @NotNull List<? extends DBSEntityAttribute> attributes
-    ) {
-        List<SQLQueryResultColumn> columns = new ArrayList<>(attributes.size());
-        List<SQLQueryResultPseudoColumn> pseudoColumns = new ArrayList<>(attributes.size());
-        for (DBSEntityAttribute attr : attributes) {
-            if (DBUtils.isHiddenObject(attr)) {
-                pseudoColumns.add(new SQLQueryResultPseudoColumn(
-                    prepareColumnSymbol(attrsContext, attr),
-                    rowsSourceModel, table, obtainColumnType(cause, statistics, attr), DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL, attr.getDescription()
-                ));
-            } else {
-                columns.add(new SQLQueryResultColumn(
-                    columns.size(),
-                    prepareColumnSymbol(attrsContext, attr),
-                    rowsSourceModel, table, attr,
-                    obtainColumnType(cause, statistics, attr)
-                ));
-            }
-        }
-        return Pair.of(columns, pseudoColumns);
-    }
-
-    @NotNull
-    private static SQLQueryExprType obtainColumnType(
-        @NotNull SQLQuerySymbolEntry reason,
-        @NotNull SQLQueryRecognitionContext statistics,
-        @NotNull DBSAttributeBase attr
-    ) {
-        SQLQueryExprType type;
-        try {
-            type = SQLQueryExprType.forTypedObject(statistics.getMonitor(), attr, SQLQuerySymbolClass.COLUMN);
-        } catch (DBException e) {
-            log.debug(e);
-            statistics.appendError(reason, "Failed to resolve column type for column " + attr.getName(), e);
-            type = SQLQueryExprType.UNKNOWN;
-        }
-        return type;
-    }
-
-    @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext originalContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        if (this.name != null) {
-            if (this.name.invalidPartsCount == 0) {
-                if (this.name.isNotClassified()) {
-                    List<String> nameStrings = this.name.toListOfStrings();
-                    if (nameStrings.size() == 1 && this.name.entityName.getName().equalsIgnoreCase(context.getDialect().getDualTableName())) {
-                        this.name.setSymbolClass(SQLQuerySymbolClass.TABLE);
-                        // TODO consider pseudocolumns, for example: dual in Oracle has them ?
-                        return context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList());
-                    }
-
-                    DBSObject refTarget = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameStrings);
-                    DBSObject obj = forDdl
-                        ? refTarget
-                        : SQLQueryDataSourceContext.expandAliases(statistics.getMonitor(), refTarget);
-
-                    this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
-
-                    if (this.table != null) {
-                        this.name.setDefinition(refTarget);
-                        context = context.extendWithRealTable(this.table, this);
-
-                        try {
-                            List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
-                            if (attributes != null) {
-                                Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> columns = prepareResultColumnsList(
-                                    this.name.entityName,
-                                    context,
-                                    statistics,
-                                    attributes
-                                );
-                                List<SQLQueryResultPseudoColumn> inferredPseudoColumns = table instanceof DBDPseudoAttributeContainer pac
-                                    ? prepareResultPseudoColumnsList(
-                                    context.getDialect(),
-                                    this,
-                                    this.table,
-                                    Stream.of(pac.getAllPseudoAttributes(statistics.getMonitor()))
-                                        .filter(a -> a.getPropagationPolicy().providedByTable)
-                                ) : Collections.emptyList();
-                                List<SQLQueryResultPseudoColumn> pseudoColumns = Stream.of(
-                                    columns.getSecond(), inferredPseudoColumns
-                                ).flatMap(Collection::stream).collect(Collectors.toList());
-                                context = context.overrideResultTuple(this, columns.getFirst(), pseudoColumns);
-                            }
-                        } catch (DBException ex) {
-                            statistics.appendError(
-                                this.name.entityName,
-                                "Failed to resolve columns of the table " + this.name.toIdentifierString(),
-                                ex
-                            );
-                        }
-                    } else {
-                        if (refTarget != null) {
-                            String typeName = obj instanceof DBSObjectWithType to
-                                ? to.getObjectType().getTypeName()
-                                : obj.getClass().getSimpleName();
-                            this.name.setDefinition(refTarget);
-                            statistics.appendError(this.name.entityName, "Expected table name while given " + typeName);
-                        } else {
-                            context = context.markHasUnresolvedSource();
-                            SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameStrings);
-                            if (rr != null && rr.tableOrNull == null && rr.source != null && rr.aliasOrNull != null && nameStrings.size() == 1) {
-                                // seems cte reference resolved
-                                this.name.entityName.setDefinition(rr.aliasOrNull.getDefinition());
-                                context = context.overrideResultTuple(this, rr.source.getResultDataContext().getColumnsList(), Collections.emptyList());
-                            } else {
-                                SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
-                                    ? SQLQuerySymbolClass.TABLE
-                                    : SQLQuerySymbolClass.ERROR;
-                                this.name.setSymbolClass(tableSymbolClass);
-                                statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
-                            }
-                        }
-                    }
-                }
-            } else {
-                context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name);
-                statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
-            }
-        } else {
-            context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-            statistics.appendError(this.getSyntaxNode(), "Table reference expected");
+        if (this.name == null) {
+            statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
+            return originalContext.resetAsUnresolved();
+        }
+        if (this.name.invalidPartsCount > 0) {
+            SQLQueryRowsSourceContext nameContext = originalContext.resetAsUnresolved();
+            SQLQuerySemanticUtils.performPartialResolution(
+                nameContext,
+                statistics,
+                this.name,
+                new SQLQuerySymbolOrigin.RowsSourceRef(nameContext),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
+                SQLQuerySymbolClass.ERROR
+            );
+            statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
+            return nameContext;
         }
 
-        return context;
+        if (this.name.parts.size() == 1) {
+            if (this.name.stringParts.getLast().equalsIgnoreCase(originalContext.getDialect().getDualTableName())) {
+                this.name.parts.getLast().getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE);
+                return originalContext.reset();
+            } else {
+                SourceResolutionResult dynamicSource = originalContext.findDynamicRowsSource(this.name.parts.getFirst());
+                if (dynamicSource != null) {
+                    this.referencedSource = dynamicSource.source;
+                    SQLQueryComplexName referenceName = dynamicSource.referenceName;
+                    SQLQueryRowsSourceContext nameContext = originalContext.reset();
+                    if (referenceName != null) {
+                        this.name.parts.getFirst().setDefinition(referenceName.parts.getLast());
+                        this.name.parts.getFirst().setOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(nameContext));
+                    }
+                    return nameContext.appendSource(this, name, null);
+                }
+            }
+        }
+
+        List<? extends DBSObject> candidates = originalContext.getConnectionInfo().findRealObjects(
+            statistics.getMonitor(),
+            RelationalObjectType.TYPE_UNKNOWN,
+            this.name.stringParts
+        );
+        DBSObject refTarget = candidates.size() == 1 ? candidates.getFirst() : null;
+        DBSObject obj = forDdl ? refTarget : SQLQueryConnectionContext.expandAliases(statistics.getMonitor(), refTarget);
+
+        this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
+
+        SQLQueryRowsSourceContext resultContext;
+        if (this.table != null) {
+            this.immediateTargetObject = refTarget;
+            SQLQueryRowsSourceContext nameContext = originalContext.reset();
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                nameContext, this.name, refTarget, SQLQuerySymbolClass.TABLE,
+                new SQLQuerySymbolOrigin.RowsSourceRef(nameContext),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET
+            );
+            resultContext = nameContext.appendSource(this, name, this.table);
+        } else {
+            SQLQueryRowsSourceContext nameContext = originalContext.resetAsUnresolved();
+            SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
+                ? SQLQuerySymbolClass.TABLE
+                : SQLQuerySymbolClass.ERROR;
+            SQLQuerySemanticUtils.performPartialResolution(
+                nameContext,
+                statistics,
+                this.name,
+                new SQLQuerySymbolOrigin.RowsSourceRef(nameContext),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
+                tableSymbolClass
+            );
+            resultContext = nameContext;
+            if (candidates.isEmpty() || candidates.size() == 1) {
+                statistics.appendError(this.name.syntaxNode, "Table " + this.name.getNameString() + " not found");
+            }
+        }
+        return resultContext;
     }
 
-    public static List<SQLQueryResultPseudoColumn> prepareResultPseudoColumnsList(
-        @NotNull SQLDialect dialect,
-        @Nullable SQLQueryRowsSourceModel source,
-        @Nullable DBSEntity table,
-        @NotNull Stream<DBDPseudoAttribute> pseudoAttributes
+    @Nullable
+    @Override
+    public List<SQLQueryNodeModel> getChildren() {
+        return this.referencedSource == null ? null : List.of(this.referencedSource);
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return pseudoAttributes.map(a -> new SQLQueryResultPseudoColumn(
-            new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(dialect, a.getName(), false, false)),
-            source, table, SQLQueryExprType.UNKNOWN, a.getPropagationPolicy(), a.getDescription()
-        )).collect(Collectors.toList());
+        SQLQueryRowsDataContext result;
+        if (this.table != null && this.name != null) {
+            try {
+                List<? extends DBSEntityAttribute> attributes = this.table.getAttributes(statistics.getMonitor());
+                if (attributes != null) {
+                    Pair<List<SQLQueryResultColumn>, List<SQLQueryResultPseudoColumn>> columns = prepareResultColumnsList(
+                        this.name.syntaxNode,
+                        this.getRowsSources().getDialect(),
+                        statistics,
+                        attributes
+                    );
+                    List<SQLQueryResultPseudoColumn> inferredPseudoColumns = table instanceof DBDPseudoAttributeContainer pac
+                        ? SQLQuerySemanticUtils.prepareResultPseudoColumnsList(
+                            this.getRowsSources().getDialect(),
+                            this,
+                            this.table,
+                            Stream.of(pac.getAllPseudoAttributes(statistics.getMonitor()))
+                                .filter(a -> a.getPropagationPolicy().providedByTable)
+                        )
+                        : Collections.emptyList();
+                    List<SQLQueryResultPseudoColumn> pseudoColumns = Stream.of(
+                        columns.getSecond(), inferredPseudoColumns
+                    ).flatMap(Collection::stream).collect(Collectors.toList());
+                    result = this.getRowsSources().makeTuple(this, columns.getFirst(), pseudoColumns);
+                } else {
+                    result = this.getRowsSources().makeEmptyTuple();
+                }
+            } catch (DBException ex) {
+                result = this.getRowsSources().makeEmptyTuple();
+                statistics.appendError(
+                    this.name.syntaxNode,
+                    "Failed to resolve columns of the table " + this.name.getNameString(),
+                    ex
+                );
+            }
+        } else if (this.referencedSource != null) {
+            if (this.referencedSource.isResolved()) {
+                SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
+                List<SQLQueryResultColumn> resultColumns = referencedData.getColumnsList().stream()
+                    .map(c -> c.withNewSource(this))
+                    .toList();
+                result = this.getRowsSources().makeTuple(this, resultColumns, Collections.emptyList());
+            } else {
+                statistics.appendError(this.name.syntaxNode, "Circular dependency detected at " + this.name.getNameString());
+                result = this.getRowsSources().makeTuple(this, Collections.emptyList(), Collections.emptyList());
+            }
+        } else {
+            result = this.getRowsSources().makeEmptyTuple();
+        }
+        return result;
     }
 
     @Override

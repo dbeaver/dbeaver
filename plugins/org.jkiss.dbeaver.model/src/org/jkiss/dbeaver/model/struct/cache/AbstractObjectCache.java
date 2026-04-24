@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,8 +187,6 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     /**
      * Adds custom objects to cache after rea; cache data was read
      *
-     * @param monitor
-     * @param owner
      * @param objectList object list which will be saved in the cache.
      *                   It can be modified by this functions
      */
@@ -212,8 +210,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 for (int i = 0; i < objects.size(); i++) {
                     OBJECT newObject = objects.get(i);
                     String newObjectName = newObject.getName();
-                    for (int k = 0; k < objectList.size(); k++) {
-                        OBJECT oldObject = objectList.get(k);
+                    for (OBJECT oldObject : objectList) {
                         String oldObjectName = oldObject.getName();
                         if (newObjectName.equals(oldObjectName)) {
                             objects.set(i, oldObject);
@@ -230,8 +227,8 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         synchronized (cacheSync) {
             if (this.objectMap == null) {
                 this.objectMap = new HashMap<>();
-                if (objectList.size() > 0) {
-                    detectCaseSensitivity(objectList.get(0));
+                if (!objectList.isEmpty()) {
+                    detectCaseSensitivity(objectList.getFirst());
                 }
 
                 for (OBJECT object : objectList) {
@@ -267,7 +264,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
-    protected boolean isValidObject(DBRProgressMonitor monitor, OWNER owner, OBJECT object) throws DBException {
+    protected boolean isValidObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull OBJECT object) throws DBException {
         return true;
     }
 

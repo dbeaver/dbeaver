@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -44,10 +45,7 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -81,7 +79,7 @@ public class DatabaseTasksTree {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         colorError = BaseThemeSettings.instance.colorError;
-        colorErrorForeground = UIUtils.getContrastColor(colorError);
+        colorErrorForeground = UIStyles.getContrastColor(colorError);
         
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
@@ -185,11 +183,7 @@ public class DatabaseTasksTree {
                     if (lastRun == null) {
                         return "N/A";
                     } else {
-                        if (lastRun.isRunSuccess()) {
-                            return TaskUIViewMessages.db_tasks_tree_column_cell_text_success;
-                        } else {
-                            return CommonUtils.notEmpty(lastRun.getErrorMessage());
-                        }
+                        return DatabaseTasksView.getBriefStatus(lastRun);
                     }
                 }
                 return null;
@@ -432,10 +426,13 @@ public class DatabaseTasksTree {
     }
 
     private void refreshTasks() {
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (project == null) {
+            return;
+        }
         allTasks.clear();
         allTasksFolders.clear();
 
-        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         DBTTaskManager taskManager = project.getTaskManager();
         DBTTask[] tasks = taskManager.getAllTasks();
         if (tasks.length != 0) {
@@ -467,8 +464,9 @@ public class DatabaseTasksTree {
         DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
         if (scheduler != null) {
             new AbstractJob("Refresh scheduled tasks") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
 
                     try {
                         scheduler.refreshScheduledTasks(monitor);
@@ -654,7 +652,7 @@ public class DatabaseTasksTree {
         }
     }
 
-    public class NamedObjectPatternFilter extends PatternFilter {
+    public static class NamedObjectPatternFilter extends PatternFilter {
         NamedObjectPatternFilter() {
             setIncludeLeadingWildcard(true);
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,21 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.nio.file.Path;
 
 /**
  * DriverLibraryRemote
  */
-public class DriverLibraryRemote extends DriverLibraryLocal
-{
+public class DriverLibraryRemote extends DriverLibraryLocal {
     private static final Log log = Log.getLog(DriverLibraryRemote.class);
 
     public static final String DOWNLOAD_DIR = "remote";
@@ -40,21 +41,23 @@ public class DriverLibraryRemote extends DriverLibraryLocal
         "https",
         "ftp",
     };
+    private String customLocalFileName;
 
-    public DriverLibraryRemote(DriverDescriptor driver, FileType type, String url) {
+    public DriverLibraryRemote(@NotNull  DriverDescriptor driver, @NotNull FileType type, @NotNull String url) {
         super(driver, type, url);
     }
 
-    public DriverLibraryRemote(DriverDescriptor driver, IConfigurationElement config) {
+    public DriverLibraryRemote(@Nullable DriverDescriptor driver, @NotNull IConfigurationElement config) {
         super(driver, config);
     }
 
-    private DriverLibraryRemote(DriverDescriptor driver, DriverLibraryRemote copyFrom) {
+    private DriverLibraryRemote(@NotNull DriverDescriptor driver, @NotNull DriverLibraryRemote copyFrom) {
         super(driver, copyFrom);
     }
 
+    @NotNull
     @Override
-    public DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor) {
+    public DBPDriverLibrary copyLibrary(@NotNull DriverDescriptor driverDescriptor) {
         return new DriverLibraryRemote(driverDescriptor, this);
     }
 
@@ -66,25 +69,38 @@ public class DriverLibraryRemote extends DriverLibraryLocal
 
     @Override
     protected String getLocalFilePath() {
-        try {
-            final String path = new URL(getPath()).getPath();
-            if (path.startsWith("/")) {
-                return DOWNLOAD_DIR + path;
-            } else {
-                return DOWNLOAD_DIR + "/" + path;
+        String finalPath = URI.create(getPath()).getPath();
+        String customLocalFileName = getCustomLocalFileName();
+        if (!CommonUtils.isEmpty(customLocalFileName)) {
+            // Replace local file name with custom
+            // Sometimes remote URL is dummy (e.g. driver.zip or some random UUID) and here we can rewrite it
+            Path folder = Path.of(finalPath).getParent();
+            if (folder != null) {
+                finalPath = folder.resolve(customLocalFileName).toString();
             }
-        } catch (MalformedURLException e) {
-            log.error(e);
-            return getPath();
+        }
+
+        if (finalPath.startsWith("/")) {
+            return DOWNLOAD_DIR + finalPath;
+        } else {
+            return DOWNLOAD_DIR + "/" + finalPath;
         }
     }
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
         return getPath();
     }
 
+    @Nullable
+    public String getCustomLocalFileName() {
+        return customLocalFileName;
+    }
+
+    public void setCustomLocalFileName(@Nullable String customLocalFileName) {
+        this.customLocalFileName = customLocalFileName;
+    }
 
     public static boolean supportsURL(String url) {
         int pos = url.indexOf(":/");

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +58,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand objectCreateCommand, @NotNull Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(executionContext, actions, objectCreateCommand.getObject());
+        createOrReplaceProcedureQuery(monitor, executionContext, actions, objectCreateCommand.getObject());
     }
 
     @Override
@@ -75,7 +74,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand objectChangeCommand, @NotNull Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(executionContext, actionList, objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(monitor, executionContext, actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -84,9 +83,13 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OracleProcedureStandalone procedure)
-    {
-        String source = OracleUtils.normalizeSourceName(procedure, false);
+    private void createOrReplaceProcedureQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull OracleProcedureStandalone procedure
+    ) {
+        String source = OracleUtils.normalizeSourceName(monitor, procedure, false);
         if (source == null) {
             return;
         }

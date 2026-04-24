@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
@@ -51,8 +54,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
 
     private boolean oldQuery;
     private boolean verbose;
-    private String query;
-    private DBCQueryPlannerConfiguration configuration;
+    private final String query;
+    private final DBCQueryPlannerConfiguration configuration;
+    private String planText;
     private List<DBCPlanNode> rootNodes;
 
     public PostgreExecutionPlan(boolean oldQuery, boolean verbose, String query, DBCQueryPlannerConfiguration configuration)
@@ -70,8 +74,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         this.configuration = new DBCQueryPlannerConfiguration();
     }
 
+    @Nullable
     @Override
-    public Object getPlanFeature(String feature) {
+    public Object getPlanFeature(@NotNull String feature) {
         if (DBCPlanCostNode.FEATURE_PLAN_COST.equals(feature) ||
             DBCPlanCostNode.FEATURE_PLAN_DURATION.equals(feature) ||
             DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature))
@@ -81,12 +86,14 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         return super.getPlanFeature(feature);
     }
 
+    @NotNull
     @Override
     public String getQueryString()
     {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         if (oldQuery) {
@@ -121,8 +128,21 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         }
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options)
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return oldQuery? DBCPlanSourceFormat.TEXT : DBCPlanSourceFormat.XML;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planText;
+    }
+
+    @NotNull
+    @Override
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options)
     {
         return rootNodes;
     }
@@ -148,10 +168,12 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                             }
                         }
                         parsePlanText(session, planLines);
+                        planText = String.join("\n", planLines);
                     } else {
                         if (dbResult.next()) {
                             SQLXML planXML = dbResult.getSQLXML(1);
                             parsePlanXML(session, planXML);
+                            planText = planXML.getString();
                         }
                     }
                 } catch (XMLException e) {

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid;
 public class CubridConstants
 {
     public static final String OWNER_NAME = "owner_name";
+    public static final String CLASS_NAME = "class_name";
     public static final String IS_SYSTEM_CLASS = "is_system_class";
     public static final String TERM_FUNCTION = "FUNCTION";
     public static final String TERM_PROCEDURE = "PROCEDURE";
@@ -28,11 +29,22 @@ public class CubridConstants
     public static final String REUSE_OID = "is_reuse_oid_class";
     public static final String NAME = "name";
     public static final String COMMENT = "comment";
-    public static final String DBA = "dba";
-    public static final String[] EVENT_OPTION = {"UPDATE", "UPDATE STATEMENT", "DELETE", "DELETE STATEMENT", "INSERT", "INSERT STATEMENT", "COMMIT", "ROLLBACK"};
-    public static final String[] ACTION_TIME_OPTION = {"BEFORE", "AFTER", "DEFFERED"};
-    public static final String[] ACTION_TYPE_OPTION = {"OTHER STATEMENT", "REJECT", "INVALIDATE_TRANSACTION", "PRINT"};
+    public static final String DBA = "DBA";
+    public static final String[] EVENT_OPTION = {"UPDATE", "STATEMENT UPDATE", "DELETE", "STATEMENT DELETE", "INSERT", "STATEMENT INSERT", "COMMIT", "ROLLBACK"};
+    public static final String[] ACTION_TIME_OPTION = {"BEFORE", "AFTER", "DEFERRED"};
+    public static final String[] ACTION_TYPE_OPTION = {"OTHER STATEMENT", "REJECT", "INVALIDATE TRANSACTION", "PRINT"};
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_PORT = "30000";
     public static final String AUTO_INCREMENT = "auto_increment";
+    public static final String STATISTIC = "statistic";
+    public static final String STATISTIC_TRACE = "statistic_trace";
+    public static final String STATISTIC_INFO = "statistic_info";
+    public static final String STATISTIC_ALL_INFO = "statistic_all_info";
+    public static final String REGEX_PATTERN_SHARD_ID = "/\\*\\+[ \\t\\r\\n]*shard_id[ \\t\\r\\n]*\\([0-9 \\t\\r\\n]+\\)[ \\t\\r\\n]*\\*/";
+    public static final String REGEX_PATTERN_SHARD_VAL = "/\\*\\+[ \\t\\r\\n]*shard_val[ \\t\\r\\n]*\\([0-9 \\t\\r\\n]+\\)[ \\t\\r\\n]*\\*/";
+    public static final String[] SHARD_TYPE = {"SHARD ID", "SHARD VAL"};
+    public static final String PREF_DBMS_OUTPUT = "pref.dbms.output";
+    public static final String PREF_DBMS_OUTPUT_BUFFER_SIZE = "pref.dbms.output.buffer.size";
+    public static final String OID_NAVIGATOR = "oid_navigator";
+    public static final String CLASS = "CLASS";
 }

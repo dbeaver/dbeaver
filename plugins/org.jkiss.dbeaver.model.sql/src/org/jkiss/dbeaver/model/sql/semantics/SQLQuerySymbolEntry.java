@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -29,24 +30,21 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
     private final String name;
     @NotNull
     private final String rawName;
+    @Nullable
+    private final SQLQueryMemberAccessEntry memberAccessEntry;
 
     @Nullable
     private SQLQuerySymbol symbol = null;
     @Nullable
     private SQLQuerySymbolDefinition definition = null;
-    
-    public SQLQuerySymbolEntry(@NotNull STMTreeNode syntaxNode, @NotNull String name, @NotNull String rawName) {
+
+    public SQLQuerySymbolEntry(@NotNull STMTreeNode syntaxNode, @NotNull String name, @NotNull String rawName, @Nullable SQLQueryMemberAccessEntry memberAccessEntry) {
         super(syntaxNode);
         this.name = name;
         this.rawName = rawName;
+        this.memberAccessEntry = memberAccessEntry;
     }
 
-    @NotNull
-    @Override
-    public STMTreeNode[] getSyntaxComponents() {
-        return new STMTreeNode[] { this.syntaxNode };
-    }
-    
     @NotNull
     public String getName() {
         return name;
@@ -55,6 +53,10 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
     @NotNull
     public String getRawName() {
         return rawName;
+    }
+
+    public SQLQueryMemberAccessEntry getMemberAccess() {
+        return this.memberAccessEntry;
     }
 
     @NotNull
@@ -80,6 +82,15 @@ public class SQLQuerySymbolEntry extends SQLQueryLexicalScopeItem implements SQL
             } else {
                 this.getSymbol().setDefinition(definition);
             }
+        }
+    }
+
+    @Override
+    public void setOrigin(SQLQuerySymbolOrigin origin) {
+        super.setOrigin(origin);
+
+        if (this.memberAccessEntry != null) {
+            this.memberAccessEntry.setOrigin(origin);
         }
     }
 

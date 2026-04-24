@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +69,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<ExasolTable> {
         @Override
-        public boolean isPropertyCached(ExasolTable object, Object propertyId)
+        public boolean isPropertyCached(@NotNull ExasolTable object, @NotNull Object propertyId)
         {
             return object.getAdditionalInfo().isLoaded();
         }
@@ -279,7 +278,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
     
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor)
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor)
     		throws DBCException
     {
     	this.read(monitor);
@@ -388,11 +387,13 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
         return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return ExasolUtils.generateDDLforTable(monitor, this.getDataSource(), this);
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         // table can only be in state normal

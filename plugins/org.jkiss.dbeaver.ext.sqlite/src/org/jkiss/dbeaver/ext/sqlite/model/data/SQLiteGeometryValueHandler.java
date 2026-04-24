@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.gis.DBGeometry;
+import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +38,7 @@ import org.locationtech.jts.io.WKBReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.SQLException;
+import java.sql.Types;
 
 public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
     public static final SQLiteGeometryValueHandler INSTANCE = new SQLiteGeometryValueHandler();
@@ -119,9 +122,11 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
                 log.debug("Error reading GeoPackage WKB", e);
                 return object;
             }
+        } else {
+            return new DBGeometry(object, GisConstants.SRID_SIMPLE);
         }
 
-        return object;
+        //return object;
     }
 
     @Nullable
@@ -133,6 +138,13 @@ public class SQLiteGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
-        statement.setObject(paramIndex, value);
+        if (DBUtils.isNullValue(value)) {
+            statement.setNull(paramIndex, Types.VARCHAR);
+        } else {
+            if (value instanceof DBGeometry geom) {
+                value = geom.getString();
+            }
+            statement.setObject(paramIndex, value);
+        }
     }
 }

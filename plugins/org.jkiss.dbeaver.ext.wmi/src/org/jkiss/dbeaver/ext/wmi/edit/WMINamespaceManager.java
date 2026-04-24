@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.wmi.model.WMINamespace;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -32,13 +33,13 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 public class WMINamespaceManager extends AbstractObjectManager<WMINamespace> implements DBEObjectEditor<WMINamespace> {
 
     @Override
-    public boolean canEditObject(WMINamespace object)
+    public boolean canEditObject(@NotNull WMINamespace object)
     {
         return false;
     }
 
     @Override
-    public DBEPropertyHandler<WMINamespace> makePropertyHandler(WMINamespace object, DBPPropertyDescriptor property)
+    public DBEPropertyHandler<WMINamespace> makePropertyHandler(@NotNull WMINamespace object, @NotNull DBPPropertyDescriptor property)
     {
         return null;
     }

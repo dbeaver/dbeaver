@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
+public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
-    private static final String DATABASE_PRODUCER_ID = "database_producer";
-    private static final String DATABASE_CONSUMER_ID = "database_consumer";
+    public static final String DATABASE_PRODUCER_ID = "database_producer";
+    public static final String DATABASE_CONSUMER_ID = "database_consumer";
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
@@ -93,7 +93,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(new int[]{70, 30});
+        sash.setWeights(70, 30);
 
         setControl(composite);
     }
@@ -105,8 +105,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 400;
-        gd.widthHint = 500;
+        gd.heightHint = 350;
+        gd.widthHint = 400;
         nodesTable.getTable().setLayoutData(gd);
         nodesTable.getTable().setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
@@ -152,7 +152,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                setSelectedSettings();
+                setSelectedSettings(true);
             }
 
             @Override
@@ -166,7 +166,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         });
     }
 
-    private void setSelectedSettings() {
+    private void setSelectedSettings(boolean forceUpdate) {
         final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
         TransferTarget target;
         if (!selection.isEmpty()) {
@@ -179,9 +179,13 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             settings.selectConsumer(null, null, true);
         } else {
             if (settings.isConsumerOptional()) {
-                settings.selectConsumer(target.node, target.processor, true);
+                if (forceUpdate || settings.getConsumer() == null) {
+                    settings.selectConsumer(target.node, target.processor, true);
+                }
             } else if (settings.isProducerOptional()) {
-                settings.selectProducer(target.node, target.processor, true);
+                if (forceUpdate || settings.getProducer() == null) {
+                    settings.selectProducer(target.node, target.processor, true);
+                }
             } else {
                 // no optional nodes
             }
@@ -197,8 +201,8 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        //gd.widthHint = 300;
-        gd.heightHint = 300;
+        gd.widthHint = 200;
+        gd.heightHint = 200;
         inputsTable.getTable().setLayoutData(gd);
         inputsTable.getTable().setLinesVisible(true);
         inputsTable.setContentProvider(new ListContentProvider());
@@ -256,25 +260,25 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         TransferTarget currentTarget = null;
         if (consumer != null || producer != null) {
             for (TransferTarget target : targets) {
-                if ((target.node == consumer || target.node == producer) && target.processor == processor) {
+                if ((target.node == consumer || target.node == producer) &&
+                    (target.processor == null || target.processor == processor)
+                ) {
                     currentTarget = target;
                     break;
                 }
             }
         }
         if (currentTarget == null && !targets.isEmpty()) {
-            currentTarget = targets.get(0);
-        }
-
-        if (currentTarget != null) {
-            StructuredSelection selection = new StructuredSelection(currentTarget);
-            UIUtils.asyncExec(() -> {
-                nodesTable.setSelection(selection);
-                setSelectedSettings();
-            });
+            currentTarget = targets.getFirst();
         }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
+
+        if (currentTarget != null) {
+            StructuredSelection selection = new StructuredSelection(currentTarget);
+            nodesTable.setSelection(selection);
+            setSelectedSettings(false);
+        }
 
         UIUtils.packColumns(nodesTable.getTable());
 

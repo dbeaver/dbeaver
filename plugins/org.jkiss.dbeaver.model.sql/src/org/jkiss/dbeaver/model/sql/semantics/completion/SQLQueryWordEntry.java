@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ package org.jkiss.dbeaver.model.sql.semantics.completion;
 import org.jkiss.dbeaver.model.text.TextUtils;
 
 public class SQLQueryWordEntry {
-
-    public static final boolean USE_FUZZY_COMPARISON = true;
-
     public final int offset;
     public final String string;
     public final String filterString;

@@ -16,18 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, CubridPrivilageHandler>
 {
@@ -43,7 +43,7 @@ public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, C
         StringBuilder builder = new StringBuilder();
         if (getObject().isPersisted()) {
             builder.append("ALTER USER ");
-            builder.append(this.getObject().getName());
+            builder.append(DBUtils.getQuotedIdentifier(getObject()));
         }
         buildBody(builder);
         actions.add(new SQLDatabasePersistAction("Update User", builder.toString()));
@@ -51,21 +51,17 @@ public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, C
 
     }
 
-
     private void buildBody(StringBuilder builder) {
         for (Object key : getProperties().keySet()) {
             switch (key.toString()) {
                 case "PASSWORD":
-                    builder.append(" PASSWORD ").append(SQLUtils.quoteString(getObject(), key.toString()));
+                    builder.append(" PASSWORD ").append(SQLUtils.quoteString(getObject(), getProperty(key).toString()));
                     break;
                 case "DESCRIPTION":
-                    builder.append(" COMMENT ").append(SQLUtils.quoteString(getObject(), key.toString()));
+                    builder.append(" COMMENT ").append(SQLUtils.quoteString(getObject(), getProperty(key).toString()));
                 default:
                     break;
-
             }
         }
     }
-
-
 }

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.dbeaver.common</groupId>
         <artifactId>com.dbeaver.common.main</artifactId>
-        <version>2.3.1-SNAPSHOT</version>
+        <version>2.7.0-SNAPSHOT</version>
         <relativePath>../dbeaver-common/pom.xml</relativePath>
     </parent>
 
@@ -17,11 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>24.3.3</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-
-        <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
-        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
@@ -33,29 +29,13 @@
 
         <module>plugins</module>
         <module>features</module>
+        <module>product</module>
     </modules>
-
-    <repositories>
-        <repository>
-            <id>local-contrib</id>
-            <url>${local-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-    </repositories>
 
     <build>
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <resources>
-                    </resources>
-                </configuration>
-            </plugin>
-
             <!-- Tycho build -->
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
@@ -70,18 +50,32 @@
                             <arch>x86_64</arch>
                         </environment>
                         <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>aarch64</arch>
+                        </environment>
+                        <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>aarch64</arch>
                         </environment>
                         <environment>
                             <os>macosx</os>
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>aarch64</arch>
+                        </environment>
                     </environments>
                 </configuration>
-
             </plugin>
 
             <plugin>
@@ -97,9 +91,10 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>17</source>
-                    <target>17</target>
-                    <compilerVersion>17</compilerVersion>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerId>${tycho.compiler.id}</compilerId>
+                    <compilerVersion>${java.version}</compilerVersion>
                 </configuration>
             </plugin>
 
@@ -132,117 +127,9 @@
             <modules>
                 <!-- Tests -->
                 <module>test</module>
-
-                <!-- Products -->
-                <module>product/community</module>
-                <module>product/repositories</module>
             </modules>
         </profile>
 
-        <!-- desktop build: includes UI components and products -->
-        <profile>
-            <id>appstore</id>
-            <activation><activeByDefault>false</activeByDefault></activation>
-            <modules>
-                <!-- Products -->
-                <module>product/appstore</module>
-            </modules>
-        </profile>
-
-        <!-- Enables build for all platforms including ARM -->
-        <profile>
-            <id>all-platforms</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.eclipse.tycho</groupId>
-                        <artifactId>target-platform-configuration</artifactId>
-                        <version>${tycho-version}</version>
-                        <configuration>
-                            <pomDependencies>consider</pomDependencies>
-                            <environments>
-                                <environment>
-                                    <os>win32</os>
-                                    <ws>win32</ws>
-                                    <arch>x86_64</arch>
-                                </environment>
-                                <environment>
-                                    <os>win32</os>
-                                    <ws>win32</ws>
-                                    <arch>aarch64</arch>
-                                </environment>
-                                <environment>
-                                    <os>linux</os>
-                                    <ws>gtk</ws>
-                                    <arch>x86_64</arch>
-                                </environment>
-                                <environment>
-                                    <os>linux</os>
-                                    <ws>gtk</ws>
-                                    <arch>aarch64</arch>
-                                </environment>
-                                <environment>
-                                    <os>macosx</os>
-                                    <ws>cocoa</ws>
-                                    <arch>x86_64</arch>
-                                </environment>
-                                <environment>
-                                    <os>macosx</os>
-                                    <ws>cocoa</ws>
-                                    <arch>aarch64</arch>
-                                </environment>
-                            </environments>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- Profile for jars sign -->
-        <profile>
-            <id>sign-code</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!--
-                            Jar sign can be slow, especially if you need to sign hundreds of them.
-                            Performance hints:
-                                - Force SHA512withRSA algorithm (https://stackoverflow.com/questions/44003975/ev-code-signing-extremely-slow)
-                                - Install fast secure random generator (https://stackoverflow.com/questions/137212/how-to-deal-with-a-slow-securerandom-generator)
-                         -->
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jarsigner-plugin</artifactId>
-                        <version>3.0.0</version>
-                        <configuration>
-                            <keystore>${key.storage.path}/jar-sign.keystore</keystore>
-                            <tsa>${tsa}</tsa>
-                            <tsacert>dbeaver</tsacert>
-                            <storepass>dbeaver</storepass>
-                            <alias>dbeaver</alias>
-                            <keypass>dbeaver</keypass>
-                            <arguments>
-                                <argument>-sigalg</argument>
-                                <argument>SHA512withRSA</argument>
-                            </arguments>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sign</id>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>

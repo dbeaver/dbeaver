@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -139,13 +140,13 @@ public class DBeaverStackRenderer extends StackRenderer {
         super.populateTabMenu(menu, part);
 
         IWorkbenchPart workbenchPart = getWorkbenchPart(part);
-        if (workbenchPart instanceof IEditorPart) {
+        if (workbenchPart instanceof IEditorPart editorPart) {
             IWorkbenchPage activePage = workbenchPart.getSite().getWorkbenchWindow().getActivePage();
             if (activePage.getActiveEditor() != workbenchPart) {
                 activePage.activate(workbenchPart);
             }
 
-            IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
+            IEditorInput editorInput = editorPart.getEditorInput();
             if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
                 populateEditorMenu(menu, workbenchPart, databaseEditorInput);
             }
@@ -156,7 +157,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 populateFileMenu(menu, workbenchPart, file, localFile);
             }
 
-            if (localFile == null && workbenchPart instanceof SQLEditor) {
+            if (localFile == null && workbenchPart instanceof SQLEditor sqlEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
 
@@ -166,7 +167,7 @@ public class DBeaverStackRenderer extends StackRenderer {
                 saveAsScriptItem.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        ((SQLEditor) workbenchPart).saveAsNewScript();
+                        sqlEditor.saveAsNewScript();
                     }
                 });
             }
@@ -241,12 +242,11 @@ public class DBeaverStackRenderer extends StackRenderer {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
 
-            {
+            if (workbenchPart instanceof SQLEditor editor && editor.supportsRename()) {
                 MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
                 String renameText = CoreMessages.editor_file_rename;
-                if (workbenchPart instanceof SQLEditor) {
-                    renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
-                }
+                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
+
                 menuItemOthers.setText(renameText);
                 menuItemOthers.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -286,7 +286,9 @@ public class DBeaverStackRenderer extends StackRenderer {
                     addBookmarkItem.setText(actionText);
                     ImageDescriptor imageDescriptor = ActionUtils.findCommandImage(CoreCommands.CMD_ADD_BOOKMARK);
                     if (imageDescriptor != null) {
-                        addBookmarkItem.setImage(imageDescriptor.createImage());
+                        Image itemImage = imageDescriptor.createImage();
+                        addBookmarkItem.setImage(itemImage);
+                        addBookmarkItem.addDisposeListener(e -> itemImage.dispose());
                     }
                     addBookmarkItem.addSelectionListener(new SelectionAdapter() {
                         @Override

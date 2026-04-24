@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,24 +70,26 @@ public class SQLiteDataSource extends GenericDataSource {
         return false;
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(@Nullable String typeName) {
         if (typeName == null) {
             return super.getLocalDataType(defaultAffinity().name());
         }
         // Resolve type name according to https://www.sqlite.org/datatype3.html
+        // except for the GUID type name considered as BLOB to allow its conversion to UUID
         typeName = typeName.toUpperCase(Locale.ENGLISH);
         SQLiteAffinity affinity;
         if (typeName.startsWith(SQLConstants.DATA_TYPE_INT)) {
             affinity = SQLiteAffinity.INTEGER;
         } else if (typeName.contains("CHAR") || typeName.contains("CLOB") || typeName.contains("TEXT") || typeName.startsWith("DATE") || typeName.startsWith("TIME")) {
             affinity = SQLiteAffinity.TEXT;
-        } else if (typeName.contains("BLOB")) {
+        } else if (typeName.contains("BLOB") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
         } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") ||
-            typeName.contains("BOOL") || typeName.contains("GUID")) {
+            typeName.contains("BOOL")) {
             affinity = SQLiteAffinity.NUMERIC;
         } else {
             affinity = defaultAffinity();
@@ -128,6 +130,7 @@ public class SQLiteDataSource extends GenericDataSource {
         return SQLiteTable.class;
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (error instanceof SQLException && ((SQLException) error).getErrorCode() == 19) {
@@ -135,5 +138,9 @@ public class SQLiteDataSource extends GenericDataSource {
             return ErrorType.UNIQUE_KEY_VIOLATION;
         }
         return super.discoverErrorType(error);
+    }
+
+    public boolean supportsStrictTyping() {
+        return isServerVersionAtLeast(3, 37);
     }
 }

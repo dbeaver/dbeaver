@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,22 +20,17 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
 * Transaction manager.
  * It can be implemented by execution context.
  */
-@DPIObject
 public interface DBCTransactionManager {
-    @DPIElement
     DBPTransactionIsolation getTransactionIsolation() throws DBCException;
 
     void setTransactionIsolation(@NotNull DBRProgressMonitor monitor, @NotNull DBPTransactionIsolation transactionIsolation) throws DBCException;
 
-    @DPIElement
     boolean isAutoCommit() throws DBCException;
 
     void setAutoCommit(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBCException;
@@ -51,6 +46,5 @@ public interface DBCTransactionManager {
 
     void rollback(@NotNull DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException;
 
-    @DPIElement
     boolean isSupportsTransactions();
 }

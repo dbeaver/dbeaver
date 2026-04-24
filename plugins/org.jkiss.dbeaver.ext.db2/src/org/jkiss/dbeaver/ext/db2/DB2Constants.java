@@ -77,6 +77,9 @@ public class DB2Constants {
     public static final int                TRACE_ALL_EXTERNAL_CALLS    = 59399;
     public static final int                TRACE_ALL                   = -1;
     public static final int                TRACE_NOTSET                = 2147483647;
+    public static final int                ER_MUST_CHANGE_PASSWORD_LOGIN = -4214;
+    public static final String             ER_STATE_MUST_CHANGE_PASSWORD_LOGIN = "28000";
+    public static final String             ER_PASSWORD_EXPIRED         = "11248";
 
     // Display Categories
     public static final String             CAT_AUDIT                   = "Audit";

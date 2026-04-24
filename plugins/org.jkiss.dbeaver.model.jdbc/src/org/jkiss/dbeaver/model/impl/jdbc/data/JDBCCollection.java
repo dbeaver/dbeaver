@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -46,7 +45,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Array holder
@@ -192,9 +190,8 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         }
         final DBSDataType dataType = getComponentType();
         try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataType, "Create JDBC array")) {
-            if (session instanceof Connection) {
-                String typeName = dataType.getFullTypeName();
-                return ((Connection) session).createArrayOf(typeName, attrs);
+            if (session instanceof Connection connection) {
+                return connection.createArrayOf(dataType.getTypeName(), attrs);
             } else {
                 return new JDBCArrayImpl(dataType.getTypeName(), dataType.getTypeID(), attrs);
             }
@@ -216,7 +213,8 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         try {
             if (column instanceof DBSTypedObjectEx) {
                 arrayType = ((DBSTypedObjectEx) column).getDataType();
-            } else {
+            }
+            if (arrayType == null) {
                 if (column instanceof DBCAttributeMetaData) {
                     DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) column).getEntityMetaData();
                     if (entityMetaData != null) {
@@ -294,25 +292,25 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         DBSDataType elementType;
         DBPDataKind dataKind;
         DBPDataTypeProvider dataTypeProvider = session.getDataSource();
-        if (array instanceof int[]) {
+        if (array instanceof int[] || isBoxedObjectArray(array, Integer.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.INTEGER);
-        } else if (array instanceof short[]) {
+        } else if (array instanceof short[] || isBoxedObjectArray(array, Short.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.SMALLINT);
-        } else if (array instanceof byte[]) {
+        } else if (array instanceof byte[] || isBoxedObjectArray(array, Byte.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.BINARY);
-        } else if (array instanceof long[]) {
+        } else if (array instanceof long[] || isBoxedObjectArray(array, Long.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.BIGINT);
-        } else if (array instanceof float[]) {
+        } else if (array instanceof float[] || isBoxedObjectArray(array, Float.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.FLOAT);
             if (elementType == null) {
                 elementType = dataTypeProvider.getLocalDataType(Types.DOUBLE);
             }
-        } else if (array instanceof double[]) {
+        } else if (array instanceof double[] || isBoxedObjectArray(array, Double.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.DOUBLE);
             if (elementType == null) {
@@ -321,7 +319,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         } else if (array instanceof BigDecimal[]) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.DECIMAL);
-        } else if (array instanceof boolean[]) {
+        } else if (array instanceof boolean[] || isBoxedObjectArray(array, Boolean.class)) {
             dataKind = DBPDataKind.BOOLEAN;
             elementType = dataTypeProvider.getLocalDataType(Types.BOOLEAN);
         } else if (array instanceof String[]) {
@@ -404,7 +402,12 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             valueHandler = DBUtils.findValueHandler(session, elementType);
         }
         try {
-            try (DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, null, dbResult, ModelMessages.model_jdbc_array_result_set, true)) {
+            try (DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(
+                session,
+                null,
+                dbResult,
+                true
+            )) {
                 List<Object> data = new ArrayList<>();
                 while (dbResult.next()) {
                     // Fetch second column - it contains value
@@ -455,6 +458,17 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         return new JDBCCollection(session.getProgressMonitor(), elementType, elementValueHandler, contents);
     }
 
+    private static boolean isBoxedObjectArray(@Nullable Object array, @NotNull Class<?> type) {
+        if (array instanceof Object[] objectArray) {
+            for (Object element : objectArray) {
+                if (element != null) {
+                    return type.isInstance(element);
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static DBDCollection makeCollectionFromString(@NotNull JDBCSession session, String value) throws DBCException {
         String stringType = DBUtils.getDefaultDataTypeName(session.getDataSource(), DBPDataKind.STRING);
@@ -470,17 +484,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         // Try to divide on string elements
         if (!CommonUtils.isEmpty(value)) {
             if (value.startsWith("[") && value.endsWith("]")) {
-                // FIXME: use real parser (nested arrays, quotes escape, etc)
-                String arrayString = value.substring(1, value.length() - 1);
-                List<Object> items = new ArrayList<>();
-                StringTokenizer st = new StringTokenizer(arrayString, ",", false);
-                while (st.hasMoreTokens()) {
-                    String token = st.nextToken().trim();
-                    if (token.startsWith("\"") && token.endsWith("\"")) {
-                        token = token.substring(1, token.length() - 1);
-                    }
-                    items.add(token);
-                }
+                List<String> items = DBUtils.convertArrayStringToList(value);
 
                 return new JDBCCollectionString(session.getProgressMonitor(), dataType, valueHandler, value, items.toArray());
             }

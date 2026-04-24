@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.*;
@@ -35,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -77,6 +81,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return handler == null ? 0 : handler.getFeatures(resource);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return handler == null ? getResourceNodeType() : handler.getTypeName(resource);
@@ -86,6 +91,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return "resource";
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
@@ -95,6 +101,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return resource.getName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         if (getOwnerProject().isVirtual()) {
@@ -104,7 +111,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage iconImage = this.getResourceNodeIcon();
@@ -138,6 +145,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         };
     }
 
+    @NotNull
     @Override
     public String getNodeTargetName() {
         IResource resource = getResource();
@@ -156,6 +164,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return resource instanceof IContainer;
     }
 
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
@@ -222,12 +231,13 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public boolean isManagable() {
+    public boolean isManageable() {
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (children != null) {
 //            for (DBNNode child : children) {
 //                child.dispose(false);
@@ -238,6 +248,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return this;
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -265,7 +276,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         try {
             if (newName.indexOf('.') == -1 && resource instanceof IFile) {
                 String ext = resource.getFileExtension();
@@ -286,7 +297,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode) {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         if (!(resource instanceof IFolder) || (getFeatures() & DBPResourceHandler.FEATURE_MOVE_INTO) == 0) {
             return false;
         }
@@ -302,7 +313,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         monitor.beginTask("Copy files", nodes.size());
         try {
             if (!resource.exists()) {
@@ -319,10 +330,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 if (otherResource != null) {
                     try {
                         if (otherResource instanceof EFSNIOResource) {
-                            otherResource.copy(
-                                resource.getRawLocation().append(otherResource.getName()),
-                                true,
-                                monitor.getNestedMonitor());
+                            fileStoreRecursiveCopy(monitor, otherResource);
                         } else {
                             if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
                                 throw new DBException("Cross-project resource move is not supported in distributed workspaces");
@@ -345,6 +353,55 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         } finally {
             monitor.done();
         }
+    }
+
+    private void fileStoreRecursiveCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource
+    ) throws DBException, CoreException {
+        fileStoreRecursiveCopy(monitor, otherResource, null);
+    }
+
+    private void fileStoreRecursiveCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource,
+        @Nullable IFileStore destinationStore
+    ) throws DBException, CoreException {
+        IFileStore dstStore = destinationStore != null ? destinationStore : getDestinationStore();
+        dstStore = dstStore.getChild(otherResource.getName());
+        if (otherResource instanceof IFolder folderSource) {
+            dstStore.mkdir(EFS.NONE, monitor.getNestedMonitor());
+            for (IResource memeber : folderSource.members()) {
+                fileStoreRecursiveCopy(monitor, memeber, dstStore);
+            }
+        } else {
+            fileStoreSingleFileCopy(monitor, otherResource, dstStore);
+        }
+    }
+
+    @NotNull
+    private IFileStore getDestinationStore() throws DBException, CoreException {
+        URI dstUri = resource.getLocationURI();
+        if (dstUri == null) {
+            throw new DBException("Destination resource has no location URI");
+        }
+        return EFS.getStore(dstUri);
+    }
+
+    private void fileStoreSingleFileCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource,
+        @NotNull IFileStore dstStore
+    ) throws DBException, CoreException {
+        URI srcUri = otherResource.getLocationURI();
+        if (srcUri == null) {
+            throw new DBException("Source resource has no location URI");
+        }
+        EFS.getStore(srcUri).copy(
+            dstStore,
+            EFS.OVERWRITE | EFS.SHALLOW,
+            monitor.getNestedMonitor()
+        );
     }
 
     public boolean supportsPaste(@NotNull DBNNode other) {
@@ -412,7 +469,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (resource != null) {
             if (adapter.isAssignableFrom(resource.getClass())) {
                 return adapter.cast(resource);
@@ -420,11 +477,18 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             if (adapter == Path.class) {
                 IPath location = resource.getLocation();
                 return location == null ? null : adapter.cast(location.toPath());
+            } else if (adapter == InputStream.class && resource instanceof IFile file) {
+                try {
+                    return adapter.cast(file.getContents());
+                } catch (CoreException e) {
+                    log.error("Error getting file contents", e);
+                }
             }
         }
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return resource == null ? super.toString() : resource.toString();

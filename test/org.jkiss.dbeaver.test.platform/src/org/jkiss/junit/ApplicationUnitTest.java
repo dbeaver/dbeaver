@@ -17,6 +17,7 @@
 package org.jkiss.junit;
 
 import org.jkiss.junit.osgi.OSGITestRunner;
+import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -24,6 +25,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunnerProxy(MockitoJUnitRunner.class)
 @RunWith(OSGITestRunner.class)
+@RunWithApplication(bundleName = "org.jkiss.dbeaver.headless", registryName = "org.jkiss.dbeaver.headless.application")
 public abstract class ApplicationUnitTest {
-    MockitoJUnitRunner runner;
+
 }

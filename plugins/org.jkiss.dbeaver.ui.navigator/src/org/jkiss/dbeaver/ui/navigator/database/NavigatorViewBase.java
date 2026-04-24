@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -55,13 +58,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, DBPDataSourceContainerProvider, DBPPreferenceListener {
-
+public abstract class NavigatorViewBase extends ViewPart
+    implements INavigatorModelView, DBPDataSourceContainerProvider, DBPPreferenceListener
+{
     private DatabaseNavigatorTree tree;
     private transient Object lastSelection;
 
-    protected NavigatorViewBase()
-    {
+    protected NavigatorViewBase() {
         super();
     }
 
@@ -70,14 +73,14 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return DBWorkbench.getPlatform().getNavigatorModel();
     }
 
-    public DatabaseNavigatorTree getNavigatorTree()
-    {
+    public DatabaseNavigatorTree getNavigatorTree() {
         return tree;
     }
 
     /**
      * Navigator nodes filter.
      * Implementation returns true if element shouldn't be filtered (i.e. always visible).
+     *
      * @return filter or null if no filtering is supported.
      */
     protected INavigatorFilter getNavigatorFilter() {
@@ -86,8 +89,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     @NotNull
     @Override
-    public TreeViewer getNavigatorViewer()
-    {
+    public TreeViewer getNavigatorViewer() {
         return tree.getViewer();
     }
 
@@ -103,8 +105,6 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         getViewSite().setSelectionProvider(tree.getViewer());
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
         getSite().getService(IContextService.class).activateContext(INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
-//        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
-//        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_VIEW_CONTEXT_ID);
 
         UIExecutionQueue.queueExec(() -> {
             if (!tree.isDisposed()) {
@@ -115,12 +115,18 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
 
     private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode) {
         // Create tree
-        final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle(), false, getNavigatorFilter());
+        final DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(
+            parent,
+            rootNode,
+            getTreeStyle(),
+            false,
+            getNavigatorFilter()
+        );
 
         createTreeColumns(navigatorTree);
 
         navigatorTree.getViewer().addSelectionChangedListener(
-            event -> onSelectionChange((IStructuredSelection)event.getSelection())
+            event -> onSelectionChange((IStructuredSelection) event.getSelection())
         );
         navigatorTree.getViewer().getTree().addListener(SWT.MouseDoubleClick, event -> {
             event.doit = false;
@@ -160,7 +166,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                     NavigatorPreferences.DoubleClickBehavior dsBehaviorDefault = CommonUtils.valueOf(
                         NavigatorPreferences.DoubleClickBehavior.class,
                         DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK),
-                        NavigatorPreferences.DoubleClickBehavior.EDIT);
+                        NavigatorPreferences.DoubleClickBehavior.EDIT
+                    );
                     if (dsBehaviorDefault == NavigatorPreferences.DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
                     } else {
@@ -202,10 +209,12 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                     String defaultEditorPageId = null;
                     NavigatorPreferences.DoubleClickBehavior dcBehaviorDefault = CommonUtils.valueOf(
                         NavigatorPreferences.DoubleClickBehavior.class,
-                        DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+                        DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK)
+                    );
 
                     if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataContainer) {
-                        defaultEditorPageId = DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
+                        defaultEditorPageId = DBWorkbench.getPlatform().getPreferenceStore()
+                            .getString(NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE);
                     }
                     boolean hasChildren = node instanceof DBNNode && ((DBNNode) node).hasChildren(true);
                     if (hasChildren && dcBehaviorDefault == NavigatorPreferences.DoubleClickBehavior.EXPAND) {
@@ -269,7 +278,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             lastSelection = null;
         }
 
-        if (lastSelection instanceof DBNDatabaseNode && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
+        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        if (lastSelection instanceof DBNDatabaseNode && preferenceStore.getBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
             IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (activeEditor != null) {
                 NavigatorUtils.syncEditorWithNavigator(this, activeEditor);
@@ -277,14 +287,12 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
     }
 
-    protected int getTreeStyle()
-    {
+    protected int getTreeStyle() {
         return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
 
         super.dispose();
@@ -294,14 +302,24 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      * Passing the focus request to the viewer's control.
      */
     @Override
-    public void setFocus()
-    {
+    public void setFocus() {
         tree.getViewer().getControl().setFocus();
     }
 
+    public boolean focusFilterControl(boolean selectAll) {
+        final Text filterControl = tree.getFilterControl();
+        if (filterControl == null || filterControl.isDisposed()) {
+            return false;
+        }
+        filterControl.setFocus();
+        if (selectAll) {
+            filterControl.selectAll();
+        }
+        return true;
+    }
+
     @Override
-    public <T> T getAdapter(Class<T> adapter)
-    {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IPropertySheetPage.class) {
             return adapter.cast(new PropertyPageStandard());
         }
@@ -312,27 +330,23 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         tree.showNode(node);
     }
 
+    @Nullable
     @Override
-    public DBPDataSourceContainer getDataSourceContainer()
-    {
-        if (lastSelection instanceof DBNDatabaseNode) {
-            if (lastSelection instanceof DBNDataSource) {
-                return ((DBNDataSource)lastSelection).getDataSourceContainer();
-            } else if (((DBNDatabaseNode) lastSelection).getObject() != null) {
-                final DBPDataSource dataSource = ((DBNDatabaseNode) lastSelection).getObject().getDataSource();
+    public DBPDataSourceContainer getDataSourceContainer() {
+        if (lastSelection instanceof DBNDatabaseNode databaseNode) {
+            if (lastSelection instanceof DBNDataSource dataSourceNode) {
+                return dataSourceNode.getDataSourceContainer();
+            } else if (databaseNode.getObject() != null) {
+                final DBPDataSource dataSource = databaseNode.getObject().getDataSource();
                 return dataSource == null ? null : dataSource.getContainer();
             }
-        } else if (lastSelection instanceof DBNResource) {
-            Collection<DBPDataSourceContainer> containers = ((DBNResource) lastSelection).getAssociatedDataSources();
+        } else if (lastSelection instanceof DBNResource resourceNode) {
+            Collection<DBPDataSourceContainer> containers = resourceNode.getAssociatedDataSources();
             if (containers != null && containers.size() == 1) {
                 return containers.iterator().next();
             }
         }
         return null;
-    }
-
-    public void configureView() {
-
     }
 
     @Override
@@ -344,6 +358,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         switch (property) {
             case ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS:
             case ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY:
+            case ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE:
             case ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:
             case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
@@ -356,10 +371,6 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 tree.getViewer().getTree().redraw();
                 break;
         }
-    }
-
-    protected void redrawTree() {
-        tree.getViewer().refresh();
     }
 
 }

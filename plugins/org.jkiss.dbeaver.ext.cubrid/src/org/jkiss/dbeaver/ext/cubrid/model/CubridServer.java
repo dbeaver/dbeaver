@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -161,7 +160,7 @@ public class CubridServer implements DBSObject, DBPNamedObject2 {
     }
 
     @Override
-    public DBPDataSource getDataSource() {
+    public CubridDataSource getDataSource() {
         return container;
     }
 

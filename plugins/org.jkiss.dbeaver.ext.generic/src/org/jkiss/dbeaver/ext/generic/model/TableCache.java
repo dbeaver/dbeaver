@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,61 +35,65 @@ import java.sql.SQLException;
  */
 public class TableCache extends JDBCStructLookupCache<GenericStructContainer, GenericTableBase, GenericTableColumn> {
 
-    private static final Log log = Log.getLog(TableCache.class);
+    private final GenericDataSource dataSource;
+    private final GenericMetaObject tableObject;
+    private final GenericMetaObject columnObject;
 
-    final GenericDataSource dataSource;
-    final GenericMetaObject tableObject;
-    final GenericMetaObject columnObject;
-
-    protected TableCache(GenericDataSource dataSource)
-    {
+    protected TableCache(@NotNull GenericDataSource dataSource) {
         super(GenericUtils.getColumn(dataSource, GenericConstants.OBJECT_TABLE, JDBCConstants.TABLE_NAME));
         this.dataSource = dataSource;
         this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
         this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
-        setListOrderComparator(DBUtils.<GenericTableBase>nameComparatorIgnoreCase());
+        setListOrderComparator(DBUtils.nameComparatorIgnoreCase());
     }
 
-    public GenericDataSource getDataSource()
-    {
+    @NotNull
+    public GenericDataSource getDataSource() {
         return dataSource;
+    }
+
+    public GenericMetaObject getTableObject() {
+        return tableObject;
     }
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
+    public JDBCStatement prepareLookupStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase object,
+        @Nullable String objectName
+    ) throws SQLException {
         return dataSource.getMetaModel().prepareTableLoadStatement(session, owner, object, objectName);
     }
 
     @Nullable
     @Override
-    protected GenericTableBase fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    protected GenericTableBase fetchObject(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return getDataSource().getMetaModel().createTableImpl(session, owner, tableObject, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable)
-        throws SQLException
-    {
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forTable
+    ) throws SQLException {
         return dataSource.getMetaModel().prepareTableColumnLoadStatement(session, owner, forTable);
     }
 
     @Override
-    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTableBase table, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    protected GenericTableColumn fetchChild(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericTableBase table,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return dataSource.getMetaModel().fetchTableColumn(session, owner, table, dbResult);
     }
 
-    @Override
-    public void beforeCacheLoading(JDBCSession session, GenericStructContainer owner) throws DBException {
-       // Do nothing
-    }
-
-    @Override
-    public void afterCacheLoading(JDBCSession session, GenericStructContainer owner) throws DBException {
-        // Do nothing
-    }
 }

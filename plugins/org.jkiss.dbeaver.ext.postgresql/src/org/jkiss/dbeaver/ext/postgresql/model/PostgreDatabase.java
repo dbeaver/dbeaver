@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -183,7 +182,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
-        try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+        PostgreExecutionContext context = getMetaContext();
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            ((PostgreDataSource) dataSource).readDatabaseServerVersion(session);
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -191,9 +192,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         loadInfo(dbResult);
                     }
                 }
-            } catch (SQLException e) {
-                throw new DBCException(e, session.getExecutionContext());
             }
+        } catch (SQLException e) {
+            throw new DBCException(e, context);
         }
     }
 
@@ -280,7 +281,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
@@ -312,7 +313,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription(DBRProgressMonitor monitor) {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
             return null;
         }
@@ -336,11 +337,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
     }
 
     @NotNull
@@ -522,15 +518,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Association
     public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
         throws DBException {
-        return collationCache.getAllObjects(monitor, this);
+        if (getDataSource().getServerType().supportsCollations()) {
+            return collationCache.getAllObjects(monitor, this);
+        }
+        return null;
     }
 
     @Association
     public PostgreCollation getCollation(DBRProgressMonitor monitor, long id)
         throws DBException {
-        for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
-            if (collation.getObjectId() == id) {
-                return collation;
+        if (getDataSource().getServerType().supportsCollations()) {
+            for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
+                if (collation.getObjectId() == id) {
+                    return collation;
+                }
             }
         }
         log.debug("Collation '" + id + "' not found in schema " + getName());
@@ -547,11 +548,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return dataSource.resolveDataKind(typeName, typeID);
     }
 
+    @Nullable
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
 
+    @NotNull
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
         synchronized (dataTypeCache) {
@@ -566,16 +569,19 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     @Override
     public PostgreDataType getLocalDataType(String typeName) {
         return getDataType(null, typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return getDataType(new VoidProgressMonitor(), typeID);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return PostgreUtils.getDefaultDataTypeName(dataKind);
@@ -829,6 +835,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return schema.getTable(monitor, tableId);
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchemas(monitor);
@@ -928,6 +935,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     public PostgreDataType getDataType(DBRProgressMonitor monitor, long typeId) {
         if (typeId <= 0) {
             return null;
@@ -1037,12 +1045,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.dbTotalSize = dbTotalSize;
     }
 
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
-    }
-
     @Override
     public String toString() {
         return name;
@@ -1087,7 +1089,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             // #271, #501: in some databases (AWS?) pg_authid is not accessible
             // FIXME: maybe some better workaround?
             return handlePermissionDeniedError(error);
@@ -1228,7 +1230,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             log.debug("Error reading tablespaces", error);
             return true;
         }
@@ -1277,7 +1279,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             if (PostgreConstants.EC_PERMISSION_DENIED.equals(SQLState.getStateFromException(error))) {
                 log.warn(error);
                 setCache(Collections.emptyList());
@@ -1406,7 +1408,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             DBWorkbench.getPlatformUI().showError("Error accessing pgAgent jobs", "Can't access pgAgent jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", error);
             setCache(Collections.emptyList());
             return true;
@@ -1459,6 +1461,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1479,6 +1482,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1499,6 +1503,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         String procMethodName = sourceObject.getDescription();
         int divPos = procMethodName.lastIndexOf('.');
         if (divPos == -1) {
@@ -115,6 +115,7 @@ public class DerbyMetaModel extends GenericMetaModel
             JDBCUtils.safeGetLong(dbResult, 5));
     }
 
+    @Nullable
     @Override
     public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
@@ -156,7 +157,7 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     @Override
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String type = JDBCUtils.safeGetString(dbResult, "TYPE");
         if (type != null) {
             if ("P".equals(type)) {
@@ -167,13 +168,16 @@ public class DerbyMetaModel extends GenericMetaModel
         return super.getUniqueConstraintType(dbResult);
     }
 
+    @NotNull
     @Override
-    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+    public GenericUniqueKey createConstraintImpl(@NotNull GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
         return new GenericUniqueKey(table, constraintName, null, constraintType, persisted);
     }
 
+    @Nullable
     @Override
-    public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session, GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(@NotNull JDBCSession session, @NotNull GenericTableBase parent, @NotNull
+    GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
         try {
             List<GenericTableConstraintColumn> derbyConstraintColumns = new ArrayList<>();
             Object descriptor = JDBCUtils.safeGetObject(dbResult, "DESCRIPTOR");
@@ -204,8 +208,9 @@ public class DerbyMetaModel extends GenericMetaModel
         return true;
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DerbyDataSource(monitor, container, this);
     }
 }

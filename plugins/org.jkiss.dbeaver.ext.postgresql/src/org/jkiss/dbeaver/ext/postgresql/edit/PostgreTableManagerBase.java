@@ -108,6 +108,22 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
+                // Column storage
+                if (!table.isPartition() && !monitor.isCanceled()
+                    && table.getDataSource().getServerType().supportsAlterStorageStrategy()
+                    && !table.getDataSource().getServerType().supportsStorageModifier()) {
+                    boolean hasStorage = false;
+                    for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                        if (!column.isHidden() && !column.hasDefaultStorage()) {
+                            if (!hasStorage && addExtraActionComment) {
+                                actions.add(new SQLDatabasePersistActionComment(dataSource, "Column storage"));
+                            }
+                            PostgreTableColumnManager.addColumnStorageAction(actions, column);
+                            hasStorage = true;
+                        }
+                    }
+                }
+
                 // Triggers
                 if (table instanceof PostgreTableReal && !table.isPartition() && !monitor.isCanceled()) {
                     Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
@@ -132,6 +148,34 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
 
                         for (PostgreRule rule : rules) {
                             actions.add(new SQLDatabasePersistAction("Create rule", rule.getObjectDefinitionText(monitor, options)));
+                        }
+                    }
+                }
+
+                // Add RLS enable DDL
+                if (table instanceof PostgreTable pgTable && pgTable.isHasRowLevelSecurity()) {
+                    actions.add(new SQLDatabasePersistAction(
+                        "Enable row level security",
+                        "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                            + " ENABLE ROW LEVEL SECURITY"
+                    ));
+                }
+
+                // Add policy DDL
+                if (table instanceof PostgreTable pgTable
+                    && table.getDataSource().getServerType().supportsRowLevelSecurity()
+                    && !monitor.isCanceled()
+                ) {
+                    Collection<PostgreTablePolicy> policies = pgTable.getPolicies(monitor);
+                    if (!CommonUtils.isEmpty(policies)) {
+                        if (addExtraActionComment) {
+                            actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Policies"));
+                        }
+                        for (PostgreTablePolicy policy : policies) {
+                            actions.add(new SQLDatabasePersistAction(
+                                "Create policy",
+                                policy.getObjectDefinitionText(monitor, options)
+                            ));
                         }
                     }
                 }

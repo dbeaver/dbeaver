@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -26,8 +27,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
  */
 public interface DBEObjectEditor <OBJECT_TYPE extends DBPObject> extends DBEObjectManager<OBJECT_TYPE> {
 
-    boolean canEditObject(OBJECT_TYPE object);
+    boolean canEditObject(@NotNull OBJECT_TYPE object);
 
-    DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, DBPPropertyDescriptor property);
+    DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(@NotNull OBJECT_TYPE object, @NotNull DBPPropertyDescriptor property);
 
 }

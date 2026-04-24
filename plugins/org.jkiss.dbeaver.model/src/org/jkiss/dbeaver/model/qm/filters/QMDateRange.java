@@ -18,24 +18,33 @@ package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.code.Nullable;
 
-public class QMDateRange {
-    @Nullable
-    private final String from;
-    @Nullable
-    private final String to;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
-    public QMDateRange(@Nullable String from, @Nullable String to) {
+public class QMDateRange {
+    private final LocalDateTime from;
+    private final LocalDateTime to;
+
+    public QMDateRange(@Nullable ZonedDateTime from, @Nullable ZonedDateTime to) {
+        this(
+            from != null ? from.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime() : null,
+            to != null ? to.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime() : null
+        );
+    }
+
+    public QMDateRange(@Nullable LocalDateTime from, @Nullable LocalDateTime to) {
         this.from = from;
         this.to = to;
     }
 
     @Nullable
-    public String getFrom() {
+    public LocalDateTime getFrom() {
         return from;
     }
 
     @Nullable
-    public String getTo() {
+    public LocalDateTime getTo() {
         return to;
     }
 }

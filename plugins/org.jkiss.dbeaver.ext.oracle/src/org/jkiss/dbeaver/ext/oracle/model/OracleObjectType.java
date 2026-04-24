@@ -160,8 +160,9 @@ public enum OracleObjectType implements DBSObjectType {
     }),
 	WINDOW("WINDOW", null, DBSObject.class, null),
 	WINDOW_GROUP("WINDOW GROUP", null, DBSObject.class, null),
-	XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null);
-    
+    XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null),
+    SCHEMA("SCHEMA", DBIcon.TREE_SCHEMA, OracleSchema.class, (monitor, schema, objectName) -> schema, false);
+
     private static final Log log = Log.getLog(OracleObjectType.class);
 
     private static Map<String, OracleObjectType> typeMap = new HashMap<>();
@@ -185,13 +186,27 @@ public enum OracleObjectType implements DBSObjectType {
     private final DBPImage image;
     private final Class<? extends DBSObject> typeClass;
     private final ObjectFinder finder;
+    private final boolean isRealType;
 
-    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType, DBPImage image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder)
-    {
+    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType,
+                                                     DBPImage image,
+                                                     Class<OBJECT_TYPE> typeClass,
+                                                     ObjectFinder finder
+    ) {
+        this(objectType, image, typeClass, finder, true);
+    }
+
+    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType,
+                                                     DBPImage image,
+                                                     Class<OBJECT_TYPE> typeClass,
+                                                     ObjectFinder finder,
+                                                     boolean isRealType
+    ) {
         this.objectType = objectType;
         this.image = image;
         this.typeClass = typeClass;
         this.finder = finder;
+        this.isRealType = isRealType;
     }
 
     public boolean isBrowsable()
@@ -221,6 +236,10 @@ public enum OracleObjectType implements DBSObjectType {
     public Class<? extends DBSObject> getTypeClass()
     {
         return typeClass;
+    }
+
+    public boolean isRealType() {
+        return isRealType;
     }
 
     public DBSObject findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException

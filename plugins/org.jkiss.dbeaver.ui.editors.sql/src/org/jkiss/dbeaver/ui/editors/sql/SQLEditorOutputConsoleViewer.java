@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.eclipse.ui.console.TextConsoleViewer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
@@ -118,15 +117,18 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
 
     public void refreshStyles() {
         Font outputFont = BaseThemeSettings.instance.monospaceFont;
-        if (outputFont != null) {
-            getTextWidget().setFont(outputFont);
-        }
-        if (UIStyles.isDarkHighContrastTheme()) {
-            getTextWidget().setForeground(UIUtils.COLOR_WHITE);
-            getTextWidget().setBackground(UIStyles.getDefaultWidgetBackground());
-        } else {
-            getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
-            getTextWidget().setBackground(UIStyles.getDefaultTextBackground());
+        StyledText textWidget = getTextWidget();
+        if (textWidget != null && !textWidget.isDisposed()) {
+            if (outputFont != null) {
+                textWidget.setFont(outputFont);
+            }
+            if (UIStyles.isDarkHighContrastTheme()) {
+                textWidget.setForeground(UIStyles.COLOR_WHITE);
+                textWidget.setBackground(UIStyles.getDefaultWidgetBackground());
+            } else {
+                textWidget.setForeground(UIStyles.getDefaultTextForeground());
+                textWidget.setBackground(UIStyles.getDefaultTextBackground());
+            }
         }
     }
 
@@ -141,7 +143,10 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
     private void createContextMenu() {
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(manager -> {
-            StyledTextUtils.fillDefaultStyledTextContextMenu(manager, getTextWidget());
+            StyledText textWidget = getTextWidget();
+            if (textWidget != null && !textWidget.isDisposed()) {
+                StyledTextUtils.fillDefaultStyledTextContextMenu(manager, textWidget);
+            }
             manager.add(new Separator());
             manager.add(new Action(SQLEditorMessages.sql_editor_action_clear) {
                 @Override
@@ -151,8 +156,11 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
             });
         });
         menuMgr.setRemoveAllWhenShown(true);
-        getTextWidget().setMenu(menuMgr.createContextMenu(getTextWidget()));
-        getTextWidget().addDisposeListener(e -> menuMgr.dispose());
+        StyledText textWidget = getTextWidget();
+        if (textWidget != null && !textWidget.isDisposed()) {
+            textWidget.setMenu(menuMgr.createContextMenu(textWidget));
+            textWidget.addDisposeListener(e -> menuMgr.dispose());
+        }
     }
 
 }

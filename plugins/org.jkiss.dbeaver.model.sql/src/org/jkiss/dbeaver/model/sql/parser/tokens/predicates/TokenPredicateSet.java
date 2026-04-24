@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public class TokenPredicateSet implements SQLTokenPredicateSet {
     private final Trie<TokenEntry, SQLTokenPredicate> conditionsBySuffix = new Trie<>(ExactTokenEntryComparator.INSTANCE, TokenEntryMatchingComparator.INSTANCE);
     private int maxHeadLength = 0;
     private int maxTailLength = 0;
+    private boolean hasCaptures = false;
 
     @Override
     @NotNull
@@ -48,8 +49,14 @@ public class TokenPredicateSet implements SQLTokenPredicateSet {
         return maxTailLength;
     }
 
+    @Override
+    public boolean hasCaptures() {
+        return this.hasCaptures;
+    }
+
     /**
      * Inserts a new condition in the set
+     *
      * @param cond condition to insert
      */
     public void add(@NotNull TokenPredicatesCondition cond) {
@@ -58,12 +65,17 @@ public class TokenPredicateSet implements SQLTokenPredicateSet {
         cond.getSuffixes().forEach(t -> conditionsBySuffix.add(new ArrayDeque<TokenEntry>(t).descendingIterator(), cond));
         maxHeadLength = Math.max(maxHeadLength, cond.maxPrefixLength);
         maxTailLength = Math.max(maxTailLength, cond.maxSuffixLength);
+
+        if (!this.hasCaptures) {
+            this.hasCaptures = cond.getPrefixes().stream()
+                .anyMatch(s -> s.stream().anyMatch(t -> t instanceof CaptureTokenPredicateNode));
+        }
     }
 
     @NotNull
     public static TokenPredicateSet of(@NotNull TokenPredicatesCondition... conditions) {
         TokenPredicateSet set = new TokenPredicateSet();
-        for (TokenPredicatesCondition cond: conditions) {
+        for (TokenPredicatesCondition cond : conditions) {
             set.add(cond);
         }
         return set;

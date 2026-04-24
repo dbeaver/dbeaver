@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,19 @@ public interface IResultSetPresentation {
         NEXT,
         LAST,
         CURRENT
+    }
+
+    /**
+     * A predicate that decides whether the presentation can be shown or not.
+     * <p>
+     * An implementation may opt not to be opened. This can be useful if
+     * an interactive confirmation is shown with an option to cancel the operation.
+     *
+     * @param controller associated result set controller
+     * @return {@code true} if the presentation can be shown, or {@code false} if not
+     */
+    default boolean canShowPresentation(@NotNull IResultSetController controller) {
+        return true;
     }
 
     void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent);

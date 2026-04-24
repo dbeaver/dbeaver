@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,9 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -51,6 +52,7 @@ import org.jkiss.dbeaver.ui.internal.registry.NavigatorExtensionsRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
@@ -117,6 +119,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         } else {
             if (store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
                 drawObjectStatistics(gc, databaseNode, item, event);
+            }
+            if (node instanceof DBNDatabaseFolder && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT) && !databaseNode.needsInitialization()) {
+                drawObjectChildrenCounter(gc, databaseNode, item);
             }
             if (node instanceof DBNDatabaseItem && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
                 drawObjectDescription(gc, databaseNode, item);
@@ -192,6 +197,18 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         }
     }
 
+    private void drawObjectChildrenCounter(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds) {
+        int childCount = 0;
+        try {
+            DBNDatabaseNode[] nodeChildren = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
+            childCount = nodeChildren == null ? 0 : nodeChildren.length;
+        } catch (DBException e) {
+            return;
+        }
+        String text = "(" + childCount + ")";
+        drawText(gc, text, bounds);
+    }
+
     private void drawObjectStatistics(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds, @NotNull Event event) {
         if (bounds.width < PERCENT_FILL_WIDTH) {
             return;
@@ -223,13 +240,17 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         // Bar
         int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
         gc.setBackground(NavigatorThemeSettings.instance.statisticsFrameColor);
-        gc.fillRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH, bounds.y + 3, width, bounds.height - 6);
+        gc.fillRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH + 2, bounds.y + 3, width, bounds.height - 6);
 
         // Text
         if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
             gc.setForeground(tree.getBackground());
         } else {
-            gc.setForeground(tree.getForeground());
+            if (CommonUtils.isBitSet(event.detail, SWT.SELECTED)) {
+                gc.setForeground(UIStyles.getDefaultTextSelectionForeground());
+            } else {
+                gc.setForeground(tree.getForeground());
+            }
         }
         gc.setFont(tree.getFont());
         gc.drawText(text, bounds.x + bounds.width - textSize.x, bounds.y + (bounds.height - textSize.y) / 2, true);
@@ -248,7 +269,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         try {
             gc.setForeground(NavigatorThemeSettings.instance.hintColor);
-            gc.setFont(BaseThemeSettings.instance.baseFontItalic);
+            gc.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
 
             drawTextClipped(gc, text, bounds);
         } finally {
@@ -319,20 +340,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     @Nullable
     @Override
     public String getToolTipText(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
-        if (node instanceof DBNDatabaseNode node1) {
-            if (node instanceof DBNDataSource dataSource) {
-                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
-                if (overActionButton != null) {
-                    return overActionButton.getNodeActionToolTip(view, node);
-                }
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    return DataSourceUtils.getDataSourceAddressText(dataSource.getDataSourceContainer());
-                }
-                return null;
-            }
-
-            if (isOverObjectStatistics(node1, tree, event)) {
-                DBSObject object = node1.getObject();
+        if (node instanceof DBNDatabaseNode dbNode) {
+            if (isOverObjectStatistics(dbNode, tree, event)) {
+                DBSObject object = dbNode.getObject();
                 if (object instanceof DBPObjectStatistics statistics && statistics.hasStatistics()) {
                     long statObjectSize = statistics.getStatObjectSize();
                     if (statObjectSize > 0) {
@@ -346,6 +356,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                         }
                         return NLS.bind("Object size on disk: {0} bytes", formattedSize);
                     }
+                }
+            }
+
+            if (node instanceof DBNDataSource) {
+                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
+                if (overActionButton != null) {
+                    return overActionButton.getNodeActionToolTip(view, node);
                 }
             }
         }
@@ -542,30 +559,31 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static class StatReadJob extends AbstractJob {
 
         private final DBNNode parentNode;
-        private final DBSObject collector;
+        private final DBSObject object;
         private final TreeItem treeItem;
 
-        StatReadJob(DBNNode parentNode, DBSObject collector, TreeItem treeItem) {
-            super("Read statistics for " + DBUtils.getObjectFullName(collector, DBPEvaluationContext.UI));
+        StatReadJob(DBNNode parentNode, DBSObject object, TreeItem treeItem) {
+            super("Read statistics for " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
             this.parentNode = parentNode;
-            this.collector = collector;
+            this.object = object;
             this.treeItem = treeItem;
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Collect database statistics", 1);
-                if (collector instanceof DBPObjectStatisticsCollector) {
+                if (object instanceof DBPObjectStatisticsCollector) {
                     // Parent object is not necessary is stats collector.
                     // E.g. table partition parent is table while stats collector is schema
-                    ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
+                    ((DBPObjectStatisticsCollector) object).collectObjectStatistics(monitor, false, false);
                 }
                 long maxStatSize = 0;
 
-                if (parentNode instanceof DBNDatabaseNode) {
+                if (parentNode instanceof DBNDatabaseNode dbNode) {
                     // Calculate max object size
-                    DBNDatabaseNode[] children = ((DBNDatabaseNode)parentNode).getChildren(monitor);
+                    DBNDatabaseNode[] children = dbNode.getChildren(monitor);
                     if (children != null) {
                         for (DBNDatabaseNode childNode : children) {
                             DBSObject child = childNode.getObject();
@@ -588,17 +606,22 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                             }
                         }
                     } finally {
-                        synchronized (statReaders) {
-                            statReaders.remove(collector);
-                        }
+                        removeStatReader();
                     }
                 });
             } catch (DBException e) {
+                removeStatReader();
                 log.debug(e);
             } finally {
                 monitor.done();
             }
             return Status.OK_STATUS;
+        }
+
+        private void removeStatReader() {
+            synchronized (statReaders) {
+                statReaders.remove(object);
+            }
         }
     }
 }

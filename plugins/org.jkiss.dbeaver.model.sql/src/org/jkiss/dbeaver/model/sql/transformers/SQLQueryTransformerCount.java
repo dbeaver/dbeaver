@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,15 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.Distinct;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
@@ -42,11 +47,16 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private static final String COUNT_WRAP_PREFIX = "SELECT COUNT(*) FROM (";
     private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
 
+    @NotNull
     @Override
-    public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLQuery query
+    ) throws DBException {
         try {
             SQLDialect sqlDialect = dataSource.getSQLDialect();
-            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof SQLDialectRelational && ((SQLDialectRelational)sqlDialect).isAmbiguousCountBroken())) {
+            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof SQLDialectRelational sdr && sdr.isAmbiguousCountBroken())) {
                 return tryInjectCount(dataSource, query);
             }
         } catch (Throwable e) {
@@ -56,22 +66,30 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return wrapSourceQuery(dataSource, syntaxManager, query);
     }
 
-    private SQLQuery wrapSourceQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+    @NotNull
+    private SQLQuery wrapSourceQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLQuery query
+    ) throws DBException {
         String queryText = null;
+
+        // Remove orderings (#4652)
         try {
-            // Remove orderings (#4652)
             Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-            if (statement instanceof Select) {
-                SelectBody selectBody = ((Select) statement).getSelectBody();
-                if (selectBody instanceof PlainSelect) {
-                    if (!CommonUtils.isEmpty(((PlainSelect) selectBody).getOrderByElements())) {
-                        ((PlainSelect) selectBody).setOrderByElements(null);
-                        queryText = statement.toString();
-                    }
+            if (statement instanceof PlainSelect plainSelect) {
+                if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
+                    plainSelect.setOrderByElements(null);
+                    queryText = statement.toString();
                 }
             }
-        } catch (Throwable e) {
-            log.debug("Error parsing query for COUNT transformation: " + e.getMessage());
+            // For non-PlainSelect statements (e.g. DuckDB FROM-first syntax, PostgreSQL TABLE command,
+            // CTEs starting with WITH), still attempt to wrap in SELECT COUNT(*) and let the database
+            // decide if it's valid (#40210)
+        } catch (DBCException e) {
+            // Query could not be parsed (e.g. uses non-standard syntax like DuckDB FROM-first).
+            // Still attempt to wrap it and let the database handle validation (#40210).
+            log.debug("Could not parse query to remove orderings, wrapping as-is: ", e);
         }
         // Trim query delimiters (#2541)
         if (queryText == null) {
@@ -82,15 +100,15 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return new SQLQuery(dataSource, countQuery, query, false);
     }
 
-    private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
+    @NotNull
+    private SQLQuery tryInjectCount(@NotNull DBPDataSource dataSource, @NotNull SQLQuery query) throws DBException {
         try {
             Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+            if (statement instanceof PlainSelect select) {
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
-                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressions())) {
+                if (select.getGroupBy() != null && !CommonUtils.isEmpty(select.getGroupBy().getGroupByExpressionList())) {
                     throw new DBException("Can't inject COUNT into query with GROUP BY clause");
                 }
 
@@ -105,21 +123,19 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 if (selectDistinct != null) {
                     countFunc.setDistinct(true);
                     List<Expression> exprs = new ArrayList<>();
-                    for (SelectItem item : select.getSelectItems()) {
-                        if (item instanceof SelectExpressionItem) {
-                            exprs.add(((SelectExpressionItem)item).getExpression());
-                        }
+                    for (SelectItem<?> item : select.getSelectItems()) {
+                        exprs.add(item.getExpression());
                     }
                     if (!exprs.isEmpty()) {
-                        countFunc.setParameters(new ExpressionList(exprs));
+                        countFunc.setParameters(new ExpressionList<>(exprs));
                     }
                 } else {
                     //countFunc.setAllColumns(true); // We can't use setAllColumns now (since JSQLParser 4.2), it will return COUNT(ALL). Replaced by AllColumns Expression
-                    countFunc.setParameters(new ExpressionList(new AllColumns()));
+                    countFunc.setParameters(new ExpressionList<>(new AllColumns()));
                 }
 
-                List<SelectItem> selectItems = new ArrayList<>();
-                selectItems.add(new SelectExpressionItem(countFunc));
+                List<SelectItem<?>> selectItems = new ArrayList<>();
+                selectItems.add(new SelectItem(countFunc));
                 select.setSelectItems(selectItems);
                 select.setOrderByElements(null);
                 return new SQLQuery(dataSource, select.toString(), query, false);

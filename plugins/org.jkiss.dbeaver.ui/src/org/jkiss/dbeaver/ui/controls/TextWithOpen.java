@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ide.IDE;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -45,9 +42,10 @@ import java.nio.file.Path;
 /**
  * TextWithOpen
  */
-public class TextWithOpen extends Composite {
+public class TextWithOpen {
     private static final Log log = Log.getLog(TextWithOpen.class);
 
+    protected final Composite panel;
     private final Text text;
     private final ToolBar toolbar;
     private final boolean multiFS;
@@ -60,7 +58,7 @@ public class TextWithOpen extends Composite {
         this(parent, multiFS, secured, false);
     }
     public TextWithOpen(Composite parent, boolean multiFS, boolean secured, boolean binary) {
-        super(parent, SWT.NONE);
+        panel = new Composite(parent, SWT.NONE);
         this.multiFS = multiFS;
         this.binary = binary;
         final GridLayout gl = new GridLayout(2, false);
@@ -68,10 +66,10 @@ public class TextWithOpen extends Composite {
         gl.marginWidth = 0;
         gl.verticalSpacing = 0;
         gl.horizontalSpacing = 0;
-        setLayout(gl);
+        panel.setLayout(gl);
 
         boolean useTextEditor = isShowFileContentEditor();
-        text = new Text(this, SWT.BORDER | ((useTextEditor && !secured) ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
+        text = new Text(panel, SWT.BORDER | ((useTextEditor && !secured) ? SWT.MULTI | SWT.V_SCROLL : SWT.SINGLE));
         if (secured) {
             text.setEchoChar('*');
         }
@@ -85,7 +83,7 @@ public class TextWithOpen extends Composite {
         }
         text.setLayoutData(gd);
 
-        toolbar = new ToolBar(this, SWT.FLAT);
+        toolbar = new ToolBar(panel, SWT.FLAT);
         if (useTextEditor) {
             final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
             toolItem.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
@@ -93,11 +91,7 @@ public class TextWithOpen extends Composite {
             toolItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String newText = EditTextDialog.editText(
-                        getShell(),
-                        secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
-                        secured ? "" : getText()
-                    );
+                    String newText = getNewTextFromUser(secured);
                     if (newText != null) {
                         setText(newText);
                     }
@@ -109,7 +103,7 @@ public class TextWithOpen extends Composite {
                 // Local FS works only on local machine. Will not work for TE remote tasks.
                 // Do we need to do anything about it in UI?
                 final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
-                toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                toolItem.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
                 toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
                 toolItem.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -120,7 +114,8 @@ public class TextWithOpen extends Composite {
             }
             if (isMultiFileSystem()) {
                 final ToolItem remoteFsItem = new ToolItem(toolbar, SWT.NONE);
-                remoteFsItem.setImage(DBeaverIcons.getImage((getStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL));
+                remoteFsItem.setImage(DBeaverIcons.getImage(
+                    (getPanelStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL));
                 remoteFsItem.setToolTipText(UIMessages.text_with_open_dialog_browse_remote);
                 remoteFsItem.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -131,7 +126,7 @@ public class TextWithOpen extends Composite {
             }
         }
 
-        if (!useTextEditor && !isBinaryContents()) {
+        if (!useTextEditor && !isBinaryContents() && !isFolderContents()) {
             // Open file text in embedded editor
             final ToolItem editItem = new ToolItem(toolbar, SWT.NONE);
             editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
@@ -171,6 +166,14 @@ public class TextWithOpen extends Composite {
         toolbar.setLayoutData(gd);
     }
 
+    protected int getPanelStyle() {
+        return SWT.OPEN;
+    }
+
+    public Composite getPanel() {
+        return panel;
+    }
+
     public String getText() {
         return text.getText();
     }
@@ -180,6 +183,10 @@ public class TextWithOpen extends Composite {
     }
 
     protected boolean isShowFileContentEditor() {
+        return false;
+    }
+
+    protected boolean isFolderContents() {
         return false;
     }
 
@@ -207,11 +214,41 @@ public class TextWithOpen extends Composite {
         return toolbar;
     }
 
-    @Override
     public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
+        panel.setEnabled(enabled);
         toolbar.setEnabled(enabled);
         text.setEnabled(enabled);
     }
 
+    /**
+     * Sets panel layout data
+     */
+    public void setLayoutData(Object data) {
+        panel.setLayoutData(data);
+    }
+
+    public Shell getShell() {
+        return panel.getShell();
+    }
+
+    /**
+     * Sets tooltip for text and panel
+     */
+    public void setToolTipText(String toolTip) {
+        this.panel.setToolTipText(toolTip);
+        this.text.setToolTipText(toolTip);
+    }
+
+    public Composite getParent() {
+        return panel.getParent();
+    }
+
+    @Nullable
+    protected String getNewTextFromUser(boolean secured) {
+        return EditTextDialog.editText(
+            panel.getShell(),
+            secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
+            secured ? "" : getText()
+        );
+    }
 }

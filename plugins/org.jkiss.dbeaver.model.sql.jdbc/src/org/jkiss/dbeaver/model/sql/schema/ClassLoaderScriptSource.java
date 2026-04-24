@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,21 @@ package org.jkiss.dbeaver.model.sql.schema;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 
 /**
  * Script source which reads scripts from class loader
  */
 public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
 
+    private static final Log log = Log.getLog(ClassLoaderScriptSource.class);
     private final ClassLoader classLoader;
     private final String createScriptPath;
     private final String updateScriptPrefix;
@@ -44,12 +47,23 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
 
     @NotNull
     @Override
-    public Reader openSchemaCreateScript(@NotNull DBRProgressMonitor monitor) throws IOException, DBException {
-        InputStream resource = classLoader.getResourceAsStream(createScriptPath);
-        if (resource == null) {
-            throw new IOException("Resource '" + createScriptPath + "' not found in " + this.classLoader.getClass().getName());
+    public Reader openSchemaCreateScript(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String specificPrefix
+    ) throws IOException, DBException {
+        List<String> attemptedPaths = specificPrefix == null ?
+            List.of(createScriptPath + ".sql") :
+            List.of(
+                createScriptPath + "_" + specificPrefix + ".sql",
+                createScriptPath + ".sql"
+            );
+
+        Reader reader = findScript(attemptedPaths.toArray(new String[0]));
+        if (reader == null) {
+            throw new IOException("Create script not found. Searched paths: " + String.join(", ", attemptedPaths));
         }
-        return new InputStreamReader(resource);
+
+        return reader;
     }
 
     @Nullable
@@ -59,10 +73,27 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         int versionNumber,
         @Nullable String specificPrefix
     ) throws IOException, DBException {
-        InputStream resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql");
-        if (resource == null) {
-            resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + ".sql");
+        List<String> attemptedPaths = specificPrefix == null ?
+            List.of(updateScriptPrefix + versionNumber + ".sql") :
+            List.of(
+                updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql",
+                updateScriptPrefix + versionNumber + ".sql"
+            );
+
+        return findScript(attemptedPaths.toArray(new String[0]));
+    }
+
+    @Nullable
+    public Reader findScript(
+        String... paths
+    ) {
+        for (String path : paths) {
+            InputStream resource = classLoader.getResourceAsStream(path);
+            if (resource != null) {
+                log.debug("Reading script file: '" + path + "'");
+                return new InputStreamReader(resource);
+            }
         }
-        return resource == null ? null : new InputStreamReader(resource);
+        return null;
     }
 }

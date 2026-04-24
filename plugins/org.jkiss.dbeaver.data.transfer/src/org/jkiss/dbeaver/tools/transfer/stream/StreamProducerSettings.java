@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.utils.HelpUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.FileNotFoundException;
@@ -38,7 +37,7 @@ import java.nio.file.Files;
 import java.util.*;
 
 /**
- * Stream transfer settings
+ * Stream producer (file) settings
  */
 public class StreamProducerSettings implements IDataTransferSettings {
 
@@ -47,9 +46,6 @@ public class StreamProducerSettings implements IDataTransferSettings {
     private final Map<String, StreamEntityMapping> entityMapping = new LinkedHashMap<>();
     private Map<String, Object> processorProperties;
     private int maxRows;
-
-    private transient Map<String, Object> lastProcessorProperties;
-    private transient StreamTransferProducer lastProducer;
 
     public StreamProducerSettings() {
     }
@@ -130,10 +126,14 @@ public class StreamProducerSettings implements IDataTransferSettings {
         @NotNull DataTransferSettings dataTransferSettings
     ) {
         try {
+            var processor = dataTransferSettings.getProcessor();
+            if (processor == null) {
+                throw new DBException("Processor haven't chosen for data import/export (e.g., XML, CSV, etc.).");
+            }
             updateProducerSettingsFromStream(
                 monitor,
                 producer,
-                dataTransferSettings.getProcessor().getInstance(),
+                processor.getInstance(),
                 dataTransferSettings.getProcessorProperties()
             );
         } catch (DBException e) {
@@ -149,14 +149,6 @@ public class StreamProducerSettings implements IDataTransferSettings {
         @NotNull Map<String, Object> processorProperties
     ) throws DBException {
         monitor.beginTask("Update data produces settings from import stream", 1);
-
-        if (CommonUtils.equalObjects(lastProcessorProperties, processorProperties) && CommonUtils.equalObjects(lastProducer, producer)) {
-            // Nothing has changed
-            return;
-        }
-
-        lastProcessorProperties = new LinkedHashMap<>(processorProperties);
-        lastProducer = producer;
 
         List<StreamDataImporterColumnInfo> columnInfos;
         StreamEntityMapping entityMapping = producer.getEntityMapping();
@@ -203,9 +195,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
     @Override
     public String getSettingsSummary() {
-        StringBuilder summary = new StringBuilder();
-
-        return summary.toString();
+        return "";
     }
 
 }

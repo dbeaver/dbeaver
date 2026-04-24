@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.model.sql.parser;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
-import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.parser.StringProvider;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
+import net.sf.jsqlparser.parser.*;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -52,7 +50,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Semantic SQL processor
@@ -62,14 +62,24 @@ public class SQLSemanticProcessor {
     private static final Log log = Log.getLog(SQLSemanticProcessor.class);
 
     private static final boolean ALLOW_COMPLEX_PARSING = false;
+    private static final int PARSE_FUTURE_TIMEOUT_MS = 1000; // if we can't parse fast, we don't want to
 
-    public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
-        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqlWithoutComments));
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
+
+    public static void shutdownExecutor() {
+        if (!executor.shutdownNow().isEmpty()) {
+            log.warn("Unexpected awaiting tasks found while terminating JSqlParser executor.");
+        }
+    }
+
+    @NotNull
+    private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        final String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
         try {
-            parser.withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
+            CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
+                .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
+
             if (dialect != null) {
-                // Enable square brackets
                 for (String[] qs : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
                     if (qs.length == 2 && "[".equals(qs[0]) && "]".equals(qs[1])) {
                         parser.withSquareBracketQuotation(true);
@@ -77,10 +87,39 @@ public class SQLSemanticProcessor {
                     }
                 }
             }
-            return parser.Statement();
-        } catch (Exception e) {
+            return parser;
+        } catch (ParseException e) {
+            throw new DBCException("Error initializing SQL parser: " + e.getMessage(), e);
+        }
+    }
+
+    @NotNull
+    private static <T> T callWithTimeout(@NotNull CCJSqlParser parser, @NotNull Callable<T> task) throws DBCException {
+        Future<T> future = executor.submit(task);
+        try {
+            return future.get(PARSE_FUTURE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException | InterruptedException e) {
+            parser.interrupted = true;
+            future.cancel(true);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            throw new DBCException("Failed to parse SQL query within reasonable time", e);
+        } catch (ExecutionException e) {
             throw new DBCException("Error parsing SQL query: " + e.getMessage(), e);
         }
+    }
+
+    @NotNull
+    public static List<Statement> parseQueries(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        CCJSqlParser parser = buildParser(dialect, sql);
+        return callWithTimeout(parser, parser::Statements);
+    }
+
+    @NotNull
+    public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        CCJSqlParser parser = buildParser(dialect, sql);
+        return callWithTimeout(parser, parser::Statement);
     }
 
     public static Statement parseQuery(@NotNull String sql) throws DBCException {
@@ -111,14 +150,10 @@ public class SQLSemanticProcessor {
         }
     }
 
-    public static boolean isSelectQuery(SQLDialect dialect, String query)
-    {
+    public static boolean isSelectQuery(SQLDialect dialect, String query) {
         try {
             Statement statement = parseQuery(dialect, query);
-            return
-                statement instanceof Select select &&
-                select.getSelectBody() instanceof PlainSelect plainSelect &&
-                CommonUtils.isEmpty(plainSelect.getIntoTables());
+            return statement instanceof PlainSelect plainSelect && CommonUtils.isEmpty(plainSelect.getIntoTables());
         } catch (Throwable e) {
             //log.debug(e);
             return false;
@@ -160,10 +195,10 @@ public class SQLSemanticProcessor {
     ) throws DBException {
         try {
             Statement statement = parseQuery(dataSource.getSQLDialect(), sqlQuery);
-            if (statement instanceof Select select && select.getSelectBody() instanceof PlainSelect plainSelect) {
+            if (statement instanceof PlainSelect plainSelect) {
                 if (patchSelectQuery(monitor, dataSource, plainSelect, dataFilter)) {
                     return statement.toString();
-                } else if (!select.getWithItemsList().isEmpty()) {
+                } else if (plainSelect.getWithItemsList() != null && !plainSelect.getWithItemsList().isEmpty()) {
                     addWhereCondition(dataSource, plainSelect, dataFilter);
                     if (dataFilter.hasOrdering()) {
                         addOrderByClause(monitor, dataSource, plainSelect, dataFilter);
@@ -175,19 +210,6 @@ public class SQLSemanticProcessor {
             throw new DBException("Error parsing SQL query", e);
         }
         throw new DBException("Can't inject filters to a query that is not a plain SELECT statement");
-    }
-
-
-    /**
-     *
-     * @deprecated Use {@link SQLQueryGenerator#getWrappedFilterQuery(DBPDataSource, String, DBDDataFilter)} instead
-     */
-    public static String wrapQuery(
-        @NotNull DBPDataSource dataSource,
-        @NotNull String sqlQuery,
-        @NotNull DBDDataFilter dataFilter
-    ) throws DBException {
-        return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
     }
 
     private static boolean patchSelectQuery(
@@ -369,7 +391,7 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table getTableFromSelect(Select select) {
-        if (select.getSelectBody() instanceof PlainSelect plainSelect) {
+        if (select instanceof PlainSelect plainSelect) {
             FromItem fromItem = plainSelect.getFromItem();
             if (fromItem instanceof Table table) {
                 return table;
@@ -389,8 +411,7 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table findTableByNameOrAlias(Select select, String tableName) {
-        SelectBody selectBody = select.getSelectBody();
-        if (selectBody instanceof PlainSelect plainSelect) {
+        if (select instanceof PlainSelect plainSelect) {
             FromItem fromItem = plainSelect.getFromItem();
             if (fromItem instanceof Table table && equalTables(table, tableName)) {
                 return table;
@@ -425,8 +446,66 @@ public class SQLSemanticProcessor {
         if (sourceWhere == null) {
             select.setWhere(conditionExpr);
         } else {
-            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), conditionExpr));
+            select.setWhere(new AndExpression(
+                new ParenthesedExpressionList<>(sourceWhere),
+                new ParenthesedExpressionList<>(conditionExpr)
+            ));
         }
     }
 
+
+    /**
+     * Returns a simple table name in the form of schema.table with proper quoting rules.
+     *
+     * Examples of transformations:
+     * <ul>
+     *   <li>{@code a.b    -> a.b}</li>
+     *   <li>{@code "a.b" -> "a.b"}</li>
+     *   <li>{@code "a".b -> "a".b}</li>
+     *   <li>{@code a."b" -> a."b"}</li>
+     *   <li>{@code "a"."b" -> "a.b"}</li>
+     * </ul>
+     *
+     * @param select  SQL SELECT statement
+     * @param dialect SQL dialect used to check and quote identifiers
+     * @return string representation of the table name
+     * @throws DBException if the table cannot be determined from the SELECT
+     */
+    @NotNull
+    public static String getSimpleTableName(@NotNull PlainSelect select, @NotNull SQLDialect dialect) throws DBException {
+        if (!(select.getFromItem() instanceof Table table)) {
+            throw new DBException("Cannot determine table name: FROM is " +
+                select.getFromItem().getClass().getSimpleName());
+        }
+        final String name   = table.getName();
+        final String schema = table.getSchemaName();
+
+        if (schema == null || schema.isEmpty()) {
+            return name;
+        }
+
+        final boolean schemaQuoted = dialect.isQuotedIdentifier(schema);
+        final boolean nameQuoted   = dialect.isQuotedIdentifier(name);
+
+        if (schemaQuoted && nameQuoted) {
+            final String merged = DBUtils.getUnQuotedIdentifier(schema, "\"")
+                + '.'
+                + DBUtils.getUnQuotedIdentifier(name, "\"");
+            return dialect.getQuotedIdentifier(merged, true, true);
+        }
+
+        return schema + '.' + name;
+    }
+
+    @NotNull
+    public static Token[] parseSqlTextForTokens(@NotNull SQLDialect dialect, @NotNull String sqlText) throws DBCException {
+        Statement statement = SQLSemanticProcessor.parseQuery(dialect, sqlText);
+        LinkedList<Token> tokensList = new LinkedList<>();
+        for (Token t = ((ASTNodeAccess) statement).getASTNode().jjtGetFirstToken(); t != null; t = t.next) {
+            if (!t.image.isEmpty()) {
+                tokensList.add(t);
+            }
+        }
+        return tokensList.toArray(Token[]::new);
+    }
 }

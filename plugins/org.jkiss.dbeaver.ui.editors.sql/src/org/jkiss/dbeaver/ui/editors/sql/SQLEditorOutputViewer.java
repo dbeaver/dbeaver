@@ -48,10 +48,10 @@ import java.util.*;
  * SQL editor output viewer
  */
 public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter {
-    private static final int MAX_RECORDS = 1000;
+    private static final int INITIAL_OUTPUT_RECORD_CAPACITY = 1000;
 
     private final Set<DBCOutputSeverity> severities = new HashSet<>();
-    private final Deque<OutputRecord> records = new ArrayDeque<>(MAX_RECORDS);
+    private final Deque<OutputRecord> records = new ArrayDeque<>(INITIAL_OUTPUT_RECORD_CAPACITY);
 
     private final Text filterText;
     private final ToolBarManager filterToolbar;
@@ -103,9 +103,6 @@ public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter 
             writer.println(message);
         }
         records.offer(new OutputRecord(severity, message));
-        if (records.size() > MAX_RECORDS) {
-            records.pop();
-        }
     }
 
     @Override

@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
@@ -25,7 +9,8 @@
             id="tidb"
             parent="mysql"
             dialect="tidb"
-            label="TiDB">
+            label="TiDB"
+            inheritProviderProperties="true">
 
             <treeInjection path="mysql/database" replaceChildren="true">
                  <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
@@ -93,7 +78,7 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/com/mysql:mysql-connector-j:RELEASE" bundle="!drivers.mysql"/>
-                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
+                    <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
 
@@ -108,11 +93,6 @@
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                 </driver>
-                <provider-properties drivers="*">
-                    <propertyGroup label="Advanced">
-                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                    </propertyGroup>
-                </provider-properties>
 
             </drivers>
         </datasource>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -54,7 +55,7 @@ public class TreeNodeLazyExpander extends TreeNodeSpecial {
     }
 
     @Override
-    public boolean handleDefaultAction(DatabaseNavigatorTree tree) {
+    public boolean handleDefaultAction(@NotNull DatabaseNavigatorTree tree) {
         int longListFetchSize = Math.max(NavigatorPreferences.MIN_LONG_LIST_FETCH_SIZE, DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
         boolean lastSegment = visibleChildren + longListFetchSize > allChildren.length;
         int nextSegmentSize = lastSegment ? allChildren.length - visibleChildren : longListFetchSize;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,25 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 /**
  * SQLQueryListener
- *
- * @author Serge Rider
  */
-public interface SQLQueryListener
-{
-    void onStartScript();
+public interface SQLQueryListener {
+    default void onStartScript() {}
 
-    void onStartQuery(DBCSession session, SQLQuery query);
+    default void onStartQuery(@NotNull DBCSession session, @NotNull SQLQuery query) {}
 
-    void onEndQuery(DBCSession session, SQLQueryResult result, DBCStatistics statistics);
+    default void onEndQuery(
+        @NotNull DBCSession session,
+        @NotNull SQLQueryResult result,
+        @NotNull DBCStatistics statistics
+    ) {}
 
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
+    default void onEndScript(@NotNull DBCStatistics statistics, boolean hasErrors) {}
 
-    void onEndSqlJob(DBCSession session, SqlJobResult result);
+    default void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {}
 }

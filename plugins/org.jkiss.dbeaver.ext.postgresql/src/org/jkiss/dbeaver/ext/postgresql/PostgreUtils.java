@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -37,7 +38,10 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -75,15 +79,20 @@ public class PostgreUtils {
 
     private static final Pattern ROLE_TYPE_PATTERN = Pattern.compile("^\\w+\\s+");
 
-    public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
-            throws DBException {
+    public static String getObjectComment(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericStructContainer container,
+        @NotNull String schema,
+        @NotNull String object
+    ) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
                     session,
-                    "select description from pg_catalog.pg_description\n" +
-                            "join pg_catalog.pg_class on pg_description.objoid = pg_class.oid\n" +
-                            "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
-                            "where pg_class.relname = ? and pg_namespace.nspname=?", object, schema);
+                """
+                    select description from pg_catalog.pg_description
+                    join pg_catalog.pg_class on pg_description.objoid = pg_class.oid
+                    join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid
+                    where pg_class.relname = ? and pg_namespace.nspname=?""", object, schema);
         } catch (Exception e) {
             log.debug(e);
             return null;
@@ -91,27 +100,19 @@ public class PostgreUtils {
     }
 
     public static String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
-        switch (dataKind) {
-            case BOOLEAN:
-                return "bool";
-            case NUMERIC:
-                return "int";
-            case STRING:
-                return "varchar";
-            case DATETIME:
-                return "timestamp";
-            case BINARY:
-                return "bytea";
-            case CONTENT:
-                return "bytea";
-            case ROWID:
-                return "oid";
-            default:
-                return "varchar";
-        }
+        return switch (dataKind) {
+            case BOOLEAN -> "bool";
+            case NUMERIC -> "int";
+            case STRING -> "varchar";
+            case DATETIME -> "timestamp";
+            case BINARY -> "bytea";
+            case CONTENT -> "bytea";
+            case ROWID -> "oid";
+            default -> "varchar";
+        };
     }
 
-    public static <T extends PostgreAttribute> T getAttributeByNum(Collection<T> attrs, int attNum) {
+    public static <T extends PostgreAttribute<?>> T getAttributeByNum(@NotNull Collection<T> attrs, int attNum) {
         for (T attr : attrs) {
             if (attr.getOrdinalPosition() == attNum) {
                 return attr;
@@ -120,21 +121,12 @@ public class PostgreUtils {
         return null;
     }
 
-    public static boolean isPGObject(Object object) {
-        if (object == null) {
-            return false;
-        }
-        String className = object.getClass().getName();
-        return className.equals(PostgreConstants.PG_OBJECT_CLASS) ||
-            className.equals(PostgreConstants.RS_OBJECT_CLASS) ||
-            className.equals(PostgreConstants.EDB_OBJECT_CLASS);
-    }
-
-    public static Object extractPGObjectValue(Object pgObject) {
+    @Nullable
+    public static Object extractPGObjectValue(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
         if (pgObject == null) {
             return null;
         }
-        if (!isPGObject(pgObject)) {
+        if (!isPgObject(dataSource, pgObject)) {
             return pgObject;
         }
         try {
@@ -145,7 +137,7 @@ public class PostgreUtils {
         return null;
     }
 
-    public static boolean supportsTypeCategory(JDBCDataSource dataSource) {
+    public static boolean supportsTypeCategory(@NotNull JDBCDataSource dataSource) {
         return dataSource.isServerVersionAtLeast(8, 4);
     }
 
@@ -171,60 +163,63 @@ public class PostgreUtils {
         return null;
     }
 
-    public static long[] getIdVector(Object pgObject) {
-        Object pgVector = extractPGObjectValue(pgObject);
+    public static long[] getIdVector(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
+        Object pgVector = extractPGObjectValue(pgObject, dataSource);
         if (pgVector == null) {
             return null;
         }
-        if (pgVector instanceof String) {
-            final String vector = (String) pgVector;
-            if (vector.isEmpty()) {
-                return null;
-            }
-            final String[] strings = vector.split(PostgreConstants.DEFAULT_ARRAY_DELIMITER);
-            final long[] ids = new long[strings.length];
-            for (int i = 0; i < strings.length; i++) {
-                ids[i] = CommonUtils.toLong(strings[i]);
-            }
-            return ids;
-        } else if (pgVector instanceof long[]) {
-            return (long[]) pgVector;
-        } else if (pgVector instanceof Long[]) {
-            Long[] objVector = (Long[]) pgVector;
-            long[] result = new long[objVector.length];
-            for (int i = 0; i < objVector.length; i++) {
-                result[i] = objVector[i];
-            }
-            return result;
-        } else if (pgVector instanceof Number) {
-            return new long[]{((Number) pgVector).longValue()};
-        } else if (pgVector instanceof java.sql.Array) {
-            try {
-                Object array = ((java.sql.Array) pgVector).getArray();
-                if (array == null) {
+        switch (pgVector) {
+            case String vector -> {
+                if (vector.isEmpty()) {
                     return null;
                 }
-                int length = Array.getLength(array);
-                long[] result = new long[length];
-                for (int i = 0; i < length; i++) {
-                    Object item = Array.get(array, i);
-                    if (item instanceof Number) {
-                        result[i] = ((Number) item).longValue();
-                    } else if (item != null) {
-                        throw new IllegalArgumentException("Bad array item type: " + item.getClass().getName());
-                    }
+                final String[] strings = vector.split(PostgreConstants.DEFAULT_ARRAY_DELIMITER);
+                final long[] ids = new long[strings.length];
+                for (int i = 0; i < strings.length; i++) {
+                    ids[i] = CommonUtils.toLong(strings[i]);
+                }
+                return ids;
+            }
+            case long[] longs -> {
+                return longs;
+            }
+            case Long[] objVector -> {
+                long[] result = new long[objVector.length];
+                for (int i = 0; i < objVector.length; i++) {
+                    result[i] = objVector[i];
                 }
                 return result;
-            } catch (SQLException e) {
-                throw new IllegalArgumentException("Error reading array value: " + pgVector);
             }
-        } else {
-            throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
+            case Number number -> {
+                return new long[] {number.longValue()};
+            }
+            case java.sql.Array array1 -> {
+                try {
+                    Object array = ((java.sql.Array) pgVector).getArray();
+                    if (array == null) {
+                        return null;
+                    }
+                    int length = Array.getLength(array);
+                    long[] result = new long[length];
+                    for (int i = 0; i < length; i++) {
+                        Object item = Array.get(array, i);
+                        if (item instanceof Number) {
+                            result[i] = ((Number) item).longValue();
+                        } else if (item != null) {
+                            throw new IllegalArgumentException("Bad array item type: " + item.getClass().getName());
+                        }
+                    }
+                    return result;
+                } catch (SQLException e) {
+                    throw new IllegalArgumentException("Error reading array value: " + pgVector);
+                }
+            }
+            default -> throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
     }
 
-    public static int[] getIntVector(Object pgObject) {
-        Object pgVector = extractPGObjectValue(pgObject);
+    public static int[] getIntVector(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
+        Object pgVector = extractPGObjectValue(pgObject, dataSource);
         if (pgVector == null) {
             return null;
         }
@@ -275,64 +270,40 @@ public class PostgreUtils {
 
     public static int getAttributePrecision(long typeOid, int typeMod) {
         //typeOid = convertArrayToBaseOid(typeOid);
-        switch ((int) typeOid) {
-            case PostgreOid.INT2:
-                return 5;
-
-            case PostgreOid.OID:
-            case PostgreOid.INT4:
-                return 10;
-
-            case PostgreOid.INT8:
-                return 19;
-
-            case PostgreOid.FLOAT4:
+        return switch ((int) typeOid) {
+            case PostgreOid.INT2 -> 5;
+            case PostgreOid.OID, PostgreOid.INT4 -> 10;
+            case PostgreOid.INT8 -> 19;
+            case PostgreOid.FLOAT4 ->
                 // For float4 and float8, we can normally only get 6 and 15
                 // significant digits out, but extra_float_digits may raise
                 // that number by up to two digits.
-                return 8;
-
-            case PostgreOid.FLOAT8:
-                return 17;
-
-            case PostgreOid.NUMERIC:
+                8;
+            case PostgreOid.FLOAT8 -> 17;
+            case PostgreOid.NUMERIC -> {
                 if (typeMod == -1)
-                    return 0;
-                return ((typeMod - 4) & 0xFFFF0000) >> 16;
-
-            case PostgreOid.CHAR:
-            case PostgreOid.BOOL:
-                return 1;
-
-            case PostgreOid.BPCHAR:
-            case PostgreOid.VARCHAR:
+                    yield 0;
+                yield ((typeMod - 4) & 0xFFFF0000) >> 16;
+            }
+            case PostgreOid.CHAR, PostgreOid.BOOL -> 1;
+            case PostgreOid.BPCHAR, PostgreOid.VARCHAR -> {
                 if (typeMod == -1)
-                    return UNKNOWN_LENGTH;
-                return typeMod - 4;
+                    yield UNKNOWN_LENGTH;
+                yield typeMod - 4;
+            }
 
             // datetime types get the
             // "length in characters of the String representation"
-            case PostgreOid.DATE:
-            case PostgreOid.TIME:
-            case PostgreOid.TIMETZ:
-            case PostgreOid.INTERVAL:
-            case PostgreOid.TIMESTAMP:
-            case PostgreOid.TIMESTAMPTZ:
-                return getDisplaySize(typeOid, typeMod);
-
-            case PostgreOid.BIT:
-                return typeMod;
-
-            case PostgreOid.VARBIT:
+            case PostgreOid.DATE, PostgreOid.TIME, PostgreOid.TIMETZ, PostgreOid.INTERVAL, PostgreOid.TIMESTAMP, PostgreOid.TIMESTAMPTZ ->
+                getDisplaySize(typeOid, typeMod);
+            case PostgreOid.BIT -> typeMod;
+            case PostgreOid.VARBIT -> {
                 if (typeMod == -1)
-                    return UNKNOWN_LENGTH;
-                return typeMod;
-
-            case PostgreOid.TEXT:
-            case PostgreOid.BYTEA:
-            default:
-                return UNKNOWN_LENGTH;
-        }
+                    yield UNKNOWN_LENGTH;
+                yield typeMod;
+            }
+            default -> UNKNOWN_LENGTH;
+        };
     }
 
     public static int getDisplaySize(long oid, int typmod) {
@@ -363,22 +334,14 @@ public class PostgreUtils {
             case PostgreOid.TIMESTAMP:
             case PostgreOid.TIMESTAMPTZ:
                 // Calculate the number of decimal digits + the decimal point.
-                int secondSize;
-                switch (typmod) {
-                    case -1:
-                        secondSize = 6 + 1;
-                        break;
-                    case 0:
-                        secondSize = 0;
-                        break;
-                    case 1:
+                int secondSize = switch (typmod) {
+                    case -1 -> 6 + 1;
+                    case 0 -> 0;
+                    case 1 ->
                         // Bizarrely SELECT '0:0:0.1'::time(1); returns 2 digits.
-                        secondSize = 2 + 1;
-                        break;
-                    default:
-                        secondSize = typmod + 1;
-                        break;
-                }
+                        2 + 1;
+                    default -> typmod + 1;
+                };
 
                 // We assume the worst case scenario for all of these.
                 // time = '00:00:00' = 8
@@ -424,30 +387,34 @@ public class PostgreUtils {
         }
     }
 
-    public static PostgreDataType findDataType(DBCSession session, PostgreDataSource dataSource, DBSTypedObject type) throws DBCException {
-        if (type instanceof PostgreDataType) {
-            return (PostgreDataType) type;
-        } else if (type instanceof PostgreAttribute) {
-            return ((PostgreAttribute) type).getDataType();
+    public static PostgreDataType findDataType(
+        @NotNull DBCSession session,
+        @NotNull PostgreDataSource dataSource,
+        @NotNull DBSTypedObject type
+    ) throws DBCException {
+        if (type instanceof PostgreDataType dt) {
+            return dt;
+        } else if (type instanceof PostgreAttribute<?> attr) {
+            return attr.getDataType();
         } else {
             DBRProgressMonitor monitor = session.getProgressMonitor();
-            if (type instanceof JDBCColumnMetaData) {
+            if (type instanceof JDBCColumnMetaData cmd) {
                 try {
-                    DBCEntityMetaData entityMetaData = ((DBCAttributeMetaData) type).getEntityMetaData();
+                    DBCEntityMetaData entityMetaData = cmd.getEntityMetaData();
                     if (entityMetaData != null) {
                         DBSEntity docEntity = DBUtils.getEntityFromMetaData(monitor, session.getExecutionContext(), entityMetaData);
                         if (docEntity != null) {
-                            DBSEntityAttribute attribute = docEntity.getAttribute(monitor, ((DBCAttributeMetaData) type).getName());
-                            if (attribute instanceof DBSTypedObjectEx) {
-                                DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                                if (dataType instanceof PostgreDataType) {
-                                    return (PostgreDataType) dataType;
+                            DBSEntityAttribute attribute = docEntity.getAttribute(monitor, cmd.getName());
+                            if (attribute instanceof DBSTypedObjectEx tee) {
+                                DBSDataType dataType = tee.getDataType();
+                                if (dataType instanceof PostgreDataType dt) {
+                                    return dt;
                                 }
                             }
                         }
                     }
                     {
-                        String databaseName = ((JDBCColumnMetaData) type).getCatalogName();
+                        String databaseName = cmd.getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
                             String typeName = type.getTypeName();
@@ -484,8 +451,8 @@ public class PostgreUtils {
 
             String typeName = type.getTypeName();
             DBSInstance ownerInstance = session.getExecutionContext().getOwnerInstance();
-            if (ownerInstance instanceof PostgreDatabase) {
-                PostgreDataType localDataType = ((PostgreDatabase) ownerInstance).getDataType(monitor, typeName);
+            if (ownerInstance instanceof PostgreDatabase pdb) {
+                PostgreDataType localDataType = pdb.getDataType(monitor, typeName);
                 if (localDataType != null) {
                     return localDataType;
                 }
@@ -496,7 +463,9 @@ public class PostgreUtils {
 
     @Nullable
     public static PostgreDataType resolveTypeFullName(
-        @NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull String fullTypeName
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreSchema schema,
+        @NotNull String fullTypeName
     ) throws DBException {
         return resolveTypeFullName(monitor, schema.getDataSource(), schema.getDatabase(), schema, fullTypeName);
     }
@@ -520,8 +489,11 @@ public class PostgreUtils {
 
     @Nullable
     private static PostgreDataType resolveTypeFullName(
-        @NotNull DBRProgressMonitor monitor, @NotNull PostgreDataSource dataSource, @NotNull PostgreDatabase database,
-        @NotNull PostgreSchema schema, @NotNull String fullTypeName
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreDataSource dataSource,
+        @NotNull PostgreDatabase database,
+        @NotNull PostgreSchema schema,
+        @NotNull String fullTypeName
     ) throws DBException {
         final String identifier = DBUtils.getTypeModifiers(fullTypeName).getFirst();
         String[] parts = splitTypeNameIdentifier(dataSource, fullTypeName);
@@ -613,7 +585,11 @@ public class PostgreUtils {
         return typeName.startsWith("\"") || typeName.contains(".");
     }
 
-    public static void setArrayParameter(JDBCPreparedStatement dbStat, int index, List<? extends PostgreObject> objectList) throws SQLException {
+    public static void setArrayParameter(
+        @NotNull JDBCPreparedStatement dbStat,
+        int index,
+        @NotNull List<? extends PostgreObject> objectList
+    ) throws SQLException {
         for (int i = 0; i < objectList.size(); i++) {
             dbStat.setLong(index + i, objectList.get(i).getObjectId());
         }
@@ -625,8 +601,9 @@ public class PostgreUtils {
         @NotNull String definition,
         @NotNull Map<String, Object> options
     ) throws DBException {
+        String clearSQLDefinition = SQLUtils.stripComments(view.getDataSource().getSQLDialect(), definition);
         // In some cases view definition already has view header (e.g. Redshift + with no schema binding)
-        if (definition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
+        if (clearSQLDefinition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
             return definition;
         }
         StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
@@ -650,7 +627,8 @@ public class PostgreUtils {
         return sql.toString();
     }
 
-    public static PostgreServerType getServerType(DBPDriver driver) {
+    @NotNull
+    public static PostgreServerType getServerType(@NotNull DBPDriver driver) {
         String serverTypeName = CommonUtils.toString(driver.getDriverParameter(PostgreConstants.PROP_SERVER_TYPE));
         if (CommonUtils.isEmpty(serverTypeName)) {
             serverTypeName = PostgreServerPostgreSQL.TYPE_ID;
@@ -662,6 +640,7 @@ public class PostgreUtils {
         return serverType;
     }
 
+    @NotNull
     public static Set<PostgreRoleReference> extractGranteesFromACL(@NotNull PostgreDatabase database, @NotNull String[] acl) {
         final Set<PostgreRoleReference> grantees = new HashSet<>();
         for (String aclValue : acl) {
@@ -680,6 +659,7 @@ public class PostgreUtils {
     }
 
     // FIXME consider user/group/role name like "test test", "test=test", "test,test", "test\"test" and user name like "group" or "role"
+    @NotNull
     public static List<PostgrePrivilege> extractPermissionsFromACL(
         @NotNull PostgrePrivilegeOwner owner,
         @NotNull String[] acl,
@@ -753,6 +733,7 @@ public class PostgreUtils {
         return new PostgreRoleReference(database, grantee, granteeType);
     }
 
+    @NotNull
     public static List<PostgrePrivilege> extractPermissionsFromACL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull PostgrePrivilegeOwner owner,
@@ -792,7 +773,7 @@ public class PostgreUtils {
         String[] aclValues = new String[aclValuesCount];
         for (int i = 0; i < aclValuesCount; i++) {
             Object aclItem = Array.get(itemArray, i);
-            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem));
+            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem, owner.getDataSource()));
             // Quoted role names are stored with escaped quotes. We don't need quotes here (#13477)
             aclValue = aclValue.replace("\\\"", "\"");
             aclValues[i] = aclValue;
@@ -800,7 +781,8 @@ public class PostgreUtils {
         return extractPermissionsFromACL(owner, aclValues, isDefault);
     }
 
-    public static String getOptionsString(String[] options) {
+    @NotNull
+    public static String getOptionsString(@NotNull String[] options) {
         StringBuilder opt = new StringBuilder();
         opt.append("(");
         if (!ArrayUtils.isEmpty(options)) {
@@ -811,7 +793,7 @@ public class PostgreUtils {
                 if (divPos < 0) {
                     opt.append(option);
                 } else {
-                    opt.append(option.substring(0, divPos)).append(" '").append(option.substring(divPos + 1)).append("'");
+                    opt.append(option, 0, divPos).append(" '").append(option.substring(divPos + 1)).append("'");
                 }
             }
         }
@@ -819,20 +801,18 @@ public class PostgreUtils {
         return opt.toString();
     }
 
-    public static String getObjectTypeName(PostgrePrivilegeOwner object) {
-        if (object instanceof PostgreSequence) {
-            return "SEQUENCE";
-        } else if (object instanceof PostgreProcedure) {
-            return ((PostgreProcedure) object).getProcedureTypeName();
-        } else if (object instanceof PostgreSchema) {
-            return "SCHEMA";
-        } else if (object instanceof PostgreDatabase) {
-            return "DATABASE";
-        } else {
-            return "TABLE";
-        }
+    @NotNull
+    public static String getObjectTypeName(@NotNull PostgrePrivilegeOwner object) {
+        return switch (object) {
+            case PostgreSequence ignored -> "SEQUENCE";
+            case PostgreProcedure postgreProcedure -> postgreProcedure.getProcedureTypeName();
+            case PostgreSchema ignored2 -> "SCHEMA";
+            case PostgreDatabase ignored3 -> "DATABASE";
+            default -> "TABLE";
+        };
     }
 
+    @NotNull
     public static String getObjectUniqueName(PostgrePrivilegeOwner object, Map<String, Object> options) {
         if (object instanceof PostgreProcedure) {
             return ((PostgreProcedure) object).getFullQualifiedSignature();
@@ -841,7 +821,12 @@ public class PostgreUtils {
         }
     }
 
-    public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePrivilegeOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
+    public static void getObjectGrantPermissionActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgrePrivilegeOwner object,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (object.isPersisted() && CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(object, true);
             if (object.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
@@ -875,12 +860,13 @@ public class PostgreUtils {
         }
     }
 
-    public static boolean isGISDataType(String typeName) {
+    public static boolean isGISDataType(@NotNull String typeName) {
         return PostgreConstants.TYPE_GEOMETRY.equals(typeName) ||
                 PostgreConstants.TYPE_GEOGRAPHY.equals(typeName);
     }
 
-    public static String getRealSchemaName(PostgreDatabase database, String name) {
+    @NotNull
+    public static String getRealSchemaName(@NotNull PostgreDatabase database, @NotNull String name) {
         return name.replace(PostgreConstants.USER_VARIABLE, database.getMetaContext().getActiveUser());
     }
 
@@ -1015,8 +1001,11 @@ public class PostgreUtils {
         }
     }
 
+    /*
+       TODO consider using {@link org.jkiss.dbeaver.model.DBUtils#getConnectivityParameters(DBPConnectionConfiguration, DBPDriver)}.
+     */
     @Nullable
-    public static String getDatabaseNameFromConfiguration(DBPConnectionConfiguration configuration) {
+    public static String getDatabaseNameFromConfiguration(@NotNull DBPConnectionConfiguration configuration) {
         String activeDatabaseName = null;
         if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
             activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
@@ -1025,10 +1014,10 @@ public class PostgreUtils {
             }
         } else {
             String url = configuration.getUrl();
-            int divPos = url.lastIndexOf('/');
-            if (divPos > 0) {
-                int lastPos = getLastNonDatabaseCharPos(divPos, url);
-                activeDatabaseName = url.substring(divPos + 1, lastPos);
+            Pattern pattern = Pattern.compile("^.*?://[^/]+/([^?#]+)(?:[?#].*)?$");
+            Matcher matcher = pattern.matcher(url);
+            if (matcher.find()) {
+                activeDatabaseName = matcher.group(1).replace("%2F", "/");
             }
         }
         return activeDatabaseName;
@@ -1036,7 +1025,7 @@ public class PostgreUtils {
 
 
     @NotNull
-    public static String updateDatabaseNameInURL(String url, String dbName) {
+    public static String updateDatabaseNameInURL(@NotNull String url, @NotNull String dbName) {
         int divPos = url.lastIndexOf('/');
         if (divPos > 0) {
             int lastPos = getLastNonDatabaseCharPos(divPos, url);
@@ -1046,17 +1035,25 @@ public class PostgreUtils {
         }
     }
 
-    private static int getLastNonDatabaseCharPos(int divPos, String url) {
+    private static int getLastNonDatabaseCharPos(int divPos, @NotNull String url) {
         int lastPos = -1;
         for (int i = divPos + 1; i < url.length(); i++) {
             char c = url.charAt(i);
-            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
+            if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.' && c != '-') {
                 lastPos = i;
                 break;
             }
         }
-        if (lastPos < 0) lastPos = url.length();
+        if (lastPos < 0) {
+            lastPos = url.length();
+        }
         return lastPos;
     }
 
+    public static boolean isPgObject(@NotNull DBPDataSource dataSource, @Nullable Object object) {
+        if (object != null && dataSource instanceof PostgreDataSource postgreDataSource) {
+            return postgreDataSource.getServerType().isPGObject(object);
+        }
+        return false;
+    }
 }

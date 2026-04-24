@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public final class OracleUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages"; //$NON-NLS-1$
@@ -113,6 +113,8 @@ public final class OracleUIMessages extends NLS {
     public static String edit_create_checkbox_content_group_use_another_table_query_description;
     public static String edit_create_checkbox_content_group_search_metadata_in_synonyms;
     public static String edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip;
+    public static String edit_create_checkbox_content_group_search_metadata_in_sequences;
+    public static String edit_create_checkbox_content_group_search_metadata_in_sequences_tooltip;
     public static String dialog_controlgroup_performance;
     public static String edit_create_checkbox_group_use_rule;
     public static String edit_create_checkbox_adds_rule_tool_tip_text;

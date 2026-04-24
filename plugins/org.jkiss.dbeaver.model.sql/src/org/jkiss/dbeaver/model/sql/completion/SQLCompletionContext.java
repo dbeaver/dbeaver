@@ -68,6 +68,8 @@ public interface SQLCompletionContext {
 
     boolean isShowValues();
 
+    boolean isForceQualifiedColumnNames();
+
     SQLCompletionProposalBase createProposal(
         @NotNull SQLCompletionRequest request,
         @NotNull String displayString,

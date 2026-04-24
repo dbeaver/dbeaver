@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -47,7 +48,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public static final String PAGE_NAME = ConnectionPageShellCommands.class.getSimpleName();
 
     private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
-    private DataSourceDescriptor dataSource;
+    private final DataSourceDescriptor dataSource;
     private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
@@ -136,7 +137,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 }
             };
 
-            Composite settingsGroup = UIUtils.createControlGroup(detailsGroup, CoreMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite settingsGroup = UIUtils.createTitledComposite(detailsGroup, CoreMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL);
 
             showProcessCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_show_process, false);
             showProcessCheck.addSelectionListener(eventEditAdapter);
@@ -197,12 +198,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private DBRShellCommand getActiveCommand() {
         DBPConnectionEventType eventType = getSelectedEventType();
         if (eventType != null) {
-            DBRShellCommand command = eventsCache.get(eventType);
-            if (command == null) {
-                command = new DBRShellCommand(""); //$NON-NLS-1$
-                eventsCache.put(eventType, command);
-            }
-            return command;
+            return eventsCache.computeIfAbsent(eventType, k -> new DBRShellCommand("")); //$NON-NLS-1$
         }
         return null;
     }
@@ -268,7 +264,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSourceDescriptor) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
             dataSourceDescriptor.getConnectionConfiguration().setEvent(entry.getKey(), entry.getValue());
         }

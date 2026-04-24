@@ -39,6 +39,11 @@ public class CustomExpression implements Expression {
     }
 
     @Override
+    public <T, S> T accept(ExpressionVisitor<T> expressionVisitor, S context) {
+        return expressionVisitor.visit(new StringValue(), context);
+    }
+
+    @Override
     public String toString() {
         return expression;
     }

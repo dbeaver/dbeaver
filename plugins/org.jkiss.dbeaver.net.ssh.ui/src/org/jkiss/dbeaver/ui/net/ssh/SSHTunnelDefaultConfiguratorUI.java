@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.net.ssh;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -50,6 +51,7 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.runtime.AbstractTrackingJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,6 +62,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -79,6 +82,8 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
     private final List<ConfigurationWrapper> configurations = new ArrayList<>();
 
     private CredentialsPanel credentialsPanel;
+    private boolean loadingConfiguration;
+    private boolean switchingConfiguration;
 
     private ExpandableComposite hostsComposite;
     private TableViewer hostsViewer;
@@ -103,8 +108,23 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         composite.setLayout(new GridLayout(1, false));
 
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            credentialsPanel = new CredentialsPanel(settingsGroup, propertyChangeListener, DBPConnectionEditIntention.DEFAULT);
+            Composite settingsGroup = UIUtils.createTitledComposite(
+                composite,
+                SSHUIMessages.model_ssh_configurator_group_settings,
+                1,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
+            credentialsPanel = new CredentialsPanel(
+                settingsGroup,
+                () -> {
+                    if (loadingConfiguration || switchingConfiguration) {
+                        return;
+                    }
+                    refreshActiveConfiguration();
+                    propertyChangeListener.run();
+                },
+                DBPConnectionEditIntention.DEFAULT
+            );
         }
 
         {
@@ -169,31 +189,44 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
             hostsViewer.addSelectionChangedListener(e -> {
-                final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
-                final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
-
-                if (current == null) {
+                if (switchingConfiguration) {
                     return;
                 }
+                switchingConfiguration = true;
+                try {
+                    final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
+                    final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
 
-                if (last != null && last != current) {
-                    final SSHHostConfiguration updated = credentialsPanel.saveSettings();
-                    if (!last.configuration.equals(updated)) {
-                        last.configuration = updated;
-                        hostsViewer.refresh();
+                    if (current == null) {
+                        return;
                     }
+
+                    if (last != null && last != current) {
+                        final SSHHostConfiguration updated = credentialsPanel.saveSettings();
+                        if (!last.configuration.equals(updated)) {
+                            last.configuration = updated;
+                            hostsViewer.refresh(last);
+                        }
+                    }
+
+                    final int index = configurations.indexOf(current);
+                    final int count = configurations.size();
+
+                    createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
+                    deleteItem.setEnabled(count > 1);
+                    moveUpItem.setEnabled(index > 0);
+                    moveDownItem.setEnabled(index < count - 1);
+
+                    loadingConfiguration = true;
+                    try {
+                        loadConfiguration(current);
+                    } finally {
+                        loadingConfiguration = false;
+                    }
+                    propertyChangeListener.run();
+                } finally {
+                    switchingConfiguration = false;
                 }
-
-                final int index = configurations.indexOf(current);
-                final int count = configurations.size();
-
-                createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
-                deleteItem.setEnabled(count > 1);
-                moveUpItem.setEnabled(index > 0);
-                moveDownItem.setEnabled(index < count - 1);
-
-                loadConfiguration(current);
-                propertyChangeListener.run();
             });
 
             final ViewerColumnController<Object, ConfigurationWrapper> controller = new ViewerColumnController<>("ssh_hosts", hostsViewer);
@@ -236,12 +269,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             client.setLayoutData(new GridData(GridData.FILL_BOTH));
             group.setClient(client);
 
-            final Group generalGroup = UIUtils.createControlGroup(
+            Composite generalGroup = UIUtils.createTitledComposite(
                 client,
                 SSHUIMessages.model_ssh_configurator_group_general_text,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             tunnelImplCombo = UIUtils.createLabelCombo(
@@ -279,12 +311,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             // Hide tunnel sharing option if it's disabled
             UIUtils.setControlVisible(enableTunnelSharingCheck, !SSHUtils.DISABLE_SESSION_SHARING);
 
-            final Group timeoutsGroup = UIUtils.createControlGroup(
+            Composite timeoutsGroup = UIUtils.createTitledComposite(
                 client,
                 SSHUIMessages.model_ssh_configurator_group_timeouts_text,
                 2,
-                GridData.VERTICAL_ALIGN_FILL,
-                0
+                GridData.VERTICAL_ALIGN_FILL
             );
             keepAliveText = UIUtils.createLabelText(
                 timeoutsGroup,
@@ -299,14 +330,15 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             );
             setNumberEditStyles(tunnelTimeout);
 
-            final Group portForwardingGroup = UIUtils.createControlGroup(
-                client,
+            Composite pfWrapper = UIUtils.createComposite(client, 1);
+            pfWrapper.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).span(2, 1).create());
+
+            Composite portForwardingGroup = UIUtils.createTitledComposite(
+                pfWrapper,
                 SSHUIMessages.model_ssh_configurator_group_port_forwarding_text,
                 4,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
-            ((GridData) portForwardingGroup.getLayoutData()).horizontalSpan = 2;
             localHostText = UIUtils.createLabelText(
                 portForwardingGroup,
                 SSHUIMessages.model_ssh_configurator_label_local_host,
@@ -368,6 +400,16 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
         UIUtils.asyncExec(() -> UIUtils.resizeShell(parent.getShell()));
+    }
+
+    private void refreshActiveConfiguration() {
+        if (credentialsPanel.lastConfiguration != null) {
+            var wrapper = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+            if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
+                wrapper.configuration = credentialsPanel.saveSettings();
+                hostsViewer.refresh(wrapper);
+            }
+        }
     }
 
     private void loadConfiguration(@NotNull ConfigurationWrapper wrapper) {
@@ -526,26 +568,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         enableTunnelSharingCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_SHARE_TUNNELS, true));
 
         localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
-        int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
-        if (lpValue != 0) {
-            localPortSpinner.setText(String.valueOf(lpValue));
-        }
-
+        localPortSpinner.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT)));
         remoteHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_REMOTE_HOST)));
-        int rpValue = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
-        if (rpValue != 0) {
-            remotePortSpinner.setText(String.valueOf(rpValue));
-        }
-
-        int kaValue = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
-        if (kaValue != 0) {
-            keepAliveText.setText(String.valueOf(kaValue));
-        }
-
-        int timeoutValue = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
-        if (timeoutValue != 0) {
-            tunnelTimeout.setText(String.valueOf(timeoutValue));
-        }
+        remotePortSpinner.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT)));
+        keepAliveText.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
+        tunnelTimeout.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
 
         savedConfiguration = new DBWHandlerConfiguration(configuration);
 
@@ -664,6 +691,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
     static class CredentialsPanel extends Composite {
         private ConfigurationWrapper lastConfiguration;
 
+        private final boolean canEditCredentialsPerPolicy = !ApplicationPolicyProvider.getInstance()
+            .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
+
         private final Text hostNameText;
         private final Text hostPortText;
         private final Text userNameText;
@@ -695,11 +725,14 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 hostNameText = new Text(hostPortComp, SWT.BORDER);
                 hostNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 hostNameText.addModifyListener(listener);
+
                 hostPortText = UIUtils.createLabelText(hostPortComp, SSHUIMessages.model_ssh_configurator_label_port, String.valueOf(SSHConstants.DEFAULT_PORT));
+                hostPortText.addModifyListener(listener);
                 setNumberEditStyles(hostPortText);
             }
 
             userNameText = UIUtils.createLabelText(this, SSHUIMessages.model_ssh_configurator_label_user_name, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            userNameText.addModifyListener(listener);
 
             authMethodCombo = UIUtils.createLabelCombo(this, SSHUIMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
             authMethodCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -717,17 +750,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new ConfigurationFileSelector(
-                this,
-                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
-                false,
-                DBWorkbench.isDistributed()
-            );
-            privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            privateKeyText.getTextControl().addModifyListener(listener);
-            if (DBWorkbench.isDistributed()) {
-                privateKeyText.getTextControl().setEditable(false);
-            }
+            privateKeyText = getConfigurationFileSelector(listener);
 
             passwordLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_password);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -748,6 +771,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                     }
                 });
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy);
             }
 
             if (editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
@@ -755,6 +779,32 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 hostPortText.setEditable(false);
                 authMethodCombo.setEnabled(false);
             }
+        }
+
+        @NotNull
+        private ConfigurationFileSelector getConfigurationFileSelector(@NotNull ModifyListener listener) {
+            boolean isDistributed = DBWorkbench.isDistributed();
+            ConfigurationFileSelector selector = new ConfigurationFileSelector(
+                this,
+                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
+                false,
+                isDistributed
+            ) {
+                @Nullable
+                protected String getNewTextFromUser(boolean secured) {
+                    return EditTextDialog.editText(
+                        panel.getShell(),
+                        secured ? SSHUIMessages.model_ssh_dialog_set_private_key : SSHUIMessages.model_ssh_dialog_edit_private_key,
+                        secured ? "" : getText()
+                    );
+                }
+            };
+            selector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            selector.getTextControl().addModifyListener(listener);
+            if (isDistributed) {
+                selector.getTextControl().setEditable(false);
+            }
+            return selector;
         }
 
         public void loadSettings(@NotNull ConfigurationWrapper wrapper, boolean forceSavePassword) {
@@ -765,10 +815,10 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostPortText.setText(String.valueOf(configuration.port()));
 
             if (configuration.auth() instanceof SSHAuthConfiguration.WithPassword password) {
-                final boolean savePassword = forceSavePassword || password.savePassword();
+                final boolean savePassword = canEditCredentialsPerPolicy && (forceSavePassword || password.savePassword());
                 passwordText.setText(CommonUtils.notEmpty(password.password()));
                 savePasswordCheckbox.setSelection(savePassword);
-                savePasswordCheckbox.setEnabled(!forceSavePassword);
+                savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy && !forceSavePassword);
             }
 
             if (configuration.auth() instanceof SSHAuthConfiguration.Password) {
@@ -846,7 +896,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
         private void showPrivateKeyField(boolean show) {
             UIUtils.setControlVisible(privateKeyLabel, show);
-            UIUtils.setControlVisible(privateKeyText, show);
+            UIUtils.setControlVisible(privateKeyText.getPanel(), show);
         }
     }
 

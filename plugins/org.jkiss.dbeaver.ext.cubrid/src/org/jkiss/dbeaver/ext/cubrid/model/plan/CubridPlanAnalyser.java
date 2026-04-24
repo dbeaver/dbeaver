@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,25 +30,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridPlanAnalyser extends AbstractExecutionPlan
-{
+public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
-    private List<CubridPlanNode> rootNodes = new ArrayList<>();
-    private String queryPlan;
-    private String query;
+    private final List<CubridPlanNode> rootNodes = new ArrayList<>();
+    private final String query;
+    private final String planText;
 
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
             throws DBCException {
         this.query = query;
         try {
-            String plan =
-                    CubridStatementProxy.getQueryplan(
-                            session.getOriginal().createStatement(), query);
-            this.queryPlan = plan;
+            planText = CubridStatementProxy.getQueryplan(session.getOriginal().createStatement(), query);
             List<CubridPlanNode> tempNode = new ArrayList<>();
             CubridPlanNode parent = new CubridPlanNode();
             long totalCost = 0;
-            for (String fullText : plan.split("(?=Join graph segments)")) {
+            for (String fullText : planText.split("(?=Join graph segments)")) {
                 if (CommonUtils.isNotEmpty(fullText)) {
                     CubridPlanNode node = new CubridPlanNode(fullText);
                     totalCost = totalCost + node.getCost();
@@ -68,7 +64,7 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan
 
     @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(@Nullable Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return rootNodes;
     }
 
@@ -80,7 +76,19 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan
 
     @NotNull
     @Override
-    public String getPlanQueryString() throws DBException {
-        return queryPlan;
+    public String getPlanQueryString() {
+        return planText;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.TEXT;
+    }
+
+    @Nullable
+    @Override
+    public Object getPlanSourceData() {
+        return planText;
     }
 }

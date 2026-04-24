@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.*;
@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
+public class MySQLDataSourceProvider extends JDBCDataSourceProvider<MySQLDataSource> implements DBPNativeClientLocationManager {
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
     private static final String REGISTRY_ROOT_MYSQL_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";
@@ -55,7 +55,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     @Nullable
     private static Map<String, DBPNativeClientLocation> localClients;
-    private static Map<String,String> connectionsProps;
+    private static final Map<String,String> connectionsProps;
 
     static {
         connectionsProps = new HashMap<>();
@@ -82,8 +82,13 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return connectionsProps;
     }
 
-    public MySQLDataSourceProvider()
-    {
+    @DynamicCall
+    public MySQLDataSourceProvider() {
+        super(MySQLDataSource.class);
+    }
+
+    protected MySQLDataSourceProvider(@NotNull Class<? extends MySQLDataSource> dsClass) {
+        super(dsClass);
     }
 
     @Override
@@ -98,8 +103,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return FEATURE_CATALOGS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         }
@@ -119,7 +125,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         boolean needMariDBString = false;
         if (MySQLUtils.isMariaDB(driver)) {
             try {
-                Object driverInstance = driver.getDriverInstance(new VoidProgressMonitor());
+                Object driverInstance = driver.getDefaultDriverLoader().getDriverInstance(new VoidProgressMonitor());
                 if (driverInstance instanceof Driver && ((Driver) driverInstance).getMajorVersion() >= 3) {
                     // Since 3.0 version Maria DB driver only accept `jdbc:mariadb:` classpath by default.
                     needMariDBString = true;
@@ -147,7 +153,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public MySQLDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
@@ -202,14 +208,18 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         String path = System.getenv("PATH");
         if (path != null) {
             for (String token : path.split(File.pathSeparator)) {
-                File mysqlFile = new File(CommonUtils.removeTrailingSlash(token), MySQLUtils.getMySQLConsoleBinaryName());
-                if (mysqlFile.exists()) {
-                    File binFolder = mysqlFile.getAbsoluteFile().getParentFile();
+                File binPath = new File(CommonUtils.removeTrailingSlash(token));
+                File executableName = new File(binPath, MySQLUtils.getMariaDBConsoleBinaryName());
+                if (!executableName.exists()) {
+                    executableName = new File(binPath, MySQLUtils.getMySQLConsoleBinaryName());
+                }
+                if (executableName.exists()) {
+                    File binFolder = executableName.getAbsoluteFile().getParentFile();
                     if (binFolder.getName().equalsIgnoreCase("bin")) {
                         String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
                         log.trace(
-                            "Found a MySQL location in PATH. token=%s mysqlFile=%s binFolder=%s homeId=%s"
-                            .formatted(token, mysqlFile, binFolder, homeId)
+                            "Found a MySQL location in PATH. token=%s executableName=%s binFolder=%s homeId=%s"
+                            .formatted(token, executableName, binFolder, homeId)
                         );
                         result.put(homeId, new LocalNativeClientLocation(homeId, homeId));
                     }
@@ -274,9 +284,12 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             binPath = binSubfolder;
         }
 
-        String cmd = new File(
-            binPath,
-            MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
+        File executableName = new File(binPath, MySQLUtils.getMariaDBConsoleBinaryName());
+        if (!executableName.exists()) {
+            executableName = new File(binPath, MySQLUtils.getMySQLConsoleBinaryName());
+        }
+
+        String cmd = executableName.getAbsolutePath();
 
         try {
             Process p = Runtime.getRuntime().exec(new String[]{cmd, MySQLConstants.FLAG_VERSION});

@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension
@@ -33,7 +16,7 @@
                   label="WMI data source"
                   path="wmi">
                 <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" description="WMI classes">
-                    <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" icon="icons/class.png">
+                    <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" icon="icons/class.svg">
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" icon="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                             <items label="Properties" itemLabel="Property" path="property" property="attributes"/>
                         </folder>
@@ -43,7 +26,7 @@
                     <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                         <items ref="Namespace"/>
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" icon="icons/classes.png" description="Classes">
-                            <items label="Classes" itemLabel="Class" path="class" property="classes" icon="icons/class.png" id="Class">
+                            <items label="Classes" itemLabel="Class" path="class" property="classes" icon="icons/class.svg" id="Class">
                                 <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassAttribute" label="Properties" icon="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                                     <items label="Properties" itemLabel="Property" path="attribute" property="allAttributes"/>
                                 </folder>
@@ -53,7 +36,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Associations" icon="icons/associations.png" description="Class Associations">
-                            <items label="Associations" itemLabel="Association" path="association" property="associations" icon="icons/association.png" id="Association">
+                            <items label="Associations" itemLabel="Association" path="association" property="associations" icon="icons/association.svg" id="Association">
                                 <items ref="ClassAttributes"/>
                             </items>
                         </folder>

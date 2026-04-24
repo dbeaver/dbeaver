@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,26 +27,26 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 /**
  * GenericTable
  */
-public class GenericProcedureParameter extends JDBCAttribute implements DBSProcedureParameter
-{
-    private String remarks;
-    private GenericProcedure procedure;
-    private DBSProcedureParameterKind parameterKind;
+public class GenericProcedureParameter extends JDBCAttribute implements DBSProcedureParameter {
+    private final String remarks;
+    private final GenericProcedure procedure;
+    private final DBSProcedureParameterKind parameterKind;
 
     public GenericProcedureParameter(
-            GenericProcedure procedure,
-            String columnName,
-            String typeName,
-            int valueType,
-            int ordinalPosition,
-            int columnSize,
-            Integer scale,
-            Integer precision,
-            boolean notNull,
-            String remarks,
-            DBSProcedureParameterKind parameterKind)
-    {
-        super(columnName,
+        @NotNull GenericProcedure procedure,
+        String columnName,
+        String typeName,
+        int valueType,
+        int ordinalPosition,
+        int columnSize,
+        Integer scale,
+        Integer precision,
+        boolean notNull,
+        String remarks,
+        @NotNull DBSProcedureParameterKind parameterKind
+    ) {
+        super(
+            columnName,
             typeName,
             valueType,
             ordinalPosition,
@@ -54,7 +54,8 @@ public class GenericProcedureParameter extends JDBCAttribute implements DBSProce
             scale,
             precision,
             notNull,
-            false);
+            false
+        );
         this.remarks = remarks;
         this.procedure = procedure;
         this.parameterKind = parameterKind;
@@ -62,29 +63,25 @@ public class GenericProcedureParameter extends JDBCAttribute implements DBSProce
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return procedure.getDataSource();
     }
 
     @Override
-    public GenericProcedure getParentObject()
-    {
+    public GenericProcedure getParentObject() {
         return procedure;
     }
 
     @NotNull
     @Override
     @Property(viewable = true, order = 30)
-    public DBSProcedureParameterKind getParameterKind()
-    {
+    public DBSProcedureParameterKind getParameterKind() {
         return parameterKind;
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return remarks;
     }
 
