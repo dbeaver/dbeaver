@@ -117,7 +117,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
         table.setHeaderVisible(true);
 
         GridDataFactory.fillDefaults()
-            .grab(true, false)
+            .grab(true, true)
             .hint(600, 300)
             .applyTo(table);
 
@@ -203,6 +203,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
         private final QMQueryFilter original;
         private String filter;
         private String title;
+        private boolean modified;
 
         MutableQueryFilter(@NotNull QMQueryFilter original) {
             this.original = original;
@@ -216,7 +217,10 @@ public final class ResultSetFilterDialog extends BaseDialog {
         }
 
         void setFilter(@NotNull String filter) {
-            this.filter = filter;
+            if (!this.filter.equals(filter)) {
+                this.filter = filter;
+                this.modified = true;
+            }
         }
 
         @NotNull
@@ -225,7 +229,10 @@ public final class ResultSetFilterDialog extends BaseDialog {
         }
 
         void setTitle(@NotNull String title) {
-            this.title = title;
+            if (!this.title.equals(title)) {
+                this.title = title;
+                this.modified = true;
+            }
         }
     }
 }

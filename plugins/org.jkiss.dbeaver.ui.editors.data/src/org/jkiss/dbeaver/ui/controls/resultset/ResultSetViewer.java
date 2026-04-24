@@ -5205,6 +5205,11 @@ public class ResultSetViewer extends Viewer
                 filters.add(filter);
             }
         }
+
+        @Override
+        public boolean isPersistent() {
+            return false;
+        }
     }
 
     private class EmptySelection extends StructuredSelection implements IResultSetSelection {

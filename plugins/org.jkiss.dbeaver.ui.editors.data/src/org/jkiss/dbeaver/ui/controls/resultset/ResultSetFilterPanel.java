@@ -23,10 +23,15 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.TextViewerUndoManager;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -62,6 +67,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllPinsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllSettingsAction;
@@ -72,10 +78,12 @@ import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHan
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -568,7 +576,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     void addFiltersHistory(@NotNull String whereCondition) {
         var oldFilter = filtersHistory.stream()
-            .filter(f -> f.query().equals(whereCondition))
+            .filter(f -> f.filter().equals(whereCondition))
             .findFirst().orElse(null);
         if (oldFilter != null) {
             // Make it the last
@@ -973,38 +981,50 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         private void showFilterHistoryPopup() {
-            var context = viewer.getExecutionContext();
-            if (context != null) {
-                var dialog = new ResultSetFilterDialog(
-                    getShell(),
-                    context,
-                    viewer.getFilterManager(),
-                    getActiveSourceQueryNormalized(false)
-                );
-                dialog.open();
-                return;
-            }
-
-            if (popup != null) {
+            if (popup != null && !popup.isDisposed()) {
                 closeHistoryPopup();
                 return;
             }
+
             popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
-            popup.setLayout(new FillLayout());
+            GridLayoutFactory.fillDefaults()
+                .spacing(0, 0)
+                .applyTo(popup);
+
             Table editControl = createFilterHistoryPanel(popup);
+
+            var context = viewer.getExecutionContext();
+            if (viewer.getFilterManager().isPersistent() && context != null) {
+                var manageButton = new Button(popup, SWT.PUSH);
+                manageButton.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+                manageButton.setText("Manage Filters");
+                manageButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    closeHistoryPopup();
+
+                    var dialog = new ResultSetFilterDialog(
+                        getShell(),
+                        context,
+                        viewer.getFilterManager(),
+                        getActiveSourceQueryNormalized(false)
+                    );
+                    dialog.open();
+                }));
+            }
 
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
             Rectangle displayRect = getMonitor().getClientArea();
-            final Point filterTextSize = filtersText.getSize();
-            int width = filterTextSize.x + historyPanel.getSize().x;
+
+            int x = parentRect.x;
+            int width = filtersText.getSize().x + historyPanel.getSize().x;
             if (filterExpandPanel != null) {
-                width += filterExpandPanel.getSize().x;
+                int w = filterExpandPanel.getSize().x;
+                x -= w;
+                width += w;
             }
             if (executePanel != null) {
                 width += executePanel.getSize().x;
             }
-            int height = Math.min(MAX_HISTORY_PANEL_HEIGHT, editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-            int x = parentRect.x;
+            int height = Math.min(MAX_HISTORY_PANEL_HEIGHT, popup.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             int y = parentRect.y + getSize().y;
             if (y + height > displayRect.y + displayRect.height) {
                 y = parentRect.y - height;
@@ -1015,18 +1035,28 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (vsb != null) {
                 tableWidth -= vsb.getSize().x;
             }
-            editControl.getColumn(0).setWidth(tableWidth);
+            int queryWidth = (int) (tableWidth * 0.7f);
+            int titleWidth = tableWidth - queryWidth;
+            editControl.getColumn(0).setWidth(queryWidth);
+            editControl.getColumn(1).setWidth(titleWidth);
+
             popup.setVisible(true);
             editControl.setFocus();
 
-            editControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
+            var onFocusLost = FocusListener.focusLostAdapter(e -> {
+                if (popup == null || popup.isDisposed()) {
+                    return;
+                }
+                var focusControl = popup.getDisplay().getFocusControl();
+                if (focusControl != null && !UIUtils.isParent(popup, focusControl)) {
                     // Do not nullify it to avoid double-opening of popup
                     // when user click on button and popup is already visible
                     popup.dispose();
                 }
             });
+            for (Control child : popup.getChildren()) {
+                child.addFocusListener(onFocusLost);
+            }
         }
 
         private void closeHistoryPopup() {
@@ -1038,99 +1068,94 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         @NotNull
         private Table createFilterHistoryPanel(final Shell popup) {
-            final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
-            new TableColumn(historyTable, SWT.NONE);
-
             if (filtersHistory.isEmpty()) {
                 loadFiltersHistory(getActiveSourceQueryNormalized(false));
             }
 
-            if (filtersHistory.isEmpty()) {
-                // nothing
-                new TableItem(historyTable, SWT.NONE).setText("");
-            } else {
-                String curFilterValue = filtersText.getText();
-                for (int i = filtersHistory.size(); i > 0; i--) {
-                    QMQueryFilter hi = filtersHistory.get(i - 1);
-                    if (!hi.query().equals(curFilterValue)) {
-                        new TableItem(historyTable, SWT.NONE).setText(hi.query());
-                    }
-                }
-                //historyTable.deselectAll();
-                if (historyTable.getItemCount() > 0) {
-                    historyTable.setSelection(0);
-                }
-            }
+            var historyViewer = new TableViewer(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
+            historyViewer.setContentProvider(new ListContentProvider());
 
-            historyTable.addMouseTrackListener(new MouseTrackAdapter() {
-                @Override
-                public void mouseHover(MouseEvent e) {
-                    //hoverItem = historyTable.getItem(new Point(e.x, e.y));
-                }
+            var historyTable = historyViewer.getTable();
+            historyTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
+            var filterTextColumn = new TableViewerColumn(historyViewer, SWT.LEFT);
+            filterTextColumn.setLabelProvider(new StyledCellLabelProvider() {
                 @Override
-                public void mouseExit(MouseEvent e) {
-                    hoverItem = null;
+                public void update(@NotNull ViewerCell cell) {
+                    cell.setText(((QMQueryFilter) cell.getElement()).filter());
+                    cell.setFont(BaseThemeSettings.instance.monospaceFont);
                 }
             });
-            historyTable.addKeyListener(new KeyAdapter() {
+
+            var filterTitleColumn = new TableViewerColumn(historyViewer, SWT.RIGHT);
+            filterTitleColumn.setLabelProvider(new StyledCellLabelProvider() {
                 @Override
-                public void keyPressed(KeyEvent e) {
-                    TableItem item = hoverItem;
-                    if (item == null) {
-                        final int selectionIndex = historyTable.getSelectionIndex();
-                        if (selectionIndex != -1) {
-                            item = historyTable.getItem(selectionIndex);
-                        }
+                public void update(@NotNull ViewerCell cell) {
+                    cell.setText(((QMQueryFilter) cell.getElement()).title());
+                    cell.setForeground(NavigatorThemeSettings.instance.hintColor);
+                }
+            });
+
+            var currentFilterText = filtersText.getText();
+            var entries = filtersHistory.stream()
+                .filter(f -> !f.filter().equals(currentFilterText))
+                .sorted(Comparator.nullsFirst(Comparator.comparing(QMQueryFilter::lastUsed)))
+                .toList();
+
+            historyViewer.setInput(entries);
+
+            historyTable.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+                TableItem item = hoverItem;
+                if (item == null) {
+                    final int selectionIndex = historyTable.getSelectionIndex();
+                    if (selectionIndex != -1) {
+                        item = historyTable.getItem(selectionIndex);
                     }
-                    if (item != null && !item.isDisposed()) {
-                        switch (e.keyCode) {
-                            case SWT.DEL:
-                                // FIXME
-                                // final String filterValue = item.getText();
-                                // try {
-                                //     DBCExecutionContext context = viewer.getExecutionContext();
-                                //     if (context != null) {
-                                //         viewer.getFilterManager().deleteQueryFilterValue(
-                                //             context,
-                                //             filterValue
-                                //         );
-                                //     }
-                                // } catch (DBException e1) {
-                                //     log.warn("Error deleting filter value [" + filterValue + "]", e1);
-                                // }
-                                // filtersHistory.remove(filterValue);
-                                // item.dispose();
-                                // hoverItem = null;
-                                break;
-                            case SWT.CR:
-                            case SWT.SPACE:
-                                final String newFilter = item.getText();
+                }
+                if (item != null && !item.isDisposed()) {
+                    switch (e.keyCode) {
+                        case SWT.DEL -> {
+                            // FIXME
+                            // final String filterValue = item.getText();
+                            // try {
+                            //     DBCExecutionContext context = viewer.getExecutionContext();
+                            //     if (context != null) {
+                            //         viewer.getFilterManager().deleteQueryFilterValue(
+                            //             context,
+                            //             filterValue
+                            //         );
+                            //     }
+                            // } catch (DBException e1) {
+                            //     log.warn("Error deleting filter value [" + filterValue + "]", e1);
+                            // }
+                            // filtersHistory.remove(filterValue);
+                            // item.dispose();
+                            // hoverItem = null;
+                        }
+                        case SWT.CR, SWT.SPACE -> {
+                            final String newFilter = item.getText();
+                            closeHistoryPopup();
+                            setFilterValue(newFilter);
+                            setCustomDataFilter();
+                        }
+                        case SWT.ARROW_UP -> {
+                            if (historyTable.getSelectionIndex() <= 0) {
                                 closeHistoryPopup();
-                                setFilterValue(newFilter);
-                                setCustomDataFilter();
-                                break;
-                            case SWT.ARROW_UP:
-                                if (historyTable.getSelectionIndex() <= 0) {
-                                    closeHistoryPopup();
-                                }
-                                break;
+                            }
                         }
                     }
                 }
-            });
+            }));
+            historyTable.addMouseTrackListener(MouseTrackListener.mouseExitAdapter(e -> hoverItem = null));
             historyTable.addMouseMoveListener(e -> hoverItem = historyTable.getItem(new Point(e.x, e.y)));
-            historyTable.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    if (hoverItem != null) {
-                        final String newFilter = hoverItem.getText();
-                        closeHistoryPopup();
-                        setFilterValue(newFilter);
-                        setCustomDataFilter();
-                    }
+            historyTable.addMouseListener(MouseListener.mouseDownAdapter(e -> {
+                if (hoverItem != null) {
+                    final String newFilter = hoverItem.getText();
+                    closeHistoryPopup();
+                    setFilterValue(newFilter);
+                    setCustomDataFilter();
                 }
-            });
+            }));
 
             return historyTable;
         }
