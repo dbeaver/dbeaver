@@ -87,7 +87,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         if (typeMod == OracleDataTypeModifier.REF) {
             this.valueType = Types.REF;
         }
-        this.charSemantics = OracleCharacterSemantics.resolve(JDBCUtils.safeGetString(dbResult, "CHAR_USED"));
+        this.charSemantics = OracleCharacterSemantics.fromCode(JDBCUtils.safeGetString(dbResult, "CHAR_USED"));
         setMaxLength(JDBCUtils.safeGetLong(dbResult, this.charSemantics == OracleCharacterSemantics.CHAR ? "CHAR_LENGTH" : "DATA_LENGTH"));
         setRequired(!OracleConstants.RESULT_YES_VALUE.equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
         Integer scale = JDBCUtils.safeGetInteger(dbResult, "DATA_SCALE");
@@ -121,9 +121,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         String normalized = fullTypeName.trim();
         Matcher m = TYPE_WITH_SEMANTICS.matcher(normalized);
         if (m.matches()) {
-            charSemantics = "CHAR".equalsIgnoreCase(m.group(3))
-                ? OracleCharacterSemantics.CHAR
-                : OracleCharacterSemantics.BYTE;
+            charSemantics = OracleCharacterSemantics.fromKeyword(m.group(3));
             normalized = m.group(1) + "(" + m.group(2) + ")";
             setMaxLength(Long.parseLong(m.group(2)));
         } else {

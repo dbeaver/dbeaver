@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
@@ -34,21 +35,36 @@ public enum OracleCharacterSemantics {
         this.keyword = keyword;
     }
 
+    @NotNull
     public String getCode() {
         return code;
     }
 
+    @NotNull
     public String getKeyword() {
         return keyword;
     }
 
     @Nullable
-    public static OracleCharacterSemantics resolve(@Nullable String code) {
+    public static OracleCharacterSemantics fromCode(@Nullable String code) {
         if (code == null) {
             return null;
         }
         for (OracleCharacterSemantics value : values()) {
             if (value.code.equals(code)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static OracleCharacterSemantics fromKeyword(@Nullable String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+        for (OracleCharacterSemantics value : values()) {
+            if (value.keyword.equalsIgnoreCase(keyword)) {
                 return value;
             }
         }
