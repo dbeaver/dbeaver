@@ -30,7 +30,7 @@ public enum OracleCharacterSemantics {
     private final String code;
     private final String keyword;
 
-    OracleCharacterSemantics(String code, String keyword) {
+    OracleCharacterSemantics(@NotNull String code, @NotNull String keyword) {
         this.code = code;
         this.keyword = keyword;
     }
