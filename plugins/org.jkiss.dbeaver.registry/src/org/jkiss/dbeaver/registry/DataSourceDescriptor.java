@@ -904,7 +904,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         persistSecrets(secretController, false);
     }
 
@@ -994,7 +994,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             // try to load private user credentials
             String secretValue = secretController.getPrivateSecretValue(getSecretValueId());

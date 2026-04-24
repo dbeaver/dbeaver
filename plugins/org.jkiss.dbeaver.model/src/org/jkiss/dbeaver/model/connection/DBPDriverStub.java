@@ -14,25 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.greenplum.model;
-
+package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 
 /**
- * PostgreServerGreengage
+ * Driver stub. Just describes/advertises the driver which exists in another product edition.
  */
-public class PostgreServerGreengage
-        extends PostgreServerGreenplum {
-
-    public PostgreServerGreengage(PostgreDataSource dataSource) {
-        super(dataSource);
-    }
-
-    @NotNull
-    @Override
-    public String getServerTypeName() {
-        return "Greengage";
-    }
+public record DBPDriverStub(
+    @NotNull String nonAvailabilityTitle,
+    @NotNull String nonAvailabilityDescription,
+    @NotNull String nonAvailabilityReason
+) {
 }

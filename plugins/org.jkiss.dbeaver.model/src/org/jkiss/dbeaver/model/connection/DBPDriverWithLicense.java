@@ -14,25 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.greenplum.model;
 
+package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * PostgreServerGreengage
+ * If driver requires a commercial license then this class is implemented by DBPDriver
+ * and provides information about license details.
  */
-public class PostgreServerGreengage
-        extends PostgreServerGreenplum {
-
-    public PostgreServerGreengage(PostgreDataSource dataSource) {
-        super(dataSource);
-    }
+public interface DBPDriverWithLicense {
 
     @NotNull
-    @Override
-    public String getServerTypeName() {
-        return "Greengage";
-    }
+    String getVendorName();
+
+    @NotNull
+    String getVendorURL();
+
+    @NotNull
+    String getDriverPurchaseURL();
+
+    @Nullable
+    DBPDriverLicense getCurrentLicense() throws DBException;
+
+    boolean supportsTrialLicense();
+
+    @NotNull
+    DBPDriverLicense requestTrialLicense(@NotNull DBRProgressMonitor monitor) throws DBException;
+
 }
