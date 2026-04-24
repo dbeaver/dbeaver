@@ -87,8 +87,6 @@ public class GizmoSQLMetaModel extends GenericMetaModel {
                 }
                 throw new DBDatabaseException(second, sourceObject.getDataSource());
             }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
