@@ -89,7 +89,8 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
             this.rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         }
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
-        if (!quoteProp.equals(DEF_QUOTE_CHAR)) {
+        String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
+        if (!CommonUtils.isEmpty(quoteStr) && !quoteStr.equals(DEF_QUOTE_CHAR)) {
             quoteChar = '\'';
         }
     }
@@ -127,7 +128,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
             if (CommonUtils.isEmpty(columnName)) {
                 columnName = column.getName();
             }
-            out.write("\t\t" + quoteChar + JSONUtils.escapeJsonString(columnName) + quoteChar + " => ");
+            out.write("\t\t" + quoteChar + escapePhpString(columnName, quoteChar) + quoteChar + " => ");
             Object cellValue = row[i];
             if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
@@ -187,7 +188,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            getWriter().write(quoteChar + JSONUtils.escapeJsonString(value) + quoteChar);
+            getWriter().write(quoteChar + escapePhpString(value, quoteChar) + quoteChar);
         } else {
             getWriter().write("null");
         }
@@ -202,7 +203,31 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
             if (count <= 0) {
                 break;
             }
-            getWriter().write(JSONUtils.escapeJsonString(new String(buffer, 0, count)));
+            getWriter().write(escapePhpString(new String(buffer, 0, count), quoteChar));
         }
+    }
+
+    static String escapePhpString(@Nullable String value, char quoteChar) {
+        if (value == null) {
+            return null;
+        }
+        if (quoteChar == '\'') {
+            // PHP single-quoted strings only recognize \\ and \' as escape
+            // sequences; every other character (including \n, \r, \t) is
+            // emitted literally. Escape the two that matter so a value like
+            // `O'Brien` or `C:\path` survives the round-trip.
+            StringBuilder result = new StringBuilder(value.length());
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == '\\' || c == '\'') {
+                    result.append('\\');
+                }
+                result.append(c);
+            }
+            return result.toString();
+        }
+        // Double-quoted strings support JSON-style \n / \r / \t / \" / \\
+        // escapes, which PHP interprets the same way.
+        return JSONUtils.escapeJsonString(value);
     }
 }
