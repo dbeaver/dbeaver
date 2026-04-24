@@ -83,7 +83,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -576,7 +575,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     void addFiltersHistory(@NotNull String whereCondition) {
         var oldFilter = filtersHistory.stream()
-            .filter(f -> f.filter().equals(whereCondition))
+            .filter(f -> f.text().equals(whereCondition))
             .findFirst().orElse(null);
         if (oldFilter != null) {
             // Make it the last
@@ -991,7 +990,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 .spacing(0, 0)
                 .applyTo(popup);
 
-            Table editControl = createFilterHistoryPanel(popup);
+            if (filtersHistory.isEmpty()) {
+                loadFiltersHistory(getActiveSourceQueryNormalized(false));
+            }
+
+            Table editControl = createFilterHistoryPanel(popup, filtersHistory);
 
             var context = viewer.getExecutionContext();
             if (viewer.getFilterManager().isPersistent() && context != null) {
@@ -1004,6 +1007,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     var dialog = new ResultSetFilterDialog(
                         getShell(),
                         context,
+                        filtersHistory,
                         viewer.getFilterManager(),
                         getActiveSourceQueryNormalized(false)
                     );
@@ -1067,11 +1071,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         @NotNull
-        private Table createFilterHistoryPanel(final Shell popup) {
-            if (filtersHistory.isEmpty()) {
-                loadFiltersHistory(getActiveSourceQueryNormalized(false));
-            }
-
+        private Table createFilterHistoryPanel(@NotNull Shell popup, @NotNull List<QMQueryFilter> filters) {
             var historyViewer = new TableViewer(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
             historyViewer.setContentProvider(new ListContentProvider());
 
@@ -1082,7 +1082,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             filterTextColumn.setLabelProvider(new StyledCellLabelProvider() {
                 @Override
                 public void update(@NotNull ViewerCell cell) {
-                    cell.setText(((QMQueryFilter) cell.getElement()).filter());
+                    cell.setText(((QMQueryFilter) cell.getElement()).text());
                     cell.setFont(BaseThemeSettings.instance.monospaceFont);
                 }
             });
@@ -1097,9 +1097,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             });
 
             var currentFilterText = filtersText.getText();
-            var entries = filtersHistory.stream()
-                .filter(f -> !f.filter().equals(currentFilterText))
-                .sorted(Comparator.nullsFirst(Comparator.comparing(QMQueryFilter::lastUsed)))
+            var entries = filters.stream()
+                .filter(f -> !f.text().equals(currentFilterText))
+                // FIXME
+                // .sorted(Comparator.nullsFirst(Comparator.comparing(QMQueryFilter::lastUsed)))
                 .toList();
 
             historyViewer.setInput(entries);

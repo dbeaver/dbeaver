@@ -45,6 +45,11 @@ public interface IResultSetFilterManager {
         @NotNull QMQueryFilter filter
     ) throws DBException;
 
+    void useQueryFilter(
+        @NotNull DBCExecutionContext context,
+        @NotNull QMQueryFilter filter
+    ) throws DBException;
+
     /**
      * Whether the filter history is persistent (saved between sessions) or not.
      */

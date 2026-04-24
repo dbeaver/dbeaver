@@ -23,7 +23,7 @@ import java.time.Instant;
 
 public record QMQueryFilter(
     @NotNull String query,
-    @NotNull String filter,
+    @NotNull String text,
     @Nullable String title,
     @Nullable Instant lastUsed,
     int useCount

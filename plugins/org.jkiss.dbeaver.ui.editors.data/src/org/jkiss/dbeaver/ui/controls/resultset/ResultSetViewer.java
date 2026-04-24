@@ -5185,8 +5185,8 @@ public class ResultSetViewer extends Viewer
 
         @NotNull
         @Override
-        public List<QMQueryFilter> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
-            final List<QMQueryFilter> filters = filterHistory.get(query);
+        public Collection<QMQueryFilter> getQueryFilterHistory(@Nullable DBCExecutionContext context, @NotNull String query) {
+            var filters = filterHistory.get(query);
             if (filters != null) {
                 return List.copyOf(filters);
             }
@@ -5195,15 +5195,32 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void saveQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull QMQueryFilter filter) {
-            filterHistory.computeIfAbsent(filter.query(), k -> new ArrayList<>()).add(filter);
+            var filters = filterHistory.computeIfAbsent(filter.query(), k -> new ArrayList<>());
+            filters.add(filter);
         }
 
         @Override
         public void deleteQueryFilterValue(@Nullable DBCExecutionContext context, @NotNull QMQueryFilter filter) {
-            List<QMQueryFilter> filters = filterHistory.get(filter.query());
+            var filters = filterHistory.get(filter.query());
             if (filters != null) {
                 filters.add(filter);
             }
+        }
+
+        @Override
+        public void useQueryFilter(@NotNull DBCExecutionContext context, @NotNull QMQueryFilter filter) throws DBException {
+            var filters = filterHistory.get(filter.query());
+            if (filters != null && filters.remove(filter)) {
+                filters.add(new QMQueryFilter(
+                    filter.query(),
+                    filter.text(),
+                    filter.title(),
+                    Instant.now(),
+                    filter.useCount() + 1
+                ));
+                return;
+            }
+            throw new DBException("Filter not found in history");
         }
 
         @Override

@@ -45,25 +45,25 @@ public class TextGetSetEditingSupport<T> extends EditingSupport {
 
     @NotNull
     @Override
-    protected CellEditor getCellEditor(@Nullable Object element) {
+    protected CellEditor getCellEditor(@NotNull Object element) {
         return new TextCellEditor((Composite) getViewer().getControl());
     }
 
     @Override
-    protected boolean canEdit(@Nullable Object element) {
+    protected boolean canEdit(@NotNull Object element) {
         return true;
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    protected Object getValue(@Nullable Object element) {
+    protected Object getValue(@NotNull Object element) {
         return getter.apply((T) element);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void setValue(@Nullable Object element, @Nullable Object value) {
+    protected void setValue(@NotNull Object element, @Nullable Object value) {
         setter.accept((T) element, (String) value);
         viewer.update(element, null);
     }

@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -48,6 +49,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class ResultSetFilterDialog extends BaseDialog {
@@ -57,9 +59,12 @@ public final class ResultSetFilterDialog extends BaseDialog {
     private final IResultSetFilterManager filterManager;
     private final String query;
 
+    private final List<QMQueryFilter> filters = new ArrayList<>();
+
     public ResultSetFilterDialog(
         @Nullable Shell parentShell,
         @NotNull DBCExecutionContext executionContext,
+        @NotNull List<QMQueryFilter> filters,
         @NotNull IResultSetFilterManager filterManager,
         @NotNull String query
     ) {
@@ -75,32 +80,36 @@ public final class ResultSetFilterDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         var composite = super.createDialogArea(parent);
+        ((GridLayout) composite.getLayout()).numColumns = 2;
 
         var searchText = new Text(composite, SWT.SEARCH | SWT.ICON_SEARCH);
         searchText.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
         searchText.setMessage("Enter expression or title to search");
 
-        List<MutableQueryFilter> filters;
+        var toolBar = new ToolBar(composite, SWT.FLAT);
+
+        List<MutableQueryFilter> filters = new ArrayList<>();
         try {
-            filters = loadFilters();
+            filters.addAll(loadFilters());
         } catch (DBException e) {
             log.error("Error loading filters history", e);
             DBWorkbench.getPlatformUI().showError("Error loading filters", "An error occurred while loading filters history", e);
-            filters = List.of();
         }
 
-        createTable(composite, filters);
-
-        var toolBar = new ToolBar(composite, SWT.FLAT);
+        var viewer = createTable(composite, filters);
         UIUtils.createToolItem(
             toolBar,
-            "Add",
+            "Add new filter",
             UIIcon.ROW_ADD,
-            SelectionListener.widgetSelectedAdapter(e -> System.out.println("Add"))
+            SelectionListener.widgetSelectedAdapter(e -> {
+                var filter = new MutableQueryFilter(new QMQueryFilter(query, "", null, null, 0));
+                filters.add(filter);
+                viewer.refresh();
+            })
         );
         UIUtils.createToolItem(
             toolBar,
-            "Remove",
+            "Remove selected filter",
             UIIcon.ROW_DELETE,
             SelectionListener.widgetSelectedAdapter(e -> System.out.println("Remove"))
         );
@@ -108,7 +117,8 @@ public final class ResultSetFilterDialog extends BaseDialog {
         return composite;
     }
 
-    private static void createTable(@NotNull Composite composite, @NotNull List<MutableQueryFilter> filters) {
+    @NotNull
+    private static TableViewer createTable(@NotNull Composite composite, @NotNull List<MutableQueryFilter> filters) {
         var viewer = new TableViewer(composite, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         viewer.setContentProvider(new ListContentProvider());
         viewer.setInput(filters);
@@ -118,6 +128,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
 
         GridDataFactory.fillDefaults()
             .grab(true, true)
+            .span(2, 1)
             .hint(600, 300)
             .applyTo(table);
 
@@ -129,7 +140,12 @@ public final class ResultSetFilterDialog extends BaseDialog {
             true,
             true,
             MutableQueryFilter::getFilter,
-            new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getFilter, MutableQueryFilter::setFilter)
+            new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getFilter, MutableQueryFilter::setFilter) {
+                @Override
+                protected boolean canEdit(@NotNull Object element) {
+                    return !((MutableQueryFilter) element).existing;
+                }
+            }
         );
         controller.addColumn(
             "Title",
@@ -169,6 +185,8 @@ public final class ResultSetFilterDialog extends BaseDialog {
         });
         table.setMenu(manager.createContextMenu(table));
         table.addDisposeListener(e -> manager.dispose());
+
+        return viewer;
     }
 
     @Override
@@ -204,11 +222,13 @@ public final class ResultSetFilterDialog extends BaseDialog {
         private String filter;
         private String title;
         private boolean modified;
+        private boolean existing;
 
         MutableQueryFilter(@NotNull QMQueryFilter original) {
             this.original = original;
-            this.filter = original.filter();
+            this.filter = original.text();
             this.title = CommonUtils.notEmpty(original.title());
+            this.existing = true;
         }
 
         @NotNull
