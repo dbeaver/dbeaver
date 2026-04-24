@@ -1070,8 +1070,6 @@
                     <property name="useEncryption" value="true"/>
                     <property name="disableCertificateVerification" value="false"/>
                     <property name="catalog" value=""/>
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <!-- FoundationDB
