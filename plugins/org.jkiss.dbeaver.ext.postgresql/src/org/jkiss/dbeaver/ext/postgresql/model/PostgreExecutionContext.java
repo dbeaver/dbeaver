@@ -145,7 +145,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
         if (!schema.isSystem() && !schema.isPublicSchema()) {
             setSearchPath(monitor, schema.getName());
-            addSearchPath(schema.getName());
         }
 
         final PostgreSchema oldActiveSchema = getDefaultSchema();
@@ -231,36 +230,19 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return searchPath;
     }
 
-    private void addSearchPath(String path) {
-        searchPath.clear();
-        searchPath.add(path);
-        if (!path.contains(activeUser)) {
-            searchPath.add(activeUser);
-        }
-    }
-
+    // Set search_path to the chosen default only (avoids invalid cached entries, e.g. missing public on Redshift).
     private void setSearchPath(@NotNull DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
-        List<String> newSearchPath = new ArrayList<>(searchPath);
-        int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        {
-            if (schemaIndex < 0) {
-                // Remove from previous position
-                newSearchPath.addFirst(defSchemaName);
-            }
-        }
+        List<String> newSearchPath = new ArrayList<>();
+        newSearchPath.add(defSchemaName);
         if (Objects.equals(newSearchPath, searchPath)) {
             return;
         }
 
-        StringBuilder spString = new StringBuilder();
-        for (String sp : newSearchPath) {
-            if (!spString.isEmpty()) spString.append(",");
-            spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
-        }
+        String quoted = DBUtils.getQuotedIdentifier(getDataSource(), defSchemaName);
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
             DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
-                    JDBCUtils.executeSQL(session, "SET search_path = " + spString);
+                    JDBCUtils.executeSQL(session, "SET search_path = " + quoted);
                 } catch (SQLException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -268,6 +250,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         } catch (DBException e) {
             throw new DBCException("Error setting search path", e, this);
         }
+        searchPath.clear();
+        searchPath.add(defSchemaName);
     }
 
     private void setSessionRole(@NotNull DBRProgressMonitor monitor) throws DBCException {
