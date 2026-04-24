@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
+import org.jkiss.dbeaver.ext.bigquery.model.BQConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.internal.BigQueryMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
@@ -78,10 +78,10 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
 
         if (authTypeCombo != null) {
-            authTypeCombo.select(CommonUtils.toInt(connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE)));
+            authTypeCombo.select(CommonUtils.toInt(connectionInfo.getProperty(BQConstants.DRIVER_PROP_OAUTH_TYPE)));
         }
         String keyPath = connectionInfo.getProperty(
-            DBWorkbench.isDistributed() ? BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEY : BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH);
+            DBWorkbench.isDistributed() ? BQConstants.DRIVER_PROP_OAUTH_PVT_KEY : BQConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH);
         if (keyPath != null && authCertFile != null) {
             authCertFile.setText(keyPath);
         }
@@ -94,11 +94,11 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
 
         if (authTypeCombo != null) {
-            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
+            connectionInfo.setProperty(BQConstants.DRIVER_PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
         }
         if (authCertFile != null) {
             connectionInfo.setProperty(
-                DBWorkbench.isDistributed() ? BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEY : BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH,
+                DBWorkbench.isDistributed() ? BQConstants.DRIVER_PROP_OAUTH_PVT_KEY : BQConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH,
                 authCertFile.getText().trim());
         }
     }

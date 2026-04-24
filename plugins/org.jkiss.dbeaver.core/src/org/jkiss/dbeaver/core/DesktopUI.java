@@ -483,6 +483,17 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
+    public String promptText(String title, String prompt, String defValue) {
+        return new UITask<String>() {
+            @Override
+            public String runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();                
+                return EditTextDialog.editText(shell, title, defValue, prompt);
+            }
+        }.execute();
+    }
+
+    @Override
     public DBNNode selectObject(@NotNull Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         DBNNode[] result = new DBNNode[1];
         UIUtils.syncExec(() -> {

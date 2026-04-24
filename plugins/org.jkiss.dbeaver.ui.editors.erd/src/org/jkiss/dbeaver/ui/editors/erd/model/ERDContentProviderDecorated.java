@@ -21,7 +21,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
+import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
 
 import java.util.List;
 
@@ -54,7 +57,9 @@ public class ERDContentProviderDecorated extends ERDContentProviderDefault {
             }
             alphabeticalOrder = decoratedDiagram.hasAttributeStyle(ERDViewStyle.ALPHABETICAL_ORDER);
         }
-        fillEntityFromObject(monitor, diagram, otherEntities, erdEntity, new ERDAttributeSettings(attributeVisibility, alphabeticalOrder));
+        DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
+        boolean loadLazyDescriptions = store.getBoolean(ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS);
+        fillEntityFromObject(monitor, diagram, otherEntities, erdEntity, new ERDAttributeSettings(attributeVisibility, alphabeticalOrder, loadLazyDescriptions));
     }
 
 }

@@ -418,8 +418,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         {
         }
 
+        @NotNull
         @Override
-        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
+        public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor)
         {
             return monitor;
         }
@@ -447,7 +448,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public void completeLoading(Map<ObjectPropertyDescriptor, Object> result)
+        public void completeLoading(@Nullable Map<ObjectPropertyDescriptor, Object> result)
         {
             completed = true;
             if (result != null) {
