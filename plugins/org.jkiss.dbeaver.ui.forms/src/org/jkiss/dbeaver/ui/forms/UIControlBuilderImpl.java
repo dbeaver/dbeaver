@@ -42,8 +42,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
-    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.LabelBuilderImpl,
-    UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
+    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.ControlBuilderImpl,
+    UIControlBuilderImpl.LabelBuilderImpl, UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
@@ -426,6 +426,20 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
                 UpdateValueStrategy.create(IConverter.create(items::get)),
                 UpdateValueStrategy.create(IConverter.create(items::indexOf))
             );
+        }
+    }
+
+    static final class ControlBuilderImpl extends UIControlBuilderImpl<ControlBuilder, Control> implements ControlBuilder {
+        private final Function<Composite, Control> factory;
+
+        ControlBuilderImpl(@NotNull Function<Composite, Control> factory) {
+            this.factory = factory;
+        }
+
+        @NotNull
+        @Override
+        protected Control create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            return factory.apply(parent);
         }
     }
 }
