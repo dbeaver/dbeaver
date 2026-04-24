@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.greenplum.model;
-
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.code.Nullable;
 
 /**
- * PostgreServerGreengage
+ * Configuration element
  */
-public class PostgreServerGreengage
-        extends PostgreServerGreenplum {
-
-    public PostgreServerGreengage(PostgreDataSource dataSource) {
-        super(dataSource);
-    }
+public interface DBPConfigurationElement {
 
     @NotNull
-    @Override
-    public String getServerTypeName() {
-        return "Greengage";
-    }
+    String getName();
+    @Nullable
+    String getValue();
+
+    @Nullable
+    String getAttribute(@NotNull String name);
+
+    @NotNull
+    DBPConfigurationElement[] getChildren();
+
+    @NotNull
+    DBPConfigurationElement[] getChildren(@NotNull String name);
+
+    @NotNull
+    String getContributorName();
+
 }

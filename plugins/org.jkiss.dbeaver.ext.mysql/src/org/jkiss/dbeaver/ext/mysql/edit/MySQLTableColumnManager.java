@@ -113,6 +113,15 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
+    protected long getDDLFeatures(MySQLTableColumn object) {
+        long features = 0;
+        if (object.getDataSource().supportsAlterTableAddColumn()) {
+            features |= FEATURE_ALTER_TABLE_ADD_COLUMN;
+        }
+        return features;
+    }
+
+    @Override
     public StringBuilder getNestedDeclaration(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableBase owner, @NotNull DBECommandAbstract<MySQLTableColumn> command, @NotNull Map<String, Object> options)
     {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);

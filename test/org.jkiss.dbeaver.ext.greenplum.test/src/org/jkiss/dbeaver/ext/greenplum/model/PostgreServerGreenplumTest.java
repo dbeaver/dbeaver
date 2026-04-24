@@ -81,6 +81,17 @@ public class PostgreServerGreenplumTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void createRelationOfClass_whenTableTypeIsForeignAndTableIsAnExternalGreenplumTable_returnsInstanceOfGreenplumExternalTable()
+            throws SQLException {
+        // Greenplum 7 / Cloudberry: external tables are stored as foreign tables
+        // backed by the gp_exttable_fdw FDW (pg_class.relkind = 'f'). The GreenplumTableCache
+        // still reports is_ext_table = true for them via the pg_exttable view.
+        Mockito.when(mockResults.getBoolean("is_ext_table")).thenReturn(true);
+        Assert.assertEquals(GreenplumExternalTable.class,
+                server.createRelationOfClass(mockSchema, PostgreClass.RelKind.f, mockResults).getClass());
+    }
+
+    @Test
     public void readTableDDL_whenTableIsNotAnInstanceOfGreenplumExternalTable_delegatesDDLcreationToParentClass()
             throws DBException {
         String expectedDelegatedResultFromParentClass = null;
