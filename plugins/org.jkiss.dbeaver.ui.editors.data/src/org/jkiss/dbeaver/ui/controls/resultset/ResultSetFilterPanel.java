@@ -990,8 +990,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 .spacing(0, 0)
                 .applyTo(popup);
 
+            String query = getActiveSourceQueryNormalized(false);
             if (filtersHistory.isEmpty()) {
-                loadFiltersHistory(getActiveSourceQueryNormalized(false));
+                loadFiltersHistory(query);
             }
 
             Table editControl = createFilterHistoryPanel(popup, filtersHistory);
@@ -1009,9 +1010,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         context,
                         filtersHistory,
                         viewer.getFilterManager(),
-                        getActiveSourceQueryNormalized(false)
+                        query
                     );
                     dialog.open();
+
+                    // Reload filters to reflect possible changes in the dialog
+                    loadFiltersHistory(query);
                 }));
             }
 

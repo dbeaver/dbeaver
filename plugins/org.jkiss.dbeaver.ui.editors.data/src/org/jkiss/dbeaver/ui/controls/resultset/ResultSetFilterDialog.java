@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMQueryFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -53,13 +52,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class ResultSetFilterDialog extends BaseDialog {
-    private static final Log log = Log.getLog(ResultSetFilterDialog.class);
-
     private final DBCExecutionContext executionContext;
     private final IResultSetFilterManager filterManager;
     private final String query;
 
-    private final List<QMQueryFilter> filters = new ArrayList<>();
+    private final List<MutableQueryFilter> filters = new ArrayList<>();
+    private final List<QMQueryFilter> deleted = new ArrayList<>();
+    private int selection;
 
     public ResultSetFilterDialog(
         @Nullable Shell parentShell,
@@ -72,6 +71,10 @@ public final class ResultSetFilterDialog extends BaseDialog {
         this.executionContext = executionContext;
         this.filterManager = filterManager;
         this.query = query;
+
+        for (QMQueryFilter filter : filters) {
+            this.filters.add(new MutableQueryFilter(filter));
+        }
 
         setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE);
     }
@@ -87,31 +90,37 @@ public final class ResultSetFilterDialog extends BaseDialog {
         searchText.setMessage("Enter expression or title to search");
 
         var toolBar = new ToolBar(composite, SWT.FLAT);
-
-        List<MutableQueryFilter> filters = new ArrayList<>();
-        try {
-            filters.addAll(loadFilters());
-        } catch (DBException e) {
-            log.error("Error loading filters history", e);
-            DBWorkbench.getPlatformUI().showError("Error loading filters", "An error occurred while loading filters history", e);
-        }
-
         var viewer = createTable(composite, filters);
+        viewer.addSelectionChangedListener(e -> {
+            var filter = (MutableQueryFilter) e.getStructuredSelection().getFirstElement();
+            selection = filters.indexOf(filter);
+        });
+
         UIUtils.createToolItem(
             toolBar,
             "Add new filter",
             UIIcon.ROW_ADD,
             SelectionListener.widgetSelectedAdapter(e -> {
-                var filter = new MutableQueryFilter(new QMQueryFilter(query, "", null, null, 0));
+                var filter = new MutableQueryFilter();
                 filters.add(filter);
                 viewer.refresh();
+                viewer.editElement(filter, 0);
             })
         );
         UIUtils.createToolItem(
             toolBar,
             "Remove selected filter",
             UIIcon.ROW_DELETE,
-            SelectionListener.widgetSelectedAdapter(e -> System.out.println("Remove"))
+            SelectionListener.widgetSelectedAdapter(e -> {
+                var filter = (MutableQueryFilter) viewer.getStructuredSelection().getFirstElement();
+                if (filter != null) {
+                    filters.remove(filter);
+                    if (filter.original != null) {
+                        deleted.add(filter.original);
+                    }
+                    viewer.refresh();
+                }
+            })
         );
 
         return composite;
@@ -139,11 +148,11 @@ public final class ResultSetFilterDialog extends BaseDialog {
             SWT.LEFT,
             true,
             true,
-            MutableQueryFilter::getFilter,
-            new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getFilter, MutableQueryFilter::setFilter) {
+            MutableQueryFilter::getText,
+            new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getText, MutableQueryFilter::setText) {
                 @Override
                 protected boolean canEdit(@NotNull Object element) {
-                    return !((MutableQueryFilter) element).existing;
+                    return ((MutableQueryFilter) element).original == null;
                 }
             }
         );
@@ -162,7 +171,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
             SWT.LEFT,
             true,
             false,
-            e -> formatInstant(e.original.lastUsed()),
+            e -> e.original != null ? formatInstant(e.original.lastUsed()) : "N/A",
             null
         );
         controller.addColumn(
@@ -171,7 +180,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
             SWT.LEFT,
             false,
             false,
-            e -> NumberFormat.getInstance().format(e.original.useCount()),
+            e -> e.original != null ? NumberFormat.getInstance().format(e.original.useCount()) : "N/A",
             null
         );
         controller.createColumns(false);
@@ -195,11 +204,50 @@ public final class ResultSetFilterDialog extends BaseDialog {
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
-    @NotNull
-    private List<MutableQueryFilter> loadFilters() throws DBException {
-        return filterManager.getQueryFilterHistory(executionContext, query).stream()
-            .map(MutableQueryFilter::new)
-            .toList();
+    @Override
+    protected void okPressed() {
+        persistChanges();
+        super.okPressed();
+    }
+
+    private void persistChanges() {
+        for (MutableQueryFilter filter : filters) {
+            try {
+                saveFilter(filter);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Error saving filter",
+                    "An error occurred while saving filter '" + filter.getTitle() + "': " + e.getMessage()
+                );
+            }
+        }
+        for (QMQueryFilter filter : deleted) {
+            try {
+                filterManager.deleteQueryFilterValue(executionContext, filter);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Error deleting filter",
+                    "An error occurred while deleting filter '" + filter.title() + "': " + e.getMessage()
+                );
+            }
+        }
+    }
+
+    private void saveFilter(@NotNull MutableQueryFilter filter) throws DBException {
+        if (filter.original == null) {
+            var newFilter = new QMQueryFilter(query, filter.text, filter.title, null, 0);
+            filterManager.saveQueryFilterValue(executionContext, newFilter);
+        } else if (filter.modified) {
+            var newFilter = new QMQueryFilter(
+                filter.original.query(),
+                filter.text,
+                filter.title.isEmpty() ? null : filter.title,
+                filter.original.lastUsed(),
+                filter.original.useCount()
+            );
+            filterManager.deleteQueryFilterValue(executionContext, filter.original);
+            filterManager.saveQueryFilterValue(executionContext, newFilter);
+        }
     }
 
     @NotNull
@@ -219,26 +267,30 @@ public final class ResultSetFilterDialog extends BaseDialog {
 
     private static class MutableQueryFilter {
         private final QMQueryFilter original;
-        private String filter;
+        private String text;
         private String title;
         private boolean modified;
-        private boolean existing;
 
         MutableQueryFilter(@NotNull QMQueryFilter original) {
             this.original = original;
-            this.filter = original.text();
+            this.text = original.text();
             this.title = CommonUtils.notEmpty(original.title());
-            this.existing = true;
+        }
+
+        MutableQueryFilter() {
+            this.original = null;
+            this.text = "";
+            this.title = "";
         }
 
         @NotNull
-        String getFilter() {
-            return filter;
+        String getText() {
+            return text;
         }
 
-        void setFilter(@NotNull String filter) {
-            if (!this.filter.equals(filter)) {
-                this.filter = filter;
+        void setText(@NotNull String text) {
+            if (!this.text.equals(text)) {
+                this.text = text;
                 this.modified = true;
             }
         }
