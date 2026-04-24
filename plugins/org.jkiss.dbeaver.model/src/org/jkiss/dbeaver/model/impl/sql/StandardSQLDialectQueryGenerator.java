@@ -166,7 +166,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
 
                 String attrName = getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery, true);
                 if (constraint.getAttribute() != null) {
-                    attrName = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), attrName, true);
+                    attrName = dataSource.getSQLDialect().getTypeCastClause(constraint.getAttribute(), attrName, true, true);
                 }
                 query
                     .append(attrName)

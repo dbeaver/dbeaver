@@ -16,24 +16,70 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
+import java.util.Map;
 
 public record CopilotChatResponse(
+    @Nullable
+    String id,
     @NotNull
     List<Choice> choices,
     @Nullable
-    CopilotUsage usage
+    CopilotUsage usage,
+    @Nullable
+    String model,
+    @Nullable
+    @SerializedName("service_tier")
+    String serviceTier
 ) {
 
-    public record Choice(Message message) {
+    public record Choice(
+        @Nullable
+        @SerializedName("finish_reason")
+        String finishReason,
+        int index,
+        @Nullable
+        @SerializedName("content_filter_results")
+        Map<String, Object> contentFilterResults,
+        Message message
+    ) {
     }
 
-    public record Message(String content) {
+    public record Message(
+        @Nullable
+        String content,
+        @Nullable
+        String padding,
+        @Nullable
+        String role,
+        @Nullable
+        @SerializedName("tool_calls")
+        List<ToolCall> toolCalls
+    ) {
+    }
 
+    public record ToolCall(
+        int index,
+        @Nullable
+        String id,
+        @Nullable
+        String type,
+        @Nullable
+        Function function
+    ) {
+    }
+
+    public record Function(
+        @Nullable
+        String name,
+        @Nullable
+        String arguments
+    ) {
     }
 
     @Nullable
@@ -46,7 +92,7 @@ public record CopilotChatResponse(
             usage.promptTokens(),
             usage.promptTokensDetails() != null ? usage.promptTokensDetails().cachedTokens() : 0,
             usage.completionTokens(),
-            0
+            usage.reasoningTokens()
         );
     }
 }

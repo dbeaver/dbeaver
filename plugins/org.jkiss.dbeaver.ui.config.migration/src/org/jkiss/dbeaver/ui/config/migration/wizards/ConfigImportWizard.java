@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -50,7 +51,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
     private static final Log log = Log.getLog(ConfigImportWizard.class);
     
     private ConfigImportWizardPage mainPage;
-    private Map<String, DriverDescriptor> driverClassMap = new HashMap<>();
+    private final Map<String, DBPDriver> driverClassMap = new HashMap<>();
 
     public ConfigImportWizard() {
 		super();
@@ -108,16 +109,16 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no connection URL pattern specified");
         }
         {
-            DriverDescriptor driver = driverClassMap.get(driverInfo.getDriverClass());
+            DBPDriver driver = driverClassMap.get(driverInfo.getDriverClass());
             if (driver != null) {
                 connectionInfo.setDriver(driver);
                 return true;
             }
         }
         final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DriverDescriptor> matchedDrivers = new ArrayList<>();
+        List<DBPDriver> matchedDrivers = new ArrayList<>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
-            for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
+            for (DBPDriver driver : dataSourceProvider.getEnabledDrivers()) {
                 final String driverClassName = driver.getDriverClassName();
                 if (driverClassName != null && driverClassName.equals(driverInfo.getDriverClass())) {
                     matchedDrivers.add(driver);
@@ -125,7 +126,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             }
         }
 
-        DriverDescriptor driver;
+        DBPDriver driver;
         if (matchedDrivers.isEmpty()) {
             // Create new driver
             final DataSourceProviderDescriptor genericProvider = registry.getDataSourceProvider("generic");
@@ -133,28 +134,29 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                 throw new DBException("Generic datasource provider not found");
             }
 
-            driver = genericProvider.createDriver();
-            driver.setName(driverInfo.getName());
-            driver.setDriverClassName(driverInfo.getDriverClass());
-            driver.setSampleURL(driverInfo.getSampleURL());
-            driver.setConnectionProperties(driverInfo.getProperties());
-            driver.setDescription(driverInfo.getDescription());
-            driver.setDriverDefaultPort(driverInfo.getDefaultPort());
-            driver.setDriverDefaultDatabase(driverInfo.getDefaultDatabase());
-            driver.setDriverDefaultServer(driverInfo.getDefaultServer());
-            driver.setDriverDefaultUser(driverInfo.getDefaultUser());
+            DriverDescriptor newDriver = genericProvider.createDriver();
+            newDriver.setName(driverInfo.getName());
+            newDriver.setDriverClassName(driverInfo.getDriverClass(), true);
+            newDriver.setSampleURL(driverInfo.getSampleURL());
+            newDriver.setConnectionProperties(driverInfo.getProperties());
+            newDriver.setDescription(driverInfo.getDescription());
+            newDriver.setDriverDefaultPort(driverInfo.getDefaultPort());
+            newDriver.setDriverDefaultDatabase(driverInfo.getDefaultDatabase());
+            newDriver.setDriverDefaultServer(driverInfo.getDefaultServer());
+            newDriver.setDriverDefaultUser(driverInfo.getDefaultUser());
             for (String path : driverInfo.getLibraries()) {
-                driver.addDriverLibrary(path, DBPDriverLibrary.FileType.jar);
+                newDriver.addDriverLibrary(path, DBPDriverLibrary.FileType.jar);
             }
-            driver.setModified(true);
-            genericProvider.addDriver(driver);
-            connectionInfo.setDriver(driver);
+            newDriver.setModified(true);
+            genericProvider.addDriver(newDriver);
+            connectionInfo.setDriver(newDriver);
+            driver = newDriver;
         } else {
             // Use the only found driver
             driver = matchedDrivers.stream()
                     .filter(driverDescriptor -> driverDescriptor.getName().equalsIgnoreCase(driverInfo.getName()))
                     .findFirst()
-                    .orElse(matchedDrivers.get(0));
+                    .orElse(matchedDrivers.getFirst());
             connectionInfo.setDriver(driver);
         }
 
@@ -252,9 +254,8 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
      * Try to parse url by driver sample url. 
      * NOTE sampleURL is not the only possible way to define a valid url.
      *
-     * @throws DBException in case url does not reflect the sample one from driver.
      */
-    private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) throws DBException {
+    private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) {
         String url = connectionInfo.getUrl();
         
         String sampleURL = connectionInfo.getDriverInfo().getSampleURL();

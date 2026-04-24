@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -357,8 +357,9 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose,
-                                                    DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @NotNull
+													String purpose,
+													@NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
     	
     	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     	
@@ -853,7 +854,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 	
     @Override
-    public String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         //Default Port
         String port = ":8563";
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {

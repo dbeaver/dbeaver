@@ -27,6 +27,11 @@ import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
 public class DataSourceOptions implements DataSourceUpdater {
+    public static final String OPTION_DATABASE = "--database";
+    public static final String OPTION_HOST = "--host";
+    public static final String OPTION_PORT = "--port";
+    public static final String OPTION_USER = "--user";
+    public static final String OPTION_PASSWORD = "--user";
     @Nullable
     @CommandLine.ArgGroup(exclusive = true)
     private ConnectionOptions connectionOptions;
@@ -40,16 +45,16 @@ public class DataSourceOptions implements DataSourceUpdater {
     }
 
     private static class ConnectionDetails {
-        @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
+        @CommandLine.Option(names = {OPTION_HOST}, arity = "1", description = "Database host")
         private String host;
 
-        @CommandLine.Option(names = {"--database"}, arity = "1", description = "Database name")
+        @CommandLine.Option(names = {OPTION_DATABASE}, arity = "1", description = "Database name")
         private String dbName;
 
         @CommandLine.Option(names = {"--server"}, arity = "1", description = "Database server")
         private String server;
 
-        @CommandLine.Option(names = {"--port"}, arity = "1", description = "Database port")
+        @CommandLine.Option(names = {OPTION_PORT}, arity = "1", description = "Database port")
         private Integer port;
     }
 

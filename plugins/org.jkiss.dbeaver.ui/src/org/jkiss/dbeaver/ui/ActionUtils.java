@@ -24,10 +24,7 @@ import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
@@ -60,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -180,6 +178,18 @@ public class ActionUtils {
             contributionParameters.mode = CommandContributionItem.MODE_FORCE_TEXT;
         }
         return new CommandContributionItem(contributionParameters);
+    }
+
+    @NotNull
+    public static IContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull String toolTipText,
+        @NotNull DBIcon icon,
+        @NotNull Runnable callback
+    ) {
+        var item = new ActionContributionItem(makeAction(text, toolTipText, icon, callback));
+        item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        return item;
     }
 
     public static boolean isCommandEnabled(String commandId, IServiceLocator site) {
@@ -429,15 +439,31 @@ public class ActionUtils {
     }
 
     @NotNull
-    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Consumer<IAction> callback) {
         return new Action(text, DBeaverIcons.getImageDescriptor(icon)) {
             @Override
             public void run() {
-                callback.run();
+                callback.accept(this);
             }
         };
     }
 
+    @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+        return makeAction(text, icon, ignored -> callback.run());
+    }
+
+    @NotNull
+    public static IAction makeAction(
+        @NotNull String text,
+        @NotNull String toolTipText,
+        @NotNull DBIcon icon,
+        @NotNull Runnable callback
+    ) {
+        var action = makeAction(text, icon, callback);
+        action.setToolTipText(toolTipText);
+        return action;
+    }
 
     public static void evaluatePropertyState(String propertyName) {
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
