@@ -850,6 +850,6 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
      * to approximate a safe character-based threshold.
      */
     public int getLobCacheThreshold4Char() {
-        return (int) (lobCacheThreshold/3);
+        return (int) (lobCacheThreshold / 3);
     }
 }
