@@ -210,6 +210,15 @@ public final class ResultSetFilterDialog extends BaseDialog {
         super.okPressed();
     }
 
+    @Nullable
+    QMQueryFilter getSelectedFilter() {
+        if (selection >= 0 && selection < filters.size()) {
+            return filters.get(selection).original;
+        } else {
+            return null;
+        }
+    }
+
     private void persistChanges() {
         for (MutableQueryFilter filter : filters) {
             try {

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
@@ -607,9 +608,37 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return filtersText;
     }
 
-    void setFilterValue(String whereCondition) {
-        if (whereCondition != null && !filtersText.getText().trim().equals(whereCondition.trim())) {
-            filtersText.setText(whereCondition);
+    void setFilterValue(@NotNull String whereCondition) {
+        for (QMQueryFilter filter : filtersHistory) {
+            if (filter.text().equals(whereCondition)) {
+                setQueryFilter(filter);
+                return;
+            }
+        }
+    }
+
+    private void setQueryFilter(@NotNull QMQueryFilter filter) {
+        if (filtersText.getText().trim().equals(filter.text().trim())) {
+            return;
+        }
+
+        filtersText.setText(filter.text());
+
+        var executionContext = viewer.getExecutionContext();
+        if (executionContext != null) {
+            try {
+                viewer.getFilterManager().useQueryFilter(executionContext, filter);
+                filtersHistory.remove(filter);
+                filtersHistory.add(new QMQueryFilter(
+                    filter.query(),
+                    filter.text(),
+                    filter.title(),
+                    Instant.now(),
+                    filter.useCount() + 1
+                ));
+            } catch (DBException e) {
+                log.error("Error updating last used filter mark", e);
+            }
         }
     }
 
@@ -1012,10 +1041,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         viewer.getFilterManager(),
                         query
                     );
-                    dialog.open();
+                    int code = dialog.open();
 
                     // Reload filters to reflect possible changes in the dialog
                     loadFiltersHistory(query);
+
+                    if (code == IDialogConstants.OK_ID) {
+                        var filter = dialog.getSelectedFilter();
+                        if (filter != null) {
+                            setQueryFilter(filter);
+                            setCustomDataFilter();
+                        }
+                    }
                 }));
             }
 
