@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.generic.model.meta.gizmosql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
@@ -42,6 +43,11 @@ import java.util.Map;
  */
 public class GizmoSQLMetaModel extends GenericMetaModel {
 
+    private static final String DDL_UNAVAILABLE = "-- View definition not available";
+    private static final String DDL_UNSUPPORTED_SQLITE =
+        "-- View DDL not supported on this GizmoSQL server: "
+            + "duckdb_views() is unavailable (typically means the SQLite backend).";
+
     @Override
     public String getViewDDL(
         @NotNull DBRProgressMonitor monitor,
@@ -53,40 +59,66 @@ public class GizmoSQLMetaModel extends GenericMetaModel {
         String schemaName = sourceObject.getContainer().getName();
         String catalogName = catalog == null ? null : catalog.getName();
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read GizmoSQL view definition")) {
-            // Preferred path: the catalog view (JDBC-shaped column names).
-            String catalogViewSql = "SELECT \"VIEW_DEFINITION\" FROM _gizmosql_system.main.gizmosql_view_definition " +
-                "WHERE \"TABLE_NAME\" = ? AND \"TABLE_SCHEM\" = ?" +
-                (catalogName == null ? "" : " AND \"TABLE_CAT\" = ?");
-            try {
-                String ddl = catalogName == null
-                    ? JDBCUtils.queryString(session, catalogViewSql, viewName, schemaName)
-                    : JDBCUtils.queryString(session, catalogViewSql, viewName, schemaName, catalogName);
-                return CommonUtils.isEmpty(ddl) ? "-- View definition not available" : ddl;
-            } catch (SQLException first) {
-                if (!looksLikeMissingSystemCatalog(first)) {
-                    throw new DBDatabaseException(first, sourceObject.getDataSource());
-                }
-                // Fall through to the inline fallback below.
+        try (JDBCSession session = DBUtils.openMetaSession(
+            monitor, sourceObject, "Read GizmoSQL view definition")
+        ) {
+            String ddl = fetchFromSystemCatalog(session, catalogName, schemaName, viewName, sourceObject);
+            if (ddl != null) {
+                return ddl;
             }
+            return fetchFromDuckdbViews(session, catalogName, schemaName, viewName, sourceObject);
+        }
+    }
 
-            // Fallback: query duckdb_views() directly. Mirrors the catalog view definition
-            // created at server startup — keep the two in sync if either changes.
-            String inlineSql = "SELECT sql FROM duckdb_views() " +
-                "WHERE view_name = ? AND schema_name = ?" +
-                (catalogName == null ? "" : " AND database_name = ?");
-            try {
-                String ddl = catalogName == null
-                    ? JDBCUtils.queryString(session, inlineSql, viewName, schemaName)
-                    : JDBCUtils.queryString(session, inlineSql, viewName, schemaName, catalogName);
-                return CommonUtils.isEmpty(ddl) ? "-- View definition not available" : ddl;
-            } catch (SQLException second) {
-                String msg = second.getMessage() == null ? "" : second.getMessage();
-                if (msg.contains("duckdb_views") || msg.contains("Catalog Error")) {
-                    return "-- View DDL not supported on this GizmoSQL server: duckdb_views() is unavailable (typically means the SQLite backend).";
-                }
-                throw new DBDatabaseException(second, sourceObject.getDataSource());
+    /**
+     * Query the preferred {@code _gizmosql_system.main.gizmosql_view_definition} catalog view.
+     *
+     * @return the DDL text, {@link #DDL_UNAVAILABLE} when the row exists but is empty, or
+     *     {@code null} when the server predates the catalog view (caller should fall through to
+     *     the inline {@code duckdb_views()} path).
+     */
+    @Nullable
+    private static String fetchFromSystemCatalog(
+        JDBCSession session, String catalogName, String schemaName, String viewName,
+        GenericView sourceObject
+    ) throws DBException {
+        String sql = "SELECT \"VIEW_DEFINITION\" FROM _gizmosql_system.main.gizmosql_view_definition "
+            + "WHERE \"TABLE_NAME\" = ? AND \"TABLE_SCHEM\" = ?"
+            + (catalogName == null ? "" : " AND \"TABLE_CAT\" = ?");
+        try {
+            String ddl = catalogName == null
+                ? JDBCUtils.queryString(session, sql, viewName, schemaName)
+                : JDBCUtils.queryString(session, sql, viewName, schemaName, catalogName);
+            return CommonUtils.isEmpty(ddl) ? DDL_UNAVAILABLE : ddl;
+        } catch (SQLException e) {
+            if (looksLikeMissingSystemCatalog(e)) {
+                return null;
             }
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
+        }
+    }
+
+    /**
+     * Fall-back path: query {@code duckdb_views()} directly. Mirrors the catalog view definition
+     * created at server startup — keep the two in sync if either changes.
+     */
+    private static String fetchFromDuckdbViews(
+        JDBCSession session, String catalogName, String schemaName, String viewName,
+        GenericView sourceObject
+    ) throws DBException {
+        String sql = "SELECT sql FROM duckdb_views() "
+            + "WHERE view_name = ? AND schema_name = ?"
+            + (catalogName == null ? "" : " AND database_name = ?");
+        try {
+            String ddl = catalogName == null
+                ? JDBCUtils.queryString(session, sql, viewName, schemaName)
+                : JDBCUtils.queryString(session, sql, viewName, schemaName, catalogName);
+            return CommonUtils.isEmpty(ddl) ? DDL_UNAVAILABLE : ddl;
+        } catch (SQLException e) {
+            if (looksLikeDuckdbViewsMissing(e)) {
+                return DDL_UNSUPPORTED_SQLITE;
+            }
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
@@ -95,5 +127,10 @@ public class GizmoSQLMetaModel extends GenericMetaModel {
         return msg.contains("_gizmosql_system")
             || msg.contains("gizmosql_view_definition")
             || msg.contains("Catalog Error");
+    }
+
+    private static boolean looksLikeDuckdbViewsMissing(SQLException e) {
+        String msg = e.getMessage() == null ? "" : e.getMessage();
+        return msg.contains("duckdb_views") || msg.contains("Catalog Error");
     }
 }
