@@ -1329,7 +1329,7 @@ public class DataSourceDescriptor
 
     }
 
-    private void resolveSecretsIfNeeded() throws DBException {
+    protected void resolveSecretsIfNeeded() throws DBException {
         if (secretsResolved || !getProject().isUseSecretStorage()) {
             return;
         }
@@ -1459,7 +1459,6 @@ public class DataSourceDescriptor
         connecting = true;
         releaseDataSourceUsers(monitor);
         try {
-            closeConnectionDetached();
             monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAvailableInstances().size());
 
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
@@ -1493,6 +1492,7 @@ public class DataSourceDescriptor
             if (dataSource != null) {
                 dataSource.shutdown(monitor);
             }
+            closeConnectionDetached();
             monitor.worked(1);
 
             // Close tunnelHandler
