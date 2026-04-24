@@ -1,10 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
- * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
- * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
- * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +17,7 @@
 package org.jkiss.dbeaver.ext.greenplum.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
@@ -38,6 +35,7 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         super(dataSource);
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "Greenplum";
@@ -53,8 +51,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return true;
     }
 
+    @Nullable
     @Override
-    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+    public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r || kind == PostgreClass.RelKind.p) {
             if (isRelationExternal(dbResult)) {
                 return new GreenplumExternalTable(schema, dbResult);
@@ -70,8 +69,10 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return super.createRelationOfClass(schema, kind, dbResult);
     }
 
+    @NotNull
     @Override
-    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
+    public PostgreTableBase createNewRelation(@NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @Nullable
+    Object copyFrom) throws DBException {
         if (kind == PostgreClass.RelKind.r || kind == PostgreClass.RelKind.p) {
             return new GreenplumTable(schema);
         } else if (kind == PostgreClass.RelKind.m) {
@@ -84,13 +85,14 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return JDBCUtils.safeGetBoolean(dbResult, "is_ext_table");
     }
 
+    @NotNull
     @Override
-    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
         return new GreenplumSchemaCache();
     }
 
     @Override
-    public void configureDialect(PostgreDialect dialect) {
+    public void configureDialect(@NotNull PostgreDialect dialect) {
         dialect.addExtraKeywords("DISTRIBUTED", "SEGMENT", "REJECT", "FORMAT", "MASTER", "WEB", "WRITABLE", "READABLE",
                 "LOG", "ERRORS");
     }
@@ -125,8 +127,9 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         }
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) throws DBException {
         if (table instanceof GreenplumExternalTable) {
             return ((GreenplumExternalTable) table).generateDDL(monitor);
         } else {

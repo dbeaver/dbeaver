@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.config.migration.datagrip.DataGripConfigXMLConstant;
@@ -482,8 +481,8 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         DataSourceProviderRegistry dataSourceProviderRegistry = DataSourceProviderRegistry.getInstance();
         List<DataSourceProviderDescriptor> dataSourceProviders = dataSourceProviderRegistry.getDataSourceProviders();
         for (DataSourceProviderDescriptor dataSourceProvider : dataSourceProviders) {
-            List<DriverDescriptor> drivers = dataSourceProvider.getDrivers();
-            for (DriverDescriptor driver : drivers) {
+            List<DBPDriver> drivers = dataSourceProvider.getDrivers();
+            for (DBPDriver driver : drivers) {
                 if (driver.getName().equalsIgnoreCase(name) || driver.getId().equalsIgnoreCase(name)
                     || driver.getName().equalsIgnoreCase(refDriverName)
                     || driver.getId().equalsIgnoreCase(refDriverName)) {
@@ -498,7 +497,7 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
                 || dataSourceProvider.getId().equalsIgnoreCase(refDriverName)
                 || dataSourceProvider.getName().equalsIgnoreCase(refDriverName)) {
                 if (!drivers.isEmpty()) {
-                    DriverDescriptor driverDescriptor = drivers.get(0);
+                    DBPDriver driverDescriptor = drivers.getFirst();
                     while (driverDescriptor.getReplacedBy() != null) {
                         driverDescriptor = driverDescriptor.getReplacedBy();
                     }
