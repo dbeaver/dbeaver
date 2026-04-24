@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -40,25 +42,23 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected Object fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
-        int index)
-        throws DBCException, SQLException
-    {
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
         Object value = resultSet.getObject(index);
         return getValueFromObject(session, type, value, false, false);
     }
 
     @Override
     protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
+        @Nullable Object value
+    ) throws DBCException, SQLException {
         throw new DBCException("Unsupported value type: " + value);
     }
 

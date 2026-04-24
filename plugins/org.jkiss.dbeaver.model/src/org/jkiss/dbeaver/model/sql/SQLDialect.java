@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -335,6 +335,7 @@ public interface SQLDialect {
 
     /**
      * Enables to call particular cast operator or function for special attribute name.
+     * Formats attribute name.
      * @param attribute   attribute data to help decide whether cast and how to cast
      * @return            casted attribute name
      */
@@ -342,13 +343,28 @@ public interface SQLDialect {
 
     /**
      * Enables to call particular cast operator or function for special data types.
+     * Wraps expression with cast if needed.
      * @param attribute   value attribute to help decide whether cast and how to cast
-     * @param expression      string representation for cast
+     * @param expression      string representation for cast, considered as NOT a reference to the given attribute
      * @param isInCondition helps to understand the application place of the method
      * @return            casted string
      */
     @NotNull
-    String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition);
+    default String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+        return this.getTypeCastClause(attribute, expression, isInCondition, false);
+    }
+
+    /**
+     * Enables to call particular cast operator or function for special data types.
+     * Wraps expression with cast if needed.
+     * @param attribute   value attribute to help decide whether cast and how to cast
+     * @param expression      string representation for cast, considered as NOT a reference to the given attribute
+     * @param isInCondition helps to understand the application place of the method
+     * @param exprIsAttrRef true when expression represents a reference to the given attribute
+     * @return            casted string
+     */
+    @NotNull
+    String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition, boolean exprIsAttrRef);
 
     /**
      * Quoting functions

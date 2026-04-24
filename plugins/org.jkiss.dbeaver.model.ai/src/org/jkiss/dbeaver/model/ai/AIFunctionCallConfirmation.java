@@ -40,6 +40,7 @@ public class AIFunctionCallConfirmation extends AIConfirmation {
     }
 
     @Override
+    @NotNull
     public String getMessage() {
         return "Confirm tools " + functionCalls.stream().map(AIFunctionCall::getFunctionName)
             .collect(Collectors.joining(","));

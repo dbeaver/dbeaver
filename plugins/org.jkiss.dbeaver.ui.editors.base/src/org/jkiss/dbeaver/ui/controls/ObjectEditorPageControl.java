@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -54,7 +56,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     private volatile LoadingJob curService = null;
 
     @Override
-    protected void populateCustomActions(ContributionManager contributionManager) {
+    protected void populateCustomActions(@NotNull ContributionManager contributionManager) {
         ToolBarManager extToolBar = new ToolBarManager();
         // Add dynamic toolbar contributions
         final IMenuService menuService = UIUtils.getActiveWorkbenchWindow().getService(IMenuService.class);
@@ -117,6 +119,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         }
     }
 
+    @Nullable
     @Override
     protected ISearchExecutor getSearchRunner() {
         ISearchExecutor searchRunner = super.getSearchRunner();
@@ -178,7 +181,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         }
 
         @Override
-        public void completeLoading(OBJECT_TYPE result) {
+        public void completeLoading(@Nullable OBJECT_TYPE result) {
             super.completeLoading(result);
             if (!listeners.isEmpty()) {
                 for (DBRRunnableParametrized<OBJECT_TYPE> listener : listeners) {

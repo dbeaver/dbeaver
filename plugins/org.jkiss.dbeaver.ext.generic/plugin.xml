@@ -6,7 +6,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
-            class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+            class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
             description="Generic JDBC connector"
             id="generic"
             label="Generic"
@@ -1490,7 +1490,7 @@
 
         <!-- Elasticsearch data sources. Historically in another datasource provider but in fact generic -->
         <datasource
-                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
                 description="Elasticsearch datasource"
                 id="elasticsearch"
                 parent="generic"
@@ -1525,7 +1525,7 @@
 
         </datasource>
         <datasource
-                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProviderBasic"
                 description="Opendistro datasource"
                 id="open-distro-elasticsearch"
                 parent="generic"

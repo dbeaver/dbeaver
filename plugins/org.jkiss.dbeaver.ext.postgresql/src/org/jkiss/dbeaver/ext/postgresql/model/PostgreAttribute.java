@@ -72,6 +72,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private String defaultValue;
     @Nullable
     private boolean isGeneratedColumn;
+    @Nullable
+    private String generatedColumnType;
     private long depObjectId;
     private PostgreAttributeStorage storage;
 
@@ -112,6 +114,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.typeId = source.typeId;
         this.typeMod = source.typeMod;
         this.defaultValue = source.defaultValue;
+        this.isGeneratedColumn = source.isGeneratedColumn;
+        this.generatedColumnType = source.generatedColumnType;
         this.storage = source.storage;
     }
 
@@ -151,9 +155,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         if (!CommonUtils.isEmpty(defaultValue) && serverType.supportsGeneratedColumns()) {
             String generatedColumn = JDBCUtils.safeGetString(dbResult, "attgenerated");
-            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored. (Other values might be added in the future)"
+            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored, v = virtual. (Other values might be added in the future)"
             if (!CommonUtils.isEmpty(generatedColumn)) {
                 isGeneratedColumn = true;
+                generatedColumnType = generatedColumn;
             }
         }
         //setDefaultValue(defaultValue);
@@ -351,6 +356,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return defaultValue;
         }
         return null;
+    }
+
+    @NotNull
+    public String getGeneratedColumnTypeName() {
+        return CommonUtils.equalObjects(generatedColumnType, "v") ? "VIRTUAL" : "STORED";
     }
 
     public boolean supportsAlterStorageStrategy() {

@@ -148,6 +148,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     @Override
+    @NotNull
     DBNBrowseSettings getSelectedNavigatorSettings() {
         return dataSource.getNavigatorSettings();
     }
@@ -163,8 +164,8 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public void addPages() {
-        if (dataSource.getDriver().isNotAvailable()) {
-            addPage(new ConnectionPageDeprecation(dataSource.getDriver()));
+        if (dataSource.getDriver().getDriverStub() != null) {
+            addPage(new ConnectionPageDeprecation(dataSource.getDriver().getDriverStub()));
             return;
         }
 
@@ -261,7 +262,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     @NotNull
     @Override
     protected PersistResult persistDataSource() {
-        if (dataSource.getDriver().isNotAvailable()) {
+        if (dataSource.getDriver().getDriverStub() != null) {
             return PersistResult.UNCHANGED;
         }
 
@@ -375,7 +376,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
-        if (dataSource.getDriver().isNotAvailable()) {
+        if (dataSource.getDriver().getDriverStub() != null) {
             return;
         }
 

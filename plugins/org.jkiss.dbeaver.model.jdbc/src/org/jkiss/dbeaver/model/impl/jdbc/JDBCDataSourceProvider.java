@@ -21,10 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.AbstractDataSourceProvider;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -40,12 +39,11 @@ import java.util.Properties;
 /**
  * JDBCDataSourceProvider
  */
-public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
+public abstract class JDBCDataSourceProvider<DATASOURCE extends JDBCDataSource> extends AbstractDataSourceProvider<DATASOURCE> {
     static final protected Log log = Log.getLog(JDBCDataSourceProvider.class);
 
-    @Override
-    public void init(@NotNull DBPPlatform platform) {
-
+    protected JDBCDataSourceProvider(@NotNull Class<? extends DATASOURCE> dsClass) {
+        super(dsClass);
     }
 
     @NotNull

@@ -91,6 +91,8 @@ public class TransactionMonitorToolbar {
             monitorPanel.addDisposeListener(e -> activePage.removePartListener(partListener));
         }
 
+        monitorPanel.refresh();
+
         return monitorPanel;
     }
 
