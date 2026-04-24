@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,18 +27,18 @@ import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverStub;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
 public class ConnectionPageDeprecation extends ConnectionWizardPage {
-    private final DBPDriver driver;
+    private final DBPDriverStub driverStub;
 
-    public ConnectionPageDeprecation(@NotNull DBPDriver driver) {
+    public ConnectionPageDeprecation(@NotNull DBPDriverStub driverStub) {
         super(ConnectionPageDeprecation.class.getName());
-        this.driver = driver;
+        this.driverStub = driverStub;
 
-        setTitle(driver.getNonAvailabilityTitle());
-        setDescription(driver.getNonAvailabilityDescription());
+        setTitle(driverStub.nonAvailabilityTitle());
+        setDescription(driverStub.nonAvailabilityDescription());
         setPageComplete(false);
     }
 
@@ -52,7 +52,7 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
 
         final FormText text = toolkit.createFormText(composite, false);
         text.setFont("header", JFaceResources.getFont("org.eclipse.jface.headerfont"));
-        text.setText(driver.getNonAvailabilityReason(), true, false);
+        text.setText(driverStub.nonAvailabilityReason(), true, false);
         text.setHyperlinkSettings(toolkit.getHyperlinkGroup());
         text.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(e -> ShellUtils.launchProgram(e.getHref().toString())));
         text.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(200, 200).create());

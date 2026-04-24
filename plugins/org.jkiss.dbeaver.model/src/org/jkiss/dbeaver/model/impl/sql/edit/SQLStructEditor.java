@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -38,16 +39,22 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    protected abstract void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException;
+    protected abstract void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException;
 
+    @NotNull
     @Override
-    public StructCreateCommand makeCreateCommand(OBJECT_TYPE object, Map<String, Object> options)
-    {
+    public StructCreateCommand makeCreateCommand(@NotNull OBJECT_TYPE object, @NotNull Map<String, Object> options) {
         return new StructCreateCommand(object, ModelMessages.model_jdbc_create_new_object, options);
     }
 
-    protected Collection<NestedObjectCommand> getNestedOrderedCommands(final StructCreateCommand structCommand)
-    {
+    @NotNull
+    protected Collection<NestedObjectCommand> getNestedOrderedCommands(@NotNull StructCreateCommand structCommand) {
         List<NestedObjectCommand> nestedCommands = new ArrayList<>(structCommand.getObjectCommands().values());
         nestedCommands.sort((o1, o2) -> {
             final DBPObject object1 = o1.getObject();
@@ -74,7 +81,11 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         return nestedCommands;
     }
 
-    protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
+    protected void createObjectReferences(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull ObjectCreateCommand createCommand
+    ) throws DBException {
         OBJECT_TYPE object = createCommand.getObject();
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         for (Class<? extends DBSObject> childType : getChildTypes()) {
@@ -97,16 +108,18 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<? extends T> type) {
+    @Nullable
+    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(@NotNull DBERegistry editorsRegistry, @NotNull Class<? extends T> type) {
         final Class<? extends T> childType = getChildType(type);
         return childType == null ? null : editorsRegistry.getObjectManager(childType, SQLObjectEditor.class);
     }
 
-    protected boolean isIncludeChildObjectReference(DBRProgressMonitor monitor, DBSObject childObject) throws DBException {
+    protected boolean isIncludeChildObjectReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject childObject) throws DBException {
         return true;
     }
 
-    protected <T> Class<? extends T> getChildType(Class<T> type) {
+    @Nullable
+    protected <T> Class<? extends T> getChildType(@NotNull Class<T> type) {
         for (Class<? extends DBSObject> childType : getChildTypes()) {
             if (type.isAssignableFrom(childType)) {
                 return (Class<? extends T>) childType;
@@ -116,12 +129,23 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     @Override
-    protected final void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand objectChangeCommand, @NotNull Map<String, Object> options) {
+    protected final void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand objectChangeCommand,
+        @NotNull Map<String, Object> options
+    ) {
         throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
 
+    @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, OBJECT_TYPE object, Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Class<? extends DBSObject> childType
+    ) throws DBException {
         return null;
     }
 
@@ -130,8 +154,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         private final Map<DBPObject, NestedObjectCommand<?, ?>> objectCommands = new LinkedHashMap<>();
 
-        public StructCreateCommand(OBJECT_TYPE object, String table, Map<String, Object> options)
-        {
+        public StructCreateCommand(@NotNull OBJECT_TYPE object, @NotNull String table, @NotNull Map<String, Object> options) {
             super(object, table, options);
             objectCommands.put(getObject(), this);
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -43,7 +44,13 @@ public class PostgrePartitionManager extends PostgreTableManager {
         PostgreIndex.class
     );
 
-    protected PostgreTablePartition createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) {
+    protected PostgreTablePartition createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         return new PostgreTablePartition((PostgreTable) container);
     }
 
@@ -84,7 +91,10 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }
 
     @Override
-    protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
+    protected boolean excludeFromDDL(
+        @NotNull NestedObjectCommand command,
+        @NotNull Collection<NestedObjectCommand> orderedCommands
+    ) {
         return !(command.getObject() instanceof PostgreTableConstraint) && !(command.getObject() instanceof PostgreIndex);
     }
 
