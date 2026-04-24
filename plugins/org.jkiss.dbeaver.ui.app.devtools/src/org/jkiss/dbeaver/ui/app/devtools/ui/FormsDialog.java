@@ -21,9 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.forms.*;
@@ -81,7 +79,8 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb.titledPanel("Text", buildTextPanel()))
             .row(rb -> rb.titledPanel("Combo", buildComboPanel()))
             .row(rb -> rb.titledPanel("Check", buildCheckPanel()))
-            .row(rb -> rb.titledPanel("Buttons", buildButtonPanel()));
+            .row(rb -> rb.titledPanel("Buttons", buildButtonPanel()))
+            .row(rb -> rb.titledPanel("Custom", buildCustomPanel()));
     }
 
     @NotNull
@@ -211,6 +210,15 @@ public class FormsDialog extends TrayDialog {
                     "Show message",
                     e -> UIUtils.showMessageBox(UIUtils.getActiveShell(), "Hello", "Hello from forms", SWT.ICON_INFORMATION),
                     bb -> bb.enabled(enabled)));
+        // @formatter:on
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildCustomPanel() {
+        // @formatter:off
+        return pb -> pb
+            .row("Progress bar", rb -> rb.control(parent -> new ProgressBar(parent, SWT.INDETERMINATE)))
+            .row("Calendar", rb -> rb.control(parent -> new DateTime(parent, SWT.CALENDAR)));
         // @formatter:on
     }
 

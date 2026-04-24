@@ -67,12 +67,18 @@ public class AILegacyTranslator {
         }
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();
         if (dataSourceContainer == null) {
-            DBWorkbench.getPlatformUI().showError("No datasource", "Connection must be associated with the SQL script");
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_no_datasource_title,
+                AIUIMessages.legacy_translator_error_no_datasource_message
+            );
             return;
         }
         DBCExecutionContext executionContext = editor.getExecutionContext();
         if (executionContext == null) {
-            DBWorkbench.getPlatformUI().showError("No connection", "You must connect to the database before performing completion");
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_no_connection_title,
+                AIUIMessages.legacy_translator_error_no_connection_message
+            );
             return;
         }
 
@@ -102,7 +108,11 @@ public class AILegacyTranslator {
                 doAutoCompletion(executionContext, lDataSource, editor, aiCompletionPopup);
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_ai_title,
+                AIUIMessages.legacy_translator_error_ai_engine_message,
+                e
+            );
         }
     }
 
@@ -123,7 +133,10 @@ public class AILegacyTranslator {
             );
 
             if (sql == null || sql.isEmpty()) {
-                DBWorkbench.getPlatformUI().showError("AI error", "No smart completions returned");
+                DBWorkbench.getPlatformUI().showError(
+                    AIUIMessages.legacy_translator_error_ai_title,
+                    AIUIMessages.legacy_translator_error_no_completions_message
+                );
                 return;
             }
 
@@ -131,7 +144,11 @@ public class AILegacyTranslator {
 
             insertSqlCompletion(editor, sql);
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_completion_title,
+                null,
+                e.getTargetException()
+            );
             return;
         }
 
@@ -219,7 +236,11 @@ public class AILegacyTranslator {
                 document.replace(offset, length, text);
                 editor.getSelectionProvider().setSelection(new TextSelection(offset + text.length(), 0));
             } catch (BadLocationException e) {
-                DBWorkbench.getPlatformUI().showError("Insert SQL", "Error inserting SQL completion in text editor", e);
+                DBWorkbench.getPlatformUI().showError(
+                    AIUIMessages.legacy_translator_error_insert_sql_title,
+                    AIUIMessages.legacy_translator_error_insert_sql_message,
+                    e
+                );
             }
         }
     }
