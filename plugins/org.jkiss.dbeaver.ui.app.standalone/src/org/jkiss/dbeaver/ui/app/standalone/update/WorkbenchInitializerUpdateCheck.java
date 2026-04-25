@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,20 @@ public class WorkbenchInitializerUpdateCheck implements IWorkbenchWindowInitiali
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (application.isDistributed() || ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
+        if (isAutoupdateDisabled(application)) {
             return;
         }
         new DBeaverVersionChecker(false).schedule();
+    }
+
+    private boolean isAutoupdateDisabled(@NotNull DBPApplication application) {
+        return application.isDistributed()
+            || ApplicationPolicyService.getInstance().isInstallUpdateDisabled()
+            || isDisabledByService();
+    }
+
+    private boolean isDisabledByService() {
+        DBPApplicationVersionUpdater service = DBWorkbench.getService(DBPApplicationVersionUpdater.class);
+        return service != null && !service.isAutoupdateEnabled();
     }
 }
