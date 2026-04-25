@@ -1185,7 +1185,19 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     public void setConnectionProperties(@NotNull Map<String, Object> parameters) {
         customConnectionProperties.clear();
-        customConnectionProperties.putAll(parameters);
+        // Reject null values: a null entry survives `clear() + putAll(...)` and is later
+        // forwarded as an empty string to the JDBC driver in
+        // JDBCDataSource.fillConnectionProperties (CommonUtils.toString(null) -> ""),
+        // which some drivers (e.g. SQLite) reject with a cryptic
+        // "[SQLITE_ERROR] SQL error or missing database (incomplete input)" when applying
+        // the empty PRAGMA at connection time. Resetting a property to null in the
+        // Driver Properties tab must mean "do not send this property", not "send empty".
+        // See dbeaver/dbeaver#38044.
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            if (entry.getValue() != null) {
+                customConnectionProperties.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     @NotNull

@@ -355,13 +355,37 @@ public abstract class JDBCDataSource extends AbstractDataSource
             // Use driver properties
             final Map<String, Object> driverProperties = container.getDriver().getConnectionProperties();
             for (Map.Entry<String, Object> prop : driverProperties.entrySet()) {
-                connectProps.setProperty(prop.getKey(), CommonUtils.toString(prop.getValue()));
+                copyConnectionProperty(connectProps, prop.getKey(), prop.getValue());
             }
         }
 
         for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
-            connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+            copyConnectionProperty(connectProps, prop.getKey(), prop.getValue());
         }
+    }
+
+    /**
+     * Copy a single driver / connection property into the JDBC {@code Properties} bag,
+     * skipping null or empty values.
+     *
+     * <p>Null values arrive when the user has cleared a property in the Driver Properties
+     * tab (a property reset is stored as a null in {@code customConnectionProperties}).
+     * Empty strings arrive when the user has saved an empty text value. Forwarding either
+     * to the JDBC driver as an empty PRAGMA value causes drivers like SQLite to reject the
+     * connection with {@code SQLITE_ERROR: SQL error or missing database (incomplete
+     * input)}. The right semantic for a cleared property is "do not send", which the
+     * driver then treats as "use the built-in default". See dbeaver/dbeaver#38044.</p>
+     */
+    static void copyConnectionProperty(@NotNull Properties target, @Nullable Object key, @Nullable Object value) {
+        if (key == null || value == null) {
+            return;
+        }
+        String stringKey = CommonUtils.toString(key);
+        String stringValue = CommonUtils.toString(value);
+        if (stringKey.isEmpty() || stringValue.isEmpty()) {
+            return;
+        }
+        target.setProperty(stringKey, stringValue);
     }
 
     @NotNull
