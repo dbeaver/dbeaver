@@ -40,7 +40,7 @@ public class WorkbenchInitializerUpdateCheck implements IWorkbenchWindowInitiali
     }
 
     private boolean isDisabledByService() {
-        DBPApplicationVersionUpdater service = DBWorkbench.getService(DBPApplicationVersionUpdater.class);
+        DBPApplicationVersionUpdater service = DBWorkbench.findService(DBPApplicationVersionUpdater.class);
         return service != null && !service.isAutoupdateEnabled();
     }
 }
