@@ -161,14 +161,27 @@ public class GlobalProxyAuthenticator extends Authenticator {
     }
 
     public static void saveCredentials(@NotNull String username, @NotNull String password) throws DBException {
-        if (CommonUtils.isNotEmpty(username)) {
-            DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
-            secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_USER, username);
-            if (CommonUtils.isNotEmpty(password)) {
-                secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD, password);
-            }
-            secrets.flushChanges();
-        }
+        saveCredentials(DBSSecretController.getGlobalSecretController(), username, password);
+    }
+
+    // Package-visible overload for unit testing the clear-on-empty behaviour without going
+    // through the global platform workbench.
+    static void saveCredentials(
+        @NotNull DBSSecretController secrets,
+        @NotNull String username,
+        @NotNull String password
+    ) throws DBException {
+        // Always write both entries. Passing null for an empty value causes
+        // the local secret controller to remove the preference entry (see
+        // LocalSecretController.setPrivateSecretValue), which lets the user
+        // clear the stored credentials from the preference page. The previous
+        // implementation short-circuited on an empty username OR password so
+        // clearing either field left the stale secret on disk (#40874).
+        secrets.setPrivateSecretValue(
+            ModelPreferences.UI_PROXY_USER, CommonUtils.isEmpty(username) ? null : username);
+        secrets.setPrivateSecretValue(
+            ModelPreferences.UI_PROXY_PASSWORD, CommonUtils.isEmpty(password) ? null : password);
+        secrets.flushChanges();
     }
 
 }
