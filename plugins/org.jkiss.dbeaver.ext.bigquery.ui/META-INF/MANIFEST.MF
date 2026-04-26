@@ -6,7 +6,7 @@ Bundle-Version: 1.0.148.qualifier
 Bundle-Release-Date: 20260504
 Bundle-Activator: org.jkiss.dbeaver.ext.bigquery.ui.BigQueryActivator
 Require-Bundle: org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ext.bigquery
+ org.jkiss.dbeaver.ext.bigquery;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.bigquery.ui.config,
  org.jkiss.dbeaver.ext.bigquery.ui.views
 Bundle-ActivationPolicy: lazy
