@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -79,5 +80,11 @@ public class OracleDialectFunctionsTest extends DBeaverUnitTest {
         Mockito.when(mockTypedObject.getScale()).thenReturn(11);
         String actualDataType = dialect.convertExternalDataType(dialect, mockTypedObject, dataSource);
         Assert.assertEquals("NUMBER(22,11)", actualDataType);
+    }
+
+    @Test
+    public void registerGlobalVariablesAsKeywordsWithoutDriverInitialization() {
+        Assert.assertEquals(DBPKeywordType.OTHER, dialect.getKeywordType("SYSDATE"));
+        Assert.assertEquals(DBPKeywordType.OTHER, dialect.getKeywordType("SYSTIMESTAMP"));
     }
 }

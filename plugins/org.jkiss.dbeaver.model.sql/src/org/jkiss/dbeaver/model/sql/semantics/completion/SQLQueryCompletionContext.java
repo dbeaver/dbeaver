@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -1143,12 +1144,46 @@ public abstract class SQLQueryCompletionContext {
                         null,
                         filterOrNull
                     );
-                    resultItems = Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems, sequenceItems).flatMap(Collection::stream).toList();
+                    LinkedList<SQLQueryCompletionItem> globalVariableItems = this.prepareGlobalVariablesCompletions(
+                        request,
+                        filterOrNull
+                    );
+                    resultItems = Stream.of(
+                        joinConditions,
+                        subsetColumns,
+                        tableRefs,
+                        procedureItems,
+                        sequenceItems,
+                        globalVariableItems
+                    ).flatMap(Collection::stream).toList();
                 } else {
                     resultItems = subsetColumns;
                 }
 
                 this.makeFilteredCompletionSet(filterOrNull, resultItems, results);
+            }
+
+            @NotNull
+            private LinkedList<SQLQueryCompletionItem> prepareGlobalVariablesCompletions(
+                @NotNull SQLCompletionRequest request,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                LinkedList<SQLQueryCompletionItem> globalVariableItems = new LinkedList<>();
+                if (request.getContext().getDataSource().getSQLDialect() instanceof BasicSQLDialect basicSQLDialect) {
+                    for (SQLDialect.GlobalVariableInfo globalVariable : basicSQLDialect.getGlobalVariables()) {
+                        SQLQueryWordEntry variableName = makeFilterInfo(filterOrNull, globalVariable.name());
+                        int score = variableName.matches(filterOrNull, this.searchInsideWords);
+                        if (score > 0) {
+                            globalVariableItems.addLast(SQLQueryCompletionItem.forSpecialText(
+                                score,
+                                variableName,
+                                globalVariable.name(),
+                                globalVariable.description()
+                            ));
+                        }
+                    }
+                }
+                return globalVariableItems;
             }
 
             @NotNull

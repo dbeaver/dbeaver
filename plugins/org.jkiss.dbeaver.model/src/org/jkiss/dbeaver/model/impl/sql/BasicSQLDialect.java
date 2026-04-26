@@ -124,6 +124,34 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
         return GlobalVariableInfo.EMPTY_ARRAY;
     }
 
+    @Override
+    public DBPKeywordType getKeywordType(@NotNull String word) {
+        DBPKeywordType type = super.getKeywordType(word);
+        if (type != null) {
+            return type;
+        }
+        String upper = word.toUpperCase(DEF_LOCALE);
+        for (GlobalVariableInfo gv : getGlobalVariables()) {
+            if (gv.name().toUpperCase(DEF_LOCALE).equals(upper)) {
+                return DBPKeywordType.OTHER;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public List<String> getMatchedKeywords(@NotNull String word) {
+        List<String> result = super.getMatchedKeywords(word);
+        String upper = word.toUpperCase(DEF_LOCALE);
+        for (GlobalVariableInfo gv : getGlobalVariables()) {
+            if (gv.name().toUpperCase(DEF_LOCALE).startsWith(upper)) {
+                result.add(gv.name());
+            }
+        }
+        return result;
+    }
+
     @NotNull
     @Override
     public String getSearchStringEscape() {
