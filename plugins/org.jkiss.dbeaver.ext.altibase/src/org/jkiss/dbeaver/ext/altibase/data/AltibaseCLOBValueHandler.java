@@ -47,7 +47,11 @@ import java.sql.SQLException;
  */
 public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
 
-    private static final AltibaseCLOBValueHandler INSTANCE = new AltibaseCLOBValueHandler();
+    public static final AltibaseCLOBValueHandler INSTANCE = new AltibaseCLOBValueHandler();
+
+    private AltibaseCLOBValueHandler() {
+        super();
+    }
 
     /*
     * Altibase stores LOB data in two ways depending on LOB_CACHE_THRESHOLD:
@@ -81,7 +85,7 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
                 return null;
             }
 
-            long len = (long) value.length();
+            long len = value.length();
             long lobCacheThreshold4Char = ((AltibaseDataSource) session.getDataSource()).getLobCacheThreshold4Char();
 
             if (len < lobCacheThreshold4Char) {
