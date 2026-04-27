@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.ui.config.migration.wizards;
 
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class ImportConnectionInfo {
 
-    private DriverDescriptor driver;
+    private DBPDriver driver;
     private ImportDriverInfo driverInfo;
     private final String id;
     private final String alias;
@@ -75,12 +75,12 @@ public class ImportConnectionInfo {
         this.password = password;
     }
 
-    public DriverDescriptor getDriver()
+    public DBPDriver getDriver()
     {
         return driver;
     }
 
-    public void setDriver(DriverDescriptor driver)
+    public void setDriver(DBPDriver driver)
     {
         this.driver = driver;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.utils.ArrayUtils;
@@ -43,29 +45,29 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
     private static final Log log = Log.getLog(DriverClassFindJob.class);
 
     public static final String OBJECT_CLASS_NAME = "java/lang/Object";
-    public static final String CLASS_FILE_EXT = ".class";
-    private List<String> driverClassNames = new ArrayList<>();
+    private final List<String> driverClassNames = new ArrayList<>();
 
     private final DriverDescriptor driver;
     private final String interfaceName;
     private final boolean isInterface;
 
-    public DriverClassFindJob(DBPDriver driver, String interfaceName, boolean isInterface) {
+    public DriverClassFindJob(@NotNull DBPDriver driver, @NotNull String interfaceName, boolean isInterface) {
         this.driver = (DriverDescriptor) driver;
         this.interfaceName = interfaceName.replace(".", "/");
         this.isInterface = isInterface;
     }
 
+    @NotNull
     public List<String> getDriverClassNames() {
         return driverClassNames;
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) {
+    public void run(@NotNull DBRProgressMonitor monitor) {
         findDriverClasses(monitor);
     }
 
-    private void findDriverClasses(DBRProgressMonitor monitor) {
+    private void findDriverClasses(@NotNull DBRProgressMonitor monitor) {
         java.util.List<Path> libFiles = driver.getDefaultDriverLoader().getAllLibraryFiles(monitor);
         java.util.List<URL> libURLs = new ArrayList<>();
         for (Path libFile : libFiles) {
@@ -89,9 +91,9 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
         }
     }
 
-    private void findDriverClasses(DBRProgressMonitor monitor, ClassLoader findCL, Path libFile) {
+    private void findDriverClasses(@NotNull DBRProgressMonitor monitor, @NotNull ClassLoader findCL, @NotNull Path libFile) {
         String jarName = libFile.getFileName().toString();
-        if (!jarName.endsWith(".jar") && !jarName.endsWith(".zip")) {
+        if (!jarName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) && !jarName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
             // Dummy file type validation
             return;
         }
@@ -105,8 +107,10 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
                     }
                     JarEntry current = (JarEntry) e.nextElement();
                     String fileName = current.getName();
-                    if (fileName.endsWith(CLASS_FILE_EXT) && !fileName.contains("$")) { //$NON-NLS-1$ //$NON-NLS-2$
-                        String className = fileName.replaceAll("/", ".").replace(CLASS_FILE_EXT, ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                    if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_CLASS) && !fileName.contains("$")) {
+                        String className = fileName
+                            .replaceAll("/", ".")
+                            .replace(DBPDriverLibrary.FILE_EXT_CLASS, "");
                         monitor.subTask(className);
                         try {
                             if (implementsInterface(currentFile, current, 0)) {
@@ -125,7 +129,7 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
         }
     }
 
-    private boolean implementsInterface(JarFile currentFile, JarEntry current, int depth) throws IOException {
+    private boolean implementsInterface(@NotNull JarFile currentFile, @NotNull JarEntry current, int depth) throws IOException {
         try (InputStream classStream = currentFile.getInputStream(current)) {
             ClassReader cr = new ClassReader(classStream);
             int access = cr.getAccess();
@@ -139,13 +143,13 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
                     return true;
                 } else if (!CommonUtils.isEmpty(superName) && !superName.equals(OBJECT_CLASS_NAME)) {
                     // Check recursively
-                    JarEntry jarEntry = currentFile.getJarEntry(superName + CLASS_FILE_EXT);
+                    JarEntry jarEntry = currentFile.getJarEntry(superName + DBPDriverLibrary.FILE_EXT_CLASS);
                     if (jarEntry != null) {
                         return implementsInterface(currentFile, jarEntry, depth + 1);
                     }
                 }
                 for (String intName : interfaces) {
-                    JarEntry jarEntry = currentFile.getJarEntry(intName + CLASS_FILE_EXT);
+                    JarEntry jarEntry = currentFile.getJarEntry(intName + DBPDriverLibrary.FILE_EXT_CLASS);
                     if (jarEntry != null) {
                         if (implementsInterface(currentFile, jarEntry, depth + 1)) {
                             return true;
@@ -157,7 +161,7 @@ public class DriverClassFindJob implements DBRRunnableWithProgress {
                 if (interfaceName.equals(superName)) {
                     return true;
                 }
-                JarEntry jarEntry = currentFile.getJarEntry(superName + CLASS_FILE_EXT);
+                JarEntry jarEntry = currentFile.getJarEntry(superName + DBPDriverLibrary.FILE_EXT_CLASS);
                 if (jarEntry != null) {
                     if (implementsInterface(currentFile, jarEntry, depth + 1)) {
                         return true;

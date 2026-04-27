@@ -135,7 +135,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
      * Solution: move all JNA-dependent functions to a separate bundle.
      */
     @Override
-    public boolean providesDriverClasses() {
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
         return true;
     }
 

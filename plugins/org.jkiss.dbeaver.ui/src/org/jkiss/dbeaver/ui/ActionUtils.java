@@ -57,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -438,13 +439,18 @@ public class ActionUtils {
     }
 
     @NotNull
-    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Consumer<IAction> callback) {
         return new Action(text, DBeaverIcons.getImageDescriptor(icon)) {
             @Override
             public void run() {
-                callback.run();
+                callback.accept(this);
             }
         };
+    }
+
+    @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+        return makeAction(text, icon, ignored -> callback.run());
     }
 
     @NotNull

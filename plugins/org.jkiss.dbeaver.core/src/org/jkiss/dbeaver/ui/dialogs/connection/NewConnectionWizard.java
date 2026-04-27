@@ -194,8 +194,8 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         if (page == pageDrivers) {
             final DBPDriver driver = getSelectedDriver();
-            if (driver.isNotAvailable()) {
-                final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver);
+            if (driver.getDriverStub() != null) {
+                final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver.getDriverStub());
                 nextPage.setWizard(this);
                 return nextPage;
             }
@@ -216,7 +216,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     protected PersistResult persistDataSource() {
         DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
-        if (driver.isNotAvailable()) {
+        if (driver.getDriverStub() != null) {
             return PersistResult.UNCHANGED;
         }
 
@@ -276,7 +276,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
         final DBPDriver driver = dataSource.getDriver();
-        if (driver.isNotAvailable()) {
+        if (driver.getDriverStub() != null) {
             return;
         }
         ConnectionPageSettings pageSettings = getPageSettings(driver);
