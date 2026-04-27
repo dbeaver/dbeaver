@@ -54,7 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public final class ResultSetFilterDialog extends BaseDialog {
+final class ResultSetFilterDialog extends BaseDialog {
     private final DBCExecutionContext executionContext;
     private final IResultSetFilterManager filterManager;
     private final String query;
@@ -62,7 +62,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
     private final List<MutableQueryFilter> filters = new ArrayList<>();
     private int selection;
 
-    public ResultSetFilterDialog(
+    ResultSetFilterDialog(
         @Nullable Shell parentShell,
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<QMQueryFilter> filters,
