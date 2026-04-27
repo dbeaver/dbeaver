@@ -442,7 +442,7 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.getService(UIServiceFilterConfig.class);
+            UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
             boolean isSaveAsCurrentUserFilterOnly = uiServiceFilterConfig != null;
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {

@@ -64,11 +64,9 @@ public class TreeNodeFilter extends ContextMenuTreeNodeSpecial implements IToolT
     }
 
     public void configureFilters(@NotNull DatabaseNavigatorTree navigatorTree) {
-        if (getParent() instanceof DBNDatabaseNode dbNode) {
-            // Managers cannot filter some nodes (databases specifically)
-            if (canNodeBeFilteredByUser(dbNode)) {
+        // Managers cannot filter some nodes (databases specifically)
+        if (getParent() instanceof DBNDatabaseNode dbNode && canNodeBeFilteredByUser(dbNode)) {
                 NavigatorHandlerFilterConfig.configureFilters(navigatorTree.getShell(), dbNode);
-            }
         }
     }
 
