@@ -7,8 +7,7 @@ Bundle-Version: 1.1.216.qualifier
 Bundle-Release-Date: 20260504
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.data.transfer,
+Require-Bundle: org.jkiss.dbeaver.data.transfer,
  org.jkiss.bundle.apache.poi
 Automatic-Module-Name: org.jkiss.dbeaver.data.office
 Export-Package: org.jkiss.dbeaver.data.office.export

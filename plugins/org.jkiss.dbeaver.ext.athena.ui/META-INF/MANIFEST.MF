@@ -6,9 +6,7 @@ Bundle-Version: 1.0.148.qualifier
 Bundle-Release-Date: 20260504
 Bundle-Activator: org.jkiss.dbeaver.ext.athena.ui.AthenaActivator
 Require-Bundle: org.jkiss.dbeaver.ext.athena,
- org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ui.navigator
+ org.jkiss.dbeaver.ui.editors.connection
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp

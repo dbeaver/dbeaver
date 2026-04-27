@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,6 +32,7 @@ import java.util.Map;
  * PostgreServerExtension
  */
 public interface PostgreServerExtension {
+    @NotNull
     String getServerTypeName();
 
     boolean supportsTransactions();
@@ -78,6 +80,7 @@ public interface PostgreServerExtension {
 
     boolean supportsSequences();
 
+    @NotNull
     PostgreSequence createSequence(@NotNull PostgreSchema schema);
 
     boolean supportsRoles();
@@ -112,31 +115,62 @@ public interface PostgreServerExtension {
 
     // Stored procedures support (workarounds for Redshift mostly)
     boolean supportsStoredProcedures();
+    @NotNull
     String getProceduresSystemTable();
+    @NotNull
     String getProceduresOidColumn();
 
     // Table DDL extraction
-    String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
+    @Nullable
+    String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) throws DBException;
 
     /** View/Materialized view DDL extraction */
-    String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException;
+    @Nullable
+    String readViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreViewBase view) throws DBException;
 
     // Custom schema cache.
-    JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(PostgreDatabase database);
+    @NotNull
+    JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(@NotNull PostgreDatabase database);
 
-    PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult);
+    /**
+     * @return relation or null if this relation type is not supported
+     */
+    @Nullable
+    PostgreTableBase createRelationOfClass(
+        @NotNull PostgreSchema schema,
+        @NotNull PostgreClass.RelKind kind,
+        @NotNull JDBCResultSet dbResult
+    );
 
-    PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException;
+    @NotNull
+    PostgreTableBase createNewRelation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreSchema schema,
+        @NotNull PostgreClass.RelKind kind,
+        @Nullable Object copyFrom
+    ) throws DBException;
 
-    void configureDialect(PostgreDialect dialect);
+    void configureDialect(@NotNull PostgreDialect dialect);
 
-    String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter, String delimiter);
+    @NotNull
+    String getTableModifiers(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase tableBase,
+        boolean alter,
+        @NotNull String delimiter
+    );
 
     // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
-    void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
+    void initDefaultSSLConfig(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Map<String, String> props);
 
-    List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException;
+    @NotNull
+    List<PostgrePrivilege> readObjectPermissions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase object,
+        boolean includeNestedObjects
+    ) throws DBException;
 
+    @NotNull
     Map<String, String> getDataTypeAliases();
 
     boolean supportsTableStatistics();
@@ -202,7 +236,7 @@ public interface PostgreServerExtension {
     boolean supportsGeneratedColumns();
 
     /** True if supports table rowid columns. Rowid columns usually replace primary key in the table */
-    boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute);
+    boolean isHiddenRowidColumn(@NotNull PostgreAttribute<?> attribute);
 
     /** Nor all databases support all types of columns. Also, some databases return comments with table DDL from the server-side */
     boolean supportsShowingOfExtraComments();
@@ -219,7 +253,7 @@ public interface PostgreServerExtension {
     /** COPY FROM STDIN is special command for the better table insert performance */
     boolean supportsCopyFromStdIn();
 
-    int getParameterBindType(DBSTypedObject type, Object value);
+    int getParameterBindType(@NotNull DBSTypedObject type, @NotNull Object value);
 
     /** Necessary for the "Truncate table" tool */
     int getTruncateToolModes();

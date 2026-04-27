@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -26,8 +28,8 @@ import java.util.List;
 /**
  * Driver library dependencies
  */
-public interface DBPDriverDependencies
-{
+public interface DBPDriverDependencies {
+
     class DependencyNode {
         public final DependencyNode owner;
         public final DBPDriverLibrary library;
@@ -35,7 +37,7 @@ public interface DBPDriverDependencies
         public final int depth;
         public boolean duplicate;
 
-        public DependencyNode(DependencyNode owner, DBPDriverLibrary library) {
+        public DependencyNode(@Nullable DependencyNode owner, @NotNull DBPDriverLibrary library) {
             this.owner = owner;
             this.library = library;
             this.depth = owner == null ? 0 : owner.depth + 1;
@@ -47,9 +49,11 @@ public interface DBPDriverDependencies
         }
     }
 
+    @NotNull
     List<DependencyNode> getLibraryList();
 
+    @NotNull
     List<DependencyNode> getLibraryMap();
 
-    void resolveDependencies(DBRProgressMonitor monitor) throws DBException;
+    void resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException;
 }
