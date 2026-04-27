@@ -500,7 +500,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        checkConnected(false, status -> UIUtils.asyncExec(() -> {
+        boolean connect = dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
+        checkConnected(connect, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBWorkbench.getPlatformUI().showError(
                     "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
@@ -1021,33 +1022,43 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    public boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish) {
+    /**
+     * Check whether datasource is connected.
+     * <p>
+     * If {@code connect} is {@code true}, the connection will be asynchronously
+     * established if it is not connected yet.
+     *
+     * @param connect  whether to connect if not connected.
+     * @param onFinish callback to be executed after connection attempt is finished.
+     * @return true if datasource is already connected; false otherwise.
+     */
+    public boolean checkConnected(boolean connect, @Nullable DBRProgressListener onFinish) {
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        boolean doConnect = dataSourceContainer != null &&
-            (forceConnect || dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
-        if (doConnect) {
-            if (!dataSourceContainer.isConnected()) {
-                UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
-                if (serviceConnections != null) {
-                    // Start connect visualizer
-                    UIUtils.asyncExec(() -> {
-                        ConnectVisualizer connectVisualizer = new ConnectVisualizer();
-                        serviceConnections.connectDataSource(
-                            dataSourceContainer, status -> {
-                                // We must reload syntax to refresh context
-                                UIUtils.asyncExec(this::reloadSyntaxRules);
-                                if (onFinish != null) {
-                                    onFinish.onTaskFinished(status);
-                                }
-                                connectVisualizer.stop();
-                            }
-                        );
-                    });
-                }
+        if (dataSourceContainer == null) {
+            return false;
+        }
+        if (dataSourceContainer.isConnected()) {
+            return true;
+        }
+        if (connect) {
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                // Start connect visualizer
+                ConnectVisualizer connectVisualizer = new ConnectVisualizer();
+                serviceConnections.connectDataSource(
+                    dataSourceContainer, status -> {
+                        // We must reload syntax to refresh context
+                        UIUtils.asyncExec(this::reloadSyntaxRules);
+                        if (onFinish != null) {
+                            onFinish.onTaskFinished(status);
+                        }
+                        connectVisualizer.stop();
+                    }
+                );
             }
         }
-        return dataSourceContainer != null && dataSourceContainer.isConnected();
+        return false;
     }
 
     @Override
