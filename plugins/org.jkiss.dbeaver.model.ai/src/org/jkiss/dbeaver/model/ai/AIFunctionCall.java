@@ -80,7 +80,7 @@ public class AIFunctionCall {
     }
 
     @NotNull
-    public String getLabel() {
+    public String getFunctionDisplayName() {
         if (function != null) {
             return function.getName();
         }
