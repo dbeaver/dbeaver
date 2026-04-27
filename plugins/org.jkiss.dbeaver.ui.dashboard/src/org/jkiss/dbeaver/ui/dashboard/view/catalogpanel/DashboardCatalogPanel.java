@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -264,23 +264,17 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
 
     @Override
     public void handleItemCreate(@NotNull DashboardItemConfiguration item) {
-        createItem(item);
+        dashboardTable.add(item.getDashboardProvider(), item);
     }
 
     @Override
     public void handleItemDelete(@NotNull DashboardItemConfiguration item) {
-        deleteItem(item);
+        dashboardTable.remove(item.getDashboardProvider(), new Object[]{item});
     }
 
-    private void createItem(@NotNull DashboardItemConfiguration item) {
-        dashboardTable.remove(item.getDashboardProvider());
-        dashboardTable.refresh();
-        dashboardTable.expandToLevel(2);
-    }
-
-    private void deleteItem(@NotNull DashboardItemConfiguration item) {
-        dashboardTable.add(item.getDashboardProvider());
-        dashboardTable.refresh();
-        dashboardTable.expandToLevel(2);
+    @Override
+    public void handleItemUpdate(@NotNull DashboardItemConfiguration oldItem, @NotNull DashboardItemConfiguration newItem) {
+        dashboardTable.remove(oldItem.getDashboardProvider(), new Object[]{oldItem});
+        dashboardTable.add(newItem.getDashboardProvider(), newItem);
     }
 }

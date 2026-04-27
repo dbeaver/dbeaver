@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
+import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistryListener;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,7 +49,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardContainer {
+public class DashboardListViewer extends StructuredViewer implements DBPDataSourceContainerProvider, DashboardContainer,
+    DashboardRegistryListener {
 
     @NotNull
     private final IWorkbenchSite site;
@@ -91,13 +94,13 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         this.part = part;
         this.configuration = configuration;
         this.viewConfiguration = viewConfiguration;
-
+        DashboardRegistry.getInstance().addListener(this);
         initConnection();
     }
 
     public void dispose() {
         WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
-
+        DashboardRegistry.getInstance().removeListener(this);
         DBCExecutionContext context = isolatedContext;
         if (context != null) {
             if (context.isConnected()) {
@@ -265,6 +268,21 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
      */
     public boolean isVisible() {
         return isCatalogPanelVisible;
+    }
+
+    @Override
+    public void handleItemCreate(@NotNull DashboardItemConfiguration item) {
+        // Added by user, do nothing
+    }
+
+    @Override
+    public void handleItemDelete(@NotNull DashboardItemConfiguration item) {
+        dashContainer.removeItem(item);
+    }
+
+    @Override
+    public void handleItemUpdate(@NotNull DashboardItemConfiguration oldItem, @NotNull DashboardItemConfiguration newItem) {
+        dashContainer.updateItem(oldItem, newItem);
     }
 
     @Override
