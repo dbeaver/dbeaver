@@ -3425,14 +3425,12 @@ public abstract class LightGrid extends Canvas {
             rowState = new RowExpandState();
 
             for (GridColumn column : columns) {
-                System.out.println();
                 if (provider.hasChildren(gridRow) || provider.hasChildren(column)) {
                     final int size = provider.getCollectionSize(column, gridRow);
                     rowState.columns.put(column, new CellExpandState(size));
                 }
             }
 
-            System.out.println("toggleRowExpand " + gridRow);
             expandedRows.put(gridPos, rowState);
         }
 

@@ -47,6 +47,7 @@ public interface DBDResultSetModel {
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         boolean retrieveDeepestCollectionElement
     ) throws DBException;
 

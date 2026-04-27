@@ -304,7 +304,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     .updateValue(originalValue, !replaceAll);
             } else {
                 // Standard value update
-                owner.getController().updateCellValue(
+                owner.getController().updateCellValue( // TODO introduce value path here
                     cellLocation.getAttribute(),
                     cellLocation.getRow(),
                     cellLocation.getRowIndexes(),

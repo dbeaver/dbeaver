@@ -166,19 +166,18 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     }
 
     private void refreshValue(boolean force) {
-        DBDAttributeBinding attr = presentation.getCurrentAttribute();
-        ResultSetRow row = presentation.getController().getCurrentRow();
+        ResultSetCellLocation cellLocation = presentation.getCurrentCellLocation();
 
-        if (attr == null || row == null) {
+        if (cellLocation == null) {
             clearValue();
             return;
         }
-        int[] rowIndexes = presentation.getCurrentRowIndexes();
+
         boolean updateActions;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
-                new ResultSetCellLocation(attr, row, rowIndexes),
+                cellLocation,
                 IValueController.EditType.PANEL,
                 viewPlaceholder)
             {
@@ -198,9 +197,11 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         } else {
             updateActions = force = (
                 force ||
-                previewController.getBinding() != attr ||
-                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
-            previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
+                previewController.getBinding() != cellLocation.getAttribute() ||
+                !CommonUtils.equalObjects(cellLocation.getRowIndexes(), previewController.getRowIndexes()) ||
+                !CommonUtils.equalObjects(cellLocation.getValuePath(), previewController.getValuePath())
+            );
+            previewController.setCellLocation(cellLocation);
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;

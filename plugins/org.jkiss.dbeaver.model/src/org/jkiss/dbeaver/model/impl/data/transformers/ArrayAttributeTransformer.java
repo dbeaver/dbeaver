@@ -56,7 +56,6 @@ public class ArrayAttributeTransformer implements DBDAttributeTransformer {
         // No component type found.
         // Array items should be resolved in a lazy mode
         MapAttributeTransformer.resolveMapsFromData(session, attribute, rows);
-        System.out.println("???");
     }
 
 }
