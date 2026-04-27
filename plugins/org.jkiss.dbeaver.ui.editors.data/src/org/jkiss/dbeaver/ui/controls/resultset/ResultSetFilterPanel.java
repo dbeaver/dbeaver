@@ -609,6 +609,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     void setFilterValue(@NotNull String whereCondition) {
+        if (whereCondition.isBlank()) {
+            setQueryFilter(null);
+            return;
+        }
         for (QMQueryFilter filter : filtersHistory) {
             if (filter.text().equals(whereCondition)) {
                 setQueryFilter(filter);
@@ -617,8 +621,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
     }
 
-    private void setQueryFilter(@NotNull QMQueryFilter filter) {
-        if (filtersText.getText().trim().equals(filter.text().trim())) {
+    private void setQueryFilter(@Nullable QMQueryFilter filter) {
+        if (filter == null) {
+            filtersText.setText("");
+            return;
+        } else if (filtersText.getText().trim().equals(filter.text().trim())) {
+            // Same filter is already applied
             return;
         }
 
