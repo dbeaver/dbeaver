@@ -27,18 +27,15 @@
                         label="StarRocks"
                         icon="icons/starrocks_icon.svg"
                         iconBig="icons/starrocks_icon_big.svg"
-                        class="com.mysql.cj.jdbc.Driver"
-                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        class="com.starrocks.cj.jdbc.Driver"
+                        sampleURL="jdbc:starrocks://{host}[:{port}]/[{database}]"
                         defaultPort="9030"
                         defaultUser="root"
                         webURL="https://docs.starrocks.io/"
-                        description="StarRocks using MySQL 8 driver"
+                        description="StarRocks JDBC driver"
                         categories="sql">
                     <replace provider="mysql" driver="starRocks"/>
-                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
-                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
-                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
-                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <file type="jar" path="maven:/com.starrocks:starrocks-connector-j:RELEASE[1.1.1]"/>
                     <property name="connectTimeout" value="20000"/>
                     <parameter name="supports-partitions" value="false"/>
                     <parameter name="supports-references" value="false"/>
