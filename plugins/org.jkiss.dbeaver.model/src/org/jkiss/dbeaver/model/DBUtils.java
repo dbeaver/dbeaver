@@ -70,8 +70,8 @@ public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
 
-    private static final ResultSetValuePath.PathItemVisitorAdapter<Object, Object> RSV_PATH_ITEM_VALUE_RESOLVER
-        = new ResultSetValuePath.PathItemVisitorAdapter<>() {
+    private static final ResultSetValuePath.PathItemVisitor<Object, Object> RSV_PATH_ITEM_VALUE_RESOLVER
+        = new ResultSetValuePath.PathItemVisitor<>() {
 
         @Nullable
         @Override
@@ -93,6 +93,7 @@ public final class DBUtils {
             return null;
         }
 
+        @Nullable
         @Override
         public Object visitAttributeItem(@NotNull ResultSetValuePath.PathAttributeItem attrItem, @NotNull Object arg) {
             if (arg instanceof DBDComposite c) {
@@ -834,6 +835,7 @@ public final class DBUtils {
         return getAttributeValue(attribute, allAttributes, row, null, false);
     }
 
+    @NotNull
     private static Object getAttributeValueByBindings(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDAttributeBinding[] allAttributes,

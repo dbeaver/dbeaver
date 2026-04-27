@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.ResultSetValuePath;
 
@@ -46,7 +47,8 @@ public interface IResultSetSelection extends IStructuredSelection {
         return null;
     }
 
-    default ResultSetValuePath getElementValuePath(Object element) {
+    @Nullable
+    default ResultSetValuePath getElementValuePath(@NotNull Object element) {
         return null;
     }
 }

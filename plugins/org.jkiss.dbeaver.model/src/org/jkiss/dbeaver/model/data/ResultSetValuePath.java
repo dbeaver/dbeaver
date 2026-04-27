@@ -27,39 +27,23 @@ public record ResultSetValuePath(
 ) {
 
     public interface PathItemVisitor<T, TRet> {
-        TRet visitAttributeItem(PathAttributeItem attrItem, T arg);
-        TRet visitIndexItem(PathIndexItem indexItem, T arg);
-    }
-
-    public static class PathItemVisitorAdapter<T, TRet> implements PathItemVisitor<T, TRet> {
-        private final TRet defaultResult;
-
-        public PathItemVisitorAdapter() {
-            this(null);
-        }
-
-        public PathItemVisitorAdapter(TRet defaultResult) {
-            this.defaultResult = defaultResult;
-        }
-
         @Nullable
-        @Override
-        public TRet visitAttributeItem(@NotNull PathAttributeItem attrItem, @NotNull T arg) { return this.defaultResult; }
-
+        TRet visitAttributeItem(@NotNull PathAttributeItem attrItem, @NotNull T arg);
         @Nullable
-        @Override
-        public TRet visitIndexItem(@NotNull PathIndexItem indexItem, @NotNull T arg) { return this.defaultResult; }
+        TRet visitIndexItem(@NotNull PathIndexItem indexItem, @NotNull T arg);
     }
 
     public interface PathItem {
-        <T, TRet> TRet apply(PathItemVisitor<T, TRet> visitor, T arg);
+        @Nullable
+        <T, TRet> TRet apply(@NotNull PathItemVisitor<T, TRet> visitor, @NotNull T arg);
     }
 
     public record PathAttributeItem(
         @NotNull DBSAttributeBase attribute
     ) implements PathItem {
+        @Nullable
         @Override
-        public <T, TRet> TRet apply(PathItemVisitor<T, TRet> visitor, T arg) {
+        public <T, TRet> TRet apply(@NotNull PathItemVisitor<T, TRet> visitor, @NotNull T arg) {
             return visitor.visitAttributeItem(this, arg);
         }
     }
@@ -67,8 +51,9 @@ public record ResultSetValuePath(
     public record PathIndexItem(
         int index
     ) implements PathItem {
+        @Nullable
         @Override
-        public <T, TRet> TRet apply(PathItemVisitor<T, TRet> visitor, T arg) {
+        public <T, TRet> TRet apply(@NotNull PathItemVisitor<T, TRet> visitor, @NotNull T arg) {
             return visitor.visitIndexItem(this, arg);
         }
     }

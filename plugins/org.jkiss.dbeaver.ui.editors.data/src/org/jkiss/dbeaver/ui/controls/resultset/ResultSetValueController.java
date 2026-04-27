@@ -81,7 +81,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return cellLocation.getRow();
     }
 
-    public void setCurRow(ResultSetRow curRow, int[] rowIndexes, ResultSetValuePath valuePath) {
+    public void setCurRow(@NotNull ResultSetRow curRow, int[] rowIndexes, @Nullable ResultSetValuePath valuePath) {
         this.cellLocation = new ResultSetCellLocation(
             cellLocation.getAttribute(),
             curRow,
@@ -94,6 +94,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return cellLocation.getRowIndexes();
     }
 
+    @Nullable
     public ResultSetValuePath getValuePath() {
         return cellLocation.getValuePath();
     }
@@ -115,6 +116,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return getBinding().getName();
     }
 
+    @Nullable
     @Override
     public DBSTypedObject getValueType() {
         if (cellLocation.getValuePath() != null) {

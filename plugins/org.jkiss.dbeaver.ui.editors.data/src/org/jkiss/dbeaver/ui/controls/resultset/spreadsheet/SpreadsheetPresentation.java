@@ -1965,8 +1965,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
             return getRowNestedIndexes(row);
         }
 
+        @Nullable
         @Override
-        public ResultSetValuePath getElementValuePath(Object element) {
+        public ResultSetValuePath getElementValuePath(@NotNull Object element) {
             if (controller.isRecordMode()) {
                 IGridRow row = spreadsheet.getRow(((GridPos) element).row);
                 return row == null ? null : getRowValuePath(row);
