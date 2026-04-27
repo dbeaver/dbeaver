@@ -11,38 +11,15 @@
                 label="StarRocks"
                 icon="icons/starrocks_icon.svg">
 
-            <!-- Define StarRocks tree with catalog layer -->
-            <tree path="starrocks" label="StarRocks" icon="#folder_database">
-                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksCatalog" label="Catalogs" icon="#folder_schema" description="StarRocks catalogs">
-                    <items label="Catalog" path="catalog" property="catalogs" icon="#database">
-                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDatabase" label="Databases" icon="#folder_database" description="Databases in catalog">
-                            <items label="Database" path="database" property="schemas" icon="#database">
-                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTable" label="Tables" icon="#folder_table" description="Tables in database">
-                                    <items label="Table" path="table" property="tables" icon="#table">
-                                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Table columns">
-                                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
-                                        </folder>
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksView" label="Views" icon="#folder_view" description="Views in database">
-                                    <items label="View" path="view" property="views" icon="#view">
-                                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="View columns">
-                                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
-                                        </folder>
-                                    </items>
-                                </folder>
-                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksMaterializedView" label="Materialized Views" icon="#folder_view" description="Materialized views in database" visibleIf="connected &amp;&amp; object.catalog.isInternal()">
-                                    <items label="Materialized View" path="materializedView" property="materializedViews" icon="#view">
-                                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Materialized view columns">
-                                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
-                                        </folder>
-                                    </items>
-                                </folder>
-                            </items>
+            <treeInjection path="generic/catalog/schema" after="view">
+                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksMaterializedView" label="Materialized Views" icon="#folder_view" description="Materialized views in database" visibleIf="object.catalog.isInternal()">
+                    <items label="Materialized View" path="materializedView" property="materializedViews" icon="#view">
+                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Materialized view columns">
+                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
                         </folder>
                     </items>
                 </folder>
-            </tree>
+            </treeInjection>
 
             <drivers managable="true">
                 <driver
