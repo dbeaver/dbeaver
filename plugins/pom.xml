@@ -78,7 +78,7 @@
         <module>org.jkiss.dbeaver.ext.denodo</module>
         <module>org.jkiss.dbeaver.ext.altibase</module>
         <module>org.jkiss.dbeaver.ext.gaussdb</module>
-        
+
         <module>org.jkiss.dbeaver.tasks.native</module>
 
         <module>org.jkiss.dbeaver.data.office</module>
@@ -106,6 +106,7 @@
                 <module>org.jkiss.dbeaver.core</module>
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>
+                <module>org.jkiss.dbeaver.ui.app.msstore</module>
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
@@ -133,6 +134,8 @@
                 <module>org.jkiss.dbeaver.ext.vertica.ui</module>
                 <module>org.jkiss.dbeaver.ext.tidb.ui</module>
                 <module>org.jkiss.dbeaver.ext.altibase.ui</module>
+
+                <module>org.jkiss.dbeaver.ext.wmi</module>
 
                 <module>org.jkiss.dbeaver.ui</module>
                 <module>org.jkiss.dbeaver.ui.editors.acl</module>
@@ -212,8 +215,6 @@
             </activation>
             <modules>
                 <module>org.jkiss.dbeaver.ui.swt.windows</module>
-                <module>org.jkiss.dbeaver.ui.app.msstore</module>
-                <module>org.jkiss.dbeaver.ext.wmi</module>
             </modules>
         </profile>
         <profile>
@@ -225,8 +226,6 @@
             </activation>
             <modules>
                 <module>org.jkiss.dbeaver.ui.swt.windows</module>
-                <module>org.jkiss.dbeaver.ui.app.msstore</module>
-                <module>org.jkiss.dbeaver.ext.wmi</module>
             </modules>
         </profile>
         <profile>
