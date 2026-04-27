@@ -48,15 +48,6 @@ public class AIToolboxRegistry implements AIToolboxManager {
 
     public AIToolboxRegistry() {
         internalToolbox = new AIToolboxInternalDescriptor();
-        try {
-            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
-            for (AIToolboxDescriptor toolbox: toolboxes) {
-                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
-            }
-        } catch (DBException e) {
-            log.error("Error loading MCP configuration", e);
-        }
-
         // Load function settings
         try {
             String mcpConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(TOOLS_CONFIG_FILE_NAME);
@@ -81,6 +72,14 @@ public class AIToolboxRegistry implements AIToolboxManager {
                 var cd = new AIFunctionCategoryDescriptor(el);
                 categoriesById.put(cd.getId(), cd);
             }
+        }
+        try {
+            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
+            for (AIToolboxDescriptor toolbox : toolboxes) {
+                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
+            }
+        } catch (DBException e) {
+            log.error("Error loading MCP configuration", e);
         }
     }
 
@@ -114,10 +113,10 @@ public class AIToolboxRegistry implements AIToolboxManager {
     @NotNull
     @Override
     public List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose) {
-        List<AIFunctionDescriptor> functions = new ArrayList<>(internalToolbox.getSupportedFunctions());
+        List<AIFunctionDescriptor> functions = new ArrayList<>(internalToolbox.getSupportedFunctions(purpose));
         for (AIToolbox toolbox : externalToolboxes.values()) {
             if (toolbox.isEnabled() && toolbox.isAccessible()) {
-                functions.addAll(toolbox.getSupportedFunctions());
+                functions.addAll(toolbox.getSupportedFunctions(purpose));
             }
         }
         return functions;
@@ -139,14 +138,40 @@ public class AIToolboxRegistry implements AIToolboxManager {
     @Nullable
     @Override
     public AIFunctionDescriptor getFunctionByFullId(@NotNull String fullId) {
-        return getAllToolboxes().stream()
-            .flatMap(it -> it.getSupportedFunctions().stream())
-            .filter(it -> fullId.equals(it.getFullId()))
-            .findFirst()
-            .orElseGet(() -> {
-                log.warn("AI function '" + fullId + "' not found in any accessible toolbox");
-                return null;
-            });
+        int divPos = fullId.indexOf("_");
+        if (divPos < 0) {
+            log.debug("Wrong function full ID: " + fullId);
+            return null;
+        }
+        String tbId = fullId.substring(0, divPos);
+        AIToolboxDescriptor toolbox = getToolbox(tbId);
+        if (toolbox == null) {
+            log.debug("Toolbox '" + tbId + "' not found");
+            return null;
+        }
+        String functionId = fullId.substring(divPos + 1);
+        AIFunctionDescriptor function = toolbox.getFunctionById(functionId);
+        if (function == null) {
+            log.debug("Function '" + functionId + "' not found in toolbox '" + tbId + "'");
+            return null;
+        }
+        return function;
+    }
+
+    @Override
+    public void saveToolboxSettings(@NotNull List<? extends AIToolbox> toolboxes) throws DBException {
+        // No-op in base implementation; overridden in Pro
+    }
+
+    /**
+     * Updates the in-memory external toolboxes map.
+     * Called by subclasses after persisting toolbox configuration.
+     */
+    protected void updateExternalToolboxes(@NotNull List<AIToolboxDescriptor> toolboxes) {
+        externalToolboxes.clear();
+        for (AIToolboxDescriptor toolbox : toolboxes) {
+            externalToolboxes.put(toolbox.getToolboxId(), toolbox);
+        }
     }
 
     @NotNull

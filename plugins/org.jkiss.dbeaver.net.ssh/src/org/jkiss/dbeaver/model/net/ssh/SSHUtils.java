@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.Identity;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jsch.internal.core.IConstants;
@@ -38,6 +41,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -94,13 +98,21 @@ public class SSHUtils {
     }
 
 
-    public static boolean isKeyEncrypted(byte[] privKeyValue) {
+    public static boolean isKeyEncrypted(@Nullable String privKeyValue) {
         // Check whether this key is encrypted
         if (privKeyValue != null) {
+            // no need to decode key value, @see com.jcraft.jsch.KeyPair.load(com.jcraft.jsch.JSch, byte[], byte[])
+            byte[] keyBinary = privKeyValue.getBytes(StandardCharsets.UTF_8);
             try {
                 JSch testSch = new JSch();
-                KeyPair keyPair = KeyPair.load(testSch, privKeyValue, null);
-                return keyPair.isEncrypted();
+                testSch.addIdentity("key", keyBinary, null, null);
+                IdentityRepository ir = testSch.getIdentityRepository();
+                List<Identity> identities = ir.getIdentities();
+                for (Identity identity : identities) {
+                    if (identity.isEncrypted()) {
+                        return true;
+                    }
+                }
             } catch (JSchException e) {
                 // Something went wrong
                 log.debug("Can't check private key encryption: " + e.getMessage());

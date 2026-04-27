@@ -579,8 +579,8 @@ public class ResultSetModel implements DBDResultSetModel {
         } else {
             this.executionSource = null;
         }
-        if (resultSet instanceof DBCResultSetTrace) {
-            this.trace = ((DBCResultSetTrace) resultSet).getExecutionTrace();
+        if (resultSet instanceof DBCResultSetTrace rst) {
+            this.trace = rst.getExecutionTrace();
         } else {
             this.trace = null;
         }

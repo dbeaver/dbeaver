@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class EULAUtils {
     public static final String DBEAVER_EULA = "DBeaver.eula";
 
     //TODO change hardcoded eula version to something more flexible
-    private static final String eulaVersion = "1.0";
+    private static final String eulaVersion = "1.5";
 
     @NotNull
     public static String getEulaVersion() {

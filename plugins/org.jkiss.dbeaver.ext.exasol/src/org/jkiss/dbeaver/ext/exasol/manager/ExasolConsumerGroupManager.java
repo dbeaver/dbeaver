@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2020 Karl Griesser (fullref@gmail.com)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +17,7 @@
 package org.jkiss.dbeaver.ext.exasol.manager;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
@@ -52,8 +52,13 @@ public class ExasolConsumerGroupManager extends SQLObjectEditor<ExasolConsumerGr
     }
 
     @Override
-    protected ExasolConsumerGroup createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
-                                                       Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected ExasolConsumerGroup createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return new ExasolConsumerGroup(
             (ExasolDataSource) container,
             "PG",

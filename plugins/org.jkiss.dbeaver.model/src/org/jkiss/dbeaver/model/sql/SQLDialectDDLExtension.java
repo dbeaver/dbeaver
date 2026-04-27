@@ -116,4 +116,15 @@ public interface SQLDialectDDLExtension extends SQLDialect {
      * Checks if sql dialect supports COLUMN key word for alter column.
      */
     boolean supportsAlterHasColumn();
+
+    @Nullable
+    default String getColumnCharsetModifier(@NotNull ColumnCharset charset) {
+        return null;
+    }
+
+    enum ColumnCharset {
+        NONE,
+        ASCII,
+        UTF8
+    }
 }

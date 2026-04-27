@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,9 +55,11 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         }
 
         ISelection selection = HandlerUtil.getCurrentSelection(event);
-        DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
-        if (selectedObject != null) {
-            return DBUtils.getDefaultContext(selectedObject, false);
+        if (selection != null) {
+            DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
+            if (selectedObject != null) {
+                return DBUtils.getDefaultContext(selectedObject, false);
+            }
         }
 
         return null;

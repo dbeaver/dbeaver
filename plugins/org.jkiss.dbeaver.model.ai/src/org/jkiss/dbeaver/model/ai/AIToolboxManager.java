@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionCategoryDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 
@@ -47,4 +48,6 @@ public interface AIToolboxManager {
     AIFunctionSettings getFunctionSettings();
 
     void saveFunctionSettings() throws DBCException;
+
+    void saveToolboxSettings(@NotNull List<? extends AIToolbox> toolboxes) throws DBException;
 }

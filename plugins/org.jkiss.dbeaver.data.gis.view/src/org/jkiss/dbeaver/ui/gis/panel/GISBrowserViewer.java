@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
@@ -67,12 +68,17 @@ public class GISBrowserViewer extends BaseValueEditor<Browser> implements IGeome
             presentation = null;
         }
 
-        leafletViewer = new GISLeafletViewer(
-            editPlaceholder,
-            new DBDAttributeBinding[]{((IAttributeController) valueController).getBinding()},
-            GisTransformUtils.getSpatialDataProvider(valueController.getExecutionContext().getDataSource()),
-            presentation
-        );
+        try {
+            leafletViewer = new GISLeafletViewer(
+                editPlaceholder,
+                new DBDAttributeBinding[]{((IAttributeController) valueController).getBinding()},
+                GisTransformUtils.getSpatialDataProvider(valueController.getExecutionContext().getDataSource()),
+                presentation
+            );
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("GIS Viewer", "Error initializing GIS viewer", e);
+            return null;
+        }
 
         return leafletViewer.getBrowser();
     }

@@ -62,7 +62,6 @@ import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
@@ -126,6 +125,7 @@ import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -152,6 +152,7 @@ public class SQLEditor extends SQLEditorBase implements
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
@@ -524,9 +525,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private boolean updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource =
-            DBWorkbench.getPlatform()
-                .getPreferenceStore()
-                .getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS)
+            SQLEditorUtils.isAttachScriptsToConnections()
                 ? defineContainer()
                 : null;
         return setDataSourceContainer(inputDataSource);
@@ -2648,21 +2647,36 @@ public class SQLEditor extends SQLEditorBase implements
         explainQueryPlan((SQLQuery) scriptElement);
     }
 
-    private void explainQueryPlan(SQLQuery sqlQuery) {
-        showResultsPanel(false);
+    private void explainQueryPlan(@NotNull SQLQuery sqlQuery) {
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
-
-        DBCPlanStyle planStyle = planner.getPlanStyle();
-        if (planStyle == DBCPlanStyle.QUERY) {
-            explainPlanFromQuery(planner, sqlQuery);
-        } else if (planStyle == DBCPlanStyle.OUTPUT) {
-            explainPlanFromQuery(planner, sqlQuery);
-            showOutputPanel(true);
-        } else {
-            ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
-
-            if (planView != null) {
-                planView.explainQueryPlan(sqlQuery, planner);
+        if (planner == null) {
+            return;
+        }
+        switch (planner.getPlanStyle()) {
+            case QUERY -> {
+                explainPlanFromQuery(planner, sqlQuery);
+                showResultsPanel(false);
+            }
+            case OUTPUT -> {
+                explainPlanFromQuery(planner, sqlQuery);
+                showResultsPanel(false);
+                showOutputPanel(true);
+            }
+            case PLAN -> {
+                RuntimeUtils.scheduleJob("Explain query plan", monitor -> {
+                    DBCQueryPlannerConfiguration configuration = ExplainPlanViewer.makeExplainPlanConfiguration(monitor, planner);
+                    if (configuration == null) {
+                        return;
+                    }
+                    UIUtils.syncExec(() -> {
+                        ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
+                        if (planView == null) {
+                            return;
+                        }
+                        planView.explainQueryPlan(sqlQuery, planner, configuration);
+                        showResultsPanel(false);
+                    });
+                });
             }
         }
     }
@@ -2678,7 +2692,8 @@ public class SQLEditor extends SQLEditorBase implements
         });
     }
 
-    private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
+    @Nullable
+    private ExplainPlanViewer getPlanView(@NotNull SQLQuery sqlQuery, @Nullable DBCQueryPlanner planner) {
 
         // 1. Determine whether planner supports plan extraction
 
@@ -2738,7 +2753,7 @@ public class SQLEditor extends SQLEditorBase implements
         return planView;
     }
 
-    private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
+    private void explainPlanFromQuery(@NotNull DBCQueryPlanner planner, @NotNull SQLQuery sqlQuery) {
         final String[] planQueryString = new String[1];
         DBRRunnableWithProgress queryObtainTask = monitor -> {
             DBCQueryPlannerConfiguration configuration = ExplainPlanViewer.makeExplainPlanConfiguration(monitor, planner);
@@ -3142,7 +3157,7 @@ public class SQLEditor extends SQLEditorBase implements
             ConfirmationDialog.WARNING,
             ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
-            dropQuery.getText()
+            StringUtils.truncateText(dropQuery.getText(), MAX_QUERY_PREVIEW_LENGTH)
         );
     }
 
@@ -4129,7 +4144,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onStartQuery(DBCSession session, final SQLQuery query) {
+        public void onStartQuery(@NotNull DBCSession session, @NotNull final SQLQuery query) {
             try {
                 SQLEditor owner = queryProcessor.getOwner();
                 boolean isInExecute = owner.getTotalQueryRunning() > 0;
@@ -4167,7 +4182,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndQuery(final DBCSession session, final SQLQueryResult result, DBCStatistics statistics) {
+        public void onEndQuery(@NotNull DBCSession session, @NotNull SQLQueryResult result, @NotNull DBCStatistics statistics) {
             try {
                 SQLEditor owner = getOwner();
                 synchronized (owner.runningQueries) {
@@ -4341,7 +4356,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndScript(final DBCStatistics statistics, final boolean hasErrors) {
+        public void onEndScript(@NotNull final DBCStatistics statistics, final boolean hasErrors) {
             try {
                 SQLEditor owner = getOwner();
                 if (owner.isDisposed()) {
@@ -4375,7 +4390,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+        public void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {
             if (result == SqlJobResult.SUCCESS || result == SqlJobResult.PARTIAL_SUCCESS) {
                 refreshContextDefaults(session);
             }

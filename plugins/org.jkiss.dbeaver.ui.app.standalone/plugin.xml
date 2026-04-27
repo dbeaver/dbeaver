@@ -248,6 +248,12 @@
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.spaces">
                         <visibleWhen checkEnabled="true"/>
                     </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces">
+                        <visibleWhen checkEnabled="true"/>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces">
+                        <visibleWhen checkEnabled="true"/>
+                    </command>
                 </menu>
             <separator name="transforms" visible="true"/>
             <separator name="data" visible="true"/>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,11 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty");
         }
@@ -76,13 +79,15 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
         return (DBSObjectCache) object.getSchema().tableCache;
     }
 
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return SQLTableManager.BASE_VIEW_NAME;
     }
 
     @Override
-    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) {
+    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @Nullable Object container, @Nullable
+    Object copyFrom, @NotNull Map<String, Object> options) {
         OracleSchema schema = (OracleSchema) container;
         OracleView newView = new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$
         setNewObjectName(monitor, schema, newView);
@@ -91,23 +96,46 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         createOrReplaceViewQuery(monitor, actions, command, options);
     }
 
     @Override
-    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         createOrReplaceViewQuery(monitor, actionList, command, options);
     }
 
     @Override
-    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, @NotNull List<DBEPersistAction> actions, DBECommandComposite<OracleView, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    private void createOrReplaceViewQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull DBECommandComposite<OracleView, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final OracleView view = command.getObject();
         boolean hasComment = command.hasProperty("comment");
         if (!hasComment || command.getProperties().size() > 1) {

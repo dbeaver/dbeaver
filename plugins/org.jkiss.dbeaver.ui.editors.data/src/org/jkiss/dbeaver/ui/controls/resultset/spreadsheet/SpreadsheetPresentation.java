@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -131,7 +133,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private boolean supportsAttributeFilter;
     private boolean autoFetchSegments;
     private boolean showAttributeIcons;
-    private boolean showAttributeDescription;
+    private ResultSetPreferences.ColumnHeaderExtraContent columnHeaderExtra;
+    private Map<DBDAttributeBinding, String> columnTypeDescriptions = Collections.emptyMap();
     private boolean calcColumnWidthByValue;
 
     private boolean rightJustifyNumbers = true;
@@ -914,7 +917,36 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         showAttrOrdering = preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
         showAttributeIcons = controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_ATTR_ICONS);
-        showAttributeDescription = getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION);
+        String headerExtraStr = getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_COLUMN_HEADER_EXTRA);
+        if (CommonUtils.isEmpty(headerExtraStr)) {
+            // Backward compatibility: check old boolean preference
+            if (getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION)) {
+                columnHeaderExtra = ResultSetPreferences.ColumnHeaderExtraContent.DESCRIPTION;
+            } else {
+                columnHeaderExtra = ResultSetPreferences.ColumnHeaderExtraContent.NOTHING;
+            }
+        } else {
+            columnHeaderExtra = CommonUtils.valueOf(
+                ResultSetPreferences.ColumnHeaderExtraContent.class,
+                headerExtraStr,
+                ResultSetPreferences.ColumnHeaderExtraContent.NOTHING
+            );
+        }
+        if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.DATA_TYPE) {
+            Map<DBDAttributeBinding, String> typeDescs = new HashMap<>();
+            for (DBDAttributeBinding binding : controller.getModel().getVisibleAttributes()) {
+                String typeName = DBUtils.getFullTypeName(binding.getDataSource(), binding);
+                DBDRowIdentifier rowIdentifier = binding.getRowIdentifier();
+                if (rowIdentifier != null && rowIdentifier.hasAttribute(binding)
+                    && rowIdentifier.getUniqueKey().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                    typeName = "PK " + typeName;
+                }
+                typeDescs.put(binding, typeName);
+            }
+            columnTypeDescriptions = typeDescs;
+        } else {
+            columnTypeDescriptions = Collections.emptyMap();
+        }
         supportsAttributeFilter =
             controller.getDataContainer() != null &&
                 (controller.getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0 &&
@@ -3061,11 +3093,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Nullable
         @Override
-        public String getDescription(IGridItem element) {
-            if (!showAttributeDescription || element.getParent() != null) {
+        public String getDescription(@NotNull IGridItem element) {
+            if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.NOTHING || element.getParent() != null) {
                 return null;
             }
             if (element.getElement() instanceof DBDAttributeBinding attributeBinding) {
+                if (columnHeaderExtra == ResultSetPreferences.ColumnHeaderExtraContent.DATA_TYPE) {
+                    return columnTypeDescriptions.get(attributeBinding);
+                }
                 return attributeBinding.getDescription();
             } else {
                 return null;
@@ -3100,6 +3135,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (attributeBinding.isRequired()) {
                     tip.append(" NOT NULL");
                 }
+                // Show source table name so users can identify column origins in JOINs
+                String sourceTable = getSourceTableName(attributeBinding);
+                if (sourceTable != null) {
+                    tip.append("\n").append(SpreadsheetMessages.tooltip_table).append(": ").append(sourceTable);
+                }
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\n").append(SpreadsheetMessages.tooltip_description).append(": ").append(description);
                 }
@@ -3116,6 +3156,24 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return tip.toString();
             }
             return null;
+        }
+
+        @Nullable
+        private String getSourceTableName(@NotNull DBDAttributeBinding binding) {
+            DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
+            if (metaAttribute == null) {
+                return null;
+            }
+            DBCEntityMetaData entityMeta = metaAttribute.getEntityMetaData();
+            if (entityMeta == null) {
+                return null;
+            }
+            String qualifiedName = DBUtils.getSimpleQualifiedName(
+                entityMeta.getCatalogName(),
+                entityMeta.getSchemaName(),
+                entityMeta.getEntityName()
+            );
+            return CommonUtils.isEmpty(qualifiedName) ? null : qualifiedName;
         }
 
         @Override
