@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizard;
 
 import java.nio.file.Path;
 
 public class ConfigImportWizardDataGrip extends ConfigImportWizard {
 
+    public enum InputMode {
+        PROJECT_FOLDER,
+        PASTED_CONFIGURATION
+    }
 
     private ConfigImportWizardPageDataGripSettings pageSettings;
 
@@ -38,8 +44,19 @@ public class ConfigImportWizardDataGrip extends ConfigImportWizard {
         super.addPages();
     }
 
+    @Nullable
     public Path getInputFile() {
         return pageSettings.getInputFile();
+    }
+
+    @NotNull
+    public InputMode getInputMode() {
+        return pageSettings.getInputMode();
+    }
+
+    @Nullable
+    public String getPastedConfiguration() {
+        return pageSettings.getPastedConfiguration();
     }
 
 }

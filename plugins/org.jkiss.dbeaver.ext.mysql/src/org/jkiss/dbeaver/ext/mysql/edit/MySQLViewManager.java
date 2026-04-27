@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,11 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException
-    {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         MySQLTableBase object = command.getObject();
         if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
@@ -65,14 +67,20 @@ public class MySQLViewManager extends MySQLTableManager {
         }
     }
 
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return SQLTableManager.BASE_VIEW_NAME;
     }
 
     @Override
-    protected MySQLView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected MySQLView createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         MySQLCatalog catalog = (MySQLCatalog) container;
         MySQLView newView = new MySQLView(catalog);
         setNewObjectName(monitor, catalog, newView);
@@ -80,8 +88,13 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
-    {
+    protected void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         createOrReplaceViewQuery(actions, (MySQLView) command.getObject());
     }
 

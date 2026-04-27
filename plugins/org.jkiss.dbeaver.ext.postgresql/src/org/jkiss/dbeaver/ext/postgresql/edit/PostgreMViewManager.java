@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -42,8 +43,13 @@ import java.util.Map;
 public class PostgreMViewManager extends PostgreViewManager {
 
     @Override
-    protected PostgreMaterializedView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected PostgreMaterializedView createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         PostgreSchema schema = (PostgreSchema)container;
         PostgreMaterializedView newMV = new PostgreMaterializedView(schema);
         newMV.setName("new_mview"); //$NON-NLS-1$
@@ -51,13 +57,19 @@ public class PostgreMViewManager extends PostgreViewManager {
         return newMV;
     }
 
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return SQLTableManager.BASE_MATERIALIZED_VIEW_NAME;
     }
 
     @Override
-    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view, Map<String, Object> options) throws DBException {
+    protected void createOrReplaceViewQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull PostgreViewBase view,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.createOrReplaceViewQuery(monitor, actions, view, options);
         // Indexes DDL
     }
