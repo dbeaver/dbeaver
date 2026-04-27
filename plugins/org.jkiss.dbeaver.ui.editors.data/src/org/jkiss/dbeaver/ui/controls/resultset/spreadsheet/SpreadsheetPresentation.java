@@ -2142,10 +2142,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                     @Override
                     public DBPImage getStatusIcon() {
-                        if (getController().getReadOnlyStatus() != null) {
-                            return UIIcon.BUTTON_READ_ONLY;
+                        if (getController().getReadOnlyStatus() == null) {
+                            return null;
                         }
-                        return null;
+                        // Adjacent Edit Key column already signals missing-unique-key via META_KEY_NA.
+                        DBCExecutionContext executionContext = getController().getExecutionContext();
+                        if (executionContext != null
+                            && getController().getModel().isUniqueKeyUndefinedButRequired(
+                                executionContext.getDataSource().getContainer())) {
+                            return null;
+                        }
+                        return UIIcon.BUTTON_READ_ONLY;
                     }
                 },
                 new IGridStatusColumn() {
