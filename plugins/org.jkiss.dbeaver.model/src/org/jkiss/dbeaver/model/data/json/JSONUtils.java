@@ -51,6 +51,7 @@ public class JSONUtils {
     public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
     public static final Type LIST_TYPE_TOKEN = TypeToken.getParameterized(List.class, MAP_TYPE_TOKEN).getType();
     public static final Gson GSON = new GsonBuilder().create();
+    public static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static String formatDate(Date date) {
         try {

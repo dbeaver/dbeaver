@@ -6,7 +6,6 @@
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
-   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
 

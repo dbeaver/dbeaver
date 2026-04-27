@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.controls;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -109,7 +111,7 @@ public class ScopeSelectorControl extends Composite {
 
         scopeConfigItem = UIUtils.createToolItem(
             toolBar,
-            "Customize",
+            AIUIMessages.scope_selector_customize,
             UIIcon.RS_DETAILS,
             SelectionListener.widgetSelectedAdapter(e -> changeScope(AIDatabaseScope.CUSTOM))
         );
@@ -182,11 +184,11 @@ public class ScopeSelectorControl extends Composite {
                 }
             }
             case CURRENT_DATASOURCE -> dataSource.getDataSourceContainer().getName();
-            default -> checkedObjectIds.size() + " object(s)";
+            default -> NLS.bind(AIUIMessages.scope_selector_custom_objects, checkedObjectIds.size());
         };
 
         scopeConfigItem.setEnabled(scope == AIDatabaseScope.CUSTOM);
-        scopeText.setText(CommonUtils.toString(text, "N/A"));
+        scopeText.setText(CommonUtils.toString(text, AIUIMessages.scope_selector_not_available));
 
         requestLayout();
         layout(true, true);
