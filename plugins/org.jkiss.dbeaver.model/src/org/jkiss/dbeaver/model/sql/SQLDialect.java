@@ -207,6 +207,23 @@ public interface SQLDialect {
     @NotNull
     String[] getScriptDelimiters();
 
+    /**
+     * Whether the default statement delimiter (typically {@code ;}) from user preferences
+     * should be suppressed when the user has not explicitly customized it.
+     * <p>
+     * When {@code true}, only the delimiters from {@link #getScriptDelimiters()} are used
+     * unless the user has explicitly configured a custom statement delimiter in preferences.
+     * <p>
+     * T-SQL (SQL Server / Sybase) needs this because {@code ;} is a statement terminator
+     * within a batch, not a batch separator. Splitting on {@code ;} breaks variable scope
+     * across statements in the same batch.
+     *
+     * @return true to suppress adding the default preference-based delimiter
+     */
+    default boolean usesOnlyNativeScriptDelimiters() {
+        return false;
+    }
+
     @Nullable
     String getScriptDelimiterRedefiner();
 
