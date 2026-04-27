@@ -26,6 +26,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -120,8 +121,14 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             this.dsRegistry = originalNode.getOwnerProject().getDataSourceRegistry();
         }
 
+        public static boolean isGlobalFilter(@NotNull DBNDatabaseNode originalNode, @Nullable DBNNode parentNode) {
+            return originalNode.getValueObject() instanceof DBPDataSource
+                // if the parent node is at datasource level, child is database/catalog
+                || (parentNode instanceof DBNDatabaseNode dbNode && dbNode.getValueObject() instanceof DBPDataSource);
+        }
+
         public void configFilterInDialog() throws DBException {
-            boolean globalFilter = isGlobalFilter();
+            boolean globalFilter = isGlobalFilter(originalNode, parentNode);
             String dialogObjectTitle = createDialogTitle(globalFilter);
             DBSObjectFilter objectFilter = getObjectFilter();
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
@@ -134,11 +141,6 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             processDialogResponse(dialog);
         }
 
-        protected boolean isGlobalFilter() {
-            return originalNode.getValueObject() instanceof DBPDataSource
-                // if the parent node is at datasource level, child is database/catalog
-                || parentNode.getValueObject() instanceof DBPDataSource;
-        }
 
         @NotNull
         protected DBSObjectFilter getObjectFilter() {
