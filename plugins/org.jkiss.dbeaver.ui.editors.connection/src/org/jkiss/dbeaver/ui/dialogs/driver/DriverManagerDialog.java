@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -362,7 +362,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             return;
         }
 
-        DriverDescriptor driver = selectedDriver.getProviderDescriptor().getDriver(selectedDriver.getId());
+        DBPDriver driver = selectedDriver.getProviderDescriptor().getDriver(selectedDriver.getId());
         if (driver == null) {
             log.warn("Driver not found for ID '" + selectedDriver.getId()
                 + "' in provider '" + selectedDriver.getProviderDescriptor().getId() + "'");
@@ -371,8 +371,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
         dialog.open();
-        if (selectedDriver != driver) {
-            selectedDriver.applyFrom(driver);
+        if (selectedDriver != driver && selectedDriver instanceof DriverDescriptor sdd && driver instanceof DriverDescriptor dd) {
+            sdd.applyFrom(dd);
         }
         treeControl.refresh(selectedDriver);
     }

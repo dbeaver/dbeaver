@@ -82,11 +82,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
     @Override
     protected void addStructObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        StructCreateCommand command,
-        Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         // Make options modifiable
         options = new HashMap<>(options);
 
@@ -170,7 +171,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     @Override
-    protected boolean isIncludeChildObjectReference(DBRProgressMonitor monitor, DBSObject childObject) throws DBException {
+    protected boolean isIncludeChildObjectReference(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject childObject
+    ) throws DBException {
         if (childObject instanceof DBSTableIndex) {
             return isIncludeIndexInDDL(monitor, (DBSTableIndex) childObject);
         }
@@ -185,13 +189,21 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return getCreateTableType(table);
     }
 
-    protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
+    protected boolean excludeFromDDL(
+        @NotNull NestedObjectCommand command,
+        @NotNull Collection<NestedObjectCommand> orderedCommands
+    ) {
         return false;
     }
 
     @Override
-    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
-    {
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         OBJECT_TYPE object = command.getObject();
         final String tableName = DBUtils.getEntityScriptName(object, options);
         actions.add(
@@ -205,16 +217,17 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     protected void appendTableModifiers(
-        DBRProgressMonitor monitor,
-        OBJECT_TYPE table,
-        NestedObjectCommand tableProps,
-        StringBuilder ddl,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE table,
+        @NotNull NestedObjectCommand tableProps,
+        @NotNull StringBuilder ddl,
         boolean alter,
-        Map<String, Object> options
+        @NotNull Map<String, Object> options
     ) throws DBException {
 
     }
 
+    @NotNull
     protected String getBaseObjectName() {
         return BASE_TABLE_NAME;
     }
