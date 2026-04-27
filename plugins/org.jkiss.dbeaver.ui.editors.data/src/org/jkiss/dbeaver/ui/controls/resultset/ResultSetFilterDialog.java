@@ -96,16 +96,17 @@ final class ResultSetFilterDialog extends BaseDialog {
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
-                var criteria = searchText.getText().trim();
-                if (criteria.isEmpty()) {
-                    return true;
-                }
                 var filter = (MutableQueryFilter) element;
                 if (filter.deleted) {
                     // Don't show deleted filters
                     return false;
                 }
-                return filter.original == null
+                if (filter.original == null) {
+                    // Always show new filters
+                    return true;
+                }
+                var criteria = searchText.getText().trim();
+                return criteria.isEmpty()
                     || filter.text.toLowerCase(Locale.ROOT).contains(criteria)
                     || filter.title.toLowerCase(Locale.ROOT).contains(criteria);
             }
