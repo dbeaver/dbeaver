@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
@@ -57,8 +58,8 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
     protected CubridTrigger createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        Object container,
-        Object copyFrom,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
     	CubridTable table = (CubridTable) container;
@@ -179,7 +180,7 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
     }
 
     @Override
-    public boolean canDeleteObject(CubridTrigger object) {
+    public boolean canDeleteObject(@NotNull CubridTrigger object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }
