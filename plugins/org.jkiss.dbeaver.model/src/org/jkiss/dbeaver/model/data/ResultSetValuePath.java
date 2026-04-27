@@ -26,16 +26,17 @@ public record ResultSetValuePath(
     @NotNull List<PathItem> pathItems
 ) {
 
-    public interface PathItemVisitor<T, TRet> {
+    public interface PathItemVisitor<T, R> {
         @Nullable
-        TRet visitAttributeItem(@NotNull PathAttributeItem attrItem, @NotNull T arg);
+        R visitAttributeItem(@NotNull PathAttributeItem attrItem, @NotNull T arg);
+
         @Nullable
-        TRet visitIndexItem(@NotNull PathIndexItem indexItem, @NotNull T arg);
+        R visitIndexItem(@NotNull PathIndexItem indexItem, @NotNull T arg);
     }
 
-    public interface PathItem {
+    public sealed interface PathItem {
         @Nullable
-        <T, TRet> TRet apply(@NotNull PathItemVisitor<T, TRet> visitor, @NotNull T arg);
+        <T, R> R apply(@NotNull PathItemVisitor<T, R> visitor, @NotNull T arg);
     }
 
     public record PathAttributeItem(
@@ -43,7 +44,7 @@ public record ResultSetValuePath(
     ) implements PathItem {
         @Nullable
         @Override
-        public <T, TRet> TRet apply(@NotNull PathItemVisitor<T, TRet> visitor, @NotNull T arg) {
+        public <T, R> R apply(@NotNull PathItemVisitor<T, R> visitor, @NotNull T arg) {
             return visitor.visitAttributeItem(this, arg);
         }
     }
@@ -53,7 +54,7 @@ public record ResultSetValuePath(
     ) implements PathItem {
         @Nullable
         @Override
-        public <T, TRet> TRet apply(@NotNull PathItemVisitor<T, TRet> visitor, @NotNull T arg) {
+        public <T, R> R apply(@NotNull PathItemVisitor<T, R> visitor, @NotNull T arg) {
             return visitor.visitIndexItem(this, arg);
         }
     }

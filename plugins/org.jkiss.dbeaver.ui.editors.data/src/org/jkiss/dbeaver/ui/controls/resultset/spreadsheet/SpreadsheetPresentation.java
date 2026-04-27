@@ -2104,6 +2104,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     try {
                         attributeValue = composite.getAttributeValue(compositeAttr);
                     } catch (DBCException e) {
+                        log.debug("Failed to obtain composite attribute value while trying to obtain grid node's children info", e);
                         return null;
                     }
                     if (compositeAttr.getDataKind() == DBPDataKind.STRUCT && attributeValue instanceof DBDComposite nestedComposite) {
@@ -2118,9 +2119,20 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         } else {
                             // should never happen, because collection items already represented explicitly
                             //                      and thus shouldn't be traversed through
+                            // we should've stop at the previous step facing its item value
+                            log.debug(
+                                "Unexpected collection object found in the middle of non-bound grid hierarchy subpath" +
+                                "while trying to obtain grid node's children info: " +
+                                compositeAttr + " - " + attributeValue
+                            );
                             return null;
                         }
                     } else {
+                        log.debug(
+                            "An item of an unexpected kind found in the grid items hierarchy " +
+                            "while trying to obtain grid node's children info - it is both non-collection and non-composite: " +
+                            compositeAttr + " - " + attributeValue
+                        );
                         return null; // should never happen
                     }
                 }

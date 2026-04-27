@@ -43,5 +43,6 @@ public interface DBSContextBoundAttribute extends DBSEntityAttribute {
     /**
      * Returns real underlying attribute represented by this object
      */
+    @NotNull
     DBSEntityAttribute getUnderlyingAttribute();
 }

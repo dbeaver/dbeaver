@@ -835,7 +835,7 @@ public final class DBUtils {
         return getAttributeValue(attribute, allAttributes, row, null, false);
     }
 
-    @NotNull
+    @Nullable
     private static Object getAttributeValueByBindings(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDAttributeBinding[] allAttributes,
@@ -942,7 +942,7 @@ public final class DBUtils {
 
             if (!(curValue instanceof DBDCollection)) {
                 if (remainingAttributes == 0) {
-                    if (remainingIndices == 0){
+                    if (remainingIndices == 0) {
                         return DBDVoid.INSTANCE;
                     } else {
                         // Indexes were not applied correctly due to incompleteness of value referencing approach,
