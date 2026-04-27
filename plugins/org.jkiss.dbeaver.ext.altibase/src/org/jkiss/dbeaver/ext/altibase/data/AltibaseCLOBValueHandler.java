@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.altibase.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentChars;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -45,22 +47,22 @@ import java.sql.SQLException;
  */
 public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
 
-    public static final AltibaseCLOBValueHandler INSTANCE = new AltibaseCLOBValueHandler();
+    private static final AltibaseCLOBValueHandler INSTANCE = new AltibaseCLOBValueHandler();
 
-    /**
-     * Altibase stores LOB data in two ways depending on LOB_CACHE_THRESHOLD:
-     * - In-row LOB  (len < threshold): Stored directly in the row, no LOB locator needed.
-     *                                  Accessible regardless of autocommit mode.
-     * - Out-of-row LOB (len >= threshold): Stored via a LOB locator, valid only within a transaction.
-     *                                      Requires 'Manual Commit' mode in DBeaver to read.
-     * In Autocommit ON mode, the LOB locator is invalidated immediately after query execution, causing:
-     *   - ERR-11104 (69828): LobLocator cannot span the transaction.
-     *   - ERR-C1013 (201915): Failed to seek a Temporary LOB.
-     * In such cases, an informational message is returned to guide the user.
-     * Note: getString() is used first to safely fetch in-row LOB data without a LOB locator.
-     *
-     * LOB_CACHE_THRESHOLD: SELECT VALUE1 FROM V$PROPERTY WHERE NAME = 'LOB_CACHE_THRESHOLD'
-     */
+    /*
+    * Altibase stores LOB data in two ways depending on LOB_CACHE_THRESHOLD:
+    * - In-row LOB  (len < threshold): Stored directly in the row, no LOB locator needed.
+    *                                  Accessible regardless of autocommit mode.
+    * - Out-of-row LOB (len >= threshold): Stored via a LOB locator, valid only within a transaction.
+    *                                      Requires 'Manual Commit' mode in DBeaver to read.
+    * In Autocommit ON mode, the LOB locator is invalidated immediately after query execution, causing:
+    *   - ERR-11104 (69828): LobLocator cannot span the transaction.
+    *   - ERR-C1013 (201915): Failed to seek a Temporary LOB.
+    * In such cases, an informational message is returned to guide the user.
+    * Note: getString() is used first to safely fetch in-row LOB data without a LOB locator.
+    *
+    * LOB_CACHE_THRESHOLD: SELECT VALUE1 FROM V$PROPERTY WHERE NAME = 'LOB_CACHE_THRESHOLD'
+    */
     @Nullable
     @Override
     protected DBDContent fetchColumnValue(
@@ -69,18 +71,18 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
             DBSTypedObject type,
             int index) throws DBCException, SQLException {
         try {
-            /* * [CRITICAL] Do not use getClob() first if Autocommit is ON.
-             * Altibase invalidates the LOB Locator immediately upon query completion in Autocommit mode.
-             * We use getString() to safely fetch In-row LOB data.
-             */
+            /* [CRITICAL] Do not use getClob() first if Autocommit is ON.
+            * Altibase invalidates the LOB Locator immediately upon query completion in Autocommit mode.
+            * We use getString() to safely fetch In-row LOB data.
+            */
             String value = resultSet.getString(index);
 
             if (resultSet.wasNull() || value == null) {
                 return null;
             }
 
-            int len = value.length();
-            int lobCacheThreshold4Char = ((AltibaseDataSource) session.getDataSource()).getLobCacheThreshold4Char();
+            long len = (long) value.length();
+            long lobCacheThreshold4Char = ((AltibaseDataSource) session.getDataSource()).getLobCacheThreshold4Char();
 
             if (len < lobCacheThreshold4Char) {
                 // In-row LOB
@@ -94,7 +96,8 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
             }
         } catch (SQLException e) {
             // Catch Altibase-specific LOB transaction errors
-            if (e.getErrorCode() == 69828 || e.getErrorCode() == 201915) {
+            if (e.getErrorCode() == AltibaseConstants.ERR_LOB_LOCATOR_SPAN_TRANS ||
+                e.getErrorCode() == AltibaseConstants.ERR_TEMP_LOB_SEEK_FAILED) {
                 return new JDBCContentChars(session.getExecutionContext(),
                         "[Long CLOB/JSON data requires 'Manual Commit' mode in DBeaver to read.]");
             }
@@ -121,10 +124,10 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
         }
     }
 
-    /**
-     * If the content fits within the threshold, it is bound as a String for efficiency.
-     * Otherwise, the Reader is reset and passed directly as a character stream.
-     */
+    /*
+    * If the content fits within the threshold, it is bound as a String for efficiency.
+    * Otherwise, the Reader is reset and passed directly as a character stream.
+    */
     private void bindCharParameter(
             @NotNull JDBCSession session,
             @NotNull JDBCPreparedStatement statement,
@@ -139,15 +142,12 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
                 return;
             }
 
-            int threshold = ((AltibaseDataSource) session.getDataSource()).getLobCacheThreshold4Char();
-            reader.mark(threshold + 1);
-            char[] buf = new char[threshold + 1];
-            int len = reader.read(buf);
+            long threshold = ((AltibaseDataSource) session.getDataSource()).getLobCacheThreshold4Char();
+            long len = contentChars.getContentLength();
 
-            if (len <= threshold) {
-                statement.setString(paramIndex, new String(buf, 0, len));
+            if (len >= 0 && len <= threshold) {
+                statement.setString(paramIndex, CommonUtils.toString(contentChars.getRawValue()));
             } else {
-                reader.reset();
                 statement.setCharacterStream(paramIndex, reader);
             }
         } catch (IOException e) {

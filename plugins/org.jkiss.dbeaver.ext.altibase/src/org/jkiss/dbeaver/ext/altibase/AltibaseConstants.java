@@ -149,4 +149,7 @@ public class AltibaseConstants {
 
     public static final String PROP_LOB_CACHE_THRESHOLD = "LOB_CACHE_THRESHOLD";
     public static final int PROP_LOB_CACHE_THRESHOLD_DEFAULT = 8192;
+
+    public static final int ERR_LOB_LOCATOR_SPAN_TRANS = 69828;
+    public static final int ERR_TEMP_LOB_SEEK_FAILED = 201915;
 }

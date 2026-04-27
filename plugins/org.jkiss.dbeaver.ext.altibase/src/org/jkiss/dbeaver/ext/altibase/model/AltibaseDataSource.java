@@ -710,10 +710,6 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
                     while (dbResult.next()) {
                         AltibaseProperty parameter = new AltibaseProperty(this, dbResult);
                         propertyList.add(parameter);
-
-                        if (AltibaseConstants.PROP_LOB_CACHE_THRESHOLD.equalsIgnoreCase(parameter.getName())) {
-                            lobCacheThreshold = (int) parameter.getAttribute();
-                        }
                     }
                     return propertyList;
                 }
@@ -849,7 +845,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
      * 3 bytes (or more). To avoid underestimation, the value is conservatively divided by 3
      * to approximate a safe character-based threshold.
      */
-    public int getLobCacheThreshold4Char() {
-        return (int) (lobCacheThreshold / 3);
+    public long getLobCacheThreshold4Char() {
+        return (lobCacheThreshold / 3);
     }
 }
