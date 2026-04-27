@@ -95,6 +95,12 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         }
     }
 
+    public static boolean isGlobalFilter(@NotNull DBNDatabaseNode originalNode, @Nullable DBNNode parentNode) {
+        return originalNode.getValueObject() instanceof DBPDataSource
+            // if the parent node is at datasource level, child is database/catalog
+            || (parentNode instanceof DBNDatabaseNode dbNode && dbNode.getValueObject() instanceof DBPDataSource);
+    }
+
     public static class FilterConfigDelegate {
 
         protected final Shell shell;
@@ -120,13 +126,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             this.itemsMeta = itemsMeta;
             this.dsRegistry = originalNode.getOwnerProject().getDataSourceRegistry();
         }
-
-        public static boolean isGlobalFilter(@NotNull DBNDatabaseNode originalNode, @Nullable DBNNode parentNode) {
-            return originalNode.getValueObject() instanceof DBPDataSource
-                // if the parent node is at datasource level, child is database/catalog
-                || (parentNode instanceof DBNDatabaseNode dbNode && dbNode.getValueObject() instanceof DBPDataSource);
-        }
-
+        
         public void configFilterInDialog() throws DBException {
             boolean globalFilter = isGlobalFilter(originalNode, parentNode);
             String dialogObjectTitle = createDialogTitle(globalFilter);

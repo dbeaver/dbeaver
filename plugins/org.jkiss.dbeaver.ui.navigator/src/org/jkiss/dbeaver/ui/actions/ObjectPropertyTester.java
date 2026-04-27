@@ -240,7 +240,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     node = node.getParentNode();
                 }
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
-                    return true;
+                    return canNodeBeFilteredByUser(dbNode);
                 }
                 break;
             }
@@ -249,7 +249,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     node.getParentNode() instanceof DBNDatabaseNode dbNode &&
                     dbNode.getItemsMeta() != null
                 ) {
-                    return true;
+                    return canNodeBeFilteredByUser(dbNode);
                 }
                 break;
             }
@@ -412,5 +412,10 @@ public class ObjectPropertyTester extends PropertyTester {
             }
         }
         return false;
+    }
+
+    private boolean canNodeBeFilteredByUser(@NotNull DBNDatabaseNode dbNode) {
+        UIServiceFilterConfig serviceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
+        return serviceFilterConfig == null || serviceFilterConfig.canBeFilteredByUser(dbNode);
     }
 }
