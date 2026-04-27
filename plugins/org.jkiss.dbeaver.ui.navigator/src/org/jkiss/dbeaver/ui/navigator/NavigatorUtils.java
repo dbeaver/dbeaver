@@ -111,7 +111,7 @@ public class NavigatorUtils {
             return null;
         }
         if (selection instanceof IStructuredSelection) {
-            Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
+            Object selectedObject = ((IStructuredSelection)selection).getFirstElement();
             if (selectedObject instanceof DBNNode) {
                 return (DBNNode) selectedObject;
             } else if (selectedObject != null) {
@@ -158,7 +158,6 @@ public class NavigatorUtils {
 
     /**
      * Find selected node for specified UI element
-     *
      * @param element ui element
      * @return node or null
      */
@@ -204,21 +203,21 @@ public class NavigatorUtils {
     public static void addContextMenu(
         @Nullable final IWorkbenchSite workbenchSite,
         @NotNull final Viewer viewer,
-        @NotNull ISelectionProvider selectionProvider
-    ) {
+        @NotNull ISelectionProvider selectionProvider)
+    {
         MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
-            ((IWorkbenchPartSite) workbenchSite).registerContextMenu(menuMgr, viewer);
+            ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, viewer);
         } else if (workbenchSite instanceof IPageSite) {
-            ((IPageSite) workbenchSite).registerContextMenu("navigatorMenu", menuMgr, viewer);
+            ((IPageSite)workbenchSite).registerContextMenu("navigatorMenu", menuMgr, viewer);
         }
     }
 
     public static MenuManager createContextMenu(
         @Nullable final IWorkbenchSite workbenchSite,
         @NotNull final Viewer viewer,
-        @NotNull final IMenuListener menuListener
-    ) {
+        @NotNull final IMenuListener menuListener)
+    {
         return createContextMenu(workbenchSite, viewer, viewer, menuListener);
     }
 
@@ -298,11 +297,7 @@ public class NavigatorUtils {
         return menuMgr;
     }
 
-    public static void addStandardMenuItem(
-        @Nullable IWorkbenchSite workbenchSite,
-        @NotNull IMenuManager manager,
-        @NotNull ISelectionProvider selectionProvider
-    ) {
+    public static void addStandardMenuItem(@Nullable IWorkbenchSite workbenchSite, @NotNull IMenuManager manager, @NotNull ISelectionProvider selectionProvider) {
         final ISelection selection = selectionProvider.getSelection();
         final DBNNode selectedNode = getSelectedNode(selectionProvider);
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
@@ -338,18 +333,16 @@ public class NavigatorUtils {
     private static void addSetDefaultObjectAction(IWorkbenchSite workbenchSite, IMenuManager manager, DBNNode selectedNode) {
         // Add "Set active object" menu
         boolean addSetActive = false;
-        if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder)
-            && ((DBNDatabaseNode) selectedNode).getObject() != null) {
+        if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
             DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
             DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
             if (dataSource != null) {
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
-                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
-                    if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange()
-                        && contextDefaults.getDefaultCatalog() != selectedObject) ||
-                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange()
-                            && contextDefaults.getDefaultSchema() != selectedObject)) {
+                    if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
+                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
+                    {
                         addSetActive = true;
                     }
                 }
@@ -367,12 +360,7 @@ public class NavigatorUtils {
         executeNodeAction(action, node, null, serviceLocator);
     }
 
-    public static void executeNodeAction(
-        DBXTreeNodeHandler.Action action,
-        Object node,
-        Map<String, Object> parameters,
-        IServiceLocator serviceLocator
-    ) {
+    public static void executeNodeAction(DBXTreeNodeHandler.Action action, Object node, Map<String, Object> parameters, IServiceLocator serviceLocator) {
         String defCommandId = null;
         if (action == DBXTreeNodeHandler.Action.open) {
             defCommandId = NavigatorCommands.CMD_OBJECT_OPEN;
@@ -390,8 +378,7 @@ public class NavigatorUtils {
     public static String getNodeActionCommand(DBXTreeNodeHandler.Action action, Object node, String defCommand) {
         if (node instanceof DBNDatabaseNode) {
             DBXTreeNodeHandler handler = ((DBNDatabaseNode) node).getMeta().getHandler(action);
-            if (handler != null && handler.getPerform() == DBXTreeNodeHandler.Perform.command
-                && !CommonUtils.isEmpty(handler.getCommand())) {
+            if (handler != null && handler.getPerform() == DBXTreeNodeHandler.Perform.command && !CommonUtils.isEmpty(handler.getCommand())) {
                 return handler.getCommand();
             }
         }
@@ -455,8 +442,7 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.getService(UIServiceFilterConfig.class);
-            boolean isSaveAsCurrentUserFilterOnly = uiServiceFilterConfig != null;
+            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -488,7 +474,6 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
-                    isSaveAsCurrentUserFilterOnly = isSaveAsCurrentUserFilterOnly && uiServiceFilterConfig.isUseUserFilter(node);
                     nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
                 }
             }
@@ -556,8 +541,7 @@ public class NavigatorUtils {
                 DBCExecutionContextDefaults editorContextDefaults = editorExecutionContext.getContextDefaults();
                 if (editorContextDefaults != null) {
                     final DBSObject dbObject = dbsObject;
-                    RuntimeUtils.runTask(
-                        monitor -> {
+                    RuntimeUtils.runTask(monitor -> {
                             try {
                                 monitor.beginTask("Change default object", 1);
                                 if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
@@ -573,8 +557,7 @@ public class NavigatorUtils {
                                 throw new InvocationTargetException(e);
                             }
                         }, "Set active object",
-                        dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT)
-                    );
+                        dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
                 }
             }
         }
@@ -592,7 +575,7 @@ public class NavigatorUtils {
                 DBPResourceHandler resourceHandler = resource.getHandler();
                 resourceHandler.openResource(resource.getResource());
             } else if (node instanceof DBNPathBase dbnPath) {
-                if (!EditorUtils.openExternalFiles(new Path[] {dbnPath.getPath()}, null, false, dbnPath)) {
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false, dbnPath)) {
                     openEntityEditor(node, window, parameters);
                 }
             } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
@@ -604,8 +587,7 @@ public class NavigatorUtils {
             DBWorkbench.getPlatformUI().showError(
                 "Error opening object",
                 "Error while opening object '" + node + "'",
-                e
-            );
+                e);
         }
     }
 
@@ -624,12 +606,12 @@ public class NavigatorUtils {
         NavigatorHandlerObjectOpen.openEntityEditor(
             (DBNNode) node,
             CommonUtils.toString(activePage, null),
-            window
-        );
+            window);
     }
 
     @Nullable
-    public static IStructuredSelection getSelectionFromPart(IWorkbenchPart part) {
+    public static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
+    {
         if (part == null) {
             return null;
         }
@@ -641,7 +623,7 @@ public class NavigatorUtils {
         if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
             return null;
         }
-        return (IStructuredSelection) selection;
+        return (IStructuredSelection)selection;
     }
 
     public static DBPProject getSelectedProject() {
