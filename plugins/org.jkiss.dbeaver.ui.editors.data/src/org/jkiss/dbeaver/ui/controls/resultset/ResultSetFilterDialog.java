@@ -101,11 +101,12 @@ public final class ResultSetFilterDialog extends BaseDialog {
                     return true;
                 }
                 var filter = (MutableQueryFilter) element;
-                if (filter.original == null) {
-                    // Always show new filters
-                    return true;
+                if (filter.deleted) {
+                    // Don't show deleted filters
+                    return false;
                 }
-                return filter.text.toLowerCase(Locale.ROOT).contains(criteria)
+                return filter.original == null
+                    || filter.text.toLowerCase(Locale.ROOT).contains(criteria)
                     || filter.title.toLowerCase(Locale.ROOT).contains(criteria);
             }
         });
@@ -223,7 +224,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        persistChanges();
+        persistFilters();
         super.okPressed();
     }
 
@@ -236,7 +237,7 @@ public final class ResultSetFilterDialog extends BaseDialog {
         }
     }
 
-    private void persistChanges() {
+    private void persistFilters() {
         for (MutableQueryFilter filter : filters) {
             try {
                 persistFilter(filter);
