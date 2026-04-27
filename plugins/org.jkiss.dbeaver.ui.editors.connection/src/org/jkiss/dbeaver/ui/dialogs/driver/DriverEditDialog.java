@@ -893,7 +893,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     protected void okPressed() {
         saveDriverSettings(this.driver);
 
-        DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
+        DBPDriver oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
         if (oldDriver != null && oldDriver != driver && !oldDriver.isDisabled() && oldDriver.getReplacedBy() == null) {
             UIUtils.showMessageBox(getShell(), UIConnectionMessages.dialog_edit_driver_dialog_save_exists_title, NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_save_exists_message, driver.getName()), SWT.ICON_ERROR);
             return;
@@ -938,7 +938,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         // Set props
         drv.setName(driverNameText.getText());
         drv.setDescription(CommonUtils.notEmpty(driverDescText.getText()));
-        drv.setDriverClassName(driverClassText.getText());
+        drv.setDriverClassName(driverClassText.getText(), true);
         drv.setSampleURL(driverURLText.getText());
         drv.setDriverDefaultPort(driverPortText.getText());
         drv.setDriverDefaultDatabase(driverDatabaseText.getText());

@@ -58,16 +58,15 @@ public class SQLDelimiterRule implements TPRule {
             boolean matches = false;
             if (c != TPCharacterScanner.EOF) {
                 c = Character.toUpperCase(c);
-                for (int k = 0; k < delimiters.length; k++) {
-                    if (i < delimiters[k].length && delimiters[k][i] == c) {
-                        buffer[i] = (char)c;
-                        if (i == delimiters[k].length - 1 && equalsBegin(delimiters[k])) {
+                for (char[] delimiter : delimiters) {
+                    if (i < delimiter.length && delimiter[i] == c) {
+                        buffer[i] = (char) c;
+                        if (i == delimiter.length - 1 && equalsBegin(delimiter)) {
                             // Matched. Check next character
                             if (Character.isLetterOrDigit(c)) {
                                 int cn = scanner.read();
                                 scanner.unread();
                                 if (Character.isUnicodeIdentifierPart(cn)) {
-                                    matches = false;
                                     continue;
                                 }
                             }
@@ -108,6 +107,13 @@ public class SQLDelimiterRule implements TPRule {
                 }
                 if (newDelimiter.endsWith(delimStr)) {
                     // New delimiter ends with old delimiter (as command terminator). Remove it.
+                    // But only if it's not the same character as the rest of the newDelimiter
+                    if (newDelimiter.length() > delimStr.length()) {
+                        char charBefore = newDelimiter.charAt(newDelimiter.length() - delimStr.length() - 1);
+                        if (charBefore == delimStr.charAt(0)) {
+                            continue;
+                        }
+                    }
                     newDelimiter = newDelimiter.substring(0, newDelimiter.length() - delimStr.length()).trim();
                 }
             }

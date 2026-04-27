@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,8 +82,13 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     // ------
 
     @Override
-    public ExasolTable createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object exasolSchema,
-                                            Object copyFrom, @NotNull Map<String, Object> options) {
+    public ExasolTable createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object exasolSchema,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         ExasolTable table = new ExasolTable((ExasolSchema) exasolSchema, NEW_TABLE_NAME);
         setNewObjectName(monitor, (ExasolSchema) exasolSchema, table);
         return table;
@@ -96,18 +100,24 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     @Override
     @SuppressWarnings("rawtypes")
     public void appendTableModifiers(
-        DBRProgressMonitor monitor,
-        ExasolTable exasolTable,
-        NestedObjectCommand tableProps,
-        StringBuilder ddl,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ExasolTable exasolTable,
+        @NotNull NestedObjectCommand tableProps,
+        @NotNull StringBuilder ddl,
         boolean alter,
-        Map<String, Object> options) {
+        @NotNull Map<String, Object> options) {
 
         // no-op
     }
 
     @Override
-    public void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    public void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.addStructObjectCreateActions(monitor, executionContext, actions, command, options);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());

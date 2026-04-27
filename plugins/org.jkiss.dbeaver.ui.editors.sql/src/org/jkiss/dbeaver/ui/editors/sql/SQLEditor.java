@@ -125,6 +125,7 @@ import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.io.*;
 import java.net.URI;
@@ -151,6 +152,7 @@ public class SQLEditor extends SQLEditorBase implements
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
@@ -3155,7 +3157,7 @@ public class SQLEditor extends SQLEditorBase implements
             ConfirmationDialog.WARNING,
             ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
-            dropQuery.getText()
+            StringUtils.truncateText(dropQuery.getText(), MAX_QUERY_PREVIEW_LENGTH)
         );
     }
 

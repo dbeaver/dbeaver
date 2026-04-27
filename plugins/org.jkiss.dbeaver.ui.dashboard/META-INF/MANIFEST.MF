@@ -8,8 +8,7 @@ Bundle-Release-Date: 20260504
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator
-Require-Bundle: org.apache.commons.jexl,
- org.jkiss.dbeaver.tasks.ui,
+Require-Bundle: org.jkiss.dbeaver.tasks.ui,
  org.jkiss.dbeaver.ui.charts;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.navigator,

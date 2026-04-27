@@ -146,6 +146,12 @@ public interface DBPPlatformUI {
     String promptProperty(@NotNull String title, @NotNull String prompt, @Nullable String defValue);
 
     /**
+     * Ask user to enter a multiline value
+     */
+    @Nullable
+    String promptText(@Nullable String title, @Nullable String prompt, @Nullable String defValue);
+
+    /**
      * Ask user to accept license agreement
      */
     boolean acceptLicense(String message, String licenseText);

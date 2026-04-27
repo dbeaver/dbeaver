@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,9 +62,13 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
         return CHILD_TYPES;
     }
 
+    @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, GenericTableBase object,
-            Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase object,
+        @NotNull Class<? extends DBSObject> childType
+    ) throws DBException {
         if (childType == GBase8sUniqueKey.class) {
             return object.getConstraints(monitor);
         }
@@ -87,7 +91,7 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     }
 
     @Override
-    protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
+    protected boolean excludeFromDDL(@NotNull NestedObjectCommand command, @NotNull Collection<NestedObjectCommand> orderedCommands) {
         // Filter out indexes linked to unique constraints if their columns match
         DBPObject object = command.getObject();
         if (object instanceof DBSTableIndex) {
