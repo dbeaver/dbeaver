@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -36,12 +37,12 @@ public class DriverDependencies implements DBPDriverDependencies
     private final List<DependencyNode> rootNodes = new ArrayList<>();
     private final List<DependencyNode> libraryList = new ArrayList<>();
 
-    public DriverDependencies(Collection<? extends DBPDriverLibrary> rootLibraries) {
+    public DriverDependencies(@NotNull Collection<? extends DBPDriverLibrary> rootLibraries) {
         this.rootLibraries = new ArrayList<>(rootLibraries);
     }
 
     @Override
-    public void resolveDependencies(DBRProgressMonitor monitor) throws DBException {
+    public void resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
         IOException lastError = null;
         {
             rootNodes.clear();
@@ -103,7 +104,11 @@ public class DriverDependencies implements DBPDriverDependencies
         }
     }
 
-    private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DependencyNode> libMap) throws IOException {
+    private void resolveDependencies(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DependencyNode ownerNode,
+        @NotNull Map<String, DependencyNode> libMap
+    ) throws IOException {
         Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
@@ -130,11 +135,13 @@ public class DriverDependencies implements DBPDriverDependencies
         }
     }
 
+    @NotNull
     @Override
     public List<DependencyNode> getLibraryList() {
         return libraryList;
     }
 
+    @NotNull
     @Override
     public List<DependencyNode> getLibraryMap() {
         return rootNodes;

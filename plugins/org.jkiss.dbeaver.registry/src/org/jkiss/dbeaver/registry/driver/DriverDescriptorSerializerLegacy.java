@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 if (provider.isTemporary()) {
                     continue;
                 }
-                List<DriverDescriptor> drivers = provider.getDrivers().stream().filter(DriverDescriptor::isModified)
+                List<DriverDescriptor> drivers = provider.getDrivers().stream()
+                    .filter(DriverDescriptor.class::isInstance)
+                    .map(DriverDescriptor.class::cast)
+                    .filter(DriverDescriptor::isModified)
                     .collect(Collectors.toList());
                 drivers.removeIf(driverDescriptor -> driverDescriptor.getReplacedBy() != null);
                 if (drivers.isEmpty()) {
@@ -317,7 +320,15 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             return;
                         }
                     }
-                    curDriver = curProvider.getDriver(idAttr);
+                    DBPDriver driver = curProvider.getDriver(idAttr);
+                    if (driver == null) {
+                        curDriver = null;
+                    } else if (driver instanceof DriverDescriptor dd) {
+                        curDriver = dd;
+                    } else {
+                        log.error("Read-only driver " + idAttr + " was changed in the configuration");
+                        break;
+                    }
                     if (curDriver == null) {
                         curDriver = new DriverDescriptor(curProvider, idAttr);
                         curProvider.addDriver(curDriver);
@@ -334,7 +345,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             curDriver.setName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
                         }
                         curDriver.setDescription(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
-                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
+                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()), false);
                         curDriver.setSampleURL(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
                         curDriver.setDriverDefaultPort(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
                         curDriver.setDriverDefaultDatabase(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DEFAULT_DATABASE), curDriver.getDefaultDatabase()));
@@ -352,7 +363,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false)));
                     }
                     if (attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
-                        curDriver.setUseURL((
+                        curDriver.setUseURLTemplate((
                             CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
                     }
                     if (attributes.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {

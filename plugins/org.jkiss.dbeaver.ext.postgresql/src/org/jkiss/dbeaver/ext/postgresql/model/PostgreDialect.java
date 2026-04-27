@@ -991,7 +991,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         // Some data for some types of columns data types must be cast. It can be simple casting only with data type name like "::pg_class" or casting with fully qualified names for user defined types like "::schemaName.testType".
         // Or very special clauses with JSON and XML columns, when we have to cast both column data and column name to text.
         return getCastedString(attribute, expression, isInCondition, false);

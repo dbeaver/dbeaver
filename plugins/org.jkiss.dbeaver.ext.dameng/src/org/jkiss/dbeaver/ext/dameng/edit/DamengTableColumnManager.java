@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,13 @@ public class DamengTableColumnManager extends GenericTableColumnManager implemen
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());

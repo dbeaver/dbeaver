@@ -1061,6 +1061,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     /**
+     * Returns true if ADD COLUMN syntax is required for column creation.
+     */
+    @Association
+    public boolean supportsAlterTableAddColumn() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("alter-table-add-column"), false);
+    }
+
+    /**
      * Returns true if local clients using is supported.
      */
     @Association

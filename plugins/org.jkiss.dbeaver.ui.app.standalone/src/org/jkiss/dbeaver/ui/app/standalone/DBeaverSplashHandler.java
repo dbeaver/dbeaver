@@ -20,12 +20,14 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
@@ -74,7 +76,11 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
 
         getContent().addPaintListener(e -> {
             var image = getSplash().getBackgroundImage();
-            if (image != null) {
+            if (image != null && !isImageFlipped()) {
+                // On macOS, since Sonoma, the splash is flipped. Eclipse features a fix for 14.x,
+                // but the bug is present in later versions as well. Interestingly, drawImage draws
+                // the image correctly; we just need to skip this for 14.x as it would flip it back.
+                // See https://github.com/eclipse-platform/eclipse.platform.ui/blob/d0eb817372ead45fff370ae91560344e88b793b6/bundles/org.eclipse.ui.workbench/eclipseui/org/eclipse/ui/internal/Workbench.java#L910-L925
                 e.gc.drawImage(image, 0, 0);
             }
             e.gc.setFont(boldFont);
@@ -82,6 +88,11 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
             e.gc.drawText(GeneralUtils.getPlainVersion(), versionCoord.x, versionCoord.y, true);
             e.gc.setFont(normalFont);
         });
+    }
+
+    private static boolean isImageFlipped() {
+        // See org.eclipse.ui.internal.Workbench.getImage
+        return Util.isMac() && RuntimeUtils.getOSVersion().getMajor() == 14;
     }
 
     @Override

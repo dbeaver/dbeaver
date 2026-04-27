@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.ui.config.migration.dbvis;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
@@ -136,7 +136,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 String sampleURL = XMLUtils.getChildElementBody(driverTypeDocumentElement, "URLFormat");
                                 String identifier = XMLUtils.getChildElementBody(driverTypeDocumentElement, "Identifier");
                                 if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL)) {
-                                    DriverDescriptor driverDescriptor = getDriverByName(name);
+                                    DBPDriver driverDescriptor = getDriverByName(name);
                                     if (driverDescriptor != null) {
                                         driver = new ImportDriverInfo(identifier, driverDescriptor.getName(), sampleURL,
                                             driverDescriptor.getDriverClassName());
@@ -147,7 +147,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                                 }
                             } else {
                                 if (!CommonUtils.isEmpty(driverName)) {
-                                    DriverDescriptor driverDescriptor = getDriverByName(driverName);
+                                    DBPDriver driverDescriptor = getDriverByName(driverName);
                                     if (driverDescriptor != null) {
                                         driver = new ImportDriverInfo(driverDescriptor.getId(),
                                             driverDescriptor.getName(),
