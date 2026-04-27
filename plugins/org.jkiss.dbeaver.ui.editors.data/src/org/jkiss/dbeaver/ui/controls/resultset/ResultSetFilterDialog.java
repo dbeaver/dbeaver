@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TextGetSetEditingSupport;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.NumberFormat;
@@ -54,7 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-final class ResultSetFilterDialog extends BaseDialog {
+final class ResultSetFilterDialog extends AbstractPopupPanel {
     private final DBCExecutionContext executionContext;
     private final IResultSetFilterManager filterManager;
     private final String query;
@@ -69,7 +69,7 @@ final class ResultSetFilterDialog extends BaseDialog {
         @NotNull IResultSetFilterManager filterManager,
         @NotNull String query
     ) {
-        super(parentShell, "Table filters", null);
+        super(parentShell, "Table filters");
         this.executionContext = executionContext;
         this.filterManager = filterManager;
         this.query = query;
@@ -78,7 +78,7 @@ final class ResultSetFilterDialog extends BaseDialog {
             this.filters.add(new MutableQueryFilter(filter));
         }
 
-        setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE);
+        setModeless(true);
     }
 
     @NotNull
@@ -142,7 +142,26 @@ final class ResultSetFilterDialog extends BaseDialog {
             })
         );
 
+        closeOnFocusLost(searchText, toolBar, viewer.getTable());
+
         return composite;
+    }
+
+    @Override
+    protected boolean needsButtonBar() {
+        return true;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, "Use Selected", true);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    }
+
+    @Override
+    protected void okPressed() {
+        persistFilters();
+        super.okPressed();
     }
 
     @NotNull
@@ -215,18 +234,6 @@ final class ResultSetFilterDialog extends BaseDialog {
         table.addDisposeListener(e -> manager.dispose());
 
         return viewer;
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, "Use Selected", true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-    }
-
-    @Override
-    protected void okPressed() {
-        persistFilters();
-        super.okPressed();
     }
 
     @Nullable

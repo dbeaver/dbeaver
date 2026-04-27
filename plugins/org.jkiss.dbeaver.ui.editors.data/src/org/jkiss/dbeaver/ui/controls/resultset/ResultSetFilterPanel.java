@@ -590,7 +590,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 Instant.now(),
                 1
             );
-            filtersHistory.add(newFilter);
+            filtersHistory.addFirst(newFilter);
             try {
                 DBCExecutionContext context = viewer.getExecutionContext();
                 if (context != null) {
@@ -1014,7 +1014,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 return;
             }
 
-            popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+            popup = new Shell(getShell(), SWT.NO_TRIM);
             GridLayoutFactory.fillDefaults()
                 .spacing(0, 0)
                 .applyTo(popup);
@@ -1041,12 +1041,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         viewer.getFilterManager(),
                         query
                     );
-                    int code = dialog.open();
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        // Reload filters to reflect possible changes in the dialog
+                        loadFiltersHistory(query);
 
-                    // Reload filters to reflect possible changes in the dialog
-                    loadFiltersHistory(query);
-
-                    if (code == IDialogConstants.OK_ID) {
                         var filter = dialog.getSelectedFilter();
                         if (filter != null) {
                             setQueryFilter(filter);
@@ -1085,10 +1083,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             editControl.getColumn(0).setWidth(queryWidth);
             editControl.getColumn(1).setWidth(titleWidth);
 
-            popup.setVisible(true);
-            editControl.setFocus();
-
-            var onFocusLost = FocusListener.focusLostAdapter(e -> {
+            var onFocusLost = FocusListener.focusLostAdapter(e -> UIUtils.asyncExec(() -> {
                 if (popup == null || popup.isDisposed()) {
                     return;
                 }
@@ -1098,10 +1093,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     // when user click on button and popup is already visible
                     popup.dispose();
                 }
-            });
+            }));
             for (Control child : popup.getChildren()) {
                 child.addFocusListener(onFocusLost);
             }
+
+            popup.setVisible(true);
+            editControl.setFocus();
         }
 
         private void closeHistoryPopup() {
