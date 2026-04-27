@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,13 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     // ------
 
     @Override
-    public DB2TableUniqueKey createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object table,
-                                                  Object from, @NotNull Map<String, Object> options)
+    public DB2TableUniqueKey createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object table,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
+    )
     {
         return new DB2TableUniqueKey((DB2Table) table, DBSEntityConstraintType.UNIQUE_KEY);
     }

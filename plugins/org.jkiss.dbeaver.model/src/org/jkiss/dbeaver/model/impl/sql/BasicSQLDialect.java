@@ -213,7 +213,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         if (isEscapeBackslash()) {
             string = string.replace("\\", "\\\\");
         }

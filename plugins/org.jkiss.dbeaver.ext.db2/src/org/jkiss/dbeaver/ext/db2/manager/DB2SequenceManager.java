@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +57,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException
+    protected void validateObjectProperties(@NotNull DBRProgressMonitor monitor, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Sequence name cannot be empty");
@@ -73,10 +72,13 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     }
 
     @Override
-    protected DB2Sequence createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
-                                               final Object container,
-                                               Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected DB2Sequence createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         DB2Schema schema = (DB2Schema) container;
         return new DB2Sequence(schema, "NEW_SEQUENCE");
     }

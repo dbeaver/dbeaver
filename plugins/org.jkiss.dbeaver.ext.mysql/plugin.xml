@@ -285,6 +285,7 @@
                     <parameter name="supports-charsets" value="false"/>
                     <parameter name="supports-collations" value="false"/>
                     <parameter name="supportsClients" value="false"/>
+                    <parameter name="alter-table-add-column" value="true"/>
                 </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">

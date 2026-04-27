@@ -49,6 +49,13 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_ATTR_FILTERS = "resultset.show.attFilters"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_ORDERING = "resultset.show.attrOrder"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_DESCRIPTION = "resultset.show.columnDescription"; //$NON-NLS-1$
+    public static final String RESULT_SET_COLUMN_HEADER_EXTRA = "resultset.show.columnHeaderExtra"; //$NON-NLS-1$
+
+    public enum ColumnHeaderExtraContent {
+        NOTHING,
+        DESCRIPTION,
+        DATA_TYPE
+    }
 
     public static final String RESULT_SET_SHOW_SEL_ROWS = "resultset.show.selected.rows"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_SEL_COLUMNS = "resultset.show.selected.columns"; //$NON-NLS-1$
