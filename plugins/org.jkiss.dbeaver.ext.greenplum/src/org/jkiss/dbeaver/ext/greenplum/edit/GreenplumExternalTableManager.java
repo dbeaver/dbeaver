@@ -1,10 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
- * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
- * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
- * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +41,8 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     @Override
     protected GreenplumExternalTable createDatabaseObject(@NotNull DBRProgressMonitor monitor,
                                                           @NotNull DBECommandContext context,
-                                                          Object container,
-                                                          Object copyFrom, @NotNull Map<String, Object> options) {
+                                                          @Nullable Object container,
+                                                          @Nullable Object copyFrom, @NotNull Map<String, Object> options) {
         GreenplumExternalTable externalTable = new GreenplumExternalTable((PostgreSchema) container);
         setNewObjectName(monitor, (PostgreSchema) container, externalTable);
 
@@ -54,10 +50,13 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor,
-                                                DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                                StructCreateCommand command,
-                                                Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         GreenplumExternalTable table = (GreenplumExternalTable) command.getObject();
 
         actions.add(new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, table.generateDDL(monitor)));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -426,7 +426,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         return expression;
     }
 
@@ -537,23 +542,25 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean isQuotedString(String string) {
+    public boolean isQuotedString(@NotNull String string) {
         return string.length() >= 2 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'';
     }
 
+    @NotNull
     @Override
-    public String getQuotedString(String string) {
+    public String getQuotedString(@NotNull String string) {
         return '\'' + escapeString(string) + '\'';
     }
 
+    @NotNull
     @Override
-    public String getUnquotedString(String string) {
+    public String getUnquotedString(@NotNull String string) {
         return isQuotedString(string) ? unEscapeString(string.substring(1, string.length() - 1)) : string;
     }
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         return string.replace("'", "''");
     }
 

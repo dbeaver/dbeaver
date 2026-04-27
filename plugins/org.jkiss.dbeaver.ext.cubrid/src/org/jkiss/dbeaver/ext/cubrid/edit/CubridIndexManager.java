@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
 import org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager;
@@ -39,8 +40,8 @@ public class CubridIndexManager extends GenericIndexManager {
     protected CubridTableIndex createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        final Object container,
-        Object from,
+        @Nullable Object container,
+        @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
         CubridTable table = (CubridTable) container;
