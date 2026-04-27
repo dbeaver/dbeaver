@@ -53,7 +53,6 @@
     <plugin id="org.jkiss.dbeaver.cmp.simple" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.data.transfer" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.tasks.native" version="0.0.0" />
-    <plugin id="org.jkiss.dbeaver.process" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.erd" version="0.0.0" />
 
     <!-- GIS -->
