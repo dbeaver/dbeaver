@@ -38,8 +38,7 @@ public class AIFunctionCallConfirmation extends AIConfirmation {
     public List<AIFunctionCall> getFunctionCalls() {
         return functionCalls;
     }
-
-    @NotNull
+    
     @Override
     @NotNull
     public String getMessage() {
