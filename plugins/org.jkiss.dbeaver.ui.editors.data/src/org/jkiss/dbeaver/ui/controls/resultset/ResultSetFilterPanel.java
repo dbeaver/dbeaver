@@ -579,9 +579,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             .filter(f -> f.text().equals(whereCondition))
             .findFirst().orElse(null);
         if (oldFilter != null) {
-            // Make it the last
+            // Make it the first
             filtersHistory.remove(oldFilter);
-            filtersHistory.add(oldFilter);
+            filtersHistory.addFirst(oldFilter);
         } else {
             var newFilter = new QMQueryFilter(
                 getActiveSourceQueryNormalized(false),
@@ -1138,8 +1138,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             var currentFilterText = filtersText.getText();
             var entries = filters.stream()
                 .filter(f -> !f.text().equals(currentFilterText))
-                // FIXME
-                // .sorted(Comparator.nullsFirst(Comparator.comparing(QMQueryFilter::lastUsed)))
                 .toList();
 
             historyViewer.setInput(entries);
