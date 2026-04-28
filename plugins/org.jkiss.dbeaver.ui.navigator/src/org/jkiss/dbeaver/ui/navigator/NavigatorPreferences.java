@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.navigator;
 
+import org.jkiss.dbeaver.ModelPreferences;
+
 /**
  * NavigatorPreferences
  */
@@ -27,7 +29,7 @@ public class NavigatorPreferences {
     public static final String NAVIGATOR_RESTORE_FILTER = "navigator.restore.filters"; //$NON-NLS-1$
     public static final String NAVIGATOR_SYNC_EDITOR_DATASOURCE = "navigator.sync.editor.datasource"; //$NON-NLS-1$
     public static final String NAVIGATOR_REFRESH_EDITORS_ON_OPEN = "navigator.refresh.editor.open"; //$NON-NLS-1$
-    public static final String NAVIGATOR_GROUP_BY_DRIVER = "navigator.group.by.driver"; //$NON-NLS-1$
+    public static final String NAVIGATOR_GROUP_BY_DRIVER = ModelPreferences.NAVIGATOR_GROUP_BY_DRIVER;
     public static final String NAVIGATOR_EDITOR_SHOW_TABLE_GRID = "navigator.editor.showGrid"; //$NON-NLS-1$
     public static final String NAVIGATOR_OBJECT_DOUBLE_CLICK = "navigator.object.doubleClick"; //$NON-NLS-1$
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$

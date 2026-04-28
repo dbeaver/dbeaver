@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -162,7 +163,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
         boolean groupByDriver = DBWorkbench.getPlatform().getPreferenceStore()
-            .getBoolean("navigator.group.by.driver");
+            .getBoolean(ModelPreferences.NAVIGATOR_GROUP_BY_DRIVER);
         if (groupByDriver != lastGroupByDriver) {
             children = null;
             lastGroupByDriver = groupByDriver;
