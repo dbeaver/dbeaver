@@ -58,8 +58,8 @@ public class PostgreTablePolicyManager
     protected PostgreTablePolicy createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        Object container,
-        Object copyFrom,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
         final PostgreTable table = (PostgreTable) container;

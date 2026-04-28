@@ -70,8 +70,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite objectsGroup = UIUtils.createTitledComposite(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL);
-        objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite objectsGroup = UIUtils.createTitledComposite(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_BOTH);
 
         connInfo = new CLabel(objectsGroup, SWT.WRAP);
         connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));

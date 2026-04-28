@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
@@ -134,14 +134,14 @@ public abstract class ConfigImportWizardPage extends ActiveWizardPage<ConfigImpo
 
     protected ImportConnectionInfo setDriverForConnection(ImportConnectionInfo connectionInfo) {
         final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DriverDescriptor> matchedDrivers = new ArrayList<>();
+        List<DBPDriver> matchedDrivers = new ArrayList<>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
-            for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
+            for (DBPDriver driver : dataSourceProvider.getEnabledDrivers()) {
                 matchedDrivers.add(driver);
             }
         }
-        matchedDrivers = matchedDrivers.stream().sorted(Comparator.comparing(DriverDescriptor::getName)).collect(Collectors.toList());
-        DriverDescriptor driver = ObjectListDialog.selectObject(
+        matchedDrivers = matchedDrivers.stream().sorted(Comparator.comparing(DBPDriver::getName)).collect(Collectors.toList());
+        DBPDriver driver = ObjectListDialog.selectObject(
             getShell(), NLS.bind(ImportConfigMessages.config_import_wizard_choose_driver_for_connections, connectionInfo.getAlias()), "ImportDriverSelector", matchedDrivers);
         if (driver != null) {
             connectionInfo.setDriver(driver);

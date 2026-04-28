@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.athena.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * Athena SQL dialect
@@ -36,5 +38,20 @@ public class AthenaSQLDialect extends GenericSQLDialect {
     @Override
     public boolean validIdentifierStart(char c) {
         return SQLUtils.isLatinLetter(c);
+    }
+
+    @NotNull
+    @Override
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
+        if (isInCondition && attribute.getFullTypeName().equalsIgnoreCase("date") && !exprIsAttrRef) {
+            return "CAST(" + expression + " AS date)";
+        } else {
+            return super.getTypeCastClause(attribute, expression, isInCondition, exprIsAttrRef);
+        }
     }
 }
