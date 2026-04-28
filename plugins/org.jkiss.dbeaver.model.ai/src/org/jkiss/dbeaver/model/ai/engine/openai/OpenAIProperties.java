@@ -125,7 +125,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (temperature != null) {
+        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
 
@@ -135,7 +135,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     public void setTemperature(double temperature) {
-        this.temperature = temperature;
+        this.temperature = AIUtils.normalizeTemperature(temperature);
     }
 
     @Override

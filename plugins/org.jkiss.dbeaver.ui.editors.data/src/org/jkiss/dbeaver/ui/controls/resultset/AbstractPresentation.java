@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,6 +155,14 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         return getCurrentAttribute();
     }
 
+    @Nullable
+    @Override
+    public ResultSetCellLocation getCurrentCellLocation() {
+        DBDAttributeBinding attr = this.getFocusAttribute();
+        ResultSetRow row = this.controller.getCurrentRow();
+        return attr == null || row == null ? null : new ResultSetCellLocation(attr, row);
+    }
+
     @Override
     public void showAttribute(@NotNull DBDAttributeBinding attribute) {
         // do nothing
@@ -195,6 +203,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
             manager,
             getCurrentAttribute(),
             controller.getCurrentRow(),
+            null,
             null,
             IResultSetController.ContextMenuLocation.UNKNOWN
         ));
