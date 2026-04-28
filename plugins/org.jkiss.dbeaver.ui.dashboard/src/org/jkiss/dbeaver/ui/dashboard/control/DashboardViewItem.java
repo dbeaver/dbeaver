@@ -156,7 +156,6 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         }
         createDashboardRenderer();
         resetDashboardData();
-        getMapQuery()
     }
 
     private void updateChartLabel(@NotNull DashboardItemConfiguration item) {

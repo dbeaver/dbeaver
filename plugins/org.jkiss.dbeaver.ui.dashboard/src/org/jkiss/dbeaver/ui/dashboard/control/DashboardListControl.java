@@ -320,6 +320,10 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     @Override
     public void removeItem(@NotNull DashboardItemContainer container) {
         DashboardViewItem item = (DashboardViewItem) container;
+        deleteItem(item);
+    }
+
+    private void deleteItem(DashboardViewItem item) {
         item.dispose();
         computeGridSize();
 
@@ -334,7 +338,6 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
     }
 
 
-
     @Override
     public void removeItem(@NotNull DashboardItemConfiguration descriptor) {
         DashboardViewItem itemToDelete = null;
@@ -343,7 +346,7 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 itemToDelete = dashContainerItem;
             }
         }
-        removeItem(itemToDelete);
+        deleteItem(itemToDelete);
     }
 
     @Override
@@ -358,7 +361,6 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
             .updateDashBoardItemConfiguration(newItem, index);
         DashboardViewItem dashboardViewItem = items.get(index);
         dashboardViewItem.updateDashboardItemConfiguration(newItem);
-        viewContainer
         computeGridSize();
         layout(true, true);
     }
