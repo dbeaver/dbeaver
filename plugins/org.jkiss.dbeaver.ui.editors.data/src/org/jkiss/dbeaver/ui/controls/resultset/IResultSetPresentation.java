@@ -130,6 +130,9 @@ public interface IResultSetPresentation {
     @Nullable
     DBDAttributeBinding getFocusAttribute();
 
+    @Nullable
+    ResultSetCellLocation getCurrentCellLocation();
+
     void setCurrentAttribute(@NotNull DBDAttributeBinding attribute);
 
     void showAttribute(@NotNull DBDAttributeBinding attribute);
