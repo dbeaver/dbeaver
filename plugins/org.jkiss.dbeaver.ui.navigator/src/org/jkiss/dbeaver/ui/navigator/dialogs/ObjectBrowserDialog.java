@@ -106,12 +106,16 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                     if (element instanceof DBNLocalFolder) {
                         return ((DBNLocalFolder) element).hasConnected();
                     }
+                    if (element instanceof DBNDriverGroup) {
+                        return ((DBNDriverGroup) element).hasConnected();
+                    }
                 }
                 if (nameFilter != null && element instanceof DBNNode node && !node.hasChildren(false) && !nameFilter.test(node.getName())) {
                     return false;
                 }
                 if (element instanceof TreeNodeSpecial ||
                     element instanceof DBNLocalFolder ||
+                    element instanceof DBNDriverGroup ||
                     element instanceof DBNFileSystem ||
                     element instanceof DBNPathBase
                 ) {

@@ -144,7 +144,8 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     }
                     if (showConnected) {
                         if (element instanceof DBNDataSource ds && ds.getDataSource() == null ||
-                            element instanceof DBNLocalFolder lf && !lf.hasConnected()) {
+                            element instanceof DBNLocalFolder lf && !lf.hasConnected() ||
+                            element instanceof DBNDriverGroup dg && !dg.hasConnected()) {
                             return false;
                         }
                     }
@@ -154,6 +155,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                             return folderItemsClass != null && DBSObjectContainer.class.isAssignableFrom(folderItemsClass);
                         }
                         if (element instanceof DBNLocalFolder ||
+                            element instanceof DBNDriverGroup ||
                             element instanceof DBNProjectDatabases ||
                             element instanceof DBNDataSource ||
                             (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSObjectContainer))

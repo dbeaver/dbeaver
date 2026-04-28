@@ -849,6 +849,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             ) {
                 return hasVisibleConnections(viewer, (DBNLocalFolder) element);
             }
+            if ((filterShowConnected ||
+                (hasPattern && getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection) ||
+                (hasPattern && filter.filterFolders())) && element instanceof DBNDriverGroup dg
+            ) {
+                for (DBNDataSource ds : dg.getDataSources()) {
+                    if (filterShowConnected && !ds.getDataSourceContainer().isConnected()) {
+                        continue;
+                    }
+                    if (!hasPattern || isLeafMatch(viewer, ds)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
             if (!filter.select(element)) {
                 return false;
             }

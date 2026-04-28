@@ -137,7 +137,8 @@ public class SearchDataPage extends AbstractSearchPage {
                     }
                     if (showConnected) {
                         if (element instanceof DBNDataSource ds && ds.getDataSource() == null ||
-                            element instanceof DBNLocalFolder lf && !lf.hasConnected()) {
+                            element instanceof DBNLocalFolder lf && !lf.hasConnected() ||
+                            element instanceof DBNDriverGroup dg && !dg.hasConnected()) {
                             return false;
                         }
                     }
@@ -150,6 +151,7 @@ public class SearchDataPage extends AbstractSearchPage {
                         }
                         if (element instanceof DBNProjectDatabases
                             || element instanceof DBNLocalFolder
+                            || element instanceof DBNDriverGroup
                             || element instanceof DBNDataSource) {
                             return true;
                         }

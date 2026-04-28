@@ -142,4 +142,17 @@ public class DBNDriverGroup extends DBNNode implements DBNContainer {
         }
         return result;
     }
+
+    public List<DBNDataSource> getNestedDataSources() {
+        return getDataSources();
+    }
+
+    public boolean hasConnected() {
+        for (DBNDataSource ds : getDataSources()) {
+            if (ds.getDataSource() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

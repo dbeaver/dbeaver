@@ -81,6 +81,15 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
                     }
                     return false;
                 }
+                if (element instanceof DBNDriverGroup) {
+                    for (DBNDataSource ds : ((DBNDriverGroup) element).getNestedDataSources()) {
+                        if (taskType.isDriverApplicable(ds.getDataSourceContainer().getDriver()) &&
+                            (!showConnected || ds.getDataSourceContainer().isConnected())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
                 if (element instanceof DBNDataSource) {
                     if (showConnected && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
                         return false;

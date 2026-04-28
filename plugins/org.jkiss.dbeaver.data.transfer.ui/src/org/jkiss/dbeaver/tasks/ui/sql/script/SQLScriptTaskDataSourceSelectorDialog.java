@@ -69,7 +69,7 @@ class SQLScriptTaskDataSourceSelectorDialog extends BaseDialog {
             }
             @Override
             public boolean select(Object element) {
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource || element instanceof TreeNodeSpecial;
+                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDriverGroup || element instanceof DBNDataSource || element instanceof TreeNodeSpecial;
             }
         };
 
