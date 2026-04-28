@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.erd;
 
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -56,7 +57,8 @@ public class ERDColors {
         return UIUtils.getColorRegistry().get(EXTRA_HEADER_COLORS[index]);
     }
 
-    public static Color getForeignKeyModifyRuleColor(DBSForeignKeyModifyRule rule) {
+    @NotNull
+    public static Color getForeignKeyModifyRuleColor(@NotNull DBSForeignKeyModifyRule rule) {
         return UIUtils.getColorRegistry().get(
             switch (rule) {
                 case DBSForeignKeyModifyRule.NO_ACTION   -> ERDUIConstants.COLOR_ERD_ARROW_COLOR_NO_ACTION;
