@@ -135,8 +135,14 @@ public class DBNDriverGroup extends DBNNode implements DBNContainer {
     public List<DBNDataSource> getDataSources() {
         List<DBNDataSource> result = new ArrayList<>();
         for (DBNDataSource ds : getParentNode().getDataSources()) {
-            if (ds.getDataSourceContainer().getFolder() == null
-                    && ds.getDataSourceContainer().getDriver() == driver) {
+            if (ds == null) {
+                continue;
+            }
+            DBPDataSourceContainer container = ds.getDataSourceContainer();
+            if (container == null || container.isHidden()) {
+                continue;
+            }
+            if (container.getFolder() == null && container.getDriver() == driver) {
                 result.add(ds);
             }
         }
