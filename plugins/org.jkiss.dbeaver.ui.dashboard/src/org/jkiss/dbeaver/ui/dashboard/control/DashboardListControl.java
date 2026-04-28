@@ -346,7 +346,9 @@ public class DashboardListControl extends Composite implements DashboardGroupCon
                 itemToDelete = dashContainerItem;
             }
         }
-        deleteItem(itemToDelete);
+        if (itemToDelete != null) {
+            deleteItem(itemToDelete);
+        }
     }
 
     @Override
