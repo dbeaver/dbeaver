@@ -133,22 +133,7 @@ public class DBeaverLauncher {
     protected boolean splashDown = false;
     protected boolean cliMode = false;
 
-    public final class SplashHandler extends Thread {
-        @Override
-        public void run() {
-            takeDownSplash();
-        }
-
-        @SuppressWarnings("unused")
-        public void updateSplash() {
-            // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
-            if (bridge != null && !splashDown) {
-                bridge.updateSplash();
-            }
-        }
-    }
-
-    private final Thread splashHandler = new SplashHandler();
+    private Thread splashHandler = null;
 
     //splash screen system properties
     public static final String SPLASH_HANDLE = "org.eclipse.equinox.launcher.splash.handle"; //$NON-NLS-1$
@@ -458,10 +443,7 @@ public class DBeaverLauncher {
 
     private String getFragmentString(String fragmentOS, String fragmentWS, String fragmentArch) {
         StringJoiner buffer = new StringJoiner("."); //$NON-NLS-1$
-        buffer.add(PLUGIN_ID).add(fragmentWS).add(fragmentOS);
-        if (!(fragmentOS.equals(Constants.OS_MACOSX) && !Constants.ARCH_X86_64.equals(fragmentArch))) {
-            buffer.add(fragmentArch);
-        }
+        buffer.add(PLUGIN_ID).add(fragmentWS).add(fragmentOS).add(fragmentArch);
         return buffer.toString();
     }
 
@@ -2726,6 +2708,14 @@ public class DBeaverLauncher {
             return;
         }
 
+        if (splashHandler == null) {
+            splashHandler = new Thread(() -> {
+                // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
+                if (bridge != null && !splashDown) {
+                    bridge.updateSplash();
+                }
+            });
+        }
         if (showSplash || endSplash != null) {
             // Register the endSplashHandler to be run at VM shutdown. This hook will be
             // removed once the splash screen has been taken down.
@@ -2776,10 +2766,12 @@ public class DBeaverLauncher {
         splashDown = bridge.takeDownSplash();
         System.clearProperty(SPLASH_HANDLE);
 
-        try {
-            Runtime.getRuntime().removeShutdownHook(splashHandler);
-        } catch (Throwable e) {
-            // OK to ignore this, happens when the VM is already shutting down
+        if (splashHandler != null) {
+            try {
+                Runtime.getRuntime().removeShutdownHook(splashHandler);
+            } catch (Throwable e) {
+                // OK to ignore this, happens when the VM is already shutting down
+            }
         }
     }
 

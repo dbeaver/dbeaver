@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,13 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected MySQLTableBase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected MySQLTableBase createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final MySQLTable table;
         MySQLCatalog catalog = (MySQLCatalog) container;
         if (copyFrom instanceof DBSEntity) {
@@ -104,7 +110,13 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
 
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_OBJECT_DROP)) {
             final MySQLTableBase table = command.getObject();
@@ -117,12 +129,12 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
 
     @Override
     protected void appendTableModifiers(
-        DBRProgressMonitor monitor,
-        MySQLTableBase tableBase,
-        NestedObjectCommand tableProps,
-        StringBuilder ddl,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull MySQLTableBase tableBase,
+        @NotNull NestedObjectCommand tableProps,
+        @NotNull StringBuilder ddl,
         boolean alter,
-        Map<String, Object> options) {
+        @NotNull Map<String, Object> options) {
 
         if (!(tableBase instanceof MySQLTable table)) {
             return;
@@ -183,8 +195,13 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         return CHILD_TYPES;
     }
 
+    @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, MySQLTableBase object, Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull MySQLTableBase object,
+        @NotNull Class<? extends DBSObject> childType
+    ) throws DBException {
         if (childType == MySQLTableColumn.class) {
             return object.getAttributes(monitor);
         } else if (childType == MySQLTableConstraint.class) {

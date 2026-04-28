@@ -55,6 +55,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataSourceSerializerModern<T extends DataSourceDescriptor> implements DataSourceSerializer<T> {
 
@@ -556,15 +557,15 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 final String substitutedProviderId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
                 final String substitutedDriverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
 
-                DriverDescriptor originalDriver;
-                DriverDescriptor substitutedDriver;
+                DBPDriver originalDriver;
+                DBPDriver substitutedDriver;
 
                 if (CommonUtils.isEmpty(originalProviderId) || CommonUtils.isEmpty(originalDriverId)) {
-                    originalDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, !isDetachedProcess);
+                    originalDriver = parseOrCreateDriver(id, substitutedProviderId, substitutedDriverId, !isDetachedProcess);
                     substitutedDriver = originalDriver;
                 } else {
-                    originalDriver = parseDriver(id, originalProviderId, originalDriverId, !isDetachedProcess);
-                    substitutedDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, false);
+                    originalDriver = parseOrCreateDriver(id, originalProviderId, originalDriverId, !isDetachedProcess);
+                    substitutedDriver = parseOrCreateDriver(id, substitutedProviderId, substitutedDriverId, false);
                 }
                 if (originalDriver == null) {
                     continue;
@@ -574,7 +575,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 }
 
                 if (getReplacementDriver(substitutedDriver) == originalDriver) {
-                    final DriverDescriptor original = originalDriver;
+                    final DBPDriver original = originalDriver;
                     originalDriver = substitutedDriver;
                     substitutedDriver = original;
                 }
@@ -775,17 +776,16 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
+                // Preferences
+                DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+                preferenceStore.clear();
+                Map<String, String> customProperties = JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES);
+                customProperties.forEach(preferenceStore::setValue);
+
                 setCurrentUserSettings(dataSource, conObject);
 
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
-
-                // Preferences
-                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
-                preferenceProperties.clear();
-                preferenceProperties.putAll(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-                );
 
                 {
                     // Extensions
@@ -864,13 +864,24 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
+        DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+        if (userSettings != null) {
+
+            Map<String, String> datasourceUserSettings = userSettings.entrySet().stream()
+                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            preferenceStore.putUserSettings(datasourceUserSettings);
+        }
+
         dataSource.getNavigatorSettings().reset();
 
+        // Navigator settings
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+            dataSource.getNavigatorSettings().setUserSettings(true);
             DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
             dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
@@ -955,7 +966,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     @Nullable
-    private static DriverDescriptor parseDriver(
+    private static DBPDriver parseOrCreateDriver(
         @NotNull String id,
         @NotNull String providerId,
         @NotNull String driverId,
@@ -981,22 +992,20 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
-        DriverDescriptor driver = provider.getOriginalDriver(driverId);
-        if (driver == null) {
+        DBPDriver curDriver = provider.getOriginalDriver(driverId);
+        if (curDriver == null) {
             if (createIfAbsent) {
                 log.debug("Can't find driver " + driverId + " in datasource provider "
                     + provider.getId() + " for datasource '" + id + "'. Create new driver");
-                driver = provider.createDriver(driverId);
+                DriverDescriptor driver = provider.createDriver(driverId);
                 driver.setName(driverId);
                 driver.setDescription("Missing driver " + driverId);
                 driver.setTemporary(true);
                 provider.addDriver(driver);
-            } else {
-                return null;
+                curDriver = driver;
             }
         }
-
-        return driver;
+        return curDriver;
     }
 
     private void deserializeModifyPermissions(
@@ -1467,8 +1476,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     @NotNull
-    private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {
-        DriverDescriptor replacement = driver;
+    private static DBPDriver getReplacementDriver(@NotNull DBPDriver driver) {
+        DBPDriver replacement = driver;
 
         while (replacement.getReplacedBy() != null) {
             replacement = replacement.getReplacedBy();

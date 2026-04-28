@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,20 +30,28 @@ import java.util.List;
  */
 public interface DBPDataSourceProviderRegistry {
 
+    @NotNull
     List<? extends DBPDataSourceProviderDescriptor> getDataSourceProviders();
 
+    @NotNull
     List<? extends DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders();
 
-    DBPDataSourceProviderDescriptor getDataSourceProvider(String id);
-    DBPDataSourceProviderDescriptor makeFakeProvider(String providerID);
+    @Nullable
+    DBPDataSourceProviderDescriptor getDataSourceProvider(@NotNull String id);
+    @Nullable
+    DBPDataSourceProviderDescriptor makeFakeProvider(@NotNull String providerID);
 
-    DBPAuthModelDescriptor getAuthModel(String id);
+    @Nullable
+    DBPAuthModelDescriptor getAuthModel(@NotNull String id);
+    @NotNull
     List<? extends DBPAuthModelDescriptor> getAllAuthModels();
-    List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver);
+    @NotNull
+    List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(@NotNull DBPDriver driver);
 
-    DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType);
-    void addConnectionType(DBPConnectionType connectionType);
-    void removeConnectionType(DBPConnectionType connectionType);
+    @Nullable
+    DBPConnectionType getConnectionType(@NotNull String id, @Nullable DBPConnectionType defaultType);
+    void addConnectionType(@NotNull DBPConnectionType connectionType);
+    void removeConnectionType(@NotNull DBPConnectionType connectionType);
     void saveConnectionTypes();
 
     @Nullable
@@ -58,11 +66,14 @@ public interface DBPDataSourceProviderRegistry {
     @NotNull
     DBPDriverSubstitutionDescriptor[] getAllDriverSubstitutions();
 
-    DBPEditorContribution[] getContributedEditors(String category, DBPDataSourceContainer dataSource);
+    @NotNull
+    DBPEditorContribution[] getContributedEditors(@NotNull String category, @NotNull DBPDataSourceContainer dataSource);
 
     // This pref store can be used to listen preference changes in ANY datasource.
+    @NotNull
     DBPPreferenceStore getGlobalDataSourcePreferenceStore();
 
-    DBPDataSourceOriginProvider getDataSourceOriginProvider(String id);
+    @Nullable
+    DBPDataSourceOriginProvider getDataSourceOriginProvider(@NotNull String id);
 
 }

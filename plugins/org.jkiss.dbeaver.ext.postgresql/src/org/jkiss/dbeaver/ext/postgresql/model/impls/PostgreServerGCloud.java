@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 
 /**
@@ -33,10 +34,11 @@ public class PostgreServerGCloud extends PostgreServerPostgreSQL {
 
     public static final String TYPE_ID = "gcloudpg";
 
-    public PostgreServerGCloud(PostgreDataSource dataSource) {
+    public PostgreServerGCloud(@NotNull PostgreDataSource dataSource) {
         super(dataSource);
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "Google Cloud SQL PostgreSQL";
