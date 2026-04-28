@@ -6,11 +6,8 @@ Bundle-Version: 1.0.39.qualifier
 Bundle-Release-Date: 20260504
 Require-Bundle: org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.ui,
- org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.base,
- org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ext.altibase,
  org.jkiss.dbeaver.ui.editors.session,
  org.jkiss.dbeaver.tasks.native.ui,

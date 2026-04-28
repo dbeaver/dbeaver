@@ -8,8 +8,6 @@ Bundle-Release-Date: 20260504
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.ui.console,
- org.eclipse.ui.views,
- org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.tasks.ui,
