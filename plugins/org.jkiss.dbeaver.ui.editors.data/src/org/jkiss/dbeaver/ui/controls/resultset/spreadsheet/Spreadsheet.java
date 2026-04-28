@@ -332,7 +332,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                                 IResultSetValueReflector.class);
                             if (valueReflector != null) {
                                 ResultSetCellLocation currentCellLocation = presentation.getCurrentCellLocation();
-                                if (currentCellLocation.getAttribute() != null && currentCellLocation.getRow() != null) {
+                                if (currentCellLocation != null) {
                                     Object cellValue = presentation.getController().getModel().getCellValue(currentCellLocation);
                                     ResultSetCopySettings copySettings = new ResultSetCopySettings();
                                     Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);
