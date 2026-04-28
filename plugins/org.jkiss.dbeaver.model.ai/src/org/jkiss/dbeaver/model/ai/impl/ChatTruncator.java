@@ -41,7 +41,7 @@ public final class ChatTruncator {
         this.counter = Objects.requireNonNull(b.counter, "TokenCounter is required");
         this.reserveForSystem = b.reserveForSystem;
         if (maxTokens <= reserveForReply + reserveForOverhead) {
-            throw new IllegalArgumentException("maxDbSnapshotTokens too small for the reserves");
+            throw new IllegalArgumentException("This AI request does not fit into the selected context window");
         }
     }
 
@@ -292,7 +292,7 @@ public final class ChatTruncator {
         @NotNull
         public ChatTruncator build() {
             assert maxTokens > reserveForReply + reserveForOverhead + reserveForSystem
-                : "maxDbSnapshotTokens must be greater than the sum of reserves";
+                : "This AI request does not fit into the selected context window";
 
             return new ChatTruncator(this);
         }
