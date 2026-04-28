@@ -180,7 +180,12 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     public boolean matches(@Nullable DBSAttributeBase attr, boolean searchByName) {
-        if (attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr)) {
+        if (attr != null && (
+            this == attr ||
+            this.getMetaAttribute() == attr ||
+            this.getEntityAttribute() == attr ||
+            this.getEntityAttribute() instanceof DBSContextBoundAttribute cba && cba.getUnderlyingAttribute() == attr
+        )) {
             return true;
         }
         if (searchByName) {
