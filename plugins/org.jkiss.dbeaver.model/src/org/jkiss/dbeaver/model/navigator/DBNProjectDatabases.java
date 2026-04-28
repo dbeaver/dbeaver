@@ -23,11 +23,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
@@ -40,6 +42,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     private DBPDataSourceRegistry dataSourceRegistry;
     private final List<DBNDataSource> dataSources = new ArrayList<>();
     private volatile DBNNode[] children;
+    private volatile boolean lastGroupByDriver = false;
     private final IdentityHashMap<DBPDataSourceFolder, DBNLocalFolder> folderNodes = new IdentityHashMap<>();
 
     public DBNProjectDatabases(DBNProject parentNode, DBPDataSourceRegistry dataSourceRegistry)
@@ -158,6 +161,12 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
+        boolean groupByDriver = DBWorkbench.getPlatform().getPreferenceStore()
+            .getBoolean("navigator.group.by.driver");
+        if (groupByDriver != lastGroupByDriver) {
+            children = null;
+            lastGroupByDriver = groupByDriver;
+        }
         if (children == null && !monitor.isForceCacheUsage()) {
             List<DBNNode> childNodes = new ArrayList<>();
             // Add root folders
@@ -171,15 +180,32 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     childNodes.add(folderNode);
                 }
             }
-            synchronized (dataSources) {
-                // Add only visible root datasources
-                for (DBNDataSource dataSource : dataSources) {
-                    if (dataSource == null ||
-                        dataSource.getDataSourceContainer().isHidden() ||
-                        dataSource.getDataSourceContainer().getFolder() != null) {
-                        continue;
+            if (groupByDriver) {
+                // Group root-level data sources by driver
+                Map<DBPDriver, DBNDriverGroup> driverGroups = new LinkedHashMap<>();
+                synchronized (dataSources) {
+                    for (DBNDataSource dataSource : dataSources) {
+                        if (dataSource == null ||
+                            dataSource.getDataSourceContainer().isHidden() ||
+                            dataSource.getDataSourceContainer().getFolder() != null) {
+                            continue;
+                        }
+                        DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
+                        driverGroups.computeIfAbsent(driver, d -> new DBNDriverGroup(this, d));
                     }
-                    childNodes.add(dataSource);
+                }
+                childNodes.addAll(driverGroups.values());
+            } else {
+                synchronized (dataSources) {
+                    // Add only visible root datasources
+                    for (DBNDataSource dataSource : dataSources) {
+                        if (dataSource == null ||
+                            dataSource.getDataSourceContainer().isHidden() ||
+                            dataSource.getDataSourceContainer().getFolder() != null) {
+                            continue;
+                        }
+                        childNodes.add(dataSource);
+                    }
                 }
             }
             sortNodes(childNodes);

@@ -154,9 +154,6 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 false,
                 2
             );
-            // TODO: remove or enable this setting
-            groupByDriverCheck.setEnabled(false);
-
             sortAlphabeticallyCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically,
