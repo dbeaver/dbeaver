@@ -134,7 +134,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK || newVersion.getProgramVersion().compareTo(currentVersion) > 0))) {
-            DBPApplicationVersionUpdater updater = DBWorkbench.findService(DBPApplicationVersionUpdater.class);
+            UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
             if (updater != null) {
                 UIUtils.asyncExec(updater::handleVersionUpdate);
             } else {

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.update;
 
-public interface DBPApplicationVersionUpdater {
+public interface UIServiceApplicationVersionUpdater {
 
     boolean isAutoUpdateEnabled();
 
