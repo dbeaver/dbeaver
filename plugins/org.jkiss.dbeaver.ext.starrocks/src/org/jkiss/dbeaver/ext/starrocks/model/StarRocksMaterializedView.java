@@ -130,7 +130,8 @@ public class StarRocksMaterializedView extends StarRocksViewBase implements DBPS
             additionalInfo.loaded = true;
             return;
         }
-        String definition = StarRocksUtils.loadShowCreateDDL(monitor, this, "Load materialized view definition", "SHOW CREATE MATERIALIZED VIEW", COL_CREATE_MV); //$NON-NLS-1$ //$NON-NLS-2$
+        String definition = StarRocksUtils.loadShowCreateDDL(
+            monitor, this, "Load materialized view definition", "SHOW CREATE MATERIALIZED VIEW", COL_CREATE_MV); //$NON-NLS-1$ //$NON-NLS-2$
         additionalInfo.setDefinition(definition);
         additionalInfo.loaded = true;
     }

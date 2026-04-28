@@ -21,25 +21,23 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.starrocks.model.StarRocksDataSource;
 import org.jkiss.dbeaver.ext.starrocks.model.StarRocksMetaModel;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * StarRocks DataSource Provider - creates StarRocksDataSource instances.
  */
-public class StarRocksDataSourceProvider extends GenericDataSourceProvider {
+public class StarRocksDataSourceProvider extends GenericDataSourceProvider<StarRocksDataSource> {
 
     private static final StarRocksMetaModel META_MODEL = new StarRocksMetaModel();
 
-    @Override
-    public long getFeatures() {
-        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
+    public StarRocksDataSourceProvider() {
+        super(StarRocksDataSource.class);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public StarRocksDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container
     ) throws DBException {

@@ -131,6 +131,7 @@ public class StarRocksTable extends GenericTable {
     }
 
     private void loadDDL(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        ddl = StarRocksUtils.loadShowCreateDDL(monitor, this, "Load table DDL", "SHOW CREATE TABLE", COL_CREATE_TABLE); //$NON-NLS-1$ //$NON-NLS-2$
+        ddl = StarRocksUtils.loadShowCreateDDL(
+            monitor, this, "Load table DDL", "SHOW CREATE TABLE", COL_CREATE_TABLE); //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

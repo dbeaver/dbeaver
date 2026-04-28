@@ -120,7 +120,8 @@ public class StarRocksView extends StarRocksViewBase implements DBSView, DBPScri
             additionalInfo.loaded = true;
             return;
         }
-        String definition = StarRocksUtils.loadShowCreateDDL(monitor, this, "Load view definition", "SHOW CREATE VIEW", COL_CREATE_VIEW); //$NON-NLS-1$ //$NON-NLS-2$
+        String definition = StarRocksUtils.loadShowCreateDDL(
+            monitor, this, "Load view definition", "SHOW CREATE VIEW", COL_CREATE_VIEW); //$NON-NLS-1$ //$NON-NLS-2$
         additionalInfo.setDefinition(definition);
         additionalInfo.loaded = true;
     }
