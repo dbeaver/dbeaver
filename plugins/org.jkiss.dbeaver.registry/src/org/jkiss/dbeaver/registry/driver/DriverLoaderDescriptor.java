@@ -301,12 +301,13 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
+                        if (file.getFile() == null) {
+                            continue;
+                        }
                         if (!IOUtils.isFileFromDefaultFS(file.getFile())) {
                             copyLibsFromExternalStorage(library, file.getFile(), result);
-                        } else {
-                            if (file.getFile() != null && !result.contains(file.getFile())) {
-                                result.add(file.getFile());
-                            }
+                        } else if (!result.contains(file.getFile())) {
+                            result.add(file.getFile());
                         }
                     }
                 }
@@ -527,7 +528,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             return list
                 .filter(p -> {
                     String fileName = p.getFileName().toString();
-                    return fileName.endsWith(".jar") || fileName.endsWith(".zip");
+                    return fileName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) || fileName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP);
                 })
                 .collect(Collectors.toList());
         } catch (IOException e) {
@@ -809,7 +810,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             for (Path dirFile : srcDirFiles) {
                 String fileName = dirFile.getFileName().toString();
                 // Skip non-libraries
-                if (fileName.endsWith(".txt")) {
+                if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_TXT)) {
                     continue;
                 }
                 Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName().toString());

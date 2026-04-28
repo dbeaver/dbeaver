@@ -133,21 +133,6 @@ public class DBeaverLauncher {
     protected boolean splashDown = false;
     protected boolean cliMode = false;
 
-    public final class SplashHandler extends Thread {
-        @Override
-        public void run() {
-            takeDownSplash();
-        }
-
-        @SuppressWarnings("unused")
-        public void updateSplash() {
-            // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
-            if (bridge != null && !splashDown) {
-                bridge.updateSplash();
-            }
-        }
-    }
-
     private Thread splashHandler = null;
 
     //splash screen system properties
@@ -2724,7 +2709,12 @@ public class DBeaverLauncher {
         }
 
         if (splashHandler == null) {
-            splashHandler = new SplashHandler();
+            splashHandler = new Thread(() -> {
+                // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
+                if (bridge != null && !splashDown) {
+                    bridge.updateSplash();
+                }
+            });
         }
         if (showSplash || endSplash != null) {
             // Register the endSplashHandler to be run at VM shutdown. This hook will be

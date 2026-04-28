@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +87,13 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public DB2Table createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object db2Schema,
-                                         Object copyFrom, @NotNull Map<String, Object> options) {
+    public DB2Table createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object db2Schema,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         DB2Table table = new DB2Table((DB2Schema) db2Schema, NEW_TABLE_NAME);
         setNewObjectName(monitor, (DB2Schema) db2Schema, table);
         return table;
@@ -98,12 +102,12 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     @Override
     @SuppressWarnings("rawtypes")
     public void appendTableModifiers(
-        DBRProgressMonitor monitor,
-        DB2Table db2Table,
-        NestedObjectCommand tableProps,
-        StringBuilder ddl,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DB2Table db2Table,
+        @NotNull NestedObjectCommand tableProps,
+        @NotNull StringBuilder ddl,
         boolean alter,
-        Map<String, Object> options) {
+        @NotNull Map<String, Object> options) {
 
         try {
             String delimiter = isCompact(options) ? " " : LINE_SEPARATOR;
@@ -140,7 +144,13 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     }
 
     @Override
-    public void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    public void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.addStructObjectCreateActions(monitor, executionContext, actions, command, options);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
