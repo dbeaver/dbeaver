@@ -102,25 +102,11 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
         conn.setLineStyle(SWT.LINE_CUSTOM);
 
         // Adjust the color of the arrow based on the delete-rule of the foreign key.
-        if (association.getObject() instanceof DBSTableForeignKey) {
-            DBSForeignKeyModifyRule deleteRule = ((DBSTableForeignKey) association.getObject()).getDeleteRule();
+        if (association.getObject() instanceof DBSTableForeignKey foreignKey) {
+            DBSForeignKeyModifyRule deleteRule = foreignKey.getDeleteRule();
             conn.setForegroundColor(ERDColors.getForeignKeyModifyRuleColor(deleteRule));
         }
     }
-
-    /*
-    private String getDeleteRuleColorKey(DBSForeignKeyModifyRule rule) {
-        return switch (rule.getId()) {
-            case "UNKNOWN" -> "dbeaver.erd.deleteRule.unknown";
-            case "NO_ACTION" -> "dbeaver.erd.deleteRule.noAction";
-            case "CASCADE" -> "dbeaver.erd.deleteRule.cascade";
-            case "SET_NULL" -> "dbeaver.erd.deleteRule.setNull";
-            case "SET_DEFAULT" -> "dbeaver.erd.deleteRule.setDefault";
-            case "RESTRICT" -> "dbeaver.erd.deleteRule.restrict";
-            default -> "dbeaver.erd.deleteRule.undefined";
-        };
-    }
-     */
 
     private void createSourceDecorator(PolylineConnection conn, Color bckColor, Color frgColor, ERDAssociationType type, String label) {
         CrowsFootPolylineDecoration sourceDecor;
