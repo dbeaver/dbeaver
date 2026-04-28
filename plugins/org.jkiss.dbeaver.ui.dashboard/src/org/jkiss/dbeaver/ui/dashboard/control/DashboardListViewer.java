@@ -94,13 +94,17 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         this.part = part;
         this.configuration = configuration;
         this.viewConfiguration = viewConfiguration;
-        DashboardRegistry.getInstance().addListener(this);
+        if (!DBWorkbench.isDistributed()) {
+            DashboardRegistry.getInstance().addListener(this);
+        }
         initConnection();
     }
 
     public void dispose() {
         WorkspaceConfigEventManager.removeConfigChangedListener(DashboardRegistry.CONFIG_FILE_NAME, dashboardsConfigChangedListener);
-        DashboardRegistry.getInstance().removeListener(this);
+        if (!DBWorkbench.isDistributed()) {
+            DashboardRegistry.getInstance().removeListener(this);
+        }
         DBCExecutionContext context = isolatedContext;
         if (context != null) {
             if (context.isConnected()) {
