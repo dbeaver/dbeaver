@@ -96,7 +96,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             Composite addrGroup = UIUtils.createTitledComposite(
                 settingsGroup,
                 AthenaMessages.label_connection,
-                2,
+                3,
                 GridData.FILL_HORIZONTAL
             );
 
@@ -104,9 +104,13 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             awsRegionCombo.addModifyListener(textListener);
             UIUtils.setDefaultTextControlWidthHint(awsRegionCombo);
 
+            createDriverSubstitutionControls(addrGroup, 1, false);
+
             UIUtils.createControlLabel(addrGroup, AthenaMessages.label_s3_location); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
             Composite s3Group = UIUtils.createComposite(addrGroup, 1);
-            s3Group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            s3Group.setLayoutData(gd);
             s3LocationText = new Text(s3Group, SWT.BORDER);
             s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,10 @@ public final class DBStructUtils {
     }
 
     @Nullable
-    public static DBSEntity getAssociatedEntity(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityConstraint constraint) throws DBException {
+    public static DBSEntity getAssociatedEntity(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityConstraint constraint
+    ) throws DBException {
         if (constraint instanceof DBSEntityAssociationLazy associationLazy) {
             return associationLazy.getAssociatedEntity(monitor);
         } else if (constraint instanceof DBSEntityAssociation association) {
@@ -99,7 +102,13 @@ public final class DBStructUtils {
         return null;
     }
 
-    public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
+    @NotNull
+    public static String generateTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        @NotNull Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager tableManager) {
@@ -110,7 +119,13 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(table.getDataSource(), "Can't generate DDL: table editor not found for " + table.getClass().getName());
     }
 
-    public static String generateObjectDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, Map<String, Object> options, boolean addComments) throws DBException {
+    @NotNull
+    public static String generateObjectDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject object,
+        @NotNull Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(object.getClass(), SQLObjectEditor.class);
         if (entityEditor != null) {
@@ -228,7 +243,7 @@ public final class DBStructUtils {
             " " + comment + lf + lf;
     }
 
-    private static void addDDLLine(StringBuilder sql, String ddl) {
+    public static void addDDLLine(@NotNull StringBuilder sql, @NotNull String ddl) {
         ddl = ddl.trim();
         if (!CommonUtils.isEmpty(ddl)) {
             sql.append(ddl);
@@ -240,7 +255,13 @@ public final class DBStructUtils {
         }
     }
 
-    public static <T extends DBSEntity> void sortTableList(DBRProgressMonitor monitor, Collection<T> input, List<T> simpleTables, List<T> cyclicTables, List<T> views) throws DBException {
+    public static <T extends DBSEntity> void sortTableList(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<T> input,
+        @NotNull List<T> simpleTables,
+        @NotNull List<T> cyclicTables,
+        @NotNull List<T> views
+    ) throws DBException {
         monitor.beginTask("Sorting table list", input.size());
         List<T> realTables = new ArrayList<>();
         for (T entity : input) {
@@ -308,6 +329,7 @@ public final class DBStructUtils {
         monitor.done();
     }
 
+    @NotNull
     public static String mapTargetDataType(
         @Nullable DBSObject objectContainer,
         @NotNull DBSTypedObject srcTypedObject,
@@ -581,19 +603,45 @@ public final class DBStructUtils {
         return false;
     }
 
+    @Nullable
+    public static DBSSchema getObjectSchema(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSSchema schema) {
+            return schema;
+        }
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSSchema schema) {
+                return schema;
+            }
+            parent = parent.getParentObject();
+        }
+        return null;
+    }
+
     /**
      * Retrieves the schema name associated with the provided database object.
      */
     @Nullable
-    public static String getObjectSchema(@NotNull DBSObject dbsObject) {
-        if (dbsObject instanceof DBSSchema) {
-            return dbsObject.getName();
+    public static String getObjectSchemaName(@NotNull DBSObject dbsObject) {
+        DBSSchema schema = getObjectSchema(dbsObject);
+        return schema == null ? null : schema.getName();
+    }
+
+    @Nullable
+    public static DBSCatalog getObjectCatalog(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSCatalog catalog) {
+            return catalog;
+        } else if (dbsObject instanceof DBSSchema) {
+            DBSObject parent = dbsObject.getParentObject();
+            if (parent instanceof DBSCatalog catalog) {
+                return catalog;
+            }
         }
 
         DBSObject parent = dbsObject;
         while (parent != null) {
-            if (parent instanceof DBSSchema) {
-                return parent.getName();
+            if (parent instanceof DBSCatalog catalog) {
+                return catalog;
             }
             parent = parent.getParentObject();
         }
@@ -605,27 +653,9 @@ public final class DBStructUtils {
      * Retrieves the catalog name associated with the provided database object.
      */
     @Nullable
-    public static String getObjectCatalog(@NotNull DBSObject dbsObject) {
-        if (dbsObject instanceof DBSCatalog) {
-            return dbsObject.getName();
-        }
-
-        if (dbsObject instanceof DBSSchema) {
-            DBSObject parent = dbsObject.getParentObject();
-            if (parent instanceof DBSCatalog) {
-                return parent.getName();
-            }
-        }
-
-        DBSObject parent = dbsObject;
-        while (parent != null) {
-            if (parent instanceof DBSCatalog) {
-                return parent.getName();
-            }
-            parent = parent.getParentObject();
-        }
-
-        return null;
+    public static String getObjectCatalogName(@NotNull DBSObject dbsObject) {
+        DBSCatalog catalog = getObjectCatalog(dbsObject);
+        return catalog == null ? null : catalog.getName();
     }
 
     public static boolean isPrimaryKey(@NotNull DBSTableColumn column) {

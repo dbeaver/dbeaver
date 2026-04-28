@@ -92,9 +92,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 cfgGroup,
                 OracleUIMessages.dialog_controlgroup_session_settings,
                 2,
-                GridData.HORIZONTAL_ALIGN_BEGINNING
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                SWT.DEFAULT,
+                2
             );
-            ((GridData)sessionGroup.getLayoutData()).horizontalSpan = 2;
 
             languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_language, SWT.DROP_DOWN);
             languageCombo.setToolTipText(OracleUIMessages.edit_label_combo_language_tool_tip_text);

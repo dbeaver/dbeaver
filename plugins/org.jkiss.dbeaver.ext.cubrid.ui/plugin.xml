@@ -12,6 +12,15 @@
             description="General user settings"
             icon="#user">
         </editor>
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridTableUniqueKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridTableColumnConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
+        </configurator>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
@@ -31,12 +40,6 @@
             label="%dialog.connection.header"
             targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
         </view>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridProcedureConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
-        </configurator>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

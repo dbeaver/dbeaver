@@ -22,32 +22,45 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
 public class DataSourceOptions implements DataSourceUpdater {
+    public static final String OPTION_DATABASE = "--database";
+    public static final String OPTION_HOST = "--host";
+    public static final String OPTION_PORT = "--port";
+    public static final String OPTION_USER = "--user";
+    public static final String OPTION_PASSWORD = "--user";
     @Nullable
-    @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
-    private String host;
+    @CommandLine.ArgGroup(exclusive = true)
+    private ConnectionOptions connectionOptions;
 
-    @Nullable
-    @CommandLine.Option(names = {"--database"}, arity = "1", description = "Database name")
-    private String dbName;
-    @Nullable
-    @CommandLine.Option(names = {"--server"}, arity = "1", description = "Database server")
-    private String server;
+    private static class ConnectionOptions {
+        @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
+        private String url;
 
-    @Nullable
-    @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
-    private String url;
+        @CommandLine.ArgGroup(exclusive = false)
+        private ConnectionDetails connectionDetails;
+    }
+
+    private static class ConnectionDetails {
+        @CommandLine.Option(names = {OPTION_HOST}, arity = "1", description = "Database host")
+        private String host;
+
+        @CommandLine.Option(names = {OPTION_DATABASE}, arity = "1", description = "Database name")
+        private String dbName;
+
+        @CommandLine.Option(names = {"--server"}, arity = "1", description = "Database server")
+        private String server;
+
+        @CommandLine.Option(names = {OPTION_PORT}, arity = "1", description = "Database port")
+        private Integer port;
+    }
 
     @Nullable
     @CommandLine.Option(names = {"--auth-model"}, arity = "1", description = "Database auth model")
     private String authModel;
-
-    @Nullable
-    @CommandLine.Option(names = {"--port"}, arity = "1", description = "Database port")
-    private Integer port;
 
     @Nullable
     @CommandLine.Option(names = {"--folder"}, arity = "1", description = "Connection folder")
@@ -77,27 +90,42 @@ public class DataSourceOptions implements DataSourceUpdater {
 
     @Nullable
     public String getHost() {
-        return host;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.host;
+        }
+        return null;
     }
 
     @Nullable
     public Integer getPort() {
-        return port;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.port;
+        }
+        return null;
     }
 
     @Nullable
     public String getServer() {
-        return server;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.server;
+        }
+        return null;
     }
 
     @Nullable
     public String getUrl() {
-        return url;
+        if (connectionOptions != null) {
+            return connectionOptions.url;
+        }
+        return null;
     }
 
     @Nullable
     public String getDbName() {
-        return dbName;
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.dbName;
+        }
+        return null;
     }
 
     @Nullable
@@ -112,23 +140,25 @@ public class DataSourceOptions implements DataSourceUpdater {
     @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
         String dsName = getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
+        var registry = dataSource.getRegistry();
+        if (CommonUtils.isNotEmpty(dsName)) {
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        } else if (CommonUtils.isEmpty(dataSource.getName()) || dataSource.getName().equals("?")) {
             dsName = dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(getDbName())) {
                 dsName += " - " + getDbName();
+            } else if (CommonUtils.isNotEmpty(getHost())) {
+                dsName += " - " + getHost();
             } else if (CommonUtils.isNotEmpty(getServer())) {
                 dsName += " - " + getServer();
             }
-        }
-        if (CommonUtils.isNotEmpty(getDatasourceName())) {
-            dataSource.setName(dsName);
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
         }
         if (CommonUtils.isNotEmpty(getFolder())) {
-            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(getFolder());
-            dataSource.setFolder(folder);
+            DBPDataSourceFolder registryFolder = registry.getFolder(getFolder());
+            dataSource.setFolder(registryFolder);
         }
         dataSource.setSavePassword(isSavePassword());
-
     }
 
 }

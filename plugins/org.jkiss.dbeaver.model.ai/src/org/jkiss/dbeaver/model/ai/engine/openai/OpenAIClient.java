@@ -22,9 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
-import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
@@ -80,7 +80,9 @@ public class OpenAIClient extends AbstractHttpAIClient {
         } catch (JsonSyntaxException e) {
             throw new DBException("Error parsing function call arguments", e);
         }
-        return new AIFunctionCall(message.name, arguments);
+        Map<String, String> metadata = CommonUtils.isEmpty(message.callId) ? null :
+            Map.of(OpenAIConstants.TOOL_RESULT_CALL_ID, message.callId);
+        return new AIFunctionCall(message.name, arguments, metadata);
     }
 
     @NotNull

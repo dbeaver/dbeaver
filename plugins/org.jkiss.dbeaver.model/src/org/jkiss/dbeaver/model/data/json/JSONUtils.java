@@ -49,7 +49,9 @@ public class JSONUtils {
         .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
         .withZone(ZoneId.of("UTC"));
     public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
+    public static final Type LIST_TYPE_TOKEN = TypeToken.getParameterized(List.class, MAP_TYPE_TOKEN).getType();
     public static final Gson GSON = new GsonBuilder().create();
+    public static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static String formatDate(Date date) {
         try {
@@ -289,6 +291,15 @@ public class JSONUtils {
     ) {
         String json = GSON.toJson(map);
         return GSON.fromJson(json, type);
+    }
+
+    @NotNull
+    public static List<Map<String, Object>> parseList(@NotNull Gson gson, @NotNull Reader reader) {
+        List<Map<String, Object>> result = gson.fromJson(reader, LIST_TYPE_TOKEN);
+        if (result == null) {
+            return List.of();
+        }
+        return result;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,18 +47,21 @@ public class HSQLExecutionPlan extends AbstractExecutionPlan {
         }
     }
 
+    @NotNull
     @Override
     public String getQueryString() {
         return query;
     }
 
+    @NotNull
     @Override
     public String getPlanQueryString() {
         return "EXPLAIN PLAN FOR " + query;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBCPlanNode> getPlanNodes(Map<String, Object> options) {
+    public List<? extends DBCPlanNode> getPlanNodes(@NotNull Map<String, Object> options) {
         return List.of();
     }
 }

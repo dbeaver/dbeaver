@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.timescale.TimescaleSchema;
@@ -45,11 +46,13 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
         return true;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "Timescale";
     }
 
+    @Nullable
     @Override
     public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r ||
@@ -61,8 +64,9 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
         return super.createRelationOfClass(schema, kind, dbResult);
     }
 
+    @NotNull
     @Override
-    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
         return new TimescaleSchemaCache();
     }
 

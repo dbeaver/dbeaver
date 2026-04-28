@@ -2,12 +2,11 @@
 <feature
         id="org.jkiss.dbeaver.test.base.feature"
         label="DBeaver Standalone"
-        version="26.0.1.qualifier"
+        version="26.0.4.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.headless.application">
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <url>
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@ import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.Binding;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
@@ -52,13 +49,15 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Action utils
@@ -179,6 +178,18 @@ public class ActionUtils {
             contributionParameters.mode = CommandContributionItem.MODE_FORCE_TEXT;
         }
         return new CommandContributionItem(contributionParameters);
+    }
+
+    @NotNull
+    public static IContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull String toolTipText,
+        @NotNull DBIcon icon,
+        @NotNull Runnable callback
+    ) {
+        var item = new ActionContributionItem(makeAction(text, toolTipText, icon, callback));
+        item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        return item;
     }
 
     public static boolean isCommandEnabled(String commandId, IServiceLocator site) {
@@ -386,6 +397,7 @@ public class ActionUtils {
         }
     }
 
+    @NotNull
     public static IAction makeAction(
         @NotNull final IActionDelegate actionDelegate,
         @Nullable IWorkbenchSite site,
@@ -424,6 +436,33 @@ public class ActionUtils {
         }
 
         return actionImpl;
+    }
+
+    @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Consumer<IAction> callback) {
+        return new Action(text, DBeaverIcons.getImageDescriptor(icon)) {
+            @Override
+            public void run() {
+                callback.accept(this);
+            }
+        };
+    }
+
+    @NotNull
+    public static IAction makeAction(@NotNull String text, @NotNull DBIcon icon, @NotNull Runnable callback) {
+        return makeAction(text, icon, ignored -> callback.run());
+    }
+
+    @NotNull
+    public static IAction makeAction(
+        @NotNull String text,
+        @NotNull String toolTipText,
+        @NotNull DBIcon icon,
+        @NotNull Runnable callback
+    ) {
+        var action = makeAction(text, icon, callback);
+        action.setToolTipText(toolTipText);
+        return action;
     }
 
     public static void evaluatePropertyState(String propertyName) {

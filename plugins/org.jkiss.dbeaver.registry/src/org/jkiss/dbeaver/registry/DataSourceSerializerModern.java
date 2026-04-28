@@ -55,6 +55,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DataSourceSerializerModern<T extends DataSourceDescriptor> implements DataSourceSerializer<T> {
 
@@ -77,6 +78,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
+
+    protected final FilterSerializer<T> filterSerializer = new FilterSerializer<>();
 
     @NotNull
     private final DataSourceRegistry<T> registry;
@@ -176,7 +179,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         jsonWriter.beginArray();
                         for (DBSObjectFilter cf : savedFilters) {
                             if (!cf.isEmpty()) {
-                                saveObjectFiler(jsonWriter, null, null, cf);
+                                filterSerializer.saveObjectFilter(jsonWriter, null, null, cf);
                             }
                         }
                         jsonWriter.endArray();
@@ -246,7 +249,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             configurationManager,
             configurationStorage.getStorageName(),
             jsonString,
-            registry.getProject().isEncryptedProject());
+            //don't encrypt data for read only configuration manager
+            registry.getProject().isEncryptedProject() && !configurationManager.isReadOnly()
+        );
 
         if (!configurationManager.isSecure()) {
             saveSecureCredentialsFile(configurationManager, configurationStorage);
@@ -552,15 +557,15 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 final String substitutedProviderId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_PROVIDER));
                 final String substitutedDriverId = CommonUtils.toString(conObject.get(RegistryConstants.ATTR_DRIVER));
 
-                DriverDescriptor originalDriver;
-                DriverDescriptor substitutedDriver;
+                DBPDriver originalDriver;
+                DBPDriver substitutedDriver;
 
                 if (CommonUtils.isEmpty(originalProviderId) || CommonUtils.isEmpty(originalDriverId)) {
-                    originalDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, !isDetachedProcess);
+                    originalDriver = parseOrCreateDriver(id, substitutedProviderId, substitutedDriverId, !isDetachedProcess);
                     substitutedDriver = originalDriver;
                 } else {
-                    originalDriver = parseDriver(id, originalProviderId, originalDriverId, !isDetachedProcess);
-                    substitutedDriver = parseDriver(id, substitutedProviderId, substitutedDriverId, false);
+                    originalDriver = parseOrCreateDriver(id, originalProviderId, originalDriverId, !isDetachedProcess);
+                    substitutedDriver = parseOrCreateDriver(id, substitutedProviderId, substitutedDriverId, false);
                 }
                 if (originalDriver == null) {
                     continue;
@@ -570,7 +575,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 }
 
                 if (getReplacementDriver(substitutedDriver) == originalDriver) {
-                    final DriverDescriptor original = originalDriver;
+                    final DBPDriver original = originalDriver;
                     originalDriver = substitutedDriver;
                     substitutedDriver = original;
                 }
@@ -620,10 +625,11 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     config.setServerName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_SERVER));
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
-                    {
+
                         final SecureCredentials creds = configurationManager.isSecure() ?
                             readPlainCredentials(cfgObject) :
                             readSecuredCredentials(dataSource, null, null);
+                    if (shouldUpdateCreds(creds)) {
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
@@ -760,23 +766,26 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
                 // Filters
                 for (Map<String, Object> filterCfg : JSONUtils.getObjectList(conObject, RegistryConstants.TAG_FILTERS)) {
-                    String typeName = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_TYPE);
-                    String objectID = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_ID);
-                    if (!CommonUtils.isEmpty(typeName)) {
-                        DBSObjectFilter filter = readObjectFiler(filterCfg);
-                        dataSource.updateObjectFilter(typeName, objectID, filter);
+                    var filterConfiguration = filterSerializer.deserializeObjectFilterConfig(filterCfg);
+                    if (filterConfiguration.typeNamePresent()) {
+                        dataSource.updateObjectFilter(
+                            filterConfiguration.typeName(),
+                            filterConfiguration.objectID(),
+                            filterConfiguration.filter()
+                        );
                     }
                 }
 
+                // Preferences
+                DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+                preferenceStore.clear();
+                Map<String, String> customProperties = JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES);
+                customProperties.forEach(preferenceStore::setValue);
+
+                setCurrentUserSettings(dataSource, conObject);
+
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
-
-                // Preferences
-                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
-                preferenceProperties.clear();
-                preferenceProperties.putAll(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-                );
 
                 {
                     // Extensions
@@ -815,7 +824,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
             // Saved filters
             for (Map<String, Object> ctMap : JSONUtils.getObjectList(configurationMap, "saved-filters")) {
-                DBSObjectFilter filter = readObjectFiler(ctMap);
+                DBSObjectFilter filter = filterSerializer.deserializeObjectFilter(ctMap);
                 registry.addSavedFilter(filter);
             }
         }
@@ -837,6 +846,14 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
+        dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
+        final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
+        dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
+        dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
+    }
+
+
+    private void setCurrentUserSettings(@NotNull T dataSource, @NotNull Map<String, Object> conObject) {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
         Map<String, String> userSettings = null;
         if (settingsProvider != null) {
@@ -847,13 +864,24 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
+        DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+        if (userSettings != null) {
+
+            Map<String, String> datasourceUserSettings = userSettings.entrySet().stream()
+                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            preferenceStore.putUserSettings(datasourceUserSettings);
+        }
+
         dataSource.getNavigatorSettings().reset();
 
+        // Navigator settings
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+            dataSource.getNavigatorSettings().setUserSettings(true);
             DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
             dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
@@ -861,11 +889,18 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
         }
 
-        dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
-        final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-        dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
-        dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
+        if (!CommonUtils.isEmpty(userSettings)) {
+            UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
+        }
     }
+
+    private boolean shouldUpdateCreds(@NotNull SecureCredentials creds) {
+        boolean isCredsResolved = creds.getUserName() != null && creds.getUserPassword() != null;
+        return isCredsResolved
+            // in TE secrets must be resolved by dataSource itself, if not present here
+            || !DBWorkbench.isDistributed();
+    }
+
 
     /**
      * Deserialize additional datasource properties
@@ -931,7 +966,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     @Nullable
-    private static DriverDescriptor parseDriver(
+    private static DBPDriver parseOrCreateDriver(
         @NotNull String id,
         @NotNull String providerId,
         @NotNull String driverId,
@@ -957,22 +992,20 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
-        DriverDescriptor driver = provider.getOriginalDriver(driverId);
-        if (driver == null) {
+        DBPDriver curDriver = provider.getOriginalDriver(driverId);
+        if (curDriver == null) {
             if (createIfAbsent) {
                 log.debug("Can't find driver " + driverId + " in datasource provider "
                     + provider.getId() + " for datasource '" + id + "'. Create new driver");
-                driver = provider.createDriver(driverId);
+                DriverDescriptor driver = provider.createDriver(driverId);
                 driver.setName(driverId);
                 driver.setDescription("Missing driver " + driverId);
                 driver.setTemporary(true);
                 provider.addDriver(driver);
-            } else {
-                return null;
+                curDriver = driver;
             }
         }
-
-        return driver;
+        return curDriver;
     }
 
     private void deserializeModifyPermissions(
@@ -1048,17 +1081,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
             return curNetworkHandler;
         }
-    }
-
-    @NotNull
-    private static DBSObjectFilter readObjectFiler(@NotNull Map<String, Object> map) {
-        DBSObjectFilter filter = new DBSObjectFilter();
-        filter.setName(JSONUtils.getString(map, RegistryConstants.ATTR_NAME));
-        filter.setDescription(JSONUtils.getString(map, RegistryConstants.ATTR_DESCRIPTION));
-        filter.setEnabled(JSONUtils.getBoolean(map, RegistryConstants.ATTR_ENABLED));
-        filter.setInclude(JSONUtils.deserializeStringList(map, RegistryConstants.TAG_INCLUDE));
-        filter.setExclude(JSONUtils.deserializeStringList(map, RegistryConstants.TAG_EXCLUDE));
-        return filter;
     }
 
     private static void saveFolder(@NotNull JsonWriter json, @NotNull DataSourceFolder folder) throws IOException {
@@ -1263,25 +1285,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         // Permissions
         serializeModifyPermissions(json, dataSource);
 
-        {
-            // Filters
-            Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-            if (!CommonUtils.isEmpty(filterMappings)) {
-                json.name(RegistryConstants.TAG_FILTERS);
-                json.beginArray();
-                for (FilterMapping filter : filterMappings) {
-                    if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
-                        saveObjectFiler(json, filter.typeName, null, filter.defaultFilter);
-                    }
-                    for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                        if (!cf.getValue().isEmpty()) {
-                            saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
-                        }
-                    }
-                }
-                json.endArray();
-            }
-        }
+        // Filters
+        filterSerializer.saveObjectFilters(json, RegistryConstants.TAG_FILTERS, dataSource, false);
 
         // Tags
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
@@ -1367,22 +1372,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         json.endObject();
     }
 
-    private static void saveObjectFiler(
-        @NotNull JsonWriter json,
-        @Nullable String typeName,
-        @Nullable String objectID,
-        @NotNull DBSObjectFilter filter
-    ) throws IOException {
-        json.beginObject();
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_ID, objectID);
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_TYPE, typeName);
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_NAME, filter.getName());
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
-        JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, filter.isEnabled());
-        JSONUtils.serializeStringList(json, RegistryConstants.TAG_INCLUDE, filter.getInclude());
-        JSONUtils.serializeStringList(json, RegistryConstants.TAG_EXCLUDE, filter.getExclude());
-        json.endObject();
-    }
 
     private void saveSecuredCredentials(
         @Nullable DataSourceDescriptor dataSource,
@@ -1487,8 +1476,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     @NotNull
-    private static DriverDescriptor getReplacementDriver(@NotNull DriverDescriptor driver) {
-        DriverDescriptor replacement = driver;
+    private static DBPDriver getReplacementDriver(@NotNull DBPDriver driver) {
+        DBPDriver replacement = driver;
 
         while (replacement.getReplacedBy() != null) {
             replacement = replacement.getReplacedBy();

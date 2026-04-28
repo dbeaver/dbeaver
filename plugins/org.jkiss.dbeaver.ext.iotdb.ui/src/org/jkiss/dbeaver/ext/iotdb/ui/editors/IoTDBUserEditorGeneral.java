@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
@@ -147,7 +148,7 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
         public ProgressVisualizer<List<IoTDBPrivilege>> createLoadVisualizer() {
             return new ProgressVisualizer<List<IoTDBPrivilege>>() {
                 @Override
-                public void completeLoading(List<IoTDBPrivilege> privileges) {
+                public void completeLoading(@Nullable List<IoTDBPrivilege> privileges) {
                     super.completeLoading(privileges);
                     privilegesTable.fillPrivileges(privileges);
                     loadGrants();
