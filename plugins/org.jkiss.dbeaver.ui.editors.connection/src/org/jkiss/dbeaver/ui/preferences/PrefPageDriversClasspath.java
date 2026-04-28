@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,10 +65,16 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        final Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            final Group group = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_classpath_global_libraries_group, 2, GridData.FILL_BOTH, 300);
+            Composite group = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_drivers_classpath_global_libraries_group,
+                2,
+                GridData.FILL_BOTH,
+                300
+            );
 
             globalLibrariesList = new List(group, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
             globalLibrariesList.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -124,7 +130,13 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
         }
 
         {
-            final Group group = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_classpath_system_classpath_group, 1, GridData.FILL_BOTH, 300);
+            Composite group = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_drivers_classpath_system_classpath_group,
+                1,
+                GridData.FILL_BOTH,
+                300
+            );
 
             systemClasspathList = new List(group, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
             systemClasspathList.setLayoutData(new GridData(GridData.FILL_BOTH));

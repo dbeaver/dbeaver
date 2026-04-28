@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
@@ -86,8 +87,9 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
             this.sqlEditor = sqlEditor;
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 navigate(monitor);
             } catch (InterruptedException e) {
@@ -108,7 +110,10 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
             }
             final IDocument document = sqlEditor.getDocument();
             if (document != null) {
-                String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                // excludes any line that starts wih --
+                String commentSkip = """
+                    ^(?!\\s*--)\\s*""";
+                String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
                 final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
                 if (parameters != null) {
                     List<OracleProcedureArgument> inParams = new ArrayList<>();

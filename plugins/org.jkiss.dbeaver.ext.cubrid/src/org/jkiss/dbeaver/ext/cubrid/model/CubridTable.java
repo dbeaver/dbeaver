@@ -77,7 +77,7 @@ public class CubridTable extends GenericTable
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         super.setName(name != null ? name.toLowerCase() : null);
     }
 
@@ -121,9 +121,13 @@ public class CubridTable extends GenericTable
         return (List<CubridTrigger>) super.getTriggers(monitor);
     }
 
+    public boolean isEnableSchema() {
+        return getDataSource().getSupportMultiSchema() || getDataSource().isDBAGroup();
+    }
+
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
+    @Property(viewable = true, editableExpr = "object.enableSchema", updatableExpr = "object.enableSchema", listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
     public GenericSchema getSchema() {
         return owner;
     }
@@ -189,10 +193,10 @@ public class CubridTable extends GenericTable
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        if (this.isSystem()) {
+        if (this.isSystem() || !getDataSource().getSupportMultiSchema()) {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
-            return DBUtils.getFullQualifiedName(getDataSource(), this.getSchema(), this);
+            return DBUtils.getQuotedIdentifier(this.getSchema()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         }
     }
 
@@ -210,7 +214,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.getDataSource().getSchemas().toArray();
@@ -246,8 +250,10 @@ public class CubridTable extends GenericTable
         ) throws SQLException, DBException {
             String partition_class_name = JDBCUtils.safeGetString(dbResult, "partition_class_name");
             String type = JDBCUtils.safeGetString(dbResult, "partition_type");
-            
-            return new CubridPartition(table, partition_class_name, type, dbResult);
+            if (type != null) {
+                type = type.toUpperCase();
+            }
+            return new CubridPartition(session.getProgressMonitor(), table, partition_class_name, type, dbResult);
         }
             
     }
@@ -260,7 +266,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.getDataSource().getCharsets().toArray();
@@ -274,7 +280,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.charset.getCollations().toArray();

@@ -165,8 +165,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     protected Control createControl(Composite editPlaceholder) {
         Object value = valueController.getValue();
         valueController.getEditPlaceholder();
-        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        timeEditor = new CustomTimeEditor(
+        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE ||
+            valueController.getEditType() == IValueController.EditType.PANEL;
+            timeEditor = new CustomTimeEditor(
                 editPlaceholder,
                 SWT.MULTI, true, inline);
         textMode = new TextMode(this, timeEditor, valueController);

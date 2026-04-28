@@ -72,6 +72,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private String defaultValue;
     @Nullable
     private boolean isGeneratedColumn;
+    @Nullable
+    private String generatedColumnType;
     private long depObjectId;
     private PostgreAttributeStorage storage;
 
@@ -112,6 +114,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.typeId = source.typeId;
         this.typeMod = source.typeMod;
         this.defaultValue = source.defaultValue;
+        this.isGeneratedColumn = source.isGeneratedColumn;
+        this.generatedColumnType = source.generatedColumnType;
         this.storage = source.storage;
     }
 
@@ -151,9 +155,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         }
         if (!CommonUtils.isEmpty(defaultValue) && serverType.supportsGeneratedColumns()) {
             String generatedColumn = JDBCUtils.safeGetString(dbResult, "attgenerated");
-            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored. (Other values might be added in the future)"
+            // PostgreSQL 12/13 documentation says: "If a zero byte (''), then not a generated column. Otherwise, s = stored, v = virtual. (Other values might be added in the future)"
             if (!CommonUtils.isEmpty(generatedColumn)) {
                 isGeneratedColumn = true;
+                generatedColumnType = generatedColumn;
             }
         }
         //setDefaultValue(defaultValue);
@@ -353,6 +358,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return null;
     }
 
+    @NotNull
+    public String getGeneratedColumnTypeName() {
+        return CommonUtils.equalObjects(generatedColumnType, "v") ? "VIRTUAL" : "STORED";
+    }
+
     public boolean supportsAlterStorageStrategy() {
         return getDataSource().getServerType().supportsAlterStorageStrategy();
     }
@@ -517,6 +527,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return true;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute<?> column) {
             List<PostgreDataType> types = new ArrayList<>();
@@ -545,6 +556,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
             try {
@@ -563,7 +575,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public static class AttributeStorageValueValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
 
         @Override
-        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreAttribute object, @Nullable Object value) throws IllegalArgumentException {
             return object.getTable() instanceof PostgreTable && object.getDataSource().getServerType().supportsAlterStorageStrategy();
         }
     }
@@ -574,6 +586,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
             return PostgreAttributeStorage.getValues(object.getDataSource());

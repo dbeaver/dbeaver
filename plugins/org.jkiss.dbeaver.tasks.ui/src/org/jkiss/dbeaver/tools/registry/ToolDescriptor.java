@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class ToolDescriptor extends AbstractDescriptor {
     private final Set<String> toolImplTaskIds;
     private final Set<ToolCommandRef> toolCommandRefs;
 
-    public ToolDescriptor(IConfigurationElement config) {
+    public ToolDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
@@ -63,21 +63,25 @@ public class ToolDescriptor extends AbstractDescriptor {
         this.toolImplTaskIds = Stream.of(config.getChildren("task"))
             .map(e -> e.getAttribute(RegistryConstants.ATTR_ID)).collect(Collectors.toSet());
         this.toolCommandRefs = Stream.of(config.getChildren("command"))
-            .map(e -> new ToolCommandRef(e)).collect(Collectors.toSet());
+            .map(ToolCommandRef::new).collect(Collectors.toSet());
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLabel() {
         return label;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
 
+    @Nullable
     public DBPImage getIcon() {
         return icon;
     }
@@ -86,6 +90,7 @@ public class ToolDescriptor extends AbstractDescriptor {
         return singleton;
     }
 
+    @Nullable
     public ToolGroupDescriptor getGroup() {
         return group;
     }
@@ -164,10 +169,11 @@ public class ToolDescriptor extends AbstractDescriptor {
             return command != null ? command : (command = ActionUtils.findCommand(commandId));
         }
         
+        @Nullable
         @Override
-        protected Object adaptType(DBPObject object) {
-            if (object instanceof DBSObject) {
-                return ((DBSObject) object).getDataSource();
+        protected Object adaptType(@NotNull DBPObject object) {
+            if (object instanceof DBSObject dbsObject) {
+                return dbsObject.getDataSource();
             }
             return super.adaptType(object);
         }

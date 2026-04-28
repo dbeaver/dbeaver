@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -69,7 +70,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         }
 
         @Override
-        public void redoCommand(DBECommand<OBJECT_TYPE> command)
+        public void redoCommand(@NotNull DBECommand<OBJECT_TYPE> command)
         {
             cacheModelObject(command.getObject());
             Map<String, Object> options = null;
@@ -80,7 +81,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         }
 
         @Override
-        public void undoCommand(DBECommand<OBJECT_TYPE> command)
+        public void undoCommand(@NotNull DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectRemove(command.getObject());
             removeModelObject(command.getObject());
@@ -94,14 +95,14 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         }
 
         @Override
-        public void redoCommand(DBECommand<OBJECT_TYPE> command)
+        public void redoCommand(@NotNull DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectRemove(command.getObject());
             removeModelObject(command.getObject());
         }
 
         @Override
-        public void undoCommand(DBECommand<OBJECT_TYPE> command)
+        public void undoCommand(@NotNull DBECommand<OBJECT_TYPE> command)
         {
             cacheModelObject(command.getObject());
             Map<String, Object> options = null;

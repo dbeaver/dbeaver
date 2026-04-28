@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package org.jkiss.dbeaver.ui.ai;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.eclipse.ui.internal.Workbench;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -27,13 +28,17 @@ public class AIPropertyTester extends PropertyTester {
     public static final String PROP_IS_DISABLED = "isDisabled";
 
     public AIPropertyTester() {
-        AISettingsRegistry.getInstance().addChangedListener(s -> UIUtils.asyncExec(() -> firePropertyChange(PROP_IS_DISABLED)));
+        AISettingsManager.getInstance().addChangedListener(s -> UIUtils.asyncExec(() -> firePropertyChange(PROP_IS_DISABLED)));
     }
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        Workbench workbench = Workbench.getInstance();
+        if (workbench == null || workbench.isStarting()) {
+            return false;
+        }
         if (property.equals(PROP_IS_DISABLED)) {
-            return AISettingsRegistry.getInstance().getSettings().isAiDisabled();
+            return AISettingsManager.getInstance().getSettings().isAiDisabled();
         }
         return false;
     }

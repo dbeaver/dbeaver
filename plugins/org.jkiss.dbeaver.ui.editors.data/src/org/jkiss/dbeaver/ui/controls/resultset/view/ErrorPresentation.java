@@ -26,19 +26,25 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -69,18 +75,35 @@ public class ErrorPresentation extends AbstractPresentation {
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
+        Throwable exception = status.getException();
+        DBCMessageException messageException = GeneralUtils.findNestedException(exception, DBCMessageException.class);
+        if (messageException != null) {
+            createMessagePanel(controller, parent, messageException);
+        } else {
+            createErrorPanel(controller, parent);
+        }
+
+        // Enable key bindings
+        enableHostEditingFor(controller, parent);
+    }
+
+    private static void enableHostEditingFor(@NotNull IResultSetController controller, @NotNull Composite parent) {
+        for (Control child : parent.getChildren()) {
+            if (child instanceof Text || child instanceof StyledText) {
+                TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), child);
+            } else if (child instanceof Composite composite) {
+                enableHostEditingFor(controller, composite);
+            }
+        }
+    }
+
+    private void createErrorPanel(@NotNull IResultSetController controller, @NotNull Composite parent) {
         CustomSashForm partDivider = UIUtils.createPartDivider(controller.getSite().getPart(), parent, SWT.HORIZONTAL);
         partDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite errorComposite = UIUtils.createComposite(partDivider, 1);
         errorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         new ErrorDetailsPart(errorComposite, status, resultSetContainer);
-
-        for (Control child : errorComposite.getChildren()) {
-            if (child instanceof Text) {
-                TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), child);
-            }
-        }
 
         Composite sqlPanel = UIUtils.createComposite(partDivider, 1);
         sqlPanel.setLayout(new FillLayout());
@@ -96,6 +119,7 @@ public class ErrorPresentation extends AbstractPresentation {
                 textWidget.setText(sqlText);
             }
         }
+
         if (REMEBER_SASH_RATIO) {
             boolean widthSet = false;
             IDialogSettings viewSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_ERROR_PANEL);
@@ -115,6 +139,28 @@ public class ErrorPresentation extends AbstractPresentation {
                 viewSettings.put(PROP_ERROR_WIDTH, weights[0] + ":" + weights[1]);
             });
         }
+
+    }
+
+    private void createMessagePanel(
+        @NotNull IResultSetController controller,
+        @NotNull Composite parent,
+        @NotNull DBCMessageException messageException
+    ) {
+        Composite msgComposite = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout(2, false);
+        msgComposite.setLayout(layout);
+        msgComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        Label imageLabel = new Label(msgComposite, SWT.NONE);
+        imageLabel.setImage(DBeaverIcons.getImage(DBIcon.STATUS_INFO));
+        imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.VERTICAL_ALIGN_BEGINNING));
+
+        textWidget = new StyledText(msgComposite, SWT.READ_ONLY | SWT.BORDER | SWT.MULTI | SWT.WRAP);
+        textWidget.setMargins(5, 5, 5, 5);
+        textWidget.setText(CommonUtils.toString(messageException.getMessage(), "N/A"));
+        textWidget.setLayoutData(new GridData(GridData.FILL_BOTH));
+
     }
 
     @Override

@@ -2,12 +2,11 @@
 <feature
       id="org.jkiss.dbeaver.ext.office.feature"
       label="DBeaver Office Support"
-      version="1.1.198.qualifier"
+      version="1.1.215.qualifier"
       provider-name="DBeaver Corp"
       plugin="org.jkiss.dbeaver.data.office">
 
    <copyright>DBeaver Corp and others</copyright>
-   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <requires>
       <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>

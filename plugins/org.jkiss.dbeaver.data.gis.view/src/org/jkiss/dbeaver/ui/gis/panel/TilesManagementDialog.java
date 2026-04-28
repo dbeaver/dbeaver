@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,18 +68,19 @@ class TilesManagementDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.PROCEED_LABEL, true);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
         Composite composite = UIUtils.createComposite(dialogArea, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Group group = UIUtils.createControlGroup(composite, "", 2, GridData.FILL_BOTH, 0);
+        Composite group = UIUtils.createTitledComposite(composite, "", 2, GridData.FILL_BOTH);
 
         tree = new Tree(group, SWT.FULL_SELECTION | SWT.BORDER | SWT.CHECK);
         tree.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -396,20 +397,19 @@ class TilesManagementDialog extends BaseDialog {
             return GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_edit_tiles_title;
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             Composite dialogArea = super.createDialogArea(parent);
             Composite composite = UIUtils.createComposite(dialogArea, 1);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Group group = UIUtils.createControlGroup(
+            Composite group = UIUtils.createTitledComposite(
                 dialogArea,
                 GISMessages.panel_select_tiles_action_manage_dialog_tile_layer_definition_dialog_tiles_properties_group,
                 2,
-                SWT.NONE,
-                0
+                GridData.FILL_BOTH
             );
-            group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             int mutabilityStyle = originalTilesDescriptor != null && originalTilesDescriptor.isPredefined() ? SWT.READ_ONLY : SWT.NONE;
             labelText = UIUtils.createLabelText(
@@ -441,7 +441,7 @@ class TilesManagementDialog extends BaseDialog {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }

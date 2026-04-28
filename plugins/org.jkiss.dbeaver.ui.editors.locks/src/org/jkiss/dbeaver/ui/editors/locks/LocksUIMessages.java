@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.locks;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class LocksUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.locks.LocksUIResources"; //$NON-NLS-1$

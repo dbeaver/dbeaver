@@ -157,8 +157,9 @@ public abstract class NotificationUtils {
         }
 
         final AbstractJob job = new AbstractJob("Play notification sound") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 sound.play(DBWorkbench.getPlatform()
                     .getPreferenceStore()
                     .getFloat(ModelPreferences.NOTIFICATIONS_SOUND_VOLUME) / 100.0f);

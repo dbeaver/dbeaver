@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.ui;
 
-import org.jkiss.api.DriverReference;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractFileDatabaseHandler;
@@ -36,16 +36,16 @@ public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected String createDatabaseName(@NotNull List<Path> fileList) {
-        return fileList.isEmpty() ? "" : fileList.get(0).toString();
+        return fileList.isEmpty() ? "" : fileList.getFirst().toString();
     }
 
     @Override
-    protected String createConnectionName(List<Path> fileList) {
+    protected String createConnectionName(@NotNull List<Path> fileList) {
         return createDatabaseName(fileList);
     }
 
     @Override
-    protected DriverReference getDriverReference() {
+    protected CompositeObjectId getDriverReference() {
         return SQLiteUtils.DRIVER_REFERENCE;
     }
 

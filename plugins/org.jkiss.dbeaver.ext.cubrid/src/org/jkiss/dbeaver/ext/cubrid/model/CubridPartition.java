@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,32 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+
+import java.util.Map;
 
 public class CubridPartition extends CubridTable implements DBSTablePartition {
 
     private CubridTable parentTable;
     private String partitionName;
     private String expression;
-    private String expressionValues;
+    private Object[] expressionValues;
     private String comment;
+    private boolean isNumeric;
 
     public CubridPartition(
+            @NotNull DBRProgressMonitor monitor,
             @NotNull CubridTable table,
             @NotNull String className,
             @NotNull String type,
@@ -48,12 +51,8 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
         this.partitionName = JDBCUtils.safeGetString(dbResult, "partition_name");
         this.expression = JDBCUtils.safeGetString(dbResult, "partition_expr").replace("[", "").replace("]", "");
         this.comment = JDBCUtils.safeGetString(dbResult, "comment");
-        if ("RANGE".equals(type)) {
-            Object[] partitions = (Object[]) JDBCUtils.safeGetObject(dbResult, "partition_values");
-            this.expressionValues = partitions[1] == null ? "MAXVALUE" : partitions[1].toString();
-        } else {
-            this.expressionValues = Arrays.toString((Object[]) JDBCUtils.safeGetObject(dbResult, "partition_values")).replace("[", "").replace("]", "");
-        }
+        this.expressionValues = getExpressionValues(dbResult, type);
+        this.isNumeric = isNumericColumn(monitor);
     }
 
     public String getPartitionName() {
@@ -75,6 +74,7 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
         return null;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
@@ -103,7 +103,26 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
     @NotNull
     @Property(viewable = true, order = 6)
     public String getExpressionValues() {
-        return expressionValues;
+        StringBuilder valueBuilder = new StringBuilder();
+        if (expressionValues != null) {
+            for (int i = 0; i < expressionValues.length; i++) {
+                if (i > 0) {
+                    valueBuilder.append(", ");
+                }
+                Object v = expressionValues[i];
+                if (isNumeric) {
+                    valueBuilder.append(v);
+                } else if (v != null) {
+                    String strVal = String.valueOf(v);
+                    if ("MAXVALUE".equalsIgnoreCase(strVal)) {
+                        valueBuilder.append(strVal);
+                    } else {
+                        valueBuilder.append(SQLUtils.quoteString(getDataSource(), strVal));
+                    }
+                }
+            }
+        }
+        return valueBuilder.toString();
     }
 
     @Nullable
@@ -144,10 +163,32 @@ public class CubridPartition extends CubridTable implements DBSTablePartition {
         return super.getCharset();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDataSource().getMetaModel().getTableDDL(monitor, getParentTable(), options);
     }
 
+    private boolean isNumericColumn(@NotNull DBRProgressMonitor monitor) {
+        try {
+            CubridTableColumn column = (CubridTableColumn) getParentTable().getAttribute(monitor, getExpression());
+            return column != null && column.getDataKind() == DBPDataKind.NUMERIC;
+        } catch (DBException e) {
+            return false;
+        }
+    }
+
+    private Object[] getExpressionValues(JDBCResultSet dbResult, String type) {
+        Object valuesObj = JDBCUtils.safeGetObject(dbResult, "partition_values");
+        if (valuesObj instanceof Object[]) {
+            Object[] valuesArray = (Object[]) valuesObj;
+            if ("RANGE".equals(type) && valuesArray.length > 1) {
+                return new Object[] { valuesArray[1] == null ? "MAXVALUE" : valuesArray[1] };
+            } else {
+                return valuesArray;
+            }
+        }
+        return null;
+    }
 }

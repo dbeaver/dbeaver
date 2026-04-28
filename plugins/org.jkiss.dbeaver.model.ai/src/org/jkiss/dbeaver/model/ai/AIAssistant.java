@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,49 +17,36 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+
 /**
- * AI Assistant interface. Provides methods for AI-based operations.
+ * AI Assistant interface.
+ * Provides various methods for AI-based operations.
  */
 public interface AIAssistant {
 
     /**
-     * Initializes assistant
-     */
-    void initialize(@NotNull DBPWorkspace workspace);
-
-    /**
-     * Translates text to SQL.
+     * Generates text according to the prompt
+     *
+     * @param functionContext database context. Creates database snapshot according to this context.
+     * @param messages        user messages
+     * @return generated text
      */
     @NotNull
-    String translateTextToSql(
+    AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AITranslateRequest request
+        @NotNull AIFunctionContext functionContext,
+        @NotNull List<AIMessage> messages
     ) throws DBException;
 
-    /**
-     * Translates a user command to SQL. The active completion engine is used.
-     */
-    @NotNull
-    AICommandResult command(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AICommandRequest request
-    ) throws DBException;
+    boolean isFunctionSupported();
 
     /**
-     * Returns whether the AI assistant has a valid configuration.
+     * Toolbox manager
      */
-    boolean hasValidConfiguration() throws DBException;
-
     @NotNull
-    AIEngine getActiveEngine() throws DBException;
-
-    @Nullable
-    AIEngineDescriptor getActiveEngineDescriptor();
+    AIToolboxManager getToolboxManager();
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,28 +29,30 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
+import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
+import org.jkiss.dbeaver.model.ai.engine.copilot.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.engine.openai.ContextWindowSizeField;
-import org.jkiss.dbeaver.ui.ai.engine.openai.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.ai.model.CachedValue;
+import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
+import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
+import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
+public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends CopilotProperties>
+    implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
@@ -58,15 +60,28 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private Button logQueryCheck;
     private Text accessTokenText;
 
-    private volatile String accessToken;
+    protected volatile String accessToken;
     protected String token = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
 
+    protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchCopilotModels);
+
+    @NotNull
+    private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new DBException("Access token is not set");
+        }
+
+        try (CopilotCompletionEngine engine = createEngine()) {
+            return engine.getModels(monitor);
+        }
+    }
+
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngine object,
+        AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);
@@ -78,13 +93,13 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     @Override
-    public void loadSettings(@NotNull LegacyAISettings<CopilotProperties> configuration) {
-        token = CommonUtils.toString(configuration.getProperties().getToken());
-        modelSelectorField.setSelectedModel(configuration.getProperties().getModel());
-        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
-        accessToken = CommonUtils.toString(configuration.getProperties().getToken(), "");
+    public void loadSettings(@NotNull PROPERTIES configuration) {
+        token = CommonUtils.toString(configuration.getToken());
+        modelSelectorField.setSelectedModel(configuration.getModel());
+        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
+        accessToken = CommonUtils.toString(configuration.getToken(), "");
         accessTokenText.setText(accessToken);
         applySettings();
 
@@ -92,16 +107,16 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     @Override
-    public void saveSettings(@NotNull LegacyAISettings<CopilotProperties> copilotSettings) {
-        copilotSettings.getProperties().setToken(accessToken);
-        copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
-        copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
-        copilotSettings.getProperties().setLoggingEnabled(logQuery);
+    public void saveSettings(@NotNull PROPERTIES properties) {
+        properties.setToken(accessToken);
+        properties.setModel(modelSelectorField.getSelectedModel());
+        properties.setContextWindowSize(contextWindowSizeField.getValue());
+        properties.setTemperature(CommonUtils.toDouble(temperature));
+        properties.setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull LegacyAISettings<CopilotProperties> copilotPropertiesLegacyAISettings) {
+    public void resetSettings(@NotNull PROPERTIES copilotPropertiesLegacyAISettings) {
 
     }
 
@@ -110,29 +125,29 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         return true;
     }
 
-    private void createModelParameters(@NotNull Composite parent) {
+    protected void createModelParameters(@NotNull Composite parent) {
         ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> {
-            if (accessToken == null || accessToken.isEmpty()) {
-                throw new DBException("Access token is not set");
-            }
-
-            CopilotProperties properties = new CopilotProperties();
-            properties.setToken(accessToken);
-
-            try (CopilotCompletionEngine engine = new CopilotCompletionEngine(properties)) {
-                return engine.getModels(monitor)
-                    .stream()
-                    .map(AIModel::name)
-                    .toList();
-            }
+            return modelsCache.get(monitor, forceRefresh).stream()
+                .filter(it -> it.features().contains(AIModelFeature.CHAT))
+                .map(AIModel::name)
+                .toList();
         };
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
-                contextWindowSizeField.setValue(CopilotModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
-            }))
+            .withModifyListener(() -> {
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                        }
+                    );
+            })
             .withModelListSupplier(modelListProvider)
             .build();
 
@@ -144,9 +159,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
-        temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(gridData);
-        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 3);
+        temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
@@ -154,8 +168,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write AI queries to debug log",
-            "Write AI queries with metadata info in the debug logs",
+            AIUIMessages.openai_configurator_log_query_label,
+            AIUIMessages.openai_configurator_log_query_tip,
             false,
             2
         );
@@ -172,7 +186,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         logQueryCheck.setSelection(logQuery);
     }
 
-    private void createConnectionParameters(@NotNull Composite parent) {
+    protected void createConnectionParameters(@NotNull Composite parent) {
 
         accessTokenText = UIUtils.createLabelText(
             parent,
@@ -224,7 +238,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         if (service == null) {
             throw new DBException("No authentication service available");
         }
-        try (var client = new CopilotClient()) {
+        try (var client = new CopilotClient(getCurrentAuthURL())) {
             monitor.subTask("Requesting device code");
             var deviceCodeResponse = client.requestDeviceCode(monitor);
 
@@ -235,5 +249,26 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         } catch (InterruptedException e) {
             throw new DBException("Authorization was interrupted", e);
         }
+    }
+
+    @NotNull
+    protected String getCurrentAuthURL() {
+        return CopilotConstants.BASE_AUTH_URL;
+    }
+
+    @NotNull
+    @Override
+    public Optional<AIEngineProperties> getCurrentProperties() {
+        CopilotProperties copilotPropertiesCopy = new CopilotProperties();
+        saveSettings((PROPERTIES) copilotPropertiesCopy);
+        return Optional.of(copilotPropertiesCopy);
+    }
+
+    @NotNull
+    protected CopilotCompletionEngine createEngine() {
+        CopilotProperties properties = new CopilotProperties();
+        properties.setToken(accessToken);
+
+        return new CopilotCompletionEngine(properties);
     }
 }

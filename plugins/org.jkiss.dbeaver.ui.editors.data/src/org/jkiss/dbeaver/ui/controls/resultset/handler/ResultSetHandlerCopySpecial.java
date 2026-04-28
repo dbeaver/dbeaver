@@ -62,6 +62,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_copy_title,
@@ -80,11 +81,10 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
                 break;
             case CMD_COPY_SPECIAL_LAST:
                 if (copySettingsLast == null) {
-                    showAdvancedCopyDialog(resultSet, HandlerUtil.getActiveShell(event));
-                } else {
-                    ResultSetUtils.copyToClipboard(
-                        resultSet.getActivePresentation().copySelection(copySettingsLast));
+                    copySettingsLast = new AdvancedCopyConfigDialog(HandlerUtil.getActiveShell(event)).copySettings;
                 }
+                ResultSetUtils.copyToClipboard(
+                        resultSet.getActivePresentation().copySelection(copySettingsLast));
                 break;
             default:
                 log.warn(String.format("Unexpected command id: %s",  event.getCommand().getId()));

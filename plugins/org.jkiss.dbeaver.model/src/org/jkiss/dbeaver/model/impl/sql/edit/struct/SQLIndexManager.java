@@ -71,8 +71,9 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
         appendIndexModifiers(index, decl);
         decl.append(" INDEX ").append(indexName); //$NON-NLS-1$
         appendIndexType(index, decl);
-        decl.append(" ON ").append(tableName) //$NON-NLS-1$
-            .append(" ("); //$NON-NLS-1$
+        decl.append(" ON ").append(tableName); //$NON-NLS-1$
+        appendIndexTypeAfterOn(index, decl);
+        decl.append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
             boolean firstColumn = true;
@@ -93,6 +94,10 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
     }
 
     protected void appendIndexType(OBJECT_TYPE index, StringBuilder decl) {
+
+    }
+
+    protected void appendIndexTypeAfterOn(OBJECT_TYPE index, StringBuilder decl) {
 
     }
 

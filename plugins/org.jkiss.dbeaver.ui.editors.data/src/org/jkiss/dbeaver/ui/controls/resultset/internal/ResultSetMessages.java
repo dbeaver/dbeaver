@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
@@ -122,6 +122,10 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
 
+    public static String controls_resultset_viewer_sorting_order_none;
+    public static String controls_resultset_viewer_sorting_order_ascending;
+    public static String controls_resultset_viewer_sorting_order_descending;
+
     public static String controls_resultset_ref_menu_no_references;
     public static String controls_resultset_ref_menu_references;
     public static String controls_resultset_ref_menu_no_associations;
@@ -147,7 +151,7 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
-    public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
     public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
@@ -198,7 +202,6 @@ public class ResultSetMessages extends NLS {
 
 
     public static String dialog_value_view_job_selector_name;
-    public static String dialog_value_view_label_dictionary;
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;
@@ -341,14 +344,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_use_sql_tip;
     public static String pref_page_database_resultsets_label_order_mode;
     public static String pref_page_database_resultsets_label_order_mode_tip;
-    public static String pref_page_database_resultsets_label_order_mode_smart;
-    public static String pref_page_database_resultsets_label_order_mode_always_client;
-    public static String pref_page_database_resultsets_label_order_mode_always_server;
     public static String pref_page_database_resultsets_label_order_policy;
     public static String pref_page_database_resultsets_label_order_policy_tip;
-    public static String pref_page_database_resultsets_label_order_policy_default;
-    public static String pref_page_database_resultsets_label_order_policy_primary_key_asc;
-    public static String pref_page_database_resultsets_label_order_policy_primary_key_desc;
     public static String pref_page_database_resultsets_label_fetch_size;
     public static String pref_page_database_resultsets_label_read_metadata;
     public static String pref_page_database_resultsets_label_read_references;
@@ -430,11 +427,18 @@ public class ResultSetMessages extends NLS {
     public static String error_part_button_go_to_error;
 
     public static String grouping_panel_sorting_action_unsorted;
-    public static String grouping_panel_sorting_action_decending;
+    public static String grouping_panel_sorting_action_descending;
     public static String grouping_panel_sorting_action_ascending;
     public static String grouping_panel_error_title;
     public static String grouping_panel_error_change_sort_message;
     public static String grouping_panel_error_change_duplicate_presentation_message;
+    public static String grouping_panel_error_change_grouping_settings_message;
+    public static String grouping_panel_error_change_grouping_query_message;
+    public static String grouping_panel_error_extension_point_action_message;
+    public static String grouping_panel_function_panel_title;
+    public static String grouping_panel_function_panel_custom_label;
+    public static String grouping_panel_column_panel_title;
+    public static String grouping_panel_column_panel_custom_label;
 
     public static String refs_label;
     public static String refs_no_refs_text;

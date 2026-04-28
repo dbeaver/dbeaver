@@ -1,0 +1,198 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.forms;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.forms.UIControlBuilder.*;
+import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.*;
+import org.jkiss.dbeaver.ui.forms.UIControlBuilderImpl.ButtonBuilderImpl.Kind;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+final class UIRowBuilderImpl implements UIRowBuilder {
+    final List<UIControlBuilderImpl<?, ?>> controls = new ArrayList<>();
+    final int indent;
+
+    UIObservable<Boolean> visible;
+    UIObservable<Boolean> enabled;
+
+    UIRowBuilderImpl(int indent) {
+        this.indent = indent;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder visible(@NotNull UIObservable<Boolean> binding) {
+        visible = binding;
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder enabled(@NotNull UIObservable<Boolean> binding) {
+        enabled = binding;
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.panel();
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.expandable(text, expanded);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder titledPanel(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.titled(text);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder scrolledPanel(boolean horizontal, boolean vertical, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.scrolled(horizontal, vertical);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder label(@NotNull Consumer<? super LabelBuilder> handler) {
+        var builder = new LabelBuilderImpl();
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder link(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<SelectionEvent> onSelect,
+        @NotNull Consumer<? super LinkBuilder> handler
+    ) {
+        var builder = new LinkBuilderImpl(text, onSelect, SWT.NONE);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder button(
+        @NotNull String text,
+        @NotNull Consumer<SelectionEvent> onSelect,
+        @NotNull Consumer<? super ButtonBuilder> handler
+    ) {
+        var builder = new ButtonBuilderImpl(text, onSelect, Kind.BUTTON);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+        var builder = new ButtonBuilderImpl(text, null, Kind.RADIO);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+        var builder = new ButtonBuilderImpl(text, null, Kind.CHECK);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public <T> UIRowBuilder textField(
+        @NotNull UIObservable<T> binding,
+        @NotNull Consumer<? super TextBuilder<T>> handler
+    ) {
+        var builder = new TextBuilderImpl<T>(SWT.BORDER, binding);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public <T> UIRowBuilder passwordField(
+        @NotNull UIObservable<T> binding,
+        @NotNull Consumer<? super TextBuilder<T>> handler
+    ) {
+        var builder = new TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public <T> UIRowBuilder comboBox(
+        @NotNull UIObservableList<? extends T> items,
+        @NotNull UIObservable<T> binding,
+        @NotNull Function<? super T, String> converter,
+        @NotNull Consumer<? super ComboBuilder<T>> handler
+    ) {
+        var builder = new ComboBuilderImpl<>(
+            items,
+            binding,
+            converter,
+            SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY
+        );
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public UIRowBuilder control(@NotNull Function<Composite, Control> factory, @NotNull Consumer<? super ControlBuilder> handler) {
+        var builder = new ControlBuilderImpl(factory);
+        handler.accept(builder);
+        controls.add(builder);
+        return this;
+    }
+}

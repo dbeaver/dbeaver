@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,11 +66,10 @@ public class CubridUserManager
     protected CubridPrivilage createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @NotNull final Object container,
+        @Nullable Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
-
         String newName = this.getNewName((CubridDataSource) container, "NEW_USER");
         return new CubridPrivilage((CubridDataSource) container, newName, null);
     }
@@ -100,8 +99,7 @@ public class CubridUserManager
         @NotNull ObjectDeleteCommand command,
         @NotNull Map<String, Object> options
     ) {
-        String builder = "DROP USER "
-            + DBUtils.getQuotedIdentifier(command.getObject());
+        String builder = "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject());
         actions.add(new DeletePersistAction(command.getObject(), builder));
     }
 
@@ -115,7 +113,11 @@ public class CubridUserManager
         }
         if (group != null && !CommonUtils.isEmpty((List<String>) properties.get("GROUPS"))) {
             builder.append(" GROUPS ");
-            builder.append(String.join(", ", (List<String>) properties.get("GROUPS")));
+            List<String> groups = (List<String>) properties.get("GROUPS");
+            List<String> quotedGroups = groups.stream()
+                .map(quoteGroup -> DBUtils.getQuotedIdentifier(user.getDataSource(), quoteGroup))
+                .toList();
+            builder.append(String.join(", ", quotedGroups));
         }
 
         if (description != null && CommonUtils.isNotEmpty(description.toString())) {
@@ -136,7 +138,6 @@ public class CubridUserManager
 
     private static class DeletePersistAction extends SQLDatabasePersistActionAtomic {
         CubridPrivilage database;
-
         public DeletePersistAction(CubridPrivilage privilage, String script) {
             super("drop user", script);
             this.database = privilage;
@@ -179,7 +180,7 @@ public class CubridUserManager
     }
 
     @Override
-    public boolean canDeleteObject(CubridPrivilage object) {
+    public boolean canDeleteObject(@NotNull CubridPrivilage object) {
         return !object.getDataSource().isShard();
     }
 }

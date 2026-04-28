@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,13 @@ public enum AIMessageType {
     USER(false),
     // Response from AI
     ASSISTANT(false),
+    FUNCTION(false),
+    CONFIRMATION(true),
+    WARNING(true),
     // Error messages
-    ERROR(true);
+    ERROR(true),
+    // Local-only message showing user actions like file attachments
+    ATTACHMENT(true);
 
     private final boolean isLocal;
 

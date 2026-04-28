@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.FillLayoutFactory;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -42,8 +43,9 @@ import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -54,12 +56,11 @@ import org.jkiss.utils.CommonUtils;
 /**
  * RSV value view panel
  */
-public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
+public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable {
 
     private static final Log log = Log.getLog(ValueViewerPanel.class);
 
     public static final String PANEL_ID = "value-view";
-    public static final String SETTINGS_SECTION = "panel-" + PANEL_ID;
 
     private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
@@ -73,10 +74,6 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
     private volatile boolean valueSaving;
     private IValueManager valueManager;
 
-    public static IDialogSettings getPanelSettings() {
-        return ResultSetUtils.getViewerSettings(SETTINGS_SECTION);
-    }
-
     public ValueViewerPanel() {
     }
 
@@ -85,19 +82,28 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         this.presentation = presentation;
 
         viewPlaceholder = new Composite(parent, SWT.NONE);
-        viewPlaceholder.setLayout(new FillLayout());
+        viewPlaceholder.setLayout(FillLayoutFactory.fillDefaults().margins(2, 2).create());
+        //new CompositeBorderPainter(this.viewPlaceholder);
+
         viewPlaceholder.addPaintListener(e -> {
             if (previewController == null && viewPlaceholder.getChildren().length == 0) {
                 e.gc.setForeground(UIStyles.getDefaultTextForeground());
                 String hidePanelCmd = ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_TOGGLE_PANELS,
+                    IResultSetCommands.CMD_TOGGLE_PANELS,
                     ValueViewerPanel.this.presentation.getController().getSite(),
-                    true);
+                    true
+                );
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, ResultSetMessages.value_viewer_select_view_message, 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 20);
+                UIUtils.drawMessageOverControl(
+                    viewPlaceholder,
+                    e,
+                    NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd),
+                    30
+                );
             }
         });
+        CSSUtils.setExcludeFromStyling(viewPlaceholder);
 
         viewPlaceholder.addDisposeListener(e -> disposeValueEditor());
         viewPlaceholder.addTraverseListener(this::handleTraverseEvent);
@@ -113,8 +119,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         });
 */
 
-        if (this.presentation instanceof ISelectionProvider) {
-            final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
+        if (this.presentation instanceof ISelectionProvider selectionProvider) {
             final ISelectionChangedListener selectionListener = event -> {
                 if (ValueViewerPanel.this.presentation.getController().getVisiblePanel() == ValueViewerPanel.this) {
                     refreshValue(false);
@@ -161,23 +166,27 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         fillToolBar(manager);
     }
 
-    private void refreshValue(boolean force) {
-        DBDAttributeBinding attr = presentation.getCurrentAttribute();
-        ResultSetRow row = presentation.getController().getCurrentRow();
+    @Override
+    public boolean needsSeparator() {
+        return true;
+    }
 
-        if (attr == null || row == null) {
+    private void refreshValue(boolean force) {
+        ResultSetCellLocation cellLocation = presentation.getCurrentCellLocation();
+
+        if (cellLocation == null) {
             clearValue();
             return;
         }
-        int[] rowIndexes = presentation.getCurrentRowIndexes();
+
         boolean updateActions;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
-                new ResultSetCellLocation(attr, row, rowIndexes),
+                cellLocation,
                 IValueController.EditType.PANEL,
-                viewPlaceholder)
-            {
+                viewPlaceholder
+            ) {
                 @Override
                 public void updateValue(@Nullable Object value, boolean updatePresentation) {
                     valueSaving = true;
@@ -193,10 +202,11 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             force = true;
         } else {
             updateActions = force = (
-                force ||
-                previewController.getBinding() != attr ||
-                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
-            previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
+                force || previewController.getBinding() != cellLocation.getAttribute()
+                    || !CommonUtils.equalObjects(cellLocation.getRowIndexes(), previewController.getRowIndexes())
+                    || !CommonUtils.equalObjects(cellLocation.getValuePath(), previewController.getValuePath())
+            );
+            previewController.setCellLocation(cellLocation);
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
@@ -208,8 +218,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
     }
 
-    private void viewValue(boolean forceRefresh)
-    {
+    private void viewValue(boolean forceRefresh) {
         if (valueSaving) {
             return;
         }
@@ -231,7 +240,8 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             try {
                 valueEditor = valueManager.createEditor(previewController);
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
+                DBWorkbench.getPlatformUI()
+                    .showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
                 return;
             }
             if (valueEditor != null) {
@@ -250,13 +260,14 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                 if (control != null) {
                     singleLineEditor =
                         control instanceof Combo ||
-                        control instanceof CCombo ||
-                        control instanceof Button ||
-                        (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
+                            control instanceof CCombo ||
+                            control instanceof Button ||
+                            (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
                     UIUtils.addFocusTracker(controller.getSite(), VALUE_VIEW_CONTROL_ID, control);
                     controller.lockActionsByFocus(control);
 
                     control.addTraverseListener(this::handleTraverseEvent);
+                    CSSUtils.setExcludeFromStyling(control);
                 }
 
                 if (showDictionaryView || singleLineEditor) {
@@ -272,7 +283,6 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
 
             if (valueEditor == null || valueEditor.getControl() == null) {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
-                placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
                 placeholder.addPaintListener(e -> {
                     Rectangle bounds = placeholder.getBounds();
                     String message = "No editor for [" + previewController.getValueType().getTypeName() + "]";
@@ -329,8 +339,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
     }
 
-    public void saveValue()
-    {
+    public void saveValue() {
         if (valueEditor == null) {
             return;
         }
@@ -340,14 +349,14 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
+            DBWorkbench.getPlatformUI()
+                .showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
         } finally {
             valueSaving = false;
         }
     }
 
-    public void clearValue()
-    {
+    public void clearValue() {
         cleanupPanel();
         valueManager = null;
         valueEditor = null;
@@ -356,8 +365,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         viewPlaceholder.layout();
     }
 
-    private void cleanupPanel()
-    {
+    private void cleanupPanel() {
         disposeValueEditor();
         // Cleanup previous viewer
         UIUtils.disposeChildControls(viewPlaceholder);
@@ -370,9 +378,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
     }
 
-    private void fillToolBar(final IContributionManager contributionManager)
-    {
-        contributionManager.add(new Separator());
+    private void fillToolBar(final IContributionManager contributionManager) {
         if (valueManager != null) {
             try {
                 valueManager.contributeActions(contributionManager, previewController, valueEditor);
@@ -387,32 +393,14 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             }
         }
         if (valueEditor != null && !valueEditor.isReadOnly()) {
-            contributionManager.add(
-                ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
-
-            contributionManager.add(
-                new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
-                    {
-                        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
-                    }
-
-                    @Override
-                    public boolean isChecked() {
-                        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
-                    }
-
-                    @Override
-                    public void run() {
-                        boolean newValue = !isChecked();
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
-                        presentation.getController().updatePanelActions();
-                    }
-                });
+            ActionContributionItem item = new ActionContributionItem(new SaveValueAction());
+            //item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+            contributionManager.add(item);
         }
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (valueEditor != null) {
             if (adapter.isAssignableFrom(valueEditor.getClass())) {
                 return adapter.cast(valueEditor);
@@ -425,5 +413,52 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         return null;
     }
 
+
+    class SaveValueAction extends Action {
+        SaveValueAction() {
+            super(ResultSetMessages.controls_resultset_edit_save, Action.AS_DROP_DOWN_MENU);
+            setActionDefinitionId(ValueViewCommandHandler.CMD_SAVE_VALUE);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE));
+            setMenuCreator(new MenuCreator(widget -> {
+                MenuManager menuManager = new MenuManager();
+                menuManager.add(ActionUtils.makeCommandContribution(
+                    presentation.getController().getSite(),
+                    ValueViewCommandHandler.CMD_SAVE_VALUE
+                ));
+
+                menuManager.add(
+                    new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
+                        {
+                            //setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
+                        }
+
+                        @Override
+                        public boolean isChecked() {
+                            return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                                ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                        }
+
+                        @Override
+                        public void run() {
+                            boolean newValue = !isChecked();
+                            DBWorkbench.getPlatform().getPreferenceStore().setValue(
+                                ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                            presentation.getController().updatePanelActions();
+                        }
+                    });
+
+                return menuManager;
+            }));
+        }
+
+        @Override
+        public void run() {
+            ActionUtils.runCommand(
+                ValueViewCommandHandler.CMD_SAVE_VALUE,
+                presentation.getController().getSite()
+            );
+        }
+
+    }
 
 }

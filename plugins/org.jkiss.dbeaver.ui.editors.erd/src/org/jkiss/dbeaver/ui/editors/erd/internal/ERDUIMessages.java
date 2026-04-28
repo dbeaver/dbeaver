@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.erd.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class ERDUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages"; //$NON-NLS-1$
@@ -71,6 +71,7 @@ public class ERDUIMessages extends NLS {
     public static String erd_preference_page_title_shows_partitions;
     public static String erd_preference_page_title_routing_combo;
     public static String erd_preference_page_title_notation_combo;
+    public static String erd_preference_page_title_load_lazy_descriptions;
     public static String erd_preference_page_title_color_pref;
     public static String erd_preference_page_title_change_border_colors;
     public static String erd_preference_page_title_change_header_colors;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class UINavigatorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UINavigatorMessages"; //$NON-NLS-1$
@@ -50,6 +50,7 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_filter_save_label;
     public static String dialog_filter_name_label;
     public static String dialog_filter_hint_text;
+    public static String dialog_filter_objects_scope_hint_text;
 
     public static String actions_navigator__objects;
     public static String actions_navigator_hide_objects;
@@ -83,6 +84,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_search_filter_container_description;
     public static String actions_navigator_search_filter_object_name;
     public static String actions_navigator_search_filter_object_description;
+    public static String actions_navigator_search_filter_file_name;
+    public static String actions_navigator_search_filter_file_description;
     public static String actions_navigator_show_only_selected_objects;
     public static String actions_navigator_show_only_object;
     public static String actions_navigator_folder_name;
@@ -123,9 +126,12 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_tooltips;
     public static String pref_page_database_general_label_show_tooltips_tip;
     public static String pref_page_database_general_label_show_contents_in_tooltips;
+    public static String pref_page_ui_general_show_table_grid;
     public static String pref_page_database_general_label_show_contents_in_tooltips_tip;
     public static String pref_page_database_general_label_order_elements_alphabetically;
     public static String pref_page_database_general_label_order_elements_alphabetically_tip;
+    public static String pref_page_database_general_label_sort_case_insensitive;
+    public static String pref_page_database_general_label_sort_case_insensitive_tip;
     public static String pref_page_database_general_label_folders_first;
     public static String pref_page_database_general_label_folders_first_tip;
     public static String pref_page_database_general_label_show_host_name;
@@ -136,6 +142,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
+    public static String dialog_connection_set_default_connection_settings;
+    public static String dialog_connection_set_default_connection_settings_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;

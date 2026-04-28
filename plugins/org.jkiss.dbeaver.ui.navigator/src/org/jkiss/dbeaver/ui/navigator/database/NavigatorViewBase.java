@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
@@ -305,6 +306,18 @@ public abstract class NavigatorViewBase extends ViewPart
         tree.getViewer().getControl().setFocus();
     }
 
+    public boolean focusFilterControl(boolean selectAll) {
+        final Text filterControl = tree.getFilterControl();
+        if (filterControl == null || filterControl.isDisposed()) {
+            return false;
+        }
+        filterControl.setFocus();
+        if (selectAll) {
+            filterControl.selectAll();
+        }
+        return true;
+    }
+
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IPropertySheetPage.class) {
@@ -336,10 +349,6 @@ public abstract class NavigatorViewBase extends ViewPart
         return null;
     }
 
-    public void configureView() {
-
-    }
-
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
         String property = event.getProperty();
@@ -349,6 +358,7 @@ public abstract class NavigatorViewBase extends ViewPart
         switch (property) {
             case ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS:
             case ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY:
+            case ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE:
             case ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:
             case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         projectListener = new DBPProjectListener() {
             @Override
             public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
-                refresh();
+                UIExecutionQueue.queueExec(() -> UIUtils.syncExec(() -> refresh()));
             }
         };
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
@@ -357,7 +357,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     @Override
-    public void handleTaskEvent(DBTTaskEvent event) {
+    public void handleTaskEvent(@NotNull DBTTaskEvent event) {
         UIUtils.asyncExec(() -> {
             DBTTask task = event.getTask();
             switch (event.getAction()) {
@@ -379,7 +379,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     @Override
-    public void handleTaskFolderEvent(DBTTaskFolderEvent event) {
+    public void handleTaskFolderEvent(@NotNull DBTTaskFolderEvent event) {
         UIUtils.asyncExec(() -> {
             DBTTaskFolder taskFolder = event.getTaskFolder();
             switch (event.getAction()) {
@@ -400,7 +400,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         tasksTree.loadViewConfig();
     }
 
-    public void refresh() {
+    void refresh() {
         updateViewTitle();
 
         if (tasksTree != null) {
@@ -413,8 +413,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private void updateViewTitle() {
         IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(VIEW_ID);
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") +
-            " - " + Objects.requireNonNull(activeProject == null ? null : activeProject.getName(), ""));
+        String projectName = Objects.requireNonNull(activeProject == null ? "" : activeProject.getName(), "");
+        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") + " - " + projectName);
+        setTitleToolTip(NLS.bind(TaskUIViewMessages.db_tasks_view_adapter_label_database_tasks_tooltip, projectName));
     }
 
     private void loadTasks() {
@@ -438,8 +439,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             return;
         }
         new AbstractJob("Refresh task runs") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Refresh task runs", IProgressMonitor.UNKNOWN);
                 try {
                     selectedTask.refreshRunStatistics();

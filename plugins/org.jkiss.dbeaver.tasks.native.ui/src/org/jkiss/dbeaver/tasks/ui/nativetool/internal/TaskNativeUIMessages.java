@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tasks.ui.nativetool.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class TaskNativeUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages"; //$NON-NLS-1$

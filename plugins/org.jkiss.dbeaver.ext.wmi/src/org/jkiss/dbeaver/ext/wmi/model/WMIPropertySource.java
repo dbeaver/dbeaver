@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -50,12 +51,14 @@ public abstract class WMIPropertySource implements DBPPropertySource
         }
     }
 
+    @NotNull
     @Override
     public Object getEditableValue()
     {
         return this;//getQualifiedObject();
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties()
     {
@@ -79,8 +82,9 @@ public abstract class WMIPropertySource implements DBPPropertySource
         }
     }
 
+    @Nullable
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id)
     {
         try {
             return getQualifiedObject().getQualifier(id.toString());
@@ -91,7 +95,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public boolean isPropertySet(String id)
+    public boolean isPropertySet(@NotNull String id)
     {
         try {
             return getQualifiedObject().getQualifier(id.toString()) != null;
@@ -102,24 +106,24 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id)
     {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value)
     {
 
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
 
     }
 

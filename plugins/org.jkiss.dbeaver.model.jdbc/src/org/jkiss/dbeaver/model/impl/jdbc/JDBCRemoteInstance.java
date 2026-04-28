@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +91,7 @@ public class JDBCRemoteInstance implements DBSInstance {
         return null;
     }
 
-    protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBCException {
+    protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sharedInstance != null) {
             return;
         }
@@ -103,7 +101,9 @@ public class JDBCRemoteInstance implements DBSInstance {
                 mainContextName = getMainContextName();
             }
             this.executionContext = dataSource.createExecutionContext(this, mainContextName);
-            this.executionContext.connect(monitor, null, null, null, true);
+            DBExecUtils.tryOpenContext(this.executionContext, (context) ->
+                context.connect(monitor, null, null, null, true));
+
         }
     }
 
@@ -120,27 +120,16 @@ public class JDBCRemoteInstance implements DBSInstance {
         SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
             container.getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
         );
-        boolean isMetaConnectionSeparate;
-        switch (behavior) {
-            case ALWAYS:
-                isMetaConnectionSeparate = true;
-                break;
-            case NEVER:
-                isMetaConnectionSeparate = false;
-                break;
-            case DEFAULT:
-            default: 
-                isMetaConnectionSeparate = !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
-                break;
-        }
+        boolean isMetaConnectionSeparate = switch (behavior) {
+            case ALWAYS -> true;
+            case NEVER -> false;
+            default -> !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
+        };
 
         if (isMetaConnectionSeparate) {
-            // FIXME: do not sync expensive operations
-            //synchronized (allContexts) {
-                this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
-                this.metaContext.connect(monitor, true, null, null, true);
-                return this.metaContext;
-            //}
+            this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
+            return DBExecUtils.tryOpenContext(this.metaContext, (context) ->
+                context.connect(monitor, true, null, null, true));
         } else {
             return this.executionContext;
         }
@@ -158,19 +147,19 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException {
+    public DBCExecutionContext openIsolatedContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String purpose,
+        @Nullable DBCExecutionContext initFrom
+    ) throws DBException {
         if (sharedInstance != null) {
             return sharedInstance.openIsolatedContext(monitor, purpose, initFrom);
         }
-        JDBCExecutionContext context = dataSource.createExecutionContext(this, purpose);
-        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
-            try {
-                context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true);
-            } catch (DBCException e) {
-                throw new InvocationTargetException(e);
-            }
-        });
-        return context;
+        JDBCExecutionContext isolatedContext = dataSource.createExecutionContext(this, purpose);
+        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 ->
+            DBExecUtils.tryOpenContext(isolatedContext, (context) ->
+                context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true)));
+        return isolatedContext;
     }
 
     @NotNull

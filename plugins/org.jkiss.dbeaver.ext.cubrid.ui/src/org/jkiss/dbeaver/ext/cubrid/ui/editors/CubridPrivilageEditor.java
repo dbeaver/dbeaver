@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
 import org.jkiss.dbeaver.ext.cubrid.ui.config.CubridPrivilageHandler;
@@ -46,7 +47,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPrivilage>
@@ -104,7 +104,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
             t.setLayoutData(gd1);
 
             if (CommonUtils.isNotEmpty(loginedUser)) {
-                boolean allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser.toUpperCase());
+                boolean allowEditPassword = user.getDataSource().isDBAGroup();
                 t.setEditable(allowEditPassword);
             }
             ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.PASSWORD);
@@ -143,8 +143,9 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
 
         new AbstractJob("Load groups")
         {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 List<CubridPrivilage> cubridUsers;
                 try {
                     cubridUsers = user.getDataSource().getCubridPrivilages(monitor);
@@ -187,7 +188,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
 
             contributionManager.add(new Separator());
@@ -235,7 +236,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
                         {
 
                             @Override
-                            public void redoCommand(DBECommandProperty<CubridPrivilage> command) {
+                            public void redoCommand(@NotNull DBECommandProperty<CubridPrivilage> command) {
                                 if (!table.isDisposed()) {
                                     editor.loadGroups();
                                     values = new ArrayList<String>(oldValue);
@@ -243,7 +244,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
                             }
 
                             @Override
-                            public void undoCommand(DBECommandProperty<CubridPrivilage> cp) {
+                            public void undoCommand(@NotNull DBECommandProperty<CubridPrivilage> cp) {
 
                                 if (!table.isDisposed()) {
                                     editor.loadGroups();

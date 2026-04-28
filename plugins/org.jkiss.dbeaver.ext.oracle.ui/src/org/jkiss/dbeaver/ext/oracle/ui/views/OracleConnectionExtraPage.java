@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ext.oracle.ui.views;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
@@ -58,6 +62,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button searchInSynonyms;
     private Button searchInSequences;
     private Button showDateAsDate;
+    private Combo optimizerVersionText;
 
     public OracleConnectionExtraPage()
     {
@@ -83,8 +88,14 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         cfgGroup.setLayoutData(gd);
 
         {
-            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_session_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-            ((GridData)sessionGroup.getLayoutData()).horizontalSpan = 2;
+            Composite sessionGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                OracleUIMessages.dialog_controlgroup_session_settings,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                SWT.DEFAULT,
+                2
+            );
 
             languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_language, SWT.DROP_DOWN);
             languageCombo.setToolTipText(OracleUIMessages.edit_label_combo_language_tool_tip_text);
@@ -109,10 +120,28 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group performanceGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite performanceGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                OracleUIMessages.dialog_controlgroup_performance,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
+
+            Composite optimizerPlaceholder = UIUtils.createPlaceholder(performanceGroup, 3);
+            optimizerPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            optimizerVersionText = UIUtils.createLabelCombo(optimizerPlaceholder, "Optimizer version", SWT.DROP_DOWN);
+            optimizerVersionText.setToolTipText("Oracle optimizer versions.\n"
+                + "May affect metadata read performance or even break some metadata reads.");
+            for (String version : OracleConstants.OPTIMIZER_VERSIONS) {
+                optimizerVersionText.add(version);
+            }
+            optimizerVersionText.setText(OracleConstants.OPTIMIZER_VERSION_DEFAULT);
+            optimizerVersionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createLink(optimizerPlaceholder, "<a>Info</a>", SelectionListener.widgetSelectedAdapter(
+                e -> UIUtils.openWebBrowser(OracleConstants.OPTIMIZER_DOCS_LINK)));
 
             useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
@@ -138,12 +167,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(
+            Composite contentGroup = UIUtils.createTitledComposite(
                 cfgGroup,
                 OracleUIMessages.dialog_controlgroup_content,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             showOnlyOneSchema = UIUtils.createCheckbox(
@@ -162,12 +190,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group dataGroup = UIUtils.createControlGroup(
+            Composite dataGroup = UIUtils.createTitledComposite(
                 cfgGroup,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
+                GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
             showDateAsDate = UIUtils.createCheckbox(
@@ -238,6 +265,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER),
             globalPreferences.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER)
         ));
+        optimizerVersionText.setText(CommonUtils.notEmpty(
+            providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION)));
         useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(
             providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY),
             globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
@@ -306,6 +335,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_USE_META_OPTIMIZER,
                 String.valueOf(useOptimizerHint.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_USE_META_OPTIMIZER_VERSION,
+                optimizerVersionText.getText());
             providerProperties.put(
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));

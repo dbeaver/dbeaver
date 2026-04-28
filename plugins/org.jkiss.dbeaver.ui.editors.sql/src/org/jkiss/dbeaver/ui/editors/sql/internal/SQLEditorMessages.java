@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class SQLEditorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages"; //$NON-NLS-1$
@@ -24,6 +24,8 @@ public class SQLEditorMessages extends NLS {
     public static String dialog_view_sql_button_copy;
     public static String dialog_view_sql_button_refresh;
     public static String dialog_view_sql_button_execute;
+    public static String dialog_view_sql_save_to_file_failure_title;
+    public static String dialog_view_sql_save_to_file_failure_message;
 
     public static String dialog_sql_param_title;
     public static String dialog_sql_param_column_name;
@@ -264,6 +266,7 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_code_editor_label_read_metadata_enabled_tip;
 
     public static String pref_page_sql_editor_checkbox_fetch_resultsets;
+    public static String pref_page_sql_editor_checkbox_fetch_resultsets_tip;
     public static String pref_page_sql_editor_text_statement_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter_tip;
@@ -280,7 +283,9 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_put_new_scripts_tip;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
     public static String pref_page_sql_editor_checkbox_create_script_folders_tip;
-    public static String pref_page_sql_editor_checkbox_reset_cursor;
+    public static String pref_page_sql_editor_checkbox_attach_scripts_to_connection;
+    public static String pref_page_sql_editor_checkbox_attach_scripts_to_connection_tip;
+
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
@@ -381,7 +386,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_data_receiver_result_name_tooltip_connection;
     public static String sql_editor_data_receiver_result_name_tooltip_time;
     public static String sql_editor_data_receiver_result_name_tooltip_query;
-    public static String sql_editor_title_tooltip_connecton;
+    public static String sql_editor_title_tooltip_connection;
     public static String sql_editor_title_tooltip_type;
     public static String sql_editor_title_tooltip_url;
     public static String sql_editor_title_tooltip_database;
@@ -420,7 +425,6 @@ public class SQLEditorMessages extends NLS {
     public static String update_conflict_message;
     public static String update_conflict_message_revert;
     public static String update_conflict_message_overwrite;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);

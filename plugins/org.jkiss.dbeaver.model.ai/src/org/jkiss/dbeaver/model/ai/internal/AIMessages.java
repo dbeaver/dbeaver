@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class AIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.ai.internal.AIMessages"; //$NON-NLS-1$
@@ -30,11 +30,22 @@ public class AIMessages extends NLS {
     public static String ai_execute_query_confirm_sql_message;
     public static String ai_execute_query_confirm_dml_message;
     public static String ai_execute_query_confirm_ddl_message;
+    public static String ai_execute_query_confirm_other_message;
     public static String ai_execute_query_auto_commit_disabled_title;
     public static String ai_execute_query_auto_commit_disabled_message;
     public static String ai_execute_command_confirm_sql_message;
     public static String ai_execute_command_confirm_dml_message;
     public static String ai_execute_command_confirm_ddl_message;
+    public static String ai_execute_command_confirm_other_message;
+    public static String ai_empty_engine_response;
+    public static String ai_command_not_connected;
+    public static String ai_command_empty_prompt;
+    public static String ai_command_confirm_usage_title;
+    public static String ai_command_confirm_usage_message;
+    public static String ai_command_services_restricted;
+    public static String ai_command_generate_sql;
+    public static String ai_command_process_generated_sql;
+    public static String ai_command_empty_response;
 
     static {
         // initialize resource bundle

@@ -75,6 +75,7 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
     }
 
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         options = new HashMap<>(options);

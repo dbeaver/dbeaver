@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -117,6 +118,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         return null;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return valueController == null ? null : valueController.getExecutionContext();
@@ -190,6 +192,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
 
     private class CursorDataContainer implements DBSDataContainer {
 
+        @NotNull
         @Override
         public String[] getSupportedFeatures()
         {
@@ -208,7 +211,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             long maxRows,
             long flags,
             int fetchSize
-        ) throws DBCException {
+        ) throws DBException {
             DBCStatistics statistics = new DBCStatistics();
             DBCResultSet resultSet = value == null ? null : value.openResultSet(session);
             if (resultSet == null) {
@@ -222,8 +225,11 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
                     log.debug(e);
                 }
             }
-            try {
+            try (resultSet) {
                 long startTime = System.currentTimeMillis();
+                // FIXME: we cannot use fetch workflow because statement is not closed
+                // until user close data viewer
+                //DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
                 dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
                 long rowCount;
                 try {
@@ -250,19 +256,11 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
                     } catch (DBCException e) {
                         log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
+                    dataReceiver.close();
                 }
                 statistics.setFetchTime(System.currentTimeMillis() - startTime);
                 statistics.setRowsFetched(rowCount);
                 return statistics;
-            }
-            finally {
-                dataReceiver.close();
-
-                try {
-                    resultSet.close();
-                } catch (Exception e) {
-                    log.debug(e);
-                }
             }
         }
 
@@ -285,7 +283,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             return null;
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource()
         {

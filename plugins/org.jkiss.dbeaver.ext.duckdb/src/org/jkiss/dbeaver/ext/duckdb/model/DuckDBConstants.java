@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,20 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+
 public class DuckDBConstants {
     public static final String TYPE_GEOMETRY = "GEOMETRY";
     public static final String TYPE_BLOB = "BLOB";
 
+    public static final String PROP_DD_PLAIN_STRING = "duckdb.dd.plain.string";
+    public static final String PROP_DD_TAG_STRING = "duckdb.dd.tag.string";
+
     private DuckDBConstants() {
+    }
+
+    public static boolean isGeometryType(@NotNull String typeName) {
+        return TYPE_GEOMETRY.equalsIgnoreCase(SQLUtils.stripColumnTypeModifiers(typeName));
     }
 }

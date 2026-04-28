@@ -46,6 +46,8 @@ final class MessageBoxModern extends BaseDialog {
     private DBPImage primaryImage;
     @Nullable
     private Consumer<? super Composite> customArea;
+    @Nullable
+    private Consumer<? super Composite> customButton;
 
     @Nullable
     private List<Button> buttons;
@@ -72,6 +74,10 @@ final class MessageBoxModern extends BaseDialog {
     
     void setCustomArea(Consumer<? super Composite> customArea) {
         this.customArea = customArea;
+    }
+
+    void setCustomButton(@NotNull Consumer<? super Composite> customButton) {
+        this.customButton = customButton;
     }
 
     // ----- jface.Dialog methods
@@ -167,6 +173,9 @@ final class MessageBoxModern extends BaseDialog {
         gd.horizontalAlignment = SWT.END;
         composite.setLayoutData(gd);
         composite.setFont(parent.getFont());
+        if (customButton != null) {
+            customButton.accept(composite);
+        }
         createButtonsForButtonBar(composite);
         return composite;
     }

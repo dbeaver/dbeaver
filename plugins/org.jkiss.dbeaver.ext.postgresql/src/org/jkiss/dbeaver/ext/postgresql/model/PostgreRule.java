@@ -134,6 +134,7 @@ public class PostgreRule implements PostgreObject, PostgreScriptObject, DBPQuali
         return table.getDatabase();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, order = 80)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException

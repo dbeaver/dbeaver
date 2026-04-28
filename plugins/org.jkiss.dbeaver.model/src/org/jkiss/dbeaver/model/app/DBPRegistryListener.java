@@ -24,8 +24,16 @@ import org.jkiss.code.NotNull;
  */
 public interface DBPRegistryListener {
 
-    void handleRegistryLoad(@NotNull DBPDataSourceRegistry registry);
+    default void handleRegistryLoad(@NotNull DBPDataSourceRegistry registry) {
+        // do nothing by default
+    }
 
-    void handleRegistryUnload(@NotNull DBPDataSourceRegistry registry);
+    default void handleRegistryUnload(@NotNull DBPDataSourceRegistry registry) {
+        // do nothing by default
+    }
+
+    default void handleRegistryReload() {
+        // do nothing by default
+    }
 
 }

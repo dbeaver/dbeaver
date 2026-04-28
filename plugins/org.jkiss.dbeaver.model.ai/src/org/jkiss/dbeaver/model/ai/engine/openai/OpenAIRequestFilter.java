@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
 
@@ -33,7 +34,7 @@ public class OpenAIRequestFilter implements OpenAIClient.HttpRequestFilter {
         HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri())
             .uri(request.uri())
             .method(request.method(), request.bodyPublisher().orElse(HttpRequest.BodyPublishers.noBody()))
-            .headers("Authorization", "Bearer " + token);
+            .headers(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token);
         for (var headerEntry : request.headers().map().entrySet()) {
             for (String value : headerEntry.getValue()) {
                 builder.header(headerEntry.getKey(), value);
@@ -41,7 +42,7 @@ public class OpenAIRequestFilter implements OpenAIClient.HttpRequestFilter {
         }
 
         if (setContentType) {
-            builder.header("Content-Type", "application/json");
+            builder.header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
         }
         return builder.build();
     }

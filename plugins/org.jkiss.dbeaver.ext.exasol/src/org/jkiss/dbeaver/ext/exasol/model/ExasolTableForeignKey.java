@@ -125,7 +125,7 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, Exas
     // Columns
     // -----------------
     @Override
-    public List<ExasolTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableForeignKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
@@ -173,7 +173,8 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, Exas
         this.enabled = enabled;
     }
 
-	@Override
+	@NotNull
+    @Override
 	public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
 			throws DBException
 	{

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,12 @@ public class VersionUpdateDialog extends Dialog {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
-        Composite propGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_version_update_title, 2, GridData.FILL_BOTH, 0);
+        Composite propGroup = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.dialog_version_update_title,
+            2,
+            GridData.FILL_BOTH
+        );
 
         createTopArea(composite);
 
@@ -259,8 +264,9 @@ public class VersionUpdateDialog extends Dialog {
             final PlatformInstaller installer = getPlatformInstaller();
             if (installer != null) {
                 final AbstractJob job = new AbstractJob("Downloading installation file") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
                         final Path folder;
                         final Path file;
@@ -343,14 +349,11 @@ public class VersionUpdateDialog extends Dialog {
 
     @Nullable
     private PlatformInstaller getPlatformInstaller() {
-        switch (Platform.getOS()) {
-            case Platform.OS_WIN32:
-                return new WindowsInstaller();
-            case Platform.OS_MACOSX:
-                return new MacintoshInstaller();
-            default:
-                return null;
-        }
+        return switch (Platform.getOS()) {
+            case Platform.OS_WIN32 -> new WindowsInstaller();
+            case Platform.OS_MACOSX -> new MacintoshInstaller();
+            default -> null;
+        };
     }
 
     @NotNull
@@ -370,7 +373,7 @@ public class VersionUpdateDialog extends Dialog {
             os = OS_LINUX;
         }
         String dist = System.getProperty(PROP_DISTRIBUTION_TYPE);
-        if (RuntimeUtils.isLinux() && CommonUtils.isEmpty(dist)) {
+        if (CommonUtils.isEmpty(dist) && RuntimeUtils.isLinux()) {
             // If distribution type was not set explicitly, then let's attempt a dumb guess.
             try {
                 RuntimeUtils.executeProcess("/usr/bin/apt-get", "--version");
@@ -406,9 +409,9 @@ public class VersionUpdateDialog extends Dialog {
         @Override
         public String getExecutableName(@NotNull ApplicationDescriptor application) {
             if ("zip".equals(System.getProperty(PROP_DISTRIBUTION_TYPE))) {
-                return application.getId() + "-latest-win32.win32.x86_64.zip";
+                return application.getId() + "-latest-win32.win32." + Platform.getOSArch() + ".zip";
             } else {
-                return application.getId() + "-latest-x86_64-setup.exe";
+                return application.getId() + "-latest-" + Platform.getOSArch() + "-setup.exe";
             }
         }
     }

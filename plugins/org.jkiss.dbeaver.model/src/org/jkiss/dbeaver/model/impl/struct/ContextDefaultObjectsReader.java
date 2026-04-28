@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
             currentDatabaseInstanceName = null;
 
             Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
-            if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
+            if (!DBSObjectContainer.class.isAssignableFrom(childType)) {
                 enabled = false;
             } else {
                 enabled = true;
@@ -108,29 +108,33 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                 DBSObjectContainer defObject = null;
                 if (DBSCatalog.class.isAssignableFrom(childType)) {
                     defObject = contextDefaults.getDefaultCatalog();
-                }
-                if (defObject != null) {
-                    Class<? extends DBSObject> catalogChildrenType = defObject.getPrimaryChildType(monitor);
-                    if (catalogChildrenType != null && DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
-                        currentDatabaseInstanceName = defObject.getName();
-                        if (contextDefaults.supportsSchemaChange()) {
-                            objectContainer = defObject;
-                        } else if (!contextDefaults.supportsCatalogChange()) {
-                            // Nothing can be changed
-                            objectContainer = null;
-                        }
-                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                        if (defaultSchema != null) {
-                            defObject = defaultSchema;
+                    if (defObject != null) {
+                        Class<? extends DBSObject> catalogChildrenType = defObject.getPrimaryChildType(monitor);
+                        if (DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
+                            currentDatabaseInstanceName = defObject.getName();
+                            if (contextDefaults.supportsSchemaChange()) {
+                                objectContainer = defObject;
+                            } else if (!contextDefaults.supportsCatalogChange()) {
+                                // Nothing can be changed
+                                objectContainer = null;
+                            }
+                            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                            if (defaultSchema != null) {
+                                defObject = defaultSchema;
+                            }
                         }
                     }
+                } else if (DBSSchema.class.isAssignableFrom(childType)) {
+                    defObject = contextDefaults.getDefaultSchema();
                 }
                 objectList = objectContainer == null ?
-                    (defObject == null ? Collections.emptyList() : Collections.singletonList(defObject)) :
+                    Collections.singletonList(defObject) :
                     objectContainer.getChildren(monitor);
                 defaultObject = defObject;
 
-                DBNModel navigatorModel = DBNUtils.getNavigatorModel(objectContainer);
+                DBSObjectContainer navigatorSource = objectContainer != null ? objectContainer :
+                    DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                DBNModel navigatorModel = DBNUtils.getNavigatorModel(navigatorSource);
                 if (readNodes && navigatorModel != null) {
                     // Cache navigator nodes
                     if (objectList != null) {

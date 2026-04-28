@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.kingbase.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.kingbase.KingbaseConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
@@ -30,6 +32,7 @@ public class PostgreServerKingbase extends PostgreServerExtensionBase {
         this.supportJobs = false;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "Kingbase";
@@ -58,8 +61,16 @@ public class PostgreServerKingbase extends PostgreServerExtensionBase {
         return true;
     }
 
+    @NotNull
     @Override
-    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
         return new KingbaseSchemaCache();
+    }
+
+    @Override
+    public boolean isPGObject(@NotNull Object object) {
+        String className = object.getClass().getName();
+        return className.equals(KingbaseConstants.KB_OBJECT_CLASS)
+            || className.equals(KingbaseConstants.KB_INTERVAL_CLASS);
     }
 }

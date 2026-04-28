@@ -101,7 +101,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
-        <pragma id="export" class="org.jkiss.dbeaver.sql.pragma.SQLPragmaExport"/>
+        <pragma id="export" class="org.jkiss.dbeaver.tools.transfer.ui.SQLPragmaExport"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

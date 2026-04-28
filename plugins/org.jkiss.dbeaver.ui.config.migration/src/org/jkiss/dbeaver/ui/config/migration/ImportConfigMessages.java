@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.config.migration;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class ImportConfigMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages"; //$NON-NLS-1$
@@ -45,6 +45,14 @@ public class ImportConfigMessages extends NLS {
     public static String config_import_wizard_custom_input_file;
     public static String config_import_wizard_custom_input_file_configuration;
     public static String config_import_wizard_file_doesnt_exist_error;
+    public static String config_import_wizard_jetbrains_input_mode;
+    public static String config_import_wizard_jetbrains_input_mode_project;
+    public static String config_import_wizard_jetbrains_input_mode_paste;
+    public static String config_import_wizard_jetbrains_project_folder;
+    public static String config_import_wizard_jetbrains_paste_configuration;
+    public static String config_import_wizard_jetbrains_paste_description;
+    public static String config_import_wizard_jetbrains_paste_empty_error;
+    public static String config_import_wizard_jetbrains_paste_no_connections_error;
     public static String config_import_wizard_file_encoding;
     public static String config_import_wizard_dbvis_name;
     public static String config_import_wizard_dbvis_description;
@@ -55,6 +63,8 @@ public class ImportConfigMessages extends NLS {
     public static String config_import_wizard_squirrel_description;
     public static String config_import_wizard_import_driver;
     public static String config_import_wizard_extract_url_parameters;
+    public static String config_import_wizard_jetbrains_description;
+    public static String config_import_wizard_pgadmin_description;
 
     static {
         // initialize resource bundle

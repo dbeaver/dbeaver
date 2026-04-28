@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.plan.CubridQueryPlanner;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -123,8 +124,8 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 + "FROM db_attribute a LEFT JOIN (SELECT k.key_attr_name AS attr_name, "
                 + "i.class_name, i.is_foreign_key "
                 + (multiSchema ? ", i.owner_name " : "")
-                + "FROM db_index i JOIN db_index_key k "
-                + "ON i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
+                + "FROM db_index i JOIN db_index_key k ON i.class_name = k.class_name "
+                + "AND i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
                 + "a.class_name = i.class_name AND a.attr_name = i.attr_name "
                 + (multiSchema ? "AND a.owner_name = i.owner_name " : ""));
         if (forTable != null) {
@@ -160,13 +161,15 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws SQLException, DBException {
         CubridTable table = (CubridTable) forTable;
         String sql = "select *, t1.index_name as PK_NAME from db_index t1 join db_index_key t2 \n"
-                + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? \n"
-                + (table.getDataSource().getSupportMultiSchema() ? "and t1.owner_name = ?" : "");
+                + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? and t2.class_name = ? \n"
+                + (table.getDataSource().getSupportMultiSchema() ? "and t1.owner_name = ? and t2.owner_name = ?" : "");
         sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, table.getName());
+        dbStat.setString(2, table.getName());
         if (table.getDataSource().getSupportMultiSchema()) {
-            dbStat.setString(2, table.getSchema().getName());
+            dbStat.setString(3, table.getSchema().getName());
+            dbStat.setString(4, table.getSchema().getName());
         }
         return dbStat;
     }
@@ -221,7 +224,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return table;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
             @NotNull GenericStructContainer container,
@@ -334,7 +337,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws DBException {
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-        return new CubridTrigger(table, name, description, dbResult);
+        return new CubridTrigger(container, (CubridTable) table, name, description, dbResult);
     }
 
     @NotNull
@@ -362,10 +365,13 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
         String tableName = JDBCUtils.safeGetString(dbResult, "target_class_name");
-        String owner = JDBCUtils.safeGetString(dbResult, "target_owner_name");
+        String targerOwner = JDBCUtils.safeGetString(dbResult, "target_owner_name");
         DBRProgressMonitor monitor = dbResult.getSession().getProgressMonitor();
-        CubridTable cubridTable = (CubridTable) container.getDataSource().findTable(monitor, null, owner, tableName);
-        return new CubridTrigger(cubridTable, name, description, dbResult);
+        CubridTable table = null;
+        if (tableName != null) {
+            table = (CubridTable) container.getDataSource().findTable(monitor, null, targerOwner, tableName);
+        }
+        return new CubridTrigger(container, table, name, description, dbResult);
     }
 
     @Override
@@ -413,7 +419,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         @NotNull Map<String, Object> options) throws DBException {
         String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
-            String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
+            String sql = String.format("show create view %s", object.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sql = ((CubridDataSource) object.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -429,7 +435,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                     if (CommonUtils.isEmpty(viewName) || CommonUtils.isEmpty(ddlFragments)) {
                         return fallbackDDL;
                     }
-                    String ddl = "create or replace view " + viewName + " as " + String.join(" union all ", ddlFragments);
+                    String ddl = "create or replace view " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " as " + String.join(" union all ", ddlFragments);
                     return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                 }
             }

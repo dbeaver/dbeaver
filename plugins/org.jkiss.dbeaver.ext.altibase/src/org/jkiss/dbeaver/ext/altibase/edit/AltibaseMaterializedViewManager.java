@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.altibase.AltibaseConstants;
 import org.jkiss.dbeaver.ext.altibase.model.AltibaseMaterializedView;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
@@ -51,8 +52,13 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
     }
 
     @Override
-    protected GenericTableBase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
-                                                    Object container, Object copyFrom, @NotNull Map<String, Object> options) {
+    protected GenericTableBase createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_MATERIALIZED_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(
@@ -68,6 +74,7 @@ public class AltibaseMaterializedViewManager extends GenericViewManager {
         return viewImpl;
     }
     
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return SQLTableManager.BASE_MATERIALIZED_VIEW_NAME;

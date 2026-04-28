@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.altibase.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericPackage;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -68,8 +69,13 @@ public class AltibasePackageManager extends SQLObjectEditor<GenericPackage, Gene
     }
 
     @Override
-    protected GenericPackage createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
-                                                  Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected GenericPackage createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 

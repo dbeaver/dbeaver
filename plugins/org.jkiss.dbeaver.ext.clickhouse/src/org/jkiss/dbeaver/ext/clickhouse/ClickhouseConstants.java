@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,18 @@ public class ClickhouseConstants {
 
     public static final String PROP_USE_SERVER_TIME_ZONE = "use_server_time_zone"; //$NON-NLS-1$
     public static final String PROP_USE_TIME_ZONE = "use_time_zone"; //$NON-NLS-1$
-
+    public static final String PROP_IGNORE_UNKNOWN_CONFIG_KEY = "ignore_unknown_config_key"; //$NON-NLS-1$
     public static final String SSL_ROOT_CERTIFICATE = "sslrootcert"; //$NON-NLS-1$
 
     public static final String DATA_TYPE_IPV4 = "ipv4";
     public static final String DATA_TYPE_IPV6 = "ipv6";
     public static final String DATA_TYPE_STRING = "String";
+    public static final String DATA_TYPE_ARRAY = "Array";
+    public static final String DATA_TYPE_TUPLE = "Tuple";
+    public static final String DATA_TYPE_MAP = "Map";
     public static final String CLICKHOUSE_SETTING_SESSION_ID = "clickhouse_setting_session_id";
     public static final String CLICKHOUSE_SETTING_SESSION_TIMEOUT = "clickhouse_setting_session_timeout";
+    public static final String DRIVER_GET_LAST_QUERY_METHOD = "getLastQueryId";
+    public static final String SESSION_BUSY_ERROR_CODE_MESSAGE = "Code: 373";
+
 }

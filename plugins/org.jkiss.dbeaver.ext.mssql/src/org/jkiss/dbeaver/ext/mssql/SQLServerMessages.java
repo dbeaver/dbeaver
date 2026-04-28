@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class SQLServerMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerMessages"; //$NON-NLS-1$
@@ -35,6 +35,10 @@ public class SQLServerMessages extends NLS {
     public static String authentication_ad_integrated_description;
     public static String authentication_other_title;
     public static String authentication_other_description;
+
+    public static String password_expired_prompt;
+    public static String password_change_error_title;
+    public static String password_change_error_message;
 
     public static String index_type_Heap;
     public static String index_type_NonClustered;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -646,7 +646,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             DBNDatabaseNode selectedNode = null;
-            for (DBNNode node : schemaContainerNode.getChildren(new VoidProgressMonitor())) {
+            for (DBNNode node : ArrayUtils.safeArray(schemaContainerNode.getChildren(new VoidProgressMonitor()))) {
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getObject() instanceof DBSObjectContainer) {
                     schemaCombo.addItem(dbNode);
                     if (dbNode.getObject() == foreignKey.getParentObject().getParentObject()) {
@@ -656,7 +656,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
             List<DBNDatabaseNode> allContainers = schemaCombo.getItems();
             if (!allContainers.isEmpty()) {
-                String nodeType = allContainers.get(0).getMeta().getNodeTypeLabel(foreignKey.getDataSource(), null);
+                String nodeType = allContainers.getFirst().getMeta().getNodeTypeLabel(foreignKey.getDataSource(), null);
                 if (!CommonUtils.isEmpty(nodeType)) {
                     controlLabel.setText(nodeType);
                 }
@@ -691,7 +691,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         } else {
             try {
                 boolean found = false;
-                for (DBNNode child : schemaNode.getChildren(new VoidProgressMonitor())) {
+                for (DBNNode child : ArrayUtils.safeArray(schemaNode.getChildren(new VoidProgressMonitor()))) {
                     if (child instanceof DBNDatabaseFolder dbNode) {
                         for (DBXTreeNode childItem : dbNode.getMeta().getChildren(child)) {
                             if (childItem instanceof DBXTreeItem dbxItem) {
@@ -716,7 +716,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return newContainerNode;
     }
 
-    private void createContainerSelector(Composite tableGroup) throws DBException {
+    private void createContainerSelector(Composite tableGroup) {
         ObjectContainerSelectorPanel containerPanel = new ObjectContainerSelectorPanel(
             tableGroup,
             this.getOwnerProject(),
@@ -747,7 +747,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
 
             @Override
-            protected void setSelectedNode(DBNDatabaseNode node) {
+            protected void setSelectedNode(@NotNull DBNDatabaseNode node) {
                 ownerContainerNode = node;
                 if (ownerContainerNode == null) {
                     setContainerInfo(null);
@@ -898,7 +898,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             } else {
                 uniqueKeyCombo.select(0);
                 //uniqueKeyCombo.setEnabled(curConstraints.size() > 1);
-                curConstraint = curConstraints.get(0);
+                curConstraint = curConstraints.getFirst();
             }
             if (enableCustomKeys) {
                 enableCurConstraintEdit();
@@ -1301,10 +1301,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             this.columnName = fkColumnInfo.getCustomName();
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             Composite composite = super.createDialogArea(parent);
-            Group group = UIUtils.createControlGroup(composite, "New column options", 2, GridData.FILL_HORIZONTAL, 300);
+            Composite group = UIUtils.createTitledComposite(composite, "New column options", 2, GridData.FILL_HORIZONTAL, 300);
             Text columnNameText = UIUtils.createLabelText(group, "Column name", fkColumnInfo.getCustomName(), SWT.BORDER);
             columnNameText.addModifyListener(e -> columnName = columnNameText.getText());
             Button notNullCheck = UIUtils.createCheckbox(group, "Not Null", "Make new column required", false, 2);

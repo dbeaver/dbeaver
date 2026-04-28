@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
@@ -212,12 +211,6 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         return tableSize == null ? 0 : tableSize;
     }
 
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
-    }
-
 
     @Property(viewable = false, category = DBConstants.CAT_STATISTICS, formatter = ByteNumberFormat.class)
     public Long getTableSize(DBRProgressMonitor monitor) throws DBCException {
@@ -340,6 +333,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<>();
+        if (monitor.isForceCacheUsage()) {
+            return refs;
+        }
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleTableForeignKey> allForeignKeys =
@@ -422,6 +418,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
@@ -533,7 +530,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return ArrayUtils.contains(supportedOptions, option);
     }
 }

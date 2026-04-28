@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -36,8 +38,11 @@ import java.util.Map;
 public class DataSourcePreferenceStore extends SimplePreferenceStore implements DBPDataSourceContainerProvider
 {
     private final DataSourceDescriptor dataSourceDescriptor;
+    @NotNull
+    private final Map<String, String> userSettings = new LinkedHashMap<>();
 
-    DataSourcePreferenceStore(
+
+    protected DataSourcePreferenceStore(
         @NotNull DBPPreferenceStore parentStore,
         @NotNull DataSourceDescriptor dataSourceDescriptor
     ) {
@@ -51,13 +56,14 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
                 getDefaultProperties().put(
                     propName.substring(DBConstants.DEFAULT_DRIVER_PROP_PREFIX.length()),
-                    CommonUtils.toString(prop.getValue()));
+                    CommonUtils.toString(prop.getValue())
+                );
             }
         }
     }
 
-    DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor) {
-        this(DBWorkbench.getPlatform().getPreferenceStore(), dataSourceDescriptor);
+    protected DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor) {
+        this(dataSourceDescriptor.getRegistry().getPreferenceStore(), dataSourceDescriptor);
     }
 
     @Override
@@ -74,7 +80,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
     }
 
     @Override
-    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+    public void firePropertyChangeEvent(@NotNull String name, @Nullable Object oldValue, @Nullable Object newValue) {
         super.firePropertyChangeEvent(name, oldValue, newValue);
 
         // Forward event to global DS prefs store
@@ -82,5 +88,19 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         if (gps instanceof AbstractPreferenceStore) {
             ((AbstractPreferenceStore) gps).firePropertyChangeEvent(this, name, oldValue, newValue);
         }
+    }
+
+    public void putUserSettings(@NotNull Map<String, String> settings) {
+        userSettings.clear();
+        userSettings.putAll(settings);
+    }
+
+    @Override
+    @NotNull
+    public Map<String, String> getProperties() {
+        Map<String, String> properties1 = super.getProperties();
+        Map<String, String> properties = new HashMap<>(properties1);
+         properties.putAll(userSettings);
+        return properties;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,6 +49,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -66,7 +64,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
     private final IResultSetController parentController;
     private final Composite mainComposite;
     private final CSmartCombo<ReferenceKey> fkCombo;
-    private ResultSetViewer dataViewer;
+    private final ResultSetViewer dataViewer;
 
     private DBSDataContainer parentDataContainer;
 
@@ -88,19 +86,18 @@ class ReferencesResultsContainer implements IResultSetContainer {
     ReferencesResultsContainer(Composite parent, IResultSetController parentController) {
         this.parentController = parentController;
 
-        this.mainComposite = UIUtils.createComposite(parent, 1);
+        this.mainComposite = UIUtils.createPlaceholder(parent, 1);
 
         Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 3);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 5;
+        gd.verticalIndent = 3;
+        gd.horizontalIndent = 3;
         keySelectorPanel.setLayoutData(gd);
-        UIUtils.createControlLabel(keySelectorPanel, ResultSetMessages.refs_label);
+
         fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fkCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        fkCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 activeReferenceKey = fkCombo.getSelectedItem();
                 if (activeReferenceKey == null) {
                     return;
@@ -110,27 +107,26 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 // Save active keys in virtual entity props
                 {
                     DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
-                    List<Map<String, Object>> activeAssociations = new ArrayList<>();
-                    activeAssociations.add(activeReferenceKey.createMemo());
-                    Object curActiveAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
-                    if (!CommonUtils.equalObjects(curActiveAssociations, activeAssociations)) {
-                        vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
-                        vEntityOwner.persistConfiguration();
+                    if (vEntityOwner != null) {
+                        List<Map<String, Object>> activeAssociations = new ArrayList<>();
+                        activeAssociations.add(activeReferenceKey.createMemo());
+                        Object curActiveAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
+                        if (!CommonUtils.equalObjects(curActiveAssociations, activeAssociations)) {
+                            vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
+                            vEntityOwner.persistConfiguration();
+                        }
                     }
                 }
-
             }
-        });
+        ));
+        CSSUtils.setExcludeFromStyling(fkCombo);
 
-        final ToolBar toolbar = new ToolBar(keySelectorPanel, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
-        UIUtils.createToolItem(
-            toolbar,
+        UIUtils.createPushButton(
+            keySelectorPanel,
             ResultSetMessages.refs_open_target,
             ResultSetMessages.refs_open_target_tip,
             DBIcon.TREE_TABLE,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener.widgetSelectedAdapter(e -> {
                     if (activeReferenceKey == null || activeReferenceKey.targetEntity == null) {
                         return;
                     }
@@ -141,14 +137,13 @@ class ReferencesResultsContainer implements IResultSetContainer {
                         }
                     });
                 }
-            });
-
-        final Label separator = new Label(keySelectorPanel, SWT.SEPARATOR | SWT.HORIZONTAL);
-        separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false, 3, 1));
+            ));
 
         {
             Composite viewerContainer = new Composite(mainComposite, SWT.NONE);
-            viewerContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.verticalIndent = 3;
+            viewerContainer.setLayoutData(gd);
             viewerContainer.setLayout(new FillLayout());
             this.dataViewer = new ResultSetViewer(viewerContainer, parentController.getSite(), this);
         }
@@ -158,10 +153,6 @@ class ReferencesResultsContainer implements IResultSetContainer {
         return activeReferenceKey;
     }
 
-    public IResultSetPresentation getOwnerPresentation() {
-        return parentController.getActivePresentation();
-    }
-
     @Nullable
     @Override
     public DBPProject getProject() {
@@ -169,6 +160,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         return dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer().getProject();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return DBUtils.getDefaultContext(dataContainer, false);
@@ -262,10 +254,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
             DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, false);
             if (vEntityOwner != null) {
                 Object activeAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
-                if (activeAssociations instanceof Collection) {
-                    for (Object refKeyMemoMap : (Collection<?>)activeAssociations) {
-                        if (refKeyMemoMap instanceof Map) {
-                            refKeyMemos.add(new ReferenceKeyMemo((Map) refKeyMemoMap));
+                if (activeAssociations instanceof Collection<?> collection) {
+                    for (Object refKeyMemoMap : collection) {
+                        if (refKeyMemoMap instanceof Map map) {
+                            refKeyMemos.add(new ReferenceKeyMemo(map));
                         }
                     }
                 }
@@ -274,8 +266,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
         if (!allEntities.isEmpty()) {
             new AbstractJob("Load reference keys") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     monitor.beginTask("Load references", allEntities.size());
                     try {
                         List<ReferenceKey> refs = new ArrayList<>();
@@ -287,11 +280,10 @@ class ReferencesResultsContainer implements IResultSetContainer {
                             }
                             // Foreign keys
                             Collection<? extends DBSEntityAssociation> associations = DBVUtils.getAllAssociations(monitor, entity);
-                            for (DBSEntityAssociation association: associations) {
-                                if (!(association instanceof DBSEntityReferrer)) {
+                            for (DBSEntityAssociation association : associations) {
+                                if (!(association instanceof DBSEntityReferrer entityReferrer)) {
                                     continue;
                                 }
-                                DBSEntityReferrer entityReferrer = (DBSEntityReferrer) association;
                                 List<? extends DBSEntityAttributeRef> attributeRefs = entityReferrer.getAttributeReferences(monitor);
                                 if (attributeRefs == null) {
                                     continue;
@@ -347,7 +339,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                     }
                                 }
                                 if (activeReferenceKey == null) {
-                                    activeReferenceKey = referenceKeys.get(0);
+                                    activeReferenceKey = referenceKeys.getFirst();
                                 }
                             }
                         }
@@ -393,12 +385,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
             return;
         }
         new AbstractJob("Read references") {
-            {
-                //setUser(true);
-                //setSystem(false);
-            }
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     DBSEntity realEntity = DBVUtils.getRealEntity(monitor, activeReferenceKey.refEntity);
                     if (!(realEntity instanceof DBSDataContainer)) {
@@ -465,9 +454,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     }
                 }
             }
-            if (targetEntity instanceof DBVEntity) {
+            if (targetEntity instanceof DBVEntity entity) {
                 try {
-                    DBSEntity realEntity = ((DBVEntity) targetEntity).getRealEntity(monitor);
+                    DBSEntity realEntity = entity.getRealEntity(monitor);
                     if (realEntity != null) {
                         targetEntity = realEntity;
                     }

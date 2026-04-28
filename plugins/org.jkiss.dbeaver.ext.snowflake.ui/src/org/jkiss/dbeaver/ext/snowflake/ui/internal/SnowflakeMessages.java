@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class SnowflakeMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeResources"; //$NON-NLS-1$
@@ -37,6 +37,9 @@ public class SnowflakeMessages extends NLS {
 	public static String dialog_setting_sql_dd_label;
 	public static String dialog_setting_sql_dd_string;
 	public static String dialog_setting_sql_dd_code_block;
+
+	public static String authenticator_snowflake_label;
+	public static String authenticator_external_browser_label;
 
 	static {
 		// initialize resource bundle

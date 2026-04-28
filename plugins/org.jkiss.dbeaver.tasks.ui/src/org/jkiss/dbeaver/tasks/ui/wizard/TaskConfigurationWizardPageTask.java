@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
-import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
@@ -58,8 +57,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private final DBPProject selectedProject;
     private Text taskLabelText;
     private Text taskDescriptionText;
-    private Spinner maxExecutionTime;
-    private Button maxExecutionTimeBtn;
     private Tree taskCategoryTree;
     private Combo taskFoldersCombo;
 
@@ -125,8 +122,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite formPanel = UIUtils.createControlGroup(composite, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2, GridData.FILL_BOTH, 0);
+            Composite formPanel = UIUtils.createComposite(composite, task == null ? 1 : 2);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            //UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2);
 
             {
                 Composite infoPanel = UIUtils.createComposite(formPanel, 2);
@@ -134,7 +132,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
                 ModifyListener modifyListener = e -> updatePageCompletion();
 
-                taskLabelText = UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_name, task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
+                taskLabelText = UIUtils.createLabelText(
+                    infoPanel,
+                    TaskUIMessages.task_config_wizard_page_task_text_label_name,
+                    task == null ? "" : CommonUtils.notEmpty(task.getName()),
+                    SWT.BORDER
+                );
                 if (taskSaved) {
                     taskLabelText.setEditable(false);
                     //taskLabelText.setEnabled(false);
@@ -144,7 +147,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     modifyListener.modifyText(e);
                 });
 
-                UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_descr).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+                UIUtils.createControlLabel(
+                    infoPanel,
+                    TaskUIMessages.task_config_wizard_page_task_control_label_descr
+                ).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
                 taskDescriptionText = new Text(infoPanel, SWT.BORDER | SWT.MULTI);
                 taskDescriptionText.setText(task == null ? "" : CommonUtils.notEmpty(task.getDescription()));
@@ -216,37 +222,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     UIUtils.createLabel(typePanel, taskType.getIcon());
                     UIUtils.createLabel(typePanel, taskType.getName());
                 }
-            }
-            Composite advancedPanel = UIUtils.createControlGroup(
-                composite,
-                TaskUIMessages.task_config_wizard_page_task_advanced_label, 2,
-                GridData.FILL_HORIZONTAL, 0);
-            maxExecutionTimeBtn = UIUtils.createCheckbox(
-                advancedPanel,
-                TaskUIMessages.task_config_wizard_page_task_max_exec_time,
-                TaskUIMessages.task_config_wizard_page_task_max_exec_time_descr,
-                true,
-                1);
-            maxExecutionTime = UIUtils.createSpinner(advancedPanel, null, TaskConstants.DEFAULT_MAX_EXECUTION_TIME, 1, Integer.MAX_VALUE);
-            maxExecutionTimeBtn.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(
-                    SelectionEvent e) {
-                    maxExecutionTime.setEnabled(maxExecutionTimeBtn.getSelection());
-                    if (!maxExecutionTimeBtn.getSelection()) {
-                        maxExecutionTime.setSelection(0);
-                    }
-                }
-            });
-            maxExecutionTime.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-            if (task != null && task.getMaxExecutionTime() != 0) {
-                maxExecutionTimeBtn.setSelection(true);
-                maxExecutionTime.setEnabled(true);
-                maxExecutionTime.setSelection(task.getMaxExecutionTime());
-            } else {
-                maxExecutionTimeBtn.setSelection(false);
-                maxExecutionTime.setEnabled(false);
-                maxExecutionTime.setSelection(TaskConstants.DEFAULT_MAX_EXECUTION_TIME);
             }
 
             if (task == null) {
@@ -464,11 +439,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     currentTaskFolder.removeTaskFromFolder(task);
                 }
                 TaskRegistry.getInstance().notifyTaskFoldersListeners(new DBTTaskFolderEvent(folder, DBTTaskFolderEvent.Action.TASK_FOLDER_REMOVE));
-            }
-            if (maxExecutionTimeBtn.getSelection()) {
-                task.setMaxExecutionTime(maxExecutionTime.getSelection());
-            } else {
-                task.setMaxExecutionTime(0);
             }
         }
     }

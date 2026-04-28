@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
 import java.util.Collections;
@@ -102,6 +103,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                 fireSelectionChanged(new PlainTextSelectionImpl());
             }
         });
+        CSSUtils.setExcludeFromStyling(text);
 
         final ScrollBar verticalBar = text.getVerticalBar();
         verticalBar.addSelectionListener(new SelectionAdapter() {
@@ -251,7 +253,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     @NotNull
     @Override
     public String getFontId() {
-        return UIFonts.DBEAVER_FONTS_MONOSPACE;
+        return UIFonts.DBeaver.MONOSPACE_FONT;
     }
 
     @Override
@@ -400,7 +402,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IFindReplaceTarget.class) {
             return adapter.cast(findReplaceTarget);
         }

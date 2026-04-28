@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,11 +42,23 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         Method getter,
         PropertyGroup groupInfo,
         IPropertyFilter filter,
-        String locale)
-    {
+        String locale,
+        boolean collectLocalizedNames
+    ) {
         super(source, parent, getter, groupInfo.id(), groupInfo.order());
         this.groupInfo = groupInfo;
-        extractAnnotations(source, this, getGetter().getReturnType(), children, filter, locale);
+        extractAnnotations(source, this, getGetter().getReturnType(), children, filter, locale, collectLocalizedNames);
+    }
+
+    public ObjectPropertyGroupDescriptor(
+        DBPPropertySource source,
+        ObjectPropertyGroupDescriptor parent,
+        Method getter,
+        PropertyGroup groupInfo,
+        IPropertyFilter filter,
+        String locale
+    ) {
+        this(source, parent, getter, groupInfo, filter, locale, true);
     }
 
     @Override
@@ -64,7 +78,7 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         return children;
     }
 
-    public Object getGroupObject(Object object, DBRProgressMonitor progressMonitor)
+    public Object getGroupObject(@NotNull Object object, @Nullable DBRProgressMonitor progressMonitor)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         if (getParent() != null) {

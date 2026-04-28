@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -49,7 +50,7 @@ import java.util.Iterator;
 import java.util.StringJoiner;
 
 /**
- * PostgreArrayValueHandler
+ * PostgreStructValueHandler
  */
 public class PostgreStructValueHandler extends JDBCStructValueHandler {
     private static final Log log = Log.getLog(PostgreStructValueHandler.class);
@@ -57,17 +58,16 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
 
     @Override
     protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value)
+        @Nullable Object value)
         throws DBCException, SQLException
     {
         if (value == null) {
             statement.setNull(paramIndex, Types.STRUCT);
-        } else if (value instanceof DBDComposite) {
-            DBDComposite struct = (DBDComposite) value;
+        } else if (value instanceof DBDComposite struct) {
             if (struct.isNull()) {
                 statement.setNull(paramIndex, Types.STRUCT);
             } else if (struct instanceof JDBCComposite) {
@@ -111,7 +111,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
                 } else {
                     value = object.toString();
                 }
-                return convertStringToStruct(session, structType, (String) value);
+                return convertStringToStruct(session, structType, CommonUtils.toString(value));
             }
         } catch (DBException e) {
             throw new DBCException("Error converting string to composite type", e, session.getExecutionContext());
@@ -121,8 +121,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     @NotNull
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite) {
-            final JDBCComposite composite = (JDBCComposite) value;
+        if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite composite) {
             final StringJoiner output = new StringJoiner(",", "(", ")");
 
             for (DBSAttributeBase attribute : composite.getAttributes()) {

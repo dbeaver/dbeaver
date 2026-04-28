@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,27 +137,39 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         return newObject;
     }
 
-    protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
+    protected void createObjectReferences(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull ObjectCreateCommand createCommand
+    ) throws DBException {
         // Do nothing. Derived implementations may add extra handling
     }
 
     @Override
-    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull OBJECT_TYPE object, @NotNull Map<String, Object> options) throws DBException {
+    public void deleteObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         commandContext.addCommand(
                 new ObjectDeleteCommand(object, ModelMessages.model_jdbc_delete_object),
                 new DeleteObjectReflector<>(this),
                 true);
     }
 
-    public ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object, Map<String, Object> options) {
+    @NotNull
+    public ObjectCreateCommand makeCreateCommand(
+        @NotNull OBJECT_TYPE object,
+        @NotNull Map<String, Object> options
+    ) {
         return new ObjectCreateCommand(object, ModelMessages.model_jdbc_create_new_object, options);
     }
 
     protected abstract OBJECT_TYPE createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        Object container,
-        Object copyFrom,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options) throws DBException;
 
     //////////////////////////////////////////////////
@@ -225,7 +237,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     //////////////////////////////////////////////////
     // Name generator
 
-    protected void setNewObjectName(DBRProgressMonitor monitor, CONTAINER_TYPE container, OBJECT_TYPE table) {
+    protected void setNewObjectName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CONTAINER_TYPE container,
+        @NotNull OBJECT_TYPE table
+    ) {
         if (table instanceof DBPNamedObject2) {
             try {
                 ((DBPNamedObject2)table).setName(getNewChildName(monitor, container));
@@ -235,15 +251,18 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
     }
 
-    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container) throws DBException {
-        return getNewChildName(monitor, container, getBaseObjectName());
-    }
-
+    @NotNull
     protected String getBaseObjectName() {
         return "NewObject";
     }
 
-    protected String getNewChildName(DBRProgressMonitor monitor, CONTAINER_TYPE container, String baseName) {
+    @NotNull
+    protected String getNewChildName(@NotNull DBRProgressMonitor monitor, @NotNull CONTAINER_TYPE container) throws DBException {
+        return getNewChildName(monitor, container, getBaseObjectName());
+    }
+
+    @NotNull
+    protected String getNewChildName(@NotNull DBRProgressMonitor monitor, @NotNull CONTAINER_TYPE container, @NotNull String baseName) {
         try {
             for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
                 String tableName = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
@@ -263,15 +282,28 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     //////////////////////////////////////////////////
     // Properties
 
-    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options) {
+    protected StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CONTAINER_TYPE owner,
+        @NotNull DBECommandAbstract<OBJECT_TYPE> command,
+        @NotNull Map<String, Object> options
+    ) {
         return null;
     }
 
-    protected void validateObjectProperty(OBJECT_TYPE object, DBPPropertyDescriptor property, Object value) throws DBException {
+    protected void validateObjectProperty(
+        @NotNull OBJECT_TYPE object,
+        @NotNull DBPPropertyDescriptor property,
+        @Nullable Object value
+    ) throws DBException {
 
     }
 
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
 
     }
 
@@ -327,10 +359,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Override
         public boolean equals(Object obj) {
-            return obj != null &&
-                    obj.getClass() == PropertyHandler.class &&
-                    //editor == ((PropertyHandler)obj).editor &&
-                    getId().equals(((PropertyHandler) obj).getId());
+            return obj instanceof DBPPropertyDescriptor ph && getId().equals(ph.getId());
         }
 
         @Override
@@ -397,11 +426,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         private Map<String, Object> options;
 
-        protected ObjectCreateCommand(OBJECT_TYPE object, String title, Map<String, Object> options) {
+        protected ObjectCreateCommand(@NotNull OBJECT_TYPE object, @NotNull String title, @NotNull Map<String, Object> options) {
             super(object, title);
             this.options = options;
         }
 
+        @NotNull
         @Override
         public Map<String, Object> getOptions() {
             return options;
@@ -433,7 +463,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
+        public DBEPersistAction[] getPersistActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull Map<String, Object> options
+        ) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
@@ -569,7 +603,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
 
         @Override
-        public void redoCommand(ObjectRenameCommand command) {
+        public void redoCommand(@NotNull ObjectRenameCommand command) {
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.newName);
 
@@ -588,7 +622,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void undoCommand(ObjectRenameCommand command) {
+        public void undoCommand(@NotNull ObjectRenameCommand command) {
             if (command.getObject() instanceof DBPNamedObject2) {
                 ((DBPNamedObject2) command.getObject()).setName(command.oldName);
 
@@ -662,7 +696,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public class ReorderObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectReorderCommand> {
 
         @Override
-        public void redoCommand(ObjectReorderCommand command) {
+        public void redoCommand(@NotNull ObjectReorderCommand command) {
             OBJECT_TYPE object = command.getObject();
 
             // Update positions in sibling objects
@@ -692,7 +726,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public void undoCommand(ObjectReorderCommand command) {
+        public void undoCommand(@NotNull ObjectReorderCommand command) {
             ((DBPOrderedObject) command.getObject()).setOrdinalPosition(command.oldPosition);
             final DBSObject parentObject = command.getObject().getParentObject();
             if (parentObject != null) {
@@ -706,12 +740,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     public static class RefreshObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommandAbstract<OBJECT_TYPE>> {
 
         @Override
-        public void redoCommand(DBECommandAbstract<OBJECT_TYPE> command) {
+        public void redoCommand(@NotNull DBECommandAbstract<OBJECT_TYPE> command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 
         @Override
-        public void undoCommand(DBECommandAbstract<OBJECT_TYPE> command) {
+        public void undoCommand(@NotNull DBECommandAbstract<OBJECT_TYPE> command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 

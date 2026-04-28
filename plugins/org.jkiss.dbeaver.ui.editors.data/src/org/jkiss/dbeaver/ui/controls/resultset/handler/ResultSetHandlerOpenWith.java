@@ -44,9 +44,11 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -168,8 +170,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 setSystem(false);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     Path tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "data-files");
                     Path tempFile = tempDir.resolve(new SimpleDateFormat(
@@ -177,10 +180,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     tempFile.toFile().deleteOnExit();
 
                     IDataTransferProcessor processorInstance = processor.getInstance();
-                    if (!(processorInstance instanceof IStreamDataExporter)) {
+                    if (!(processorInstance instanceof IStreamDataExporter exporter)) {
                         return Status.CANCEL_STATUS;
                     }
-                    IStreamDataExporter exporter = (IStreamDataExporter) processorInstance;
 
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();
@@ -192,7 +194,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     Map<String, Object> properties = new HashMap<>();
                     // Default values from wizard
                     IDialogSettings dtSettings = DataTransferWizard.getWizardDialogSettings();
-                    IDialogSettings procListSection = dtSettings.getSection("processors");
+                    IDialogSettings procListSection = dtSettings.getSection(DTConstants.PROP_PROCESSORS_LIST);
                     IDialogSettings procSettings = null;
                     if (procListSection != null) {
                         procSettings = procListSection.getSection("stream_consumer:" + processor.getId());
@@ -220,8 +222,14 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producerSettings.setQueryRowCount(false);
                     // disable OpenNewconnection by default (#6432)
                     producerSettings.setOpenNewConnections(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+
+                    boolean selectedRowsOnly = !CommonUtils.isEmpty(options.getSelectedRows());
+                    boolean selectedColumnsOnly = !CommonUtils.isEmpty(options.getSelectedColumns());
+                    if (selectedRowsOnly || selectedColumnsOnly) {
+                        producerSettings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly));
+                    } else {
+                        producerSettings.setFetchedRowsPolicy(null);
+                    }
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 
@@ -319,7 +327,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             // Def processor is null
             if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
+                    IResultSetCommands.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {
                     {
                         setChecked(CommonUtils.isEmpty(getDefaultOpenWithProcessor()));
@@ -401,7 +409,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         final ICommandService service = PlatformUI.getWorkbench().getService(ICommandService.class);
 
         if (service != null) {
-            service.refreshElements(ResultSetHandlerMain.CMD_EXPORT, null);
+            service.refreshElements(IResultSetCommands.CMD_EXPORT, null);
             controller.updateToolbar();
         }
     }

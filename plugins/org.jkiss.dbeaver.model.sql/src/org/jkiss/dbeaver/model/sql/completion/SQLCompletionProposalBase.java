@@ -270,6 +270,11 @@ public class SQLCompletionProposalBase extends CompletionProposalBase {
         return proposalType;
     }
 
+    @Override
+    public int getProposalTypeSorterScore() {
+        return getProposalType().sortOrder;
+    }
+
     public DBPImage getObjectImage() {
         return image;
     }

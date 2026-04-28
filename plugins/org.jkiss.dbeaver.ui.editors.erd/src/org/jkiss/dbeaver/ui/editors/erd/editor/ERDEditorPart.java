@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -118,8 +119,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -284,6 +285,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         editModeComposite = new EditModeComposite(contentContainer);
         contentContainer = editModeComposite.getPlaceholder();
+        CSSUtils.setExcludeFromStyling(contentContainer);
 
         super.createPartControl(contentContainer);
 
@@ -345,8 +347,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * Adaptable implementation for Editor
      */
     @Override
-    public Object getAdapter(Class adapter)
-    {
+    public Object getAdapter(Class adapter) {
         // we need to handle common .gef elements we created
         if (adapter == GraphicalViewer.class || adapter == EditPartViewer.class) {
             return getGraphicalViewer();
@@ -365,8 +366,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         } else if (IWorkbenchAdapter.class.equals(adapter)) {
             return new WorkbenchAdapter() {
                 @Override
-                public String getLabel(Object o)
-                {
+                public String getLabel(Object o) {
                     return "ERD Editor";
                 }
             };
@@ -408,6 +408,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public abstract boolean isReadOnly();
+
+    public boolean isERD() {
+        return true;
+    }
 
     public void setEditMode(boolean editMode) {
         if (editModeComposite != null) {
@@ -759,7 +763,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public RefreshResult refreshPart(Object source, boolean force)
     {
-        refreshDiagram(force, true);
+        refreshDiagram(force, force);
         return RefreshResult.REFRESHED;
     }
 
@@ -1301,17 +1305,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getActiveDescriptor();
                 setDiagramNotation(defaultNotation);
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, false);
+                refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
                 ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
                 setDiagramRouter(defaultRouter);
                 doSave(new NullProgressMonitor());
                 refreshDiagram(true, false);
+            } else if (ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS.equals(event.getProperty())) {
+                refreshDiagram(false, true);
             }
         }
     }
 
-    private void refreshEntityAndAttributes() {
+    protected void refreshEntityAndAttributes() {
         getDiagram().getEntities().forEach(entity -> {
             entity.reloadAttributes(getDiagram());
         });
@@ -1352,12 +1358,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        public void fillCustomActions(IContributionManager toolBarManager) {
+        public void fillCustomActions(@NotNull IContributionManager toolBarManager) {
             fillDefaultEditorContributions(toolBarManager);
         }
 
         @Override
-        protected void populateCustomActions(ContributionManager contributionManager) {
+        protected void populateCustomActions(@NotNull ContributionManager contributionManager) {
             ToolBarManager extToolBar = new ToolBarManager();
             // Add dynamic toolbar contributions
             final IMenuService menuService = getSite().getService(IMenuService.class);
@@ -1377,6 +1383,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
 
+        @Nullable
         @Override
         protected ISearchExecutor getSearchRunner()
         {
@@ -1391,7 +1398,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
 
             @Override
-            public void completeLoading(EntityDiagram entityDiagram)
+            public void completeLoading(@Nullable EntityDiagram entityDiagram)
             {
                 super.completeLoading(entityDiagram);
                 if (entityDiagram != null) {
@@ -1655,7 +1662,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        public void completeLoading(EntityDiagram entityDiagram) {
+        public void completeLoading(@Nullable EntityDiagram entityDiagram) {
             super.completeLoading(entityDiagram);
             super.visualizeLoading();
             if (entityDiagram == null || !entityDiagram.getEntities().isEmpty()) {

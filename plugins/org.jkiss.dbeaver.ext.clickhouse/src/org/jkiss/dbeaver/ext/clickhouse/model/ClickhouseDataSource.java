@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -50,6 +52,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 public class ClickhouseDataSource extends GenericDataSource {
@@ -88,7 +91,8 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext   context, @NotNull
+    String purpose, @NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         if (!CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE)) &&
             !CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_TIME_ZONE))
@@ -100,6 +104,7 @@ public class ClickhouseDataSource extends GenericDataSource {
             }
             properties.put(ClickhouseConstants.PROP_USE_TIME_ZONE, customTimeZone);
         }
+        properties.put(ClickhouseConstants.PROP_IGNORE_UNKNOWN_CONFIG_KEY, "true");
 
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler("clickhouse-ssl");
@@ -169,6 +174,38 @@ public class ClickhouseDataSource extends GenericDataSource {
         properties.put(ClickhouseConstants.CLICKHOUSE_SETTING_SESSION_ID, "sess_" + UUID.randomUUID());
     }
 
+    // Canceling
+    @Override
+    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+        try {
+
+            super.cancelStatementExecute(monitor, statement);
+        } catch (Throwable ex) {
+            if (ex.getMessage().contains(ClickhouseConstants.SESSION_BUSY_ERROR_CODE_MESSAGE)) {
+                fallbackForServerID(monitor, statement);
+            }
+        }
+    }
+
+    // same session_id will lead to impossibility of cancelling the query, because the session is already busy...
+    // So we need to temporarily create a new one
+    protected void fallbackForServerID(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBCException {
+        try (Connection connection = openConnection(monitor, statement.getConnection().getExecutionContext(), "Close Query")) {
+            try (Statement dbStat = connection.createStatement()) {
+                Statement original = ((JDBCStatementImpl) statement).getOriginal();
+                String getLastQueryId = (String) BeanUtils.invokeObjectDeclaredMethod(
+                    original,
+                    ClickhouseConstants.DRIVER_GET_LAST_QUERY_METHOD,
+                    new Class[0],
+                    new Object[0]
+                );
+                dbStat.execute("KILL QUERY WHERE query_id='%s'".formatted(getLastQueryId));
+            }
+        } catch (Throwable e) {
+            throw new DBCException("Error during cancelling query", e);
+        }
+    }
+
     @Override
     protected synchronized void readDatabaseServerVersion(Connection session, DatabaseMetaData metaData) {
         if (databaseVersion == null) {
@@ -199,9 +236,18 @@ public class ClickhouseDataSource extends GenericDataSource {
                 return type;
             }
         }
-        return super.resolveDataType(monitor, typeFullName);
+
+        DBSDataType type = super.resolveDataType(monitor, typeFullName);
+        if (type != null) {
+            return type;
+        }
+
+        // As a last resort, try to find the type without modifiers
+        String baseTypeName = ClickhouseTypeParser.getTypeNameWithoutModifiers(typeFullName);
+        return super.resolveDataType(monitor, baseTypeName);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
@@ -261,9 +307,9 @@ public class ClickhouseDataSource extends GenericDataSource {
     @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        if (typeName.startsWith("Array")) {
+        if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)) {
             return DBPDataKind.ARRAY;
-        } else if (ClickhouseTypeParser.isComplexType(typeName)) {
+        } else if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE)) {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);
@@ -305,5 +351,25 @@ public class ClickhouseDataSource extends GenericDataSource {
             }
             return null;
         }
+    }
+
+    @Override
+    protected boolean isConnectionReadOnlyBroken() {
+        return isDriverVersionAtLeast(0, 8);
+    }
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
+        Connection connection = super.openConnection(monitor, context, purpose);
+
+        if (getContainer().isConnectionReadOnly() && isConnectionReadOnlyBroken()) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("SET readonly=1");
+            } catch (SQLException e) {
+                log.error("Failed to set readonly mode", e);
+            }
+        }
+
+        return connection;
     }
 }

@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.model.auth.SMSessionType;
 import java.util.Map;
 
 public interface SMAuthController {
+    @NotNull
     SMAuthInfo authenticateAnonymousUser(
         @NotNull String appSessionId,
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType
     ) throws DBException;
 
+    @NotNull
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
         @Nullable String previousSmSessionId,
@@ -42,7 +44,12 @@ public interface SMAuthController {
         boolean forceSessionsLogout
     ) throws DBException;
 
-    @Deprecated(forRemoval = true)
+    /**
+     * Check auth status.
+     * We have a newer push mechanism (over websockets) which obsoletes this functions.
+     * However, we still use it widely and we cannot stop using because push is not always enabled.
+     */
+    @NotNull
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
     @Nullable

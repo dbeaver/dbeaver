@@ -16,5 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
-public abstract class BaseCompletionEngine implements AIEngine {
+import org.jkiss.code.NotNull;
+
+public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine<PROPS> {
+
+    protected final PROPS properties;
+
+    public BaseCompletionEngine(@NotNull PROPS properties) {
+        this.properties = properties;
+    }
+
+    @NotNull
+    @Override
+    public PROPS getProperties() {
+        return properties;
+    }
 }

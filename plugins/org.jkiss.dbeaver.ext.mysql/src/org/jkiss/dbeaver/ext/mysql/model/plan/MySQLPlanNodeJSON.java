@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model.plan;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -103,12 +104,14 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         );
     }
 
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -130,6 +133,9 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         Object readCost = nodeProps.get("read_cost");
         if (readCost == null) {
             readCost = nodeProps.get("query_cost");
+        }
+        if (readCost == null) {
+            readCost = nodeProps.get("cost");
         }
         if (readCost == null) {
             if (nested != null) {
@@ -179,11 +185,13 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
 
+    @Nullable
     @Override
     public MySQLPlanNodeJSON getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<MySQLPlanNodeJSON> getNested() {
         return nested;
@@ -201,11 +209,13 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
     //////////////////////////////////////////////////////////
     // Properties
 
+    @NotNull
     @Override
     public Object getEditableValue() {
         return this;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[nodeProps.size()];
@@ -225,33 +235,34 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
         return props;
     }
 
+    @Nullable
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
         return nodeProps.get(id);
     }
 
     @Override
-    public boolean isPropertySet(String id) {
+    public boolean isPropertySet(@NotNull String id) {
         return false;//attributes.containsKey(id.toString());
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
 
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value) {
 
     }
 

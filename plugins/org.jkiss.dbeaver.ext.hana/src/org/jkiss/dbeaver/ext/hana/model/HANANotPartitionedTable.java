@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 
 public class HANANotPartitionedTable implements IPropertyValueValidator<HANATable, Object> {
 
     @Override
-    public boolean isValidValue(HANATable object, Object value) throws IllegalArgumentException {
+    public boolean isValidValue(@NotNull HANATable object, @Nullable Object value) throws IllegalArgumentException {
         return !(object instanceof HANAPartition);
     }
 }

@@ -70,7 +70,7 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -141,6 +141,7 @@ public class VerticaSequence extends GenericSequence implements GenericScriptObj
         this.description = description;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
         if (source == null) {

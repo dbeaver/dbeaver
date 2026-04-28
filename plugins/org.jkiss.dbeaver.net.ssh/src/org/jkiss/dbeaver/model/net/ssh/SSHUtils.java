@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.model.net.ssh;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.Identity;
+import com.jcraft.jsch.IdentityRepository;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jsch.internal.core.IConstants;
 import org.eclipse.jsch.internal.core.JSchCorePlugin;
@@ -29,14 +33,15 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -93,13 +98,21 @@ public class SSHUtils {
     }
 
 
-    public static boolean isKeyEncrypted(byte[] privKeyValue) {
+    public static boolean isKeyEncrypted(@Nullable String privKeyValue) {
         // Check whether this key is encrypted
         if (privKeyValue != null) {
+            // no need to decode key value, @see com.jcraft.jsch.KeyPair.load(com.jcraft.jsch.JSch, byte[], byte[])
+            byte[] keyBinary = privKeyValue.getBytes(StandardCharsets.UTF_8);
             try {
                 JSch testSch = new JSch();
-                KeyPair keyPair = KeyPair.load(testSch, privKeyValue, null);
-                return keyPair.isEncrypted();
+                testSch.addIdentity("key", keyBinary, null, null);
+                IdentityRepository ir = testSch.getIdentityRepository();
+                List<Identity> identities = ir.getIdentities();
+                for (Identity identity : identities) {
+                    if (identity.isEncrypted()) {
+                        return true;
+                    }
+                }
             } catch (JSchException e) {
                 // Something went wrong
                 log.debug("Can't check private key encryption: " + e.getMessage());
@@ -212,7 +225,8 @@ public class SSHUtils {
     ) throws DBException {
         final List<SSHHostConfiguration> hosts = new ArrayList<>();
 
-        for (int i = 0; i < SSHConstants.MAX_JUMP_SERVERS; i++) {
+        int count = configuration.getIntProperty(DataSourceUtils.PROP_JUMP_SERVER + ".count", SSHConstants.MAX_JUMP_SERVERS);
+        for (int i = 0; i < count; i++) {
             // jump hosts, if present
             final String prefix = DataSourceUtils.getJumpServerSettingsPrefix(i);
             if (configuration.getBooleanProperty(prefix + RegistryConstants.ATTR_ENABLED)) {
@@ -312,13 +326,16 @@ public class SSHUtils {
         @NotNull DBWHandlerConfiguration configuration,
         @NotNull SSHHostConfiguration[] hosts
     ) {
-        for (int i = 0; i < hosts.length; i++) {
-            if (i < hosts.length - 1) {
-                saveHostConfiguration(configuration, hosts[i], DataSourceUtils.getJumpServerSettingsPrefix(i), true, true);
-            } else {
-                saveHostConfiguration(configuration, hosts[i], "", false, false);
-            }
+        Assert.isLegal(hosts.length > 0);
+        configuration.setProperty(DataSourceUtils.PROP_JUMP_SERVER + ".count", hosts.length - 1);
+
+        // jump hosts
+        for (int i = 0; i < hosts.length - 1; i++) {
+            saveHostConfiguration(configuration, hosts[i], DataSourceUtils.getJumpServerSettingsPrefix(i), true, true);
         }
+
+        // primary host
+        saveHostConfiguration(configuration, hosts[hosts.length - 1], "", false, false);
     }
 
     private static void saveHostConfiguration(

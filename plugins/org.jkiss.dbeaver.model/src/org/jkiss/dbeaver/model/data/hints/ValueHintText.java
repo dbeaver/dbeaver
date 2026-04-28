@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.data.hints;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
 /**
@@ -27,27 +29,31 @@ public class ValueHintText implements DBDValueHint {
     private final String description;
     private final DBPImage icon;
 
-    public ValueHintText(String text, String description, DBPImage icon) {
+    public ValueHintText(@NotNull String text, @Nullable String description, @Nullable DBPImage icon) {
         this.text = text;
         this.description = description;
         this.icon = icon;
     }
 
+    @NotNull
     @Override
     public HintType getHintType() {
         return HintType.STRING;
     }
 
+    @NotNull
     @Override
     public String getHintText() {
         return text;
     }
 
+    @Nullable
     @Override
     public String getHintDescription() {
         return description;
     }
 
+    @Nullable
     @Override
     public DBPImage getHintIcon() {
         return icon;

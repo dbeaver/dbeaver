@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceURLProvider;
 import org.jkiss.dbeaver.model.DatabaseURL;
@@ -42,8 +42,8 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.*;
 
-public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
-    private static Map<String, String> connectionsProps;
+public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDataSource> implements DBPNativeClientLocationManager {
+    private static final Map<String, String> connectionsProps;
     @Nullable
     private static Collection<DBPNativeClientLocation> localClients;
 
@@ -61,7 +61,13 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         return connectionsProps;
     }
 
+    @DynamicCall
     public PostgreDataSourceProvider() {
+        super(PostgreDataSource.class);
+    }
+
+    protected PostgreDataSourceProvider(@NotNull Class<? extends PostgreDataSource> dsClass) {
+        super(dsClass);
     }
 
     @Override
@@ -69,8 +75,9 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         DBPConnectionConfiguration configToUse = connectionInfo;
         String databaseName = connectionInfo.getDatabaseName();
 
@@ -112,13 +119,12 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         return url.toString();
     }
 
-
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public PostgreDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container)
-        throws DBException {
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         return new PostgreDataSource(monitor, container);
     }
 
@@ -129,8 +135,8 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
      * Solution: move all JNA-dependent functions to a separate bundle.
      */
     @Override
-    public boolean providesDriverClasses() {
-        return false;
+    public boolean providesDriverClasses(@NotNull DBPDriver driver) {
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////

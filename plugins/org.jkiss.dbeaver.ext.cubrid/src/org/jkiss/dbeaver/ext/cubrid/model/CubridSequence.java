@@ -164,7 +164,7 @@ public class CubridSequence extends GenericSequence {
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (((CubridDataSource) owner.getDataSource()).getSupportMultiSchema()) {
-            return DBUtils.getFullQualifiedName(getDataSource(), this.getOwner(), this);
+            return DBUtils.getQuotedIdentifier(this.getOwner()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         }

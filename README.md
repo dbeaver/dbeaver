@@ -11,6 +11,7 @@ Free multi-platform database tool for developers, SQL programmers, database admi
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI integration, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
 * Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
 * Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
+* Supports smart AI completion and code generation with OpenAI or Copilot
 
 <a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
@@ -38,14 +39,14 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 
 ## Architecture
 
-- DBeaver is written on Java.
+- DBeaver is written mostly on Java. However, it also uses a set of native OS-specific components for desktop UI, high performance database drivers and networking.
 - Basic frameworks:
   - [OSGI](https://en.wikipedia.org/wiki/OSGi) platform for plugins and dependency management. Community version consists of 130+ plugins.
   - [Eclipse RCP](https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/docs/Rich_Client_Platform.md) platform for rich user interface build.
   - [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) for basic database connectivity API.
   - [JSQLParser](https://github.com/JSQLParser/JSqlParser) and [Antlr4](https://github.com/antlr/antlr4) for SQL grammar and semantic parser.
-- For networking and additional functionality we use wide range of open source libraries such as SSHJ, JSch, Okhttp, OpenAI SDK, Apache POI, JFreeChart, JTS/GIS, etc.
-- We separate model plugins from desktop UI plugins. This allows us to use the same set of "back-end" plugins in both DBeaver and CloudBeaver.
+- For networking and additional functionality we use wide range of open source libraries such as [SSHJ](https://github.com/hierynomus/sshj), [Apache POI](https://github.com/apache/poi), [JFreeChart](https://github.com/jfree/jfreechart), [JTS](https://github.com/locationtech/jts), [Apache JEXL](https://github.com/apache/commons-jexl) etc.
+- We separate model plugins from desktop UI plugins. This allows us to use the same set of "back-end" plugins in both DBeaver and [CloudBeaver](https://github.com/dbeaver/cloudbeaver).
 - Dependencies: being an OSGI application we use P2 repositories for third party dependencies. For additional Maven dependencies we use our own [DBeaver P2 repo](https://github.com/dbeaver/dbeaver-deps-ce).
 
 ## Supported databases
@@ -58,7 +59,7 @@ MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill,
 ### PRO versions
 
 <a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of many popular drivers and also support non-JDBC datasources such as:
-MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTable, DynamoDB, Kafka KSQL, Neo4j, Neptune, Timestream.  
+ODBC, MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTable, DynamoDB, Kafka KSQL, Neo4j, AWS Neptune, AWS Timestream, Azure CosmosDB, Yugabyte, Salesforce, etc.  
 Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
 You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
 
@@ -88,5 +89,6 @@ Thank you!
 
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
-<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the browser, enabling database management from any device with an internet connection and eliminating the need for local installation. Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.
+<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the web interface, enabling database management from any device with an internet connection and eliminating the need for local installation.   
+Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.    
 Designed with a user-friendly interface, CloudBeaver simplifies complex database operations and is suitable for both individual developers and organizations. Its scalable architecture accommodates various needs, making it a convenient solution for managing databases anytime and anywhere through web-based accessibility.

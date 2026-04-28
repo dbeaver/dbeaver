@@ -27,9 +27,8 @@
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.model.sql.jdbc</module>
+        <module>org.jkiss.dbeaver.model.lsp</module>
         <module>org.jkiss.dbeaver.registry</module>
-        <module>org.jkiss.dbeaver.dpi.app</module>
-        <module>org.jkiss.dbeaver.dpi.model</module>
 
         <module>org.jkiss.dbeaver.cmp.simple</module>
 
@@ -57,6 +56,7 @@
         <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
         <module>org.jkiss.dbeaver.ext.informix</module>
+        <module>org.jkiss.dbeaver.ext.iotdb</module>
         <module>org.jkiss.dbeaver.ext.kingbase</module>
         <module>org.jkiss.dbeaver.ext.mssql</module>
         <module>org.jkiss.dbeaver.ext.mysql</module>
@@ -106,7 +106,7 @@
                 <module>org.jkiss.dbeaver.core</module>
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>
-                <module>org.jkiss.dbeaver.ui.app.winstore</module>
+                <module>org.jkiss.dbeaver.ui.app.msstore</module>
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
@@ -115,8 +115,10 @@
                 <module>org.jkiss.dbeaver.ext.databend.ui</module>
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
+                <module>org.jkiss.dbeaver.ext.duckdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>
+                <module>org.jkiss.dbeaver.ext.iotdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.kingbase.ui</module>
                 <module>org.jkiss.dbeaver.ext.mssql.ui</module>
                 <module>org.jkiss.dbeaver.ext.mysql.ui</module>
@@ -152,6 +154,7 @@
                 <module>org.jkiss.dbeaver.ui.editors.session</module>
                 <module>org.jkiss.dbeaver.ui.editors.xml</module>
                 <module>org.jkiss.dbeaver.ui.navigator</module>
+                <module>org.jkiss.dbeaver.ui.forms</module>
                 <module>org.jkiss.dbeaver.ui.charts</module>
                 <module>org.jkiss.dbeaver.ui.dashboard</module>
                 <module>org.jkiss.dbeaver.ui.search</module>

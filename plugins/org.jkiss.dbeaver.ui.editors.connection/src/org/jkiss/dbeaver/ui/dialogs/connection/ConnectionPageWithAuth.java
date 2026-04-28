@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -46,17 +45,9 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     private UIServiceConnectionEditor serviceConnectionEditor;
 
     protected void createAuthPanel(Composite parent, int hSpan) {
-        createAuthPanel(parent, hSpan, null);
-    }
-
-    protected void createAuthPanel(Composite parent, int hSpan, Runnable panelExtender) {
-        Assert.isLegal(isAuthEnabled());
         authModelSelector = new AuthModelSelector(parent, () -> {
             // Apply font on auth mode change
             Dialog.applyDialogFont(authModelSelector);
-            if (panelExtender != null) {
-                panelExtender.run();
-            }
         }, () -> getSite().updateButtons(), true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.setDefaultTextControlWidthHint(authModelSelector);
@@ -74,40 +65,37 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     }
 
     protected Composite getAuthPanelComposite() {
-        Assert.isLegal(isAuthEnabled());
-        return authModelSelector.getAuthPanelComposite();
+        return authModelSelector;
     }
 
     @Override
     public void loadSettings() {
         super.loadSettings();
 
-        if (!isAuthEnabled()) {
-            return;
-        }
-
         DBPDataSourceContainer dataSource = getSite().getActiveDataSource();
+        if (isAuthEnabled()) {
 
-        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
+            DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
 
-        if (site.isNew() && CommonUtils.isEmpty(configuration.getUserName())) {
-            configuration.setUserName(dataSource.getDriver().getDefaultUser());
-        }
-
-        DBPAuthModelDescriptor selectedAuthModel = dataSource.getDriver().getDataSourceProvider().detectConnectionAuthModel(
-            dataSource.getDriver(), configuration);
-
-        if (selectedAuthModel != null) {
-            DBPAuthModelDescriptor amReplace = selectedAuthModel.getReplacedBy(dataSource.getDriver());
-            if (amReplace != null) {
-                log.debug("Auth model '" + selectedAuthModel.getId() + "' was replaced by '" + amReplace.getId() + "'");
-                selectedAuthModel = amReplace;
-                configuration.setAuthModelId(selectedAuthModel.getId());
+            if (site.isNew() && CommonUtils.isEmpty(configuration.getUserName())) {
+                configuration.setUserName(dataSource.getDriver().getDefaultUser());
             }
-        }
 
-        if (authModelSelector != null) {
-            authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+            DBPAuthModelDescriptor selectedAuthModel = dataSource.getDriver().getDataSourceProvider().detectConnectionAuthModel(
+                dataSource.getDriver(), configuration);
+
+            if (selectedAuthModel != null) {
+                DBPAuthModelDescriptor amReplace = selectedAuthModel.getReplacedBy(dataSource.getDriver());
+                if (amReplace != null) {
+                    log.debug("Auth model '" + selectedAuthModel.getId() + "' was replaced by '" + amReplace.getId() + "'");
+                    selectedAuthModel = amReplace;
+                    configuration.setAuthModelId(selectedAuthModel.getId());
+                }
+            }
+
+            if (authModelSelector != null) {
+                authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+            }
         }
 
         if (serviceConnectionEditor != null) {
@@ -125,15 +113,13 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     public void saveSettings(DBPDataSourceContainer dataSource) {
         super.saveSettings(dataSource);
 
-        if (!isAuthEnabled()) {
-            return;
-        }
-
-        if (authModelSelector != null) {
-            DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
-            dataSource.getConnectionConfiguration().setAuthModelId(
-                selectedAuthModel == null ? null : selectedAuthModel.getId());
-            authModelSelector.saveSettings(dataSource);
+        if (isAuthEnabled()) {
+            if (authModelSelector != null) {
+                DBPAuthModelDescriptor selectedAuthModel = authModelSelector.getSelectedAuthModel();
+                dataSource.getConnectionConfiguration().setAuthModelId(
+                    selectedAuthModel == null ? null : selectedAuthModel.getId());
+                authModelSelector.saveSettings(dataSource);
+            }
         }
 
         if (serviceConnectionEditor != null) {
@@ -152,7 +138,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     }
 
     protected boolean isAuthEnabled() {
-        return true;
+        return !site.getDriver().isAnonymousAccess();
     }
 
     protected DBPConnectionEditIntention getIntention() {

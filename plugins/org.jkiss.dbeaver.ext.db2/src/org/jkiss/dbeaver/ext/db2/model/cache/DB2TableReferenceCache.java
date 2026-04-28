@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +78,7 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema, DB2Table forTable)
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
         throws SQLException
     {
         String sql;
@@ -98,8 +97,9 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
 
     @Nullable
     @Override
-    protected DB2TableReference fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, String constName,
-        JDBCResultSet dbResult) throws SQLException, DBException
+    protected DB2TableReference fetchObject(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table, @NotNull String constName,
+        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
@@ -115,8 +115,9 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
 
     @Nullable
     @Override
-    protected DB2TableKeyColumn[] fetchObjectRow(JDBCSession session, DB2Table db2Table,
-                                                 DB2TableReference db2TableReference, JDBCResultSet dbResult) throws SQLException, DBException
+    protected DB2TableKeyColumn[] fetchObjectRow(
+        @NotNull JDBCSession session, @NotNull DB2Table db2Table,
+        @NotNull DB2TableReference db2TableReference, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
@@ -132,7 +133,7 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableReference constraint, List<DB2TableKeyColumn> rows)
+    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull DB2TableReference constraint, @NotNull List<DB2TableKeyColumn> rows)
     {
         constraint.setAttributeReferences(rows);
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -44,16 +46,17 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final Log log = Log.getLog(QMMCollectorImpl.class);
 
     private static final int MAX_HISTORY_EVENTS = 10000;
+    private static final int MAX_WAIT_COUNT = 20;
 
     // Session map
-    private LongKeyMap<QMMConnectionInfo> connectionMap = new LongKeyMap<>();
-    private List<Long> closedConnections = new ArrayList<>();
+    private final LongKeyMap<QMMConnectionInfo> connectionMap = new LongKeyMap<>();
+    private final List<Long> closedConnections = new ArrayList<>();
 
     // External listeners
     private final List<QMMetaListener> listeners = new ArrayList<>();
 
     // Temporary event pool
-    private List<QMMetaEvent> eventPool = new ArrayList<>();
+    private final List<QMMetaEvent> eventPool = new ArrayList<>();
     // Sync object
     private final Object historySync = new Object();
     // History (may be purged when limit reached)
@@ -70,16 +73,18 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         new EventDispatcher().schedule(eventDispatchPeriod);
     }
 
-    public synchronized void dispose() {
-        if (!connectionMap.isEmpty()) {
-            List<QMMConnectionInfo> openSessions = new ArrayList<>();
-            for (QMMConnectionInfo connection : connectionMap.values()) {
-                if (!connection.isClosed()) {
-                    openSessions.add(connection);
+    public void dispose() {
+        synchronized (connectionMap) {
+            if (!connectionMap.isEmpty()) {
+                List<QMMConnectionInfo> openSessions = new ArrayList<>();
+                for (QMMConnectionInfo connection : connectionMap.values()) {
+                    if (!connection.isClosed()) {
+                        openSessions.add(connection);
+                    }
                 }
-            }
-            if (!openSessions.isEmpty()) {
-                log.warn("Some sessions are still open: " + openSessions);
+                if (!openSessions.isEmpty()) {
+                    log.warn("Some sessions are still open: " + openSessions);
+                }
             }
         }
         synchronized (listeners) {
@@ -88,7 +93,18 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 listeners.clear();
             }
         }
+        int waitCount = 0;
+        while (!isEventPoolEmpty() && waitCount < MAX_WAIT_COUNT) {
+            waitCount++;
+            RuntimeUtils.pause((int) eventDispatchPeriod);
+        }
         running = false;
+    }
+
+    private boolean isEventPoolEmpty() {
+        synchronized (eventPool) {
+            return CommonUtils.isEmpty(eventPool);
+        }
     }
 
     boolean isRunning() {
@@ -101,13 +117,13 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return "Meta info collector";
     }
 
-    public void addListener(QMMetaListener listener) {
+    public void addListener(@NotNull QMMetaListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
-    public void removeListener(QMMetaListener listener) {
+    public void removeListener(@NotNull QMMetaListener listener) {
         synchronized (listeners) {
             if (!listeners.remove(listener)) {
                 log.warn("Listener '" + listener + "' is not registered in QM meta collector");
@@ -115,6 +131,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
+    @NotNull
     private List<QMMetaListener> getListeners() {
         synchronized (listeners) {
             if (listeners.isEmpty()) {
@@ -136,7 +153,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         tryFireMetaEvent(object, action, timestamp, context.getDataSource());
     }
 
-    private synchronized void tryFireMetaEvent(
+    private void tryFireMetaEvent(
         final @NotNull QMMObject object,
         final @NotNull QMEventAction action,
         final long timestamp,
@@ -144,45 +161,53 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     ) {
         try {
             String sessionId = QMUtils.getQmSessionId(dataSource);
-            eventPool.add(new QMMetaEvent(object, action, timestamp, sessionId));
+            synchronized (eventPool) {
+                eventPool.add(new QMMetaEvent(object, action, timestamp, sessionId));
+            }
             // may be send event here
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
     }
 
-    private synchronized List<QMMetaEvent> obtainEvents() {
-        if (eventPool.isEmpty()) {
-            return Collections.emptyList();
-        }
-        // qm session id might be null if database migration is in progress for single user product
-        if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider qmSessionProvider) {
-            for (QMMetaEvent event : eventPool) {
-                if (event.getSessionId() != null) {
-                    continue;
-                }
-                var workspace = DBWorkbench.getPlatform().getWorkspace();
-                if (workspace == null) {
-                    continue;
-                }
-                var sessionId = qmSessionProvider.getQueryManagerSessionId();
-                if (sessionId == null) {
-                    return Collections.emptyList();
-                }
-                event.setSessionId(sessionId);
+    @NotNull
+    private List<QMMetaEvent> obtainEvents() {
+        synchronized (eventPool) {
+            if (eventPool.isEmpty()) {
+                return Collections.emptyList();
             }
+            // qm session id might be null if database migration is in progress for single user product
+            if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider qmSessionProvider) {
+                for (QMMetaEvent event : eventPool) {
+                    if (event.getSessionId() != null) {
+                        continue;
+                    }
+                    var workspace = DBWorkbench.getPlatform().getWorkspace();
+                    if (workspace == null) {
+                        continue;
+                    }
+                    var sessionId = qmSessionProvider.getQueryManagerSessionId();
+                    if (sessionId == null) {
+                        return Collections.emptyList();
+                    }
+                    event.setSessionId(sessionId);
+                }
+            }
+            List<QMMetaEvent> events = new ArrayList<>(eventPool);
+            eventPool.clear();
+            return events;
         }
-        List<QMMetaEvent> events = eventPool;
-        eventPool = new ArrayList<>();
-        return events;
     }
 
-    public synchronized QMMConnectionInfo getConnectionInfo(DBCExecutionContext context) {
-        QMMConnectionInfo connectionInfo = connectionMap.get(context.getContextId());
-        if (connectionInfo == null) {
-            log.debug("Can't find connectionInfo meta information: " + context.getContextId() + " (" + context.getContextName() + ")");
+    @Nullable
+    public QMMConnectionInfo getConnectionInfo(DBCExecutionContext context) {
+        synchronized (connectionMap) {
+            QMMConnectionInfo connectionInfo = connectionMap.get(context.getContextId());
+            if (connectionInfo == null) {
+                log.debug("Can't find connectionInfo meta information: " + context.getContextId() + " (" + context.getContextName() + ")");
+            }
+            return connectionInfo;
         }
-        return connectionInfo;
     }
 
     public List<QMMetaEvent> getPastEvents() {
@@ -192,28 +217,40 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
-        final long contextId = context.getContextId();
-        QMMConnectionInfo connection = connectionMap.get(contextId);
-        if (connection == null) {
-            connection = new QMMConnectionInfo(
-                context,
-                transactional);
-            connectionMap.put(contextId, connection);
-        } else {
-            // This session may already be in cache in case of reconnect/invalidate
-            // (when context closed and reopened without new context object creation)
-            connection.reopen(context);
-        }
+    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
+        synchronized (connectionMap) {
+            final long contextId = context.getContextId();
+            QMMConnectionInfo connection = connectionMap.get(contextId);
+            if (connection == null) {
+                connection = new QMMConnectionInfo(
+                    context,
+                    transactional
+                );
+                connectionMap.put(contextId, connection);
+            } else {
+                // This session may already be in cache in case of reconnect/invalidate
+                // (when context closed and reopened without new context object creation)
+                connection.reopen(context);
+            }
 
-        // Remove from closed sessions (in case of re-opened connection)
-        closedConnections.remove(contextId);
-        tryFireMetaEvent(connection, QMEventAction.BEGIN, connection.getOpenTime(), context);
-        // Notify
+            // Remove from closed sessions (in case of re-opened connection)
+            closedConnections.remove(contextId);
+            // Notify
+            tryFireMetaEvent(connection, QMEventAction.BEGIN, connection.getOpenTime(), context);
+        }
     }
 
     @Override
-    public synchronized void handleContextClose(@NotNull DBCExecutionContext context) {
+    public void handleContextUpdate(@NotNull DBCExecutionContext context, boolean transactional) {
+        QMMConnectionInfo connectionInfo = getConnectionInfo(context);
+        if (connectionInfo != null) {
+            connectionInfo.setTransactional(transactional);
+            tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
+        }
+    }
+
+    @Override
+    public void handleContextClose(@NotNull DBCExecutionContext context) {
         QMMConnectionInfo session = getConnectionInfo(context);
         if (session != null) {
             session.close();
@@ -223,7 +260,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
+    public void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
@@ -235,7 +272,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context) {
+    public void handleTransactionCommit(@NotNull DBCExecutionContext context) {
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
@@ -246,7 +283,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
+    public void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
@@ -257,16 +294,20 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementOpen(@NotNull DBCStatement statement) {
-        QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
+    public void handleStatementOpen(@NotNull DBCStatement statement) {
+        DBCExecutionContext executionContext = statement.getSession().getExecutionContext();
+        QMMConnectionInfo session = getConnectionInfo(executionContext);
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
-            tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), statement.getSession().getExecutionContext());
+            tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), executionContext);
+        } else {
+            log.warn("QM session for '" + executionContext + "' is missing in cache. "
+                + "Cannot handle statement '" + statement + "' open.");
         }
     }
 
     @Override
-    public synchronized void handleStatementClose(@NotNull DBCStatement statement, long rows) {
+    public void handleStatementClose(@NotNull DBCStatement statement, long rows) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement, rows);
@@ -279,7 +320,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
+    public void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
@@ -290,7 +331,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error) {
+    public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error) {
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
@@ -301,7 +342,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleResultSetOpen(@NotNull DBCResultSet resultSet) {
+    public void handleResultSetOpen(@NotNull DBCResultSet resultSet) {
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
@@ -312,7 +353,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount) {
+    public void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount) {
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
@@ -322,9 +363,25 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
+    @Override
+    public void handleFetchError(@NotNull DBCResultSet resultSet, @NotNull Throwable error) {
+        if (!DBExecUtils.isExecutionCanceled(resultSet.getSession().getDataSource(), error)) {
+            return;
+        }
+
+        QMMConnectionInfo executionContext = getConnectionInfo(resultSet.getSession().getExecutionContext());
+
+        if (executionContext != null) {
+            QMMStatementExecuteInfo execution = executionContext.execution(resultSet.getSourceStatement(), error);
+            if (execution != null) {
+                tryFireMetaEvent(execution, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
+            }
+        }
+    }
+
 
     @Override
-    public synchronized void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
+    public void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
         QMMDataSourceConnectErrorInfo connectErrorInfo = new QMMDataSourceConnectErrorInfo(
             dataSource.getContainer(),
             DBExecUtils.discoverErrorType(dataSource, error).name(),
@@ -341,8 +398,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             final List<QMMetaEvent> events;
             List<Long> sessionsToClose;
             synchronized (QMMCollectorImpl.this) {
@@ -373,7 +431,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 }
             }
             // Cleanup closed sessions
-            synchronized (QMMCollectorImpl.this) {
+            synchronized (connectionMap) {
                 for (Long sessionId : sessionsToClose) {
                     final QMMConnectionInfo session = connectionMap.get(sessionId);
                     if (session != null && !session.isClosed()) {

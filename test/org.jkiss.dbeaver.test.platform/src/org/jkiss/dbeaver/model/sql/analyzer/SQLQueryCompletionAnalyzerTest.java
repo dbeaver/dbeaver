@@ -376,7 +376,7 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final Set<String> proposals = request.requestNewStrings("SELECT * FROM Database3.\"a.schema\".|");
             
-            Assert.assertTrue(proposals.contains("\"a.table\" at2"));
+            Assert.assertTrue(proposals.contains("\"a.table\" t"));
             
         }
     }

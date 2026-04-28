@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.exec.DBCConnectException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -234,9 +236,17 @@ public class DriverEditHelpers {
             DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
             String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration,
                 dataSource == null ? "<unknown driver>" : dataSource.getContainer().getDriver().getName());
-            new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
+            new BadDriverConfigDialog(shell, title, message == null ? title : message, defineException(error)).open();
         };
         UIUtils.syncExec(runnable);
+    }
+
+    @NotNull
+    private static DBException defineException(@NotNull DBException error) {
+        return error instanceof DBCConnectException
+            && error.getCause() instanceof DBException cause
+            ? cause
+            : error;
     }
 
     static class BadDriverConfigDialog extends StandardErrorDialog {
@@ -254,10 +264,9 @@ public class DriverEditHelpers {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(parent, IDialogConstants.RETRY_ID, "Open Driver &Configuration", true);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
-            createDetailsButton(parent);
         }
 
         @Override
