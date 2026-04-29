@@ -655,7 +655,8 @@ public abstract class LightGrid extends Canvas {
                 if (!fitValue) {
                     // If grid width more than screen - lets narrow too long columns
                     int clientWidth = getCurrentOrLastClientArea().width;
-                    int availableWidth = clientWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth();
+                    int visibleRowHeaderWidth = rowHeaderVisible ? rowHeaderWidth : 0;
+                    int availableWidth = clientWidth - getBorderWidth() - visibleRowHeaderWidth - vScroll.getWidth();
                     if (totalWidth > clientWidth && clientWidth != 0) {
                         int normalWidth = 0;
                         List<GridColumn> fatColumns = new ArrayList<>();
