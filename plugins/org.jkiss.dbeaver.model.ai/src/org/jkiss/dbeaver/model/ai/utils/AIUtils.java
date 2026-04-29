@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
+    public static final double DEFAULT_TEMPERATURE = 0.0;
 
     @Nullable
     public static AIEngineDescriptor getActiveEngineDescriptor() {
@@ -396,4 +397,12 @@ public final class AIUtils {
         }
     }
 
+    /**
+     * Normalizes a temperature value used for AI model inference.
+     * If the supplied value is not a finite number (e.g. {@code NaN} or {@code Infinity})
+     * it is replaced with {@link #DEFAULT_TEMPERATURE}.
+     */
+    public static double normalizeTemperature(double temperature) {
+        return Double.isFinite(temperature) ? temperature : DEFAULT_TEMPERATURE;
+    }
 }

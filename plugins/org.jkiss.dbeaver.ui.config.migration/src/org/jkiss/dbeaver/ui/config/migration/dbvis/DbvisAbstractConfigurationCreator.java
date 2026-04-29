@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.config.migration.dbvis;
 
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.utils.CommonUtils;
 
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigurationCreator {
 
@@ -68,13 +67,13 @@ public abstract class DbvisAbstractConfigurationCreator implements DbvisConfigur
         return configFile;
     }
 
-    public DriverDescriptor getDriverByName(String name) {
+    public DBPDriver getDriverByName(String name) {
         String driverName = substituteDriverName(name);
-        final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DriverDescriptor> descriptors = registry.getDataSourceProviders().stream()
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        List<DBPDriver> descriptors = registry.getDataSourceProviders().stream()
             .flatMap(provider -> provider.getEnabledDrivers().stream())
-            .collect(Collectors.toList());
-        Optional<DriverDescriptor> descriptor = descriptors.stream()
+            .toList();
+        Optional<DBPDriver> descriptor = descriptors.stream()
             .filter(d -> d.getName().equals(driverName))
             .findFirst();
         if (descriptor.isEmpty()) {
