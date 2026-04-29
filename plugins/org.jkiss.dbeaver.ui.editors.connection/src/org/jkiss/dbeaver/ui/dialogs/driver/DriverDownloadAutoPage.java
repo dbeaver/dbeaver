@@ -437,7 +437,6 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 IDialogConstants.IGNORE_ID,
                 IDialogConstants.IGNORE_LABEL,
                 false);
-            createDetailsButton(parent);
         }
 
         @Override
