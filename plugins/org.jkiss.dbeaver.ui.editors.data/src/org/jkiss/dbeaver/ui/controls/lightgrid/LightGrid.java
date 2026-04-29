@@ -657,11 +657,11 @@ public abstract class LightGrid extends Canvas {
                     int clientWidth = getCurrentOrLastClientArea().width;
                     int visibleRowHeaderWidth = rowHeaderVisible ? rowHeaderWidth : 0;
                     int availableWidth = clientWidth - getBorderWidth() - visibleRowHeaderWidth - vScroll.getWidth();
-                    if (totalWidth > clientWidth && clientWidth != 0) {
+                    if (totalWidth > availableWidth && availableWidth > 0) {
                         int normalWidth = 0;
                         List<GridColumn> fatColumns = new ArrayList<>();
                         for (GridColumn curColumn : columns) {
-                            int curColumnWidthPercent = (int)((curColumn.getWidth() / (double)  clientWidth) * 100);
+                            int curColumnWidthPercent = (int)((curColumn.getWidth() / (double) availableWidth) * 100);
                             if (CommonUtils.isEmpty(curColumn.getChildren()) && curColumnWidthPercent > maxColumnDefWidth) {
                                 fatColumns.add(curColumn);
                             } else {
@@ -671,8 +671,8 @@ public abstract class LightGrid extends Canvas {
                         if (!fatColumns.isEmpty()) {
                             // Narrow fat columns on decWidth
                             int freeSpace = (availableWidth - normalWidth) / fatColumns.size();
-                            int freeSpacePercent = (int) (((double) freeSpace / clientWidth) * 100);
-                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) ((double) maxColumnDefWidth / 100 * clientWidth));
+                            int freeSpacePercent = (int) (((double) freeSpace / availableWidth) * 100);
+                            int newFatWidth = (freeSpacePercent > maxColumnDefWidth ? freeSpace : (int) ((double) maxColumnDefWidth / 100 * availableWidth));
                             for (GridColumn curColumn : fatColumns) {
                                 curColumn.setWidth(newFatWidth);
                             }
