@@ -555,7 +555,10 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         return AltibaseDataTypeDomain.CLOB.getTypeName();
     }
 
-    public String getJsonDataType() { return AltibaseDataTypeDomain.JSON.getTypeName(); }
+    @Override
+    public String getJsonDataType() {
+        return AltibaseDataTypeDomain.JSON.getTypeName();
+    }
 
     @Override
     public String getUuidDataType() {
