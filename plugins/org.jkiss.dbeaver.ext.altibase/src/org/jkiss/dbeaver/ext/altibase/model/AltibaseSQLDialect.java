@@ -556,11 +556,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
     }
 
     @Override
-    public String getJsonDataType() {
-        return AltibaseDataTypeDomain.JSON.getTypeName();
-    }
-
-    @Override
     public String getUuidDataType() {
         // Not supported data type
         return "";
