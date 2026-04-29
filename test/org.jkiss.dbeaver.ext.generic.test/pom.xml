@@ -13,4 +13,13 @@
     <version>1.0.70-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.duckdb</groupId>
+            <artifactId>duckdb_jdbc</artifactId>
+            <version>1.5.2.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 </project>

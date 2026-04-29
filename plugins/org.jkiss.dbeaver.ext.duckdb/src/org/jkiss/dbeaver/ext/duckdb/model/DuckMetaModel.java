@@ -149,33 +149,39 @@ public class DuckMetaModel extends GenericMetaModel {
         String referencePattern = "'REFERENCES\\s+([^\\(]+)\\(([^\\)]*)\\)'";
         return "WITH fk AS (" +
             " SELECT database_name, schema_name, table_name, constraint_index, constraint_column_names," +
-            " trim(regexp_extract(constraint_text, " + referencePattern + ", 1)) AS referenced_table," +
+            " trim(regexp_extract(constraint_text, " + referencePattern + ", 1)) AS referenced_table_path," +
             " string_split(regexp_extract(constraint_text, " + referencePattern + ", 2), ',') AS referenced_column_names" +
             " FROM duckdb_constraints()" +
             " WHERE constraint_type = 'FOREIGN KEY'" +
             " AND (? IS NULL OR database_name = ?)" +
             " AND (? IS NULL OR schema_name = ?)" +
             " AND " + tableCondition +
-            "), fk_columns AS (" +
-            " SELECT database_name, schema_name, table_name, constraint_index, referenced_table," +
-            " unnest(constraint_column_names) AS fk_column_name, trim(unnest(referenced_column_names)) AS pk_column_name" +
+            "), fk_column_indexes AS (" +
+            " SELECT database_name, schema_name, table_name, constraint_index, referenced_table_path," +
+            " constraint_column_names, referenced_column_names, generate_subscripts(constraint_column_names, 1) AS key_seq" +
             " FROM fk" +
+            "), fk_columns AS (" +
+            " SELECT database_name, schema_name, table_name, constraint_index, referenced_table_path, key_seq," +
+            " list_extract(constraint_column_names, key_seq) AS fk_column_name," +
+            " trim(list_extract(referenced_column_names, key_seq)) AS pk_column_name" +
+            " FROM fk_column_indexes" +
             ")" +
             " SELECT database_name AS " + JDBCConstants.PKTABLE_CAT +
-            ", schema_name AS " + JDBCConstants.PKTABLE_SCHEM +
-            ", referenced_table AS " + JDBCConstants.PKTABLE_NAME +
+            ", CASE WHEN contains(referenced_table_path, '.') THEN split_part(referenced_table_path, '.', 1) ELSE schema_name END AS " + JDBCConstants.PKTABLE_SCHEM +
+            ", CASE WHEN contains(referenced_table_path, '.') THEN split_part(referenced_table_path, '.', 2) ELSE referenced_table_path END AS " + JDBCConstants.PKTABLE_NAME +
             ", pk_column_name AS " + JDBCConstants.PKCOLUMN_NAME +
             ", database_name AS " + JDBCConstants.FKTABLE_CAT +
             ", schema_name AS " + JDBCConstants.FKTABLE_SCHEM +
             ", table_name AS " + JDBCConstants.FKTABLE_NAME +
             ", fk_column_name AS " + JDBCConstants.FKCOLUMN_NAME +
-            ", row_number() OVER (PARTITION BY database_name, schema_name, table_name, constraint_index) AS " + JDBCConstants.KEY_SEQ +
+            ", key_seq AS " + JDBCConstants.KEY_SEQ +
             ", " + DatabaseMetaData.importedKeyNoAction + " AS " + JDBCConstants.UPDATE_RULE +
             ", " + DatabaseMetaData.importedKeyNoAction + " AS " + JDBCConstants.DELETE_RULE +
             ", table_name || '_' || constraint_index || '_fkey' AS " + JDBCConstants.FK_NAME +
             ", NULL AS " + JDBCConstants.PK_NAME +
             ", " + DatabaseMetaData.importedKeyNotDeferrable + " AS " + JDBCConstants.DEFERRABILITY +
-            " FROM fk_columns";
+            " FROM fk_columns" +
+            " ORDER BY database_name, schema_name, table_name, constraint_index, key_seq";
     }
 
     @Override
