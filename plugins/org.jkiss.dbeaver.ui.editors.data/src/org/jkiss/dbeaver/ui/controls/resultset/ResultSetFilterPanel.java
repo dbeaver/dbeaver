@@ -1054,10 +1054,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         loadFiltersHistory(query);
 
                         var filter = dialog.getSelectedFilter();
-                        if (filter != null) {
-                            setQueryFilter(filter);
-                            setCustomDataFilter();
+                        if (filter == null) {
+                            // Did the user delete the current filter?
+                            filter = filtersHistory.stream()
+                                .filter(f -> f.text().equals(filtersText.getText()))
+                                .findFirst().orElse(null);
                         }
+                        setQueryFilter(filter);
+                        setCustomDataFilter();
                     }
                 }));
             }

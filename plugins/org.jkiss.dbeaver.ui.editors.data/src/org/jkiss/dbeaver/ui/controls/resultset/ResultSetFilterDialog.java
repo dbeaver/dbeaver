@@ -97,7 +97,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
                     // Don't show deleted filters
                     return false;
                 }
-                if (filter.original == null) {
+                if (filter.persisted == null) {
                     // Always show new filters
                     return true;
                 }
@@ -110,6 +110,11 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         viewer.addSelectionChangedListener(e -> {
             var filter = (MutableQueryFilter) e.getStructuredSelection().getFirstElement();
             selection = filters.indexOf(filter);
+
+            var button = getButton(IDialogConstants.OK_ID);
+            if (button != null) {
+                button.setText(filter != null ? "Use Selected" : IDialogConstants.OK_LABEL);
+            }
         });
 
         searchText.addModifyListener(e -> viewer.refresh());
@@ -150,7 +155,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
 
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        createButton(parent, IDialogConstants.OK_ID, "Use Selected", true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
@@ -188,7 +193,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         exprColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getText, MutableQueryFilter::setText) {
             @Override
             protected boolean canEdit(@NotNull Object element) {
-                return ((MutableQueryFilter) element).original == null;
+                return ((MutableQueryFilter) element).persisted == null;
             }
         });
 
@@ -212,7 +217,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             @Override
             public String getText(@NotNull Object element) {
                 var filter = (MutableQueryFilter) element;
-                return filter.original != null ? formatInstant(filter.original.lastUsed()) : "N/A";
+                return filter.persisted != null ? formatInstant(filter.persisted.lastUsed()) : "N/A";
             }
         });
 
@@ -224,7 +229,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             @Override
             public String getText(@NotNull Object element) {
                 var filter = (MutableQueryFilter) element;
-                return filter.original != null ? NumberFormat.getInstance().format(filter.original.useCount()) : "N/A";
+                return filter.persisted != null ? NumberFormat.getInstance().format(filter.persisted.useCount()) : "N/A";
             }
         });
 
@@ -247,7 +252,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
     @Nullable
     QMQueryFilter getSelectedFilter() {
         if (selection >= 0 && selection < filters.size()) {
-            return filters.get(selection).original;
+            return filters.get(selection).persisted;
         } else {
             return null;
         }
@@ -268,23 +273,25 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
 
     private void persistFilter(@NotNull MutableQueryFilter filter) throws DBException {
         if (filter.deleted) {
-            if (filter.original != null) {
-                filterManager.deleteQueryFilterValue(executionContext, filter.original);
+            if (filter.persisted != null) {
+                filterManager.deleteQueryFilterValue(executionContext, filter.persisted);
+                filter.persisted = null;
             }
         } else if (filter.modified) {
-            if (filter.original != null) {
-                filterManager.deleteQueryFilterValue(executionContext, filter.original);
+            if (filter.persisted != null) {
+                filterManager.deleteQueryFilterValue(executionContext, filter.persisted);
                 var newFilter = new QMQueryFilter(
-                    filter.original.query(),
+                    filter.persisted.query(),
                     filter.text,
                     filter.title.isEmpty() ? null : filter.title,
-                    filter.original.lastUsed(),
-                    filter.original.useCount()
+                    filter.persisted.lastUsed(),
+                    filter.persisted.useCount()
                 );
                 filterManager.saveQueryFilterValue(executionContext, newFilter);
             } else if (!filter.text.isBlank()) {
-                var newFilter = new QMQueryFilter(query, filter.text, filter.title, null, 0);
-                filterManager.saveQueryFilterValue(executionContext, newFilter);
+                var persisted = new QMQueryFilter(query, filter.text, filter.title, null, 0);
+                filter.persisted = persisted;
+                filterManager.saveQueryFilterValue(executionContext, persisted);
             }
         }
     }
@@ -305,20 +312,20 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
     }
 
     private static class MutableQueryFilter {
-        private final QMQueryFilter original;
+        private QMQueryFilter persisted;
         private String text;
         private String title;
         private boolean modified;
         private boolean deleted;
 
-        MutableQueryFilter(@NotNull QMQueryFilter original) {
-            this.original = original;
-            this.text = original.text();
-            this.title = CommonUtils.notEmpty(original.title());
+        MutableQueryFilter(@NotNull QMQueryFilter persisted) {
+            this.persisted = persisted;
+            this.text = persisted.text();
+            this.title = CommonUtils.notEmpty(persisted.title());
         }
 
         MutableQueryFilter() {
-            this.original = null;
+            this.persisted = null;
             this.text = "";
             this.title = "";
         }
