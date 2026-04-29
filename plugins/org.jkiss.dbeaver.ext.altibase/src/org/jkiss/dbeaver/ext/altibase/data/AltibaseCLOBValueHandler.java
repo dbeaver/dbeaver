@@ -70,10 +70,11 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
     @Nullable
     @Override
     protected DBDContent fetchColumnValue(
-            DBCSession session,
-            JDBCResultSet resultSet,
-            DBSTypedObject type,
-            int index) throws DBCException, SQLException {
+        DBCSession session,
+        JDBCResultSet resultSet,
+        DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
         try {
             /* [CRITICAL] Do not use getClob() first if Autocommit is ON.
             * Altibase invalidates the LOB Locator immediately upon query completion in Autocommit mode.
