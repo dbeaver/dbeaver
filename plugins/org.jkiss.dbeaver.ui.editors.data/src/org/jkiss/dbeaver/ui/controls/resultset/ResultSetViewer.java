@@ -3859,55 +3859,12 @@ public class ResultSetViewer extends Viewer
         if (getExecutionContext() == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
         }
-        DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-        if (refConstraint == null) {
-            throw new DBException("Broken association (referenced constraint missing)");
-        }
-        if (!(refConstraint instanceof DBSEntityReferrer)) {
-            throw new DBException("Referenced constraint [" + refConstraint + "] is not a referrer");
-        }
-        DBSEntity targetEntity = refConstraint.getParentObject();
-        targetEntity = DBVUtils.getRealEntity(monitor, targetEntity);
-        if (!(targetEntity instanceof DBSDataContainer)) {
-            throw new DBException("Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] is not a data container");
-        }
-
-        // make constraints
-        List<DBDAttributeConstraint> constraints = new ArrayList<>();
-
-        // Set conditions
-        List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
-        List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
-        if (ownAttrs.size() != refAttrs.size()) {
-            throw new DBException(
-                "Entity [" + DBUtils.getObjectFullName(targetEntity, DBPEvaluationContext.UI) + "] association [" + association.getName() +
-                    "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
-        }
-        // Add association constraints
-        for (int i = 0; i < ownAttrs.size(); i++) {
-            DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
-            DBSEntityAttributeRef refAttr = refAttrs.get(i);
-            DBDAttributeBinding ownBinding = bindingsModel.getAttributeBinding(ownAttr.getAttribute());
-            if (ownBinding == null) {
-                DBWorkbench.getPlatformUI()
-                    .showError("Cannot navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
-                return;
-            }
-
-            DBSEntityAttribute attribute = refAttr.getAttribute();
-            if (attribute != null) {
-                DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, DBDAttributeConstraint.NULL_VISUAL_POSITION);
-                constraint.setVisible(true);
-                constraints.add(constraint);
-                createFilterConstraint(rows, ownBinding, constraint);
-            }
-
-        }
+        DBDReferenceNavigation navigation = DBDReferenceUtils.resolveAssociationNavigation(monitor, bindingsModel, association, rows);
         if (curState == null) {
             setNewState(container.getDataContainer(), model.getDataFilter());
         }
         curState.filter = new DBDDataFilter(bindingsModel.getDataFilter());
-        navigateEntity(monitor, newWindow, targetEntity, constraints);
+        navigateEntity(monitor, newWindow, navigation.getTargetEntity(), navigation.getTargetFilter());
     }
 
     /**
@@ -3999,8 +3956,10 @@ public class ResultSetViewer extends Viewer
     }
 
     private void navigateEntity(@NotNull DBRProgressMonitor monitor, boolean newWindow, DBSEntity targetEntity, List<DBDAttributeConstraint> constraints) {
-        DBDDataFilter newFilter = new DBDDataFilter(constraints);
+        navigateEntity(monitor, newWindow, targetEntity, new DBDDataFilter(constraints));
+    }
 
+    private void navigateEntity(@NotNull DBRProgressMonitor monitor, boolean newWindow, DBSEntity targetEntity, DBDDataFilter newFilter) {
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
