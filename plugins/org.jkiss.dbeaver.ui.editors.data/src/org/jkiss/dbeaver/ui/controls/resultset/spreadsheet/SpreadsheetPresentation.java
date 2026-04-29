@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,12 +53,7 @@ import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -1832,7 +1827,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
     }
 
-        private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
+    private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
         if ((attr.getDataKind() == DBPDataKind.STRUCT || attr.getDataKind() == DBPDataKind.ARRAY) && controller.isRecordMode()) {
             return true;
         }
@@ -2609,7 +2604,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Nullable
-        private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
+        private Color getCellForeground(
+            @Nullable DBDAttributeBinding attribute,
+            @Nullable ResultSetRow row,
+            @Nullable Object cellValue,
+            @Nullable Color background,
+            boolean selected
+        ) {
+            if (attribute == null || row == null) {
+                return ResultSetThemeSettings.instance.foregroundNull;
+            }
             if (selected) {
                 Color fg = ResultSetThemeSettings.instance.foregroundSelected;
                 if (colorizeDataTypes && !DBUtils.isNullValue(cellValue)) {

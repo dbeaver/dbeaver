@@ -181,6 +181,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         return values[position];
     }
 
+    @Nullable
     public Object getAttributeValue(@NotNull String attrName) throws DBCException {
         DBSEntityAttribute attribute = DBUtils.findObject(attributes, attrName);
         return attribute == null ? null : getAttributeValue(attribute);
@@ -367,7 +368,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         }
     */
 
-    protected class ArrayType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
+    protected class ArrayType extends StructType {
         public ArrayType(@NotNull DBPDataSource dataSource) {
             super(dataSource);
         }
@@ -388,21 +389,9 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         public DBPDataKind getDataKind() {
             return DBPDataKind.ARRAY;
         }
-
-        @NotNull
-        @Override
-        public DBSEntityType getEntityType() {
-            return DBSEntityType.TYPE;
-        }
-
-        @Nullable
-        @Override
-        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
-            return Arrays.asList(attributes);
-        }
     }
 
-    protected class SimpleType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
+    protected class SimpleType extends StructType {
         private final int typeId;
 
         public SimpleType(@NotNull DBPDataSource dataSource, @Nullable Object value) {
@@ -425,18 +414,6 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         @Override
         public DBPDataKind getDataKind() {
             return JDBCUtils.getDataKindByTypeID(typeId, null);
-        }
-
-        @NotNull
-        @Override
-        public DBSEntityType getEntityType() {
-            return DBSEntityType.TYPE;
-        }
-
-        @Nullable
-        @Override
-        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
-            return Arrays.asList(attributes);
         }
     }
 
