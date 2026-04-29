@@ -20,11 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeMap;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 
+import java.sql.Array;
 import java.sql.Struct;
 import java.util.Map;
 
@@ -49,6 +52,8 @@ public class DuckDBStructValueHandler extends JDBCStructValueHandler {
             } catch (DBCException e) {
                 log.warn(e);
             }
+        } else if (object instanceof Array) {
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);
         } else {
             log.warn("Incorrect use of handler: " + this.getClass().getSimpleName());
         }
