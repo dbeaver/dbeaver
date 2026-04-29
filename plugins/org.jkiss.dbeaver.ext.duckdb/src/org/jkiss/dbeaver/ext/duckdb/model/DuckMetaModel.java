@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
@@ -119,6 +121,61 @@ public class DuckMetaModel extends GenericMetaModel {
     @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public JDBCStatement prepareForeignKeysLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
+        String tableCondition = forParent == null ? "table_name LIKE ?" : "table_name = ?";
+        JDBCPreparedStatement statement = session.prepareStatement(getDuckDBForeignKeysQuery(tableCondition));
+
+        String catalogName = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+        String schemaName = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName();
+        String tableName = forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName();
+        statement.setString(1, catalogName);
+        statement.setString(2, catalogName);
+        statement.setString(3, schemaName);
+        statement.setString(4, schemaName);
+        statement.setString(5, tableName);
+        return statement;
+    }
+
+    @NotNull
+    private static String getDuckDBForeignKeysQuery(@NotNull String tableCondition) {
+        String referencePattern = "'REFERENCES\\s+([^\\(]+)\\(([^\\)]*)\\)'";
+        return "WITH fk AS (" +
+            " SELECT database_name, schema_name, table_name, constraint_index, constraint_column_names," +
+            " trim(regexp_extract(constraint_text, " + referencePattern + ", 1)) AS referenced_table," +
+            " string_split(regexp_extract(constraint_text, " + referencePattern + ", 2), ',') AS referenced_column_names" +
+            " FROM duckdb_constraints()" +
+            " WHERE constraint_type = 'FOREIGN KEY'" +
+            " AND (? IS NULL OR database_name = ?)" +
+            " AND (? IS NULL OR schema_name = ?)" +
+            " AND " + tableCondition +
+            "), fk_columns AS (" +
+            " SELECT database_name, schema_name, table_name, constraint_index, referenced_table," +
+            " unnest(constraint_column_names) AS fk_column_name, trim(unnest(referenced_column_names)) AS pk_column_name" +
+            " FROM fk" +
+            ")" +
+            " SELECT database_name AS " + JDBCConstants.PKTABLE_CAT +
+            ", schema_name AS " + JDBCConstants.PKTABLE_SCHEM +
+            ", referenced_table AS " + JDBCConstants.PKTABLE_NAME +
+            ", pk_column_name AS " + JDBCConstants.PKCOLUMN_NAME +
+            ", database_name AS " + JDBCConstants.FKTABLE_CAT +
+            ", schema_name AS " + JDBCConstants.FKTABLE_SCHEM +
+            ", table_name AS " + JDBCConstants.FKTABLE_NAME +
+            ", fk_column_name AS " + JDBCConstants.FKCOLUMN_NAME +
+            ", row_number() OVER (PARTITION BY database_name, schema_name, table_name, constraint_index) AS " + JDBCConstants.KEY_SEQ +
+            ", " + DatabaseMetaData.importedKeyNoAction + " AS " + JDBCConstants.UPDATE_RULE +
+            ", " + DatabaseMetaData.importedKeyNoAction + " AS " + JDBCConstants.DELETE_RULE +
+            ", table_name || '_' || constraint_index || '_fkey' AS " + JDBCConstants.FK_NAME +
+            ", NULL AS " + JDBCConstants.PK_NAME +
+            ", " + DatabaseMetaData.importedKeyNotDeferrable + " AS " + JDBCConstants.DEFERRABILITY +
+            " FROM fk_columns";
     }
 
     @Override
