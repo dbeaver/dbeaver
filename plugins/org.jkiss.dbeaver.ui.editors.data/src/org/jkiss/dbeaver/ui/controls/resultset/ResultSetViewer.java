@@ -487,9 +487,10 @@ public class ResultSetViewer extends Viewer
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         boolean retrieveDeepestCollectionElement
     ) throws DBException {
-        return model.getCellValue(attribute, row, rowIndexes, retrieveDeepestCollectionElement);
+        return model.getCellValue(attribute, row, rowIndexes, valuePath, retrieveDeepestCollectionElement);
     }
 
     @Nullable
@@ -1835,7 +1836,8 @@ public class ResultSetViewer extends Viewer
         boolean needRefresh = false;
         for (DBDAttributeBinding attr : attrs) {
             for (DBDValueRow row : rows) {
-                Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
+                // TODO introduce value path here
+                Object cellValue = model.getCellValue(attr, row, rowIndexes, null, false);
                 List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
                 for (DBDCellHintProvider provider : hintProviders) {
                     DBDValueHint[] hints = provider.getCellHints(
@@ -2145,6 +2147,11 @@ public class ResultSetViewer extends Viewer
         if (curState == null) {
             setNewState(targetEntity, model.getDataFilter());
         }
+
+        // overwrite current model's filters because otherwise they will be aggregated on resultset's metadata update while the former one
+        // might have been describing different entity reference and is not adequate for the current targetEntity of intereset
+        model.setDataFilter(newFilter);
+
         runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, false, null);
     }
 
@@ -3010,6 +3017,7 @@ public class ResultSetViewer extends Viewer
         @Nullable final DBDAttributeBinding attr,
         @Nullable final ResultSetRow row,
         int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @NotNull ContextMenuLocation menuLocation
     ) {
         // Custom oldValue items
@@ -3017,7 +3025,7 @@ public class ResultSetViewer extends Viewer
         if (attr != null && row != null) {
             valueController = new ResultSetValueController(
                 this,
-                new ResultSetCellLocation(attr, row, rowIndexes),
+                new ResultSetCellLocation(attr, row, rowIndexes, valuePath),
                 IValueController.EditType.NONE,
                 null);
         } else {
@@ -4994,7 +5002,7 @@ public class ResultSetViewer extends Viewer
                             );
                             final ResultSetValueController controller = new ResultSetValueController(
                                 this,
-                                new ResultSetCellLocation(docAttribute, targetRow, null),
+                                new ResultSetCellLocation(docAttribute, targetRow, null, null),
                                 IValueController.EditType.NONE,
                                 null
                             );

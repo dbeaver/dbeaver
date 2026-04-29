@@ -27,20 +27,21 @@ import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.util.Locale;
-
 public class DuckDBValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
+        String typeName = typedObject.getTypeName();
+        if (DuckDBConstants.isGeometryType(typeName)) {
+            return DuckDBGeometryValueHandler.INSTANCE;
+        }
         if (typedObject.getDataKind() == DBPDataKind.STRUCT) {
             return DuckDBStructValueHandler.INSTANCE;
         }
-        return switch (typedObject.getTypeName().toUpperCase(Locale.ROOT)) {
-            case DuckDBConstants.TYPE_GEOMETRY -> DuckDBGeometryValueHandler.INSTANCE;
-            case DuckDBConstants.TYPE_BLOB -> JDBCContentValueHandler.INSTANCE;
-            default -> null;
-        };
+        if (DuckDBConstants.TYPE_BLOB.equalsIgnoreCase(typeName.trim())) {
+            return JDBCContentValueHandler.INSTANCE;
+        }
+        return null;
     }
 }
