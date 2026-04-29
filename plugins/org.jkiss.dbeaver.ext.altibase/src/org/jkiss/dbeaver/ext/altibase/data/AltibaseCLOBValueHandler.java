@@ -117,7 +117,12 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
             @NotNull DBSTypedObject paramType,
             int paramIndex,
             @Nullable Object value
-    ) throws DBCException, SQLException {
+    protected void bindParameter(
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
+        int paramIndex,
+        @Nullable Object value
         if (DBUtils.isNullValue(value)) {
             statement.setNull(paramIndex, paramType.getTypeID(), paramType.getTypeName());
         } else if (value instanceof JDBCContentChars contentChars) {
