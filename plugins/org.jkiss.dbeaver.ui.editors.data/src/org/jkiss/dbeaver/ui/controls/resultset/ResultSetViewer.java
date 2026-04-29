@@ -2146,6 +2146,11 @@ public class ResultSetViewer extends Viewer
         if (curState == null) {
             setNewState(targetEntity, model.getDataFilter());
         }
+
+        // overwrite current model's filters because otherwise they will be aggregated on resultset's metadata update while the former one
+        // might have been describing different entity reference and is not adequate for the current targetEntity of intereset
+        model.setDataFilter(newFilter);
+
         runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, false, null);
     }
 
