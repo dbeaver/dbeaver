@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -40,7 +37,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TextGetSetEditingSupport;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.utils.CommonUtils;
 
@@ -176,62 +172,74 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         GridDataFactory.fillDefaults()
             .grab(true, true)
             .span(2, 1)
-            .hint(600, 300)
+            .hint(800, 300)
             .applyTo(table);
 
-        var controller = new ViewerColumnController<Object, MutableQueryFilter>("ResultSetFilterDialogTable", viewer);
-        controller.addColumn(
-            "Expression",
-            "Expression of the filter",
-            SWT.LEFT,
-            true,
-            true,
-            MutableQueryFilter::getText,
-            new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getText, MutableQueryFilter::setText) {
-                @Override
-                protected boolean canEdit(@NotNull Object element) {
-                    return ((MutableQueryFilter) element).original == null;
-                }
-            }
-        );
-        controller.addColumn(
-            "Title",
-            "Title of the filter",
-            SWT.LEFT,
-            true,
-            true,
-            MutableQueryFilter::getTitle,
-            new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getTitle, MutableQueryFilter::setTitle)
-        );
-        controller.addColumn(
-            "Last used",
-            "The last time the filter was used",
-            SWT.LEFT,
-            true,
-            false,
-            e -> e.original != null ? formatInstant(e.original.lastUsed()) : "N/A",
-            null
-        );
-        controller.addColumn(
-            "Times used",
-            "The number of times the filter was used",
-            SWT.LEFT,
-            false,
-            false,
-            e -> e.original != null ? NumberFormat.getInstance().format(e.original.useCount()) : "N/A",
-            null
-        );
-        controller.createColumns(false);
-
-        var manager = new MenuManager();
-        manager.setRemoveAllWhenShown(true);
-        manager.addMenuListener(m -> {
-            if (controller.isClickOnHeader()) {
-                controller.fillConfigMenu(m);
+        var exprColumn = new TableViewerColumn(viewer, SWT.LEFT);
+        exprColumn.getColumn().setText("Expression");
+        exprColumn.getColumn().setToolTipText("Expression of the filter");
+        exprColumn.setLabelProvider(new ColumnLabelProvider() {
+            @NotNull
+            @Override
+            public String getText(@NotNull Object element) {
+                return ((MutableQueryFilter) element).getText();
             }
         });
-        table.setMenu(manager.createContextMenu(table));
-        table.addDisposeListener(e -> manager.dispose());
+        exprColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getText, MutableQueryFilter::setText) {
+            @Override
+            protected boolean canEdit(@NotNull Object element) {
+                return ((MutableQueryFilter) element).original == null;
+            }
+        });
+
+        var titleColumn = new TableViewerColumn(viewer, SWT.LEFT);
+        titleColumn.getColumn().setText("Title");
+        titleColumn.getColumn().setToolTipText("Title of the filter");
+        titleColumn.setLabelProvider(new ColumnLabelProvider() {
+            @NotNull
+            @Override
+            public String getText(@NotNull Object element) {
+                return ((MutableQueryFilter) element).getTitle();
+            }
+        });
+        titleColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getTitle, MutableQueryFilter::setTitle));
+
+        var lastUsedColumn = new TableViewerColumn(viewer, SWT.LEFT);
+        lastUsedColumn.getColumn().setText("Last used");
+        lastUsedColumn.getColumn().setToolTipText("The last time the filter was used");
+        lastUsedColumn.setLabelProvider(new ColumnLabelProvider() {
+            @NotNull
+            @Override
+            public String getText(@NotNull Object element) {
+                var filter = (MutableQueryFilter) element;
+                return filter.original != null ? formatInstant(filter.original.lastUsed()) : "N/A";
+            }
+        });
+
+        var timesUsedColumn = new TableViewerColumn(viewer, SWT.LEFT);
+        timesUsedColumn.getColumn().setText("Times used");
+        timesUsedColumn.getColumn().setToolTipText("The number of times the filter was used");
+        timesUsedColumn.setLabelProvider(new ColumnLabelProvider() {
+            @NotNull
+            @Override
+            public String getText(@NotNull Object element) {
+                var filter = (MutableQueryFilter) element;
+                return filter.original != null ? NumberFormat.getInstance().format(filter.original.useCount()) : "N/A";
+            }
+        });
+
+        UIUtils.asyncExec(() -> {
+            float[] weights = {0.45f, 0.25f, 0.2f, 0.10f};
+            int totalWeight = table.getClientArea().width;
+            int remainingWeight = totalWeight;
+            for (int i = 0; i < weights.length; i++) {
+                int columnWidth = i != weights.length - 1 ? (int) (totalWeight * weights[i]) : remainingWeight;
+                var column = viewer.getTable().getColumn(i);
+                column.setWidth(columnWidth);
+                column.setMoveable(false);
+                remainingWeight -= columnWidth;
+            }
+        });
 
         return viewer;
     }
