@@ -139,11 +139,11 @@ public class AltibaseCLOBValueHandler extends JDBCContentValueHandler {
     * Otherwise, the Reader is reset and passed directly as a character stream.
     */
     private void bindCharParameter(
-            @NotNull JDBCSession session,
-            @NotNull JDBCPreparedStatement statement,
-            @NotNull DBSTypedObject paramType,
-            int paramIndex,
-            @NotNull JDBCContentChars contentChars
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
+        int paramIndex,
+        @NotNull JDBCContentChars contentChars
     ) throws DBCException, SQLException {
         try {
             Reader reader = contentChars.getContentReader();
