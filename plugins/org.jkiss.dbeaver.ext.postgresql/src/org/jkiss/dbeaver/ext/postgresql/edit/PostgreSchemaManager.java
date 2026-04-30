@@ -62,7 +62,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     protected PostgreSchema createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -148,7 +148,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         }
 
         @Override
-        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+        public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBCException {
             super.afterExecute(session, error);
             if (error == null) {
                 schema.readSchemaInfo(session.getProgressMonitor());
