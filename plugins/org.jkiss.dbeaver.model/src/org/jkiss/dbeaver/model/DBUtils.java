@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -68,6 +69,45 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
+
+    private static final ResultSetValuePath.PathItemVisitor<Object, Object> RSV_PATH_ITEM_VALUE_RESOLVER
+        = new ResultSetValuePath.PathItemVisitor<>() {
+
+        @Nullable
+        @Override
+        public Object visitIndexItem(@NotNull ResultSetValuePath.PathIndexItem indexItem, @NotNull Object arg) {
+            if (arg instanceof Collection<?> c) {
+                if (indexItem.index() < c.size()) {
+                    if (arg instanceof List<?> l) {
+                        return l.get(indexItem.index());
+                    } else {
+                        Object[] items = c.toArray();
+                        return items[indexItem.index()];
+                    }
+                } else {
+                    log.debug("Path index item " + indexItem.index() + " is out of range for " + arg);
+                }
+            } else {
+                log.debug("Cannot apply path index item to " + arg);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitAttributeItem(@NotNull ResultSetValuePath.PathAttributeItem attrItem, @NotNull Object arg) {
+            if (arg instanceof DBDComposite c) {
+                try {
+                    return c.getAttributeValue(attrItem.attribute());
+                } catch (DBCException e) {
+                    log.debug("Failed to apply path attribute item to " + arg, e);
+                }
+            } else {
+                log.debug("Cannot apply path attribute item to " + arg);
+            }
+            return null;
+        }
+    };
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
@@ -743,7 +783,8 @@ public final class DBUtils {
                         dataContainer,
                         dataSource,
                         customAttributes.get(i),
-                        bindings.length + i);
+                        bindings.length + i
+                    );
                 }
                 DBDAttributeBinding[] combinedAttrs = new DBDAttributeBinding[bindings.length + customBindings.length];
                 System.arraycopy(bindings, 0, combinedAttrs, 0, bindings.length);
@@ -759,6 +800,32 @@ public final class DBUtils {
         }
     }
 
+    /**
+     * Obtain row item value by following the given valuePath
+     * @param row element of data
+     * @param valuePath through the tree of row subvalues
+     */
+    @Nullable
+    public static Object getRowValueByPath(@NotNull DBDValueRow row, @NotNull ResultSetValuePath valuePath) {
+        if (!(valuePath.pathItems().getFirst() instanceof ResultSetValuePath.PathAttributeItem rootAttr
+            && rootAttr.attribute() instanceof DBDAttributeBinding rootBinding)
+        ) {
+            log.debug("Root valuePath item expected to be an attribute binding.");
+            return null;
+        }
+
+        Object value = row.getValues()[rootBinding.getOrdinalPosition()];
+        int i = 1;
+        while (value != null && i < valuePath.pathItems().size()) {
+            value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
+            i++;
+        }
+        if (i < valuePath.pathItems().size()) {
+            log.debug("ResultSet value valuePath was not completely applied.");
+        }
+        return value;
+    }
+
     @Nullable
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
@@ -766,6 +833,72 @@ public final class DBUtils {
         @NotNull Object[] row
     ) {
         return getAttributeValue(attribute, allAttributes, row, null, false);
+    }
+
+    @Nullable
+    private static Object getAttributeValueByBindings(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @NotNull int[] nestedIndexes
+    ) {
+        ListNode<DBDAttributeBinding> path = null;
+        for (DBDAttributeBinding attr = attribute; attr != null; attr = attr.getParentObject()) {
+            path = ListNode.push(path, attr);
+        }
+
+        int rootIndex = -1;
+        for (DBDAttributeBinding allAttribute : allAttributes) {
+            if (allAttribute == path.data) {
+                rootIndex = allAttribute.getOrdinalPosition();
+                break;
+            }
+        }
+
+        if (rootIndex < 0) {
+            log.debug("Failed to resolve root attribute index by its binding.");
+            return null;
+        }
+
+        Object value = row[rootIndex];
+        int currentIndex = 0;
+        for (ListNode<DBDAttributeBinding> node = path.next; node != null;) {
+            if (value instanceof Collection<?> c) { // if we have a collection
+                int index;
+                if (currentIndex < nestedIndexes.length) { // and nestedIndex is available
+                    index = nestedIndexes[currentIndex++]; // then we get it
+                } else {
+                    log.debug("Not enough nested indexes given to apply attribute bindings to the given values hierarchy.");
+                    return null;
+                }
+                if (index < c.size()) { // and apply presented nestedIndex
+                    if (value instanceof List<?> l) {
+                        value = l.get(index);
+                    } else {
+                        Object[] items = c.toArray();
+                        value = items[index];
+                    }
+                } else {
+                    log.debug("Nested index is out of collection range at a certain level of the given values hierarchy.");
+                    return null;
+                }
+            } else if (value instanceof DBDComposite c) {
+                try {
+                    value = c.getAttributeValue(node.data);
+                } catch (DBCException e) {
+                    log.debug("Failed to apply attribute binding to the given composite.", e);
+                    return null;
+                }
+                node = node.next;
+            } else {
+                log.debug("Failed to apply attribute binding to the value of an unknown kind.");
+                return null;
+            }
+        }
+        if (currentIndex < nestedIndexes.length) {
+            log.debug("Not all of nested indexes were used, we might have missed the desired value.");
+        }
+        return value;
     }
 
     @Nullable
@@ -809,7 +942,17 @@ public final class DBUtils {
 
             if (!(curValue instanceof DBDCollection)) {
                 if (remainingAttributes == 0) {
-                    return DBDVoid.INSTANCE;
+                    if (remainingIndices == 0) {
+                        return DBDVoid.INSTANCE;
+                    } else {
+                        // Indexes were not applied correctly due to incompleteness of value referencing approach,
+                        // so try to use bindings hierarchy as a traversing path through the row subvalues tree.
+                        // Assuming given nestedIndexes is enough, which might not be true, as it is a plain array and
+                        // doesn't carry information on which index should be applied to which collection.
+                        // NOTE: doesn't fix all the other cases when the value location is not covered by bindings.
+                        Object value = getAttributeValueByBindings(attribute, allAttributes, row, nestedIndexes);
+                        return value == null ? DBDVoid.INSTANCE : value;
+                    }
                 }
                 remainingAttributes -= 1;
                 DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(remainingAttributes));

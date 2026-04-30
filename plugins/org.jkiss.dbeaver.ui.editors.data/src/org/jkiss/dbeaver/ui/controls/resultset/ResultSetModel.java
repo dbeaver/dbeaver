@@ -413,13 +413,19 @@ public class ResultSetModel implements DBDResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull ResultSetCellLocation cellLocation) {
-        return getCellValue(cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), false);
+        return getCellValue(
+            cellLocation.getAttribute(),
+            cellLocation.getRow(),
+            cellLocation.getRowIndexes(),
+            cellLocation.getValuePath(),
+            false
+        );
     }
 
     @Nullable
     @Override
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) {
-        return getCellValue(attribute, row, null, false);
+        return getCellValue(attribute, row, null, null, false);
     }
 
     @Nullable
@@ -428,15 +434,20 @@ public class ResultSetModel implements DBDResultSetModel {
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         boolean retrieveDeepestCollectionElement
     ) {
-        return DBUtils.getAttributeValue(
-            attribute,
-            attributes,
-            row.getValues(),
-            rowIndexes,
-            retrieveDeepestCollectionElement
-        );
+        if (valuePath != null) {
+            return DBUtils.getRowValueByPath(row, valuePath);
+        } else {
+            return DBUtils.getAttributeValue(
+                attribute,
+                attributes,
+                row.getValues(),
+                rowIndexes,
+                retrieveDeepestCollectionElement
+            );
+        }
     }
 
     /**
@@ -534,7 +545,8 @@ public class ResultSetModel implements DBDResultSetModel {
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
         } else if (row.isChanged(attr)) {
-            DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
+            // TODO introduce value path here
+            DBUtils.resetValue(getCellValue(attr, row, rowIndexes, null, false));
             try {
                 Object origValue = row.getChange(attr);
                 if (origValue instanceof DBDAttributeBinding refAttr) {
