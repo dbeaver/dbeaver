@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1344,7 +1344,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 JDBCStringValueHandler.INSTANCE.bindValueObject(
                     session,
                     dbStat,
-                    null, // It is ok to pass null here because JDBCStringValueHandler doesn't use attr type
+                    null, // it is ok - string vh doesn't use column meta
                     paramPos++,
                     "%" + pattern + "%");
             }

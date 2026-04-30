@@ -66,7 +66,7 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     protected PostgreRole createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {

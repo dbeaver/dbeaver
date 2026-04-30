@@ -71,7 +71,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
     protected GenericUniqueKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable final Object container,
+        @NotNull final Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
