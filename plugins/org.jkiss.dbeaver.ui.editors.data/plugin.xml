@@ -255,8 +255,12 @@
         <command id="org.jkiss.dbeaver.core.resultset.count" name="%command.org.jkiss.dbeaver.core.resultset.count.name" description="%command.org.jkiss.dbeaver.core.resultset.count.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.edit" name="%command.org.jkiss.dbeaver.core.resultset.row.edit.name" description="%command.org.jkiss.dbeaver.core.resultset.row.edit.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.edit.inline" name="%command.org.jkiss.dbeaver.core.resultset.row.edit.inline.name" description="%command.org.jkiss.dbeaver.core.resultset.row.edit.inline.description" categoryId="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="%command.org.jkiss.dbeaver.core.resultset.row.add.name" description="%command.org.jkiss.dbeaver.core.resultset.row.add.description" categoryId="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="%command.org.jkiss.dbeaver.core.resultset.row.copy.name" description="%command.org.jkiss.dbeaver.core.resultset.row.copy.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.row.add" name="%command.org.jkiss.dbeaver.core.resultset.row.add.name" description="%command.org.jkiss.dbeaver.core.resultset.row.add.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter id="placement" name="Placement" optional="true"/>
+        </command>
+        <command id="org.jkiss.dbeaver.core.resultset.row.copy" name="%command.org.jkiss.dbeaver.core.resultset.row.copy.name" description="%command.org.jkiss.dbeaver.core.resultset.row.copy.description" categoryId="org.jkiss.dbeaver.core.rs">
+            <commandParameter id="placement" name="Placement" optional="true"/>
+        </command>
         <command id="org.jkiss.dbeaver.core.resultset.row.copy.from.above" name="%command.org.jkiss.dbeaver.core.resultset.row.copy.from.above.name" description="%command.org.jkiss.dbeaver.core.resultset.row.copy.from.above.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.copy.from.below" name="%command.org.jkiss.dbeaver.core.resultset.row.copy.from.below.name" description="%command.org.jkiss.dbeaver.core.resultset.row.copy.from.below.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="%command.org.jkiss.dbeaver.core.resultset.row.delete.name" description="%command.org.jkiss.dbeaver.core.resultset.row.delete.description" categoryId="org.jkiss.dbeaver.core.rs"/>

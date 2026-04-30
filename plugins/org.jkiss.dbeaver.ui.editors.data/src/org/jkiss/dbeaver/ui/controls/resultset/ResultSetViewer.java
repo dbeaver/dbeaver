@@ -246,6 +246,9 @@ public class ResultSetViewer extends Viewer
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
         super();
+        // Lazy-install the global Shift-companion key filter the first time any
+        // result-set viewer is created (#12106). The filter is idempotent.
+        ResultSetRowShiftKeyFilter.install();
         this.site = site;
         this.recordMode = false;
         this.container = container;

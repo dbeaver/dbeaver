@@ -209,10 +209,20 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case IResultSetCommands.CMD_ROW_ADD:
             case IResultSetCommands.CMD_ROW_COPY: {
                 boolean copy = actionId.equals(IResultSetCommands.CMD_ROW_COPY);
-                boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
-                final RowPlacement placement;
+                // "Insert before" can be requested two ways (#12106):
+                //   1. Via the placement command parameter, set by
+                //      ResultSetRowShiftKeyFilter when the user presses
+                //      Shift+<active row.add/row.copy chord>.
+                //   2. Via the SWT.SHIFT modifier on the trigger Event, which
+                //      is what toolbar Shift-clicks deliver.
+                boolean beforeRequested = IResultSetCommands.PARAM_ROW_PLACEMENT_BEFORE.equals(
+                    event.getParameter(IResultSetCommands.PARAM_ROW_PLACEMENT));
+                if (!beforeRequested && event.getTrigger() instanceof Event triggerEvent) {
+                    beforeRequested = (triggerEvent.stateMask & SWT.SHIFT) == SWT.SHIFT;
+                }
 
-                if (rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ^ shiftPressed) {
+                final RowPlacement placement;
+                if (rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ^ beforeRequested) {
                     placement = RowPlacement.AFTER_SELECTION;
                 } else {
                     placement = RowPlacement.BEFORE_SELECTION;
