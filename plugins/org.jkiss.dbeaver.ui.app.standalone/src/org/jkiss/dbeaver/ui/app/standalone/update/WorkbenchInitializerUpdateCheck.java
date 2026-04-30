@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.app.standalone.update;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
+import org.jkiss.dbeaver.core.ui.services.UIServiceApplicationVersionUpdater;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
@@ -36,10 +37,10 @@ public class WorkbenchInitializerUpdateCheck implements IWorkbenchWindowInitiali
     private boolean isAutoupdateDisabled(@NotNull DBPApplication application) {
         return application.isDistributed()
             || ApplicationPolicyService.getInstance().isInstallUpdateDisabled()
-            || isDisabledByService();
+            || isUpdateJobDisabledByService();
     }
 
-    private boolean isDisabledByService() {
+    private boolean isUpdateJobDisabledByService() {
         UIServiceApplicationVersionUpdater service = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
         return service != null && !service.isAutoUpdateEnabled();
     }
