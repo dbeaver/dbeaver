@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBParser;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBParserException;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBWriter;
@@ -92,7 +93,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object,
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object,
                                      boolean copy, boolean validateValue) throws DBCException {
         if (object == null) {
             return new DBGeometry();

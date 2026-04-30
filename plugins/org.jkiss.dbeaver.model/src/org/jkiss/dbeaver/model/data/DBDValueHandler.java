@@ -108,8 +108,7 @@ public interface DBDValueHandler extends DBDValueRenderer
         @Nullable Object object,
         boolean copy,
         boolean validateValue
-    )
-        throws DBCException;
+    ) throws DBCException;
 
     /**
      * Creates new value object.

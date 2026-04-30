@@ -37,7 +37,6 @@ public interface DBDContent extends DBDValue {
     /**
      * Content length in bytes.
      * @return length
-     * @throws DBCException
      */
     long getContentLength() throws DBCException;
 
@@ -60,11 +59,10 @@ public interface DBDContent extends DBDValue {
      * @param storage storage
      * @return true if implementation acquires passed storage object.
      *   false if implementation copies storage.
-     * @throws DBException
      */
     boolean updateContents(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDContentStorage storage)
+        @Nullable DBDContentStorage storage)
         throws DBException;
 
     /**

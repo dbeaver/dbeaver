@@ -112,7 +112,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     @Override
     public boolean updateContents(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDContentStorage storage)
+        @Nullable DBDContentStorage storage)
         throws DBException
     {
         if (storage == null) {

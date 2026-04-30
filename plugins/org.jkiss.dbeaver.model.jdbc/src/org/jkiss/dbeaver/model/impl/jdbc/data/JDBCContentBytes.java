@@ -46,7 +46,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
 
     private static final Log log = Log.getLog(JDBCContentBytes.class);
 
-    private byte[] originalData;
+    private final byte[] originalData;
     private byte[] data;
 
     public JDBCContentBytes(DBCExecutionContext executionContext) {
@@ -72,9 +72,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
 
     @NotNull
     @Override
-    public InputStream getContentStream()
-        throws IOException
-    {
+    public InputStream getContentStream() {
         if (data == null) {
             return new ByteArrayInputStream(new byte[0]);
         } else {
@@ -84,9 +82,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
 
     @NotNull
     @Override
-    public Reader getContentReader()
-        throws IOException
-    {
+    public Reader getContentReader() {
         return new InputStreamReader(
             getContentStream());
     }
@@ -108,9 +104,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
 
     @NotNull
     @Override
-    public JDBCContentBytes cloneStorage(@NotNull DBRProgressMonitor monitor)
-        throws IOException
-    {
+    public JDBCContentBytes cloneStorage(@NotNull DBRProgressMonitor monitor) {
         return cloneValue(monitor);
     }
 
@@ -131,7 +125,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     @Override
     public boolean updateContents(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDContentStorage storage)
+        @Nullable DBDContentStorage storage)
         throws DBException
     {
         if (storage == null) {

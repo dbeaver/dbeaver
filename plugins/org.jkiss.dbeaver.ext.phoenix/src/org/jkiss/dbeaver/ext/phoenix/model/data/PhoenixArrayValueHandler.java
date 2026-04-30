@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.phoenix.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -40,7 +41,7 @@ public class PhoenixArrayValueHandler extends JDBCArrayValueHandler {
     public static final String PHOENIX_ARRAY_TYPE = "PhoenixArray";
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object != null && object.getClass().getSimpleName().contains(PHOENIX_ARRAY_TYPE)) {
             return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);

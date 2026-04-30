@@ -62,8 +62,13 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
 
     @Nullable
     @Override
-    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, 
-            Object object, boolean copy, boolean validateValue) throws DBCException {
+    public DBGeometry getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
 
         DBGeometry dbGeometry = null;
         int srid = 0;

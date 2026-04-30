@@ -41,7 +41,7 @@ public class MySQLGeometryValueHandler extends GISGeometryValueHandler {
 
     @Nullable
     @Override
-    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
         final DBGeometry geometry = super.getValueFromObject(session, type, object, copy, validateValue);
         if (geometry.getSRID() == 0) {
             if (type instanceof DBDAttributeBinding binding) {

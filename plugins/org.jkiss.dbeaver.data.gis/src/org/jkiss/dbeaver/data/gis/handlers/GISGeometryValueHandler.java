@@ -111,7 +111,13 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+    public DBGeometry getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
         DBGeometry geometry;
         if (object == null) {
             geometry = new DBGeometry();
@@ -130,7 +136,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             } else {
                 bytes = (byte[]) object;
             }
-            if (bytes.length == 0) {
+            if (bytes == null || bytes.length == 0) {
                 return new DBGeometry();
             }
             try {
@@ -210,10 +216,10 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (value instanceof DBGeometry && format == DBDDisplayFormat.NATIVE) {
-            return "'" + value.toString() + "'";
+            return "'" + value + "'";
         } else if (value instanceof JDBCContentBytes && !DBUtils.isNullValue(value)) {
             byte[] bytes = ((JDBCContentBytes) value).getRawValue();
-            if (bytes.length != 0) {
+            if (bytes != null && bytes.length != 0) {
                 try {
                     Geometry geometry = convertGeometryFromBinaryFormat(null, bytes);
                     return geometry.toString();

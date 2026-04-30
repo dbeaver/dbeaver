@@ -69,7 +69,7 @@ public class StringContent extends AbstractContent {
     }
 
     @Override
-    public boolean updateContents(@NotNull DBRProgressMonitor monitor, @NotNull DBDContentStorage storage) throws DBException {
+    public boolean updateContents(@NotNull DBRProgressMonitor monitor, @Nullable DBDContentStorage storage) throws DBException {
         try {
             try (Reader reader = storage.getContentReader()) {
                 StringWriter sw = new StringWriter((int)storage.getContentLength());
