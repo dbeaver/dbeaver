@@ -1053,14 +1053,7 @@ public class SQLScriptParser {
         if (elements.size() <= 1) {
             return elements;
         }
-        Pattern[] separatorPatterns = new Pattern[batchSeparators.length];
-        for (int i = 0; i < batchSeparators.length; i++) {
-            separatorPatterns[i] = Pattern.compile(
-                "^\\s*" + Pattern.quote(batchSeparators[i]) + "\\s*$",
-                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
-            );
-        }
-
+        Pattern[] separatorPatterns = buildSeparatorPatterns(batchSeparators);
         List<SQLScriptElement> merged = new LinkedList<>();
         int batchStart = -1;
         int batchEnd = -1;
@@ -1081,23 +1074,7 @@ public class SQLScriptParser {
                 batchDataSource = query.getDataSource();
                 continue;
             }
-            boolean hasSeparator = false;
-            int gapStart = batchEnd;
-            int gapEnd = query.getOffset();
-            if (gapEnd > gapStart) {
-                try {
-                    String gapText = document.get(gapStart, gapEnd - gapStart);
-                    for (Pattern p : separatorPatterns) {
-                        if (p.matcher(gapText).find()) {
-                            hasSeparator = true;
-                            break;
-                        }
-                    }
-                } catch (BadLocationException e) {
-                    hasSeparator = true;
-                }
-            }
-            if (hasSeparator) {
+            if (hasBatchSeparator(document, batchEnd, query.getOffset(), separatorPatterns)) {
                 merged.add(createBatchQuery(document, batchDataSource, batchStart, batchEnd));
                 batchStart = query.getOffset();
                 batchEnd = query.getOffset() + query.getLength();
@@ -1113,6 +1090,41 @@ public class SQLScriptParser {
     }
 
     @NotNull
+    private static Pattern[] buildSeparatorPatterns(@NotNull String[] batchSeparators) {
+        Pattern[] patterns = new Pattern[batchSeparators.length];
+        for (int i = 0; i < batchSeparators.length; i++) {
+            patterns[i] = Pattern.compile(
+                "^\\s*" + Pattern.quote(batchSeparators[i]) + "\\s*$",
+                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
+            );
+        }
+        return patterns;
+    }
+
+    private static boolean hasBatchSeparator(
+        @NotNull IDocument document,
+        int gapStart,
+        int gapEnd,
+        @NotNull Pattern[] separatorPatterns
+    ) {
+        if (gapEnd <= gapStart) {
+            return false;
+        }
+        try {
+            String gapText = document.get(gapStart, gapEnd - gapStart);
+            for (Pattern p : separatorPatterns) {
+                if (p.matcher(gapText).find()) {
+                    return true;
+                }
+            }
+        } catch (BadLocationException e) {
+            log.debug("Failed to read gap text between script elements", e);
+            return true;
+        }
+        return false;
+    }
+
+    @NotNull
     private static SQLQuery createBatchQuery(
         @NotNull IDocument document,
         @Nullable DBPDataSource dataSource,
@@ -1123,6 +1135,7 @@ public class SQLScriptParser {
             String text = SQLUtils.fixLineFeeds(document.get(start, end - start));
             return new SQLQuery(dataSource, text, start, end - start);
         } catch (BadLocationException e) {
+            log.debug("Failed to read batch text from document", e);
             return new SQLQuery(dataSource, "", start, end - start);
         }
     }
