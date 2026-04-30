@@ -110,9 +110,9 @@ public final class ResultSetRowShiftKeyFilter implements Listener {
                     event.doit = false;
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception e) {
             // Never let this filter break unrelated keystrokes
-            log.debug("Shift companion dispatch failed", t);
+            log.debug("Shift companion dispatch failed", e);
         }
     }
 
