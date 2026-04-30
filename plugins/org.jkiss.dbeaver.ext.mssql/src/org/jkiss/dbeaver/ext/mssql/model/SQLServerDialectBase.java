@@ -117,12 +117,13 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     @NotNull
     @Override
     public String[] getScriptDelimiters() {
-        return new String[]{"GO"};
+        return new String[]{";", "GO"};
     }
 
+    @Nullable
     @Override
-    public boolean usesOnlyNativeScriptDelimiters() {
-        return true;
+    public String[] getScriptBatchSeparators() {
+        return new String[]{"GO"};
     }
 
     @Override

@@ -157,14 +157,12 @@ public class SQLSyntaxManager {
             }
         }
 
-        if (!sqlDialect.usesOnlyNativeScriptDelimiters()) {
-            String extraDelimiters = CommonUtils.toString(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER), SQLConstants.DEFAULT_STATEMENT_DELIMITER);
-            StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
-            while (st.hasMoreTokens()) {
-                String delim = st.nextToken();
-                if (!ArrayUtils.contains(this.statementDelimiters, delim)) {
-                    this.statementDelimiters = ArrayUtils.add(String.class, this.statementDelimiters, delim);
-                }
+        String extraDelimiters = CommonUtils.toString(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER), SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+        StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
+        while (st.hasMoreTokens()) {
+            String delim = st.nextToken();
+            if (!ArrayUtils.contains(this.statementDelimiters, delim)) {
+                this.statementDelimiters = ArrayUtils.add(String.class, this.statementDelimiters, delim);
             }
         }
         this.statementDelimiterMode = SQLScriptStatementDelimiterMode.fromPreferences(preferenceStore);

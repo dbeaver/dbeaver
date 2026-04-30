@@ -208,20 +208,23 @@ public interface SQLDialect {
     String[] getScriptDelimiters();
 
     /**
-     * Whether the default statement delimiter (typically {@code ;}) from user preferences
-     * should be suppressed when the user has not explicitly customized it.
+     * Returns the subset of script delimiters that mark actual execution batch boundaries.
      * <p>
-     * When {@code true}, only the delimiters from {@link #getScriptDelimiters()} are used
-     * unless the user has explicitly configured a custom statement delimiter in preferences.
+     * When non-null, during script execution (ALT+X) only these delimiters split
+     * the script into separate JDBC calls. Statements separated by other delimiters
+     * (like {@code ;}) are merged into a single execution batch.
      * <p>
-     * T-SQL (SQL Server / Sybase) needs this because {@code ;} is a statement terminator
-     * within a batch, not a batch separator. Splitting on {@code ;} breaks variable scope
-     * across statements in the same batch.
+     * All script delimiters are still used for editor features (folding, highlighting).
+     * <p>
+     * T-SQL needs this because {@code ;} is a statement terminator within a batch,
+     * not a batch separator. The actual batch separator is {@code GO}.
      *
-     * @return true to suppress adding the default preference-based delimiter
+     * @return batch separator strings, or {@code null} if all script delimiters
+     *         are batch separators (default)
      */
-    default boolean usesOnlyNativeScriptDelimiters() {
-        return false;
+    @Nullable
+    default String[] getScriptBatchSeparators() {
+        return null;
     }
 
     @Nullable

@@ -663,22 +663,19 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
 
     @Test
     public void parseBeginTransaction() throws DBException {
-        assertParse(
-            POSTGRESQL_DIALECT_NAME,
-            "begin transaction;\nselect 1 from dual;",
-            new String[] {"begin transaction", "select 1 from dual"}
-        );
-        // SQL Server uses GO as the batch delimiter, not ';'.
-        // Semicolons do not split batches, so the whole text is one element.
-        assertParse(
-            SQLSERVER_DIALECT_NAME,
-            "begin transaction;\nselect 1 from dual;",
-            new String[] {"begin transaction;\nselect 1 from dual;"}
-        );
+        String[] dialects = new String[] {POSTGRESQL_DIALECT_NAME, SQLSERVER_DIALECT_NAME};
+        for (String dialect : dialects) {
+            assertParse(
+                dialect,
+                "begin transaction;\nselect 1 from dual;",
+                new String[] {"begin transaction", "select 1 from dual"}
+            );
+        }
     }
 
     @Test
     public void parseFromCursorPositionBeginTransaction() throws DBException {
+        String[] dialects = new String[] {POSTGRESQL_DIALECT_NAME, SQLSERVER_DIALECT_NAME};
         String query = """
             begi<-|n transaction;<-|
             select 1 from dual;
@@ -692,22 +689,14 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             String modifiedQuery = entry.getKey();
             int[] positions = entry.getValue();
 
-            // PostgreSQL splits on ';' - cursor in "begin transaction" returns just that statement
-            context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), modifiedQuery);
-            for (int pos : positions) {
-                element = SQLScriptParser.parseQuery(
-                    context, 0, modifiedQuery.length(), pos, false, false
-                );
-                assertEquals("begin transaction", element.getText());
-            }
-
-            // SQL Server does not split on ';' - the whole batch is one query
-            context = createParserContext(setDialect(SQLSERVER_DIALECT_NAME), modifiedQuery);
-            for (int pos : positions) {
-                element = SQLScriptParser.parseQuery(
-                    context, 0, modifiedQuery.length(), pos, false, false
-                );
-                assertEquals(modifiedQuery.trim(), element.getText().trim());
+            for (String dialect : dialects) {
+                context = createParserContext(setDialect(dialect), modifiedQuery);
+                for (int pos : positions) {
+                    element = SQLScriptParser.parseQuery(
+                        context, 0, modifiedQuery.length(), pos, false, false
+                    );
+                    assertEquals("begin transaction", element.getText());
+                }
             }
         }
     }
@@ -715,31 +704,43 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     /**
      * Issue 40922 - SQL Server variable declarations must stay in the same batch.
      * Splitting on ';' causes "Must declare the scalar variable" errors.
+     * In script mode (ALT+X), ';'-separated statements are merged into a single
+     * execution batch; only GO creates a new batch.
      */
     @Test
     public void parseSqlServerVariableDeclarationBatch() throws DBException {
-        // Single batch with DECLARE + SELECT - must NOT be split on ';'
         String singleBatch = "DECLARE @month DATETIME = '2026-03-01';\nSELECT @month;";
+
+        // Script mode (ALT+X): statements merged into one batch
         SQLParserContext ctx = createParserContext(setDialect(SQLSERVER_DIALECT_NAME), singleBatch);
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
-            ctx, 0, ctx.getDocument().getLength(), false, false, false
+            ctx, 0, ctx.getDocument().getLength(), true, false, false
         );
         assertEquals(1, elements.size());
-        assertEquals(singleBatch, elements.get(0).getText().trim());
+        assertEquals(singleBatch, elements.get(0).getText());
 
-        // Two batches separated by GO - must be split into two elements
-        assertParse(
-            SQLSERVER_DIALECT_NAME,
-            "DECLARE @month DATETIME = '2026-03-01';\nSELECT @month;\nGO\nSELECT 1;",
-            new String[]{"DECLARE @month DATETIME = '2026-03-01';\nSELECT @month;\n", "SELECT 1;"}
+        // Editor mode (folding): still splits on ';' for proper folding
+        elements = SQLScriptParser.extractScriptQueries(
+            ctx, 0, ctx.getDocument().getLength(), false, false, false
         );
+        assertEquals(2, elements.size());
 
-        // PostgreSQL should still split on ';' as before
-        assertParse(
-            POSTGRESQL_DIALECT_NAME,
-            "DECLARE @month DATETIME = '2026-03-01';\nSELECT @month;",
-            new String[]{"DECLARE @month DATETIME = '2026-03-01'", "SELECT @month"}
+        // Script mode: GO separates into two execution batches
+        String twoBatches = "DECLARE @month DATETIME = '2026-03-01';\nSELECT @month;\nGO\nSELECT 1;";
+        ctx = createParserContext(setDialect(SQLSERVER_DIALECT_NAME), twoBatches);
+        elements = SQLScriptParser.extractScriptQueries(
+            ctx, 0, ctx.getDocument().getLength(), true, false, false
         );
+        assertEquals(2, elements.size());
+        assertEquals("DECLARE @month DATETIME = '2026-03-01';\nSELECT @month;", elements.get(0).getText().trim());
+        assertEquals("SELECT 1;", elements.get(1).getText().trim());
+
+        // PostgreSQL still splits on ';' even in script mode
+        ctx = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), singleBatch);
+        elements = SQLScriptParser.extractScriptQueries(
+            ctx, 0, ctx.getDocument().getLength(), true, false, false
+        );
+        assertEquals(2, elements.size());
     }
 
     /**

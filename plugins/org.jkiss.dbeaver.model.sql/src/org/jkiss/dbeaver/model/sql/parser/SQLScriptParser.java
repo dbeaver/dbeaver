@@ -51,6 +51,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SQL parser
@@ -1020,6 +1021,13 @@ public class SQLScriptParser {
             expandQueries(parserContext, queryList);
         }
 
+        if (scriptMode) {
+            String[] batchSeparators = parserContext.getSyntaxManager().getDialect().getScriptBatchSeparators();
+            if (batchSeparators != null) {
+                queryList = mergeIntoBatches(queryList, document, batchSeparators);
+            }
+        }
+
         if (parseParameters) {
             // Parse parameters
             for (SQLScriptElement element : queryList) {
@@ -1029,6 +1037,94 @@ public class SQLScriptParser {
             }
         }
         return queryList;
+    }
+
+    /**
+     * Merges parsed script elements that belong to the same execution batch.
+     * Elements are in the same batch if no batch separator (e.g. GO) appears
+     * between them in the original document text.
+     */
+    @NotNull
+    private static List<SQLScriptElement> mergeIntoBatches(
+        @NotNull List<SQLScriptElement> elements,
+        @NotNull IDocument document,
+        @NotNull String[] batchSeparators
+    ) {
+        if (elements.size() <= 1) {
+            return elements;
+        }
+        Pattern[] separatorPatterns = new Pattern[batchSeparators.length];
+        for (int i = 0; i < batchSeparators.length; i++) {
+            separatorPatterns[i] = Pattern.compile(
+                "^\\s*" + Pattern.quote(batchSeparators[i]) + "\\s*$",
+                Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
+            );
+        }
+
+        List<SQLScriptElement> merged = new LinkedList<>();
+        int batchStart = -1;
+        int batchEnd = -1;
+        DBPDataSource batchDataSource = null;
+
+        for (SQLScriptElement element : elements) {
+            if (!(element instanceof SQLQuery query)) {
+                if (batchStart >= 0) {
+                    merged.add(createBatchQuery(document, batchDataSource, batchStart, batchEnd));
+                    batchStart = -1;
+                }
+                merged.add(element);
+                continue;
+            }
+            if (batchStart < 0) {
+                batchStart = query.getOffset();
+                batchEnd = query.getOffset() + query.getLength();
+                batchDataSource = query.getDataSource();
+                continue;
+            }
+            boolean hasSeparator = false;
+            int gapStart = batchEnd;
+            int gapEnd = query.getOffset();
+            if (gapEnd > gapStart) {
+                try {
+                    String gapText = document.get(gapStart, gapEnd - gapStart);
+                    for (Pattern p : separatorPatterns) {
+                        if (p.matcher(gapText).find()) {
+                            hasSeparator = true;
+                            break;
+                        }
+                    }
+                } catch (BadLocationException e) {
+                    hasSeparator = true;
+                }
+            }
+            if (hasSeparator) {
+                merged.add(createBatchQuery(document, batchDataSource, batchStart, batchEnd));
+                batchStart = query.getOffset();
+                batchEnd = query.getOffset() + query.getLength();
+                batchDataSource = query.getDataSource();
+            } else {
+                batchEnd = query.getOffset() + query.getLength();
+            }
+        }
+        if (batchStart >= 0) {
+            merged.add(createBatchQuery(document, batchDataSource, batchStart, batchEnd));
+        }
+        return merged;
+    }
+
+    @NotNull
+    private static SQLQuery createBatchQuery(
+        @NotNull IDocument document,
+        @Nullable DBPDataSource dataSource,
+        int start,
+        int end
+    ) {
+        try {
+            String text = SQLUtils.fixLineFeeds(document.get(start, end - start));
+            return new SQLQuery(dataSource, text, start, end - start);
+        } catch (BadLocationException e) {
+            return new SQLQuery(dataSource, "", start, end - start);
+        }
     }
 
     private static void expandQueries(@NotNull SQLParserContext parserContext, @NotNull List<SQLScriptElement> queryList) {
