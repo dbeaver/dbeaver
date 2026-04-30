@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -29,7 +30,7 @@ public class MySQLJSONValueHandler extends JDBCContentValueHandler {
     public static final MySQLJSONValueHandler INSTANCE = new MySQLJSONValueHandler();
 
     @Override
-    protected DBDContent fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws SQLException {
+    protected DBDContent fetchColumnValue(@NotNull DBCSession session, @NotNull JDBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws SQLException {
         // Starting with org.mariadb.jdbc:mariadb-java-client:3.1.0, JSON data is returned as a byte[] when using ResultSet#getObject
         return new JDBCContentChars(session.getExecutionContext(), resultSet.getString(index));
     }

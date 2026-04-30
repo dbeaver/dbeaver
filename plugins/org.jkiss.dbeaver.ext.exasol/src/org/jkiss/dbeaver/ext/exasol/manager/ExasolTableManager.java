@@ -85,7 +85,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
     public ExasolTable createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object exasolSchema,
+        @NotNull Object exasolSchema,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

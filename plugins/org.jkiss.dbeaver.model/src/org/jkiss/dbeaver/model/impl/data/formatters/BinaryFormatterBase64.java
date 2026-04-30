@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.utils.Base64;
 
@@ -24,26 +25,30 @@ import org.jkiss.utils.Base64;
  */
 public class BinaryFormatterBase64 implements DBDBinaryFormatter {
 
+    @NotNull
     @Override
     public String getId()
     {
         return "base64";
     }
 
+    @NotNull
     @Override
     public String getTitle()
     {
         return "Base64";
     }
 
+    @NotNull
     @Override
-    public String toString(byte[] bytes, int offset, int length)
+    public String toString(@NotNull byte[] bytes, int offset, int length)
     {
         return Base64.encode(bytes, offset, length);
     }
 
+    @NotNull
     @Override
-    public byte[] toBytes(String string)
+    public byte[] toBytes(@NotNull String string)
     {
         return Base64.decode(string);
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -38,13 +38,11 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler implements 
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
 
-    private static final Log log = Log.getLog(JDBCStringValueHandler.class);
-
     @Override
     protected Object fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
         int index)
         throws SQLException
     {
@@ -53,8 +51,9 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler implements 
     }
 
     @Override
-    public void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                              int paramIndex, Object value)
+    public void bindParameter(
+        @NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType,
+        int paramIndex, Object value)
         throws SQLException
     {
         if (value == null) {
@@ -72,16 +71,16 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler implements 
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null || object instanceof String) {
             return object;
-        } else if (object instanceof char[]) {
-            return new String((char[])object);
-        } else if (object instanceof byte[]) {
-            return new String((byte[])object);
-        } else if (object instanceof DBDContent) {
-            return ContentUtils.getContentStringValue(session.getProgressMonitor(), (DBDContent) object);
+        } else if (object instanceof char[] chars) {
+            return new String(chars);
+        } else if (object instanceof byte[] bytes) {
+            return new String(bytes);
+        } else if (object instanceof DBDContent content) {
+            return ContentUtils.getContentStringValue(session.getProgressMonitor(), content);
         } else if (object.getClass().isArray()) {
             // Special workaround for #798 - convert array to string (weird stuff)
             return GeneralUtils.makeDisplayString(object);
@@ -90,13 +89,15 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler implements 
         }
     }
 
+    @NotNull
     @Override
     public String getDefaultValueLabel() {
         return "Empty string";
     }
 
+    @NotNull
     @Override
-    public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
+    public Object generateDefaultValue(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
         return "";
     }
 }
