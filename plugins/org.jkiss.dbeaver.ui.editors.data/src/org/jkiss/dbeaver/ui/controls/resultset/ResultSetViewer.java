@@ -3927,7 +3927,7 @@ public class ResultSetViewer extends Viewer
 
             }
         }
-        navigateEntity(monitor, newWindow, targetEntity, constraints);
+        navigateEntity(monitor, newWindow, targetEntity, new DBDDataFilter(constraints));
     }
 
     private void createFilterConstraint(
@@ -3953,10 +3953,6 @@ public class ResultSetViewer extends Viewer
             }
             constraint.setValue(keyValues);
         }
-    }
-
-    private void navigateEntity(@NotNull DBRProgressMonitor monitor, boolean newWindow, DBSEntity targetEntity, List<DBDAttributeConstraint> constraints) {
-        navigateEntity(monitor, newWindow, targetEntity, new DBDDataFilter(constraints));
     }
 
     private void navigateEntity(@NotNull DBRProgressMonitor monitor, boolean newWindow, DBSEntity targetEntity, DBDDataFilter newFilter) {
