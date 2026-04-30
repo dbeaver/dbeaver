@@ -42,6 +42,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final List<Uses> uses;
     private final boolean supportsActions;
     private final boolean supportsUi;
+    private final boolean sendUIOnFirstMessage;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -55,6 +56,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
             .toList();
         this.supportsActions = CommonUtils.toBoolean(config.getAttribute("supportsActions"), false);
         this.supportsUi = CommonUtils.toBoolean(config.getAttribute("supportsUi"), false);
+        this.sendUIOnFirstMessage = CommonUtils.toBoolean(config.getAttribute("sendUIOnFirstMessage"), true);
     }
 
     @NotNull
@@ -88,6 +90,10 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
     public boolean isSupportsUi() {
         return supportsUi;
+    }
+
+    public boolean isSendUIOnFirstMessage() {
+        return sendUIOnFirstMessage;
     }
 
     @NotNull
