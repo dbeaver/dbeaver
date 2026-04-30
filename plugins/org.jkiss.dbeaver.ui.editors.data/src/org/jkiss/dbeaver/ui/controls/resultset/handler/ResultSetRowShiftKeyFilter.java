@@ -105,10 +105,10 @@ public final class ResultSetRowShiftKeyFilter implements Listener {
                 }
                 return;
             }
-            if (matchesActiveBinding(bindingService, IResultSetCommands.CMD_ROW_COPY, chordModifiers, chordKey)) {
-                if (dispatch(IResultSetCommands.CMD_ROW_COPY, event)) {
-                    event.doit = false;
-                }
+            if (matchesActiveBinding(bindingService, IResultSetCommands.CMD_ROW_COPY, chordModifiers, chordKey)
+                && dispatch(IResultSetCommands.CMD_ROW_COPY, event)
+            ) {
+                event.doit = false;
             }
         } catch (Exception e) {
             // Never let this filter break unrelated keystrokes
