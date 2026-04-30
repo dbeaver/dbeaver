@@ -25,14 +25,90 @@
 
    <element name="prompt">
       <complexType>
-         <attribute name="class" type="string">
+         <sequence>
+            <element ref="uses" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  Unique prompt identifier
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Human-readable prompt label shown in UI
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Class implementing the AIPromptGenerator interface
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIPromptGenerator"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Optional human-readable description of what this prompt does
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Optional icon path for this prompt
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="resource"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="supportsActions" type="string">
+            <annotation>
+               <documentation>
+                  Whether this prompt supports ACTION-type functions (e.g. UI wizards). Defaults to false
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="supportsUi" type="string">
+            <annotation>
+               <documentation>
+                  Whether this prompt supports UI-type functions (functions that inspect open views). Defaults to false
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="sendUIOnFirstMessage" type="string">
+            <annotation>
+               <documentation>
+                  Whether UI and ACTION functions are included in the very first user message.
+                  Set to false to delay their appearance until the second message, keeping the initial
+                  context smaller. Defaults to true
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="uses">
+      <complexType>
+         <attribute name="function" type="string" use="required">
+            <annotation>
+               <documentation>
+                  ID of the AI function that this prompt uses
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="instructions" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Instructions for the AI on when and how to call this function
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
