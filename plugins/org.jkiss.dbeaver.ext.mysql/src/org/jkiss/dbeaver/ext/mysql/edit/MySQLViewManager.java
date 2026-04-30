@@ -77,7 +77,7 @@ public class MySQLViewManager extends MySQLTableManager {
     protected MySQLView createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -143,7 +143,7 @@ public class MySQLViewManager extends MySQLTableManager {
         
         actions.add(new SQLDatabasePersistAction("Create view", decl.toString()) {
             @Override
-            public void beforeExecute(DBCSession session) throws DBCException {
+            public void beforeExecute(@NotNull DBCSession session) throws DBCException {
                 MySQLView schemaView;
                 try {
                     schemaView = DBUtils.findObject(view.getParentObject().getViews(session.getProgressMonitor()), view.getName());

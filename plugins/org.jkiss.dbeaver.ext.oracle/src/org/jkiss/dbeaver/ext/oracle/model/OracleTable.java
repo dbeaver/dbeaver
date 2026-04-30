@@ -180,6 +180,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
+    @Nullable
     @Override
     public TableAdditionalInfo getAdditionalInfo()
     {
