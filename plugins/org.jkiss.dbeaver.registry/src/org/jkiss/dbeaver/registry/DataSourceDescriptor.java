@@ -1685,6 +1685,7 @@ public class DataSourceDescriptor
         this.extensions.putAll(extensions);
     }
 
+    @NotNull
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         if (this.formatterProfile == null) {
