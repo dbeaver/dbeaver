@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,13 +61,15 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     ////////////////////////////////////////////////////////
     // Default generator
 
+    @NotNull
     @Override
     public String getDefaultValueLabel() {
         return "Current Time";
     }
 
+    @NotNull
     @Override
-    public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
+    public Object generateDefaultValue(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
         try {
             return getValueFromObject(session, type, new Date(), false, false);
         } catch (DBCException e) {

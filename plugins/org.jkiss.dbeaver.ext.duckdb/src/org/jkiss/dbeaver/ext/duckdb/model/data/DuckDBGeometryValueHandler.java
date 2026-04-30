@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.duckdb.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -37,9 +38,9 @@ public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
 
     @Override
     protected Object fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
         int index
     ) throws DBCException, SQLException {
         try {
@@ -49,8 +50,9 @@ public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+    protected Geometry convertGeometryFromBinaryFormat(@Nullable DBCSession session, @NotNull byte[] object) throws DBCException {
         if (session != null && isStandardWkbStorage(session)) {
             return super.convertGeometryFromBinaryFormat(session, object);
         }

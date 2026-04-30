@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.data.gis.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -78,14 +79,14 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
+    protected Object fetchColumnValue(@NotNull DBCSession session, @NotNull JDBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException, SQLException {
         return getValueFromObject(session, type,
             fetchBytes(resultSet, index),
             false, invertCoordinates);
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
+    protected void bindParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
         if (value instanceof DBGeometry) {
             value = ((DBGeometry) value).getRawValue();
         }
@@ -108,24 +109,24 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         return DBGeometry.class;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBGeometry getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         DBGeometry geometry;
         if (object == null) {
             geometry = new DBGeometry();
-        } else if (object instanceof DBGeometry) {
+        } else if (object instanceof DBGeometry g) {
             if (copy) {
-                geometry = ((DBGeometry) object).copy();
+                geometry = g.copy();
             } else {
-                geometry = (DBGeometry) object;
+                geometry = g;
             }
-        } else if (object instanceof Geometry) {
-            geometry = new DBGeometry((Geometry)object);
+        } else if (object instanceof Geometry g) {
+            geometry = new DBGeometry(g);
         } else if (object instanceof byte[] || (object instanceof JDBCContentBytes && !DBUtils.isNullValue(object))) {
             byte[] bytes;
-            if (object instanceof JDBCContentBytes) {
-                bytes = ((JDBCContentBytes) object).getRawValue();
+            if (object instanceof JDBCContentBytes cb) {
+                bytes = cb.getRawValue();
             } else {
                 bytes = (byte[]) object;
             }
@@ -153,7 +154,8 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         return geometry;
     }
 
-    protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+    @NotNull
+    protected Geometry convertGeometryFromBinaryFormat(@Nullable DBCSession session, @NotNull byte[] object) throws DBCException {
         try (ByteArrayInputStream is = new ByteArrayInputStream(object)) {
             int srid = 0;
 
@@ -177,7 +179,8 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    protected byte[] convertGeometryToBinaryFormat(DBCSession session, Geometry geometry) throws DBCException {
+    @NotNull
+    protected byte[] convertGeometryToBinaryFormat(@NotNull DBCSession session, @NotNull Geometry geometry) throws DBCException {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final int srid = geometry.getSRID();
 
@@ -222,6 +225,7 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
+    @Nullable
     protected byte[] fetchBytes(@NotNull JDBCResultSet resultSet, int index) throws SQLException {
         return resultSet.getBytes(index);
     }

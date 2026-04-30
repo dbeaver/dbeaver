@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler implements
     private static final Log log = Log.getLog(JDBCBooleanValueHandler.class);
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
+    protected Object fetchColumnValue(@NotNull DBCSession session, @NotNull JDBCResultSet resultSet, @NotNull DBSTypedObject type, int index)
         throws SQLException
     {
         boolean value = resultSet.getBoolean(index);
@@ -46,8 +46,9 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value) throws SQLException
+    protected void bindParameter(
+        @NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType,
+        int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
@@ -84,13 +85,15 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler implements
         }
     }
 
+    @NotNull
     @Override
     public String getDefaultValueLabel() {
         return "False";
     }
 
+    @NotNull
     @Override
-    public Object generateDefaultValue(DBCSession session, DBSTypedObject type) {
+    public Object generateDefaultValue(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
         return false;
     }
 

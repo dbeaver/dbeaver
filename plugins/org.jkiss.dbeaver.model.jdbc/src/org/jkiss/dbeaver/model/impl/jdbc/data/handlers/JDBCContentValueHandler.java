@@ -68,9 +68,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
 
     @Override
     protected DBDContent fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
         int index)
         throws DBCException, SQLException
     {

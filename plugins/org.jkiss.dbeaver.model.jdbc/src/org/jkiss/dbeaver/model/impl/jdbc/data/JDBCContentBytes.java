@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -69,6 +70,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         this.data = copyFrom.data;
     }
 
+    @NotNull
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -80,6 +82,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         }
     }
 
+    @NotNull
     @Override
     public Reader getContentReader()
         throws IOException
@@ -96,14 +99,16 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         return data.length;
     }
 
+    @NotNull
     @Override
     public String getCharset()
     {
         return DBValueFormatting.getDefaultBinaryFileEncoding(executionContext.getDataSource());
     }
 
+    @NotNull
     @Override
-    public JDBCContentBytes cloneStorage(DBRProgressMonitor monitor)
+    public JDBCContentBytes cloneStorage(@NotNull DBRProgressMonitor monitor)
         throws IOException
     {
         return cloneValue(monitor);
@@ -184,6 +189,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         }
     }
 
+    @Nullable
     @Override
     public byte[] getRawValue() {
         return data;
@@ -202,6 +208,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         this.data = this.originalData;
     }
 
+    @Nullable
     @Override
     public String getDisplayString(@NotNull DBDDisplayFormat format)
     {
@@ -211,12 +218,14 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         return DBValueFormatting.formatBinaryString(executionContext.getDataSource(), data, format);
     }
 
+    @NotNull
     @Override
-    public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)
+    public JDBCContentBytes cloneValue(@NotNull DBRProgressMonitor monitor)
     {
         return new JDBCContentBytes(this);
     }
 
+    @NotNull
     @Override
     public Object getCachedValue()
     {
