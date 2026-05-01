@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -38,6 +39,8 @@ public class AIFunctionCall {
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
+    @Nullable
+    private Boolean confirmed;
     @Nullable
     private transient AIFunctionDescriptor function;
 
@@ -112,6 +115,14 @@ public class AIFunctionCall {
 
     public void setHint(@Nullable String hint) {
         this.hint = hint;
+    }
+
+    public boolean isConfirmed() {
+        return CommonUtils.getBoolean(confirmed, true);
+    }
+
+    public void setConfirmed(boolean confirmed) {
+        this.confirmed = confirmed;
     }
 
     @Nullable
