@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
     public static final PostgreJSONValueHandler INSTANCE = new PostgreJSONValueHandler();
 
     @Override
-    protected DBDContent fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws SQLException {
+    protected DBDContent fetchColumnValue(@NotNull DBCSession session, @NotNull JDBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws SQLException {
         String json = resultSet.getString(index);
         return new PostgreContentJSON(session.getExecutionContext(), json);
     }
