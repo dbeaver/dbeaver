@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.commands;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -23,6 +24,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -61,12 +64,12 @@ public class SQLCommandAI implements SQLControlCommandHandler {
     public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         DBPDataSource dataSource = command.getDataSource();
         if (dataSource == null) {
-            throw new DBException("Not connected to database");
+            throw new DBException(AIMessages.ai_command_not_connected);
         }
 
         String prompt = command.getParameter();
         if (CommonUtils.isEmptyTrimmed(prompt)) {
-            throw new DBException("Empty AI prompt");
+            throw new DBException(AIMessages.ai_command_empty_prompt);
         }
 
         AIBaseFeatures.SQL_AI_COMMAND.use();
@@ -77,13 +80,14 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
         AICompletionSettings completionSettings = new AICompletionSettings(dataSourceContainer);
         if (!completionSettings.isMetaTransferConfirmed()) {
-            if (DBWorkbench.getPlatformUI().confirmAction("Do you confirm AI usage",
-                "Do you confirm AI usage for '" + dataSourceContainer.getName() + "'?"
+            if (DBWorkbench.getPlatformUI().confirmAction(
+                AIMessages.ai_command_confirm_usage_title,
+                NLS.bind(AIMessages.ai_command_confirm_usage_message, dataSourceContainer.getName())
             )) {
                 completionSettings.setMetaTransferConfirmed(true);
                 completionSettings.saveSettings();
             } else {
-                throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
+                throw new DBException(NLS.bind(AIMessages.ai_command_services_restricted, dataSourceContainer.getName()));
             }
         }
         DBCExecutionContext executionContext = scriptContext.getExecutionContext();
@@ -109,7 +113,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         AIDatabaseContext dbContext = contextBuilder.build();
         AIFunctionContext fc = new AIFunctionContext(monitor, dbContext, new AIPromptGenerateSql());
 
-        monitor.subTask("Generate SQL from prompt");
+        monitor.subTask(AIMessages.ai_command_generate_sql);
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .getAssistant(dataSourceContainer.getProject().getWorkspace());
@@ -123,7 +127,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             return SQLControlResult.success();
         }
 
-        monitor.subTask("Process generated SQL");
+        monitor.subTask(AIMessages.ai_command_process_generated_sql);
 
         AISqlFormatter sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         MessageChunk[] messageChunks = AITextUtils.processAndSplitCompletion(
@@ -147,7 +151,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             if (!messages.isEmpty()) {
                 throw new DBCMessageException(messages.toString());
             }
-            throw new DBCMessageException("Empty AI response for '" + prompt + "'");
+            throw new DBCMessageException(NLS.bind(AIMessages.ai_command_empty_response, prompt));
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);

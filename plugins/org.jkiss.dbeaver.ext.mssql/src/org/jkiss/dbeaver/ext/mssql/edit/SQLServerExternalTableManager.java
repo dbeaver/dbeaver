@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable;
@@ -25,7 +26,6 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -39,8 +39,15 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         SQLServerTableColumn.class);
 
+    @NotNull
     @Override
-    protected SQLServerExternalTable createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected SQLServerExternalTable createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final SQLServerSchema schema = (SQLServerSchema) container;
         final SQLServerExternalTable table = new SQLServerExternalTable(schema);
         setNewObjectName(monitor, schema, table);
@@ -54,30 +61,37 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
 
     @Override
     protected void appendTableModifiers(
-        DBRProgressMonitor monitor,
-        SQLServerExternalTable table,
-        NestedObjectCommand tableProps,
-        StringBuilder ddl,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerExternalTable table,
+        @NotNull NestedObjectCommand tableProps,
+        @NotNull  StringBuilder ddl,
         boolean alter,
-        Map<String, Object> options) {
+        @NotNull Map<String, Object> options
+    ) {
         try {
             String delimiter = getDelimiter(options);
             String indent = delimiter.equals(" ") ? "" : "\t";
             final SQLServerExternalTable.AdditionalInfo info = table.getAdditionalInfo(monitor);
-            ddl.append(" WITH (")
-                .append(delimiter)
-                .append(indent).append("LOCATION = ")
-                .append(SQLUtils.quoteString(table, info.getExternalLocation()));
-            ddl.append(",")
-                .append(delimiter)
+            ddl.append(" WITH (");
+
+            if (CommonUtils.isNotEmpty(info.getExternalLocation())) {
+                ddl.append(delimiter)
+                    .append(indent).append("LOCATION = ")
+                    .append(SQLUtils.quoteString(table, info.getExternalLocation()))
+                    .append(",");
+            }
+
+            ddl.append(delimiter)
                 .append(indent).append("DATA_SOURCE = ")
                 .append(DBUtils.getQuotedIdentifier(table.getDataSource(), info.getExternalDataSource()));
+
             if (CommonUtils.isNotEmpty(info.getExternalFileFormat())) {
                 ddl.append(",")
                     .append(delimiter)
                     .append(indent).append("FILE_FORMAT = ")
                     .append(SQLUtils.quoteString(table, info.getExternalFileFormat()));
             }
+
             ddl.append(delimiter).append(")");
         } catch (DBCException e) {
             log.error("Error retrieving external table info");

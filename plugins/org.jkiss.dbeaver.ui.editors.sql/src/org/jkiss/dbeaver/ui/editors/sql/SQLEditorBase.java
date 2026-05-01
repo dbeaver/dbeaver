@@ -801,6 +801,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             formatMenu.add(getAction(ITextEditorActionConstants.UPPER_CASE));
             formatMenu.add(getAction(ITextEditorActionConstants.LOWER_CASE));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.trim.spaces"));
+            formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces"));
+            formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces"));
             formatMenu.add(new Separator());
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.word.wrap"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.single"));

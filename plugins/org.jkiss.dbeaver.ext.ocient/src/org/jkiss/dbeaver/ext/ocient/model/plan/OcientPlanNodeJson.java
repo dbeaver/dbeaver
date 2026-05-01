@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,12 +109,14 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
         nested.add(new OcientPlanNodeJson(this, name, value));
     }
 
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -145,11 +147,13 @@ public class OcientPlanNodeJson extends OcientPlanNode implements DBPPropertySou
         return CommonUtils.toLong(rowCount);
     }
 
+    @Nullable
     @Override
     public OcientPlanNodeJson getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<OcientPlanNodeJson> getNested() {
         return nested;

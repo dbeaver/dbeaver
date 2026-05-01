@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,9 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
     }
 
     @Override
-    protected GenericTableBase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull
+    Object container, @Nullable
+    Object copyFrom, @NotNull Map<String, Object> options)
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;
 
@@ -97,7 +99,7 @@ public class GenericTableManager extends SQLTableManager<GenericTableBase, Gener
     }
 
     @Override
-    protected boolean excludeFromDDL(NestedObjectCommand command, Collection<NestedObjectCommand> orderedCommands) {
+    protected boolean excludeFromDDL(@NotNull NestedObjectCommand command, @NotNull Collection<NestedObjectCommand> orderedCommands) {
         // Filter out indexes for unique constraints (if they have the same name)
         DBPObject object = command.getObject();
         if (object instanceof DBSTableIndex) {

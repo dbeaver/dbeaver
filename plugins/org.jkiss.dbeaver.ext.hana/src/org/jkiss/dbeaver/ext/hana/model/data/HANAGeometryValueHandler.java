@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Contributors:
- *    Stefan Uhrig - initial implementation
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBParser;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBParserException;
 import org.jkiss.dbeaver.ext.hana.model.data.wkb.HANAWKBWriter;
@@ -43,7 +41,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
     public static final HANAGeometryValueHandler INSTANCE = new HANAGeometryValueHandler();
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
+    protected Object fetchColumnValue(@NotNull DBCSession session, @NotNull JDBCResultSet resultSet, @NotNull DBSTypedObject type, int index)
             throws DBCException, SQLException {
         byte[] wkb = resultSet.getBytes(index);
         if (wkb == null) {
@@ -59,8 +57,9 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-            int paramIndex, Object value) throws DBCException, SQLException {
+    protected void bindParameter(
+        @NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType,
+        int paramIndex, Object value) throws DBCException, SQLException {
         Object geometry = value;
         int srid = 0;
         if (geometry instanceof DBGeometry) {
@@ -94,7 +93,7 @@ public class HANAGeometryValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object,
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object,
                                      boolean copy, boolean validateValue) throws DBCException {
         if (object == null) {
             return new DBGeometry();
