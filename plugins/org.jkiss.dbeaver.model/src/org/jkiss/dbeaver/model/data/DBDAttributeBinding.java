@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,6 +128,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return false;
     }
 
+    @Nullable
     public DBSDataContainer getDataContainer() {
         DBDAttributeBinding parentObject = getParentObject();
         return parentObject == null ? null : parentObject.getDataContainer();
@@ -139,6 +140,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Nullable
     public abstract DBDRowIdentifier getRowIdentifier();
 
+    @Nullable
     public abstract String getRowIdentifierStatus();
 
     public boolean isInRowIdentifier() {
