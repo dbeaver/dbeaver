@@ -1074,7 +1074,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    protected DBPDataSource openConnectionDetached(@NotNull DBRProgressMonitor monitor, boolean detachedProcess) {
+    protected DBPDataSource openConnectionDetached(@NotNull DBRProgressMonitor monitor, boolean detachedProcess) throws DBException {
         return null;
     }
 
