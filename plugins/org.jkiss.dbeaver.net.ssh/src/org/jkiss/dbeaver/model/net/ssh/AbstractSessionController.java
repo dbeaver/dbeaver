@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,13 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +46,6 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     private static final Log log = Log.getLog(AbstractSessionController.class);
 
     protected final Map<SSHHostConfiguration, ShareableSession<T>> sessions = new ConcurrentHashMap<>();
-    protected AgentIdentityRepository agentIdentityRepository;
 
     @NotNull
     @Override
@@ -131,34 +133,38 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
     }
 
     @NotNull
-    protected IdentityRepository createAgentIdentityRepository() throws DBException {
-        if (agentIdentityRepository == null) {
-            AgentConnector connector = null;
+    protected IdentityRepository createAgentIdentityRepository(@Nullable String authSockPath) throws DBException {
+        AgentConnector connector = null;
 
-            try {
-                connector = new PageantConnector();
-                log.debug("SSHSessionController: connected with pageant");
-            } catch (Exception e) {
-                log.debug("SSHSessionController: pageant connect exception", e);
-            }
-
-            if (connector == null) {
-                try {
-                    connector = new SSHAgentConnector(new JUnixSocketFactory());
-                    log.debug("SSHSessionController: Connected with ssh-agent");
-                } catch (Exception e) {
-                    log.debug("SSHSessionController: ssh-agent connection exception", e);
-                }
-            }
-
-            if (connector == null) {
-                throw new DBException("Unable to initialize SSH agent");
-            }
-
-            agentIdentityRepository = new AgentIdentityRepository(connector);
+        try {
+            connector = new PageantConnector();
+            log.debug("SSHSessionController: connected with pageant");
+        } catch (Exception e) {
+            log.debug("SSHSessionController: pageant connect exception", e);
         }
 
-        return agentIdentityRepository;
+        if (connector == null) {
+            try {
+                if (CommonUtils.isNotEmpty(authSockPath)) {
+                    connector = new SSHAgentConnector(new JUnixSocketFactory(), Path.of(authSockPath));
+                    log.debug("SSHSessionController: Connected with ssh-agent using custom socket: " + authSockPath);
+                } else {
+                    connector = new SSHAgentConnector(new JUnixSocketFactory());
+                    log.debug("SSHSessionController: Connected with ssh-agent");
+                }
+            } catch (InvalidPathException e) {
+                log.debug("SSHSessionController: invalid ssh-agent auth socket path", e);
+                throw new DBException("SSH agent socket path is invalid: " + authSockPath);
+            } catch (Exception e) {
+                log.debug("SSHSessionController: ssh-agent connection exception", e);
+            }
+        }
+
+        if (connector == null) {
+            throw new DBException("Unable to initialize SSH agent");
+        }
+
+        return new AgentIdentityRepository(connector);
     }
 
     @NotNull

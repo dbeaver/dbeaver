@@ -83,9 +83,9 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
             } catch (Exception e) {
                 throw new DBException("Error adding identity key", e);
             }
-        } else if (auth instanceof SSHAuthConfiguration.Agent) {
+        } else if (auth instanceof SSHAuthConfiguration.Agent(String authSockPath)) {
             log.debug("SSHSessionController: Using agent authentication");
-            jsch.setIdentityRepository(createAgentIdentityRepository());
+            jsch.setIdentityRepository(createAgentIdentityRepository(authSockPath));
         }
 
         try {
