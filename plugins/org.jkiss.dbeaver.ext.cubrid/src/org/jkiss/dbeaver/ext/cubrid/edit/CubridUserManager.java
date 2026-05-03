@@ -66,7 +66,7 @@ public class CubridUserManager
     protected CubridPrivilage createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -144,7 +144,7 @@ public class CubridUserManager
         }
 
         @Override
-        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+        public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBCException {
             super.afterExecute(session, error);
             if (error == null) {
                 GenericSchema user = this.database.getParentObject().getSchema(database.getName());

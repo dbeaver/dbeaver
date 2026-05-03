@@ -78,7 +78,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     protected SQLServerView createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

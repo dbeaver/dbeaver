@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
@@ -30,15 +31,19 @@ import java.io.Reader;
  */
 public interface DBDContentStorage {
 
+    @NotNull
     InputStream getContentStream() throws IOException;
 
+    @NotNull
     Reader getContentReader() throws IOException;
 
     long getContentLength() throws IOException;
 
+    @NotNull
     String getCharset();
 
-    DBDContentStorage cloneStorage(DBRProgressMonitor monitor) throws IOException;
+    @NotNull
+    DBDContentStorage cloneStorage(@NotNull DBRProgressMonitor monitor) throws IOException;
 
     void release();
 

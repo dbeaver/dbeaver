@@ -86,7 +86,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     }
 
     @Override
-    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @Nullable Object container, @Nullable
+    protected OracleView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull Object container, @Nullable
     Object copyFrom, @NotNull Map<String, Object> options) {
         OracleSchema schema = (OracleSchema) container;
         OracleView newView = new OracleView(schema, "NEW_VIEW"); //$NON-NLS-1$

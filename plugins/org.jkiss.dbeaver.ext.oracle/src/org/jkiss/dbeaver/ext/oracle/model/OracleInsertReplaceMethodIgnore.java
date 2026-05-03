@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDInsertReplaceMethod;
@@ -33,9 +34,9 @@ import java.util.Optional;
 public class OracleInsertReplaceMethodIgnore implements DBDInsertReplaceMethod {
     private static final Log log = Log.getLog(OracleInsertReplaceMethodIgnore.class);
 
-    @NotNull
+    @Nullable
     @Override
-    public String getOpeningClause(DBSTable table, DBRProgressMonitor monitor) {
+    public String getOpeningClause(@NotNull DBRProgressMonitor monitor, @NotNull DBSTable table) {
         if (table != null) {
             try {
                 Collection<? extends DBSTableConstraint> constraints = table.getConstraints(monitor);
@@ -54,8 +55,9 @@ public class OracleInsertReplaceMethodIgnore implements DBDInsertReplaceMethod {
         return "INSERT INTO";
     }
 
+    @Nullable
     @Override
-    public String getTrailingClause(DBSTable table, DBRProgressMonitor monitor, DBSAttributeBase[] attributes) {
+    public String getTrailingClause(@NotNull DBRProgressMonitor monitor, @NotNull DBSTable table, @NotNull DBSAttributeBase[] attributes) {
         return null;
     }
 }
