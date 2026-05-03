@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,16 +40,15 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
         this.binding = binding;
     }
 
+    @Nullable
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException
-    {
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return Collections.singletonList(this);
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         final DBSEntityAttribute attribute = getAttribute();
         return attribute == null ? null : attribute.getDescription();
     }
@@ -88,7 +87,7 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
         return true;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntityAttribute getAttribute()
     {

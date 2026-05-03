@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -62,7 +62,10 @@ public class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
-    ResultSetHintContext(Supplier<DBSDataContainer> dataContainerSupplier, Supplier<DBSEntity> entitySupplier) {
+    public ResultSetHintContext(
+        @NotNull Supplier<DBSDataContainer> dataContainerSupplier,
+        @NotNull Supplier<DBSEntity> entitySupplier
+    ) {
         this.dataContainerSupplier = dataContainerSupplier;
         this.entitySupplier = entitySupplier;
     }
@@ -163,14 +166,14 @@ public class ResultSetHintContext implements DBDValueHintContext {
         return result;
     }
 
-    void resetCache() {
+    public void resetCache() {
         this.contextAttributes.clear();
         synchronized (this.hintProvidersLock) {
             this.hintProviders.clear();
         }
     }
 
-    void initProviders(DBDAttributeBinding[] attributes) {
+    public void initProviders(DBDAttributeBinding[] attributes) {
         DBSDataContainer dataContainer = getDataContainer();
         DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
         DBSEntity entity = ds == null ? null : entitySupplier.get();

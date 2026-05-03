@@ -52,8 +52,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final String id;
     private final String name;
     private final DBPImage icon;
-    private final boolean global;
-    private final boolean hidden;
+    private final boolean system;
     private final boolean ui;
     private final boolean enabledByDefault;
     private final AIFunctionPurpose purpose;
@@ -76,8 +75,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
-        this.global = CommonUtils.toBoolean(config.getAttribute("global"));
-        this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
+        this.system = CommonUtils.toBoolean(config.getAttribute("system"));
         this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
@@ -148,15 +146,9 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         return ui;
     }
 
-    /**
-     * Global functions are passed in ALL requests
-     */
-    public boolean isGlobal() {
-        return global;
-    }
-
-    public boolean isHidden() {
-        return hidden;
+    @Override
+    public boolean isSystem() {
+        return system;
     }
 
     @Override
