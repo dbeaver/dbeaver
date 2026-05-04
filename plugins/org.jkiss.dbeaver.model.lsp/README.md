@@ -1,1 +1,0 @@
-# DBeaver LSP Server Implementation
