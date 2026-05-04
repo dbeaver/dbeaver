@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.data.storage;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -38,6 +39,7 @@ public class StreamContentStorage implements DBDContentStorage {
         this.stream = stream;
     }
 
+    @NotNull
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -45,6 +47,7 @@ public class StreamContentStorage implements DBDContentStorage {
         return stream;
     }
 
+    @NotNull
     @Override
     public Reader getContentReader()
         throws IOException
@@ -58,14 +61,16 @@ public class StreamContentStorage implements DBDContentStorage {
         return -1;
     }
 
+    @NotNull
     @Override
     public String getCharset()
     {
         return GeneralUtils.DEFAULT_ENCODING;
     }
 
+    @NotNull
     @Override
-    public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
+    public DBDContentStorage cloneStorage(@NotNull DBRProgressMonitor monitor)
         throws IOException
     {
         return new StreamContentStorage(stream);

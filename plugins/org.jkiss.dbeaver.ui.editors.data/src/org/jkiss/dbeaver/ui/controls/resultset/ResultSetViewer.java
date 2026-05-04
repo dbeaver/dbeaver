@@ -124,8 +124,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -1761,7 +1761,7 @@ public class ResultSetViewer extends Viewer
         return model.getDefaultRowIdentifier();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBDValueHintContext getHintContext() {
         return model.getHintContext();

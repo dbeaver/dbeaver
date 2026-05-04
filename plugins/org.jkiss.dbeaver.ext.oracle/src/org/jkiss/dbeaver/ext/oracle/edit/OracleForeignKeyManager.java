@@ -47,7 +47,7 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
     protected OracleTableForeignKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
