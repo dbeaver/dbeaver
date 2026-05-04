@@ -1110,12 +1110,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     popup.dispose();
                 }
             }));
-            for (Control child : composite.getChildren()) {
+            Control[] compChildren = composite.getChildren();
+            for (Control child : compChildren) {
                 child.addFocusListener(onFocusLost);
             }
 
             popup.setVisible(true);
-            composite.getChildren()[1].setFocus();
+            if (compChildren.length > 1) {
+                // Set focus to button
+                compChildren[1].setFocus();
+            }
         }
 
         private void closeHistoryPopup() {
