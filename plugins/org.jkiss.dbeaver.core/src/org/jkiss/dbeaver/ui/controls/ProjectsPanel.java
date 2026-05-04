@@ -95,12 +95,12 @@ class ProjectsPanel implements DBPProjectListener {
         projects.add(project);
         projects.sort((o1, o2) ->
             o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
-        refillCombo();
+        UIUtils.asyncExec(this::refillCombo);
     }
 
     public void removeProject(@NotNull DBPProject project) {
         projects.remove(project);
-        refillCombo();
+        UIUtils.asyncExec(this::refillCombo);
     }
 
     private void refillCombo() {
