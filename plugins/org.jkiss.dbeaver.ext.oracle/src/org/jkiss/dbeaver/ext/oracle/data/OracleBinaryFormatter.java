@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 
 /**
@@ -27,26 +28,30 @@ public class OracleBinaryFormatter extends BinaryFormatterHex {
     private static final String HEX_PREFIX = "'";
     private static final String HEX_POSTFIX = "'";
 
+    @NotNull
     @Override
     public String getId()
     {
         return "orahex";
     }
 
+    @NotNull
     @Override
     public String getTitle()
     {
         return "Oracle Hex";
     }
 
+    @NotNull
     @Override
-    public String toString(byte[] bytes, int offset, int length)
+    public String toString(@NotNull byte[] bytes, int offset, int length)
     {
         return HEX_PREFIX + super.toString(bytes, offset, length) + HEX_POSTFIX;
     }
 
+    @NotNull
     @Override
-    public byte[] toBytes(String string)
+    public byte[] toBytes(@NotNull String string)
     {
         if (string.startsWith(HEX_PREFIX)) {
             string = string.substring(

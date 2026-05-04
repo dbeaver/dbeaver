@@ -70,7 +70,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     protected OBJECT_TYPE createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object owner,
+        @NotNull Object owner,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

@@ -144,12 +144,13 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         }
     }
 
+    @NotNull
     @Override
-    public DBSDataType getDataType()
-    {
+    public DBSDataType getDataType() {
         return type;
     }
 
+    @Nullable
     @Override
     public Struct getRawValue() {
         if (rawStruct != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     }
 
     @Override
-    protected void applyThemeSettings(ITheme currentTheme) {
+    protected void applyThemeSettings(@NotNull ITheme currentTheme) {
         text.setFont(BaseThemeSettings.instance.monospaceFont);
         if (UIStyles.isDarkHighContrastTheme()) {
             text.setBackground(UIStyles.getDefaultWidgetBackground());
@@ -204,6 +204,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         fireSelectionChanged(new PlainTextSelectionImpl());
     }
 
+    @Nullable
     @Override
     public Control getControl() {
         return text;
@@ -335,7 +336,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
 
     @NotNull
     @Override
-    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+    public Map<Transfer, Object> copySelection(@NotNull ResultSetCopySettings settings) {
         return Collections.singletonMap(
             TextTransfer.getInstance(),
             text.getSelectionText());
@@ -409,18 +410,20 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         return null;
     }
 
+    @NotNull
     @Override
     public ISelection getSelection() {
         return new PlainTextSelectionImpl();
     }
 
+    @NotNull
     @Override
     public DBDDisplayFormat getDefaultDisplayFormat() {
         return DBDDisplayFormat.safeValueOf(controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT));
     }
 
     @Override
-    public void setDefaultDisplayFormat(DBDDisplayFormat displayFormat) {
+    public void setDefaultDisplayFormat(@NotNull DBDDisplayFormat displayFormat) {
         controller.getPreferenceStore().setValue(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT, displayFormat.name());
     }
 
