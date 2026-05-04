@@ -183,11 +183,24 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
             UIUtils.createLabelSeparator(client, SWT.HORIZONTAL);
 
+            final Label editHint = new Label(client, SWT.NONE);
+            editHint.setText(SSHUIMessages.model_ssh_configurator_label_jump_server_edit_hint);
+            final GridData editHintLayout = new GridData(GridData.FILL_HORIZONTAL);
+            editHintLayout.horizontalIndent = 4;
+            editHintLayout.verticalIndent = 2;
+            editHint.setLayoutData(editHintLayout);
+
             hostsViewer = new TableViewer(client, SWT.FULL_SELECTION | SWT.SINGLE);
             hostsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             hostsViewer.getTable().setHeaderVisible(true);
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
+            hostsViewer.addDoubleClickListener(e -> {
+                final ConfigurationWrapper selected = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                if (selected != null) {
+                    credentialsPanel.focusHostField();
+                }
+            });
             hostsViewer.addSelectionChangedListener(e -> {
                 if (switchingConfiguration) {
                     return;
@@ -408,6 +421,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
                 wrapper.configuration = credentialsPanel.saveSettings();
                 hostsViewer.refresh(wrapper);
+                hostsViewer.getTable().redraw();
             }
         }
     }
@@ -835,6 +849,13 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
             updateAuthMethodVisibility();
             lastConfiguration = wrapper;
+        }
+
+        public void focusHostField() {
+            if (hostNameText != null && !hostNameText.isDisposed()) {
+                hostNameText.setFocus();
+                hostNameText.selectAll();
+            }
         }
 
         @NotNull
