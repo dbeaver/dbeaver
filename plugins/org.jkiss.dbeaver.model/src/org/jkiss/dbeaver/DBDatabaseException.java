@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,8 +82,13 @@ public class DBDatabaseException extends DBException {
         if (!CommonUtils.isEmpty(ex.getSQLState())) {
             msg.append(" [").append(ex.getSQLState()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        if (!CommonUtils.isEmpty(ex.getMessage())) {
-            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage())); //$NON-NLS-1$
+        String sqlMessage = ex.getMessage();
+        if (!CommonUtils.isEmpty(sqlMessage)) {
+            msg.append(": ").append(SQLUtils.stripTransformations(sqlMessage)); //$NON-NLS-1$
+        } else if (ex.getErrorCode() > 0) {
+            // For some Oracle errors (e.g., ORA-01403 "no data found"), the JDBC driver
+            // may return a null message. Provide a generic but informative fallback.
+            msg.append(": ORA-").append(String.format("%05d", ex.getErrorCode())); //$NON-NLS-1$
         }
         return msg.toString();
     }
