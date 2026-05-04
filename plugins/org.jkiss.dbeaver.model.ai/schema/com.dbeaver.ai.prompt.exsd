@@ -69,26 +69,17 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="supportsActions" type="string">
+         <attribute name="uiAction" type="string">
             <annotation>
                <documentation>
-                  Whether this prompt supports ACTION-type functions (e.g. UI wizards). Defaults to false
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="supportsUi" type="string">
-            <annotation>
-               <documentation>
-                  Whether this prompt supports UI-type functions (functions that inspect open views). Defaults to false
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="sendUIOnFirstMessage" type="string">
-            <annotation>
-               <documentation>
-                  Whether UI and ACTION functions are included in the very first user message.
-                  Set to false to delay their appearance until the second message, keeping the initial
-                  context smaller. Defaults to true
+                  Controls if and when UI and ACTION functions are injected into the context.
+                  Accepted values (case-insensitive):
+                  NONE        – no UI or ACTION functions (default).
+                  ALL         – both UI and ACTION functions are included from the first message.
+                  AFTER_FIRST – both UI and ACTION functions are included starting from the second
+                                message, keeping the initial context smaller.
+                  ONLY_UI     – only UI functions are included (from the first message).
+                  ONLY_ACTION – only ACTION functions are included (from the first message).
                </documentation>
             </annotation>
          </attribute>

@@ -220,18 +220,13 @@ public class AIEngineRequestFactory {
             }
         }
 
-        if (!prompt.isSupportsActions()) {
+        if (!prompt.isSupportsActions(userMessageCount)) {
             // Filter out actions
             selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
         }
-        if (!prompt.isSupportsUi()) {
+        if (!prompt.isSupportsUi(userMessageCount)) {
             // Filter out ui functions
             selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
-        }
-
-        if (!prompt.isSendUIOnFirstMessage() && userMessageCount == 1) {
-            selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
-            selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
         }
 
         return new RequestFunctions(autoFunctions, selectedFunctions);
