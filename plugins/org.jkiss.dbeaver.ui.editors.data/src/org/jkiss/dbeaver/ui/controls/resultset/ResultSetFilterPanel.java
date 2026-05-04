@@ -24,6 +24,7 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
@@ -1023,7 +1024,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             popup = new Shell(getShell(), SWT.NO_TRIM);
             popup.setLayout(new FillLayout());
-            Composite composite = UIUtils.createPlaceholder(popup, 1);
+
+            Composite composite = new Composite(popup, SWT.NONE);
+            GridLayoutFactory.fillDefaults().margins(2, 2).applyTo(composite);
+            new CompositeBorderPainter(composite);
 
             String query = getActiveSourceQueryNormalized(false);
             if (filtersHistory.isEmpty()) {
