@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.osgi.framework.BundleReference;
 import org.osgi.framework.FrameworkUtil;
 
 import java.lang.reflect.Constructor;
+import java.security.Security;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,6 +54,15 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
+        if (!isMultiuser()) {
+            Security.setProperty("jdk.tls.disabledAlgorithms", "NULL, anon");
+            Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^37");
+            Security.setProperty(
+                "jdk.tls.legacyAlgorithms",
+                "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, ECDH, TLS_RSA_*"
+                    + ", rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature"
+            );
+        }
     }
 
     public static DBPApplication getInstance() {
