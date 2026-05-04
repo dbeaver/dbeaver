@@ -1094,8 +1094,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (vsb != null) {
                 tableWidth -= vsb.getSize().x;
             }
-            int queryWidth = (int) (tableWidth * 0.7f) - 5;
-            int titleWidth = tableWidth - queryWidth - 5;
+            int queryWidth = (int) (tableWidth * 0.7f) - 2;
+            int titleWidth = tableWidth - queryWidth - 2;
             editControl.getColumn(0).setWidth(queryWidth);
             editControl.getColumn(1).setWidth(titleWidth);
 
@@ -1132,7 +1132,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             var historyTable = historyViewer.getTable();
             GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-            gd.horizontalIndent = 5;
             historyTable.setLayoutData(gd);
 
             var filterTextColumn = new TableViewerColumn(historyViewer, SWT.LEFT);
@@ -1170,24 +1169,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
                 if (item != null && !item.isDisposed()) {
                     switch (e.keyCode) {
-                        case SWT.DEL -> {
-                            // FIXME
-                            // final String filterValue = item.getText();
-                            // try {
-                            //     DBCExecutionContext context = viewer.getExecutionContext();
-                            //     if (context != null) {
-                            //         viewer.getFilterManager().deleteQueryFilterValue(
-                            //             context,
-                            //             filterValue
-                            //         );
-                            //     }
-                            // } catch (DBException e1) {
-                            //     log.warn("Error deleting filter value [" + filterValue + "]", e1);
-                            // }
-                            // filtersHistory.remove(filterValue);
-                            // item.dispose();
-                            // hoverItem = null;
-                        }
                         case SWT.CR, SWT.SPACE -> {
                             final String newFilter = item.getText();
                             closeHistoryPopup();
