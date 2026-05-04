@@ -88,7 +88,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         searchText.setMessage("Enter expression or title to search");
 
         var toolBar = new ToolBar(composite, SWT.FLAT);
-        var viewer = createTable(composite, filters);
+        TableViewer viewer = createTable(composite, filters);
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
@@ -116,6 +116,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
                 button.setText(filter != null ? "Use Selected" : IDialogConstants.OK_LABEL);
             }
         });
+        viewer.addDoubleClickListener(event -> okPressed());
 
         searchText.addModifyListener(e -> viewer.refresh());
 
@@ -159,14 +160,8 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
-    @Override
-    protected void okPressed() {
-        persistFilters();
-        super.okPressed();
-    }
-
     @NotNull
-    private static TableViewer createTable(@NotNull Composite composite, @NotNull List<MutableQueryFilter> filters) {
+    private TableViewer createTable(@NotNull Composite composite, @NotNull List<MutableQueryFilter> filters) {
         var viewer = new TableViewer(composite, SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         viewer.setContentProvider(new ListContentProvider());
         viewer.setInput(filters);
@@ -207,7 +202,14 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
                 return ((MutableQueryFilter) element).getTitle();
             }
         });
-        titleColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getTitle, MutableQueryFilter::setTitle));
+        titleColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, MutableQueryFilter::getTitle, (f, s) -> {
+            f.setText(s);
+            try {
+                persistFilter(f);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save failed", null, e);
+            }
+        }));
 
         var lastUsedColumn = new TableViewerColumn(viewer, SWT.LEFT);
         lastUsedColumn.getColumn().setText("Last used");
@@ -255,19 +257,6 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             return filters.get(selection).persisted;
         } else {
             return null;
-        }
-    }
-
-    private void persistFilters() {
-        for (MutableQueryFilter filter : filters) {
-            try {
-                persistFilter(filter);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(
-                    "Error persisting filter",
-                    "An error occurred while persisting filter '" + filter.getTitle() + "': " + e.getMessage()
-                );
-            }
         }
     }
 
