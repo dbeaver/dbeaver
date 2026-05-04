@@ -41,7 +41,7 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     @Override
     protected GreenplumExternalTable createDatabaseObject(@NotNull DBRProgressMonitor monitor,
                                                           @NotNull DBECommandContext context,
-                                                          @Nullable Object container,
+                                                          @NotNull Object container,
                                                           @Nullable Object copyFrom, @NotNull Map<String, Object> options) {
         GreenplumExternalTable externalTable = new GreenplumExternalTable((PostgreSchema) container);
         setNewObjectName(monitor, (PostgreSchema) container, externalTable);

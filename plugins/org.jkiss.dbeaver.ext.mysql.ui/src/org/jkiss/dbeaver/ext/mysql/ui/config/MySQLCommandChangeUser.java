@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -88,7 +89,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             actions.add(
                 new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_create_new_user, script.toString()) {
                     @Override
-                    public void afterExecute(DBCSession session, Throwable error)
+                    public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error)
                     {
                         if (error == null) {
                             getObject().setPersisted(true);

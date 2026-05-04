@@ -177,6 +177,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         @Nullable DBDAttributeBinding attr,
         @Nullable ResultSetRow row,
         int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @NotNull ContextMenuLocation menuLocation
     );
 
@@ -278,6 +279,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void updateDirtyFlag();
 
+    // TODO introduce value path here
     boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
@@ -285,6 +287,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         @Nullable Object value,
         boolean refreshHints) throws DBException;
 
+    // TODO introduce value path here
     void resetCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
