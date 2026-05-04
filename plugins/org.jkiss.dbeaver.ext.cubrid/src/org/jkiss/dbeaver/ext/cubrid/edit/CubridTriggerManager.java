@@ -58,7 +58,7 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
     protected CubridTrigger createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ public class SpreadsheetMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetMessages";
 
     public static String tooltip_column;
+    public static String tooltip_attribute;
     public static String tooltip_description;
     public static String tooltip_table;
 

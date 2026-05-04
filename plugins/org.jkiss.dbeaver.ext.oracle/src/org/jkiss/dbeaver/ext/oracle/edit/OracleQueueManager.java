@@ -63,7 +63,7 @@ public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchem
     protected OracleQueue createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
