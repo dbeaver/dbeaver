@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             return new DBEPersistAction[] {
                 new SQLDatabasePersistAction(MySQLUIMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
-                    public void afterExecute(DBCSession session, Throwable error)
+                    public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error)
                     {
                         if (error == null) {
                             getObject().setPersisted(false);
