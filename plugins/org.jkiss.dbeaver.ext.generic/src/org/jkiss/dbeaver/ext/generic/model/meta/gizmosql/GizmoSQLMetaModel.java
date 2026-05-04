@@ -79,8 +79,11 @@ public class GizmoSQLMetaModel extends GenericMetaModel {
      */
     @Nullable
     private static String fetchFromSystemCatalog(
-        JDBCSession session, String catalogName, String schemaName, String viewName,
-        GenericView sourceObject
+        @NotNull JDBCSession session,
+        @Nullable String catalogName,
+        @NotNull String schemaName,
+        @NotNull String viewName,
+        @NotNull GenericView sourceObject
     ) throws DBException {
         String sql = "SELECT \"VIEW_DEFINITION\" FROM _gizmosql_system.main.gizmosql_view_definition "
             + "WHERE \"TABLE_NAME\" = ? AND \"TABLE_SCHEM\" = ?"
@@ -102,9 +105,13 @@ public class GizmoSQLMetaModel extends GenericMetaModel {
      * Fall-back path: query {@code duckdb_views()} directly. Mirrors the catalog view definition
      * created at server startup — keep the two in sync if either changes.
      */
+    @NotNull
     private static String fetchFromDuckdbViews(
-        JDBCSession session, String catalogName, String schemaName, String viewName,
-        GenericView sourceObject
+        @NotNull JDBCSession session,
+        @Nullable String catalogName,
+        @NotNull String schemaName,
+        @NotNull String viewName,
+        @NotNull GenericView sourceObject
     ) throws DBException {
         String sql = "SELECT sql FROM duckdb_views() "
             + "WHERE view_name = ? AND schema_name = ?"
@@ -122,14 +129,14 @@ public class GizmoSQLMetaModel extends GenericMetaModel {
         }
     }
 
-    private static boolean looksLikeMissingSystemCatalog(SQLException e) {
+    private static boolean looksLikeMissingSystemCatalog(@NotNull SQLException e) {
         String msg = e.getMessage() == null ? "" : e.getMessage();
         return msg.contains("_gizmosql_system")
             || msg.contains("gizmosql_view_definition")
             || msg.contains("Catalog Error");
     }
 
-    private static boolean looksLikeDuckdbViewsMissing(SQLException e) {
+    private static boolean looksLikeDuckdbViewsMissing(@NotNull SQLException e) {
         String msg = e.getMessage() == null ? "" : e.getMessage();
         return msg.contains("duckdb_views") || msg.contains("Catalog Error");
     }
