@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -98,12 +97,9 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         viewer.addSelectionChangedListener(e -> {
             var filter = (QMQueryFilter) e.getStructuredSelection().getFirstElement();
             selection = filters.indexOf(filter);
-
-            var button = getButton(IDialogConstants.OK_ID);
-            if (button != null) {
-                button.setText(filter != null ? "Use Selected" : IDialogConstants.OK_LABEL);
-            }
         });
+        viewer.getTable().addSelectionListener(SelectionListener.widgetDefaultSelectedAdapter(selectionEvent ->
+            okPressed()));
         viewer.getTable().addMouseListener(MouseListener.mouseDoubleClickAdapter(event -> {
             if (event.widget instanceof Table t &&
                 t.getSelection().length > 0 &&
@@ -180,8 +176,10 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             }
         });
         titleColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, QMQueryFilter::title, (f, s) -> {
-            f.setTitle(s);
-            persistFilter(f);
+            if (f != null && !CommonUtils.isEmpty(s)) {
+                f.setTitle(s);
+                persistFilter(f);
+            }
         }));
 
         var lastUsedColumn = new TableViewerColumn(viewer, SWT.LEFT);

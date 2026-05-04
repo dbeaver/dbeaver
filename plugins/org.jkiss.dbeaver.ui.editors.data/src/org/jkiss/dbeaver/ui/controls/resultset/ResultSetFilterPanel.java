@@ -1115,7 +1115,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
 
             popup.setVisible(true);
-            editControl.setFocus();
+            composite.getChildren()[1].setFocus();
         }
 
         private void closeHistoryPopup() {
