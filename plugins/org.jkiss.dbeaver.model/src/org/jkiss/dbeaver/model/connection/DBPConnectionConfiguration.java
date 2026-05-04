@@ -565,6 +565,10 @@ public class DBPConnectionConfiguration implements DBPObject {
         }
     }
 
+    public void removeAuthProperty(@NotNull String name) {
+        setAuthProperty(name, null);
+    }
+
     ///////////////////////////////////////////////////////////
     // Misc
 
