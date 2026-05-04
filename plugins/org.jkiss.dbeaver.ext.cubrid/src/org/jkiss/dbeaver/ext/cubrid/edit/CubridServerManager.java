@@ -61,7 +61,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     protected CubridServer createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

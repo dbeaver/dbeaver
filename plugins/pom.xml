@@ -78,7 +78,7 @@
         <module>org.jkiss.dbeaver.ext.denodo</module>
         <module>org.jkiss.dbeaver.ext.altibase</module>
         <module>org.jkiss.dbeaver.ext.gaussdb</module>
-
+        
         <module>org.jkiss.dbeaver.tasks.native</module>
 
         <module>org.jkiss.dbeaver.data.office</module>
@@ -160,6 +160,10 @@
                 <module>org.jkiss.dbeaver.ui.search</module>
                 <module>org.jkiss.dbeaver.ui.statistics</module>
 
+                <module>org.jkiss.dbeaver.ui.swt.linux</module>
+                <module>org.jkiss.dbeaver.ui.swt.macos</module>
+                <module>org.jkiss.dbeaver.ui.swt.windows</module>
+
                 <module>org.jkiss.dbeaver.tasks.native.ui</module>
                 <module>org.jkiss.dbeaver.tasks.ui</module>
                 <module>org.jkiss.dbeaver.tasks.ui.view</module>
@@ -181,73 +185,6 @@
                 <module>org.jkiss.dbeaver.team.git.ui</module>
 
                 <module>org.jkiss.dbeaver.ui.app.devtools</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>build-linux-x86_64</id>
-            <activation>
-                <property>
-                    <name>build.all-environments</name>
-                </property>
-            </activation>
-            <modules>
-                <module>org.jkiss.dbeaver.ui.swt.linux</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>build-linux-aarch64</id>
-            <activation>
-                <property>
-                    <name>build.all-environments</name>
-                </property>
-            </activation>
-            <modules>
-                <module>org.jkiss.dbeaver.ui.swt.linux</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>build-windows-x86_64</id>
-            <activation>
-                <property>
-                    <name>build.all-environments</name>
-                </property>
-            </activation>
-            <modules>
-                <module>org.jkiss.dbeaver.ui.swt.windows</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>build-windows-aarch64</id>
-            <activation>
-                <property>
-                    <name>build.all-environments</name>
-                </property>
-            </activation>
-            <modules>
-                <module>org.jkiss.dbeaver.ui.swt.windows</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>build-macos-x86_64</id>
-            <activation>
-                <property>
-                    <name>build.all-environments</name>
-                </property>
-            </activation>
-            <modules>
-                <module>org.jkiss.dbeaver.ui.swt.macos</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>build-macos-aarch64</id>
-            <activation>
-                <property>
-                    <name>build.all-environments</name>
-                </property>
-            </activation>
-            <modules>
-                <module>org.jkiss.dbeaver.ui.swt.macos</module>
             </modules>
         </profile>
     </profiles>

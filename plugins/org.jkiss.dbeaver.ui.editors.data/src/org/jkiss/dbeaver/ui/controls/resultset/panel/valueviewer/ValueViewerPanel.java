@@ -91,10 +91,16 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 String hidePanelCmd = ActionUtils.findCommandDescription(
                     IResultSetCommands.CMD_TOGGLE_PANELS,
                     ValueViewerPanel.this.presentation.getController().getSite(),
-                    true);
+                    true
+                );
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, ResultSetMessages.value_viewer_select_view_message, 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 30);
+                UIUtils.drawMessageOverControl(
+                    viewPlaceholder,
+                    e,
+                    NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd),
+                    30
+                );
             }
         });
         CSSUtils.setExcludeFromStyling(viewPlaceholder);
@@ -166,22 +172,21 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     }
 
     private void refreshValue(boolean force) {
-        DBDAttributeBinding attr = presentation.getCurrentAttribute();
-        ResultSetRow row = presentation.getController().getCurrentRow();
+        ResultSetCellLocation cellLocation = presentation.getCurrentCellLocation();
 
-        if (attr == null || row == null) {
+        if (cellLocation == null) {
             clearValue();
             return;
         }
-        int[] rowIndexes = presentation.getCurrentRowIndexes();
+
         boolean updateActions;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
-                new ResultSetCellLocation(attr, row, rowIndexes),
+                cellLocation,
                 IValueController.EditType.PANEL,
-                viewPlaceholder)
-            {
+                viewPlaceholder
+            ) {
                 @Override
                 public void updateValue(@Nullable Object value, boolean updatePresentation) {
                     valueSaving = true;
@@ -197,10 +202,11 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             force = true;
         } else {
             updateActions = force = (
-                force ||
-                previewController.getBinding() != attr ||
-                !CommonUtils.equalObjects(rowIndexes, previewController.getRowIndexes()));
-            previewController.setCellLocation(new ResultSetCellLocation(attr, row, rowIndexes));
+                force || previewController.getBinding() != cellLocation.getAttribute()
+                    || !CommonUtils.equalObjects(cellLocation.getRowIndexes(), previewController.getRowIndexes())
+                    || !CommonUtils.equalObjects(cellLocation.getValuePath(), previewController.getValuePath())
+            );
+            previewController.setCellLocation(cellLocation);
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
@@ -212,8 +218,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
     }
 
-    private void viewValue(boolean forceRefresh)
-    {
+    private void viewValue(boolean forceRefresh) {
         if (valueSaving) {
             return;
         }
@@ -235,7 +240,8 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             try {
                 valueEditor = valueManager.createEditor(previewController);
             } catch (Throwable e) {
-                DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
+                DBWorkbench.getPlatformUI()
+                    .showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
                 return;
             }
             if (valueEditor != null) {
@@ -254,9 +260,9 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 if (control != null) {
                     singleLineEditor =
                         control instanceof Combo ||
-                        control instanceof CCombo ||
-                        control instanceof Button ||
-                        (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
+                            control instanceof CCombo ||
+                            control instanceof Button ||
+                            (control instanceof Text && (control.getStyle() & SWT.MULTI) == 0);
                     UIUtils.addFocusTracker(controller.getSite(), VALUE_VIEW_CONTROL_ID, control);
                     controller.lockActionsByFocus(control);
 
@@ -333,8 +339,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
     }
 
-    public void saveValue()
-    {
+    public void saveValue() {
         if (valueEditor == null) {
             return;
         }
@@ -344,14 +349,14 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             previewController.updateValue(newValue, true);
             presentation.updateValueView();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
+            DBWorkbench.getPlatformUI()
+                .showError(ResultSetMessages.value_viewer_apply_error_title, ResultSetMessages.value_viewer_apply_error_message, e);
         } finally {
             valueSaving = false;
         }
     }
 
-    public void clearValue()
-    {
+    public void clearValue() {
         cleanupPanel();
         valueManager = null;
         valueEditor = null;
@@ -360,8 +365,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         viewPlaceholder.layout();
     }
 
-    private void cleanupPanel()
-    {
+    private void cleanupPanel() {
         disposeValueEditor();
         // Cleanup previous viewer
         UIUtils.disposeChildControls(viewPlaceholder);
@@ -419,7 +423,8 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 MenuManager menuManager = new MenuManager();
                 menuManager.add(ActionUtils.makeCommandContribution(
                     presentation.getController().getSite(),
-                    ValueViewCommandHandler.CMD_SAVE_VALUE));
+                    ValueViewCommandHandler.CMD_SAVE_VALUE
+                ));
 
                 menuManager.add(
                     new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
@@ -450,7 +455,8 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         public void run() {
             ActionUtils.runCommand(
                 ValueViewCommandHandler.CMD_SAVE_VALUE,
-                presentation.getController().getSite());
+                presentation.getController().getSite()
+            );
         }
 
     }

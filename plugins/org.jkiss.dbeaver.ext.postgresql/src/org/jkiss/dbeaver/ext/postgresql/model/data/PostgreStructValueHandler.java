@@ -84,7 +84,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     public Object getValueFromObject(
         @NotNull DBCSession session,
         @NotNull DBSTypedObject type,
-        Object object,
+        @Nullable Object object,
         boolean copy,
         boolean validateValue
     ) throws DBCException {
