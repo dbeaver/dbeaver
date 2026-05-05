@@ -410,13 +410,22 @@ public class DBeaverLauncher {
         try {
             Security.setProperty("jdk.tls.disabledAlgorithms", "NULL, anon");
             Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^37");
-            // We put these usually disabled algorithms into the ` legacyAlgorithms ` category so that they are still in use, but only if
-            // all other TLS protos and ciphers fail. We need to somehow update these regularly, though...
-            Security.setProperty(
-                "jdk.tls.legacyAlgorithms",
-                "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, ECDH, TLS_RSA_*"
-                    + ", rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature"
+            // Let's put these usually obsolete algorithms into the ` legacyAlgorithms ` category so that they are still in use,
+            // but only if all other TLS protos and ciphers fail. To relief ourselves from the burden of tracking the updates of this
+            // property in new Java releases, let's just concatenate the default value with our own.
+            String legacyAlgosKey = "jdk.tls.legacyAlgorithms";
+            String[] originalLegacyAlgos = Security.getProperty(legacyAlgosKey).split(",");
+            Set<String> legacyAlgos = HashSet.newHashSet(originalLegacyAlgos.length);
+            for (String algo : originalLegacyAlgos) {
+                legacyAlgos.add(algo.stripTrailing());
+            }
+            Collections.addAll(
+                legacyAlgos,
+                "SSLv3", "TLSv1", "TLSv1.1", "DTLSv1.0", "RC4", "DES", "MD5withRSA", "DH keySize < 1024", "EC keySize < 224",
+                "3DES_EDE_CBC", "ECDH", "TLS_RSA_*", "rsa_pkcs1_sha1 usage HandshakeSignature", "ecdsa_sha1 usage HandshakeSignature",
+                "dsa_sha1 usage HandshakeSignature"
             );
+            Security.setProperty(legacyAlgosKey, String.join(", ", legacyAlgos));
         } catch (RuntimeException ignore) {
             // Just in case
         }
