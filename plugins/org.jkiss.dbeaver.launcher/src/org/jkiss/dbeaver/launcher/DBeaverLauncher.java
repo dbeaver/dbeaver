@@ -364,14 +364,52 @@ public class DBeaverLauncher {
         }
     }
 
-    static {
-        Security.setProperty("jdk.tls.disabledAlgorithms", "NULL, anon");
-        Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^37");
-        Security.setProperty(
-            "jdk.tls.legacyAlgorithms",
-            "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, ECDH, TLS_RSA_*"
-                + ", rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature"
-        );
+    /**
+     * Patch `java.security` properties to allow certain legacy crypto to work with non-server DBeaver products.
+     * <p>
+     * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms that are disabled in Java
+     * by default due to their inadequate (be modern standards) security properties. However, these algorithms are still used by some
+     * legacy databases for encryption in transit. We believe that it's ok to enable them as long as we do it only for non-server products
+     * (i.e., DBeaver desktop, dbvr), since these applications do not have incomming traffic.
+     * <p>
+     * See:
+     * <a href="https://github.com/dbeaver/dbeaver/issues/12668">#12668</a>
+     * <a href="https://github.com/dbeaver/dbeaver/issues/40987">#40987</a>
+     * <a href="https://www.java.com/en/jre-jdk-cryptoroadmap.html">JRE and JDK Cryptographic Roadmap</a>
+     *
+     * @param args command line arguments
+     */
+    private static void patchJavaSecurity(String[] args) {
+        // We need a way to disable this using a Java property just in case
+        if (!Objects.equals(System.getProperty("dbeaver.security.patchJavaSecurityProperties", "1"), "1")) {
+            return;
+        }
+        // Let's detect a desktop DBeaver or dbvr using their product ID
+        String productId = "";
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (PRODUCT.equals(arg) && i + 1 < args.length) {
+                productId = args[i + 1];
+                break;
+            }
+        }
+        if (!productId.startsWith("org.jkiss.dbeaver") && !productId.startsWith("com.dbeaver") && !productId.startsWith("org.dbvr")) {
+            return;
+        }
+        // See `conf/security/java.security` for explanation of these properties
+        try {
+            Security.setProperty("jdk.tls.disabledAlgorithms", "NULL, anon");
+            Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^37");
+            // We put these usually disabled algorithms into the ` legacyAlgorithms ` category so that they are still in use, but only if
+            // all other TLS protos and ciphers fail. We need to somehow update these regularly, though...
+            Security.setProperty(
+                "jdk.tls.legacyAlgorithms",
+                "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, ECDH, TLS_RSA_*"
+                    + ", rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature"
+            );
+        } catch (RuntimeException ignore) {
+            // Just in case
+        }
     }
 
     private String getWS() {
@@ -586,6 +624,7 @@ public class DBeaverLauncher {
         disableDefaultProxyServiceActivation();
         commands = args;
         String[] passThruArgs = processCommandLine(args);
+        patchJavaSecurity(passThruArgs);
         if (debug) {
             System.out.println("Processed command line arguments: " + Arrays.toString(passThruArgs));
         }
