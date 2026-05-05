@@ -176,6 +176,8 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
                 selectedDebugType = debugPanel;
                 selectedDebugPanel = debugPanel.createPanel();
                 selectedDebugPanel.createPanel(panelPlaceholder, this);
+                panelPlaceholder.layout(true, true);
+                panelPlaceholder.pack(true);
                 if (dataSource != null && currentConfiguration != null) {
                     try {
                         selectedDebugPanel.loadConfiguration(dataSource, currentConfiguration.getAttributes());

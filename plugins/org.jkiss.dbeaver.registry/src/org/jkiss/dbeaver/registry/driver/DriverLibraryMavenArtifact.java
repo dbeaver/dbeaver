@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,17 +80,18 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         this.originalPreferredVersion = copyFrom.originalPreferredVersion;
     }
 
+    @Nullable
     public MavenArtifactReference getReference() {
         return reference;
     }
 
-    public void setReference(MavenArtifactReference reference) {
+    public void setReference(@NotNull MavenArtifactReference reference) {
         this.reference = reference;
         this.path = PATH_PREFIX + reference.toString();
         this.localVersion = null;
     }
 
-    private void initArtifactReference(String preferredVersion) {
+    private void initArtifactReference(@Nullable String preferredVersion) {
         if (path.endsWith("]")) {
             int divPos = path.lastIndexOf('[');
             if (divPos != -1) {
@@ -220,7 +221,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
         MavenArtifactVersion localVersion = getArtifactVersion(monitor);
         if (localVersion != null) {
             return localVersion.getExternalURL();
@@ -317,8 +318,11 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         return DBIcon.APACHE;
     }
 
-    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName)
-    throws IOException, InterruptedException {
+    public void downloadLibraryFile(
+        @NotNull DBRProgressMonitor monitor,
+        boolean forceUpdate,
+        @NotNull String taskName
+    ) throws IOException, InterruptedException {
         if (isInvalidLibrary()) {
             throw new IOException("Maven artifact '" + getDisplayName() + "' cannot be resolved in external repositores");
         }

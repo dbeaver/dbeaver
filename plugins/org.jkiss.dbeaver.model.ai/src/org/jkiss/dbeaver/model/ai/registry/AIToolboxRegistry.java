@@ -48,15 +48,6 @@ public class AIToolboxRegistry implements AIToolboxManager {
 
     public AIToolboxRegistry() {
         internalToolbox = new AIToolboxInternalDescriptor();
-        try {
-            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
-            for (AIToolboxDescriptor toolbox: toolboxes) {
-                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
-            }
-        } catch (DBException e) {
-            log.error("Error loading MCP configuration", e);
-        }
-
         // Load function settings
         try {
             String mcpConfig = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(TOOLS_CONFIG_FILE_NAME);
@@ -81,6 +72,14 @@ public class AIToolboxRegistry implements AIToolboxManager {
                 var cd = new AIFunctionCategoryDescriptor(el);
                 categoriesById.put(cd.getId(), cd);
             }
+        }
+        try {
+            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
+            for (AIToolboxDescriptor toolbox : toolboxes) {
+                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
+            }
+        } catch (DBException e) {
+            log.error("Error loading MCP configuration", e);
         }
     }
 
