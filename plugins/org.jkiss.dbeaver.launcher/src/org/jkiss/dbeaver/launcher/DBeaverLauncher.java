@@ -385,7 +385,7 @@ public class DBeaverLauncher {
      * Patch `java.security` properties to allow certain legacy crypto to work with non-server DBeaver products.
      * <p>
      * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms are disabled in Java
-     * by default due to their inadequate (be modern standards) security qualities. However, these algorithms are still used by some
+     * by default due to their inadequate (by modern standards) security qualities. However, these algorithms are still used by some
      * legacy databases for encryption in transit. We believe that it's ok to enable them as long as we do it only for non-server products
      * (i.e., DBeaver desktop, dbvr), since these applications do not have incoming traffic.
      * <p>
