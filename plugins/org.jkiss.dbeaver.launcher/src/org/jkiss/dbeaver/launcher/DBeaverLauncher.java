@@ -410,8 +410,7 @@ public class DBeaverLauncher {
             return;
         }
         // Let's put these obsolete algorithms into the ` legacyAlgorithms ` category so that they are still in use,
-        // but only if all other TLS protos and ciphers fail. To relief ourselves from the burden of tracking the updates of this
-        // property in new Java releases, let's just concatenate the default value with our own.
+        // but only if all other TLS protos and ciphers fail.
         // See `conf/security/java.security` for an explanation of the used properties.
         try {
             String disabledAlgosKey = "jdk.tls.disabledAlgorithms";
