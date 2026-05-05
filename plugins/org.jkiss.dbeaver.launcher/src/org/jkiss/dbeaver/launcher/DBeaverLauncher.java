@@ -365,6 +365,23 @@ public class DBeaverLauncher {
     }
 
     /**
+     * Searches for the product ID in the provided array of command-line arguments.
+     * The ID follows the `-product` flag.
+     *
+     * @param args an array of command-line arguments to search through
+     * @return the product ID, or empty string if not found
+     */
+    private static String findProductIdInArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (PRODUCT.equals(arg) && i + 1 < args.length) {
+                return args[i + 1];
+            }
+        }
+        return "";
+    }
+
+    /**
      * Patch `java.security` properties to allow certain legacy crypto to work with non-server DBeaver products.
      * <p>
      * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms that are disabled in Java
@@ -385,14 +402,7 @@ public class DBeaverLauncher {
             return;
         }
         // Let's detect a desktop DBeaver or dbvr using their product ID
-        String productId = "";
-        for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
-            if (PRODUCT.equals(arg) && i + 1 < args.length) {
-                productId = args[i + 1];
-                break;
-            }
-        }
+        String productId = findProductIdInArgs(args);
         if (!productId.startsWith("org.jkiss.dbeaver") && !productId.startsWith("com.dbeaver") && !productId.startsWith("org.dbvr")) {
             return;
         }
@@ -912,13 +922,10 @@ public class DBeaverLauncher {
     }
 
     private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
-        String productName = "";
+        String productName = findProductIdInArgs(args);
         String customWorkspacePath = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if (PRODUCT.equals(arg)) {
-                productName = args[++i];
-            }
             if (ARG_DATA.equals(arg)) {
                 customWorkspacePath = args[++i];
                 break;
