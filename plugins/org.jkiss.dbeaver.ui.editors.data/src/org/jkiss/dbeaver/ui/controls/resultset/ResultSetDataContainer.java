@@ -179,8 +179,9 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         return controller.getExecutionContext();
     }
 
+    @NotNull
     @Override
-    public DBDAttributeBinding[] filterAttributeBindings(DBDAttributeBinding[] attributes) {
+    public DBDAttributeBinding[] filterAttributeBindings(@NotNull DBDAttributeBinding[] attributes) {
         DBDDataFilter dataFilter = model.getDataFilter();
         List<DBDAttributeBinding> filtered = new ArrayList<>();
         DBDAttributeBinding[] preFiltered;
