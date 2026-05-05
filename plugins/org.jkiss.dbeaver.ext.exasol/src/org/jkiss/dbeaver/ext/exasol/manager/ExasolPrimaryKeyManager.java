@@ -53,11 +53,11 @@ public class ExasolPrimaryKeyManager
 
 	@Override
 	protected ExasolTableUniqueKey createDatabaseObject(
-		@NotNull DBRProgressMonitor monitor,
-		@NotNull DBECommandContext context,
-		@Nullable Object container,
-		@Nullable Object copyFrom,
-		@NotNull Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
 	) throws DBException
 	{
 		return new ExasolTableUniqueKey(

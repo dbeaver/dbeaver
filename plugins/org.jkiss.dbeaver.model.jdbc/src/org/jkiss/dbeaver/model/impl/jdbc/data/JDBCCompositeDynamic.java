@@ -110,8 +110,9 @@ public class JDBCCompositeDynamic extends JDBCComposite {
         }
     }
 
+    @NotNull
     @Override
-    public JDBCCompositeDynamic cloneValue(DBRProgressMonitor monitor) throws DBCException {
+    public JDBCCompositeDynamic cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return new JDBCCompositeDynamic(this, monitor);
     }
 

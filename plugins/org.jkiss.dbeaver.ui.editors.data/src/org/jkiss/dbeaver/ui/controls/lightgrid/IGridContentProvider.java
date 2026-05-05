@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,8 +75,10 @@ public interface IGridContentProvider extends IContentProvider {
 
     int getSortOrder(@Nullable IGridColumn element);
 
+    @NotNull
     ElementState getDefaultState(@NotNull IGridColumn element);
 
+    @NotNull
     IGridStatusColumn[] getStatusColumns();
 
     int getColumnPinIndex(@NotNull IGridColumn element);
@@ -94,33 +96,37 @@ public interface IGridContentProvider extends IContentProvider {
     /**
      * Checks for additional data read according to the specified cell/row
      */
-    void validateDataPresence(IGridColumn colElement, IGridRow rowElement);
+    void validateDataPresence(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
 
     /**
      * Returns cell information.
      * TODO: add returnColors parameter for optimization
      */
     @NotNull
-    CellInformation getCellInfo(IGridColumn colElement, IGridRow rowElement, boolean selected);
+    CellInformation getCellInfo(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean selected);
 
-    boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow);
+    boolean isVoidCell(@NotNull IGridColumn gridColumn, @NotNull IGridRow gridRow);
 
     /**
      * @param formatString Format string values or return raw values
      *
      */
-    Object getCellValue(IGridColumn colElement, IGridRow rowElement, boolean formatString);
+    @Nullable
+    Object getCellValue(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean formatString);
 
     @NotNull
-    String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
+    String getCellLinkText(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
 
-    String getCellToolTip(IGridColumn colElement, IGridRow rowElement);
+    @Nullable
+    String getCellToolTip(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);
 
-    List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options);
+    @Nullable
+    List<IGridHint> getCellHints(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, @Nullable Object cellValue, int options);
 
-    List<IGridHint> getColumnHints(IGridItem element, int options);
+    @Nullable
+    List<IGridHint> getColumnHints(@NotNull IGridItem element, int options);
 
-    int getColumnHintsWidth(IGridColumn colElement);
+    int getColumnHintsWidth(@NotNull IGridColumn colElement);
 
     // Resets all cached colors
     void resetColors();
