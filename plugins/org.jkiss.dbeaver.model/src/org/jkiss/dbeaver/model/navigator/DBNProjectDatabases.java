@@ -181,32 +181,18 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     childNodes.add(folderNode);
                 }
             }
-            if (groupByDriver) {
-                // Group root-level data sources by driver
-                Map<DBPDriver, DBNDriverGroup> driverGroups = new LinkedHashMap<>();
-                synchronized (dataSources) {
-                    for (DBNDataSource dataSource : dataSources) {
-                        if (dataSource == null ||
-                            dataSource.getDataSourceContainer().isHidden() ||
-                            dataSource.getDataSourceContainer().getFolder() != null) {
-                            continue;
-                        }
-                        DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
-                        driverGroups.computeIfAbsent(driver, d -> new DBNDriverGroup(this, d));
-                    }
-                }
-                childNodes.addAll(driverGroups.values());
-            } else {
-                synchronized (dataSources) {
-                    // Add only visible root datasources
-                    for (DBNDataSource dataSource : dataSources) {
-                        if (dataSource == null ||
-                            dataSource.getDataSourceContainer().isHidden() ||
-                            dataSource.getDataSourceContainer().getFolder() != null) {
-                            continue;
-                        }
-                        childNodes.add(dataSource);
-                    }
+            synchronized (dataSources) {
+                if (groupByDriver) {
+                    dataSources.stream()
+                        .filter(this::isVisibleRootDataSource)
+                        .map(ds -> ds.getDataSourceContainer().getDriver())
+                        .distinct()
+                        .map(driver -> new DBNDriverGroup(this, driver))
+                        .forEach(childNodes::add);
+                } else {
+                    dataSources.stream()
+                        .filter(this::isVisibleRootDataSource)
+                        .forEach(childNodes::add);
                 }
             }
             sortNodes(childNodes);
@@ -260,6 +246,14 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
 
         refreshChildren();
+    }
+
+    private boolean isVisibleRootDataSource(@Nullable DBNDataSource dataSource) {
+        if (dataSource == null) {
+            return false;
+        }
+        DBPDataSourceContainer container = dataSource.getDataSourceContainer();
+        return !container.isHidden() && container.getFolder() == null;
     }
 
     public void refreshChildren()
