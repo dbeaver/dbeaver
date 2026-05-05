@@ -440,7 +440,7 @@ public class DBeaverLauncher {
         if (propertyValue == null) {
             return;
         }
-        // Split by `,` and then strip trailing space instead of splitting by `, ` directly for performance reasons
+        // Split by `,` and then strip leading space instead of splitting by `, ` directly for performance reasons
         String[] valuesArray = propertyValue.split(",");
         for (String value : valuesArray) {
             values.add(value.stripLeading());
