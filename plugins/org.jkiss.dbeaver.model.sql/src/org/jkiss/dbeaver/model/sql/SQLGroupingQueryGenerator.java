@@ -152,7 +152,7 @@ public class SQLGroupingQueryGenerator {
                     Expression expression = SQLSemanticProcessor.parseExpression(func);
                     SelectItem<?> sei = new SelectItem<>(expression);
                     if (useAliasForColumns) {
-                        sei.setAlias(new Alias(funcAliases[i]));
+                        sei.setAlias(new Alias(SQLUtils.quoteString(dataSource, funcAliases[i])));
                     }
                     selectItems.add(sei);
                 }
