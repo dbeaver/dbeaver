@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="hsqldb" class="org.jkiss.dbeaver.ext.hsqldb.model.HSQLMetaModel" driverClass="org.hsqldb.jdbcDriver,org.hsqldb.jdbc.JDBCDriver" dialect="hsqldb"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="hsqldb" parent="generic" class="org.jkiss.dbeaver.ext.hsqldb.model.HSQLDialect" label="HSQLDB" description="HSQLDB SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/hsqldb_icon.png">
+        </dialect>
+    </extension>
+
+</plugin>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+    <description name="DBeaver - SQL debugger" url="https://dbeaver.io/update/debug/latest">DBeaver - SQL debugger</description>
+
+    <feature id="org.jkiss.dbeaver.debug.feature">
+        <category name="org.jkiss.dbeaver.debug.category"/>
+    </feature>
+    <category-def name="org.jkiss.dbeaver.debug.category" label="DBeaver SQL Debugger (PostgreSQL)"/>
+</site>

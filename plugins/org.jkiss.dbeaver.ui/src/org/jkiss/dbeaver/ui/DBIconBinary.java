@@ -1,0 +1,81 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jkiss.dbeaver.ui;
+
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.utils.CommonUtils;
+
+/**
+ * Image with binary data
+ */
+public class DBIconBinary implements DBPImage {
+    private final String location;
+    private final Image image;
+    private final ImageDescriptor imageDescriptor;
+
+    public DBIconBinary(@NotNull String location, @NotNull ImageData data) {
+        this.location = "binary:" + location;
+        this.image = new Image(Display.getCurrent(), data);
+        this.imageDescriptor = ImageDescriptor.createFromImageDataProvider(zoom -> data);
+    }
+
+    public DBIconBinary(@Nullable String location, @NotNull Image image) {
+        this.location = "image:" + (location != null ? location : image.hashCode());
+        this.image = image;
+        this.imageDescriptor = ImageDescriptor.createFromImage(image);
+    }
+
+    @NotNull
+    public Image getImage() {
+        return image;
+    }
+
+    @NotNull
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
+    }
+
+    @NotNull
+    @Override
+    public String getLocation() {
+        return location;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DBIconBinary) {
+            return CommonUtils.equalObjects(location, ((DBIconBinary) obj).location);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return location;
+    }
+
+    public void dispose() {
+        this.image.dispose();
+    }
+}

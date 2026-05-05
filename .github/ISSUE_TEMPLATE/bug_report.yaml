@@ -1,0 +1,72 @@
+name: 🐛 Bug Report
+description: Report a reproducible bug or regression in DBeaver
+labels: [wait for review]
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please fill in all required fields with as many details as possible.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        Describe the issue you are experiencing.
+        Attach log files if possible ([read how to provide log files on our wiki](https://github.com/dbeaver/dbeaver/wiki/Log-files))
+      placeholder: |
+        Please enter a description of the issue. Here you can also attach log files, screenshots or a video
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: DBeaver Version
+      description: What version of DBeaver are you running?
+      placeholder: ex. Community Edition 24.1.0
+    validations:
+      required: true
+  - type: input
+    id: os-kind
+    attributes:
+      label: Operating System
+      description: What an operating system do you use?
+      placeholder: ex. macOS Big Sur 11.5.2
+    validations:
+      required: false
+  - type: textarea
+    id: database-driver
+    attributes:
+      label: Database and driver
+      description: |
+        What database and driver do you use?
+        You can check it in the connection settings dialog.
+      placeholder: |
+        Example:
+        1. Database name and version: PostgreSQL 14.0
+        2. Driver name and version: PostgreSQL JDBC Driver 42.2.25
+    validations:
+      required: false
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Describe the steps to reproduce the bug
+      placeholder: |
+        1. I try to connect to database '...'
+        2. With this config '...'
+        3. I push the button '...'
+        4. See an error '...'
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any additional context about the environment
+      placeholder: |
+        Example:
+        1. Tunnels and proxy: SSH, SOCKS, etc
+        2. Extensions: Office extension, Git extension, etc
+    validations:
+      required: false

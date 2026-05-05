@@ -1,0 +1,1289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <!-- UI extensions -->
+    <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="Workbench handlers" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.clearHistoryHandler" name="Clear history handlers" schema="schema/org.jkiss.dbeaver.clearHistoryHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.toolBarConfiguration" name="Toolbar configurations" schema="schema/org.jkiss.dbeaver.toolBarConfiguration.exsd" />
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
+            namespace="org.jkiss.dbeaver.core.datasourceContainer"
+            properties="driverId,driverClass,connected,connecting,supportsSchemas"
+            type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
+            namespace="org.jkiss.dbeaver.core.folder"
+            properties="connected"
+            type="org.jkiss.dbeaver.model.navigator.DBNLocalFolder"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
+            id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
+            namespace="org.jkiss.dbeaver.runtime.process"
+            properties="running"
+            type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.toolbar.configuration"
+            properties="visible"
+            type="java.lang.Object"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.views">
+        <view
+                id="org.jkiss.dbeaver.core.queryManager"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
+                allowMultiple="false"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.svg"
+                name="%view.query.manager.title">
+            <description>%view.query.manager.description</description>
+        </view>
+        <view
+                id="org.jkiss.dbeaver.core.shellProcess"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.process.ShellProcessView"
+                allowMultiple="true"
+                restorable="false"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/shell.svg"
+                name="%view.shell.process.title">
+            <description>%view.shell.process.description</description>
+        </view>
+<!--
+        <view
+                id="org.jkiss.dbeaver.core.databaseOutput"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.views.DatabaseOutputView"
+                allowMultiple="false"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.svg"
+                name="%view.database.output.title"/>
+-->
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.core.util" name="%category.utility.name" description="%category.utility.description"/>
+        <command id="org.jkiss.dbeaver.core.eula.showPopup" name="%command.org.jkiss.dbeaver.ui.eula.showPopup.name" description="%command.org.jkiss.dbeaver.ui.eula.showPopup.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+
+        <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.new.connection.from.url" name="%command.org.jkiss.dbeaver.core.new.connection.from.url.name" description="%command.org.jkiss.dbeaver.core.new.connection.from.url.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.migrate.connection" name="%command.org.jkiss.dbeaver.core.migrate.connection.name" description="%command.org.jkiss.dbeaver.core.migrate.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.bookmark.navigate" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.navigate.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.navigate.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+
+        <command id="org.jkiss.dbeaver.core.connect" name="%command.org.jkiss.dbeaver.core.connect.name" description="%command.org.jkiss.dbeaver.core.connect.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.folder.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.invalidate" name="%command.org.jkiss.dbeaver.core.invalidate.name" description="%command.org.jkiss.dbeaver.core.invalidate.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnectProject" name="%command.org.jkiss.dbeaver.core.disconnectProject.name" description="%command.org.jkiss.dbeaver.core.disconnectProject.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnectAll" name="%command.org.jkiss.dbeaver.core.disconnectAll.name" description="%command.org.jkiss.dbeaver.core.disconnectAll.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.disconnectOther" name="%command.org.jkiss.dbeaver.core.disconnectOther.name" description="%command.org.jkiss.dbeaver.core.disconnectOther.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.commit" name="%command.org.jkiss.dbeaver.core.commit.name" description="%command.org.jkiss.dbeaver.core.commit.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.rollback" name="%command.org.jkiss.dbeaver.core.rollback.name" description="%command.org.jkiss.dbeaver.core.rollback.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.txn.autocommit" name="%command.org.jkiss.dbeaver.core.txn.autocommit.name" description="%command.org.jkiss.dbeaver.core.txn.autocommit.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.connection.synchronize" name="%command.org.jkiss.dbeaver.core.connection.synchronize.name" description="%command.org.jkiss.dbeaver.core.connection.synchronize.description" categoryId="org.jkiss.dbeaver.core.database" />
+        <command id="org.jkiss.dbeaver.core.connection.readonly" name="%command.org.jkiss.dbeaver.core.connection.readonly.name" description="%command.org.jkiss.dbeaver.core.connection.readonly.description" categoryId="org.jkiss.dbeaver.core.database" />
+        <command id="org.jkiss.dbeaver.core.txn.log" name="%command.org.jkiss.dbeaver.core.txn.log.name" description="%command.org.jkiss.dbeaver.core.txn.log.description" categoryId="org.jkiss.dbeaver.core.database">
+            <commandParameter id="showAll" name="Show all queries by default" optional="true"/>
+        </command>
+        <command id="org.jkiss.dbeaver.core.txn.pending" name="%command.org.jkiss.dbeaver.core.txn.pending.name" description="%command.org.jkiss.dbeaver.core.txn.pending.description" categoryId="org.jkiss.dbeaver.core.database"/>
+
+        <command id="org.jkiss.dbeaver.core.qm.filter" name="%command.org.jkiss.dbeaver.core.qm.filter.name" description="%command.org.jkiss.dbeaver.core.qm.filter.description" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.qm.clear" name="%command.org.jkiss.dbeaver.core.qm.clear.name" description="%command.org.jkiss.dbeaver.core.qm.clear.description" categoryId="org.jkiss.dbeaver.core.util"/>
+
+        <command id="org.jkiss.dbeaver.core.process.stop" name="%command.org.jkiss.dbeaver.core.process.stop.name" description="%command.org.jkiss.dbeaver.core.process.stop.description" categoryId="org.jkiss.dbeaver.core.util"/>
+
+        <command id="org.jkiss.dbeaver.ui.tools.menu" name="%command.org.jkiss.dbeaver.ui.tools.menu.name" description="%command.org.jkiss.dbeaver.ui.tools.menu.description" categoryId="org.jkiss.dbeaver.core.database"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.svg"/>
+
+        <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.invalidate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/reconnect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.connection.synchronize" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.connection.readonly" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/readonly.svg" />
+        <image commandId="org.jkiss.dbeaver.folder.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.commit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/commit.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.txn.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_log.svg"/>
+
+        <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/erase.png"/>
+
+        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/cancel.svg"/>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.core.ui.querylog.control">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.ui.qm.log"/>
+            </with>
+        </definition>
+<!--
+        <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetEditor">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.ui.InlineWidgetEditor"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText">
+            <and>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.ui.InlineWidgetEditor"/>
+                </with>
+                <with variable="activeFocusControl">
+                    <instanceof value="org.eclipse.swt.custom.StyledText"/>
+                </with>
+            </and>
+        </definition>
+-->
+
+        <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
+            <with variable="activePart">
+                <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.toolbar.general.visible">
+            <reference definitionId="DBeaverPerspectiveActive"/>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.editor.transactional">
+            <with variable="activeEditor">
+                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                    <test property="org.jkiss.dbeaver.core.datasource.supportsTransactions" value="true"/>
+                </adapt>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.preferences.datasource">
+            <or>
+                <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            </or>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.folder.connected">
+            <with variable="selection">
+                <count value="+"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.model.navigator.DBNLocalFolder">
+                        <test property="org.jkiss.dbeaver.core.folder.connected" value="true"/>
+                    </adapt>
+                </iterate>
+            </with>
+        </definition>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.core.eula.showPopup" class="org.jkiss.dbeaver.ui.eula.EULAHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection.from.url" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateFromUrlHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceMigrateHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" class="org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <and>
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDatabaseNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.projectResourceEditable"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate" class="org.jkiss.dbeaver.ui.actions.common.NavigateBookmarkHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.ui.resources.bookmarks.DBNBookmark"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <handler commandId="org.jkiss.dbeaver.core.connect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler">
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/>
+                    <not>
+                        <reference definitionId="org.jkiss.dbeaver.core.datasource.connecting"/>
+                    </not>
+                </and>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.folder.disconnect" class="org.jkiss.dbeaver.ui.actions.datasource.FolderDisconnectHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.folder.connected"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.disconnectAll" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectAllHandler"/>
+        <handler commandId="org.jkiss.dbeaver.core.disconnectOther" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectOtherHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.disconnectProject" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectProjectHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasMultipleProjects"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.invalidate" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.connection.synchronize" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceSynchronizeHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.datasource.synchronizable"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.transactionActive"/>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/>
+                    <or>
+                        <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="admin"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
+                    </or>
+                </and>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.connection.readonly" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceReadonlyHandler">
+            <enabledWhen>
+                <or>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.connected"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.datasource.disconnected"/>
+                </or>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.txn.log" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionLogHandler">\
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.txn.pending" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourcePendingTransactionsHandler">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></enabledWhen>
+        </handler>
+
+        <!-- Set default behaviour for standard widgets -->
+<!--
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:copy">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:paste">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.cut" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:cut">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.eclipse.ui.internal.handlers.SelectAllHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+        </handler>
+-->
+
+        <!--
+            Inline control handlers.
+            Commented because we use workaround - see UIUtils.enableHostEditorKeyBindings()
+         -->
+<!--
+                <handler commandId="org.eclipse.ui.edit.text.goto.lineStart" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:lineStart">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.lineEnd" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:lineEnd">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.textStart" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:textStart">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.textEnd" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:textEnd">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.pageUp" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:pageUp">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.pageDown" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:pageDown">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:wordPrevious">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.goto.wordNext" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:wordNext">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
+                </handler>
+-->
+
+<!--
+                <handler commandId="org.eclipse.ui.edit.text.select.lineStart" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:lineStart">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.lineEnd" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:lineEnd">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.textStart" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:textStart">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.textEnd" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:textEnd">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.pageUp" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:pageUp">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.pageDown" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:pageDown">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.wordPrevious" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:wordPrevious">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+                <handler commandId="org.eclipse.ui.edit.text.select.wordNext" class="org.jkiss.dbeaver.ui.editors.WidgetCommandDirector:wordNext">
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                </handler>
+-->
+
+
+        <!-- Query log control handlers -->
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
+
+        <!-- Query log view handlers -->
+        <handler commandId="org.jkiss.dbeaver.core.qm.clear" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerClearHandler"/>
+
+        <!-- Process view handlers -->
+        <handler commandId="org.jkiss.dbeaver.core.process.stop" class="org.jkiss.dbeaver.ui.views.process.ShellProcessStopHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <instanceof value="org.jkiss.dbeaver.model.runtime.DBRProcessController">
+                        <test property="org.jkiss.dbeaver.runtime.process.running"/>
+                    </instanceof>
+                </with>
+            </enabledWhen>
+        </handler>
+
+        <!-- Tools menu -->
+        <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsContextMenuHandler">
+            <activeWhen>
+                <and>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
+                    <or>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
+                    </or>
+                </and>
+            </activeWhen>
+        </handler>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+
+        <!-- Database menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?before=window">
+            <menu id="dataSourceMenu" label="%menu.database">
+                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+
+                <separator name="driverGroup" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.new.connection">
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.new.connection.from.url">
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.driver.manager">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <separator name="connection" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.connect"/>
+                <command commandId="org.jkiss.dbeaver.core.invalidate"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnect"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnectAll"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnectOther"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnectProject">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.synchronize">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <separator name="session" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.commit">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.rollback">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
+                </command>
+                <menu label="%command.org.jkiss.dbeaver.core.transaction_mode.name">
+                    <dynamic id="org.jkiss.dbeaver.core.menu.txn" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
+                </menu>
+                <command commandId="org.jkiss.dbeaver.core.txn.log">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.txn.pending">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle"/>
+                <separator name="transactions" visible="false"/>
+                <separator name="tools" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.migrate.connection">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+
+                <separator name="additions" visible="false"/>
+            </menu>
+        </menuContribution>
+
+        <!-- Database toolbar -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
+            <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
+                <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
+                    <visibleWhen checkEnabled="true">
+                        <and>
+                            <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                        </and>
+                    </visibleWhen>
+                </command>
+                <separator name="connection-tools" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.connect">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.invalidate">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.disconnect">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.synchronize">
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
+                            <reference definitionId="org.jkiss.dbeaver.core.datasource.synchronizable"/>
+                        </and>
+                    </visibleWhen>
+                </command>
+                <separator name="sql_tools" visible="true"/>
+                <separator name="additions" visible="false"/>
+            </toolbar>
+            <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                <command commandId="org.jkiss.dbeaver.core.commit" id="org.jkiss.dbeaver.core.commit.menu" style="pulldown" mode="FORCE_TEXT">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.rollback" id="org.jkiss.dbeaver.core.rollback.menu" style="pulldown" mode="FORCE_TEXT">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <command
+                      commandId="org.jkiss.dbeaver.core.txn.autocommit"
+                      icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_auto.svg"
+                      id="org.jkiss.dbeaver.core.menu.txn"
+                      style="pulldown"
+                      tooltip="%command.org.jkiss.dbeaver.core.txn.autocommit.description">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <separator name="additions" visible="false"/>
+            </toolbar>
+
+            <toolbar id="dbeaver-transaction-monitor" label="%toolbar.dbeaver-transaction-monitor.label">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                <control class="org.jkiss.dbeaver.ui.controls.txn.TransactionMonitorToolbar$ToolbarContribution" id="Transaction monitor toolbar">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </control>
+                <command
+                      commandId="org.jkiss.dbeaver.core.txn.log"
+                      id="org.jkiss.dbeaver.core.menu.txn.log"
+                      style="pulldown">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.connection.readonly" style="toggle">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+            </toolbar>
+
+<!--
+            <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
+                <command commandId="org.eclipse.ui.file.save"/>
+                <command commandId="org.eclipse.ui.file.revert" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
+                <command commandId="org.eclipse.ui.edit.undo"/>
+                <command commandId="org.eclipse.ui.edit.redo"/>
+                <command commandId="org.eclipse.ui.file.refresh"/>
+            </toolbar>
+-->
+
+            <toolbar id="dbeaver-connection-selector" label="%toolbar.dbeaver-datasource-selector.label">
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                <command
+                    commandId="org.jkiss.dbeaver.ui.tools.select.connection"
+                    id="org.jkiss.dbeaver.core.menu.select.connection"
+                    style="pulldown"
+                    mode="FORCE_TEXT">
+                    <visibleWhen>
+                        <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                    </visibleWhen>
+                </command>
+                <command
+                    commandId="org.jkiss.dbeaver.ui.tools.select.schema"
+                    id="org.jkiss.dbeaver.core.menu.select.schema"
+                    style="pulldown"
+                    mode="FORCE_TEXT">
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                            <with variable="activeEditor">
+                                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                                    <test property="org.jkiss.dbeaver.core.datasourceContainer.supportsSchemas"/>
+                                </adapt>
+                            </with>
+                        </and></visibleWhen>
+                </command>
+                <separator name="additions" visible="false"/>
+            </toolbar>
+
+        </menuContribution>
+
+        <!-- All Context menus -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
+            <separator name="sql_tools" visible="true"/>
+
+            <command commandId="org.jkiss.dbeaver.core.project.active">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <separator name="create" visible="true"/>
+
+            <command commandId="org.jkiss.dbeaver.core.object.open">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <dynamic id="org.jkiss.dbeaver.core.connection.settings"
+                     class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
+                                <and>
+                                    <test property="org.jkiss.dbeaver.core.datasource.editable"/>
+                                </and>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </dynamic>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <command commandId="org.jkiss.dbeaver.core.navigator.open.browser">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <menu id="navigator.filter"
+                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"
+                  label="%menu.filter.label">
+                <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.add.include">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.config">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.toggle">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.clear">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+            </menu>
+
+<!--
+            <command commandId="org.jkiss.dbeaver.core.object.move.up">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.object.move.down">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+-->
+
+            <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.file.properties">
+                <visibleWhen checkEnabled="true">
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+
+            <separator name="remote-files" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.edit.save.resource">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.edit.load.resource">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+            <separator name="connection-tools" visible="true"/>
+
+            <command commandId="org.jkiss.dbeaver.core.connect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.invalidate">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.disconnect">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.folder.disconnect">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
+        <!-- Additions end - Copy/Paste/etc -->
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions_end">
+            <separator name="copy" visible="true"/>
+
+            <command commandId="org.eclipse.ui.edit.copy">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.edit.paste">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.adv_info">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.edit.delete">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.edit.rename">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+
+
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="navigate" label="%menu.navigate">
+                <command commandId="org.jkiss.dbeaver.core.object.goto"><visibleWhen checkEnabled="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object">
+					  <visibleWhen checkEnabled="true"/>
+			    </command>
+            </menu>
+        </menuContribution><menuContribution allPopups="false" locationURI="menu:help?after=additions">
+            <command commandId="org.jkiss.dbeaver.core.eula.showPopup" label="%command.org.jkiss.dbeaver.ui.eula.showPopup.name"/>
+        </menuContribution>
+        <!-- Transaction mode menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn">
+            <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.commit.menu">
+            <command commandId="org.jkiss.dbeaver.core.commit"/>
+            <separator visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.txn.log">
+                <parameter name="showAll" value="true"/>
+            </command>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.rollback.menu">
+            <command commandId="org.jkiss.dbeaver.core.rollback"/>
+            <separator visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.txn.log">
+                <parameter name="showAll" value="true"/>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.project">
+            <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
+        </menuContribution>
+
+        <!-- New connection menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.newConnection">
+            <separator name="additions" visible="false"/>
+            <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>
+            <separator name="footer" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection.from.url" label="%command.org.jkiss.dbeaver.core.new.connection.from.url.name_short"/>
+            <separator name="custom" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+        </menuContribution>
+
+        <!-- QM menu & toolbar -->
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
+            <separator name="refresh" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
+            <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
+            <separator name="additions" visible="true"/>
+            <separator name="settings" visible="false"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.queryManager">
+            <separator name="refresh" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
+            <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
+            <separator name="additions" visible="true"/>
+            <separator name="settings" visible="false"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.shellProcess">
+            <command commandId="org.jkiss.dbeaver.core.process.stop"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.shellProcess">
+            <command commandId="org.jkiss.dbeaver.core.process.stop"/>
+        </menuContribution>
+
+        <!-- Connection and schema selector menus -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.select.connection">
+            <dynamic id="org.jkiss.dbeaver.core.menu.select.connection.list" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveDataSourceHandler$MenuContributor"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.select.schema">
+            <dynamic id="org.jkiss.dbeaver.core.menu.select.schema.list" class="org.jkiss.dbeaver.ui.actions.datasource.SelectActiveSchemaHandler$MenuContributor"/>
+        </menuContribution>
+
+        <!-- Transaction log menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn.log">
+            <command commandId="org.jkiss.dbeaver.core.txn.log"/>
+            <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
+            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.svg" label="%command.org.eclipse.ui.views.showView.label" style="push">
+                <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
+            </command>
+        </menuContribution>
+
+        <!-- Database Navigator menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
+            <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.driver.manager">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="projects" visible="true"/>
+            <menu commandId="org.jkiss.dbeaver.core.project.select" label="%menu.org.jkiss.dbeaver.core.project.select.label">
+                <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorActiveProjectContributor"/>
+            </menu>
+            <command commandId="org.jkiss.dbeaver.core.new.folder"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh">
+                <parameter name="singleProject" value="true"/>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
+        <!-- Project Navigator menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator">
+            <command commandId="org.jkiss.dbeaver.core.project.create">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator">
+            <command commandId="org.jkiss.dbeaver.core.project.create">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="additions" visible="true"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+            <command commandId="org.eclipse.ui.file.properties"/>
+            <separator name="additions_end" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
+        </menuContribution>
+
+        <!-- Project explorer menu & toolbar -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
+            <command commandId="org.eclipse.ui.file.properties"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll"/>
+            <command commandId="org.eclipse.ui.navigate.expandAll"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
+        </menuContribution>
+
+    </extension>
+
+
+    <extension point="org.eclipse.ui.bindings">
+
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="ALT+`"/>
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="ALT+`"/>
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+V"/>
+
+        <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.edit.copy.special.with.last.settings" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ALT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.edit.paste.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+V"/>
+        <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+D"/>
+
+        <key commandId="org.jkiss.dbeaver.core.new.connection" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+N"/>
+        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+4"/>
+        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+4"/>
+        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+ALT+SHIFT+K"/>
+        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+8"/>
+        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+8"/>
+        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+ALT+SHIFT+R"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.core.DesktopPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%page.org.jkiss.dbeaver.preferences.main.errorHandle.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.main.connections" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient" name="%page.org.jkiss.dbeaver.preferences.main.connections.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.main.transactions" class="org.jkiss.dbeaver.ui.preferences.PrefPageTransactions" name="%page.org.jkiss.dbeaver.preferences.main.transactions.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="%page.org.jkiss.dbeaver.preferences.main.meta.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+        </page>
+
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors" id="org.jkiss.dbeaver.preferences.editors" name="%page.org.jkiss.dbeaver.preferences.editors.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
+
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" id="org.jkiss.dbeaver.preferences.main.qm" name="%page.org.jkiss.dbeaver.preferences.main.qm.name">
+           <enabledWhen>
+              <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
+           </enabledWhen>
+        </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                </or>
+            </enabledWhen>
+        </page>
+
+        <page id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
+              class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
+              name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+            </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+        <!-- General colors -->
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.accent.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.accent"
+            value="51, 135, 197">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.accent.description</description>
+        </colorDefinition>
+
+        <!-- Colors for transactions -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.committed.background"
+                value="184,247,170">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.reverted.background"
+                value="247,170,170">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.transaction.background"
+                value="247,228,170">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Read-only labels"
+                categoryId="org.eclipse.ui.workbenchMisc"
+                id="org.jkiss.dbeaver.color.readOnly.foreground"
+                value="244, 132, 0">
+            <description>Color for read-only notification labels and messages</description>
+        </colorDefinition>
+
+        <!-- Colors for connection types -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.colors.connectionTypes.label" id="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.colors.connectionTypes.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+            label="Test"
+            categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
+            id="org.jkiss.dbeaver.color.connectionType.qa.background"
+            value="214,250,207">
+            <description>QA/Test/Stage server</description>
+        </colorDefinition>
+        <colorDefinition
+            label="Production"
+            categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
+            id="org.jkiss.dbeaver.color.connectionType.prod.background"
+            value="250,207,207">
+            <description>Production server</description>
+        </colorDefinition>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.exportWizards">
+        <category id="org.jkiss.dbeaver.core.export.resources" name="%category.org.jkiss.dbeaver.core.export.resources.name"/>
+        <wizard
+             category="org.jkiss.dbeaver.core.export.resources"
+             class="org.jkiss.dbeaver.tools.project.ProjectExportWizard"
+             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"
+             id="org.jkiss.dbeaver.core.wizard.export.project"
+             name="%wizard.org.jkiss.dbeaver.core.wizard.export.project.name">
+           <description>
+               %wizard.org.jkiss.dbeaver.core.wizard.export.project.description
+           </description>
+        </wizard>
+        <wizard
+             category="org.jkiss.dbeaver.core.export.resources"
+             class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
+             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+             id="org.jkiss.dbeaver.core.wizard.export.scripts"
+             name="%wizard.org.jkiss.dbeaver.core.wizard.export.scripts.name">
+           <description>
+               %wizard.org.jkiss.dbeaver.core.wizard.export.scripts.description
+           </description>
+        </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.core.export.resources"
+                class="org.jkiss.dbeaver.tools.configuration.ConfigurationExportWizard"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"
+                id="org.jkiss.dbeaver.core.wizard.export.workspace"
+                name="%wizard.org.jkiss.dbeaver.core.wizard.export.workspace.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.export.workspace.description
+            </description>
+        </wizard>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.importWizards">
+        <category id="org.jkiss.dbeaver.core.import.resources" name="%category.org.jkiss.dbeaver.core.import.resources.name"/>
+        <wizard
+            category="org.jkiss.dbeaver.core.import.resources"
+            class="org.jkiss.dbeaver.tools.project.ProjectImportWizard"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"
+            id="org.jkiss.dbeaver.core.wizard.import.project"
+            name="%wizard.org.jkiss.dbeaver.core.wizard.import.project.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.import.project.description
+            </description>
+        </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.core.import.resources"
+            class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+            id="org.jkiss.dbeaver.core.wizard.import.scripts"
+            name="%wizard.org.jkiss.dbeaver.core.wizard.import.scripts.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.import.scripts.description
+            </description>
+        </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.core.import.resources"
+                class="org.jkiss.dbeaver.tools.configuration.ConfigurationImportWizard"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"
+                id="org.jkiss.dbeaver.core.wizard.import.workspace"
+                name="%wizard.org.jkiss.dbeaver.core.wizard.import.workspace.name">
+            <description>
+                %wizard.org.jkiss.dbeaver.core.wizard.import.workspace.description
+            </description>
+        </wizard>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
+             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.svg"
+             id="org.jkiss.dbeaver.core.wizard.new.connection"
+             name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
+           <description>
+               %wizard.org.jkiss.dbeaver.core.wizard.new.connection.description
+           </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.help.toc">
+       <toc file="docs/help/toc.xml" primary="true">
+       </toc>
+    </extension>
+
+    <extension point="org.eclipse.help.contexts">
+       <contexts plugin="org.jkiss.dbeaver.core" file="docs/help/contexts.xml">
+       </contexts>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.main.meta" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.main.meta.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.binary.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.data" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.data.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.content.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.erd.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.sql.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.entity" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.editor.entity.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.dbeaver" label="dbeaver beaver"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.connection"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.profiles" label="ssh proxy kubernetes ssm tunnel network profile"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.grid.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.database.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.database.connection.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.user.interface" label="%keyword.org.jkiss.dbeaver.core.keyword.user.interface.label"/>
+
+    </extension>
+
+    <!-- DBeaver extensions -->
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager" objectType="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler type="default" class="org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl"/>
+        <handler type="project" class="org.jkiss.dbeaver.ui.resources.projects.ProjectHandlerImpl"/>
+        <handler type="bookmark" class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl"/>
+        <handler type="shortcut" class="org.jkiss.dbeaver.ui.resources.shortcuts.ShortcutsHandlerImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl" uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"/>
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_default"/>
+        </stylesheet>
+        <stylesheet uri="css/e4-dark_dbeaver_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceAuth" class="org.jkiss.dbeaver.ui.services.UIServiceAuthImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSQL" class="org.jkiss.dbeaver.ui.editors.sql.UIServiceSQLImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceDrivers" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceDriversImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceSystemAgentImpl"/>
+        <service name="org.jkiss.dbeaver.runtime.DBServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.pluginService">
+        <service class="org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester$ResourceListener"/>
+        <service class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester$QMService"/>
+    </extension>
+
+    <!-- Perspective -->
+    <extension point="org.eclipse.ui.perspectives">
+        <perspective
+                class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/dbeaver_perspective.png"
+                id="org.jkiss.dbeaver.core.perspective"
+                name="%perspective.name">
+        </perspective>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoNextEditPosition"/>
+            <hiddenToolBarItem id="org.eclipse.ui.edit.text.gotoLastEditPosition"/>
+        </perspectiveExtension>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+                id="exit"
+                title="%confirm.exit.title"
+                description="%confirm.exit.tip"
+                message="%confirm.exit.message"
+                toggleMessage="default"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="driver_download"
+                title="%confirm.driver_download.title"
+                description="%confirm.driver_download.tip"
+                message="%confirm.driver_download.message"
+                toggleMessage="default"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="disable_network_handler"
+                title="%confirm.disable_network_handler.title"
+                description="%confirm.disable_network_handler.tip"
+                message="%confirm.disable_network_handler.message"
+                toggleMessage="default"
+                group="%confirmation.group.general.actions"/>
+        <confirmation
+                id="test_connection_persist"
+                title="%confirm.test_connection_persist.title"
+                description="%confirm.test_connection_persist.tip"
+                message="%confirm.test_connection_persist.message"
+                toggleMessage="default"
+                group="Connections"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page
+            category="org.jkiss.dbeaver.preferences.main"
+            id="org.jkiss.dbeaver.preferences.main.toolbar.customization"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
+            name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name"/>
+        <page
+            id="org.jkiss.dbeaver.preferences.accessibility"
+             category="org.jkiss.dbeaver.preferences.main"
+            class="org.jkiss.dbeaver.ui.preferences.PrefPageAccessibility"
+             name="%page.org.jkiss.dbeaver.preferences.accessibility.name">
+        </page>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="commit" name="Transaction commit"/>
+        <notification id="disconnect.idle" name="Disconnect from a database after long idle period"/>
+        <notification id="rollback" name="Transaction rollback"/>
+        <notification id="rollback.idle" name="Transaction rollback after long idle period"/>
+        <notification id="reconnect.success" name="Datasource invalidation success"/>
+        <notification id="reconnect.failure" name="Datasource invalidation failure"/>
+        <notification id="agent.notify" name="Long-time operations" description="This is a notification for long-time operations.&#10;It will be shown for all operations that have exceeded the specified timeout." soundEnabled="true"/>
+        <notification id="perspective.reset" name="Perspective Reset"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.clearHistoryHandler">
+        <handler
+            id="clearBrowserCookies"
+            name="%handler.clearBrowserCookies.name"
+            description="%handler.clearBrowserCookies.description"
+            handler="org.jkiss.dbeaver.ui.browser.handlers.BrowserClearCookiesHandler"/>
+    </extension>
+
+    <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
+        <fragment apply="always" uri="fragment.e4xmi"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.DBeaverCoreWorkbenchInitializer" order="2"/>
+    </extension>
+</plugin>

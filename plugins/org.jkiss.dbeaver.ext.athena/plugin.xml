@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- Athena -->
+        <datasource
+                class="org.jkiss.dbeaver.ext.athena.AthenaDataSourceProvider"
+                description="AWS Athena datasource"
+                id="athena"
+                parent="generic"
+                label="Athena"
+                icon="icons/athena_icon.svg"
+                dialect="aws_athena">
+            <drivers managable="true">
+                <driver id="aws_athena_jdbc_simba"/>
+                <driver
+                        id="aws_athena_jdbc_amazon"
+                        label="Athena"
+                        icon="icons/athena_icon.svg"
+                        iconBig="icons/athena_icon_big.svg"
+                        class="com.amazon.athena.jdbc.AthenaDriver"
+                        sampleURL="jdbc:athena://Region={region};"
+                        defaultPort="444"
+                        customEndpoint="true"
+                        description="AWS Athena JDBC driver"
+                        category="AWS"
+                        webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
+                        databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
+                        categories="sql,aws"
+                        singleConnection="true">
+
+                    <file type="jar" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.7.0/athena-jdbc-3.7.0-lean-jar-and-separate-dependencies-jars.zip" bundle="!drivers.athena"/>
+                    <file type="license" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.7.0/LICENSE.txt" bundle="!drivers.athena"/>
+
+                    <file type="jar" path="drivers/athena" bundle="drivers.athena"/>
+                    <file type="license" path="drivers/athena/LICENSE.txt" bundle="drivers.athena"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+                <driver
+                    id="aws_athena_jdbc_legacy"
+                    label="Athena (Legacy)"
+                    icon="icons/athena_icon.svg"
+                    iconBig="icons/athena_icon_big.svg"
+                    class="com.simba.athena.jdbc.Driver"
+                    sampleURL="jdbc:athena://AWSRegion={region};"
+                    defaultPort="444"
+                    customEndpoint="true"
+                    description="Legacy Athena driver (Simba). Relies on AWS SDK 1.x. Use it only if you are experiencing issues with the new driver."
+                    category="AWS"
+                    webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html"
+                    propertiesURL="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.25.1001/doc/Simba+Athena+JDBC+Connector+Install+and+Configuration+Guide.pdf"
+                    databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
+                    categories="sql,aws"
+                    singleConnection="true">
+                    <replace provider="generic" driver="aws_athena_42"/>
+                    <replace provider="athena" driver="aws_athena_jdbc_simba"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar"/>
+                    <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/docs/LICENSE.txt"/>
+                    <file type="jar" path="drivers/athena-legacy" bundle="drivers.athena"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <parameter name="read-only-data" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+
+                <main-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="host" label="Host" type="string"/>
+                    </propertyGroup>
+                </main-properties>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="AwsRegion" label="Region" type="string" description="Athena AWS Region" defaultValue="us-west-1" validValues="us-east-1,us-east-2,us-west-1,us-west-2,ca-central-1,eu-central-1,eu-west-1,eu-west-2,eu-west-3,ap-northeast-1,ap-northeast-2,ap-northeast-3,ap-southeast-1,ap-southeast-2,ap-south-1,sa-east-1,cn-north-1,cn-northwest-1"/>
+                        <property id="S3OutputLocation" label="S3 Location" type="string" description="Athena AWS S3 Location"/>
+                        <property id="show-aws-catalogs" label="Show catalogs" type="string" description="To show multiple data catalogs with Athena (for example, when using an external Hive metastore or federated queries)"/>
+                    </propertyGroup>
+                </provider-properties>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="aws_athena" parent="generic" class="org.jkiss.dbeaver.ext.athena.model.AthenaSQLDialect" label="Athena"
+                 description="AWS Athena dialect." icon="icons/athena_icon.svg">
+        </dialect>
+    </extension>
+
+</plugin>

@@ -1,0 +1,127 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2024 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.task;
+
+import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.nio.file.Path;
+import java.util.Map;
+
+/**
+ * Task manager
+ */
+public interface DBTTaskManager {
+
+    @NotNull
+    DBTTaskRegistry getRegistry();
+
+    @NotNull
+    DBPProject getProject();
+
+    @NotNull
+    DBTTask[] getAllTasks();
+
+    @Nullable
+    DBTTask getTaskById(@NotNull String id);
+
+    @Nullable
+    DBTTask getTaskByName(@NotNull String name);
+
+    @NotNull
+    DBTTask[] getAllTaskByType(DBTTaskType task);
+
+    @NotNull
+    DBTTaskType[] getExistingTaskTypes();
+
+    @Nullable
+    DBTTaskFolder[] getTasksFolders();
+
+    @NotNull
+    DBTTaskFolder createTaskFolder(@NotNull DBPProject project,
+                                   @NotNull String folderName,
+                                   @Nullable DBTTaskFolder parentFolder,
+                                   @Nullable DBTTask[] folderTasks) throws DBException;
+
+    @NotNull
+    DBTTask createTask(
+        @NotNull DBTTaskType task,
+        @NotNull String label,
+        @Nullable String description,
+        @Nullable String taskFolderName,
+        @NotNull Map<String, Object> properties) throws DBException;
+
+    /**
+     * Temporary tasks can be used to execute some task without adding to task manager registry
+     */
+    @NotNull
+    DBTTask createTemporaryTask(
+        @NotNull DBTTaskType task,
+        @NotNull String label);
+
+    void updateTaskConfiguration(@NotNull DBTTask task) throws DBException;
+
+    void deleteTaskConfiguration(@NotNull DBTTask task) throws DBException;
+
+    void removeTaskFolder(@NotNull DBTTaskFolder taskFolder) throws DBException;
+
+    void updateConfiguration();
+
+    boolean hasRunningTasks();
+
+    void cancelRunningTasks();
+
+    @NotNull
+    Path getStatisticsFolder();
+
+    @NotNull
+    Path getStatisticsFolder(@NotNull DBTTask task);
+
+    /**
+     * Runs a task synchronously, blocking the calling thread.
+     *
+     * @param monitor  progress monitor
+     * @param task     task to run
+     * @param listener task execution listener
+     * @return task run status
+     * @throws DBException on any error
+     * @see #scheduleTask(DBTTask, DBTTaskExecutionListener)
+     */
+    @NotNull
+    DBTTaskRunStatus runTask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBTTask task,
+        @NotNull DBTTaskExecutionListener listener
+    ) throws DBException;
+
+    /**
+     * Schedules a task to be run at some point in the future.
+     *
+     * @param task     task to run
+     * @param listener task execution listener
+     * @throws DBException on any error
+     * @return job that will run the task
+     * @see #runTask(DBRProgressMonitor, DBTTask, DBTTaskExecutionListener)
+     */
+    @NotNull
+    Job scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException;
+
+}

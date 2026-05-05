@@ -1,0 +1,265 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui;
+
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
+
+import java.util.List;
+
+/**
+ * UI Icons
+ */
+public class UIIcon {
+
+    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver_logo_medium.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_LOGO_SMALL = new DBIcon("dbeaver_logo_small", "dbeaver_logo_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon SEPARATOR_V = new DBIcon("separator_v", "misc/separator_v.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SEPARATOR_H = new DBIcon("separator_h", "misc/separator_h.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DOTS_BUTTON = new DBIcon("dots_button", "misc/dots_button.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon LOADING0 = new DBIcon("loading0", "animation/loading00.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING1 = new DBIcon("loading1", "animation/loading01.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING2 = new DBIcon("loading2", "animation/loading02.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING3 = new DBIcon("loading3", "animation/loading03.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING4 = new DBIcon("loading4", "animation/loading04.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING5 = new DBIcon("loading5", "animation/loading05.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING6 = new DBIcon("loading6", "animation/loading06.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOADING7 = new DBIcon("loading7", "animation/loading07.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final List<DBIcon> LOADING = List.of(LOADING0, LOADING1, LOADING2, LOADING3, LOADING4, LOADING5, LOADING6, LOADING7);
+
+    public static final DBIcon PROGRESS0 = new DBIcon("progress0", "animation/progress_0.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS1 = new DBIcon("progress1", "animation/progress_1.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS2 = new DBIcon("progress2", "animation/progress_2.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS3 = new DBIcon("progress3", "animation/progress_3.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS4 = new DBIcon("progress4", "animation/progress_4.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS5 = new DBIcon("progress5", "animation/progress_5.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS6 = new DBIcon("progress6", "animation/progress_6.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS7 = new DBIcon("progress7", "animation/progress_7.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS8 = new DBIcon("progress8", "animation/progress_8.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROGRESS9 = new DBIcon("progress9", "animation/progress_9.gif"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon RS_REFRESH = new DBIcon("rs_refresh", "sql/resultset_refresh.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_GRID = new DBIcon("rs_mode_grid", "sql/grid.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_DETAILS = new DBIcon("rs_details", "sql/details.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_FORWARD = new DBIcon("rs_forward", "misc/forward.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_BACK = new DBIcon("rs_back", "misc/back.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CLOCK_START = new DBIcon("clock_start", "misc/clock_play.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CLOCK_STOP = new DBIcon("clock_stop", "misc/clock_stop.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon TXN_COMMIT = new DBIcon("txn_commit_auto", "sql/commit.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TXN_ROLLBACK = new DBIcon("txn_commit_auto", "sql/rollback.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TXN_COMMIT_AUTO = new DBIcon("txn_commit_auto", "sql/txn_auto.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TXN_COMMIT_MANUAL = new DBIcon("txn_commit_manual", "sql/txn_manual.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RULER_POSITION = new DBIcon("ruler_position", "misc/ruler_position.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FIND = new DBIcon("find", "misc/find.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FIND_TEXT = new DBIcon("find_text", "misc/find_text.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SEARCH = new DBIcon("search", "misc/search.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_ON = new DBIcon("checked", HolidayDecorations.isEnabled() ? "misc/present_checked.svg" : "misc/checked.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_OFF = new DBIcon("unchecked", HolidayDecorations.isEnabled() ? "misc/present_unchecked.svg" : "misc/unchecked.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHECK_QUEST = new DBIcon("check_null", HolidayDecorations.isEnabled() ? "misc/present_checked_null.svg" : "misc/checked_null.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ZOOM = new DBIcon("zoom", "misc/zoom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ZOOM_IN = new DBIcon("zoom_in", "misc/zoom_in.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ZOOM_OUT = new DBIcon("zoom_out", "misc/zoom_out.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ROTATE = new DBIcon("rotate", "misc/rotate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ROTATE_LEFT = new DBIcon("rotate_left", "misc/rotate_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ROTATE_RIGHT = new DBIcon("rotate_right", "misc/rotate_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FIT_WINDOW = new DBIcon("fit_window", "misc/fit_window.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ORIGINAL_SIZE = new DBIcon("original_size", "misc/original_size.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ASTERISK = new DBIcon("asterisk", "misc/asterisk.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DROP_DOWN = new DBIcon("drop_down", "misc/drop_down.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BULLET_BLACK = new DBIcon("bullet_black", "misc/bullet_black.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BULLET_GREEN = new DBIcon("bullet_green", "misc/bullet_green.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BULLET_RED = new DBIcon("bullet_red", "misc/bullet_red.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BULLET_STAR = new DBIcon("bullet_star", "misc/bullet_star.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon ARROW_TOP = new DBIcon("arrow_top", "misc/arrow_top.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_UP = new DBIcon("arrow_up", "misc/arrow_up.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_DOWN = new DBIcon("arrow_down", "misc/arrow_down.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_BOTTOM = new DBIcon("arrow_bottom", "misc/arrow_bottom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_LEFT = new DBIcon("arrow_left", "misc/arrow_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_LEFT_ALL = new DBIcon("arrow_left_all", "misc/arrow_left_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_RIGHT = new DBIcon("arrow_right", "misc/arrow_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_RIGHT_ALL = new DBIcon("arrow_right_all", "misc/arrow_right_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_RESET = new DBIcon("arrow_reset", "misc/arrow_reset.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT = new DBIcon("sort", "misc/sort.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_CONFIG = new DBIcon("sort_config", "misc/sort_config.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon ALIGN_TO_LEFT = new DBIcon("align_to_left", "misc/align_to_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ALIGN_TO_CENTER = new DBIcon("align_to_center", "misc/align_to_center.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ALIGN_TO_RIGHT = new DBIcon("align_to_right", "misc/align_to_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon FILTER = new DBIcon("misc/filter.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_VALUE = new DBIcon("misc/filter_value.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_INPUT = new DBIcon("misc/filter_input.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CLIPBOARD = new DBIcon("misc/filter_clipboard.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_APPLY = new DBIcon("misc/filter_apply.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_RESET = new DBIcon("misc/filter_reset.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_SAVE = new DBIcon("misc/filter_save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONFIG = new DBIcon("misc/filter_config.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONNECTIONS = new DBIcon("misc/filter_connections.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONTAINERS = new DBIcon("misc/filter_containers.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_OBJECTS = new DBIcon("misc/filter_objects.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONNECTED = new DBIcon("misc/filter_connected.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_ALL = new DBIcon("misc/filter_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon EVENT = new DBIcon("event", "misc/event.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon HOME = new DBIcon("home", "misc/home.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COMPILE = new DBIcon("compile", "misc/compile.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COMPILE_LOG = new DBIcon("compile_log", "misc/compile_log.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SAVE = new DBIcon("save", "file/save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SAVE_AS = new DBIcon("save_as", "file/save_as.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SAVE_ALL = new DBIcon("saveall", "file/saveall.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LOAD = new DBIcon("load", "file/load.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RESET = new DBIcon("reset", "file/reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COMPARE = new DBIcon("compare", "file/compare.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon MOVE = new DBIcon("sql_move", "sql/sql_move.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COPY = new DBIcon("sql_copy", "sql/sql_copy.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ACCEPT = new DBIcon("accept", "sql/accept.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REJECT = new DBIcon("reject", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REVERT = new DBIcon("revert", "sql/revert.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon IMPORT = new DBIcon("import", "file/import.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EXPORT = new DBIcon("export", "file/export.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REFRESH = new DBIcon("refresh", "/refresh.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CONFIRM = new DBIcon("confirm", "misc/confirm.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OK_MARK = new DBIcon("ok_mark", "misc/ok_mark.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CLOSE = new DBIcon("close", "misc/close.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SOURCES = new DBIcon("sources", "misc/sources.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PRINT = new DBIcon("print", "misc/print.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT = new DBIcon("edit", "edit.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DELETE = new DBIcon("delete", "delete.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon REMOVE = new DBIcon("remove", "remove.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RENAME = new DBIcon("rename", "rename.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PALETTE = new DBIcon("palette", "misc/palette.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CLEAN = new DBIcon("clean", "misc/clean.svg"); //$NON-NLS-1$//
+    // $NON-NLS-2$
+    public static final DBIcon ROW_ADD = new DBIcon("row_add", "sql/row_add.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ROW_COPY = new DBIcon("row_copy", "sql/row_copy.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ROW_EDIT = new DBIcon("row_edit", "sql/row_edit.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ROW_DELETE = new DBIcon("row_delete", "sql/row_delete.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT_DATABASE = new DBIcon("edit_database", "misc/edit_database.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT_TABLE = new DBIcon("edit_table", "misc/edit_table.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EDIT_COLUMN = new DBIcon("edit_column", "misc/edit_column.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CONFIG_TABLE = new DBIcon("edit_table", "misc/config_table.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_TABLE = new DBIcon("edit_table", "sql/sql_table.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon OBJ_ADD = new DBIcon("object_add", "misc/object_add.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OBJ_REMOVE = new DBIcon("object_remove", "misc/object_remove.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OBJ_REFRESH = new DBIcon("object_refresh", "misc/object_refresh.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon OBJ_LAYOUT = new DBIcon("layout", "misc/layout.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon TREE_EXPAND = new DBIcon("expand", "misc/expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_EXPAND_ALL = new DBIcon("expand_all", "misc/expand_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_COLLAPSE = new DBIcon("collapse", "misc/collapse.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_COLLAPSE_ALL = new DBIcon("collapse_all", "misc/collapse_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon PROJECTS = new DBIcon("projects", "projects.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DATABASES = new DBIcon("databases", "databases.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PAGE_STACK = new DBIcon("page_stack", "page_stack.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BOOKMARK_FOLDER = new DBIcon("bookmark_folder", "bookmark_folder.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon BOOKMARK = new DBIcon("bookmark", "bookmark.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PICTURE = new DBIcon("picture", "picture.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PICTURE_SAVE = new DBIcon("picture_save", "picture_save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PROPERTIES = new DBIcon("properties", "properties.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CONFIGURATION = new DBIcon("configuration", "configuration.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LINK_TO_EDITOR = new DBIcon("link_to_editor", "link_to_editor.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LINK = new DBIcon("link", "misc/link.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LINK2 = new DBIcon("link2", "misc/link2.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SECURITY = new DBIcon("security", "security.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon READONLY_RESOURCES = new DBIcon("readonly", "readonly_resources.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PERCENT = new DBIcon("percent", "misc/percent.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon SQL_NEW_CONNECTION = new DBIcon("sql_new_connection", "database_connect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_DISCONNECT = new DBIcon("sql_disconnect", "sql/disconnect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_READONLY = new DBIcon("readonly", "sql/readonly.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_CONSOLE = new DBIcon("sql_console", "sql/sql_console.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT_CREATE = new DBIcon("sql_script_create", "sql/sql_script_create.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT_EXECUTE = new DBIcon("sql_script_exec", "sql/sql_script_exec.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT_EXECUTE_NATIVE = new DBIcon("sql_exec_native", "sql/sql_exec_native.svg");//$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_FALSE = new DBIcon(
+        "sql_tab_per_result_true", "sql/sql_multiple_results_per_tab_false.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_TRUE = new DBIcon(
+        "sql_tab_per_result_false", "sql/sql_multiple_results_per_tab_true.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_ANALYSE = new DBIcon("sql_analyse", "sql/sql_analyse.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_PREVIEW = new DBIcon("sql_preview", "sql/sql_preview.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT = new DBIcon("sql_script", "sql/sql_script.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_VARIABLE = new DBIcon("sql_variable", "sql/variable.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_VARIABLE2 = new DBIcon("sql_variable2", "sql/variable2.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_PARAMETER = new DBIcon("sql_parameter", "sql/parameter.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon SQL_PAGE_DATA_GRID = new DBIcon("sql/page_data_grid.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_PAGE_DATA_GRID_LOCKED = new DBIcon("sql/page_data_grid_locked.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_PAGE_EXPLAIN_PLAN = new DBIcon("sql/page_explain_plan.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_PAGE_LOG = new DBIcon("sql/page_error.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_PAGE_OUTPUT = new DBIcon("sql/page_output.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_PAGE_OUTPUT_ALERT = new DBIcon("sql/page_output_alert.svg"); //$NON-NLS-1$
+
+    public static final DBIcon DUPS_ALLOWED = new DBIcon("sql/dup_allowed.svg"); //$NON-NLS-1$
+    public static final DBIcon DUPS_RESTRICTED = new DBIcon("sql/dup_restricted.svg"); //$NON-NLS-1$
+
+    public static final DBIcon SAVE_TO_DATABASE = new DBIcon("save_to_db", "sql/save_to_database.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon AUTO_SAVE = new DBIcon("auto_save", "file/auto_save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon PANEL_CUSTOMIZE = new DBIcon("panel_customize", "sql/panel_customize.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon PAGES = new DBIcon("pages", "misc/pages.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TEXTFIELD = new DBIcon("textfield", "misc/textfield.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon DRIVER_MANAGER = new DBIcon("driver_manager.svg"); //$NON-NLS-1$
+
+    public static final DBIcon CHART_BAR = new DBIcon("chart_bar", "chart/chart_bar.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHART_CURVE = new DBIcon("chart_curve", "chart/chart_curve.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHART_LINE = new DBIcon("chart_line", "chart/chart_line.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHART_PIE = new DBIcon("chart_pie", "chart/chart_pie.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon NOTIFICATION_CLOSE = new DBIcon("misc/notifications/notification-close.gif"); //$NON-NLS-1$
+    public static final DBIcon NOTIFICATION_CLOSE_HOVER = new DBIcon("misc/notifications/notification-close-active.gif"); //$NON-NLS-1$
+    
+    public static final DBIcon SHOW_ALL_DETAILS = new DBIcon("misc/show_all_details.svg"); //$NON-NLS-1$
+    public static final DBIcon SHOW_MAIN_DETAILS = new DBIcon("misc/show_main_details.svg"); //$NON-NLS-1$
+    public static final DBIcon HIDE_ALL_DETAILS = new DBIcon("misc/hide_all_details.svg"); //$NON-NLS-1$
+
+    public static final DBIcon RUN = new DBIcon("run.svg"); //$NON-NLS-1$
+
+    public static final DBIcon BUTTON_READ_ONLY = new DBIcon("buttons/lock.png"); //$NON-NLS-1$
+    public static final DBIcon BUTTON_TUNNEL = new DBIcon("buttons/tunnel.png"); //$NON-NLS-1$
+    public static final DBIcon BUTTON_CLOUD = new DBIcon("buttons/cloud.png"); //$NON-NLS-1$
+
+    public static final DBIcon FILE = new DBIcon("file/file.svg"); //$NON-NLS-1$
+    public static final DBIcon OPEN = new DBIcon("file/open.png"); //$NON-NLS-1$
+    public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
+    public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
+
+    static  {
+        DBIcon.loadIcons(UIIcon.class);
+    }
+}

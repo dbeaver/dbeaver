@@ -1,0 +1,311 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.impl.app;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPAdaptable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMAuthSpace;
+import org.jkiss.dbeaver.model.auth.SMSession;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.Enumeration;
+import java.util.Properties;
+
+/**
+ * BaseWorkspaceImpl.
+ */
+public abstract class BaseWorkspaceImpl implements DBPWorkspace {
+
+    private static final Log log = Log.getLog(BaseWorkspaceImpl.class);
+
+    public static final String DEFAULT_RESOURCES_ROOT = "Resources"; //$NON-NLS-1$
+
+    protected static final String PROP_PROJECT_ACTIVE = "project.active";
+
+    private static final String WORKSPACE_ID = "workspace-id";
+
+    private static String globalWorkspaceId;
+
+    protected final DBPPlatform platform;
+    private final Path workspacePath;
+    private final SessionContextImpl workspaceAuthContext;
+
+    protected DBPProject activeProject;
+
+    protected BaseWorkspaceImpl(@NotNull DBPPlatform platform, @NotNull Path workspacePath) {
+        this.platform = platform;
+        this.workspacePath = workspacePath;
+        this.workspaceAuthContext = new SessionContextImpl(null);
+    }
+
+    @NotNull
+    protected SMSession acquireWorkspaceSession(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return new LocalWorkspaceSession(this);
+    }
+
+    @Override
+    public abstract void initializeProjects() throws DBException;
+
+    public void initializeWorkspaceSession() throws DBException {
+        // Remove old primary session first
+        SMSessionContext authContext = getAuthContext();
+        SMAuthSpace primaryAuthSpace = authContext.getPrimaryAuthSpace();
+        if (primaryAuthSpace != null) {
+            SMSession workspaceSession = authContext.findSpaceSession(primaryAuthSpace);
+            if (workspaceSession != null) {
+                authContext.removeSession(workspaceSession);
+            }
+        }
+        // Acquire new one
+        SMSession workspaceSession = acquireWorkspaceSession(new VoidProgressMonitor());
+        authContext.addSession(workspaceSession);
+    }
+
+    @NotNull
+    public static Properties readWorkspaceInfo(@NotNull Path metadataFolder) {
+        Properties props = new Properties();
+
+        Path versionFile = metadataFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE);
+        if (Files.exists(versionFile)) {
+            try (InputStream is = Files.newInputStream(versionFile)) {
+                props.load(is);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return props;
+    }
+
+    public static void writeWorkspaceInfo(Path metadataFolder, Properties props) {
+        Path versionFile = metadataFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE);
+
+        try (OutputStream os = Files.newOutputStream(versionFile)) {
+            props.store(os, "DBeaver workspace version");
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+    public static Path getWorkspaceConfigFolder(DBPWorkspace workspace) {
+        Path configFolder = workspace.getAbsolutePath();
+        if (!Files.exists(configFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE))) {
+            configFolder = workspace.getMetadataFolder();
+        }
+        return configFolder;
+    }
+
+    @Nullable
+    public String getActiveProjectName() {
+        Properties props = readWorkspaceInfo(getWorkspaceConfigFolder(this));
+        String activeProjectName = props.getProperty(PROP_PROJECT_ACTIVE);
+        if (CommonUtils.isEmpty(activeProjectName)) {
+            activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        }
+        return activeProjectName;
+    }
+
+    public void setActiveProjectName(@Nullable String projectName) {
+        updateWorkspaceProperties(getWorkspaceConfigFolder(this), projectName);
+        platform.getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, CommonUtils.notEmpty(projectName));
+    }
+
+    private void updateWorkspaceProperties(@NotNull Path configFolder, @Nullable String projectName) {
+        Properties props = readWorkspaceInfo(configFolder);
+        if (CommonUtils.isEmpty(projectName)) {
+            props.remove(PROP_PROJECT_ACTIVE);
+        } else {
+            props.setProperty(PROP_PROJECT_ACTIVE, projectName);
+        }
+        writeWorkspaceInfo(configFolder, props);
+    }
+
+    @Override
+    public void dispose() {
+        DBVModel.checkGlobalCacheIsEmpty();
+        // Close workspace session
+        getAuthContext().dispose();
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getResourceIcon(DBPAdaptable resourceAdapter) {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Override
+    public void deleteProject(@NotNull DBPProject project) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Override
+    public void renameProject(@NotNull DBPProject project, @NotNull String newName) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Nullable
+    @Override
+    public DBPProject getActiveProject() {
+        return activeProject;
+    }
+
+    @Nullable
+    public DBPProject getProjectById(@NotNull String projectId) {
+        for (DBPProject project : getProjects()) {
+            if (project.getId().equals(projectId)) {
+                return project;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public SMSessionContext getAuthContext() {
+        return workspaceAuthContext;
+    }
+
+    @NotNull
+    @Override
+    public DBPPlatform getPlatform() {
+        return platform;
+    }
+
+    @Override
+    public boolean isActive() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public Path getAbsolutePath() {
+        return workspacePath;
+    }
+
+    @NotNull
+    @Override
+    public Path getMetadataFolder() {
+        return getAbsolutePath().resolve(METADATA_FOLDER);
+    }
+
+    @NotNull
+    public static String readWorkspaceIdProperty() {
+        if (globalWorkspaceId == null) {
+            // Check workspace ID
+            Path metadataFolder = GeneralUtils.getMetadataFolder();
+            globalWorkspaceId = readWorkspaceId(metadataFolder);
+        }
+        return globalWorkspaceId;
+    }
+
+    @NotNull
+    protected static String readWorkspaceId(Path metadataFolder) {
+        Properties workspaceInfo = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
+        String workspaceId = workspaceInfo.getProperty(WORKSPACE_ID);
+        if (CommonUtils.isEmpty(workspaceId)) {
+            // Generate new UUID
+            workspaceId = "D" + Long.toString(
+                Math.abs(SecurityUtils.generateRandomLong()),
+                36).toUpperCase();
+            workspaceInfo.setProperty(WORKSPACE_ID, workspaceId);
+            BaseWorkspaceImpl.writeWorkspaceInfo(metadataFolder, workspaceInfo);
+        }
+        return workspaceId;
+    }
+
+    public static String getLocalHostId() {
+        // Here we get local machine identifier. It is hashed and thus depersonalized
+        try {
+            InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();
+            NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
+            if (ni == null || ni.getHardwareAddress() == null) {
+                Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
+                while (niEnum.hasMoreElements()) {
+                    ni = niEnum.nextElement();
+                    if (ni.getHardwareAddress() != null) {
+                        break;
+                    }
+                }
+            }
+            if (ni == null) {
+                log.debug("Cannot detect local network interface");
+                return "NOMACADDR";
+            }
+            byte[] hardwareAddress = ni.getHardwareAddress();
+
+            // Use MD5
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(hardwareAddress);
+
+            long lValue = 0;
+            for (int i = 0; i < messageDigest.length; i++) {
+                lValue += (long)messageDigest[i] << (i * 8);
+            }
+
+            return Long.toString(Math.abs(lValue), 36).toUpperCase();
+        } catch (Exception e) {
+            log.debug(e);
+            return "XXXXXXXXXX";
+        }
+    }
+
+    ////////////////////////////////////////////////////////
+    // Options
+
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    @Override
+    public boolean hasRealmPermission(@NotNull String permission) {
+        return true;
+    }
+
+    @Override
+    public boolean supportsRealmFeature(@NotNull String feature) {
+        return true;
+    }
+
+}

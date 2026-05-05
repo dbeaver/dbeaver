@@ -1,0 +1,56 @@
+
+TODO:
+- Go through all "TODO" markers
+
+Current problems:
+- For table actions, in some case the confirmation dialog is not shown.
+  -> seems to happen when the execution time is very short (<10ms?)
+- If the user create an object in lower case, many funtion do not work
+- In some cases, for some unknown reason DDL for table does not work 
+
+Improvements:
+  - Enhance Search
+    - Add Tablespaces, indexes, foreign keys, modules, routines ...
+  - Propagate and use monitors everywhere
+  - Optionnaly seperate some kinds of DB2Tables into distinct sub types:
+    - Temporary Tables
+    - Hierachies..
+  
+Serge to check?
+  - looked for icon sessions.png used by myslq and oracle, didn't find it
+  - missing PK columns indicator/icon in columns lists (Unique, foreign)
+  - Enhance EXPLAIN facility with a graphic view of nodes -> Later
+  - CLob/Blob/XML type viewer in @Properties -> later
+  
+Missing Menu Actions
+  - DB2Schema. Menu "Tools" with
+      call sysproc.admin_drop_schema
+      call sysproc.admin_copy_schema
+  - DataSource
+    - call sysproc.admin_cmd("backup...");
+    - display current locks
+    - display Server OS INFO
+  - DB2Table
+    - set Integrity
+
+Missing metadata:
+- DB2TablePartition
+  - keys in DATAPARTITIONEXPRESSION 
+- DB2TableColum (DB2 v10.1+)
+  - Masks + Row Permissions (SYSCAT.CONTROLS)
+- DB2Routines
+  - methods
+  - dependencies
+  - options
+- Federated Function Mappings (routinesfederated, funcmapping)
+- Federated Remote indexes (indexoptions)
+
+Missing relationships (All nice to have):
+   - Tables     -> referenced by triggers (that could be in a different schema...)
+   - Tables     -> referenced by aliases (that could be in a different schema...)
+   - Tables     -> referenced by indexes  (that could be in a different schema...)
+   - Sequences  -> referenced by aliases (that could be in a different schema...)
+   
+All Objects:
+- privileges   
+      

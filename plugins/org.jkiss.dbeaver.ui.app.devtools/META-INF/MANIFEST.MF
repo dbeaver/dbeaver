@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Test Plug-in
+Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.devtools;singleton:=true
+Bundle-Version: 2.0.0.qualifier
+Bundle-Release-Date: 20240722
+Require-Bundle: org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui.forms,
+ org.eclipse.core.resources,
+ com.sun.jna,
+ com.sun.jna.platform
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Automatic-Module-Name: org.jkiss.dbeaver.ui.app.devtools

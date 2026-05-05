@@ -1,0 +1,79 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.connection;
+
+import org.jkiss.api.CompositeObjectId;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+
+import java.util.List;
+
+/**
+ * Data source provider
+ */
+public interface DBPDataSourceProviderRegistry {
+
+    @NotNull
+    List<? extends DBPDataSourceProviderDescriptor> getDataSourceProviders();
+
+    @NotNull
+    List<? extends DBPDataSourceProviderDescriptor> getEnabledDataSourceProviders();
+
+    @Nullable
+    DBPDataSourceProviderDescriptor getDataSourceProvider(@NotNull String id);
+    @Nullable
+    DBPDataSourceProviderDescriptor makeFakeProvider(@NotNull String providerID);
+
+    @Nullable
+    DBPAuthModelDescriptor getAuthModel(@NotNull String id);
+    @NotNull
+    List<? extends DBPAuthModelDescriptor> getAllAuthModels();
+    @NotNull
+    List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(@NotNull DBPDriver driver);
+
+    @Nullable
+    DBPConnectionType getConnectionType(@NotNull String id, @Nullable DBPConnectionType defaultType);
+    void addConnectionType(@NotNull DBPConnectionType connectionType);
+    void removeConnectionType(@NotNull DBPConnectionType connectionType);
+    void saveConnectionTypes();
+
+    @Nullable
+    DBPDriver findDriver(@NotNull CompositeObjectId ref);
+
+    @Nullable
+    DBPDriver findDriver(@NotNull String driverIdOrName);
+
+    @Nullable
+    DBPDriverSubstitutionDescriptor getDriverSubstitution(@NotNull String id);
+
+    @NotNull
+    DBPDriverSubstitutionDescriptor[] getAllDriverSubstitutions();
+
+    @NotNull
+    DBPEditorContribution[] getContributedEditors(@NotNull String category, @NotNull DBPDataSourceContainer dataSource);
+
+    // This pref store can be used to listen preference changes in ANY datasource.
+    @NotNull
+    DBPPreferenceStore getGlobalDataSourcePreferenceStore();
+
+    @Nullable
+    DBPDataSourceOriginProvider getDataSourceOriginProvider(@NotNull String id);
+
+}

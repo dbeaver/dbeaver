@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension-point id="org.jkiss.dbeaver.sqlFormatter" name="%extension-point.org.jkiss.dbeaver.sqlFormatter.name" schema="schema/org.jkiss.dbeaver.sqlFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlGenerator" name="%extension-point.org.jkiss.dbeaver.sqlGenerator.name" schema="schema/org.jkiss.dbeaver.sqlGenerator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlDialect" name="%extension-point.org.jkiss.dbeaver.sqlDialect.name" schema="schema/org.jkiss.dbeaver.sqlDialect.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlInsertMethod" name="%extension-point.org.jkiss.dbeaver.sqlInsertMethod" schema="schema/org.jkiss.dbeaver.sqlInsertMethod.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.confirmations" name="SQL confirmations" schema="schema/org.jkiss.dbeaver.confirmations.exsd"/>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>
+    </extension>
+
+    <!-- SQL Formatters -->
+    <extension point="org.jkiss.dbeaver.sqlFormatter">
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" label="%sql.formatter.default.name" description="%sql.formatter.default.tip"/>
+        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" label="%sql.formatter.compact.name" description="%sql.formatter.compact.tip"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="%sql.formatter.external.name" description="%sql.formatter.external.tip"/>
+    </extension>
+
+    <!-- SQL Generators -->
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <!-- Table SQL generators-->
+        <generator id="tableSelect" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSelect" label="SELECT" description="SELECT from table" order="1">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="tableInsert" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInsert" label="INSERT" description="INSERT into table" order="2">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableUpdate" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorUpdate" label="UPDATE" description="UPDATE table" order="3">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableDelete" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDelete" label="DELETE" description="DELETE from table" order="4">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableMerge" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorMerge" label="MERGE" description="MERGE table" order="5">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </generator>
+        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSimpleJoin" label="SIMPLE JOIN" description="JOIN tables" order="6" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="tableInnerJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInnerJoin" label="INNER JOIN" description="JOIN tables" order="7" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="procedureCall" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall" label="CALL" description="Execute procedure" order="1000">
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+        </generator>
+        <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
+            <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
+        </generator>
+        <!-- Result set (data) SQL generators-->
+        <generator id="dataSelect" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorSelectFromData" label="SELECT .. WHERE .. =" description="SELECT from table" order="1">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataSelectMany" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorSelectManyFromData" label="SELECT .. WHERE .. IN" description="SELECT from table IN" order="2">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataInsert" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorInsertFromData" label="INSERT" description="INSERT into table" order="3">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataUpdate" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorUpdateFromData" label="UPDATE" description="UPDATE table" order="4">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataDeleteByUniqueKey" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorDeleteFromData" label="DELETE by Unique Key" description="DELETE from table" order="5">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="set" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandSet" label="Set" description="Sets variable/parameter value"/>
+        <command id="unset" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandUnset" label="Unset" description="Removes variable/parameter"/>
+        <command id="echo" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandEcho" label="Echo" description="Prints string to Output log"/>
+        <command id="export" class="org.jkiss.dbeaver.model.sql.commands.SQLCommandExport" label="Export resultset" description="Export results of the next query. Launches data transfer process."/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="basic" class="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect" label="SQL" description="Base SQL dialect for all other dialects." icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.svg" abstract="true">
+            <property name="keywords" value=""/>
+            <property name="ddlKeywords" value="CREATE,ALTER,DROP"/>
+            <property name="dmlKeywords" value="INSERT,DELETE,UPDATE,UPSERT,MERGE,TRUNCATE"/>
+            <property name="execKeywords" value=""/>
+            <property name="types" value=""/>
+            <property name="functions" value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="sql,ddl"
+                id="org.jkiss.dbeaver.sql"
+                name="SQL Script"
+                priority="high"
+                describer="org.jkiss.dbeaver.model.sql.SQLContentTypeDescriber"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceType">
+        <type id="sql-script"
+              name="SQL script"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+              folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.svg"
+              managable="true">
+            <root folder="Scripts"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
+        </type>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.lsm.dialectSyntax">
+        <lsmDialect analyzerFactoryClass="org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzerFactory">
+            <appliesTo dialectClass="org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect"/>
+        </lsmDialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.settings">
+        <propertyGroup id="editors" label="Editors">
+            <propertyGroup id="sqlEditor" label="SQL Editor">
+                <property id="sql.proposals.insert.table.alias" label="Insert table aliases (in FROM clause)"
+                          validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user"
+                          description="Automatically inserts table aliases"/>
+                <property id="SQLEditor.ContentAssistant.proposals.long.name" label="%SQLEditor.ContentAssistant.proposals.long.name"
+                          defaultValue="false" type="boolean" scopes="global,user"/>
+                <property id="SQLEditor.ContentAssistant.experimental.mode" label="%SQLEditor.ContentAssistant.experimental.mode"
+                          validValues="NEW,DEFAULT" defaultValue="NEW" type="string" scopes="global,user"/>
+                <property id="org.jkiss.dbeaver.core.confirm.dangerous_sql"
+                          label="%confirm.dangerous_sql.label" description="%confirm.dangerous_sql.tip"
+                          defaultValue="true" type="boolean" scopes="user"/>
+                <property id="org.jkiss.dbeaver.core.confirm.drop_sql"
+                          label="%confirm.drop_sql.label" description="%confirm.drop_sql.tip"
+                          defaultValue="true" type="boolean" scopes="user"/>
+                <property id="sql.parameter.enabled" label="%sql.parameter.enabled" description="%sql.parameter.enabled.description"
+                          type="boolean" scopes="user" defaultValue="true"/>
+                <property id="sql.variables.enabled" label="%sql.variables.enabled" description="%sql.variables.enabled.description"
+                          type="boolean" scopes="user" defaultValue="true"/>
+            </propertyGroup>
+        </propertyGroup>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+            id="dangerous_sql"
+            title="%confirm.dangerous_sql.title"
+            description="%confirm.dangerous_sql.tip"
+            message="%confirm.dangerous_sql.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="drop_sql"
+            title="%confirm.drop_sql.title"
+            description="%confirm.drop_sql.tip"
+            message="%confirm.drop_sql.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="close_running_query"
+            title="%confirm.close_running_query.title"
+            description="%confirm.close_running_query.tip"
+            message="%confirm.close_running_query.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="close_result_tabs"
+            title="%confirm.close_result_tabs.title"
+            description="%confirm.close_result_tabs.tip"
+            message="%confirm.close_result_tabs.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="save_sql_console"
+            title="%confirm.save_sql_console.title"
+            description="%confirm.save_sql_console.tip"
+            message="%confirm.save_sql_console.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+    </extension>
+</plugin>

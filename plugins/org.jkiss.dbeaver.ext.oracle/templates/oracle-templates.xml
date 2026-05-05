@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+    <template id="org.jkiss.dbeaver.templates.curtime" name="curtime" context="sql_oracle" autoinsert="true" description="select current time">select current_timestamp from dual;</template>
+
+</templates>

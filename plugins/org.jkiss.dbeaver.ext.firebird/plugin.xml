@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="firebird" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel" driverClass="org.firebirdsql.jdbc.FBDriver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- SQL Server -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.firebird.FireBirdDataSourceProvider"
+                description="Firebird Jaybird driver"
+                id="jaybird"
+                parent="generic"
+                label="Firebird"
+                icon="icons/firebird_icon.png"
+                dialect="firebird">
+            <drivers managable="true">
+
+                <driver
+                        id="jaybird"
+                        label="Firebird"
+                        icon="icons/firebird_icon.png"
+                        iconBig="icons/firebird_icon_big.png"
+                        class="org.firebirdsql.jdbc.FBDriver"
+                        sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
+                        defaultPort="3050"
+                        defaultUser="SYSDBA"
+                        webURL="https://firebirdsql.org/en/jdbc-driver/"
+                        propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
+                        description="Firebird Jaybird driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql,embedded">
+                    <replace provider="generic" driver="firebird_jaybird"/>
+                    <replace provider="generic" driver="firebird_jaybird3"/>
+
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[5.0.4.java11]" bundle="!drivers.firebird"/>
+                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
+
+                    <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/jaybird" bundle="drivers.firebird"/>
+
+                    <property name="encoding" value="UTF8"/>
+
+                    <parameter name="supports-embedded-database-creation" value="false"/>
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableColumnManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdProcedureManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedure"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlInsertMethod">
+        <method id="firebirdReplaceIgnore" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdInsertReplaceMethod" label="UPDATE OR INSERT INTO" description="Insert replace duplicate key value"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="firebird" parent="generic" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect" label="Firebird" description="Firebird SQL dialect." icon="icons/firebird_icon.png">
+            <property name="insertMethods" value="firebirdReplaceIgnore"/>
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="firebirdUpdateOrInsert"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorUpdateOrInsert"
+            label="UPDATE OR INSERT"
+            description="UPDATE OR INSERT INTO with MATCHING clause"
+            order="7">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
+        <generator id="firebirdExecuteBlock"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorExecuteBlock"
+            label="EXECUTE BLOCK"
+            description="EXECUTE BLOCK with variable declarations"
+            order="8">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
+    </extension>
+
+</plugin>

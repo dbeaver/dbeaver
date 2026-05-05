@@ -1,0 +1,150 @@
+"XMLSchema"        since v9.1
+"Table Partitions" since v9.1
+"Roles"            since v9.5
+"Variables"        since v9.5
+"Modules"          since v9.7
+"XML Strings"      since v9.7
+"Stogroups"        since v10.1
+
+Catalog tables used by DBeaver that do not exists in v8.x:
+-----------------------------------------------------------
+SYSCAT.CONDITIONS
+SYSCAT.DATAPARTITIONS
+SYSCAT.MODULEAUTH
+SYSCAT.MODULES
+SYSCAT.ROLE
+SYSCAT.ROLEAUTH
+SYSCAT.STOGROUPS
+SYSCAT.VARIABLEAUTH
+SYSCAT.VARIABLES
+SYSCAT.XMLSTRINGS
+SYSCAT.XSROBJECTS
+SYSCAT.XSROBJECTAUTH
+SYSCAT.XSROBJECTDEP
+
+Catalog tables used by DBeaver that do not exists in v9.1:
+----------------------------------------------------------
+SYSCAT.CONDITIONS
+SYSCAT.MODULEAUTH
+SYSCAT.MODULES
+SYSCAT.ROLE
+SYSCAT.ROLEAUTH
+SYSCAT.STOGROUPS
+SYSCAT.VARIABLEAUTH
+SYSCAT.VARIABLES
+SYSCAT.XMLSTRINGS
+
+DB2 v10.5 catalog Tables
+-------------------------
+attributes of structured data types SYSCAT.ATTRIBUTES
+audit policies SYSCAT.AUDITPOLICIES,SYSCAT.AUDITUSE
+authorities on database SYSCAT.DBAUTH
+buffer pool configuration on database partition group SYSCAT.BUFFERPOOLS
+buffer pool size exceptions for database partitions   SYSCAT.BUFFERPOOLDBPARTITIONS
+buffer pool size exceptions for members   SYSCAT.BUFFERPOOLEXCEPTIONS
+cast functions SYSCAT.CASTFUNCTIONS
+check constraints SYSCAT.CHECKS
+column masks   SYSCAT.CONTROLS
+column mask dependences SYSCAT.CONTROLDEP
+column privileges SYSCAT.COLAUTH
+columns  SYSCAT.COLUMNS
+columns referenced by check constraints   SYSCAT.COLCHECKS
+columns used in dimensions SYSCAT.COLUSE
+columns used in keys SYSCAT.KEYCOLUSE
+conditions  SYSCAT.CONDITIONS
+constraint dependencies SYSCAT.CONSTDEP
+controls SYSCAT.CONTROLS
+database partition group database partitions SYSCAT.DBPARTITIONGROUPDEF
+database partition group definitions   SYSCAT.DBPARTITIONGROUPS
+data partitions   SYSCAT.DATAPARTITIONEXPRESSION,SYSCAT.DATAPARTITIONS
+data type dependencies  SYSCAT.DATATYPEDEP
+data types  SYSCAT.DATATYPES
+detailed column group statistics SYSCAT.COLGROUPCOLS,SYSCAT.COLGROUPDIST ,SYSCAT.COLGROUPDISTCOUNTS ,SYSCAT.COLGROUPS
+detailed column options SYSCAT.COLOPTIONS
+detailed column statistics SYSCAT.COLDIST
+distribution maps SYSCAT.PARTITIONMAPS
+event monitor definitions  SYSCAT.EVENTMONITORS
+events currently monitored SYSCAT.EVENTS,SYSCAT.EVENTTABLES
+fields of row data types   SYSCAT.ROWFIELDS
+function dependencies1  SYSCAT.ROUTINEDEP
+function mapping  SYSCAT.FUNCMAPPINGS
+function mapping options   SYSCAT.FUNCMAPOPTIONS
+function parameter mapping options  SYSCAT.FUNCMAPPARMOPTIONS
+function parameters1 SYSCAT.ROUTINEPARMS
+functions1  SYSCAT.ROUTINES
+global variables  SYSCAT.VARIABLEAUTH,SYSCAT.VARIABLEDEP,SYSCAT.VARIABLES
+hierarchies (types, tables, views)  SYSCAT.HIERARCHIES,SYSCAT.FULLHIERARCHIES
+identity columns  SYSCAT.COLIDENTATTRIBUTES
+index columns  SYSCAT.INDEXCOLUSE
+index data partitions   SYSCAT.INDEXPARTITIONS
+index dependencies   SYSCAT.INDEXDEP
+index exploitation   SYSCAT.INDEXEXPLOITRULES
+index extension dependencies  SYSCAT.INDEXEXTENSIONDEP
+index extension parameters SYSCAT.INDEXEXTENSIONPARMS
+index extension search methods   SYSCAT.INDEXEXTENSIONMETHODS
+index extensions  SYSCAT.INDEXEXTENSIONS
+index options  SYSCAT.INDEXOPTIONS
+index privileges  SYSCAT.INDEXAUTH
+indexes  SYSCAT.INDEXES
+invalid objects   SYSCAT.INVALIDOBJECTS
+method dependencies1 SYSCAT.ROUTINEDEP
+method parameters1   SYSCAT.ROUTINES
+methods1 SYSCAT.ROUTINES
+module objects SYSCAT.MODULEOBJECTS
+module privileges SYSCAT.MODULEAUTH
+modules  SYSCAT.MODULES
+nicknames   SYSCAT.NICKNAMES
+object mapping SYSCAT.NAMEMAPPINGS
+package dependencies SYSCAT.PACKAGEDEP
+package privileges   SYSCAT.PACKAGEAUTH
+packages SYSCAT.PACKAGES
+partitioned tables   SYSCAT.TABDETACHEDDEP
+pass-through privileges SYSCAT.PASSTHRUAUTH
+periods  SYSCAT.PERIODS
+predicate specifications   SYSCAT.PREDICATESPECS
+procedure options SYSCAT.ROUTINEOPTIONS
+procedure parameter options   SYSCAT.ROUTINEPARMOPTIONS
+procedure parameters1   SYSCAT.ROUTINEPARMS
+procedures1 SYSCAT.ROUTINES
+protected tables  SYSCAT.SECURITYLABELACCESS,SYSCAT.SECURITYLABELCOMPONENTELEMENTS,SYSCAT.SECURITYLABELCOMPONENTS,SYSCAT.SECURITYLABELS,SYSCAT.SECURITYPOLICIES,SYSCAT.SECURITYPOLICYCOMPONENTRULES,SYSCAT.SECURITYPOLICYEXEMPTIONS,SYSCAT.SURROGATEAUTHIDS
+provides DB2® for z/OS® compatibility  SYSIBM.SYSDUMMY1
+referential constraints SYSCAT.REFERENCES
+remote table options SYSCAT.TABOPTIONS
+roles SYSCAT.ROLEAUTH,SYSCAT.ROLES
+routine dependencies SYSCAT.ROUTINEDEP
+routine parameters1  SYSCAT.ROUTINEPARMS
+routine privileges   SYSCAT.ROUTINEAUTH
+routines SYSCAT.ROUTINES,SYSCAT.ROUTINESFEDERATED
+row permisssions  SYSCAT.CONTROLS
+row permission dependeencies  SYSCAT.CONTROLDEP
+schema privileges SYSCAT.SCHEMAAUTH
+schemas  SYSCAT.SCHEMATA
+sequence privileges  SYSCAT.SEQUENCEAUTH
+sequences   SYSCAT.SEQUENCES
+server options SYSCAT.SERVEROPTIONS
+server-specific user options  SYSCAT.USEROPTIONS
+statements  SYSCAT.STATEMENTS,SYSCAT.STATEMENTTEXTS
+storage groups SYSCAT.STOGROUPS
+procedures  SYSCAT.ROUTINES
+system servers SYSCAT.SERVERS
+table constraints SYSCAT.TABCONST
+table dependencies   SYSCAT.TABDEP
+table privileges  SYSCAT.TABAUTH
+table space use privileges SYSCAT.TBSPACEAUTH
+table spaces   SYSCAT.TABLESPACES
+tables   SYSCAT.TABLES
+transforms  SYSCAT.TRANSFORMS
+trigger dependencies SYSCAT.TRIGDEP
+triggers SYSCAT.TRIGGERS
+trusted contexts  SYSCAT.CONTEXTATTRIBUTES,SYSCAT.CONTEXTS
+type mapping   SYSCAT.TYPEMAPPINGS
+usage lists SYSCAT.USAGELISTS
+user-defined functions  SYSCAT.ROUTINES
+view dependencies SYSCAT.TABDEP
+views SYSCAT.TABLES,SYSCAT.VIEWS
+workload management  SYSCAT.HISTOGRAMTEMPLATEBINS,SYSCAT.HISTOGRAMTEMPLATES,SYSCAT.HISTOGRAMTEMPLATEUSE,SYSCAT.SCPREFTBSPACES,SYSCAT.SERVICECLASSES,SYSCAT.THRESHOLDS,SYSCAT.WORKACTIONS,SYSCAT.WORKACTIONSETS,SYSCAT.WORKCLASSATTRIBUTES,SYSCAT.WORKCLASSES,SYSCAT.WORKCLASSSETS,SYSCAT.WORKLOADAUTH,SYSCAT.WORKLOADCONNATTR,SYSCAT.WORKLOADS
+wrapper options   SYSCAT.WRAPOPTIONS
+wrappers SYSCAT.WRAPPERS
+XML strings SYSCAT.XMLSTRINGS
+Index on XML column  SYSCAT.INDEXXMLPATTERNS
+XSR objects SYSCAT.XDBMAPGRAPHS,SYSCAT.XDBMAPSHREDTREES,SYSCAT.XSROBJECTAUTH,SYSCAT.XSROBJECTCOMPONENTS,SYSCAT.XSROBJECTDEP,SYSCAT.XSROBJECTDETAILS,SYSCAT.XSROBJECTHIERARCHIES,SYSCAT.XSROBJECTS

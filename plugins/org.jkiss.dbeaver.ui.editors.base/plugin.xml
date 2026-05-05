@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
+                id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
+                namespace="org.jkiss.dbeaver.core.datasource"
+                properties="connected,connecting,transactional,synchronizable,transactionActive,supportsTransactions,editable,projectResourceEditable,projectResourceViewable"
+                type="org.jkiss.dbeaver.model.DBPContextProvider"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.database.editor"
+                properties="active"
+                type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
+        <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.text"
+                properties="available,canComment,canLoad,canSave"
+                type="org.eclipse.ui.IEditorPart"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.elementFactories">
+        <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
+        <factory id="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.NodeEditorInputFactory"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </factory>
+        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.core.transactionActive">
+            <with variable="activeEditor">
+                <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                    <test property="org.jkiss.dbeaver.core.datasource.transactionActive" value="true"/>
+                </adapt>
+            </with>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.datasource.connected">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.datasource.connecting">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connecting"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.connecting"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.datasource.disconnected">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
+        <definition id="org.jkiss.dbeaver.core.datasource.synchronizable">
+            <or>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                            <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
+                        </adapt>
+                    </iterate>
+                </with>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
+                        <test property="org.jkiss.dbeaver.core.datasource.synchronizable" value="true"/>
+                    </adapt>
+                </with>
+            </or>
+        </definition>
+
+    </extension>
+
+    <!-- File content types.
+      No special handling, just says to open these types in embedded text editor -->
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="csv"
+                id="org.jkiss.dbeaver.csv"
+                name="CSV file"
+                priority="normal"/>
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="tsv"
+                id="org.jkiss.dbeaver.tsv"
+                name="TSV file"
+                priority="normal"/>
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="log"
+                id="org.jkiss.dbeaver.log"
+                name="Log file"
+                priority="normal"/>
+    </extension>
+
+
+    <extension point="org.jkiss.dbeaver.fileTypeHandler">
+        <handler id="file" class="org.jkiss.dbeaver.ui.editors.file.AbstractFileHandler" databaseHandler="false" order="10000">
+            <extension id="file" extensions="*" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/file.svg"/>
+        </handler>
+    </extension>
+</plugin>

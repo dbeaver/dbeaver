@@ -1,0 +1,570 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.editors.sql.plan;
+
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.services.IEvaluationReference;
+import org.eclipse.ui.services.IEvaluationService;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.plan.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithParam;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.VerticalButton;
+import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanSaveProvider;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPlanViewProvider;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanActionDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.plan.registry.SQLPlanViewRegistry;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * ResultSetViewer
+ */
+public class ExplainPlanViewer extends Viewer implements IAdaptable {
+
+    private LoadingJob<DBCPlan> explainService;
+
+    private static class PlanViewInfo {
+        private final SQLPlanViewDescriptor descriptor;
+        private SQLPlanViewProvider planViewer;
+        private Viewer viewer;
+
+        public PlanViewInfo(SQLPlanViewDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+    }
+    private static class PlanActionInfo {
+        private final SQLPlanActionDescriptor action;
+
+        public PlanActionInfo(@NotNull SQLPlanActionDescriptor action) {
+            this.action = action;
+        }
+    }
+
+
+    private final IWorkbenchPart workbenchPart;
+    private final DBPContextProvider contextProvider;
+    private final ProgressControl planPresentationContainer;
+    private final VerticalFolder tabViewFolder;
+    private final VerticalFolder actionFolder;
+    private final Composite planViewComposite;
+
+    private PlanViewInfo activeViewInfo;
+    private SQLQuery lastQuery;
+    private Object lastQueryId;
+    private DBCPlan lastPlan;
+    private final int planNumber;
+
+    private final RefreshPlanAction refreshPlanAction;
+    
+    private String curFolder;
+
+    public ExplainPlanViewer(
+        @NotNull IWorkbenchPart workbenchPart,
+        @NotNull DBPContextProvider contextProvider,
+        @NotNull Composite parent,
+        int planNumber
+    ) {
+        this.workbenchPart = workbenchPart;
+        this.contextProvider = contextProvider;
+        this.planNumber = planNumber;
+
+        this.refreshPlanAction = new RefreshPlanAction();
+        this.refreshPlanAction.setEnabled(false);
+
+        this.planPresentationContainer = new ProgressControl(parent);
+        this.planPresentationContainer.getLayout().numColumns = 2;
+        this.planPresentationContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        var folderComposite = new Composite(planPresentationContainer, SWT.NONE);
+        folderComposite.setLayout(GridLayoutFactory.fillDefaults().create());
+        folderComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true));
+
+        {
+            tabViewFolder = new VerticalFolder(folderComposite, SWT.LEFT);
+            tabViewFolder.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, true));
+
+            actionFolder = new VerticalFolder(folderComposite, SWT.LEFT);
+            actionFolder.setLayoutData(new GridData(SWT.BEGINNING, SWT.END, false, true));
+
+            DBPDataSource currentDataSource = null;
+            if (this.contextProvider.getExecutionContext() != null) {
+                currentDataSource = this.contextProvider.getExecutionContext().getDataSource();
+            }
+
+            SQLPlanViewRegistry registry = SQLPlanViewRegistry.getInstance();
+            for (SQLPlanViewDescriptor viewDesc : registry.getPlanViewDescriptors()) {
+                if (viewDesc.isDataSourceSpecific() && !viewDesc.supportedBy(currentDataSource)) {
+                    continue;
+                }
+                VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT | SWT.RADIO);
+                treeViewButton.setText(viewDesc.getLabel());
+                if (!CommonUtils.isEmpty(viewDesc.getDescription())) {
+                    treeViewButton.setToolTipText(viewDesc.getDescription());
+                    if (viewDesc.getIcon() != null) {
+                        treeViewButton.setImage(DBeaverIcons.getImage(viewDesc.getIcon()));
+                    }
+                }
+                treeViewButton.setData(new PlanViewInfo(viewDesc));
+                treeViewButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            }
+            List<SQLPlanActionDescriptor> actionDescriptors = registry.getActionDescriptors();
+            if (!actionDescriptors.isEmpty()) {
+//                UIUtils.createEmptyLabel(tabViewFolder, 1, 1)
+//                    .setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+                for (SQLPlanActionDescriptor actionDescriptor : actionDescriptors) {
+                    VerticalButton button = new VerticalButton(actionFolder, SWT.LEFT | SWT.PUSH);
+                    button.setText(actionDescriptor.getLabel());
+                    button.setToolTipText(actionDescriptor.getDescription());
+                    if (actionDescriptor.getIcon() != null) {
+                        button.setImage(DBeaverIcons.getImage(actionDescriptor.getIcon()));
+                    }
+                    button.setData(new PlanActionInfo(actionDescriptor));
+                    button.setAction(new Action(actionDescriptor.getLabel()) {
+                        @Override
+                        public void run() {
+                            try {
+                                if (lastPlan != null
+                                    && contextProvider.getExecutionContext() != null
+                                    && workbenchPart instanceof SQLEditor editor
+                                ) {
+                                    DBRRunnableWithParam<ExplainPlanParameters> runnable = actionDescriptor.createInstance();
+                                    ExplainPlanParameters params = new ExplainPlanParameters(
+                                        editor,
+                                        contextProvider.getExecutionContext().getDataSource(),
+                                        getQuery(),
+                                        lastPlan
+                                    );
+                                    runnable.run(params);
+                                }
+                            } catch (Exception e) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    SQLEditorMessages.editors_sql_error_execution_plan_title,
+                                    null,
+                                    e);
+                            }
+                        }
+                    }, true);
+
+                    var evaluationService = Workbench.getInstance().getService(IEvaluationService.class);
+                    var enabledWhen = actionDescriptor.getEnabledWhen();
+                    if (evaluationService != null && enabledWhen != null) {
+                        IPropertyChangeListener listener = event -> {
+                            button.setVisible(CommonUtils.toBoolean(event.getNewValue()));
+                            folderComposite.layout(true, true);
+                        };
+                        final IEvaluationReference reference = evaluationService.addEvaluationListener(
+                            enabledWhen,
+                            listener,
+                            "enabled"
+                        );
+                        button.addDisposeListener(e -> evaluationService.removeEvaluationListener(reference));
+                    }
+                }
+            }
+
+            tabViewFolder.addListener(SWT.Selection, event -> {
+                try {
+                    VerticalButton button = tabViewFolder.getSelection();
+                    if (button.getData() instanceof PlanViewInfo viewInfo) {
+                        changeActiveView(viewInfo);
+                    }
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        SQLEditorMessages.editors_sql_error_execution_plan_title,
+                        SQLEditorMessages.editors_sql_error_execution_plan_message,
+                        e);
+                }
+            });
+        }
+        {
+            planViewComposite = new Composite(planPresentationContainer, SWT.NONE);
+            planViewComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+            planViewComposite.setLayout(new StackLayout());
+        }
+
+        planPresentationContainer.setShowDivider(false);
+        Composite progressPanel = planPresentationContainer.createProgressPanel();
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        progressPanel.setLayoutData(gd);
+
+        IDialogSettings settings = getPlanViewSettings();
+        VerticalButton curItem = null;
+        String activeViewId = settings.get("activeView");
+        for (VerticalButton item : tabViewFolder.getItems()) {
+            if (item.getData() instanceof PlanViewInfo viewInfo) {
+                if (curItem == null) {
+                    curItem = item;
+                } else if (activeViewId != null && activeViewId.equals(viewInfo.descriptor.getId())) {
+                    curItem = item;
+                }
+            }
+        }
+        tabViewFolder.setSelection(curItem);
+    }
+
+    @NotNull
+    public SQLQuery getQuery() {
+        return lastQuery;
+    }
+
+    public int getPlanNumber() {
+        return planNumber;
+    }
+
+    public boolean loadQueryPlan(@NotNull DBCQueryPlanner planner, @NotNull Viewer viewer) {
+        if (planner instanceof DBCQueryPlannerSerializable qps) {
+
+            FileDialog fd = new FileDialog(viewer.getControl().getShell(), SWT.OPEN | SWT.SINGLE);
+            fd.setText(UIMessages.save_execution_plan);
+            fd.setFilterPath(curFolder);
+            fd.setFilterExtensions(SQLPlanSaveProvider.EXT);
+            String selected = fd.open();
+            if (selected != null) {
+
+                curFolder = fd.getFilterPath();
+
+                try (Reader r = new FileReader(selected)) {
+                    lastPlan = qps.deserialize(r);
+                    lastQuery = new SQLQuery(
+                        contextProvider.getExecutionContext().getDataSource(),
+                            lastPlan.getQueryString());
+                    lastQueryId = lastPlan.getQueryString();
+
+                    refresh();
+
+                    return true;
+
+                } catch (IOException | InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ", CommonUtils.getRootCause(e));
+                }
+            }
+        }
+        return false;
+    }
+
+    public void explainQueryPlan(@NotNull SQLQuery query, @NotNull Object queryId) {
+        explainQueryPlan(query, queryId, null);
+    }
+
+    public void explainQueryPlan(
+        @NotNull SQLQuery query,
+        @NotNull Object queryId,
+        @Nullable DBCQueryPlannerConfiguration configuration
+    ) {
+        this.lastQuery = query;
+        this.lastQueryId = queryId;
+
+        refresh(configuration);
+    }
+
+    @NotNull
+    private PlanViewInfo[] getPlanViews() {
+        return Arrays.stream(tabViewFolder.getItems())
+            .filter(i -> i.getData() instanceof PlanViewInfo)
+            .map(i -> (PlanViewInfo)i.getData()).toArray(PlanViewInfo[]::new);
+    }
+
+    private void changeActiveView(@NotNull PlanViewInfo viewInfo) throws DBException {
+        activeViewInfo = viewInfo;
+        if (activeViewInfo.planViewer == null) {
+            activeViewInfo.planViewer = activeViewInfo.descriptor.createInstance();
+            activeViewInfo.viewer = activeViewInfo.planViewer.createPlanViewer(workbenchPart, planViewComposite);
+            if (lastPlan != null) {
+                activeViewInfo.planViewer.visualizeQueryPlan(activeViewInfo.viewer, lastQuery, lastPlan);
+            }
+        }
+        if (activeViewInfo.planViewer != null) {
+            ((StackLayout) planViewComposite.getLayout()).topControl = activeViewInfo.viewer.getControl();
+            planViewComposite.layout();
+
+            getPlanViewSettings().put("activeView", activeViewInfo.descriptor.getId());
+
+        } else {
+            activeViewInfo = null;
+        }
+
+        planPresentationContainer.refreshActions();
+    }
+
+    @NotNull
+    private IDialogSettings getPlanViewSettings() {
+        return UIUtils.getSettingsSection(SQLEditorActivator.getDefault().getDialogSettings(), getClass().getSimpleName());
+    }
+
+    /////////////////////////////////////////////////////////
+    // Viewer
+
+    @Override
+    public Control getControl() {
+        return planPresentationContainer;
+    }
+
+    @Override
+    public Object getInput() {
+        return activeViewInfo == null ? null : activeViewInfo.viewer.getInput();
+    }
+
+    @Override
+    public ISelection getSelection() {
+        return activeViewInfo == null ? null : activeViewInfo.viewer.getSelection();
+    }
+
+    @Override
+    public void refresh() {
+        refresh(null);
+    }
+
+    public void refresh(@Nullable DBCQueryPlannerConfiguration configuration) {
+        DBCQueryPlanner planner;
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+        if (executionContext != null) {
+            DBPDataSource dataSource = executionContext.getDataSource();
+            planner = GeneralUtils.adapt(dataSource, DBCQueryPlanner.class);
+        } else {
+            DBWorkbench.getPlatformUI().showError(
+                ModelMessages.error_not_connected_to_database,
+                ModelMessages.error_not_connected_to_database
+            );
+            return;
+        }
+        if (planner == null) {
+            DBWorkbench.getPlatformUI().showError("No SQL Plan", "This datasource doesn't support execution plans");
+            return;
+        }
+        DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator = monitor -> {
+            if (configuration != null) {
+                return configuration;
+            } else {
+                return makeExplainPlanConfiguration(monitor, planner);
+            }
+        };
+        explainService = LoadingJob.createService(
+            new ExplainPlanService(planner, executionContext, configurator, lastQuery.getText(), lastQueryId),
+            planPresentationContainer.createVisualizer()
+        );
+        explainService.schedule();
+    }
+
+    private void visualizePlan(@NotNull DBCPlan plan) {
+        this.lastPlan = plan;
+        this.refreshPlanAction.setEnabled(true);
+
+        for (PlanViewInfo viewInfo : getPlanViews()) {
+            if (viewInfo.viewer != null) {
+                viewInfo.planViewer.visualizeQueryPlan(viewInfo.viewer, lastQuery, plan);
+            }
+        }
+        planPresentationContainer.refreshActions();
+    }
+
+    @Override
+    public void setInput(@NotNull Object input) {
+        if (activeViewInfo != null) {
+            activeViewInfo.viewer.setInput(input);
+        }
+    }
+
+    @Override
+    public void setSelection(@NotNull ISelection selection, boolean reveal) {
+        if (activeViewInfo != null) {
+            activeViewInfo.viewer.setSelection(selection, reveal);
+        }
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (activeViewInfo != null && activeViewInfo.viewer instanceof IAdaptable) {
+            return ((IAdaptable) activeViewInfo.viewer).getAdapter(adapter);
+        }
+        return null;
+    }
+
+    private class ProgressControl extends ProgressPageControl {
+        ProgressControl(@NotNull Composite parent) {
+            super(parent, SWT.SHEET);
+        }
+
+        @Override
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
+            super.fillCustomActions(contributionManager);
+            if (activeViewInfo != null && activeViewInfo.viewer != null) {
+                activeViewInfo.planViewer.contributeActions(activeViewInfo.viewer, contributionManager, lastQuery, lastPlan);
+            }
+            contributionManager.add(refreshPlanAction);
+        }
+
+        @Override
+        protected boolean cancelProgress() {
+            if (explainService != null) {
+                explainService.cancel();
+                return true;
+            }
+            return false;
+        }
+
+        PlanLoadVisualizer createVisualizer() {
+            return new PlanLoadVisualizer();
+        }
+
+        class PlanLoadVisualizer extends ProgressVisualizer<DBCPlan> implements ILoadVisualizerExt {
+            @Override
+            public void completeLoading(@Nullable DBCPlan plan) {
+                super.completeLoading(plan);
+                if (plan != null) {
+                    visualizePlan(plan);
+                }
+                explainService = null;
+            }
+
+            @Override
+            public void finalizeLoading() {
+                // Redraw editor
+                // We need to update UI controls state after error dialog
+                if (workbenchPart instanceof SQLEditor) {
+                    ((SQLEditor) workbenchPart).refreshActions();
+                }
+            }
+        }
+    }
+
+    public static class ExplainPlanService extends DatabaseLoadService<DBCPlan> {
+
+        private final DBCQueryPlanner planner;
+        private final DBCExecutionContext executionContext;
+        private final String query;
+        private final Object savedQueryId;
+        private final DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator;
+        private DBCPlan plan;
+
+        ExplainPlanService(
+            @NotNull DBCQueryPlanner planner,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull DBRRunnableWithReturn<DBCQueryPlannerConfiguration> configurator,
+            @NotNull String query,
+            @Nullable Object savedQueryId
+        ) {
+            super("Explain plan", planner.getDataSource());
+            this.planner = planner;
+            this.executionContext = executionContext;
+            this.configurator = configurator;
+            this.query = query;
+            this.savedQueryId = savedQueryId;
+        }
+
+        @Override
+        public DBCPlan evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
+            try {
+                var configuration = configurator.runTask(monitor);
+                if (configuration == null) {
+                    return null;
+                }
+
+                DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
+                    try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
+                        if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
+                            plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
+                        } else {
+                            plan = planner.planQueryExecution(session, query, configuration);
+                        }
+                    }
+                });
+            } catch (Throwable ex) {
+                throw new InvocationTargetException(ex);
+            }
+            return plan;
+        }
+    }
+
+    private class RefreshPlanAction extends Action {
+        private RefreshPlanAction()
+        {
+            super(SQLEditorMessages.editors_sql_explain_refresh_plan_action_text, DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
+        }
+
+        @Override
+        public void run()
+        {
+            ExplainPlanViewer.this.refresh();
+        }
+    }
+
+    @Nullable
+    public static DBCQueryPlannerConfiguration makeExplainPlanConfiguration(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBCQueryPlanner planner
+    ) {
+        DBCQueryPlannerConfiguration configuration = new DBCQueryPlannerConfiguration();
+        DBEObjectConfigurator<DBCQueryPlannerConfiguration> plannerConfigurator = GeneralUtils.adapt(planner, DBEObjectConfigurator.class);
+        if (plannerConfigurator != null) {
+            return plannerConfigurator.configureObject(monitor, null, planner, configuration, Collections.emptyMap());
+        }
+        return configuration;
+    }
+
+}

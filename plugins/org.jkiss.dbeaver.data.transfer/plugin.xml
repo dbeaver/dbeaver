@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transfer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.dataTransfer">
+        <node type="producer"
+              id="database_producer"
+              class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
+              label="%dataTransfer.producer.database.name"
+              description="%dataTransfer.producer.database.description"
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings"
+              advanced="true">
+            <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+<!--            <sourceType type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>-->
+        </node>
+
+        <node type="consumer"
+            id="database_consumer"
+            class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
+            label="%dataTransfer.consumer.database.name"
+            description="%dataTransfer.consumer.database.description"
+            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
+            advanced="true">
+            <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </node>
+
+        <node type="producer"
+            id="stream_producer"
+            class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
+            icon="icons/formats/file.svg"
+            label="%dataTransfer.producer.stream.name"
+            description="%dataTransfer.producer.stream.description"
+            settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
+
+            <processor
+                id="stream.csv"
+                class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
+                description="%dataTransfer.producer.stream.processor.csv.description"
+                icon="icons/formats/csv.svg"
+                label="%dataTransfer.producer.stream.processor.csv.name"
+                contentType="text/plain">
+                <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.producer.stream.processor.csv.property.extension.label" defaultValue="csv,tsv,txt"/>
+                    <property id="encoding" label="%dataTransfer.producer.stream.processor.csv.property.encoding.label" defaultValue="utf-8"/>
+                    <property id="delimiter" label="%dataTransfer.producer.stream.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
+                    <property id="header" label="%dataTransfer.producer.stream.processor.csv.property.header.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top"/>
+                    <property id="quoteChar" label="%dataTransfer.producer.stream.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
+                    <property id="strictQuotes" label="%dataTransfer.producer.stream.processor.csv.property.strictQuotes.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.strictQuotes.description" defaultValue="false" required="false"/>
+                    <property id="escapeChar" label="%dataTransfer.producer.stream.processor.csv.property.escapeChar.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.escapeChar.description" defaultValue="\" required="false"/>
+                    <property id="nullString" label="%dataTransfer.producer.stream.processor.csv.property.nullString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="emptyStringNull" label="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.emptyStringNull.description" defaultValue="" required="false"/>
+                    <property id="timestampFormat" label="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampFormat.description" defaultValue="yyyy-MM-dd[ HH:mm:ss[.SSS]]" required="false"/>
+                    <property id="trimWhitespaces" label="%dataTransfer.producer.stream.processor.csv.property.trimWhitespaces.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.trimWhitespaces.description" defaultValue="false" required="false"/>
+                    <property id="timestampZone" label="%dataTransfer.producer.stream.processor.csv.property.timestampZone.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.timestampZone.description" defaultValue="" required="false"/>
+                </propertyGroup>
+                <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.sampling.label">
+                    <property id="columnTypeSamplesCount" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeSamplesCount.description" defaultValue="100" required="false"/>
+                    <property id="columnTypeMinimalLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.name" type="integer" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeMinimalLength.description" defaultValue="50" required="false"/>
+                    <property id="columnTypeIsByteLength" label="%dataTransfer.producer.stream.processor.csv.property.columnTypeUseByteLength.name" type="boolean" description="%dataTransfer.producer.stream.processor.csv.property.columnTypeUseByteLength.description" defaultValue="" required="false"/>
+                </propertyGroup>
+            </processor>
+        </node>
+
+        <node type="consumer"
+              id="stream_consumer"
+              class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
+              icon="icons/formats/file.svg"
+              label="%dataTransfer.consumer.stream.name"
+              description="%dataTransfer.consumer.stream.description"
+              settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
+
+            <processor
+                    id="stream.xml"
+                    shortId="xml"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterXML"
+                    description="%dataTransfer.processor.xml.description"
+                    icon="icons/formats/xml.svg"
+                    label="%dataTransfer.processor.xml.name"
+                    contentType="text/xml">
+                <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.xml.property.extension.label" defaultValue="xml"/>
+                    <property id="includeDoctype" label="%dataTransfer.processor.xml.property.doctype.label" type="boolean" defaultValue="false"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.dbunit"
+                    shortId="dbunit"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterDbUnit"
+                    description="%dataTransfer.processor.dbunit.description"
+                    icon="icons/formats/xml.svg"
+                    label="%dataTransfer.processor.dbunit.name"
+                    contentType="text/xml">
+                <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
+                    <property id="upperCaseTableName" label="%dataTransfer.processor.dbunit.property.uppercase.table.name.label" type="boolean" defaultValue="true"/>
+                    <property id="upperCaseColumnNames" label="%dataTransfer.processor.dbunit.property.uppercase.column.names.label" type="boolean" defaultValue="true"/>
+                    <property id="extension" label="%dataTransfer.processor.dbunit.property.extension.label" defaultValue="xml"/>
+                    <property id="includeNullValues" label="%dataTransfer.processor.dbunit.property.include.null.values.label" type="boolean" defaultValue="true"/>
+                    <property id="nullValueString" label="%dataTransfer.processor.dbunit.property.null.value.string.label" defaultValue="[NULL]"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.json"
+                    shortId="json"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterJSON"
+                    description="%dataTransfer.processor.json.description"
+                    icon="icons/formats/json.svg"
+                    label="%dataTransfer.processor.json.name"
+                    contentType="text/json">
+                <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
+                    <property id="printTableName" label="%dataTransfer.processor.json.property.printTableName.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="formatDateISO" label="%dataTransfer.processor.json.property.formatDateISO.label"
+                              type="boolean" defaultValue="true" validValues="true,false"/>
+                    <property id="exportJsonValues" label="%dataTransfer.processor.json.property.exportJsonValues.label"
+                              type="string" defaultValue="string" validValues="string,json"/>
+                    <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.html"
+                    shortId="html"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
+                    description="%dataTransfer.processor.html.description"
+                    icon="icons/formats/html.svg"
+                    label="%dataTransfer.processor.html.name"
+                    appFileExtension="html"
+                    appName="%dataTransfer.processor.web.name"
+                    html="true"
+                    order="20"
+                    contentType="text/html">
+                <propertyGroup label="%dataTransfer.processor.html.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.html.property.extension.label" defaultValue="html"/>
+                    <property id="tableHeader" label="%dataTransfer.processor.html.property.header.name" type="boolean" description="%dataTransfer.processor.html.property.header.description" defaultValue="true"/>
+                    <property id="columnHeaders" label="%dataTransfer.processor.html.property.columnHeaders.name" type="boolean" description="%dataTransfer.processor.html.property.columnHeaders.description" defaultValue="true"/>
+                    <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.csv"
+                    shortId="csv"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV"
+                    description="%dataTransfer.processor.csv.description"
+                    icon="icons/formats/csv.svg"
+                    label="%dataTransfer.processor.csv.name"
+                    contentType="text/plain">
+                <propertyGroup label="%dataTransfer.processor.csv.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.csv.property.extension.label" defaultValue="csv"/>
+                    <property id="delimiter" label="%dataTransfer.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
+                    <property id="rowDelimiter" label="%dataTransfer.processor.csv.property.rowDelimiter.name" type="string" description="%dataTransfer.processor.csv.property.rowDelimiter.description" defaultValue="default" validValues="default,\n,\r,\r\n,\n\r" required="true"/>
+                    <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom" allowCustomValues="false"/>
+                    <property id="headerFormat" label="%dataTransfer.processor.csv.property.headerFormat.name" type="string" description="%dataTransfer.processor.csv.property.headerFormat.description" defaultValue="label" required="false" validValues="label,description,both" allowCustomValues="false"/>
+                    <property id="headerCase" label="%dataTransfer.processor.csv.property.headerCase.name" type="string" description="%dataTransfer.processor.csv.property.headerCase.description" defaultValue="as is" required="true" validValues="as is,upper,lower" allowCustomValues="false"/>
+                    <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape" allowCustomValues="false"/>
+                    <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
+                    <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="string" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="disabled" required="false" validValues="disabled,all,strings,all but numbers,all including nulls" allowCustomValues="false"/>
+                    <property id="quoteNever" label="%dataTransfer.processor.csv.property.quoteNever.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteNever.description" defaultValue="false" required="false"/>
+                    <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
+                    <property id="lineFeedEscapeString" label="%dataTransfer.producer.stream.processor.csv.property.lineFeedEscapeString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.lineFeedEscapeString.description" defaultValue="" validValues="\n,¶" allowCustomValues="true" required="false"/>
+                    <property id="formatArray" label="%dataTransfer.processor.csv.property.formatArray.name" type="string" description="%dataTransfer.processor.csv.property.formatArray.description" defaultValue="{ }" required="true" validValues="{ },[ ],( )" allowCustomValues="false"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.markdown.table"
+                    shortId="markdown"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterMarkdownTable"
+                    description="%dataTransfer.processor.markdownTable.description"
+                    icon="icons/formats/markdown.svg"
+                    label="%dataTransfer.processor.markdownTable.name"
+                contentType="text/plain">
+                <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.markdownTable.property.extension.label" defaultValue="md"/>
+                    <property id="nullString" label="%dataTransfer.processor.markdownTable.property.nullString.name" type="string" description="%dataTransfer.processor.markdownTable.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.markdownTable.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.formatNumbers.description" defaultValue="false" required="false"/>
+                    <property id="showHeaderSeparator" label="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.description" defaultValue="true" required="false"/>
+                    <property id="confluenceFormat" label="%dataTransfer.processor.markdownTable.property.confluenceFormat.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.confluenceFormat.description" defaultValue="false" required="false"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.sql"
+                    shortId="sql"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
+                    description="%dataTransfer.processor.sql.description"
+                    icon="icons/formats/sql.svg"
+                    label="%dataTransfer.processor.sql.name"
+                contentType="text/sql">
+                <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
+                    <property id="includeAutoGenerated" label="%dataTransfer.processor.sql.property.includeAutoGenerated.label" description="%dataTransfer.processor.sql.property.includeAutoGenerated.description" type="boolean" defaultValue="false"/>
+                    <property id="extension" label="%dataTransfer.processor.sql.property.extension.label" type="string" defaultValue="sql"/>
+                    <property id="userTableName" label="%dataTransfer.processor.sql.property.userTableName.name" description="%dataTransfer.processor.sql.property.userTableName.description" type="string" defaultValue=""/>
+                    <property id="nativeFormat" label="%dataTransfer.processor.sql.property.nativeFormat.name" type="boolean" description="%dataTransfer.processor.sql.property.nativeFormat.description" defaultValue="true" />
+                    <property id="omitSchema" label="%dataTransfer.processor.sql.property.omitSchema.name" type="boolean" description="%dataTransfer.processor.sql.property.omitSchema.description" required="false" defaultValue="false"/>
+                    <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
+                </propertyGroup>
+                <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.formatting.label">
+                    <property id="lineBeforeRows" label="%dataTransfer.processor.sql.property.lineBeforeRows.name" type="boolean" description="%dataTransfer.processor.sql.property.lineBeforeRows.description" defaultValue="true" />
+                    <property id="keywordCase" label="%dataTransfer.processor.sql.property.keywordCase.name" type="string" description="%dataTransfer.processor.sql.property.keywordCase.description" defaultValue="upper" required="true" validValues="upper,lower" allowCustomValues="false"/>
+                    <property id="identifierCase" label="%dataTransfer.processor.sql.property.identifierCase.name" type="string" description="%dataTransfer.processor.sql.property.identifierCase.description" defaultValue="as is" required="true" validValues="as is,upper,lower" allowCustomValues="false"/>
+                    <property id="upsertKeyword" label="%dataTransfer.processor.sql.property.upsertKeyword.name" type="string" description="%dataTransfer.processor.sql.property.upsertKeyword.description" defaultValue="INSERT" required="true" validValues="INSERT,INSERT ALL,UPDATE OR,UPSERT INTO,REPLACE INTO,ON DUPLICATE KEY UPDATE,ON CONFLICT" allowCustomValues="false"/>
+                    <property id="insertOnConflict" label="%dataTransfer.processor.sql.property.insertOnConflict.name" type="string" description="%dataTransfer.processor.sql.property.insertOnConflict.description" defaultValue="" required="true"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.txt"
+                    shortId="txt"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterTXT"
+                    description="%dataTransfer.processor.txt.description"
+                    icon="icons/formats/text.svg"
+                    label="%dataTransfer.processor.txt.name"
+                    contentType="text/plain">
+                <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.txt.property.extension.label" type="string" defaultValue="txt"/>
+                    <property id="batchSize" label="%dataTransfer.processor.txt.property.batchSize.label" defaultValue="200"/>
+                    <property id="minColumnLength" label="%dataTransfer.processor.txt.property.minColumnLength.label"
+                              description="%dataTransfer.processor.txt.property.minColumnLength.tip" defaultValue="3"/>
+                    <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label"
+                              description="%dataTransfer.processor.txt.property.maxColumnLength.tip" defaultValue="0"/>
+                    <property id="showNulls" label="%dataTransfer.processor.txt.property.showNulls.label" description="%dataTransfer.processor.txt.property.showNulls.tip" type="boolean" defaultValue="false"/>
+                    <property id="delimHeader" label="%dataTransfer.processor.txt.property.delimHeader.label" type="boolean"
+                              description="%dataTransfer.processor.txt.property.delimHeader.tip" defaultValue="true"/>
+                    <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean"
+                              description="%dataTransfer.processor.txt.property.delimLeading.tip" defaultValue="true"/>
+                    <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean"
+                              description="%dataTransfer.processor.txt.property.delimTrailing.tip" defaultValue="true"/>
+                    <property id="delimBetween" label="%dataTransfer.processor.txt.property.delimBetween.label" type="string"
+                              description="%dataTransfer.processor.txt.property.delimBetween.tip" defaultValue="|" required="true" allowCustomValues="true"/>
+                    <property id="showHeader" label="%dataTransfer.processor.txt.property.showHeader.label" description="%dataTransfer.processor.txt.property.showHeader.tip" type="boolean" defaultValue="true"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.source.code"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSourceCode"
+                    description="%dataTransfer.processor.source.code.description"
+                    icon="icons/formats/code.svg"
+                    label="%dataTransfer.processor.source.code.name"
+                    contentType="text/plain">
+                <propertyGroup label="%dataTransfer.processor.source.code.propertyGroup.general.label">
+                    <property id="language" label="%dataTransfer.processor.source.code.property.language.name" type="string" description="%dataTransfer.processor.source.code.property.language.description" defaultValue="PHP &lt; 5.4" validValues="PHP &lt; 5.4,PHP 5.4+" required="true"/>
+                    <property id="formatDateISOPHP" label="%dataTransfer.processor.source.code.property.formatDateISO.label" type="boolean" defaultValue="true"/>
+                    <property id="extension" label="%dataTransfer.processor.source.code.property.extension.label" defaultValue="php"/>
+                    <property id="quoteChar" label="%dataTransfer.processor.source.code.property.quoteChar.name" type="string" description="%dataTransfer.processor.source.code.property.quoteChar.description" defaultValue="&quot;" validValues="&quot;,&#39;"/>
+                    <property id="rowDelimiter" label="%dataTransfer.processor.source.code.property.rowDelimiter.name" type="string" description="%dataTransfer.processor.source.code.property.rowDelimiter.description" defaultValue="default" validValues="default,\n,\r,\r\n,\n\r"/>
+                </propertyGroup>
+            </processor>
+        </node>
+
+
+<!--        <transformer id="none" label="" description="PAss value as is" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>-->
+        <transformer id="null" label="Set to NULL" description="Set column value to NULL" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>
+
+        <transformer id="constant" label="Constant" description="Set column value to a constant value" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerConstant">
+            <propertyGroup label="Settings">
+                <property id="constant" label="Constant value" type="string" description="Constant value" defaultValue="" required="false"/>
+            </propertyGroup>
+        </transformer>
+
+        <transformer id="expression" label="Expression" description="Set column value to a result of expression&#10;Language references and examples can be found here:&#10;http://commons.apache.org/proper/commons-jexl/reference/syntax.html" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerExpression">
+            <propertyGroup label="Settings">
+                <property id="expression" label="Expression" type="string" description="Expression to evaluate" defaultValue="" required="true"/>
+            </propertyGroup>
+        </transformer>
+
+        <eventProcessor
+                id="showInExplorer"
+                label="%dataTransfer.eventProcessor.showInExplorer.label"
+                description="%dataTransfer.eventProcessor.showInExplorer.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.ShowInExplorerEventProcessor"
+                nodes="streamTransferConsumer"/>
+
+        <eventProcessor
+                id="executeCommand"
+                label="%dataTransfer.eventProcessor.executeCommand.label"
+                description="%dataTransfer.eventProcessor.executeCommand.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
+                nodes="streamTransferConsumer"/>
+
+        <eventProcessor
+                id="failedExportFileCleaner"
+                label="%dataTransfer.eventProcessor.failedExportFileCleaner.label"
+                description="%dataTransfer.eventProcessor.failedExportFileCleaner.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.FailedExportFileCleanerProcessor"
+                nodes="streamTransferConsumer"/>
+
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="common" name="%task.category.name.common" description="%task.category.description.common"
+                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.svg"/>
+
+        <task id="dataExport"
+              name="%task.name.export"
+              description="%task.description.export"
+              icon="icons/export.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport"
+              supportsVariables="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </task>
+        <task id="dataImport"
+              name="%task.name.import"
+              description="%task.description.import"
+              icon="icons/import.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </task>
+
+        <task id="scriptExecute"
+              name="%task.name.sql.script"
+              description="%task.description.sql.script"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler"
+              supportsVariables="true">
+            <objectType name="org.eclipse.core.resources.IFile"/>
+        </task>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.serialize">
+        <serializer id="databaseTransferProducer"
+                    class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer$ObjectSerializer"/>
+        <serializer id="streamTransferProducer"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer$ObjectSerializer"/>
+
+        <serializer id="databaseTransferConsumer"
+                    class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumerSerializer"/>
+        <serializer id="streamTransferConsumer"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer$ObjectSerializer"
+                    supportsDistributedMode="false"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.tools.transfer.internal.DataTransferPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource id="stream" class="org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSourceProvider" dialect="basic"/>
+    </extension>
+
+</plugin>

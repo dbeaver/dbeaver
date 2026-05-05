@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.oceanbase.OceanbaseDataSourceProvider"
+            description="Oceanbase"
+            id="oceanbase"
+            parent="mysql"
+            dialect="mysql"
+            label="Oceanbase">
+            <treeInjection path="mysql/database"
+                           changeFolderType="org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLCatalog"/>
+            <treeInjection path="mysql/database/view/column"
+                           changeFolderType="org.jkiss.dbeaver.ext.oceanbase.model.OceanbaseMySQLViewColumn"/>
+            <drivers managable="true">
+                <driver
+                    id="alipay_oceanbase"
+                    label="OceanBase"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}:{port}[/{database}]"
+                    defaultPort="2881"
+                    webURL="https://open.oceanbase.com"
+                    icon="icons/ob_icon.png"
+                    iconBig="icons/ob_icon_big.png"
+                    description="Driver for OceanBase-MySQL"
+                    supportedPageFields="host,port,database,server"
+                    categories="sql">
+
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <parameter name="supports-events" value="false"/>
+                    <parameter name="supports-plugins" value="false"/>
+                    <parameter name="supports-triggers" value="false"/>
+                    <parameter name="supports-users" value="true"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="oceanbase_native"
+            label="Oceanbase Native"
+            description="Oceanbase native authentication (name/password)"
+            class="org.jkiss.dbeaver.ext.oceanbase.model.auth.OceanbaseAuthModelDatabaseNative"
+            default="true">
+            <replace model="native"/>
+            <datasource id="oceanbase"/>
+        </authModel>
+    </extension>
+
+</plugin>
+

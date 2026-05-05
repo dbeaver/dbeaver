@@ -1,0 +1,256 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.navigator.database;
+
+import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+public class DatabaseObjectsSelectorPanel extends Composite {
+
+    private final DBPProject selectedProject;
+    private final DatabaseNavigatorTree dataSourceTree;
+    private DatabaseObjectsTreeManager checkboxTreeManager;
+
+    public DatabaseObjectsSelectorPanel(@NotNull Composite parent, boolean multiSelector, @NotNull DBRRunnableContext runnableContext) {
+        this(parent, runnableContext, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE), false);
+    }
+
+    public DatabaseObjectsSelectorPanel(@NotNull Composite parent, @NotNull DBRRunnableContext runnableContext, int style) {
+        this(parent, runnableContext, style, false);
+    }
+
+    public DatabaseObjectsSelectorPanel(
+        @NotNull Composite parent,
+        @NotNull DBRRunnableContext runnableContext,
+        int style,
+        boolean enableFilter
+    ) {
+        super(parent, SWT.NONE);
+        if (parent.getLayout() instanceof GridLayout) {
+            setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+        GridLayout gl = new GridLayout(1, true);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        setLayout(gl);
+
+        selectedProject = this.getSelectedProject();
+        DBNNode rootNode = this.getRootNode();
+        DatabaseNavigatorTreeFilter navigatorFilter = enableFilter ? createNavigatorFilter() : null;
+        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, style, false, navigatorFilter);
+        if (enableFilter) {
+            dataSourceTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.container);
+        }
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 300;
+        dataSourceTree.setLayoutData(gd);
+        if (!enableFilter) {
+            dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                    return isElementAccepted(element);
+                }
+            });
+        }
+        if ((style & SWT.CHECK) != 0) {
+            final CheckboxTreeViewer viewer = dataSourceTree.getCheckboxViewer();
+
+            checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,
+                new Class[]{DBSDataContainer.class});
+            viewer.addCheckStateListener(event -> onSelectionChange(event.getElement()));
+            viewer.addDoubleClickListener(event ->
+            {
+                Object firstElement = viewer.getStructuredSelection().getFirstElement();
+                checkboxTreeManager.updateElementsCheck(
+                    new Object[]{firstElement},
+                    viewer.getChecked(firstElement),
+                    true,
+                    true);
+            });
+        } else {
+            dataSourceTree.getViewer().addSelectionChangedListener(event -> onSelectionChange(
+                ((IStructuredSelection)event.getSelection()).getFirstElement()));
+        }
+    }
+
+    @NotNull
+    public DatabaseNavigatorTree getNavigatorTree() {
+        return dataSourceTree;
+    }
+
+    @NotNull
+    public DatabaseObjectsTreeManager getCheckboxTreeManager() {
+        return checkboxTreeManager;
+    }
+
+    @Nullable
+    protected DBPProject getSelectedProject() {
+        return NavigatorUtils.getSelectedProject();
+    }
+
+    protected DBNNode getRootNode() {
+        DBNModel navigatorModel = selectedProject.getNavigatorModel();
+        final DBNProject projectNode = navigatorModel.getRoot().getProjectNode(selectedProject);
+        DBNNode rootNode = projectNode == null ? navigatorModel.getRoot() : projectNode.getDatabases();
+        return rootNode;
+    }
+
+    public void setNavigatorFilter(INavigatorFilter navigatorFilter) {
+        dataSourceTree.setNavigatorFilter(navigatorFilter);
+    }
+
+    public DBPProject getProject() {
+        return selectedProject;
+    }
+
+    public void setSelection(List<? extends DBNNode> nodes) {
+//        for (DBNNode node : nodes) {
+//            dataSourceTree.getViewer().reveal(node);
+//        }
+        dataSourceTree.getViewer().setSelection(
+            new StructuredSelection(nodes), true);
+    }
+
+    public void checkNodes(Collection<? extends DBNNode> nodes, boolean revealAll) {
+        TreeViewer treeViewer = dataSourceTree.getViewer();
+        boolean first = true;
+        for (DBNNode node : nodes) {
+            if (revealAll) {
+                treeViewer.reveal(node);
+            } else if (first) {
+                DBNDataSource dsNode = DBNDataSource.getDataSourceNode(node);
+                if (dsNode != null) {
+                    treeViewer.reveal(dsNode);
+                }
+                first = false;
+            }
+            if (treeViewer instanceof CheckboxTreeViewer checkboxTreeViewer) {
+                checkboxTreeViewer.setChecked(node, true);
+            }
+        }
+        if (treeViewer instanceof CheckboxTreeViewer) {
+            checkboxTreeManager.updateCheckStates();
+        }
+    }
+
+    public boolean hasCheckedNodes() {
+        for (Object element : dataSourceTree.getCheckboxViewer().getCheckedElements()) {
+            if (element instanceof DBNNode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<DBNNode> getCheckedNodes() {
+        Object[] checkedElements = dataSourceTree.getCheckboxViewer().getCheckedElements();
+        List<DBNNode> result = new ArrayList<>(checkedElements.length);
+        for (Object element : checkedElements) {
+            if (element instanceof DBNNode nodes) {
+                result.add(nodes);
+            }
+        }
+        return result;
+    }
+
+    protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
+        Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
+        return folderItemsClass != null &&
+            (DBSObjectContainer.class.isAssignableFrom(folderItemsClass) ||
+                DBSEntity.class.isAssignableFrom(folderItemsClass));
+    }
+
+    protected boolean isDatabaseObjectVisible(DBSObject obj) {
+        return obj instanceof DBSInstance ||
+            obj instanceof DBSObjectContainer ||
+            (obj instanceof DBSDataContainer && obj instanceof DBSEntity);
+    }
+
+    protected boolean isDataSourceVisible(DBNDataSource dataSource) {
+        return true;
+    }
+
+    protected boolean isFolderVisible(DBNLocalFolder folder) {
+        return true;
+    }
+
+    protected boolean isElementAccepted(@Nullable Object element) {
+        if (element instanceof TreeNodeSpecial) {
+            return true;
+        }
+        if (element instanceof DBNNode) {
+            return switch (element) {
+                case DBNDatabaseFolder folder -> isDatabaseFolderVisible(folder);
+                case DBNProjectDatabases ignored -> true;
+                case DBNLocalFolder localFolder -> isFolderVisible(localFolder);
+                case DBNDataSource dataSource -> isDataSourceVisible(dataSource);
+                case DBSWrapper wrapper -> isDatabaseObjectVisible(wrapper.getObject());
+                default -> false;
+            };
+        }
+        return false;
+    }
+
+    @NotNull
+    protected DatabaseNavigatorTreeFilter createNavigatorFilter() {
+        return new DatabaseNavigatorTreeFilter() {
+            @Override
+            public boolean select(Object element) {
+                return isElementAccepted(element);
+            }
+
+            @NotNull
+            @Override
+            public Set<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
+                return Set.of(DatabaseNavigatorTreeFilterObjectType.container, DatabaseNavigatorTreeFilterObjectType.table);
+            }
+        };
+    }
+
+    protected void onSelectionChange(Object element) {
+
+    }
+
+    public void refreshNodes() {
+        dataSourceTree.getViewer().refresh();
+    }
+
+    public void addSelectionListener(ISelectionChangedListener listener) {
+        dataSourceTree.getViewer().addSelectionChangedListener(listener);
+    }
+
+    public ISelection getSelection() {
+        return dataSourceTree.getViewer().getSelection();
+    }
+}

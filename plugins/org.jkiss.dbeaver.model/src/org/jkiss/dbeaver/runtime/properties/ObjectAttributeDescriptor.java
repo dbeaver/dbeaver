@@ -1,0 +1,276 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.runtime.properties;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.*;
+
+/**
+ * Abstract object attribute
+ */
+public abstract class ObjectAttributeDescriptor {
+
+    static final Log log = Log.getLog(ObjectAttributeDescriptor.class);
+
+    public static final Comparator<ObjectAttributeDescriptor> ATTRIBUTE_DESCRIPTOR_COMPARATOR = new Comparator<ObjectAttributeDescriptor>() {
+        @Override
+        public int compare(ObjectAttributeDescriptor o1, ObjectAttributeDescriptor o2) {
+            return o1.getOrderNumber() - o2.getOrderNumber();
+        }
+    };
+
+    private final DBPPropertySource source;
+    private final ObjectPropertyGroupDescriptor parent;
+    private final int orderNumber;
+    private String id;
+    private final Method getter;
+    private boolean isLazy;
+    private IPropertyCacheValidator cacheValidator;
+    private final Class<?> declaringClass;
+
+    public ObjectAttributeDescriptor(
+        @Nullable DBPPropertySource source,
+        ObjectPropertyGroupDescriptor parent,
+        Method getter,
+        String id,
+        int orderNumber)
+    {
+        this.source = source;
+        this.parent = parent;
+        this.getter = getter;
+        this.orderNumber = orderNumber;
+        this.id = id;
+        if (CommonUtils.isEmpty(this.id)) {
+            this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+            String parentGroupId = parent == null ? null : parent.getGroupId();
+            // cloudbeaver param
+            // defines id of property if parent group has group id
+            if (CommonUtils.isNotEmpty(parentGroupId)) {
+                this.id = parentGroupId + "." + this.id;
+            }
+        }
+
+        declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
+        if (this.getter.getParameterTypes().length > 0 && getter.getParameterTypes()[0] == DBRProgressMonitor.class) {
+            this.isLazy = true;
+        }
+
+        if (isLazy) {
+            final LazyProperty lazyInfo = getter.getAnnotation(LazyProperty.class);
+            if (lazyInfo != null) {
+                try {
+                    cacheValidator = lazyInfo.cacheValidator().getConstructor().newInstance();
+                } catch (Exception e) {
+                    log.warn("Can't instantiate lazy cache validator '" + lazyInfo.cacheValidator().getName() + "'", e);
+                }
+            }
+        }
+    }
+
+    public Class<?> getDeclaringClass()
+    {
+        return declaringClass;
+    }
+
+    @Nullable
+    public DBPPropertySource getSource() {
+        return source;
+    }
+
+    public int getOrderNumber()
+    {
+        return orderNumber;
+    }
+
+    @NotNull
+    public String getId()
+    {
+        return id;
+    }
+
+    public <T extends Annotation> T getAnnotation(Class<T> annoType) {
+        return getter == null ? null : getter.getAnnotation(annoType);
+    }
+
+    public Method getGetter() {
+        return getter;
+    }
+
+    public boolean isNameProperty() {
+        return id.equals(DBConstants.PROP_ID_NAME) || orderNumber == 1;
+    }
+
+    public boolean isDescriptionProperty() {
+        return id.equals(DBConstants.PROP_ID_DESCRIPTION);
+    }
+
+    public boolean isRemote()
+    {
+        return isLazy || parent != null && parent.isRemote();
+    }
+
+    public boolean isLazy()
+    {
+        return isLazy;
+    }
+
+    public boolean isLazy(@NotNull Object object, boolean checkParent)
+    {
+        if (object instanceof DBSObject dbso && !dbso.isPersisted()) {
+            return false;
+        }
+        if (isLazy && cacheValidator != null) {
+            if (parent != null) {
+                if (parent.isLazy(object, true)) {
+                    return true;
+                }
+                try {
+                    // Parent isn't lazy so use null progress monitor
+                    object = parent.getGroupObject(object, null);
+                } catch (Exception e) {
+                    log.debug(e);
+                    return true;
+                }
+            }
+            return !cacheValidator.isPropertyCached(object, id);
+        }
+        return isLazy || (checkParent && parent != null && parent.isLazy(object, checkParent));
+    }
+
+    public IPropertyCacheValidator getCacheValidator()
+    {
+        return cacheValidator;
+    }
+
+    public ObjectPropertyGroupDescriptor getParent()
+    {
+        return parent;
+    }
+
+    public abstract String getCategory();
+
+    public abstract String getDescription();
+
+    @NotNull
+    public static Class<?> getObjectClass(Object theObject) {
+        return theObject.getClass();
+    }
+
+    @NotNull
+    public static List<ObjectPropertyDescriptor> extractAnnotations(
+        @Nullable DBPPropertySource source,
+        Class<?> theClass,
+        IPropertyFilter filter,
+        @Nullable String locale
+    ) {
+        return extractAnnotations(source, theClass, filter, locale, true);
+    }
+
+    @NotNull
+    public static List<ObjectPropertyDescriptor> extractAnnotations(
+        @Nullable DBPPropertySource source,
+        Class<?> theClass,
+        IPropertyFilter filter,
+        @Nullable String locale,
+        boolean collectLocalizedNames
+    ) {
+        List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
+        extractAnnotations(source, null, theClass, annoProps, filter, locale,  collectLocalizedNames);
+        return annoProps;
+    }
+
+    public static List<ObjectPropertyDescriptor> extractAnnotations(
+        DBPPropertySource source,
+        Collection<Class<?>> classList,
+        IPropertyFilter filter)
+    {
+        List<ObjectPropertyDescriptor> annoProps = new ArrayList<>();
+        for (Class<?> objectClass : classList) {
+            annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter, null));
+        }
+        annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+        return annoProps;
+    }
+
+    static void extractAnnotations(
+        @Nullable DBPPropertySource source,
+        @Nullable ObjectPropertyGroupDescriptor parent,
+        Class<?> theClass,
+        List<ObjectPropertyDescriptor> annoProps,
+        IPropertyFilter filter,
+        @Nullable String locale,
+        boolean collectLocalizedNames
+    ) {
+        Object object = source == null ? null : source.getEditableValue();
+        Method[] methods = theClass.getMethods();
+        Map<String, Method> passedNames = new HashMap<>();
+        for (Method method : methods) {
+            String methodFullName = method.getDeclaringClass().getName() + "." + method.getName();
+            final Method prevMethod = passedNames.get(methodFullName);
+            if (prevMethod != null) {
+                // The same method but probably with another return type
+                final Class<?> prevReturnType = prevMethod.getReturnType();
+                final Class<?> newReturnType = method.getReturnType();
+                if (newReturnType == null || prevReturnType == null || newReturnType == prevReturnType || !prevReturnType.isAssignableFrom(newReturnType)) {
+                    continue;
+                }
+                // Let it another chance. New return types seems to be subclass of previous
+            }
+            final PropertyGroup propGroupInfo = method.getAnnotation(PropertyGroup.class);
+            if (propGroupInfo != null && method.getReturnType() != null) {
+                // Property group
+                ObjectPropertyGroupDescriptor groupDescriptor = new ObjectPropertyGroupDescriptor(source, parent, method, propGroupInfo, filter, locale);
+                annoProps.addAll(groupDescriptor.getChildren());
+            } else {
+                final Property propInfo = method.getAnnotation(Property.class);
+                if (propInfo == null || !BeanUtils.isGetterName(method.getName()) || method.getReturnType() == null) {
+                    continue;
+                }
+                // Single property
+                ObjectPropertyDescriptor desc = new ObjectPropertyDescriptor(source, parent, propInfo, method, locale, collectLocalizedNames);
+                if (filter != null && !filter.select(object, desc)) {
+                    continue;
+                }
+                if (prevMethod != null) {
+                    // Remove previous anno
+                    annoProps.removeIf(
+                        objectPropertyDescriptor -> objectPropertyDescriptor.getId().equals(desc.getId()));
+                }
+                annoProps.add(desc);
+                passedNames.put(methodFullName, method);
+            }
+        }
+        annoProps.sort(ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+
+    }
+
+}

@@ -1,0 +1,207 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.cubrid.edit;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Map;
+
+public class CubridViewManager extends GenericViewManager implements DBEObjectRenamer<GenericTableBase> {
+
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        boolean isDBAGroup = dataSource.isDBAGroup();
+        boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
+        boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
+        return isDBAGroup || supportsMultiSchema || isCurrentUser || !dataSource.isShard();
+    }
+
+    @NotNull
+    @Override
+    protected GenericTableBase createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
+        GenericStructContainer structContainer = (GenericStructContainer) container;
+        String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(
+            structContainer, tableName, GenericConstants.TABLE_TYPE_VIEW, null);
+        if (viewImpl instanceof GenericView) {
+            ((GenericView) viewImpl).setObjectDefinitionText("\n");
+        }
+        return viewImpl;
+    }
+
+    @Override
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        createOrReplaceViewQuery(actions, command);
+    }
+
+    @Override
+    protected void addObjectModifyActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull ObjectChangeCommand command,
+            @NotNull Map<String, Object> options) {
+        if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
+            createOrReplaceViewQuery(actionList, command);
+        }
+    }
+
+    private void createOrReplaceViewQuery(
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull DBECommandComposite<GenericTableBase, PropertyHandler> command
+    ) {
+        CubridView view = (CubridView) command.getObject();
+        StringBuilder query = new StringBuilder(200);
+        String viewDDL = view.getDDL();
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
+        if (viewDDL == null) {
+            viewDDL = "";
+        }
+        if (!view.isPersisted()) {
+            query.append("CREATE VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\nAS ");
+            query.append(viewDDL);
+            if (hasComment && view.getDescription() != null) {
+                query.append("\nCOMMENT = ").append(SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
+            }
+        } else {
+            if (command.hasProperty(DBConstants.PARAM_OBJECT_DEFINITION_TEXT)) {
+                query.append(viewDDL).append("\n");
+            }
+            if (hasComment || view.getDescription() != null) {
+                boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
+                String viewName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "."
+                    + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName())
+                    : DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName());
+                query.append("ALTER VIEW " + viewName + " COMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
+            }
+        }
+        actions.add(new SQLDatabasePersistAction("Create view", query.toString()));
+    }
+
+    @Override
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        CubridView view = (CubridView) command.getObject();
+        boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
+        String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "";
+        actions.add(new SQLDatabasePersistAction(
+            "Rename view",
+            "RENAME VIEW " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName())
+            + " TO " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())
+        ));
+    }
+
+    @Override
+    public void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableBase object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
+    }
+
+    @Override
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) {
+        CubridView view = (CubridView) command.getObject();
+        boolean isDBAGroup = view.getDataSource().isDBAGroup();
+        boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
+        String currentUser = view.getDataSource().getCurrentUser();
+        String schemaName = view.getSchema().getName();
+        if (view.isPersisted()) {
+            if (view.getContainer() == view.getSchema()) {
+                return;
+            }
+        } else {
+            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) {
+                return;
+            }
+        }
+        actions.add(new SQLDatabasePersistAction(
+            "Change Owner",
+            "ALTER VIEW " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "")
+            + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName()) + " OWNER TO "
+            + DBUtils.getQuotedIdentifier(view.getSchema())
+        ));
+    }
+
+    @Override
+    public boolean canRenameObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(@NotNull GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+}

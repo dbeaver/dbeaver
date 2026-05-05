@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <!-- Deprecated extension point, must be replaced with tasks UI configurators -->
+    <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.task.ui" name="%extension-point.org.jkiss.dbeaver.task.ui.name" schema="schema/org.jkiss.dbeaver.task.ui.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.clearHistoryHandler">
+        <handler
+                id="taskRunHistory"
+                name="%handler.taskRunHistory.name"
+                description="%handler.taskRunHistory.description"
+                handler="org.jkiss.dbeaver.tasks.ui.handlers.TaskClearHistoryHandler"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="task.execute.success" name="Task execution success" soundEnabled="true"/>
+        <notification id="task.execute.failure" name="Task execution failure" soundEnabled="true"/>
+    </extension>
+
+</plugin>

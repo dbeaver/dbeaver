@@ -1,0 +1,633 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
+
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.utils.HelpUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
+    private static final Log log = Log.getLog(StreamProducerPageSettings.class);
+    private static final String HELP_DATA_TRANSFER_LINK = "Data-transfer#import-parameters";
+
+    private PropertyTreeViewer propsEditor;
+    private PropertySourceCustom propertySource;
+
+    private boolean showRemoteFS;
+    private Table filesTable;
+    private Button tiOpenLocal;
+    private Button tiOpenRemote;
+    private Button openFSBrowserCheckbox;
+
+    private String noneItemSelectedText = DTUIMessages.stream_consumer_page_settings_item_text_none;
+
+    public StreamProducerPageSettings() {
+        super(DTMessages.data_transfer_wizard_page_input_files_name);
+        setTitle(DTMessages.data_transfer_wizard_page_input_files_title);
+        setDescription(DTMessages.data_transfer_wizard_page_input_files_description);
+        setPageComplete(false);
+    }
+
+    @Override
+    public void createControl(Composite parent) {
+        initializeDialogUnits(parent);
+
+        SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
+        settingsDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        {
+            Composite inputFilesGroup = UIUtils.createComposite(settingsDivider, 1);
+            inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.NONE);
+            inputFilesTableGroup.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
+            inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+            DBPProject project = getWizard().getProject();
+            showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
+
+            createFileSelectionToolBar(inputFilesTableGroup);
+
+            filesTable = createFilesTable(inputFilesTableGroup);
+
+            if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
+                UIUtils.createInfoLink(
+                    inputFilesGroup,
+                    "You cannot use files stored on this PC in scheduled tasks." +
+                        "\nIf you want to use the files for export/import, please transfer them to <a href=\"#\">Cloud Storage</a>.",
+                    () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Cloud-Storage"))
+                ).setToolTipText("Scheduled tasks don't have access to files stored on this PC because they're executed on a remote server.");
+            }
+
+            UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
+            if (!isSkipTargetColumn()) {
+                UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
+            }
+
+            new CustomTableEditor(filesTable) {
+                @Override
+                protected Control createEditor(Table table, int index, TableItem item) {
+                    Text text = new Text(table, SWT.BORDER);
+                    DataTransferPipe pipe = (DataTransferPipe) item.getData();
+                    if (pipe.getProducer() instanceof StreamTransferProducer stp) {
+                        Path inputFile = stp.getInputFile();
+                        if (inputFile != null) {
+                            text.setText(DBFUtils.convertPathToString(inputFile));
+                        }
+                    }
+                    text.setSelection(0, text.getCharCount());
+                    return text;
+                }
+
+                @Override
+                protected void saveEditorValue(Control control, int index, TableItem item) {
+                    if (control instanceof Text text) {
+                        if (text.getData("saved") != null) {
+                            // Avoid double-apply on Mac
+                            return;
+                        }
+                        text.setData("saved", true);
+                        DataTransferPipe pipe = (DataTransferPipe) item.getData();
+                        String fileName = text.getText();
+                        text.dispose();
+                        if (fileName.isBlank()) {
+                            return;
+                        }
+                        try {
+                            Path path = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), pipe.getConsumer().getProject(), fileName);
+                            if (!Files.exists(path)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTUIMessages.stream_producer_column_mapping_error_title,
+                                    "File '" + fileName + "' doesn't exist");
+                            } else {
+                                updateSingleConsumer(new VoidProgressMonitor(), pipe, path);
+                                item.setText(0, DBFUtils.convertPathToString(path));
+                                reloadPipes();
+                                updatePageCompletion();
+                            }
+                        } catch (Exception e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                DTUIMessages.stream_producer_column_mapping_error_title,
+                                "Error resolving file",
+                                e);
+                        }
+                    }
+                }
+            };
+            filesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateBrowseButtons()));
+        }
+
+        {
+            Composite exporterSettings = UIUtils.createComposite(settingsDivider, 1);
+            UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
+
+            propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+            Object layoutData = propsEditor.getControl().getLayoutData();
+            if (layoutData instanceof GridData gd) {
+                // Avoid vertical grab to maximum
+                gd.heightHint = 150;
+            }
+
+            UIUtils.createInfoLink(
+                exporterSettings,
+                DTUIMessages.stream_producer_page_input_files_hint,
+                () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_TRANSFER_LINK))
+            );
+        }
+        settingsDivider.setWeights(400, 600);
+
+        setControl(settingsDivider);
+
+        updatePageCompletion();
+    }
+
+    @Override
+    public void deactivatePage() {
+        // Save settings.
+        // It is a producer so it must prepare data for consumers
+
+        // Save processor properties
+        propsEditor.saveEditorValues();
+        Map<String, Object> processorProperties = propertySource.getPropertiesWithDefaults();
+        DataTransferSettings dtSettings = getWizard().getSettings();
+        dtSettings.setProcessorProperties(processorProperties);
+
+        final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        if (producerSettings != null) {
+            producerSettings.setProcessorProperties(processorProperties);
+        }
+
+        // Update column mappings for database consumers
+        IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
+
+        try {
+            getWizard().getRunnableContext().run(
+                true, true, monitor -> {
+                    for (DataTransferPipe pipe : dtSettings.getDataPipes()) {
+                        if (pipe.getProducer() instanceof StreamTransferProducer producer) {
+                            if (producerSettings != null) {
+                                producerSettings.updateProducerSettingsFromStream(monitor, producer, dtSettings);
+                            }
+
+                            if (consumerSettings instanceof DatabaseConsumerSettings databaseConsumerSettings) {
+                                DatabaseMappingContainer mapping
+                                    = databaseConsumerSettings.getDataMapping(producer.getDatabaseObject());
+                                if (mapping != null) {
+                                    mapping.getAttributeMappings(monitor);
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+            saveOpenFSBrowserPreference();
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Error updating stream settings", "Error updating settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+
+        super.deactivatePage();
+    }
+
+    @Override
+    public void activatePage() {
+        getWizard().loadNodeSettings();
+
+        // Initialize property editor
+        DataTransferProcessorDescriptor processor = getProducerProcessor();
+        DBPPropertyDescriptor[] properties = processor == null ? new DBPPropertyDescriptor[0] : processor.getProperties();
+        propertySource = new PropertySourceCustom(properties, getWizard().getSettings().getProcessorProperties());
+        propsEditor.loadProperties(propertySource);
+
+        // Init pipes
+        reloadPipes();
+
+        updatePageCompletion();
+
+        UIUtils.asyncExec(() -> UIUtils.packColumns(filesTable, true));
+
+    }
+
+    @NotNull
+    private Composite createFileSelectionToolBar(@NotNull Composite inputFilesTableGroup) {
+        final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
+        toolbar.setLayout(new GridLayout(4, false));
+        UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
+
+        tiOpenLocal = UIUtils.createPushButton(
+            toolbar,
+            UIMessages.text_with_open_dialog_browse,
+            UIMessages.text_with_open_dialog_browse,
+            UIIcon.OPEN,
+            SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
+        );
+
+        if (showRemoteFS) {
+            tiOpenRemote = UIUtils.createPushButton(
+                toolbar,
+                UIMessages.text_with_open_dialog_browse_remote,
+                UIMessages.text_with_open_dialog_browse_remote,
+                UIIcon.OPEN_EXTERNAL,
+                SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(true).run())
+            );
+        }
+
+        openFSBrowserCheckbox = createOpenFSBrowserCheckbox(toolbar);
+        UIUtils.createLabelSeparator(inputFilesTableGroup, SWT.HORIZONTAL);
+        return toolbar;
+    }
+
+    @NotNull
+    private Button createOpenFSBrowserCheckbox(@NotNull Composite toolbar) {
+        return UIUtils.createCheckbox(
+            toolbar,
+            DTUIMessages.pref_open_fs_browser_on_enter,
+            DTUIMessages.pref_open_fs_browser_on_enter_tooltip,
+            DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DTConstants.PREF_OPEN_LOCAL_FS_BROWSER),
+            0
+        );
+    }
+
+    @NotNull
+    private Table createFilesTable(@NotNull Composite inputFilesTableGroup) {
+        Table newFilesTable = new Table(inputFilesTableGroup, SWT.SINGLE | SWT.FULL_SELECTION);
+        newFilesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        newFilesTable.setHeaderVisible(true);
+        newFilesTable.setLinesVisible(true);
+
+        UIWidgets.setControlContextMenu(
+            newFilesTable, manager -> {
+                manager.add(new SelectInputFileAction(false));
+                if (showRemoteFS) {
+                    manager.add(new SelectInputFileAction(true));
+                }
+            }
+        );
+        return newFilesTable;
+    }
+
+    private boolean isSkipTargetColumn() {
+        return getWizard()
+            .getSettings()
+            .getSourceObjects()
+            .stream()
+            .noneMatch(so -> so instanceof DBSDataManipulator);
+    }
+
+    private void updateSingleConsumer(@NotNull DBRProgressMonitor monitor, @NotNull DataTransferPipe pipe, @NotNull Path path) {
+        final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+
+        final StreamTransferProducer oldProducer = pipe.getProducer() instanceof StreamTransferProducer stp ? stp : null;
+        final StreamTransferProducer newProducer = new StreamTransferProducer(new StreamEntityMapping(path));
+
+        pipe.setProducer(newProducer);
+        producerSettings.updateProducerSettingsFromStream(monitor, newProducer, getWizard().getSettings());
+
+        IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
+        if (consumerSettings instanceof DatabaseConsumerSettings settings) {
+            DatabaseMappingContainer mapping = new DatabaseMappingContainer(settings, newProducer.getDatabaseObject());
+            if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator databaseObject) {
+                DBSObject container = databaseObject.getParentObject();
+                if (container instanceof DBSObjectContainer) {
+                    settings.setContainer((DBSObjectContainer) container);
+                }
+                mapping.setTarget(databaseObject);
+            } else {
+                mapping.setTarget(null);
+                mapping.setTargetName(generateTableName(newProducer.getObjectName()));
+            }
+            if (oldProducer != null) {
+                // Remove old mapping because we're just replaced file
+                DatabaseMappingContainer oldMappingContainer = settings.getDataMappings().remove(oldProducer.getDatabaseObject());
+                if (oldMappingContainer != null && oldMappingContainer.getSource() instanceof StreamEntityMapping oldEntityMapping) {
+                    // Copy mappings from old producer if columns are the same
+                    if (oldEntityMapping.isSameColumns(newProducer.getEntityMapping())) {
+                        StreamEntityMapping entityMapping = new StreamEntityMapping(path);
+                        settings.addDataMappings(getWizard().getRunnableContext(), entityMapping, new DatabaseMappingContainer(oldMappingContainer, entityMapping));
+
+                        StreamTransferProducer producer = new StreamTransferProducer(entityMapping);
+                        pipe.setProducer(producer);
+                        producerSettings.updateProducerSettingsFromStream(monitor, producer, getWizard().getSettings());
+
+                        return;
+                    }
+                }
+            }
+            settings.addDataMappings(getWizard().getRunnableContext(), newProducer.getDatabaseObject(), mapping);
+        }
+    }
+
+    private void updateItemData(TableItem item, DataTransferPipe pipe) {
+        IDataTransferProducer<?> producer = pipe.getProducer();
+        if (isInvalidDataTransferNode(producer)) {
+            item.setImage(0, null);
+            item.setText(0, noneItemSelectedText);
+        } else {
+            item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
+            if (producer instanceof StreamTransferProducer stp) {
+                Path inputFile = stp.getInputFile();
+                item.setText(0, DBFUtils.convertPathToString(inputFile));
+            } else {
+                item.setText(0, String.valueOf(producer.getObjectName()));
+            }
+        }
+
+        IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
+        if (isInvalidDataTransferNode(consumer)) {
+            item.setImage(1, null);
+            item.setText(1, noneItemSelectedText);
+        } else {
+            item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
+            item.setText(1, String.valueOf(consumer.getObjectName()));
+        }
+    }
+
+    private boolean isInvalidDataTransferNode(final IDataTransferNode<?> node) {
+        return node == null || node.getObjectName() == null;
+    }
+
+    private void saveOpenFSBrowserPreference() {
+        DBWorkbench.getPlatform().getPreferenceStore()
+            .setValue(DTConstants.PREF_OPEN_LOCAL_FS_BROWSER, openFSBrowserCheckbox.getSelection());
+    }
+
+    @Override
+    protected boolean determinePageCompletion() {
+        for (int i = 0; i < filesTable.getItemCount(); i++) {
+            final DataTransferPipe pipe = (DataTransferPipe) filesTable.getItem(i).getData();
+            if (isInvalidDataTransferNode(pipe.getConsumer()) || isInvalidDataTransferNode(pipe.getProducer())) {
+                setMessage(DTUIMessages.stream_consumer_page_warning_not_enough_sources_chosen, IMessageProvider.WARNING);
+                return false;
+            }
+        }
+        setMessage(null);
+        return true;
+    }
+
+    private void reloadPipes() {
+        DataTransferSettings settings = getWizard().getSettings();
+        int selectionIndex = filesTable.getSelectionIndex();
+        filesTable.removeAll();
+        List<DataTransferPipe> dataPipes = settings.getDataPipes();
+        for (DataTransferPipe pipe : dataPipes) {
+            TableItem item = new TableItem(filesTable, SWT.NONE);
+            item.setData(pipe);
+            updateItemData(item, pipe);
+        }
+        if (!dataPipes.isEmpty()) {
+            if (selectionIndex < 0) {
+                selectionIndex = 0;
+                if (isOpenFSBrowser()) {
+                    openFSBrowser();
+                }
+            } else if (selectionIndex >= dataPipes.size()) {
+                selectionIndex = dataPipes.size() - 1;
+            }
+            filesTable.select(selectionIndex);
+        }
+        updateBrowseButtons();
+
+    }
+
+    private boolean isOpenFSBrowser() {
+        return openFSBrowserCheckbox.getSelection()
+            && filesTable.getItemCount() == 1
+            && filesTable.getItem(0).getText().equals(noneItemSelectedText);
+    }
+
+    private void openFSBrowser() {
+        UIUtils.asyncExec(() -> new SelectInputFileAction(false).run());
+    }
+
+    private void updateBrowseButtons() {
+        boolean hasSelection = filesTable.getSelection().length > 0;
+        if (tiOpenLocal != null) tiOpenLocal.setEnabled(hasSelection);
+        if (tiOpenRemote != null) tiOpenRemote.setEnabled(hasSelection);
+    }
+
+    private DataTransferProcessorDescriptor getProducerProcessor() {
+        return getWizard().getSettings().getProcessor();
+    }
+
+    @NotNull
+    private String generateTableName(String fileName) {
+        StringBuilder name = new StringBuilder();
+        // Cut off extension
+        int divPos = fileName.lastIndexOf(".");
+        if (divPos != -1) {
+            fileName = fileName.substring(0, divPos);
+        }
+        boolean lastCharSpecial = false;
+        char lastChar = (char)0;
+        for (int i = 0; i < fileName.length(); i++) {
+            char c = fileName.charAt(i);
+            if (!Character.isLetter(c) && lastCharSpecial) {
+                break;
+            }
+            lastCharSpecial = !Character.isLetterOrDigit(c);
+            if (lastCharSpecial) {
+                if (c != '_') c = '_';
+                if (lastChar == '_') {
+                    continue;
+                }
+            }
+            lastChar = c;
+            name.append(c);
+        }
+        if (!name.isEmpty() && name.charAt(name.length() - 1) == '_') {
+            name.deleteCharAt(name.length() - 1);
+        }
+        return name.toString();
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return isProducerOfType(StreamTransferProducer.class);
+    }
+
+    private class SelectInputFileAction extends Action {
+        private final boolean remote;
+        public SelectInputFileAction(boolean remote) {
+            super(remote ? UIMessages.text_with_open_dialog_browse_remote : UIMessages.text_with_open_dialog_browse);
+            this.remote = remote;
+        }
+
+        @Override
+        public void run() {
+            if (filesTable.getSelectionIndex() < 0) {
+                return;
+            }
+            TableItem item = filesTable.getItem(filesTable.getSelectionIndex());
+            DataTransferPipe pipe = (DataTransferPipe) item.getData();
+            chooseSourceFile(pipe, remote);
+        }
+
+        private void chooseSourceFile(DataTransferPipe pipe, boolean remoteFS) {
+            final String[] extensions = new String[] {
+                "*." + CommonUtils.toString(propertySource.getPropertyValue(null, "extension")).replace(",", ";*."), "*.*"
+            };
+
+            DBRRunnableWithProgress initializer = null;
+
+            DBPProject project = pipe.getConsumer().getProject();
+            if (remoteFS && project != null) {
+                DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                    DTUIMessages.stream_producer_select_input_file,
+                    false,
+                    SWT.OPEN,
+                    false,
+                    extensions,
+                    pipe.getProducer() instanceof StreamTransferProducer stp && stp.getInputFile() != null
+                        ? DBFUtils.convertPathToString(stp.getInputFile())
+                        : pipe.getProducer().getObjectName()
+                );
+                if (selected != null) {
+                    initializer = monitor -> updateSingleConsumer(monitor, pipe, selected.getPath());
+                }
+            } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
+                File[] files = DialogUtils.openFileList(getShell(), DTUIMessages.stream_producer_select_input_file, extensions);
+                if (files != null && files.length > 0) {
+                    initializer = monitor -> updateMultiConsumers(
+                        monitor,
+                        pipe,
+                        Arrays.stream(files).map(File::toPath).toArray(Path[]::new)
+                    );
+                }
+            } else {
+                File file = DialogUtils.openFile(getShell(), extensions);
+                if (file != null) {
+                    initializer = monitor -> updateSingleConsumer(monitor, pipe, file.toPath());
+                }
+            }
+            if (initializer != null) {
+                try {
+                    getWizard().getRunnableContext().run(true, true, initializer);
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        DTUIMessages.stream_producer_column_mapping_error_title,
+                        DTUIMessages.stream_producer_column_mapping_error_message,
+                        e.getTargetException()
+                    );
+                    return;
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+            reloadPipes();
+            updatePageCompletion();
+        }
+
+        private void updateMultiConsumers(DBRProgressMonitor monitor, DataTransferPipe pipe, Path[] files) {
+            final StreamProducerSettings producerSettings = getWizard().getPageSettings(
+                StreamProducerPageSettings.this,
+                StreamProducerSettings.class
+            );
+            IDataTransferConsumer<?, ?> originalConsumer = pipe.getConsumer();
+
+            DataTransferSettings dtSettings = getWizard().getSettings();
+            List<DataTransferPipe> newPipes = new ArrayList<>(dtSettings.getDataPipes());
+            newPipes.remove(pipe);
+
+            final Deque<StreamEntityMapping> pendingEntityMappings = Arrays.stream(files).map(StreamEntityMapping::new)
+                .collect(Collectors.toCollection(ArrayDeque::new));
+
+            while (!pendingEntityMappings.isEmpty()) {
+                final StreamEntityMapping entityMapping = pendingEntityMappings.remove();
+
+                if (producerSettings.extractExtraEntities(monitor, entityMapping, dtSettings, pendingEntityMappings)) {
+                    continue;
+                }
+
+                StreamTransferProducer producer = new StreamTransferProducer(entityMapping);
+                IDataTransferConsumer<?, ?> consumer = new DatabaseTransferConsumer();
+
+                DataTransferPipe singlePipe = new DataTransferPipe(producer, consumer);
+                try {
+                    singlePipe.initPipe(dtSettings, newPipes.size(), newPipes.size());
+                } catch (DBException e) {
+                    log.error(e);
+                    continue;
+                }
+                newPipes.add(singlePipe);
+                producerSettings.updateProducerSettingsFromStream(monitor, producer, dtSettings);
+
+                IDataTransferSettings consumerSettings = dtSettings.getNodeSettings(dtSettings.getConsumer());
+                if (consumerSettings instanceof DatabaseConsumerSettings dcs) {
+                    if (originalConsumer != null && originalConsumer.getTargetObjectContainer() instanceof DBSObjectContainer oc) {
+                        dcs.setContainer(oc);
+                    }
+                    DatabaseMappingContainer mapping = new DatabaseMappingContainer(dcs, producer.getDatabaseObject());
+                    mapping.setTargetName(generateTableName(producer.getObjectName()));
+
+                    dcs.addDataMappings(getWizard().getRunnableContext(), producer.getDatabaseObject(), mapping);
+                }
+            }
+
+            dtSettings.setDataPipes(newPipes, false);
+            dtSettings.setPipeChangeRestricted(true);
+        }
+    }
+
+}

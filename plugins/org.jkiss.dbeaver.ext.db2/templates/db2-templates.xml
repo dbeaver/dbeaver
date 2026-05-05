@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+    <template id="org.jkiss.dbeaver.templates.curtime" 
+              name="curtimestamp" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="values (current timestamp)">
+VALUES (CURRENT TIMESTAMP);
+    </template>
+
+    <template id="org.jkiss.dbeaver.templates.cmdAdminDropSchema" 
+              name="cmdAdminDropSchema" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="Admin Drop Schema"
+              >
+call SYSPROC.ADMIN_DROP_SCHEMA('${schema}',null,?,?);
+    </template>
+    
+    <template id="org.jkiss.dbeaver.templates.cmdAdminCopySchema" 
+              name="cmdAdminCopySchema" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="Admin Copy Schema">
+call SYSPROC.ADMIN_COPY_SCHEMA('${schema}','&lt;target schema&gt;','COPY', NULL, '&lt;source ts1, source ts2&gt;','&lt;target ts1, target ts2&gt;',?,?);
+    </template>
+
+</templates>

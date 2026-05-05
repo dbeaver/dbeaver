@@ -1,0 +1,572 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.postgresql.model;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
+import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * PostgreTable
+ */
+public abstract class PostgreTable extends PostgreTableReal
+    implements PostgreTableContainer, DBDPseudoAttributeContainer, DBSEntityConstrainable
+{
+    private static final Log log = Log.getLog(PostgreTable.class);
+
+    private final SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
+    //private List<PostgreTablePartition>  partitions  = null;
+
+    private final PolicyCache policyCache = new PolicyCache();
+
+    private boolean hasOids;
+    private long tablespaceId;
+    private List<PostgreTableInheritance> superTables;
+    private List<PostgreTableInheritance> subTables;
+    private boolean hasSubClasses;
+
+    private boolean hasPartitions;
+    private boolean hasRowLevelSecurity;
+    private String partitionKey;
+    private String partitionRange;
+    private long depObjectId;
+    private long depObjectAttrNumber;
+
+    public PostgreTable(PostgreTableContainer container)
+    {
+        super(container);
+    }
+
+    public PostgreTable(
+        PostgreTableContainer container,
+        ResultSet dbResult)
+    {
+        super(container, dbResult);
+
+        if (getDataSource().getServerType().supportsHasOidsColumn()) {
+            this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
+        }
+        this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+        this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
+
+        this.partitionKey = getDataSource().isServerVersionAtLeast(10, 0) ? JDBCUtils.safeGetString(dbResult, "partition_key")  : null;
+        this.hasPartitions = this.partitionKey != null;
+        this.hasRowLevelSecurity = getDataSource().getServerType().supportsRowLevelSecurity()
+            && JDBCUtils.safeGetBoolean(dbResult, "relrowsecurity");
+    }
+
+    // Copy constructor
+    public PostgreTable(DBRProgressMonitor monitor, PostgreTableContainer container, PostgreTable source, boolean persisted) throws DBException {
+        super(monitor, container, source, persisted);
+        this.hasOids = source.hasOids;
+        this.tablespaceId = container == source.getContainer() ? source.tablespaceId : 0;
+
+        this.partitionKey = source.partitionKey;
+
+        PostgreSchema.IndexCache indexCache = getSchema().getIndexCache();
+        if (indexCache != null) {
+            for (PostgreIndex srcIndex : CommonUtils.safeCollection(source.getIndexes(monitor))) {
+                if (srcIndex.isPrimaryKeyIndex()) {
+                    continue;
+                }
+                PostgreIndex constr = new PostgreIndex(monitor, this, srcIndex);
+                indexCache.cacheObject(constr);
+            }
+        }
+
+/*
+        // Copy FKs
+        List<PostgreTableForeignKey> fkList = new ArrayList<>();
+        for (PostgreTableForeignKey srcFK : CommonUtils.safeCollection(source.getForeignKeys(monitor))) {
+            PostgreTableForeignKey fk = new PostgreTableForeignKey(monitor, this, srcFK);
+            if (fk.getReferencedConstraint() != null) {
+                fk.setName(fk.getName() + "_copy"); // Fix FK name - they are unique within schema
+                fkList.add(fk);
+            } else {
+                log.debug("Can't copy association '" + srcFK.getName() + "' - can't find referenced constraint");
+            }
+        }
+        this.foreignKeys.setCache(fkList);
+*/
+    }
+
+    public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {
+        return foreignKeys;
+    }
+
+    public boolean isTablespaceSpecified() {
+        return tablespaceId != 0;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = TablespaceListProvider.class)
+    public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
+        if (tablespaceId == 0) {
+            return getDatabase().getDefaultTablespace(monitor);
+        }
+        return PostgreUtils.getObjectById(monitor, getDatabase().tablespaceCache, getDatabase(), tablespaceId);
+    }
+
+    public void setTablespace(PostgreTablespace tablespace) {
+        this.tablespaceId = tablespace.getObjectId();
+    }
+
+    @Override
+    public boolean isView() {
+        return false;
+    }
+
+    @Property(editable = true, updatable = true, order = 40, visibleIf = PostgreColumnHasOidsValidator.class)
+    public boolean isHasOids() {
+        return hasOids;
+    }
+
+    public void setHasOids(boolean hasOids) {
+        this.hasOids = hasOids;
+    }
+
+    @Property(viewable = true, updatable = true, order = 41, visibleIf = PostgreColumnHasRowLevelSecurity.class)
+    public boolean isHasRowLevelSecurity() {
+        return hasRowLevelSecurity;
+    }
+
+    public void setHasRowLevelSecurity(boolean hasRowLevelSecurity) {
+        this.hasRowLevelSecurity = hasRowLevelSecurity;
+    }
+
+    @Property(viewable = true, order = 42)
+    public boolean hasPartitions() {
+        return hasPartitions;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 43)
+    public String getPartitionKey() {
+        return partitionKey;
+    }
+
+    public void setPartitionKey(String partitionKey) {
+        this.partitionKey = partitionKey;
+    }
+
+    @Override
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
+        super.fetchStatistics(dbResult);
+        if (diskSpace != null && diskSpace == 0 && hasSubClasses) {
+            // Prefetch partitions (shouldn't be too expensive, we already have all tables in cache)
+            getPartitions(dbResult.getSession().getProgressMonitor());
+        }
+    }
+
+    @Override
+    public long getStatObjectSize() {
+        if (diskSpace != null && subTables != null) {
+            long partSizeSum = diskSpace;
+            for (PostgreTableInheritance ti : subTables) {
+                PostgreTableBase partTable = ti.getParentObject();
+                if (partTable.isPartition() && partTable instanceof PostgreTableReal) {
+                    partSizeSum += ((PostgreTableReal) partTable).getStatObjectSize();
+                }
+            }
+            return partSizeSum;
+        }
+        return super.getStatObjectSize();
+    }
+
+    @Override
+    public Collection<PostgreIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().getServerType().supportsIndexes()) {
+            return Collections.emptyList();
+        }
+        return getSchema().getIndexes(monitor, this);
+    }
+
+    @NotNull
+    @Override
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
+        return DBStructUtils.generateTableDDL(monitor, this, options, false);
+    }
+
+    private boolean hasOidPseudoAttribute() {
+        return this.hasOids && getDataSource().getServerType().supportsOids();
+    }
+
+    @Nullable
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() {
+        if (this.hasOidPseudoAttribute()) {
+            return new DBDPseudoAttribute[]{PostgreConstants.PSEUDO_ATTR_OID};
+        } else {
+            return null;
+        }
+    }
+
+    @NotNull
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return DBDPseudoAttribute.EMPTY_ARRAY;
+    }
+
+    @Association
+    @Override
+    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
+        throws DBException
+    {
+
+        final List<PostgreTableInheritance> superTables = getSuperInheritance(monitor);
+        final Collection<PostgreTableForeignKey> foreignKeys = getForeignKeys(monitor);
+        if (CommonUtils.isEmpty(superTables)) {
+            return foreignKeys;
+        } else if (CommonUtils.isEmpty(foreignKeys)) {
+            return superTables;
+        }
+        List<DBSEntityAssociation> agg = new ArrayList<>(superTables.size() + foreignKeys.size());
+        agg.addAll(superTables);
+        agg.addAll(foreignKeys);
+        return agg;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor == null || monitor.isForceCacheUsage()) {
+            return null;
+        }
+        List<DBSEntityAssociation> refs = new ArrayList<>(
+            CommonUtils.safeList(getSubInheritance(monitor)));
+        // Obtain a list of schemas containing references to this table to avoid fetching everything
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read referencing schemas")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DISTINCT connamespace FROM pg_catalog.pg_constraint WHERE confrelid=?")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        final long schemaId = JDBCUtils.safeGetLong(dbResult, 1);
+                        final PostgreSchema schema = getContainer().getDatabase().getSchema(monitor, schemaId);
+                        if (schema == null) {
+                            continue;
+                        }
+                        final Collection<PostgreTableForeignKey> allForeignKeys =
+                            schema.getConstraintCache().getTypedObjects(monitor, schema, PostgreTableForeignKey.class);
+                        for (PostgreTableForeignKey constraint : allForeignKeys) {
+                            if (constraint.getAssociatedEntity() == this) {
+                                refs.add(constraint);
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, getDataSource());
+            }
+        }
+        return refs;
+    }
+
+    @Association
+    public Collection<PostgreTableForeignKey> getForeignKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getSchema().getConstraintCache().getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
+    }
+
+    @Nullable
+    @Property(viewable = false, optional = true, order = 30)
+    public List<PostgreTableBase> getSuperTables(DBRProgressMonitor monitor) throws DBException {
+        final List<PostgreTableInheritance> si = getSuperInheritance(monitor);
+        if (CommonUtils.isEmpty(si)) {
+            return null;
+        }
+        List<PostgreTableBase> result = new ArrayList<>(si.size());
+        for (int i1 = 0; i1 < si.size(); i1++) {
+            result.add(si.get(i1).getAssociatedEntity());
+        }
+        return result;
+    }
+
+    /**
+     * Sub tables = child tables
+     */
+    @Nullable
+    @Property(viewable = false, optional = true, order = 31)
+    public List<PostgreTableBase> getSubTables(DBRProgressMonitor monitor) throws DBException {
+        final List<PostgreTableInheritance> si = getSubInheritance(monitor);
+        if (CommonUtils.isEmpty(si)) {
+            return null;
+        }
+        List<PostgreTableBase> result = new ArrayList<>(si.size());
+        for (PostgreTableInheritance aSi : si) {
+            PostgreTableBase table = aSi.getParentObject();
+            if (!table.isPartition()) {
+                result.add(table);
+            }
+        }
+        return result;
+    }
+
+    @Nullable
+    public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
+        if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted() && monitor != null) {
+            if (monitor.isForceCacheUsage()) {
+                return Collections.emptyList();
+            }
+            superTables = initSuperTables(monitor);
+        }
+        return superTables == null || superTables.isEmpty() ? null : superTables;
+    }
+
+    void addSuperTableInheritance(PostgreTableBase superTable, int seqNum) {
+        PostgreTableInheritance inheritance = new PostgreTableInheritance(this, superTable, seqNum, true);
+        if (superTables == null) {
+            superTables = new ArrayList<>();
+        }
+        superTables.add(inheritance);
+    }
+
+    void nullifyEmptySuperTableInheritance() {
+        if (superTables == null) {
+            superTables = new ArrayList<>();
+        }
+    }
+
+    void resetSuperInheritance() {
+        superTables = null;
+    }
+
+    private List<PostgreTableInheritance> initSuperTables(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableInheritance> inheritanceList = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT i.*,c.relnamespace " +
+                "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
+                "WHERE i.inhrelid=? AND c.oid=i.inhparent " +
+                "ORDER BY i.inhseqno")) {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        final long parentSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                        final long parentTableId = JDBCUtils.safeGetLong(dbResult, "inhparent");
+                        PostgreSchema schema = getDatabase().getSchema(monitor, parentSchemaId);
+                        if (schema == null) {
+                            log.warn("Can't find parent table's schema '" + parentSchemaId + "'");
+                            continue;
+                        }
+                        PostgreTableBase parentTable = schema.getTable(monitor, parentTableId);
+                        if (parentTable == null) {
+                            log.warn("Can't find parent table '" + parentTableId + "' in '" + schema.getName() + "'");
+                            continue;
+                        }
+                        inheritanceList.add(
+                            new PostgreTableInheritance(
+                                this,
+                                parentTable,
+                                JDBCUtils.safeGetInt(dbResult, "inhseqno"),
+                                true));
+                    }
+                }
+                return inheritanceList;
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getExecutionContext());
+            }
+        }
+    }
+
+    @Nullable
+    public String getPartitionRange(DBRProgressMonitor monitor) throws DBException {
+        if (partitionRange == null && getDataSource().getServerType().supportsInheritance()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table partition range")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "select pg_get_expr(c.relpartbound, c.oid, true) as partition_range from \"pg_catalog\".pg_class c where relname = ? and relnamespace = ?;")) { //$NON-NLS-1$
+                    dbStat.setString(1, getName());
+                    dbStat.setLong(2, getSchema().oid);
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        dbResult.next();
+                        partitionRange = JDBCUtils.safeGetString(dbResult, "partition_range"); //$NON-NLS-1$
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
+                }
+            }
+        }
+        return partitionRange;
+    }
+
+    public boolean hasSubClasses() {
+        return hasSubClasses;
+    }
+
+    @Nullable
+    public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (isPersisted() && subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
+            List<PostgreTableInheritance> tables = new ArrayList<>();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
+                String sql = "SELECT i.*,c.relnamespace " +
+                    "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
+                    "WHERE i.inhparent=? AND c.oid=i.inhrelid";
+//                if (getDataSource().isServerVersionAtLeast(10, 0)) {
+//                    sql += " AND c.relispartition=false";
+//                }
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+                    dbStat.setLong(1, getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace"); //$NON-NLS-1$
+                            final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid"); //$NON-NLS-1$
+                            PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
+                            if (schema == null) {
+                                log.warn("Can't find sub-table's schema '" + subSchemaId + "'");
+                                continue;
+                            }
+                            PostgreTableBase subTable = schema.getTable(monitor, subTableId);
+                            if (subTable == null) {
+                                log.warn("Can't find sub-table '" + subTableId + "' in '" + schema.getName() + "'");
+                                continue;
+                            }
+                            tables.add(
+                                new PostgreTableInheritance(
+                                    subTable,
+                                    this,
+                                    JDBCUtils.safeGetInt(dbResult, "inhseqno"),//$NON-NLS-1$
+                                    true));
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException(e, session.getExecutionContext());
+                }
+            }
+            DBUtils.orderObjects(tables);
+            this.subTables = tables;
+        }
+        return subTables == null || subTables.isEmpty() ? null : subTables;
+    }
+
+    @Nullable
+    @Association
+    public List<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
+        final List<PostgreTableInheritance> si = getSubInheritance(monitor);
+        if (CommonUtils.isEmpty(si)) {
+            return null;
+        }
+        return si.stream()
+            .map(AbstractTableConstraint::getParentObject)
+            .filter(PostgreTableBase::isPartition)
+            .collect(Collectors.toList());
+    }
+
+    @NotNull
+    @Association
+    public List<PostgreTablePolicy> getPolicies(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return policyCache.getAllObjects(monitor, this);
+    }
+
+    @Nullable
+    public PostgreTablePolicy getPolicy(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        return policyCache.getObject(monitor, this, name);
+    }
+
+    @NotNull
+    public PolicyCache getPolicyCache() {
+        return policyCache;
+    }
+
+    @Override
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
+        if (hasPartitions && DBPScriptObject.OPTION_INCLUDE_PARTITIONS.equals(option)) {
+            return true;
+        }
+        return super.supportsObjectDefinitionOption(option);
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        superTables = null;
+        subTables = null;
+        policyCache.clearCache();
+        return super.refreshObject(monitor);
+    }
+
+    @NotNull
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, PostgreTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, PostgreTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.INDEX, PostgreIndex.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, PostgreTableConstraint.class)
+        );
+    }
+
+    public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {
+
+        @Override
+        public boolean isValidValue(@NotNull PostgreTable object, @Nullable Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsHasOidsColumn();
+        }
+    }
+
+    public static class PostgreColumnHasRowLevelSecurity implements IPropertyValueValidator<PostgreTable, Object> {
+        @Override
+        public boolean isValidValue(@NotNull PostgreTable object, @Nullable Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsRowLevelSecurity();
+        }
+    }
+
+    public static class PolicyCache extends JDBCObjectCache<PostgreTable, PostgreTablePolicy> {
+        @NotNull
+        @Override
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTable table
+        ) throws SQLException {
+            final var stmt = session.prepareStatement("select * from pg_catalog.pg_policies where schemaname=? and tablename=?");
+            stmt.setString(1, table.getSchema().getName());
+            stmt.setString(2, table.getName());
+            return stmt;
+        }
+
+        @Nullable
+        @Override
+        protected PostgreTablePolicy fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTable table,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
+            return new PostgreTablePolicy(session.getProgressMonitor(), table, resultSet);
+        }
+    }
+}

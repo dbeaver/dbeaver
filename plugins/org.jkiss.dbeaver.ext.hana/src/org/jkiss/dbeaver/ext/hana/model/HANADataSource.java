@@ -1,0 +1,266 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.hana.model;
+
+import org.jkiss.dbeaver.ext.hana.internal.HANAMessages;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.hana.model.plan.HANAPlanAnalyser;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.eclipse.osgi.util.NLS;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
+public class HANADataSource extends GenericDataSource implements DBCQueryPlanner {
+
+    private static final Log log = Log.getLog(HANADataSource.class);
+
+    private HashMap<String, String> sysViewColumnUnits; 
+    private boolean isPasswordExpireWarningShown;
+
+    public HANADataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+        throws DBException
+    {
+        super(monitor, container, metaModel, new HANASQLDialect());
+    }
+
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
+    {
+        final HANADataSourceInfo info = new HANADataSourceInfo(metaData);
+        return info;
+    }
+
+    
+    @NotNull
+    @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        if (HANAConstants.DATA_TYPE_NAME_HALF_VECTOR.equalsIgnoreCase(typeName) ||
+            HANAConstants.DATA_TYPE_NAME_REAL_VECTOR.equalsIgnoreCase(typeName)) {
+            return DBPDataKind.ARRAY;
+        }
+        return super.resolveDataKind(typeName, valueType);
+    }
+
+    /*
+     * search
+     */
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new HANAStructureAssistant(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new HANAUserPasswordManager(this));
+        }
+        return super.getAdapter(adapter);
+    }
+
+    /*
+     * explain
+     */
+    @NotNull
+    @Override
+    public DBCPlan planQueryExecution(@NotNull DBCSession session, @NotNull String query, @NotNull DBCQueryPlannerConfiguration configuration)
+    throws DBCException {
+        HANAPlanAnalyser plan = new HANAPlanAnalyser(this, query);
+        plan.explain(session);
+        return plan;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanStyle getPlanStyle() {
+        return DBCPlanStyle.PLAN;
+    }
+
+    /*
+     * application
+     */
+    @Override
+    protected boolean isPopulateClientAppName() { 
+        return false; // basically true, but different property name 
+    } 
+
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Map<String, String> props = new HashMap<>();
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            String appName = DBUtils.getClientApplicationName(getContainer(), context, purpose);
+            props.put(HANAConstants.CONN_PROP_APPLICATION_NAME, appName);
+        }
+        if (getContainer().isConnectionReadOnly()) {
+            props.put(HANAConstants.CONN_PROP_READONLY, "TRUE");
+        }
+        // Represent geometries as EWKB (instead of as WKB) so that we can extract the SRID
+        props.put(HANAConstants.CONN_PROP_SPATIAL_OUTPUT_REPRESENTATION, HANAConstants.CONN_VALUE_SPATIAL_OUTPUT_REPRESENTATION);
+        // Represent empty points using NaN-coordinates
+        props.put(HANAConstants.CONN_PROP_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION, HANAConstants.CONN_VALUE_SPATIAL_WKB_EMPTY_POINT_REPRESENTATION);
+        return props;
+    }
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context,
+                                        @NotNull String purpose) throws DBCException {
+        Connection connection = super.openConnection(monitor, context, purpose);
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute("SELECT * FROM SYS.M_MONITOR_COLUMNS");
+        } catch (SQLException e) {
+            if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_PASSWORD_NEEDED) {
+                if (changeExpiredPassword(monitor, context, purpose)) {
+                    return openConnection(monitor, context, purpose);
+                }
+            } else if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_LICENSE_NEEDED) {
+                if (changeLicense(monitor, context, purpose)) {
+                    return openConnection(monitor, context, purpose);
+                }
+            } else {
+                log.debug("password expired check failed ", e);
+            }
+        }
+
+        try {
+            for (SQLWarning warning = connection.getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                if (warning.getErrorCode() == HANAConstants.WRN_SQL_NEARLY_EXPIRED_PASSWORD && !isPasswordExpireWarningShown) {
+                    isPasswordExpireWarningShown = true;
+                    DBWorkbench.getPlatformUI().showWarningMessageBox("Warning", warning.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("password expire check failed", e);
+        }
+        return connection;
+    }    
+
+    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+                HANAMessages.dialog_user_expired_password_change_label, connectionInfo.getUserName(), connectionInfo.getUserPassword(), false, false);
+        if (passwordInfo == null) {
+            return false;
+        }
+        try {
+            if (passwordInfo.getNewPassword() == null) {
+                throw new DBException(HANAMessages.dialog_user_expired_password_empty_input);
+            }
+            Connection connection = super.openConnection(monitor, context, purpose);
+            Statement statement = connection.createStatement();
+            statement.execute("ALTER USER " + connectionInfo.getUserName() + " PASSWORD " + DBUtils.getQuotedIdentifier(this, passwordInfo.getNewPassword()));
+            
+            connectionInfo.setUserPassword(passwordInfo.getNewPassword());
+            getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+            getContainer().persistConfiguration();
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(HANAMessages.dialog_user_expired_password_error_title, HANAMessages.dialog_user_expired_password_error_message, e);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean changeLicense(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+        String newLicense = DBWorkbench.getPlatformUI().promptText(
+                NLS.bind(HANAMessages.dialog_invalid_license_input_title, getContainer().getName()),
+                NLS.bind(HANAMessages.dialog_invalid_license_input_label, connectionInfo.getUserName(), connectionInfo.getHostPort()),
+                "----- Begin SAP License -----\n...");
+        if (newLicense == null) {
+            return false;
+        }
+        try {
+            if (newLicense.length() < 1) {
+                throw new DBException(HANAMessages.dialog_invalid_license_empty_input);
+            }
+            try (Connection connection = super.openConnection(monitor, context, purpose)) {
+                try (Statement statement = connection.createStatement()) {
+                    // force remove old licenses which can interfere with new
+                    statement.execute("UNSET SYSTEM LICENSE ALL;");
+                    statement.execute("SET SYSTEM LICENSE '" + newLicense + "';");
+                }
+            }
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(HANAMessages.dialog_invalid_license_error_title, HANAMessages.dialog_invalid_license_error_message, e);
+            return false;
+        }
+        return true;
+    }
+
+    /*
+     * column unit for views in SYS schema
+     */
+    public void initializeSysViewColumnUnits(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (sysViewColumnUnits != null)
+            return;
+        sysViewColumnUnits = new HashMap<String, String>();
+        String stmt = "SELECT VIEW_NAME||'.'||VIEW_COLUMN_NAME, UNIT FROM SYS.M_MONITOR_COLUMNS WHERE UNIT IS NOT NULL";
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
+            try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
+                    try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                        while(resultSet.next()) {
+                            sysViewColumnUnits.put(resultSet.getString(1), resultSet.getString(2));
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Error getting SYS column units: " + e.getMessage());
+            }
+        }
+    }
+    
+    String getSysViewColumnUnit(String objectName, String columnName)
+    {
+        return sysViewColumnUnits.get(objectName+"."+columnName);
+    }
+}

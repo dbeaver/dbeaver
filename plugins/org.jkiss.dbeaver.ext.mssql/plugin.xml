@@ -1,0 +1,651 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="sqlserver" class="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerMetaModel"
+              driverClass="net.sourceforge.jtds.jdbc.Driver,com.microsoft.sqlserver.jdbc.SQLServerDriver,com.sybase.jdbc4.jdbc.SybDriver"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- SQL Server. New connector replaces all Generic-based SQL Server drivers -->
+
+        <datasource
+            class="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"
+            description="%datasource.mssql.description"
+            id="sqlserver"
+            label="MS SQL Server"
+            icon="icons/mssql_icon.png"
+            dialect="sqlserver">
+
+            <tree path="sqlserver" label="SQL Server data source">
+                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase" label="%tree.databases.node.name" icon="#folder_database" description="%tree.databases.node.tip">
+                    <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
+                            <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                                <icon if="object.system" icon="#schema_system"/>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                                    <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                        <icon if="object.system" icon="#table_system"/>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExtendedProperty" label="%tree.extendedProperties.node.name" icon="#extended-properties" description="Table extended properties">
+                                                    <items label="%tree.extendedProperty.node.name" path="extendedProperty" property="extendedProperties" icon="#extended-property"/>
+                                                </folder>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys">
+                                            <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                                <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint" label="%tree.check_constraints.node.name" icon="#constraints" description="Table check constraints">
+                                            <items label="%tree.check_constraint.node.name" path="checkConstraint" property="checkConstraints" icon="#constraint">
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                            <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                                <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                                <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                            <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                                <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.supportsTriggers()">
+                                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExtendedProperty" label="%tree.extendedProperties.node.name" icon="#extended-properties" description="Table extended properties">
+                                            <items label="%tree.extendedProperty.node.name" path="extendedProperty" property="extendedProperties" icon="#extended-property"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable" label="%tree.externalTables.node.name" icon="#folder_table" description="External tables" visibleIf="object.dataSource.supportsExternalTables()">
+                                    <items label="%tree.externalTable.node.name" path="externalTable" property="externalTables" icon="#table_external">
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerView" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                                    <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                            </items>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="View triggers" visibleIf="object.dataSource.supportsTriggers()">
+                                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                        </folder>
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerExtendedProperty" label="%tree.extendedProperties.node.name" icon="#extended-properties" description="View extended properties">
+                                            <items label="%tree.extendedProperty.node.name" path="extendedProperty" property="extendedProperties" icon="#extended-property"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" virtual="true">
+                                    <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                        <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                                    <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                        <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences"  visibleIf="object.dataSource.supportsSequences()">
+                                    <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms" visibleIf="object.dataSource.supportsSynonyms()">
+                                    <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
+                                </folder >
+                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" virtual="true" visibleIf="object.dataSource.supportsTriggers()">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" virtual="true"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
+                                    <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type">
+                                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table type columns" visibleIf="object.isTableType()">
+                                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                            </items>
+                                        </folder>
+                                        <folder label="%tree.uni_keys.node.name" icon="#constraints" description="Table type unique keys" visibleIf="object.isTableType()">
+                                            <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                                <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" virtual="true">
+                                                </items>
+                                            </items>
+                                        </folder>
+                                     </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabaseTrigger" label="%tree.databaseTriggers.node.name" icon="#triggers" description="All database triggers" visibleIf="object.dataSource.supportsTriggers()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                        </folder>
+                    </items>
+                </folder>
+                <folder label="%tree.security.node.name" icon="#security" id="securityManagement" description="Security management">
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin" label="%tree.logins.node.name" icon="#folder_user" description="Logins">
+                        <items label="%tree.login.node.name" path="logins" property="logins" icon="#user"/>
+                    </folder>
+                </folder>
+                <folder label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin"
+                        description="tree.administer.node.description">
+                    <treeContribution category="connectionEditor"/>
+                </folder>
+            </tree>
+
+            <drivers managable="true">
+
+                <driver
+                        id="microsoft"
+                        label="SQL Server"
+                        icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
+                        category="MS SQL Server"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        databaseDocumentationSuffixURL="Database-driver-Microsoft-SQL-Server"
+                        description="%driver.sqlserver.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        promoted="1"
+                        categories="sql">
+
+                    <replace provider="mssql" driver="mssql_jdbc_ms_new"/>
+                    <replace provider="mssql" driver="mssql_jdbc_legacy"/>
+
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.4.0.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="lib" path="maven:/com.microsoft.sqlserver:mssql-jdbc_auth:RELEASE[13.4.0.x64]" os="win32" arch="x86_64" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
+
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/new/auth/x64" optional="true" bundle="drivers.mssql.new"/>
+                    <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
+
+                    <provider-properties>
+                        <propertyGroup label="Advanced">
+                            <property id="@dbeaver-show-all-schemas@" label="Show all schemas" type="boolean" description="Shows all database schemas. If disabled shows only non-empty schemas."/>
+                            <property id="sslTrustServerCertificate" label="Trust Server Certificate" type="boolean" description="Trust Server Certificate"/>
+                        </propertyGroup>
+                    </provider-properties>
+                </driver>
+
+                <driver
+                        id="azure"
+                        label="Azure SQL Server"
+                        icon="icons/azure_sql_server_icon.png"
+                        iconBig="icons/azure_sql_server_icon_big.png"
+                        category="Azure"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host};databaseName={database}"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        description="%driver.sqlserver.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+
+                    <replace provider="mssql" driver="mssql_jdbc_azure"/>
+
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.4.0.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+
+                    <!-- Active directory auth -->
+                    <file type="jar" path="maven:/com.microsoft.azure:msal4j[1.16.0]" optional="true" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
+                </driver>
+
+                <driver
+                        id="babelfish"
+                        label="Babelfish via TDS (beta)"
+                        icon="icons/babelfish_icon.png"
+                        iconBig="icons/babelfish_icon_big.png"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host};databaseName={database}"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="https://babelfishpg.org/"
+                        description="%driver.sqlserver.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql,server,aws">
+                    <parameter name="jtds" value="true"/>
+
+                    <replace provider="mssql" driver="mssql_jdbc_babelfish"/>
+
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[13.4.0.jre11]" bundle="!drivers.mssql.new"/>
+                    <file type="license" path="https://raw.githubusercontent.com/microsoft/sql-server-samples/master/license.txt" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="drivers/mssql/new" bundle="drivers.mssql.new"/>
+                    <file type="license" path="drivers/mssql/new/LICENSE.txt" bundle="drivers.mssql.new"/>
+                </driver>
+
+                <!-- jTDS driver - deprecated -->
+                <driver
+                        id="jtds"
+                        label="jTDS driver"
+                        icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
+                        category="MS SQL Server"
+                        class="net.sourceforge.jtds.jdbc.Driver"
+                        sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="http://jtds.sourceforge.net/"
+                        description="%driver.jTDS.description"
+                        categories="sql">
+                    <parameter name="jtds" value="true"/>
+                </driver>
+
+            </drivers>
+        </datasource>
+
+        <!-- Generic (Sybase + Legacy) -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.mssql.SQLServerGenericDataSourceProvider"
+                description="%datasource.mssql.description"
+                id="mssql"
+                parent="generic"
+                label="MS SQL Server (Generic)"
+                icon="icons/mssql_icon.png"
+                dialect="sqlserver">
+            <drivers managable="true">
+                <!-- Obsolete -->
+                <driver
+                    id="mssql_jdbc_jtds"
+                    label="jTDS driver (Deprecated)"
+                    icon="icons/mssql_icon.png"
+                    iconBig="icons/mssql_icon_big.png"
+                    category="MS SQL Server"
+                    class="net.sourceforge.jtds.jdbc.Driver"
+                    sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                    useURL="false"
+                    defaultPort="1433"
+                    webURL="http://jtds.sourceforge.net/"
+                    description="jTDS SQL Server driver">
+                    <replace provider="generic" driver="mssql"/>
+                </driver>
+
+                <driver
+                    id="mssql_jdbc_ms"
+                    label="SQL Server (Deprecated)"
+                    icon="icons/mssql_icon.png"
+                    iconBig="icons/mssql_icon_big.png"
+                    category="MS SQL Server"
+                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                    sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                    useURL="false"
+                    defaultPort="1433"
+                    webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
+                    description="Microsoft JDBC Driver for SQL Server">
+                    <replace provider="generic" driver="mssql_ms"/>
+                </driver>
+
+                <driver
+                        id="mssql_jdbc_ms_new"
+                        label="SQL Server (Deprecated)"
+                        icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
+                        category="MS SQL Server"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                        useURL="false"
+                        defaultPort="1433"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        description="Microsoft JDBC Driver for SQL Server">
+                    <replace provider="generic" driver="mssql_ms"/>
+                    <replace provider="mssql" driver="mssql_jdbc_ms"/>
+                </driver>
+
+                <driver
+                        id="mssql_jdbc_azure"
+                        label="Azure SQL Server (Deprecated)"
+                        icon="icons/azure_sql_server_icon.png"
+                        iconBig="icons/azure_sql_server_icon_big.png"
+                        category="Azure"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host};databaseName={database}"
+                        useURL="false"
+                        defaultPort="1433"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        description="Microsoft JDBC Driver for SQL Server">
+                </driver>
+
+                <driver
+                        id="mssql_jdbc_legacy"
+                        label="SQL Server (Old driver, MS)"
+                        icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
+                        category="MS SQL Server"
+                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="https://github.com/Microsoft/mssql-jdbc"
+                        description="%driver.sqlserver.old.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        supportsDistributedMode="false"
+                        categories="sql">
+                </driver>
+
+                <driver
+                        id="mssql_jtds_legacy"
+                        label="SQL Server (Old driver, jTDS)"
+                        icon="icons/mssql_icon.png"
+                        iconBig="icons/mssql_icon_big.png"
+                        category="MS SQL Server"
+                        class="net.sourceforge.jtds.jdbc.Driver"
+                        sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                        useURL="false"
+                        defaultPort="1433"
+                        defaultDatabase="master"
+                        webURL="http://jtds.sourceforge.net/"
+                        description="jTDS SQL Server (MSSQL) driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        supportsDistributedMode="false"
+                        categories="sql">
+
+                    <replace provider="mssql" driver="mssql_jdbc_jtds"/>
+                    <replace provider="sqlserver" driver="jtds"/>
+
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="script-delimiter" value=";,go"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+                    <parameter name="script-delimiter-after-query" value="true"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
+                    <file type="license" path="licenses/external/lgpl-2.1.txt"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll" bundle="!drivers.jtds"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
+
+                    <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
+                    <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" bundle="drivers.jtds"/>
+                </driver>
+
+                <!-- Sybase -->
+
+                <driver
+                        id="sybase_jtds"
+                        label="Sybase jTDS"
+                        icon="icons/sybase_icon.png"
+                        iconBig="icons/sybase_icon_big.png"
+                        class="net.sourceforge.jtds.jdbc.Driver"
+                        sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                        useURL="false"
+                        defaultPort="5000"
+                        defaultUser="sa"
+                        webURL="http://jtds.sourceforge.net/"
+                        description="Sybase jTDS driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+
+                    <replace provider="generic" driver="sybase"/>
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="script-delimiter" value=";,go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
+                    <file type="license" path="licenses/external/lgpl-2.1.txt"/>
+                    <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
+                </driver>
+
+                <driver
+                        id="sybase_jconn"
+                        label="Sybase jConnect"
+                        icon="icons/sybase_icon.png"
+                        iconBig="icons/sybase_icon_big.png"
+                        class="com.sybase.jdbc4.jdbc.SybDriver"
+                        sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
+                        useURL="false"
+                        defaultPort="5000"
+                        defaultUser="sa"
+                        webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
+                        description="Sybase jConnect driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="script-delimiter" value=";,go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="repo:/drivers/sybase/jconnect/jconn4.jar" bundle="!drivers.sybase.jconnect"/>
+                    <file type="license" path="repo:/drivers/sybase/jconnect/LICENSE.txt" bundle="!drivers.sybase.jconnect"/>
+
+                    <file type="jar" path="drivers/sybase/jconnect" bundle="drivers.sybase.jconnect"/>
+                    <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
+                </driver>
+                <driver
+                        id="sypase_jconn"
+                        label="SAP ASE jConnect"
+                        icon="icons/sap_ase_icon.png"
+                        iconBig="icons/sap_ase_icon_big.png"
+                        logoImage="icons/sap_ase_logo.png"
+                        class="com.sybase.jdbc4.jdbc.SybDriver"
+                        sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
+                        useURL="false"
+                        defaultPort="5000"
+                        defaultUser="sa"
+                        webURL="https://help.sap.com/viewer/bb5dd5b844d046ea97fa6b328e0fda1d/8.0/en-US/b9acdb91f1e94cc2bdf12e9986567643.html"
+                        description="SAP ASE jConnect driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql">
+
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="script-delimiter" value=";,go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="repo:/drivers/sybase/jconnect/jconn4.jar" bundle="!drivers.sybase.jconnect"/>
+                    <file type="license" path="repo:/drivers/sybase/jconnect/LICENSE.txt" bundle="!drivers.sybase.jconnect"/>
+
+                    <file type="jar" path="drivers/sybase/jconnect" bundle="drivers.sybase.jconnect"/>
+                    <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
+                </driver>
+
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDatabaseManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerExternalTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableType"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerForeignKeyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerIndexManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerCheckConstraintManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableCheckConstraint"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerTableTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerSynonymManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerSynonym"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerView"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerDataTypeManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerDataType"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerExtendedPropertyManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerExtendedProperty"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerLoginManager" objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin"/>
+
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericProcedureManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTriggerManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTrigger"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTable"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericViewManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericView"/>
+        <manager class="org.jkiss.dbeaver.ext.mssql.edit.generic.SQLServerGenericTableColumnManager" objectType="org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericTableColumn"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
+                description="sql server data types provider"
+                id="SQLServerStandardValueHandlerProvider"
+                label="SQL Server data types provider">
+
+            <datasource id="sqlserver"/>
+            <type name="MONEY"/>
+            <type name="SMALLMONEY"/>
+            <type name="SQL_VARIANT"/>
+            <type name="DATETIMEOFFSET"/>
+        </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="sqlserver" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectMssql" label="SQL Server" description="SQL Server SQL dialect." icon="icons/mssql_icon.png"/>
+        <dialect id="sybase" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectSybase" label="Sybase" description="Sybase SQL dialect." icon="icons/sybase_icon.png"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.task">
+        <category id="sqlserver" name="SQL Server" description="SQL Server database tasks" icon="icons/mssql_icon.png"/>
+        <category id="sqlServerTool" parent="sqlserver" name="Tools" description="SQL Server database tools" icon="icons/mssql_icon.png"/>
+
+        <!-- SQL tools -->
+        <task id="mssqlToolTableRebuild" name="%tasks.rebuild.table.node.name" description="%tasks.rebuild.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableRebuild">
+            <datasource id="sqlserver"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase"/>
+        </task>
+        <task id="mssqlToolTriggerEnable" name="Enable trigger" description="Enable trigger(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableTriggerEnable">
+            <datasource id="sqlserver"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.canEnable()"/>
+        </task>
+        <task id="mssqlToolTriggerDisable" name="Disable trigger" description="Disable trigger(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="sqlServerTool" handler="org.jkiss.dbeaver.ext.mssql.tasks.SQLServerToolTableTriggerDisable">
+            <datasource id="sqlserver"/>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.SQLServerTableTrigger" if="object.canDisable()"/>
+        </task>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="mssql_ssl"
+                codeName="SSL"
+                prefix="ssl"
+                label="SSL"
+                description="SSL settings"
+                desktop="false"
+                secured="false"
+                order="2"
+                handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="KEYSTORE" defaultValue="KEYSTORE"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
+            <propertyGroup label="Parameters">
+                <property id="ssl.keystore.value" label="Keystore" type="file" features="secured,password,file"/>
+                <property id="ssl.keystore" label="Keystore path" type="string" desktop="true"/>
+                <property id="ssl.keystore.password" label="Keystore password" type="string" features="secured,password"/>
+                <property id="sslKeyStoreHostname" label="Certificate hostname" type="string"/>
+            </propertyGroup>
+            <objectType name="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"/>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.mssql.internal.SQLServerPreferencesInitializer"/>
+    </extension>
+
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="sqlserver_database"
+                label="SQL Server Authentication"
+                description="SQL Server password based authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelDatabase"
+                default="true">
+            <datasource id="sqlserver"/>
+            <replace model="native"/>
+        </authModel>
+        <authModel
+                id="sqlserver_windows"
+                desktop="true"
+                label="Windows Authentication"
+                description="Windows integrated authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelWindows">
+            <datasource id="sqlserver"/>
+        </authModel>
+        <authModel
+                id="sqlserver_ntlm"
+                label="NTLM"
+                description="NTLM authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_ad_password"
+                label="Active Directory - Password"
+                description="Active Directory password based authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADPassword">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_msi"
+                label="Active Directory - MSI"
+                description="Active Directory MSI based authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMSI">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_mfa"
+                desktop="true"
+                label="Active Directory - MFA"
+                description="Interactive authentication flow (multi-factor authentication)"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMFA">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_ad_integrated"
+                desktop="true"
+                label="Active Directory - Integrated"
+                description="Active Directory integrated authentication"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADIntegrated">
+            <datasource id="sqlserver" if="object.getDriverParameter('jtds') == null"/>
+        </authModel>
+        <authModel
+                id="sqlserver_custom"
+                label="Custom"
+                description="Custom authentication schema"
+                class="org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelCustom">
+            <datasource id="sqlserver"/>
+        </authModel>
+    </extension>
+
+</plugin>

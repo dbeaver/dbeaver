@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.data.chart.label" id="org.jkiss.dbeaver.ui.data.chart">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.data.chart.description</description>
+        </themeElementCategory>
+
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.1" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.1.label" value="206, 63, 34"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.2" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.2.label" value="44, 165, 233"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.3" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.3.label" value="138, 114, 99"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.4" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.4.label" value="242, 132, 35"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.5" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.5.label" value="124, 38, 19"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.6" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.6.label" value="157, 214, 245"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.7" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.7.label" value="173, 140, 127"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.8" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.8.label" value="249, 214, 205"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.9" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.9.label" value="71, 28, 18"/>
+        <colorDefinition id="org.jkiss.dbeaver.ui.data.chart.color.10" categoryId="org.jkiss.dbeaver.ui.data.chart" label="%colorDefinition.org.jkiss.dbeaver.ui.data.chart.color.10.label" value="83, 69, 60"/>
+    </extension>
+
+</plugin>

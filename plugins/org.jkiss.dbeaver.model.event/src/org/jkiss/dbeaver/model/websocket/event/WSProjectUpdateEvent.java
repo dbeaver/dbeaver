@@ -1,0 +1,99 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.websocket.event;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.rm.RMProjectInfo;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
+
+public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEvent {
+    public static final String ADDED = "cb_rm_project_added";
+    public static final String UPDATED = "cb_rm_project_updated";
+    public static final String REMOVED = "cb_rm_project_removed";
+
+    @NotNull
+    protected final String projectId;
+    @Nullable
+    protected final RMProjectInfo projectInfo;
+
+    public WSProjectUpdateEvent(
+        @NotNull String eventId,
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId,
+        @Nullable RMProjectInfo projectInfo
+    ) {
+        super(eventId, WSConstants.TOPIC_PROJECTS, sessionId, userId);
+        this.projectId = projectId;
+        this.projectInfo = projectInfo;
+    }
+
+    public static WSProjectUpdateEvent create(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId
+    ) {
+        return new WSProjectUpdateEvent(
+            ADDED,
+            sessionId,
+            userId,
+            projectId,
+            null
+        );
+    }
+
+    public static WSProjectUpdateEvent update(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId,
+        @NotNull RMProjectInfo projectInfo
+    ) {
+        return new WSProjectUpdateEvent(
+            UPDATED,
+            sessionId,
+            userId,
+            projectId,
+            projectInfo
+        );
+    }
+
+    public static WSProjectUpdateEvent delete(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId
+    ) {
+        return new WSProjectUpdateEvent(
+            REMOVED,
+            sessionId,
+            userId,
+            projectId,
+            null
+        );
+    }
+
+    @NotNull
+    @Override
+    public String getProjectId() {
+        return projectId;
+    }
+
+    @Nullable
+    public RMProjectInfo getProjectInfo() {
+        return projectInfo;
+    }
+}

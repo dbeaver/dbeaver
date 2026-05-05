@@ -1,0 +1,294 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.runtime.properties;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
+import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * PropertySourceEditable
+ */
+public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable {
+    private static final Log log = Log.getLog(PropertySourceEditable.class);
+
+    @Nullable
+    private DBECommandContext commandContext;
+    private PropertyChangeCommand lastCommand = null;
+    //private final List<IPropertySourceListener> listeners = new ArrayList<IPropertySourceListener>();
+    private final CommandReflector commandReflector = new CommandReflector();
+
+    public PropertySourceEditable(@Nullable DBECommandContext commandContext, @NotNull Object sourceObject, @NotNull Object object) {
+        super(sourceObject, object, true);
+        this.commandContext = commandContext;
+        //this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
+    }
+
+    public PropertySourceEditable(@NotNull Object sourceObject, @NotNull Object object)
+    {
+        super(sourceObject, object, true);
+    }
+
+    @Override
+    public boolean isEditable(Object object) {
+        if (commandContext == null) {
+            return true;
+        }
+        DBEObjectEditor objectEditor = getObjectEditor(DBEObjectEditor.class);
+        return objectEditor != null &&
+            object instanceof DBPObject po && objectEditor.canEditObject(po)
+            && DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
+    }
+
+    @Nullable
+    private <T> T getObjectEditor(@NotNull Class<T> managerType) {
+        final Object editableValue = getEditableValue();
+        if (editableValue == null) {
+            return null;
+        }
+        return DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+            editableValue.getClass(),
+            managerType);
+    }
+
+    @Nullable
+    public DBECommandContext getCommandContext()
+    {
+        return commandContext;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setPropertyValue(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull Object editableValue,
+        @NotNull ObjectPropertyDescriptor prop,
+        @Nullable Object newValue
+    ) throws IllegalArgumentException {
+        if (prop.getValueTransformer() != null) {
+            newValue = prop.getValueTransformer().transform(editableValue, newValue);
+        }
+        final Object oldValue = getPropertyValue(monitor, editableValue, prop, true);
+        if (!updatePropertyValue(monitor, editableValue, prop, newValue, false)) {
+            return;
+        }
+        if (commandContext != null) {
+            if (editableValue instanceof DBSObject dbo && !dbo.isPersisted() && !containCreateCommand(commandContext, dbo)) {
+                // Property change for a new object (command list is empty).
+                // No need to create a new command
+                // Do nothing
+            } else if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop || !commandContext.isDirty()) {
+                // Last command is not applicable (check for isDirty because command queue might be reverted)
+                final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(DBEObjectEditor.class);
+                if (objectEditor == null) {
+                    log.error("Can't obtain object editor for " + getEditableValue());
+                    return;
+                }
+                final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
+                    (DBPObject) editableValue,
+                    prop);
+                PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
+                commandContext.addCommand(curCommand, commandReflector);
+                lastCommand = curCommand;
+            } else {
+                lastCommand.setNewValue(newValue);
+                commandContext.updateCommand(lastCommand, commandReflector);
+            }
+        }
+
+        // If we perform rename then we should refresh object cache
+        // To update name-based cache
+        if (prop.isNameProperty() && editableValue instanceof DBSObject dbsObject) {
+            DBEObjectMaker objectManager = getObjectEditor(DBEObjectMaker.class);
+            if (objectManager != null) {
+                DBSObjectCache cache = objectManager.getObjectsCache(dbsObject);
+                if (cache != null && cache.isFullyCached()) {
+                    List<? extends DBSObject> cachedObjects = CommonUtils.copyList(cache.getCachedObjects());
+                    cache.setCache(cachedObjects);
+                }
+            }
+        }
+
+/*
+        // Notify listeners
+        for (IPropertySourceListener listener : listeners) {
+            listener.handlePropertyChange(editableValue, prop, newValue);
+        }
+*/
+    }
+
+    private boolean containCreateCommand(@NotNull DBECommandContext commandContext, @NotNull DBSObject object) {
+        for (DBECommand<?> cmd : commandContext.getFinalCommands()) {
+            if (cmd instanceof SQLObjectEditor.ObjectCreateCommand && cmd.getObject() == object) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean updatePropertyValue(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull Object editableValue,
+        @NotNull ObjectPropertyDescriptor prop,
+        @Nullable Object value,
+        boolean force
+    ) throws IllegalArgumentException {
+        // Write property value
+        try {
+            if (Collection.class.isAssignableFrom(prop.getDataType()) && value instanceof String str) {
+                // For collection params convert to array and use first item only.
+                // FIXME: support all array items search by enum/name (see below)
+                List<String> strings = DBUtils.convertArrayStringToList(str);
+                if (strings.isEmpty()) {
+                    value = null;
+                } else {
+                    value = strings.getFirst();
+                }
+            }
+            // Check for complex object
+            // If value should be a named object then try to obtain it from list provider
+            if (value != null && value.getClass() == String.class) {
+                final Object[] items = prop.getPossibleValues(editableValue);
+                if (items != null) {
+                    boolean found = false;
+                    if (items.length > 0) {
+                        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                            if ((items[i] instanceof DBPNamedObject namedObject && value.equals(namedObject.getName())) ||
+                                (items[i] instanceof Enum<?> anEnum && value.equals(anEnum.name()))
+                            ) {
+                                value = items[i];
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) {
+                        if (value.getClass() != prop.getDataType()){
+                            value = null;
+                        }
+                    }
+                }
+            }
+            final Object oldValue = getPropertyValue(monitor, editableValue, prop, true);
+            if (CommonUtils.equalObjects(oldValue, value)) {
+                return false;
+            }
+
+            prop.writeValue(editableValue, value);
+            // Fire object update event
+            if (editableValue instanceof DBSObject) {
+                DBUtils.fireObjectUpdate((DBSObject) editableValue, prop);
+            }
+            addChangedProperties(prop, value);
+            return true;
+        } catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException) e).getTargetException();
+            }
+            if (e instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException) e;
+            }
+            throw new IllegalArgumentException("Can't write property '" + prop.getDisplayName() + "' value", e);
+        }
+    }
+
+    @Override
+    public boolean isPropertyResettable(@NotNull Object object, @NotNull ObjectPropertyDescriptor prop) {
+        return (lastCommand != null && lastCommand.property == prop && lastCommand.getObject() == object);
+    }
+
+    @Override
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull Object object, @NotNull ObjectPropertyDescriptor prop) {
+//        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(obj);
+//        if (compositeCommand != null) {
+//            final Object value = compositeCommand.getProperty(prop.getId());
+//        }
+
+        if (lastCommand != null && lastCommand.property == prop) {
+            setPropertyValue(monitor, object, prop, lastCommand.getOldValue());
+        }
+//        final ObjectProps objectProps = getObjectProps(object);
+//        DBECommandProperty curCommand = objectProps.propValues.get(prop);
+//        if (curCommand != null) {
+//            curCommand.resetValue();
+//        }
+        log.warn("Property reset not implemented");
+    }
+
+    private class PropertyChangeCommand extends DBECommandProperty<DBPObject> {
+        ObjectPropertyDescriptor property;
+        public PropertyChangeCommand(
+            @NotNull DBPObject editableValue,
+            @NotNull ObjectPropertyDescriptor property,
+            @NotNull DBEPropertyHandler<DBPObject> propertyHandler,
+            @Nullable Object oldValue,
+            @Nullable Object newValue
+        ) {
+            super(editableValue, propertyHandler, oldValue, newValue);
+            this.property = property;
+        }
+
+        @Override
+        public void updateModel() {
+            super.updateModel();
+            updatePropertyValue(null, getObject(), property, getNewValue(), true);
+        }
+    }
+
+    private class CommandReflector implements DBECommandReflector<DBPObject, PropertyChangeCommand> {
+
+        @Override
+        public void redoCommand(@NotNull PropertyChangeCommand command) {
+            updatePropertyValue(null, command.getObject(), command.property, command.getNewValue(), false);
+/*
+            // Notify listeners
+            for (IPropertySourceListener listener : listeners) {
+                listener.handlePropertyChange(command.getObject(), command.property, command.getNewValue());
+            }
+*/
+        }
+
+        @Override
+        public void undoCommand(@NotNull PropertyChangeCommand command) {
+            updatePropertyValue(null, command.getObject(), command.property, command.getOldValue(), false);
+/*
+            // Notify listeners
+            for (IPropertySourceListener listener : listeners) {
+                listener.handlePropertyChange(command.getObject(), command.property, command.getOldValue());
+            }
+*/
+        }
+    }
+
+}

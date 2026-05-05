@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="greenplum"
+                    name="Greenplum"
+                    class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreenplum"
+                    logo="icons/greenplum_logo.png"
+                    customURL="true" turnOffPreparedStatements="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="cloudberry"
+                    name="Cloudberry"
+                    class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerCloudberry"
+                    logo="icons/cloudberry_logo.png"
+                    customURL="true" turnOffPreparedStatements="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="greengage"
+                    name="Greengage"
+                    class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreengage"
+                    logo="icons/greengage_logo.svg"
+                    customURL="true"
+                    turnOffPreparedStatements="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.GreenplumDataSourceProvider"
+                description="%datasource.greenplum.description"
+                id="greenplum"
+                parent="postgresql"
+                label="Greenplum"
+                icon="icons/greenplum_icon.png"
+                dialect="greenplum"
+                inheritClients="true"
+                inheritProviderProperties="true">
+
+            <treeInjection path="postgresql/database/schema/table"
+                           changeFolderType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
+            <treeInjection path="postgresql/database/schema" after="table">
+                <folder type="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"
+                        label="%tree.externaltables.node.name"
+                        icon="#folder_table" visibleIf="object.dataSource.supportsExternalTables()">
+                    <items label="%tree.externaltable.node.name" path="externalTable" property="externalTables"
+                           icon="#table_external">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"
+                                label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                            </items>
+                        </folder>
+                    </items>
+                </folder>
+            </treeInjection>
+
+            <drivers managable="true">
+                <driver
+                        id="greenplum-jdbc"
+                        label="Greenplum"
+                        icon="icons/greenplum_icon.png"
+                        iconBig="icons/greenplum_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://greenplum.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL="Database-driver-Greenplum"
+                        description="%driver.greenplum.description"
+                        categories="sql,analytic">
+                    <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                          bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
+                          optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
+<!--                    <file type="jar" path="drivers/waffle" bundle="drivers.postgresql"/>-->
+                    <parameter name="serverType" value="greenplum"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                </driver>
+            </drivers>
+        </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.CloudberryDataSourceProvider"
+                description="%datasource.cloudberry.description"
+                id="cloudberry"
+                parent="greenplum"
+                label="Cloudberry"
+                icon="icons/cloudberry_icon.png"
+                dialect="greenplum"
+                inheritClients="true"
+                inheritProviderProperties="true">
+
+            <drivers managable="true">
+                <driver
+                        id="cloudberry-jdbc"
+                        label="Cloudberry"
+                        icon="icons/cloudberry_icon.png"
+                        iconBig="icons/cloudberry_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://cloudberry.apache.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL=""
+                        description="%driver.cloudberry.description"
+                        categories="sql,analytic">
+                    <replace provider="postgresql" driver="postgres-cloudberry-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                          bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
+                          optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="cloudberry"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                </driver>
+            </drivers>
+        </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.GreengageDataSourceProvider"
+                description="%datasource.greengage.description"
+                id="greengage"
+                parent="greenplum"
+                label="Greengage"
+                icon="icons/greengage_icon.svg"
+                dialect="greenplum"
+                inheritClients="true"
+                inheritProviderProperties="true">
+
+            <drivers managable="true">
+                <driver
+                        id="greengage-jdbc"
+                        label="Greengage"
+                        icon="icons/greengage_icon.svg"
+                        iconBig="icons/greengage_icon_big.svg"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://greengagedb.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL="Database-driver-Greengage"
+                        description="%driver.greengage.description"
+                        categories="sql,analytic">
+                    <replace provider="postgresql" driver="postgres-greengage-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                          bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
+                          optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="greengage"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumSchemaManager"
+                 objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumTableManager"
+                 objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
+        <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumExternalTableManager"
+                 containerType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumSchema"
+                 objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable"/>
+        <manager class="org.jkiss.dbeaver.ext.greenplum.edit.GreenplumFunctionManager"
+                 objectType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumFunction"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="greenplum" parent="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect" label="Greenplum" description="Greenplum dialect." icon="icons/greenplum_icon.png">
+            <keywords value=""/>
+            <execKeywords value=""/>
+            <ddlKeywords value=""/>
+            <dmlKeywords value=""/>
+            <functions value=""/>
+            <types value=""/>
+
+            <property name="" value=""/>
+        </dialect>
+    </extension>
+
+</plugin>

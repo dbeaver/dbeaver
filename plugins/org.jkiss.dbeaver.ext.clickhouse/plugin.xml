@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="clickhouse"
+              class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel"
+              driverClass="ru.yandex.clickhouse.ClickHouseDriver,com.clickhouse.jdbc.ClickHouseDriver"
+              dialect="clickhouse"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"
+                description="Clickhouse"
+                id="clickhouse"
+                parent="generic"
+                label="ClickHouse"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
+                dialect="clickhouse">
+            <drivers managable="true">
+
+                <driver
+                        id="yandex_clickhouse"
+                        label="ClickHouse (Legacy)"
+                        class="com.clickhouse.jdbc.ClickHouseDriver"
+                        sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
+                        defaultPort="8123"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"
+                        description="ClickHouse legacy driver (server version &lt; 21.3)"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        webURL="https://github.com/yandex/clickhouse-jdbc"
+                        databaseDocumentationSuffixURL="Clickhouse"
+                        categories="sql,analytic,columns"
+                        singleConnection="true">
+                    <replace provider="generic" driver="yandex_clickhouse"/>
+                    <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
+                </driver>
+
+                <driver
+                    id="com_clickhouse"
+                    label="ClickHouse"
+                    class="com.clickhouse.jdbc.ClickHouseDriver"
+                    sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
+                    defaultPort="8123"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"
+                    description="Official ClickHouse driver (server version 21.3+)"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/ClickHouse/clickhouse-java"
+                    databaseDocumentationSuffixURL="Clickhouse"
+                    categories="sql,analytic,columns"
+                    singleConnection="true"
+                    allowsEmptyPassword="true">
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.9.7]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.4.4]" bundle="!drivers.clickhouse_com"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
+                    <file type="jar" path="bundle:/org.apache.commons.lang3" bundle="drivers.clickhouse_com"/>
+                    <!-- Disable server timezone as it confuses during timestamp edit -->
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="clickhouse" parent="generic" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSQLDialect" label="Clickhouse" description="Clickhouse SQL dialect." icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseTableManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTable"/>
+        <manager class="org.jkiss.dbeaver.ext.clickhouse.edit.ClickhouseViewManager" objectType="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseView"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="clickhouse-ssl"
+                codeName="SSL"
+                prefix="ssl"
+                label="SSL"
+                description="SSL settings"
+                secured="false"
+                desktop="false"
+                order="2"
+                handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
+            <propertyGroup label="SSL Settings">
+                <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
+                <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
+                <property id="ssl.client.key.value" label="Client Private Key" type="file" description="Choose client private key file" features="secured,password" length="MULTILINE"/>
+                <property id="ssl.ca.cert" label="CA Certificate Path" type="string" description="Path to a CA certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.cert" label="Client Certificate Path" type="string" description="Path to a client certificate file"
+                          desktop="true"/>
+                <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
+                          desktop="true"/>
+            </propertyGroup>
+            <propertyGroup label="Advanced Settings">
+                <property id="ssl.mode" label="SSL mode" type="string" description="Is certificate verification required" validValues="STRICT,NONE" defaultValue="STRICT"/>
+            </propertyGroup>
+            <objectType name="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"/>
+        </handler>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                id="ClickhouseValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
+                class="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                label="ClickHouse data types provider"
+                description="ClickHouse data types provider">
+
+            <datasource id="clickhouse"/>
+            <type standard="ARRAY"/>
+            <type standard="STRUCT"/>
+            <type standard="DATE"/>
+            <type standard="TIME"/>
+            <type standard="TIMESTAMP"/>
+            <type name="ENUM8"/>
+            <type name="ENUM16"/>
+            <type kind="NUMERIC"/>
+            <type name="BOOL"/>
+            <type name="UUID"/>
+            <type name="IPV4"/>
+            <type name="IPV6"/>
+            <type name="TUPLE*"/>
+            <type name="MAP*"/>
+
+            <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
+            <type name="POINT"/>
+            <type name="RING"/>
+            <type name="LINESTRING"/>
+            <type name="MULTILINESTRING"/>
+            <type name="POLYGON"/>
+            <type name="MULTIPOLYGON"/>
+        </provider>
+    </extension>
+
+</plugin>
