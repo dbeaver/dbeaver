@@ -409,28 +409,38 @@ public class DBeaverLauncher {
         ) {
             return;
         }
-        // See `conf/security/java.security` for explanation of these properties
+        // Let's put these obsolete algorithms into the ` legacyAlgorithms ` category so that they are still in use,
+        // but only if all other TLS protos and ciphers fail. To relief ourselves from the burden of tracking the updates of this
+        // property in new Java releases, let's just concatenate the default value with our own.
+        // See `conf/security/java.security` for an explanation of the used properties.
         try {
-            Security.setProperty("jdk.tls.disabledAlgorithms", "NULL, anon");
-            Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^37");
-            // Let's put these usually obsolete algorithms into the ` legacyAlgorithms ` category so that they are still in use,
-            // but only if all other TLS protos and ciphers fail. To relief ourselves from the burden of tracking the updates of this
-            // property in new Java releases, let's just concatenate the default value with our own.
+            String disabledAlgosKey = "jdk.tls.disabledAlgorithms";
+            Collection<String> algorithms = getSecurityPropertyValues(disabledAlgosKey);
             String legacyAlgosKey = "jdk.tls.legacyAlgorithms";
-            String[] originalLegacyAlgos = Security.getProperty(legacyAlgosKey).split(",");
-            Set<String> legacyAlgos = HashSet.newHashSet(originalLegacyAlgos.length);
-            for (String algo : originalLegacyAlgos) {
-                legacyAlgos.add(algo.stripTrailing());
-            }
-            Collections.addAll(
-                legacyAlgos,
-                "SSLv3", "TLSv1", "TLSv1.1", "DTLSv1.0", "RC4", "DES", "MD5withRSA", "DH keySize < 1024", "EC keySize < 224",
-                "3DES_EDE_CBC", "ECDH", "TLS_RSA_*", "rsa_pkcs1_sha1 usage HandshakeSignature", "ecdsa_sha1 usage HandshakeSignature",
-                "dsa_sha1 usage HandshakeSignature"
-            );
-            Security.setProperty(legacyAlgosKey, String.join(", ", legacyAlgos));
+            addSecurityPropertyValues(legacyAlgosKey, algorithms);
+            Security.setProperty(legacyAlgosKey, String.join(", ", algorithms));
+            Security.setProperty(disabledAlgosKey, "");
+            // We also need to remove `ChaCha20-Poly1305 KeyUpdate 2^37` from `jdk.tls.keyLimits`. The reason for this is lost to history.
+            String keyLimitsKey = "jdk.tls.keyLimits";
+            Collection<String> keyLimits = getSecurityPropertyValues(keyLimitsKey);
+            keyLimits.remove("ChaCha20-Poly1305 KeyUpdate 2^37");
+            Security.setProperty(keyLimitsKey, String.join(", ", keyLimits));
         } catch (RuntimeException ignore) {
             // Just in case
+        }
+    }
+
+    private static Collection<String> getSecurityPropertyValues(String propertyKey) {
+        Collection<String> values = new HashSet<>();
+        addSecurityPropertyValues(propertyKey, values);
+        return values;
+    }
+
+    private static void addSecurityPropertyValues(String propertyKey, Collection<? super String> values) {
+        // Split by `,` and then strip trailing space instead of splitting by `, ` directly for performance reasons
+        String[] valuesArray = System.getProperty(propertyKey).split(",");
+        for (String value : valuesArray) {
+            values.add(value.stripTrailing());
         }
     }
 
