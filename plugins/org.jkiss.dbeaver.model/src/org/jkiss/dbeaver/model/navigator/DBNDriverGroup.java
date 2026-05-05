@@ -34,10 +34,12 @@ import java.util.List;
  */
 public class DBNDriverGroup extends DBNNode implements DBNContainer {
 
+    private final DBNProjectDatabases parent;
     private final DBPDriver driver;
 
     public DBNDriverGroup(@NotNull DBNProjectDatabases parent, @NotNull DBPDriver driver) {
         super(parent);
+        this.parent = parent;
         this.driver = driver;
     }
 
@@ -110,7 +112,7 @@ public class DBNDriverGroup extends DBNNode implements DBNContainer {
     @NotNull
     @Override
     public DBNProjectDatabases getParentNode() {
-        return (DBNProjectDatabases) super.getParentNode();
+        return parent;
     }
 
     @Override
@@ -147,10 +149,6 @@ public class DBNDriverGroup extends DBNNode implements DBNContainer {
             }
         }
         return result;
-    }
-
-    public List<DBNDataSource> getNestedDataSources() {
-        return getDataSources();
     }
 
     public boolean hasConnected() {
