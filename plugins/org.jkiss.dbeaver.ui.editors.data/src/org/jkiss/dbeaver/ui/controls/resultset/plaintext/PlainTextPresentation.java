@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -157,8 +158,21 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
             if (rowNum < 0) {
                 rowNum = 0;
             }
-            if (rowNum >= 0 && rowNum < model.getVisibleAttributeCount()) {
+            if (rowNum < model.getVisibleAttributeCount()) {
                 curAttribute = model.getVisibleAttribute(rowNum);
+            }
+            boolean rowChanged = false;
+            int colNum = getColumnAtOffset(horizontalOffset, delimLeading);
+            if (colNum > 0) {
+                ResultSetRow row = getRecordRow(colNum - 1);
+                if (row != null && row != controller.getCurrentRow()) {
+                    controller.setCurrentRow(row);
+                    rowChanged = true;
+                }
+            }
+            controller.updateEditControls();
+            if (rowChanged) {
+                controller.updatePanelsContent(false);
             }
         } else {
             int colNum = 0;
@@ -246,9 +260,57 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     private void printRecord() {
         PlainTextFormatter formatter = new PlainTextFormatter(getController().getPreferenceStore());
         StringBuilder grid = new StringBuilder(512);
-        formatter.printRecord(grid, controller.getModel(), controller.getCurrentRow());
+        formatter.printRecord(grid, controller.getModel(), getRecordRows());
+        colWidths = formatter.getColWidths();
+        startOffset = formatter.getStartOffset();
 
         text.setText(grid.toString());
+    }
+
+    private int getColumnAtOffset(int horizontalOffset, boolean delimLeading) {
+        if (colWidths == null || colWidths.length == 0) {
+            return -1;
+        }
+        int columnEnd = startOffset;
+        if (delimLeading) {
+            columnEnd++;
+        }
+        for (int i = 0; i < colWidths.length; i++) {
+            columnEnd += colWidths[i] + 1;
+            if (horizontalOffset < columnEnd) {
+                return i;
+            }
+        }
+        return colWidths.length - 1;
+    }
+
+    @Nullable
+    private ResultSetRow getRecordRow(int recordIndex) {
+        ResultSetModel model = controller.getModel();
+        int[] selectedRecords = controller.getSelectedRecords();
+        if (recordIndex < selectedRecords.length) {
+            int selectedRecord = selectedRecords[recordIndex];
+            if (selectedRecord < model.getRowCount()) {
+                return model.getRow(selectedRecord);
+            }
+        }
+        return recordIndex == 0 ? controller.getCurrentRow() : null;
+    }
+
+    @NotNull
+    private List<ResultSetRow> getRecordRows() {
+        ResultSetModel model = controller.getModel();
+        int[] selectedRecords = controller.getSelectedRecords();
+        List<ResultSetRow> rows = new ArrayList<>(selectedRecords.length);
+        for (int selectedRecord : selectedRecords) {
+            if (selectedRecord < model.getRowCount()) {
+                rows.add(model.getRow(selectedRecord));
+            }
+        }
+        if (rows.isEmpty() && controller.getCurrentRow() != null) {
+            rows.add(controller.getCurrentRow());
+        }
+        return rows;
     }
 
     @NotNull
@@ -491,6 +553,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         @Override
         public List<ResultSetRow> getSelectedRows()
         {
+            if (controller.isRecordMode()) {
+                return getRecordRows();
+            }
             ResultSetRow currentRow = controller.getCurrentRow();
             if (currentRow == null) {
                 return Collections.emptyList();
