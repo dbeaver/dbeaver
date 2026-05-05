@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.code.Nullable;
 
-/**
- * Enum value
- *
- * @author Serge Rider
- */
-public interface DBDEnum extends DBDValue {
+import java.time.Instant;
 
-    Object getValue();
-
-    @NotNull
-    DBSDataType getElementType();
-
-    Object[] getEnumElements();
+public record QMQueryFilter(
+    @NotNull String query,
+    @NotNull String text,
+    @Nullable String title,
+    @Nullable Instant lastUsed,
+    int useCount
+) {
 }

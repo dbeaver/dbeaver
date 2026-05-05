@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -36,7 +37,7 @@ public interface DBDDataFormatter {
     String TYPE_NAME_TIMESTAMP = "timestamp"; //$NON-NLS-1$
     String TYPE_NAME_TIMESTAMP_TZ = "timestamptz"; //$NON-NLS-1$
 
-    void init(@Nullable DBSTypedObject type, Locale locale, Map<String, Object> properties);
+    void init(@Nullable DBSTypedObject type, @NotNull Locale locale, @NotNull Map<String, Object> properties);
 
     @Nullable
     String getPattern();

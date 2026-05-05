@@ -75,7 +75,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     protected DB2Sequence createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

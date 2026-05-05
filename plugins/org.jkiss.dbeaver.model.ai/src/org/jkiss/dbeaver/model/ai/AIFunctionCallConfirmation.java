@@ -38,11 +38,11 @@ public class AIFunctionCallConfirmation extends AIConfirmation {
     public List<AIFunctionCall> getFunctionCalls() {
         return functionCalls;
     }
-
+    
     @Override
     @NotNull
     public String getMessage() {
-        return "Confirm tools " + functionCalls.stream().map(AIFunctionCall::getFunctionName)
+        return "Confirm tools: " + functionCalls.stream().map(AIFunctionCall::getFunctionDisplayName)
             .collect(Collectors.joining(","));
     }
 
