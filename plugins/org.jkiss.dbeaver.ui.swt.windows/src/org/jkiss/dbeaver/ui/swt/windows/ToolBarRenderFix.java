@@ -34,6 +34,14 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ * Fixes white (or light blue) background for toolbar items under the mouse for Windows 11 and Dark theme
+ * https://github.com/dbeaver/pro/issues/9018
+ *
+ * We intercept the window function to handle the WM_PAINT message of the toolbar UI control,
+ * switching theming off and rendering items we're unhappy with with the default renderer instead of a bad-looking one.
+ */
 public class ToolBarRenderFix implements IPluginService {
 
     private static final String DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME = "DBEAVER_TOOLBAR_SUBCLASS_HANDLER";
