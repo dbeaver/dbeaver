@@ -84,7 +84,7 @@ public class AIPromptUtils {
                 lines.add("Default " + schemaTerm + ": " + currentSchema);
             }
             if (dataSource.getDataSourceContainer().isConnectionReadOnly()) {
-                lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot bve changed.");
+                lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
             }
         }
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
