@@ -403,7 +403,10 @@ public class DBeaverLauncher {
         }
         // Let's detect a desktop DBeaver or dbvr using their product ID
         String productId = findProductIdInArgs(args);
-        if (!productId.startsWith("org.jkiss.dbeaver") && !productId.startsWith("com.dbeaver") && !productId.startsWith("org.dbvr")) {
+        if (!productId.startsWith(Constants.PRODUCT_DBEAVER_COMMUNITY_PREFIX) &&
+            !productId.startsWith(Constants.PRODUCT_PROPRIETARY_DBEAVER_DESKTOP_PREFIX) &&
+            !productId.startsWith(Constants.PRODUCT_DBVR_PREFIX)
+        ) {
             return;
         }
         // See `conf/security/java.security` for explanation of these properties
