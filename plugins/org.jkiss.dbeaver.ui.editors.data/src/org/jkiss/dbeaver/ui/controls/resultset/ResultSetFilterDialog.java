@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.TextGetSetEditingSupport;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.text.NumberFormat;
 import java.time.Instant;
@@ -44,7 +45,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
-import java.util.Locale;
 
 final class ResultSetFilterDialog extends AbstractPopupPanel {
     private final DBCExecutionContext executionContext;
@@ -90,8 +90,8 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
                 var criteria = searchText.getText().trim();
                 persistFilter(filter);
                 return criteria.isEmpty()
-                    || filter.text().toLowerCase(Locale.ROOT).contains(criteria)
-                    || filter.title().toLowerCase(Locale.ROOT).contains(criteria);
+                    || StringUtils.containsIgnoreCase(filter.text(), criteria)
+                    || (filter.title() != null && StringUtils.containsIgnoreCase(filter.title(), criteria));
             }
         });
         viewer.addSelectionChangedListener(e -> {
@@ -175,11 +175,13 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
                 return CommonUtils.notEmpty(((QMQueryFilter) element).title());
             }
         });
-        titleColumn.setEditingSupport(new TextGetSetEditingSupport<>(viewer, QMQueryFilter::title, (f, s) -> {
-            if (f != null && !CommonUtils.isEmpty(s)) {
-                f.setTitle(s);
-                persistFilter(f);
-            }
+        titleColumn.setEditingSupport(new TextGetSetEditingSupport<QMQueryFilter>(viewer,
+            f -> CommonUtils.notEmpty(f.title()),
+            (f, s) -> {
+                if (f != null && !CommonUtils.isEmpty(s)) {
+                    f.setTitle(s);
+                    persistFilter(f);
+                }
         }));
 
         var lastUsedColumn = new TableViewerColumn(viewer, SWT.LEFT);
