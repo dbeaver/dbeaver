@@ -384,10 +384,10 @@ public class DBeaverLauncher {
     /**
      * Patch `java.security` properties to allow certain legacy crypto to work with non-server DBeaver products.
      * <p>
-     * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms that are disabled in Java
-     * by default due to their inadequate (be modern standards) security properties. However, these algorithms are still used by some
+     * As explained in the linked issues and JRE and JDK Cryptographic Roadmap, some of the crypto algorithms are disabled in Java
+     * by default due to their inadequate (be modern standards) security qualities. However, these algorithms are still used by some
      * legacy databases for encryption in transit. We believe that it's ok to enable them as long as we do it only for non-server products
-     * (i.e., DBeaver desktop, dbvr), since these applications do not have incomming traffic.
+     * (i.e., DBeaver desktop, dbvr), since these applications do not have incoming traffic.
      * <p>
      * See:
      * <a href="https://github.com/dbeaver/dbeaver/issues/12668">#12668</a>
@@ -398,7 +398,7 @@ public class DBeaverLauncher {
      */
     private static void patchJavaSecurity(String[] args) {
         // We need a way to disable this using a Java property just in case
-        if (!Objects.equals(System.getProperty("dbeaver.security.enableLegacyAlgorithms", "1"), "1")) {
+        if (!Boolean.parseBoolean(System.getProperty("dbeaver.security.enableLegacyAlgorithms", "true"))) {
             return;
         }
         // Let's detect a desktop DBeaver or dbvr using their product ID
@@ -416,7 +416,7 @@ public class DBeaverLauncher {
             String disabledAlgosKey = "jdk.tls.disabledAlgorithms";
             Collection<String> algorithms = getSecurityPropertyValues(disabledAlgosKey);
             String legacyAlgosKey = "jdk.tls.legacyAlgorithms";
-            addSecurityPropertyValues(legacyAlgosKey, algorithms);
+            getSecurityPropertyValues(legacyAlgosKey, algorithms);
             Security.setProperty(legacyAlgosKey, String.join(", ", algorithms));
             Security.setProperty(disabledAlgosKey, "");
             // We also need to remove `ChaCha20-Poly1305 KeyUpdate 2^37` from `jdk.tls.keyLimits`. The reason for this is lost to history.
@@ -431,15 +431,19 @@ public class DBeaverLauncher {
 
     private static Collection<String> getSecurityPropertyValues(String propertyKey) {
         Collection<String> values = new HashSet<>();
-        addSecurityPropertyValues(propertyKey, values);
+        getSecurityPropertyValues(propertyKey, values);
         return values;
     }
 
-    private static void addSecurityPropertyValues(String propertyKey, Collection<? super String> values) {
+    private static void getSecurityPropertyValues(String propertyKey, Collection<? super String> values) {
+        String propertyValue = Security.getProperty(propertyKey);
+        if (propertyValue == null) {
+            return;
+        }
         // Split by `,` and then strip trailing space instead of splitting by `, ` directly for performance reasons
-        String[] valuesArray = System.getProperty(propertyKey).split(",");
+        String[] valuesArray = propertyValue.split(",");
         for (String value : valuesArray) {
-            values.add(value.stripTrailing());
+            values.add(value.stripLeading());
         }
     }
 
