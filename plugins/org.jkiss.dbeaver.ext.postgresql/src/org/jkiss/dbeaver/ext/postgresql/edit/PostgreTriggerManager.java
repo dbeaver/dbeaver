@@ -66,7 +66,7 @@ public class PostgreTriggerManager extends SQLTriggerManager<PostgreTrigger, Pos
     protected PostgreTrigger createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {

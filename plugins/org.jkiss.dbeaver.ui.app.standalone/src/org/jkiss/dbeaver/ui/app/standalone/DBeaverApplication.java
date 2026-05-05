@@ -302,6 +302,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
+        log.debug("\tPatch workbench configuration");
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
 
         // Run instance server
@@ -507,7 +508,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private Display getDisplay() {
         if (display == null) {
-            log.debug("Create display");
+            log.debug("\tCreate display");
             // Set display name at the very beginning (#609)
             // This doesn't initialize display - just sets default title
             Display.setAppName(GeneralUtils.getProductName());

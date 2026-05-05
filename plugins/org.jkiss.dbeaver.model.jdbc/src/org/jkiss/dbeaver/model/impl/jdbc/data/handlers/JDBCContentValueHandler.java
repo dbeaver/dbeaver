@@ -68,9 +68,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
 
     @Override
     protected DBDContent fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
         int index)
         throws DBCException, SQLException
     {
@@ -134,7 +134,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             // Create wrapper using column type
