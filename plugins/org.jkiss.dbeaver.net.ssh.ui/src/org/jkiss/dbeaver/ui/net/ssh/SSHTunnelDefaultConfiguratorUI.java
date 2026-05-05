@@ -183,13 +183,6 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
             UIUtils.createLabelSeparator(client, SWT.HORIZONTAL);
 
-            final Label editHint = new Label(client, SWT.NONE);
-            editHint.setText(SSHUIMessages.model_ssh_configurator_label_jump_server_edit_hint);
-            final GridData editHintLayout = new GridData(GridData.FILL_HORIZONTAL);
-            editHintLayout.horizontalIndent = 4;
-            editHintLayout.verticalIndent = 2;
-            editHint.setLayoutData(editHintLayout);
-
             hostsViewer = new TableViewer(client, SWT.FULL_SELECTION | SWT.SINGLE);
             hostsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             hostsViewer.getTable().setHeaderVisible(true);
@@ -264,6 +257,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             }, null);
             controller.createColumns(true);
 
+            UIUtils.createInfoLabel(client, SSHUIMessages.model_ssh_configurator_label_jump_server_edit_hint);
         }
 
         {
