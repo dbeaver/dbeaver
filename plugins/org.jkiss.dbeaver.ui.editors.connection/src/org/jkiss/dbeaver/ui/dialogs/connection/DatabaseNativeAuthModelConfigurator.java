@@ -58,10 +58,15 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected DBPDataSourceContainer dataSource;
 
     protected final boolean canEditCredentialsPerPolicy;
+    protected boolean credentialsPromptMode;
 
     public DatabaseNativeAuthModelConfigurator() {
         canEditCredentialsPerPolicy = !ApplicationPolicyProvider.getInstance()
             .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
+    }
+
+    public void setCredentialsPromptMode(boolean credentialsPromptMode) {
+        this.credentialsPromptMode = credentialsPromptMode;
     }
 
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -113,12 +118,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         if (this.passwordText != null && !this.passwordText.isDisposed()) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             if (canEditCredentialsPerPolicy) {
-                this.passwordText.setEnabled(dataSource.isSavePassword());
+                this.passwordText.setEnabled(credentialsPromptMode || dataSource.isSavePassword() || isForceSaveCredentials());
                 if (this.savePasswordCheck != null) {
                     this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
                 }
                 if (showPasswordButton != null) {
-                    this.showPasswordButton.setEnabled(dataSource.isSavePassword() || isForceSaveCredentials());
+                    this.showPasswordButton.setEnabled(credentialsPromptMode || dataSource.isSavePassword() || isForceSaveCredentials());
                 }
             } else {
                 if (this.savePasswordCheck != null) {
@@ -146,7 +151,8 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
-        boolean resetPassword = !canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());
+        boolean resetPassword = !credentialsPromptMode &&
+            (!canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection()));
         if (dataSource.isSharedCredentials()) {
             resetPassword = false;
         }
@@ -159,7 +165,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
-        if (!canEditCredentialsPerPolicy) {
+        if (credentialsPromptMode && this.savePasswordCheck == null) {
+            dataSource.setSavePassword(false);
+        } else if (!canEditCredentialsPerPolicy) {
             dataSource.setSavePassword(dataSource.isSharedCredentials());
         } else if (this.savePasswordCheck != null) {
             dataSource.setSavePassword(this.savePasswordCheck.getSelection());
@@ -227,9 +235,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 1
             );
             savePasswordCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                passwordText.setEnabled(savePasswordCheck.getSelection());
+                passwordText.setEnabled(credentialsPromptMode || savePasswordCheck.getSelection());
                 if (showPasswordButton != null) {
-                    showPasswordButton.setEnabled(savePasswordCheck.getSelection());
+                    showPasswordButton.setEnabled(credentialsPromptMode || savePasswordCheck.getSelection());
                 }
             }));
             savePasswordCheck.setEnabled(!isForceSaveCredentials());
