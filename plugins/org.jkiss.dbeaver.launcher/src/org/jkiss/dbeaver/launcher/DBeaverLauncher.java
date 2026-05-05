@@ -34,8 +34,9 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
+import java.security.Security;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -361,6 +362,16 @@ public class DBeaverLauncher {
             // minor numbers are equivalent so check service
             return service >= minimum.service;
         }
+    }
+
+    static {
+        Security.setProperty("jdk.tls.disabledAlgorithms", "NULL, anon");
+        Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^37");
+        Security.setProperty(
+            "jdk.tls.legacyAlgorithms",
+            "SSLv3, TLSv1, TLSv1.1, DTLSv1.0, RC4, DES, MD5withRSA, DH keySize < 1024, EC keySize < 224, 3DES_EDE_CBC, ECDH, TLS_RSA_*"
+                + ", rsa_pkcs1_sha1 usage HandshakeSignature, ecdsa_sha1 usage HandshakeSignature, dsa_sha1 usage HandshakeSignature"
+        );
     }
 
     private String getWS() {
