@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
+import org.jkiss.dbeaver.model.impl.data.ResultSetHintContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -132,6 +133,7 @@ public class ResultSetModel implements DBDResultSetModel {
         this.dataFilter = createDataFilter();
     }
 
+    @NotNull
     @Override
     public ResultSetHintContext getHintContext() {
         return hintContext;
