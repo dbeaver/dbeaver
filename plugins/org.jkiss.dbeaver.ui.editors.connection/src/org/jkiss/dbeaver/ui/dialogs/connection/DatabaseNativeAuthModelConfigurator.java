@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
@@ -83,8 +84,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
     }
 
-    protected void createUserNameControls(Composite authPanel, Runnable propertyChangeListener) {
-
+    protected void createUserNameControls(@NotNull Composite authPanel, @NotNull Runnable propertyChangeListener) {
         usernameText = new Text(authPanel, SWT.BORDER);
         usernameText.setLayoutData(makeAuthControlLayoutData(authPanel));
         usernameText.addModifyListener(e -> propertyChangeListener.run());
@@ -184,7 +184,8 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         return false;
     }
 
-    protected Text createPasswordText(Composite parent, String label) {
+    @NotNull
+    protected Text createPasswordText(@NotNull Composite parent, @Nullable String label) {
         if (label != null) {
             UIUtils.createControlLabel(parent, label);
         }
@@ -195,7 +196,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         return passwordText;
     }
 
-    protected void createPasswordControls(Composite parent, Runnable propertyChangeListener) {
+    protected void createPasswordControls(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
         passwordLabel = UIUtils.createLabel(parent, getPasswordFieldLabel());
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -210,7 +211,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         boolean supportsPasswordView = serviceSecurity != null;
 
         int colCount = 1;
-        if (supportsPasswordView) colCount++;
+        if (supportsPasswordView) {
+            colCount++;
+        }
         Composite panel = UIUtils.createComposite(passPlaceholder, colCount);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
@@ -242,11 +245,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
     }
 
+    @NotNull
     protected String getPasswordFieldLabel() {
         return UIConnectionMessages.dialog_connection_auth_label_password;
     }
 
-    private void showPasswordText(UIServiceSecurity serviceSecurity) {
+    private void showPasswordText(@NotNull UIServiceSecurity serviceSecurity) {
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (dataSource.getRegistry().getDataSource(dataSource.getId()) != null) {
