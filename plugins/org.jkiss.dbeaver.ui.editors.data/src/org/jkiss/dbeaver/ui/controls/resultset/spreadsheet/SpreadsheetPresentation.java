@@ -1842,7 +1842,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
     }
 
-        private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
+    private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
         if ((attr.getDataKind() == DBPDataKind.STRUCT || attr.getDataKind() == DBPDataKind.ARRAY) && controller.isRecordMode()) {
             return true;
         }
@@ -2616,7 +2616,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Nullable
-        private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
+        private Color getCellForeground(
+            @Nullable DBDAttributeBinding attribute,
+            @Nullable ResultSetRow row,
+            @Nullable Object cellValue,
+            @Nullable Color background,
+            boolean selected
+        ) {
+            if (attribute == null || row == null) {
+                return ResultSetThemeSettings.instance.foregroundNull;
+            }
             if (selected) {
                 Color fg = ResultSetThemeSettings.instance.foregroundSelected;
                 if (colorizeDataTypes && !DBUtils.isNullValue(cellValue)) {
