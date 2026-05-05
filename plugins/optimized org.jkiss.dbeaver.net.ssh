@@ -1,0 +1,47 @@
+<handler
+    type="tunnel"
+    id="ssh_tunnel"
+    codeName="SSH"
+    prefix="ssh"
+    label="%handler.ssh_tunnel.label"
+    description="%handler.ssh_tunnel.description"
+    desktop="false"
+    secured="true"
+    order="1"
+    handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl">
+
+    <propertyGroup label="SSH Settings" order="1">
+        <property id="host" label="Host" type="string" required="true"/>
+        <property id="port" label="Port" type="integer" defaultValue="22"/>
+
+        <property id="authType"
+                  label="Authentication type"
+                  type="string"
+                  defaultValue="PASSWORD"
+                  validValues="PASSWORD,PUBLIC_KEY,AGENT"/>
+
+        <property id="user" label="User name" type="string"/>
+        <property id="password" label="User password"
+                  type="string" features="secured,password"/>
+
+        <property id="keyValue" label="Private key value"
+                  type="file" features="multiline,secured,password"/>
+
+        <property id="keyPath" label="Private key path"
+                  type="file" features="secured"/>
+    </propertyGroup>
+
+    <propertyGroup label="SSH Advanced Settings" order="2">
+        <property id="aliveInterval" label="Keep-Alive interval (sec)"
+                  type="integer" defaultValue="30"/>
+        <property id="sshConnectTimeout" label="Connect timeout (ms)"
+                  type="integer" defaultValue="10000"/>
+    </propertyGroup>
+
+    <propertyGroup label="SSH Proxy / Jump Host" order="3">
+        <property id="proxyHost" label="Proxy host" type="string"/>
+        <property id="proxyPort" label="Proxy port" type="integer" defaultValue="22"/>
+        <property id="proxyUser" label="Proxy user" type="string"/>
+    </propertyGroup>
+
+</handler>
