@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,14 +54,24 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
     }
 
     @Override
-    protected PostgreJobStep createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected PostgreJobStep createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final PostgreJob job = (PostgreJob) container;
         final String name = DBUtils.makeNewObjectName(monitor, "Step{0}", job, PostgreJobStep.class, PostgreJob::getStep, context);
         return new PostgreJobStep(job, name);
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final PostgreJobStep step = command.getObject();
 
         if (step.getKind() == PostgreJobStep.StepKind.s && (step.getTargetDatabase() == null && CommonUtils.isEmptyTrimmed(step.getRemoteConnectionString()))) {
@@ -78,7 +88,12 @@ public class PostgreJobStepManager extends SQLObjectEditor<PostgreJobStep, Postg
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreJob owner, DBECommandAbstract<PostgreJobStep> command, Map<String, Object> options) {
+    protected StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreJob owner,
+        @NotNull DBECommandAbstract<PostgreJobStep> command,
+        @NotNull Map<String, Object> options
+    ) {
         return new StringBuilder(getCreateDDL(monitor, command.getObject(), options, true));
     }
 

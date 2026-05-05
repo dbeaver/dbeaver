@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -25,15 +27,16 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
  */
 public interface DBDReference extends DBDComplexValue {
 
+    @NotNull
     DBSDataType getReferencedType();
 
     /**
      * Retrieves referenced object.
      * Object is retrieved in lazy way because references may point to owner objects in circular way.
      * @return referenced object
-     * @throws DBCException
      */
-    Object getReferencedObject(DBCSession session)
+    @Nullable
+    Object getReferencedObject(@NotNull DBCSession session)
         throws DBCException;
 
 }

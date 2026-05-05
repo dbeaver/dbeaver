@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDComplexValue;
-import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -84,15 +81,22 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return cellLocation.getRow();
     }
 
-    public void setCurRow(ResultSetRow curRow, int[] rowIndexes) {
+    public void setCurRow(@NotNull ResultSetRow curRow, int[] rowIndexes, @Nullable ResultSetValuePath valuePath) {
         this.cellLocation = new ResultSetCellLocation(
             cellLocation.getAttribute(),
             curRow,
-            rowIndexes);
+            rowIndexes,
+            valuePath
+        );
     }
 
     public int[] getRowIndexes() {
         return cellLocation.getRowIndexes();
+    }
+
+    @Nullable
+    public ResultSetValuePath getValuePath() {
+        return cellLocation.getValuePath();
     }
 
     @Nullable
@@ -112,8 +116,24 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return getBinding().getName();
     }
 
+    @Nullable
     @Override
     public DBSTypedObject getValueType() {
+        if (cellLocation.getValuePath() != null) {
+            for (ResultSetValuePath.PathItem pathItem : cellLocation.getValuePath().pathItems().reversed()) {
+                if (pathItem instanceof ResultSetValuePath.PathAttributeItem attrItem) {
+                    DBSAttributeBase typedAttr = attrItem.attribute();
+                    if (typedAttr.getDataKind() == DBPDataKind.ARRAY) {
+                        DBSDataType componentType = getComponentType(typedAttr);
+                        if (componentType != null) {
+                            return componentType;
+                        }
+                    } else {
+                        return typedAttr;
+                    }
+                }
+            }
+        }
         DBSAttributeBase valueType = getBinding().getPresentationAttribute();
         if (cellLocation.getRowIndexes() != null) {
             if (valueType != null && valueType.getDataKind() == DBPDataKind.ARRAY) {
@@ -129,7 +149,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public DBDValueHandler getValueHandler() {
         DBDValueHandler valueHandler = getBinding().getValueHandler();
-        if (cellLocation.getRowIndexes() != null) {
+        if (cellLocation.getRowIndexes() != null || cellLocation.getValuePath() != null) {
             DBSTypedObject valueType = getValueType();
             DBPDataSource dataSource = getDataController().getDataContainer().getDataSource();
             return DBUtils.findValueHandler(dataSource, valueType);
@@ -169,7 +189,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         this.cellLocation = new ResultSetCellLocation(
             binding,
             this.cellLocation.getRow(),
-            this.cellLocation.getRowIndexes());
+            this.cellLocation.getRowIndexes(),
+            this.cellLocation.getValuePath()
+        );
     }
 
     @NotNull
@@ -198,6 +220,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
                 cellLocation.getAttribute(),
                 cellLocation.getRow(),
                 cellLocation.getRowIndexes(),
+                cellLocation.getValuePath(),
                 readLeafValue);
         } else {
             return controller.getModel().getCellValue(cellLocation);
