@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,13 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
     }
 
     @Override
-    protected MySQLTrigger createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected MySQLTrigger createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         MySQLTable table = (MySQLTable) container;
         return new MySQLTrigger(table.getContainer(), table, "NewTrigger");
     }

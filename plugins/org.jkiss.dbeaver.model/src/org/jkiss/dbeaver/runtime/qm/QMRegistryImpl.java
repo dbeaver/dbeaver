@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -138,9 +139,10 @@ public class QMRegistryImpl implements QMRegistry {
     }
 
     @Override
-    public void unregisterMetaListener(@NotNull QMMetaListener metaListener)
-    {
-        metaHandler.removeListener(metaListener);
+    public void unregisterMetaListener(@NotNull QMMetaListener metaListener) {
+        if (metaHandler != null) {
+            metaHandler.removeListener(metaListener);
+        }
     }
 
     List<QMExecutionHandler> getHandlers()
@@ -227,7 +229,7 @@ public class QMRegistryImpl implements QMRegistry {
                 String searchString = criteria.getSearchString().toLowerCase();
                 List<QMMetaEvent> filtered = new ArrayList<>();
                 for (QMMetaEvent event : pastEvents) {
-                    if (event.getObject().getText().toLowerCase().contains(searchString) &&
+                    if (StringUtils.containsIgnoreCase(event.getObject().getText(), searchString) &&
                         (filter == null || filter.accept(event)))
                     {
                         filtered.add(event);

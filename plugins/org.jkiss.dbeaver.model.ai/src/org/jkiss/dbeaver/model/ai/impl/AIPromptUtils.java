@@ -52,14 +52,17 @@ public class AIPromptUtils {
     }
 
     public static String[] describeDataSourceInfo(@Nullable DBSLogicalDataSource dataSource) {
-        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
-            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
 
         if (dataSource != null) {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
+            SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
+            lines.add("SQL dialect: " + dialect.getDialectName());
+            if (dsInfo != null) {
+                lines.add("Server version: " + dsInfo.getDatabaseProductName() + " " + dsInfo.getDatabaseVersion());
+            }
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
                 lines.add("DBeaver connection name: " + dataSource.getDataSourceContainer().getName());
                 DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
@@ -70,17 +73,22 @@ public class AIPromptUtils {
                 }
             }
 
-            String currentSchema = dataSource.getCurrentSchema();
-            if (!CommonUtils.isEmpty(currentSchema)) {
-                lines.add("Current " + (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
-            }
             String currentCatalog = dataSource.getCurrentCatalog();
             if (!CommonUtils.isEmpty(currentCatalog)) {
-                lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
+                String catalogTerm = (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()).toLowerCase();
+                lines.add("Default " + catalogTerm + ": " + currentCatalog);
+            }
+            String currentSchema = dataSource.getCurrentSchema();
+            if (!CommonUtils.isEmpty(currentSchema)) {
+                String schemaTerm = (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()).toLowerCase();
+                lines.add("Default " + schemaTerm + ": " + currentSchema);
+            }
+            if (dataSource.getDataSourceContainer().isConnectionReadOnly()) {
+                lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
             }
         }
-        lines.add("SQL dialect: " + dialect.getDialectName());
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
+
         return lines.toArray(String[]::new);
     }
 

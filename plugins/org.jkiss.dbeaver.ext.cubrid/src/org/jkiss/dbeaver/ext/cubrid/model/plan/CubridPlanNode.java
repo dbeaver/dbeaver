@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,14 +82,14 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
     }
 
 
-    @NotNull
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return getMethodTitle(name);
     }
 
-    @NotNull
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -146,12 +146,13 @@ public class CubridPlanNode extends AbstractExecutionPlanNode
         return parent;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Collection<CubridPlanNode> getNested() {
         return nested;
     }
 
+    @NotNull
     @Override
     public DBCPlanNodeKind getNodeKind() {
         if ("sscan".equals(name)) {

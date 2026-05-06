@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -39,18 +40,21 @@ public abstract class DirectDatabasePersistAction implements DBEPersistAction {
         this.type = type;
     }
 
+    @NotNull
     @Override
     public String getTitle()
     {
         return title;
     }
 
+    @NotNull
     @Override
     public String getScript()
     {
         return null;
     }
 
+    @NotNull
     @Override
     public ActionType getType()
     {
@@ -63,7 +67,7 @@ public abstract class DirectDatabasePersistAction implements DBEPersistAction {
     }
 
     @Override
-    public void beforeExecute(DBCSession session) throws DBCException {
+    public void beforeExecute(@NotNull DBCSession session) throws DBCException {
 
     }
 
