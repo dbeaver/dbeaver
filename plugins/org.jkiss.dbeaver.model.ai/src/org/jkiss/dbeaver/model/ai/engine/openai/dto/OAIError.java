@@ -16,25 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import com.google.gson.annotations.SerializedName;
-
-/**
- * Object containing a response chunk from the chat completions streaming api.
- */
-public class OAIResponsesChunk {
+public class OAIError {
 
     public String type;
-    @SerializedName("sequence_number")
-    public Integer sequenceNumber;
-    public OAIResponsesResponse response;
-    public OAIMessage item;
-    @SerializedName("item_id")
-    public String itemId;
-    @SerializedName("output_index")
-    public int outputIndex;
-    @SerializedName("content_index")
-    public int contentIndex;
-    public String delta;
-    public OAIError error;
+    public String code;
+    public String message;
 
 }
