@@ -46,7 +46,7 @@ public class SQLServerForeignKeyManager extends SQLForeignKeyManager<SQLServerTa
     protected SQLServerTableForeignKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object table,
+        @NotNull Object table,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
