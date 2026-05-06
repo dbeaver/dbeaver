@@ -132,10 +132,22 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         return getDelegateSession(session).getDataSources();
     }
 
+    /**
+     * Creates an identity repository for SSH agent authentication.
+     * <p>
+     * On Windows, Pageant is preferred.
+     * The {@code authSockPath} parameter is only used on non-Windows platforms
+     * (macOS, Linux) where Unix domain sockets are available.
+     * </p>
+     *
+     * @param authSockPath authSockPath custom SSH agent socket path (ignored on Windows)
+     */
     @NotNull
     protected IdentityRepository createAgentIdentityRepository(@Nullable String authSockPath) throws DBException {
         AgentConnector connector = null;
 
+        // PageantConnector only works on Windows.
+        // On Windows, Pageant takes priority and authSockPath is not applicable.
         try {
             connector = new PageantConnector();
             log.debug("SSHSessionController: connected with pageant");
