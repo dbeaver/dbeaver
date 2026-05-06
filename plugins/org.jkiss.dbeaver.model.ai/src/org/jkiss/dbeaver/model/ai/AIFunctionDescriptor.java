@@ -33,7 +33,7 @@ public interface AIFunctionDescriptor {
 
     @NotNull
     default String getFullId() {
-        return getToolbox().getToolboxId() + "_" + getId();
+        return getFullFunctionId(getToolbox().getToolboxId(), getId());
     }
 
     @NotNull
@@ -52,7 +52,7 @@ public interface AIFunctionDescriptor {
     String getCategoryId();
 
     @Nullable
-    String getDescription();
+    String getAiDescription();
 
     /**
      * Function which returns information about surrounding UI (e.g. open windows, active editor, etc)
@@ -60,11 +60,10 @@ public interface AIFunctionDescriptor {
     boolean isUI();
 
     /**
-     * Global functions are passed in ALL requests
+     * Indicates whether the function is a system function.
+     * System functions are not shown in the UI and can be executed without confirmation.
      */
-    boolean isGlobal();
-
-    boolean isHidden();
+    boolean isSystem();
 
     boolean isEnabledByDefault();
 
@@ -87,4 +86,7 @@ public interface AIFunctionDescriptor {
     @NotNull
     AIFunction getInstance();
 
+    static String getFullFunctionId(@NotNull String toolboxId, @NotNull String toolId) {
+        return toolboxId + "_" + toolId;
+    }
 }

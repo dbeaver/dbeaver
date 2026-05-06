@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -149,6 +150,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return true;//dataSource.isServerVersionAtLeast(10, 0);
     }
 
+    @NotNull
     @Override
     public PostgreSequence createSequence(@NotNull PostgreSchema schema) {
         return new PostgreSequence(schema);
@@ -189,13 +191,15 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return true;
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) throws DBException {
         return null;
     }
 
+    @Nullable
     @Override
-    public String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException {
+    public String readViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreViewBase view) throws DBException {
         return null;
     }
 
@@ -204,13 +208,15 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return true;
     }
 
+    @NotNull
     @Override
-    public PostgreDatabase.SchemaCache createSchemaCache(PostgreDatabase database) {
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
         return new PostgreDatabase.SchemaCache();
     }
 
+    @Nullable
     @Override
-    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+    public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             return new PostgreTableRegular(schema, dbResult);
         } else if (kind == PostgreClass.RelKind.R) {
@@ -233,8 +239,14 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
     }
 
+    @NotNull
     @Override
-    public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
+    public PostgreTableBase createNewRelation(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreSchema schema,
+        @NotNull PostgreClass.RelKind kind,
+        @Nullable Object copyFrom
+    ) throws DBException {
         if (kind == PostgreClass.RelKind.v) {
             return new PostgreView(schema);
         } else if (kind == PostgreClass.RelKind.m) {
@@ -263,15 +275,15 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
 
     @Override
-    public void configureDialect(PostgreDialect dialect) {
+    public void configureDialect(@NotNull PostgreDialect dialect) {
 
     }
 
+    @NotNull
     @Override
-    public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter, String delimiter) {
+    public String getTableModifiers(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase tableBase, boolean alter, @NotNull String delimiter) {
         StringBuilder ddl = new StringBuilder();
-        if (tableBase instanceof PostgreTable) {
-            PostgreTable table = (PostgreTable) tableBase;
+        if (tableBase instanceof PostgreTable table) {
             if (!alter) {
                 try {
                     final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
@@ -351,15 +363,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
+    public void initDefaultSSLConfig(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Map<String, String> props) {
         if (connectionInfo.getProperty(PostgreConstants.PROP_SSL) == null) {
             // We need to disable SSL explicitly (see #4928)
             props.put(PostgreConstants.PROP_SSL, "false");
         }
     }
 
+    @NotNull
     @Override
-    public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
+    public List<PostgrePrivilege> readObjectPermissions(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase object, boolean includeNestedObjects) throws DBException {
         List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl(), false);
         if (!includeNestedObjects) {
             return tablePermissions;
@@ -375,6 +388,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return tablePermissions;
     }
 
+    @NotNull
     @Override
     public Map<String, String> getDataTypeAliases() {
         return PostgreConstants.DATA_TYPE_ALIASES;
@@ -428,11 +442,13 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return dataSource.isServerVersionAtLeast(11, 0);
     }
 
+    @NotNull
     @Override
     public String getProceduresSystemTable() {
         return "pg_proc";
     }
 
+    @NotNull
     @Override
     public String getProceduresOidColumn() {
         return "oid";
@@ -553,7 +569,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute attribute) {
+    public boolean isHiddenRowidColumn(@NotNull PostgreAttribute<?> attribute) {
         return false;
     }
 
@@ -588,7 +604,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public int getParameterBindType(DBSTypedObject type, Object value) {
+    public int getParameterBindType(@NotNull DBSTypedObject type, @NotNull Object value) {
         return Types.OTHER;
     }
 

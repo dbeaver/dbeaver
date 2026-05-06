@@ -41,7 +41,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.h2gis.model.H2GISDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -52,14 +51,18 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  * @author Erwan Bocher, CNRS
  * @author Serge Rider (serge@dbeaver.com)
  */
-public class H2GISDataSourceProvider extends GenericDataSourceProvider {
+public class H2GISDataSourceProvider extends GenericDataSourceProvider<H2GISDataSource> {
 
     public H2GISDataSourceProvider() {
+        super(H2GISDataSource.class);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+    public H2GISDataSource openDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         return new H2GISDataSource(monitor, container);
     }
 }

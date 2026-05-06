@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,8 +77,12 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
-    {
+    public StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull TABLE_TYPE owner,
+        @NotNull DBECommandAbstract<OBJECT_TYPE> command,
+        @NotNull Map<String, Object> options
+    ) {
         OBJECT_TYPE constraint = command.getObject();
 
         // Create column

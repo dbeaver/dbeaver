@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDatabase;
@@ -57,44 +58,77 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
-    protected void validateObjectProperty(SQLServerView object, DBPPropertyDescriptor property, Object value) throws DBException {
+    protected void validateObjectProperty(
+        @NotNull SQLServerView object,
+        @NotNull DBPPropertyDescriptor property,
+        @Nullable Object value
+    ) throws DBException {
         if (CommonUtils.isEmpty(object.getName())) {
             throw new DBException("View name cannot be empty");
         }
     }
 
+    @NotNull
     @Override
     protected String getBaseObjectName() {
         return SQLTableManager.BASE_VIEW_NAME;
     }
 
     @Override
-    protected SQLServerView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected SQLServerView createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         SQLServerView newView = new SQLServerView((SQLServerSchema) container);
         setNewObjectName(monitor, (SQLServerSchema) container, newView);
         return newView;
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         createOrReplaceViewQuery(monitor, executionContext, actions, command.getObject(), ViewAction.CREATE);
     }
 
     @Override
-    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceViewQuery(monitor, executionContext, actionList, command.getObject(), ViewAction.ALTER);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         createOrReplaceViewQuery(monitor, executionContext, actions, command.getObject(), ViewAction.DROP);
     }
 
-    private void createOrReplaceViewQuery(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerView view, ViewAction action)
-    {
+    private void createOrReplaceViewQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull SQLServerView view,
+        @NotNull ViewAction action
+    ) {
         SQLServerDatabase procDatabase = view.getContainer().getDatabase();
         SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
         boolean addUse = defaultDatabase != null && procDatabase != null && defaultDatabase != procDatabase;
@@ -104,7 +138,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
         switch (action) {
             case CREATE:
-                actions.add(new SQLDatabasePersistAction("Create view", view.getName()));
+                actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
                 break;
             case ALTER:
                 actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource(), view.getDDL())));
@@ -120,7 +154,12 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull SQLServerView object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+    public void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull SQLServerView object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
