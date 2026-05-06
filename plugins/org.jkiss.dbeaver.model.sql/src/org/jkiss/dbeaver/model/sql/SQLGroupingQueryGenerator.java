@@ -202,15 +202,15 @@ public class SQLGroupingQueryGenerator {
             alias.deleteCharAt(alias.length() - 1);
         }
 
-        boolean isAliasReservedWord = dialect.getReservedWords()
-                .stream()
-                .anyMatch(kw -> kw.equalsIgnoreCase(alias.toString()));
-
         if (!alias.isEmpty()) {
             long numberOfSameColumnNames = Arrays.stream(funcAliases)
                 .filter(Objects::nonNull)
                 .filter(a -> a.startsWith(alias.toString().toLowerCase(Locale.ENGLISH)))
                 .count();
+
+            boolean isAliasReservedWord = dialect.getReservedWords()
+                    .stream()
+                    .anyMatch(kw -> kw.equalsIgnoreCase(alias.toString()));
 
             // Add suffix for duplicate or reserved aliases
             if (numberOfSameColumnNames > 0 || isAliasReservedWord) {
