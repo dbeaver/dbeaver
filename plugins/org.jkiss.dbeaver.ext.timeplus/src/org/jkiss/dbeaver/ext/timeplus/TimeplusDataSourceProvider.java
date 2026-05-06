@@ -16,24 +16,26 @@
  */
 package org.jkiss.dbeaver.ext.timeplus;
 
+import org.jkiss.code.DynamicCall;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.generic.GenericMetaModelRegistry;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.timeplus.model.TimeplusDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class TimeplusDataSourceProvider extends GenericDataSourceProvider {
+public class TimeplusDataSourceProvider extends GenericDataSourceProvider<TimeplusDataSource> {
 
+    @DynamicCall
     public TimeplusDataSourceProvider() {
+        super(TimeplusDataSource.class);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public TimeplusDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container
     ) throws DBException {
