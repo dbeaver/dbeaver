@@ -20,6 +20,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.Callback;
+import org.eclipse.swt.internal.DPIUtil;
+import org.eclipse.swt.internal.Win32DPIUtils;
 import org.eclipse.swt.internal.win32.OS;
 import org.eclipse.swt.internal.win32.RECT;
 import org.eclipse.swt.widgets.Display;
@@ -30,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +75,7 @@ public class ToolBarRenderFix implements IPluginService {
             }
         };
 
-        Display display = PlatformUI.createDisplay();
+        Display display = UIUtils.getDisplay();
         for (int eventId : eventsToHandle) {
             display.addFilter(eventId, listener);
         }
@@ -116,12 +119,12 @@ public class ToolBarRenderFix implements IPluginService {
 
                 List<RECT> rects = new ArrayList<>(items.length);
                 for (var item : items) { // obtain rects of toolItems to fix
-                    Rectangle bb = item.getBounds();
                     if (item.isEnabled() &&
                         (item.getStyle() & inclusiveMask) > 0 &&
                         (item.getStyle() & exclusiveMask) == 0 &&
                         item.getControl() == null
                     ) {
+                        Rectangle bb = Win32DPIUtils.pointToPixel(item.getBounds(),  DPIUtil.getZoomForAutoscaleProperty(item.nativeZoom));
                         var rect = new RECT();
                         rect.left = bb.x;
                         rect.top = bb.y;
