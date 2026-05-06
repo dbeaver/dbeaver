@@ -59,7 +59,7 @@ public class CubridProcedureManager extends GenericProcedureManager {
     protected GenericProcedure createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable final Object container,
+        @NotNull final Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {

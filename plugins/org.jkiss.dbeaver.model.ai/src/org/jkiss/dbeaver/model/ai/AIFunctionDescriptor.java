@@ -60,11 +60,10 @@ public interface AIFunctionDescriptor {
     boolean isUI();
 
     /**
-     * Global functions are passed in ALL requests
+     * Indicates whether the function is a system function.
+     * System functions are not shown in the UI and can be executed without confirmation.
      */
-    boolean isGlobal();
-
-    boolean isHidden();
+    boolean isSystem();
 
     boolean isEnabledByDefault();
 

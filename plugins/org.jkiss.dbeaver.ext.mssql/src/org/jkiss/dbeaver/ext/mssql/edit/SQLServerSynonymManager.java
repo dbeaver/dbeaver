@@ -59,7 +59,7 @@ public class SQLServerSynonymManager extends SQLServerObjectManager<SQLServerSyn
     protected SQLServerSynonym createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBCFeatureNotSupportedException {
