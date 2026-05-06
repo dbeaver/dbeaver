@@ -21,10 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * AI function call info
@@ -34,13 +34,13 @@ public class AIFunctionCall {
     private static final Log log = Log.getLog(AIFunctionCall.class);
 
     @NotNull
+    private final UUID id;
+    @NotNull
     private String functionName;
     @Nullable
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
-    @Nullable
-    private Boolean confirmed;
     @Nullable
     private transient AIFunctionDescriptor function;
 
@@ -52,6 +52,7 @@ public class AIFunctionCall {
     private Map<String, String> messageMetadata;
 
     public AIFunctionCall() {
+        id = UUID.randomUUID();
         functionName = "";
         arguments = Map.of();
     }
@@ -61,6 +62,7 @@ public class AIFunctionCall {
         @NotNull Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
+        this.id = UUID.randomUUID();
         this.functionName = functionName;
         this.arguments = arguments;
         this.messageMetadata = messageMetadata;
@@ -68,6 +70,11 @@ public class AIFunctionCall {
 
     public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
         this(functionName, arguments, null);
+    }
+
+    @NotNull
+    public UUID getId() {
+        return id;
     }
 
     @NotNull
@@ -115,14 +122,6 @@ public class AIFunctionCall {
 
     public void setHint(@Nullable String hint) {
         this.hint = hint;
-    }
-
-    public boolean isConfirmed() {
-        return CommonUtils.getBoolean(confirmed, true);
-    }
-
-    public void setConfirmed(boolean confirmed) {
-        this.confirmed = confirmed;
     }
 
     @Nullable
