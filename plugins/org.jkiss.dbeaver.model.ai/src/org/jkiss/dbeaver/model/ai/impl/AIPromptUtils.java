@@ -83,6 +83,9 @@ public class AIPromptUtils {
                 String schemaTerm = (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()).toLowerCase();
                 lines.add("Default " + schemaTerm + ": " + currentSchema);
             }
+            if (dataSource.getDataSourceContainer().isConnectionReadOnly()) {
+                lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
+            }
         }
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
 

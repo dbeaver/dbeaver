@@ -91,7 +91,7 @@ public class GaussDBFunctionManager extends SQLObjectEditor<GaussDBFunction, Gau
     protected GaussDBFunction createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable final Object container,
+        @NotNull final Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

@@ -54,7 +54,7 @@ public class MySQLEventManager extends SQLObjectEditor<MySQLEvent, MySQLCatalog>
     protected MySQLEvent createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

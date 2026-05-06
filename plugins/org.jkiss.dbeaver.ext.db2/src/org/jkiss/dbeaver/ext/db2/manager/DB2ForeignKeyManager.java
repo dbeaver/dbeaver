@@ -69,7 +69,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     public DB2TableForeignKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object table,
+        @NotNull Object table,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     )
