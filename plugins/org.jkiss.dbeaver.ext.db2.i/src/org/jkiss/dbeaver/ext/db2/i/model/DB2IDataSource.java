@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.exec.DBCNativeBatchAutoCommit;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -35,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class DB2IDataSource extends GenericDataSource implements DBCNativeBatchAutoCommit {
+public class DB2IDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(DB2IDataSource.class);
     
