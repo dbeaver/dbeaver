@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHPortForwardConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -148,14 +149,14 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
 
         // PageantConnector only works on Windows.
         // On Windows, Pageant takes priority and authSockPath is not applicable.
-        try {
-            connector = new PageantConnector();
-            log.debug("SSHSessionController: connected with pageant");
-        } catch (Exception e) {
-            log.debug("SSHSessionController: pageant connect exception", e);
-        }
-
-        if (connector == null) {
+        if (RuntimeUtils.isWindows()) {
+            try {
+                connector = new PageantConnector();
+                log.debug("SSHSessionController: connected with pageant");
+            } catch (Exception e) {
+                log.debug("SSHSessionController: pageant connect exception", e);
+            }
+        } else {
             try {
                 if (CommonUtils.isNotEmpty(authSockPath)) {
                     connector = new SSHAgentConnector(new JUnixSocketFactory(), Path.of(authSockPath));
