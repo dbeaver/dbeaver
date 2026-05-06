@@ -58,10 +58,9 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return client.getInstance().loadModels(monitor, requestSessionToken(monitor).token()).stream()
-            .map(model -> CopilotModels.getModelByName(model.id()).orElse(
-                new AIModel(model.id(), null, Set.of())
-            ))
+        List<CopilotModel> copilotModels = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
+        return copilotModels.stream()
+            .map(model -> new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT)))
             .toList();
     }
 
