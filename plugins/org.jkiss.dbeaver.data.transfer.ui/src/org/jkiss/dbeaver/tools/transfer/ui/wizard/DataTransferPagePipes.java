@@ -23,6 +23,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -88,12 +91,13 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        SashForm sash = new SashForm(composite, SWT.HORIZONTAL);
+        SashForm sash = new SashForm(composite, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(70, 30);
+        createNodesTable(sash);
+        sash.setWeights(30, 70);
+        //sash.setSashWidth(5);
 
         setControl(composite);
     }
@@ -104,11 +108,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        Table table = nodesTable.getTable();
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 350;
-        gd.widthHint = 400;
-        nodesTable.getTable().setLayoutData(gd);
-        nodesTable.getTable().setLinesVisible(true);
+        gd.heightHint = 20 * (UIUtils.getFontHeight(table));
+        table.setLayoutData(gd);
+        table.setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
             if (inputElement instanceof Collection) {
                 return ((Collection<?>) inputElement).toArray();
@@ -134,21 +138,33 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     } else {
                         label = element.node.getDescription();
                     }
+                    cell.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 }
                 cell.setText(label);
             }
+
+            @Override
+            public String getToolTipText(Object element) {
+                if (element instanceof TransferTarget tt) {
+                    if (tt.processor != null) {
+                        return tt.processor.getDescription();
+                    }
+                }
+                return super.getToolTipText(element);
+            }
         };
+        ColumnViewerToolTipSupport.enableFor(nodesTable);
         {
             TableViewerColumn columnName = new TableViewerColumn(nodesTable, SWT.LEFT);
             columnName.setLabelProvider(labelProvider);
             columnName.getColumn().setText(DTMessages.data_transfer_wizard_init_column_exported);
 
-            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.LEFT);
+            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.RIGHT);
             columnDesc.setLabelProvider(labelProvider);
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
-        nodesTable.getTable().addSelectionListener(new SelectionListener() {
+        table.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -197,24 +213,28 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createInputsTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_group_objects);
-
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 200;
-        gd.heightHint = 200;
-        inputsTable.getTable().setLayoutData(gd);
-        inputsTable.getTable().setLinesVisible(true);
+        Table table = inputsTable.getTable();
+        table.setLayoutData(gd);
+        table.setLinesVisible(true);
+        UIUtils.createTableColumn(table, SWT.LEFT, "Table").setWidth(100);
         inputsTable.setContentProvider(new ListContentProvider());
-        UIWidgets.createTableContextMenu(inputsTable.getTable(), null);
+        UIWidgets.createTableContextMenu(table, null);
         DBNModel nModel = DBWorkbench.getPlatform().getNavigatorModel();
         CellLabelProvider labelProvider = new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 DBSObject element = (DBSObject) cell.getElement();
                 if (cell.getColumnIndex() == 0) {
-                    DBNDatabaseNode objectNode = nModel.getNodeByObject(element);
-                    DBPImage icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
+                    DBPImage icon;
+                    DBSEntity entity = DBUtils.getAdapter(DBSEntity.class, element);
+                    if (entity != null) {
+                        DBNDatabaseNode objectNode = nModel.getNodeByObject(entity);
+                        icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
+                    } else {
+                        icon = UIIcon.SQL_SCRIPT;
+                    }
                     cell.setImage(DBeaverIcons.getImage(icon));
                     final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
                     if (queryContainer != null) {
@@ -280,7 +300,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             setSelectedSettings(false);
         }
 
-        UIUtils.packColumns(nodesTable.getTable());
+        UIUtils.packColumns(inputsTable.getTable(), true);
+        UIUtils.packColumns(nodesTable.getTable(), true);
 
         updatePageCompletion();
     }
