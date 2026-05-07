@@ -234,6 +234,9 @@ public final class ModelPreferences
 
     public static final String RESULT_SET_REREAD_ON_SCROLLING = "resultset.reread.on.scroll"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
+    // Maximum number of elements in a collection (array/list) to render inline in the cell instead of
+    // collapsing into a "[+N]" size hint. Zero or negative disables the feature (always show the hint).
+    public static final String RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT = "resultset.inline.collection.element.limit"; //$NON-NLS-1$
 
 
     public static final String SQL_PARAMETERS_ENABLED = "sql.parameter.enabled"; //$NON-NLS-1$
@@ -363,6 +366,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS_USE_SQL, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_PRESENTATION, DBConstants.BINARY_FORMATS[0].getId());
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT, 10);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_USE_FETCH_SIZE, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_IGNORE_COLUMN_LABEL, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_ORDERING_POLICY, OrderingPolicy.DEFAULT);

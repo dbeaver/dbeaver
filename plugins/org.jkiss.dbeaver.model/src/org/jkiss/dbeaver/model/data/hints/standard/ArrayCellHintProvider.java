@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.data.hints.standard;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDCollection;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.EnumSet;
@@ -49,15 +52,31 @@ public class ArrayCellHintProvider implements DBDCellHintProvider {
             !CommonUtils.isBitSet(options, OPTION_ROW_EXPANDED) &&
             value instanceof DBDCollection collection
         ) {
-            if (collection.size() > 1) {
-                return new DBDValueHint[] {
-                    new ValueHintText(
-                        !CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? "[+" + (collection.size() - 1) + "]" : String.valueOf(collection.size()),
-                        "Size", null)
-                };
+            int size = collection.size();
+            if (size <= 1) {
+                return null;
             }
+            // Suppress the size hint for small collections so the cell renders the
+            // full array inline instead of truncating to "first element [+N]".
+            int inlineLimit = getInlineElementLimit(attribute);
+            if (inlineLimit > 0 && size <= inlineLimit) {
+                return null;
+            }
+            return new DBDValueHint[] {
+                new ValueHintText(
+                    !CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? "[+" + (size - 1) + "]" : String.valueOf(size),
+                    "Size", null)
+            };
         }
         return null;
+    }
+
+    private static int getInlineElementLimit(@NotNull DBDAttributeBinding attribute) {
+        DBPDataSource dataSource = attribute.getDataSource();
+        DBPPreferenceStore prefStore = dataSource != null
+            ? dataSource.getContainer().getPreferenceStore()
+            : ModelPreferences.getPreferences();
+        return prefStore.getInt(ModelPreferences.RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT);
     }
 
 }

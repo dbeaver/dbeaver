@@ -41,6 +41,8 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_calc_column_width_by_values_tip;
     public static String pref_page_database_resultsets_label_structurize_complex_types;
     public static String pref_page_database_resultsets_label_structurize_complex_types_tip;
+    public static String pref_page_database_resultsets_label_inline_collection_limit;
+    public static String pref_page_database_resultsets_label_inline_collection_limit_tip;
     public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
     public static String pref_page_database_resultsets_label_right_justify_datetime;
     public static String pref_page_database_resultsets_label_auto_completion;

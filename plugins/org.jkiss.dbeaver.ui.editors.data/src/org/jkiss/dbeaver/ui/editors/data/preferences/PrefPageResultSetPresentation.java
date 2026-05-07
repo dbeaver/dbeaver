@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -48,6 +50,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     private Button columnWidthByValue;
     private Button showConnectionName;
     private Button transformComplexTypes;
+    private Spinner inlineCollectionLimit;
     private Button rightJustifyNumbers;
     private Button rightJustifyDateTime;
     private Button autoCompleteProposal;
@@ -66,6 +69,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
             store.contains(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME) ||
             store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
+            store.contains(ModelPreferences.RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME) ||
             store.contains(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL);
@@ -114,6 +118,12 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types,
                 DataEditorsMessages.pref_page_database_resultsets_label_structurize_complex_types_tip,
                 false, 2);
+            inlineCollectionLimit = UIUtils.createLabelSpinner(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_inline_collection_limit,
+                DataEditorsMessages.pref_page_database_resultsets_label_inline_collection_limit_tip,
+                10, 0, Integer.MAX_VALUE);
+            inlineCollectionLimit.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date,
                 null, false, 2);
@@ -146,6 +156,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
             rightJustifyNumbers.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
             rightJustifyDateTime.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
             transformComplexTypes.setSelection(store.getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
+            inlineCollectionLimit.setSelection(store.getInt(ModelPreferences.RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT));
             autoCompleteProposal.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL));
         } catch (Exception e) {
             log.warn(e);
@@ -166,6 +177,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, rightJustifyNumbers.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME, rightJustifyDateTime.getSelection());
             store.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, transformComplexTypes.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT, inlineCollectionLimit.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL, autoCompleteProposal.getSelection());
         } catch (Exception e) {
             log.warn(e);
@@ -182,7 +194,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         store.setToDefault(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
         store.setToDefault(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
         store.setToDefault(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
-        store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);  
+        store.setToDefault(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
+        store.setToDefault(ModelPreferences.RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT);
         store.setToDefault(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL);
     }
 
@@ -201,6 +214,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         columnWidthByValue.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES));
         showConnectionName.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME));
         transformComplexTypes.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES));
+        inlineCollectionLimit.setSelection(store.getDefaultInt(ModelPreferences.RESULT_SET_INLINE_COLLECTION_ELEMENT_LIMIT));
         rightJustifyNumbers.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS));
         rightJustifyDateTime.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME));
         autoCompleteProposal.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL));
