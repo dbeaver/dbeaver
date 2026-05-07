@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +40,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final String description;
     private final DBPImage icon;
     private final List<Uses> uses;
-    private final UIFunctionSupport uiAction;
+    private final UIFunctionSupport uiFunctions;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -51,8 +52,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         this.uses = Stream.of(config.getChildren("uses"))
             .map(Uses::new)
             .toList();
-        String uiAction = config.getAttribute("uiAction");
-        this.uiAction = UIFunctionSupport.valueOf(uiAction != null ? uiAction.toUpperCase() : "NONE");
+        this.uiFunctions = CommonUtils.valueOf(UIFunctionSupport.class, config.getAttribute("uiFunctions"), UIFunctionSupport.NONE);
     }
 
     @NotNull
@@ -81,11 +81,11 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     }
 
     public boolean isSupportsActions(long messageUserCount) {
-        return uiAction.supportsActions(messageUserCount);
+        return uiFunctions.supportsActions(messageUserCount);
     }
 
     public boolean isSupportsUi(long messageUserCount) {
-        return uiAction.supportsUi(messageUserCount);
+        return uiFunctions.supportsUi(messageUserCount);
     }
 
     @NotNull

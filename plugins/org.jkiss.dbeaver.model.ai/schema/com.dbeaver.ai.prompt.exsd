@@ -69,7 +69,7 @@
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="uiAction" type="string">
+         <attribute name="uiFunctions" type="string">
             <annotation>
                <documentation>
                   Controls if and when UI and ACTION functions are injected into the context.

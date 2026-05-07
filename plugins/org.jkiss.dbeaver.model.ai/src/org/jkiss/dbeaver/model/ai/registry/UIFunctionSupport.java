@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 public enum UIFunctionSupport {
     ALL,
-    AFTER_FIRST,
+    AFTER_FIRST, //both UI and ACTION functions are included starting from the second message, keeping the initial context smaller.
     ONLY_UI,
     ONLY_ACTION,
     NONE;
