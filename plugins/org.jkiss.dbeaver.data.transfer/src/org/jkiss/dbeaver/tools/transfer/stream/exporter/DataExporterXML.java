@@ -178,22 +178,6 @@ public class DataExporterXML extends StreamExporterAbstract {
         return "_" + escapedName;
     }
 
-    /**
-     * Builds the XML element name for a column using the column label (with a
-     * fallback to the column name when the label is empty), so that the
-     * DOCTYPE declaration, per-column ELEMENT declarations and the actual
-     * element tags emitted in every row all reference the same name.
-     *
-     * Before this helper the three call sites disagreed: the DATA_RECORD
-     * content list used the label, but the per-column ELEMENT declarations
-     * and the row tags used the raw column name, so an aliased SELECT
-     * (e.g. `SELECT price AS "Unit Price"`) produced XML whose DOCTYPE
-     * referenced `<Unit_Price>` while the rows emitted `<price>` — the
-     * resulting document failed DTD validation.
-     *
-     * Matches the label-first idiom the JSON exporter already uses (merged
-     * in #2731).
-     */
     private String getXmlColumnName(DBDAttributeBinding column) {
         String colName = column.getLabel();
         if (CommonUtils.isEmpty(colName)) {
