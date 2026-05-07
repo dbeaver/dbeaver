@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -105,8 +106,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createNodesTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
-
+        UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         Table table = nodesTable.getTable();
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -213,6 +213,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createInputsTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
+        UIUtils.createControlLabel(panel, DTUIMessages.database_producer_page_input_objects_name);
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         Table table = inputsTable.getTable();
