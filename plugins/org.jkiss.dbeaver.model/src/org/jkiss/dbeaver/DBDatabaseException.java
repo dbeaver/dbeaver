@@ -86,7 +86,7 @@ public class DBDatabaseException extends DBException {
         if (!CommonUtils.isEmpty(sqlMessage)) {
             msg.append(": ").append(SQLUtils.stripTransformations(sqlMessage)); //$NON-NLS-1$
         } else if (ex.getErrorCode() > 0) {
-            msg.append(": ORA-").append(String.format("%05d", ex.getErrorCode())); //$NON-NLS-1$
+            msg.append(": Error ").append(ex.getErrorCode()); //$NON-NLS-1$
         }
         return msg.toString();
     }
