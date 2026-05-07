@@ -52,8 +52,8 @@ public class DuckDBStructValueHandler extends JDBCStructValueHandler {
             } catch (DBCException e) {
                 log.warn(e);
             }
-        } else if (object instanceof Array) {
-            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, (Array) object);
+        } else if (object instanceof Array array) {
+            return JDBCCollection.makeCollectionFromArray((JDBCSession) session, type, array);
         } else {
             log.warn("Incorrect use of handler: " + this.getClass().getSimpleName());
         }
