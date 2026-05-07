@@ -241,15 +241,29 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     if (queryContainer != null) {
                         cell.setText(
                             CommonUtils.truncateString(
-                                CommonUtils.getSingleLineString(queryContainer.getQuery().getText()), 64));
+                                CommonUtils.getSingleLineString(queryContainer.getQuery().getText()), 1024));
                     } else {
                         cell.setText(
                             CommonUtils.truncateString(
-                                DBUtils.getObjectFullName(element, DBPEvaluationContext.UI), 64));
+                                DBUtils.getObjectFullName(element, DBPEvaluationContext.UI), 1024));
                     }
                 }
             }
+
+            @Override
+            public String getToolTipText(Object element) {
+                final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
+                if (queryContainer != null) {
+                    return CommonUtils.truncateString(queryContainer.getQuery().getText(), 64000);
+                } else if (element instanceof DBSObject object) {
+                    return CommonUtils.truncateString(
+                        DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), 64000);
+                } else {
+                    return null;
+                }
+            }
         };
+        ColumnViewerToolTipSupport.enableFor(inputsTable);
         inputsTable.setLabelProvider(labelProvider);
     }
 
