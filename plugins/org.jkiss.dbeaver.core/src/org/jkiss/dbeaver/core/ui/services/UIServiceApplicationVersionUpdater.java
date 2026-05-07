@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.qm.filters;
+package org.jkiss.dbeaver.core.ui.services;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+public interface UIServiceApplicationVersionUpdater {
 
-public class QMQueryFilter {
-    @NotNull
-    private final String query;
-    @Nullable
-    private final String filterValue;
+    boolean isAutoUpdateEnabled();
 
-    public QMQueryFilter(@NotNull String query, @Nullable String filterValue) {
-        this.query = query;
-        this.filterValue = filterValue;
-    }
+    boolean handleVersionUpdate();
 
-    @Nullable
-    public String getFilterValue() {
-        return filterValue;
-    }
-
-    @NotNull
-    public String getQuery() {
-        return query;
-    }
 }

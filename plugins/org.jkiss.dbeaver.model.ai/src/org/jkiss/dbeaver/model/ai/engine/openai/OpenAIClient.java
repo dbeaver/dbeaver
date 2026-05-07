@@ -198,6 +198,10 @@ public class OpenAIClient extends AbstractHttpAIClient {
                 String data = event.substring(DATA_EVENT.length()).trim();
                 try {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
+                    if (chunk.error != null) {
+                        listener.error(new DBException(chunk.error.code + ": " + chunk.error.message));
+                        return;
+                    }
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
                         listener.usage(chunk.response.getAIUsage());
                     } else {
@@ -248,6 +252,8 @@ public class OpenAIClient extends AbstractHttpAIClient {
                         case "response.content_part.done":
                         case "response.output_item.done":
                         case EVENT_TYPE_RESPONSE_COMPLETED:
+                            break;
+                        case "error":
                             break;
                     }
                 }

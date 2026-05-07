@@ -65,6 +65,7 @@
         <module>org.jkiss.dbeaver.ext.ocient</module>
         <module>org.jkiss.dbeaver.ext.oracle</module>
         <module>org.jkiss.dbeaver.ext.phoenix</module>
+        <module>org.jkiss.dbeaver.ext.starrocks</module>
 
         <module>org.jkiss.dbeaver.ext.postgresql</module>
 

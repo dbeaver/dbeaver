@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
@@ -33,16 +35,19 @@ public interface DBEPersistAction {
         COMMENT
     }
 
+    @NotNull
     String getTitle();
 
+    @NotNull
     String getScript();
 
-    void beforeExecute(DBCSession session)
+    void beforeExecute(@NotNull DBCSession session)
         throws DBException;
 
-    void afterExecute(DBCSession session, Throwable error)
+    void afterExecute(@NotNull DBCSession session, @Nullable Throwable error)
         throws DBException;
 
+    @NotNull
     ActionType getType();
 
     boolean isComplex();

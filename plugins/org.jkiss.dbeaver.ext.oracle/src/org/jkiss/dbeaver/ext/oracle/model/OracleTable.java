@@ -180,6 +180,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
+    @Nullable
     @Override
     public TableAdditionalInfo getAdditionalInfo()
     {
@@ -373,6 +374,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
             && getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_SUPPORT_ROWID);
     }
 
+    @Nullable
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
         if (this.hasRowIdPseudoAttribute()) {
@@ -385,6 +387,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         }
     }
 
+    @NotNull
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (this.allPseudoAttributes == null) {
