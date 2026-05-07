@@ -34,10 +34,7 @@ import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
@@ -230,6 +227,25 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         return commands.values().stream().toList();
     }
 
+    @NotNull
+    private static List<CLICommandDescriptor> matchInvokedCommands(@NotNull String[] args) {
+        if (args.length == 0) {
+            return List.of();
+        }
+        Set<String> argSet = new HashSet<>(Arrays.asList(args));
+        List<CLICommandDescriptor> matched = new ArrayList<>();
+        for (CLICommandDescriptor descriptor : commands.values()) {
+            CommandLine.Command annotation = descriptor.getImplClass().getAnnotation(CommandLine.Command.class);
+            if (annotation == null || CommonUtils.isEmpty(annotation.name())) {
+                continue;
+            }
+            if (argSet.contains(annotation.name())) {
+                matched.add(descriptor);
+            }
+        }
+        return matched;
+    }
+
     private static CommandLine.Model.CommandSpec findCommandForHelp(
         @NotNull CommandLine.ParseResult parseResult
     ) {
@@ -253,7 +269,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     public void preprocessCommandLine(
         @NotNull String[] args
     ) throws DBException {
-        for (CLICommandDescriptor descriptor : extractCommandsToExecuteFromArgs(args)) {
+        for (CLICommandDescriptor descriptor : matchInvokedCommands(args)) {
             preprocessCommandLineParameter(
                 descriptor,
                 false
