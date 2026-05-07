@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
@@ -135,7 +136,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         setDefaultCatalog(monitor, schema.getDatabase(), schema, false);
     }
 
-    boolean changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect, boolean force) throws DBCException {
+    boolean changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect, boolean force) throws DBException {
         if (activeSchemaId == schema.getObjectId() && !force) {
             return false;
         }
@@ -223,28 +224,35 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return true;
     }
 
+    @Nullable
     public String getActiveUser() {
         return activeUser;
     }
 
+    @NotNull
     public List<String> getSearchPath() {
         return searchPath;
     }
 
-    private void addSearchPath(String path) {
+    private void addSearchPath(@NotNull String path) {
         searchPath.clear();
         searchPath.add(path);
-        if (!path.contains(activeUser)) {
+        if (!path.contains(activeUser) && !(getDataSource().getServerType() instanceof PostgreServerRedshift)) {
             searchPath.add(activeUser);
         }
     }
 
-    private void setSearchPath(@NotNull DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
+    private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBException {
         List<String> newSearchPath = new ArrayList<>(searchPath);
         int schemaIndex = newSearchPath.indexOf(defSchemaName);
         {
             if (schemaIndex < 0) {
                 // Remove from previous position
+                if (getDataSource().getServerType() instanceof PostgreServerRedshift
+                    && getDefaultCatalog().getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME) == null
+                    && !PostgreConstants.PUBLIC_SCHEMA_NAME.equals(defSchemaName)) {
+                    newSearchPath.removeIf(PostgreConstants.PUBLIC_SCHEMA_NAME::equals);
+                }
                 newSearchPath.addFirst(defSchemaName);
             }
         }
