@@ -43,7 +43,6 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -126,7 +125,6 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         loadViewConfig();
         loadTasks();
-        updateViewTitle();
 
         projectListener = new DBPProjectListener() {
             @Override
@@ -401,21 +399,11 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     void refresh() {
-        updateViewTitle();
-
         if (tasksTree != null) {
             tasksTree.refresh();
         }
 
         loadTaskRuns(true);
-    }
-
-    private void updateViewTitle() {
-        IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(VIEW_ID);
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        String projectName = Objects.requireNonNull(activeProject == null ? "" : activeProject.getName(), "");
-        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") + " - " + projectName);
-        setTitleToolTip(NLS.bind(TaskUIViewMessages.db_tasks_view_adapter_label_database_tasks_tooltip, projectName));
     }
 
     private void loadTasks() {
@@ -519,10 +507,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof TaskCategoryNode)) {
+            if (!(obj instanceof TaskCategoryNode cmp)) {
                 return false;
             }
-            TaskCategoryNode cmp = (TaskCategoryNode)obj;
             return project == cmp.project &&
                 CommonUtils.equalObjects(parent, cmp.parent) &&
                 category == cmp.category;
