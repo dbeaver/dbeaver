@@ -398,7 +398,7 @@ public class DBeaverLauncher {
      */
     private static void patchJavaSecurity(String[] args) {
         // We need a way to disable this using a Java property just in case
-        if (!Boolean.parseBoolean(System.getProperty("dbeaver.security.enableLegacyAlgorithms", "true"))) {
+        if (!Boolean.parseBoolean(System.getProperty("dbeaver.security.enableLegacyAlgorithms", "false"))) {
             return;
         }
         // Let's detect a desktop DBeaver or dbvr using their product ID

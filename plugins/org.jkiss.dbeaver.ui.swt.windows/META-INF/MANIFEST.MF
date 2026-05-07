@@ -11,6 +11,10 @@ Bundle-ActivationPolicy: lazy
 SWT-WS: win32
 SWT-OS: win32
 Eclipse-PlatformFilter: (& (osgi.ws=win32) (osgi.os=win32) )
-Export-Package: org.eclipse.swt.browser
-Require-Bundle: org.eclipse.swt
+Export-Package: org.eclipse.swt.browser,
+    org.jkiss.dbeaver.ui.swt.windows
+Require-Bundle: org.eclipse.swt,
+    org.eclipse.ui,
+    org.jkiss.dbeaver.model,
+    org.jkiss.dbeaver.ui
 Automatic-Module-Name: org.jkiss.dbeaver.ui.swt.windows
