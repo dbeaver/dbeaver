@@ -142,7 +142,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS));
         sqlGenerator.setShowFullDdl(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS) != null &&
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
-        sqlGenerator.setFormatSql(getDialogBoundsSettings().get(DBPScriptObject.OPTION_FORMAT_SQL) != null &&
+        sqlGenerator.setFormatSql(supportsFormatting && getDialogBoundsSettings().get(DBPScriptObject.OPTION_FORMAT_SQL) != null &&
             getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_FORMAT_SQL));
 
         generateDDLJob = new AbstractJob("Generating DDL") {
