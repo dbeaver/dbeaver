@@ -157,6 +157,18 @@ public class ResultSetMessages extends NLS {
     public static String actions_name_color_by;
     public static String actions_name_color_reset_by;
     public static String actions_name_row_colors;
+    public static String actions_name_group_row_striping;
+    public static String dialog_group_row_striping_title;
+    public static String dialog_group_row_striping_enable;
+    public static String dialog_group_row_striping_columns_label;
+    public static String dialog_group_row_striping_add;
+    public static String dialog_group_row_striping_remove;
+    public static String dialog_group_row_striping_up;
+    public static String dialog_group_row_striping_down;
+    public static String dialog_group_row_striping_sort_by_group;
+    public static String dialog_group_row_striping_sort_by_group_tip;
+    public static String dialog_group_row_striping_color_first;
+    public static String dialog_group_row_striping_color_second;
     public static String actions_name_structurize_complex_types;
     public static String actions_spreadsheet_copy_special;
 
