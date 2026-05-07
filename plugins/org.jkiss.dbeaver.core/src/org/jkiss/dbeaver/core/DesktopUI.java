@@ -429,6 +429,19 @@ public class DesktopUI extends ConsoleUserInterface {
         }.execute();
     }
 
+    @Override
+    public boolean promptAuthModelCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) {
+        return new UITask<Boolean>() {
+            @Override
+            public Boolean runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
+                return AuthModelCredentialsDialog.openDialog(shell, dataSourceContainer);
+            }
+        }.execute();
+    }
+
     @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible) {

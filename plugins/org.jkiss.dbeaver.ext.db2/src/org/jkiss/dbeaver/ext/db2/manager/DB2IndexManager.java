@@ -52,7 +52,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
     protected DB2Index createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
