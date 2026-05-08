@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,17 +33,25 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingAttribute;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamConsumerPageSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,6 +60,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,8 +77,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         DataTransferNodeDescriptor node;
         DataTransferProcessorDescriptor processor;
 
-        private TransferTarget(DataTransferNodeDescriptor node, DataTransferProcessorDescriptor processor)
-        {
+        private TransferTarget(DataTransferNodeDescriptor node, DataTransferProcessorDescriptor processor) {
             this.node = node;
             this.processor = processor;
         }
@@ -98,7 +107,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         createInputsTable(sash);
         createNodesTable(sash);
         sash.setWeights(30, 70);
-        //sash.setSashWidth(5);
+        sash.setSashWidth(5);
 
         setControl(composite);
     }
@@ -214,6 +223,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         Composite panel = UIUtils.createComposite(composite, 1);
 
         UIUtils.createControlLabel(panel, DTUIMessages.database_producer_page_input_objects_name);
+
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         Table table = inputsTable.getTable();
@@ -265,6 +275,92 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         };
         ColumnViewerToolTipSupport.enableFor(inputsTable);
         inputsTable.setLabelProvider(labelProvider);
+
+        Composite buttonsPanel = UIUtils.createComposite(panel, 2);
+        UIUtils.createPushButton(
+            buttonsPanel,
+            DTUIMessages.stream_consumer_page_mapping_button_configure,
+            null,
+            null,
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                final List<StreamMappingContainer> mappings = new ArrayList<>();
+
+                StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
+                if (streamConsumerSettings == null) {
+                    DBWorkbench.getPlatformUI().showError(
+                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                        "Current configuration do not support stream settings"
+                    );
+                    return;
+                }
+                try {
+                    UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, streamConsumerSettings, mappings));
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                        DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                        e
+                    );
+                    return;
+                }
+
+                new ConfigureColumnsDialog(getShell(), mappings, streamConsumerSettings).open();
+            })
+        );
+        if (false) {
+            // TODO: move extraction settings to dialog a bit later
+            UIUtils.createPushButton(
+                buttonsPanel,
+                DTUIMessages.database_producer_page_extract_settings_name_and_title,
+                null,
+                null,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                    ConfigureDataExtractionDialog dialog = new ConfigureDataExtractionDialog(getShell(), getWizard());
+                    dialog.open();
+                })
+            );
+        }
+    }
+
+    @Nullable
+    private StreamConsumerSettings getStreamConsumerSettings() {
+        StreamConsumerPageSettings page = getWizard().getPage(StreamConsumerPageSettings.class);
+        if (page == null) {
+            return null;
+        }
+        return getWizard().getPageSettings(page, StreamConsumerSettings.class);
+    }
+
+    private void refreshMappings(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StreamConsumerSettings settings,
+        @NotNull List<StreamMappingContainer> mappings
+    ) {
+        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+
+        try {
+            monitor.beginTask("Load mappings", pipes.size());
+            for (DataTransferPipe pipe : pipes) {
+                DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
+                StreamMappingContainer mapping = settings.getDataMapping(source);
+
+                if (mapping == null) {
+                    mapping = new StreamMappingContainer(source);
+
+                    for (StreamMappingAttribute attribute : mapping.getAttributes(monitor)) {
+                        attribute.setMappingType(StreamMappingType.export);
+                    }
+                } else {
+                    // Create a copy to avoid direct modifications
+                    mapping = new StreamMappingContainer(mapping);
+                }
+
+                mappings.add(mapping);
+                monitor.worked(1);
+            }
+        } finally {
+            monitor.done();
+        }
     }
 
     @Override
