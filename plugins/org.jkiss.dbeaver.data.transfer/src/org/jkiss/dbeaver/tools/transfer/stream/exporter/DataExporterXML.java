@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -165,7 +166,8 @@ public class DataExporterXML extends StreamExporterAbstract {
         }
     }
 
-    private String escapeXmlElementName(String name) {
+    @NotNull
+    private String escapeXmlElementName(@Nullable String name) {
         if (CommonUtils.isEmpty(name)) {
             return "_";
         }
@@ -178,7 +180,8 @@ public class DataExporterXML extends StreamExporterAbstract {
         return "_" + escapedName;
     }
 
-    private String getXmlColumnName(DBDAttributeBinding column) {
+    @NotNull
+    private String getXmlColumnName(@NotNull DBDAttributeBinding column) {
         String colName = column.getLabel();
         if (CommonUtils.isEmpty(colName)) {
             colName = column.getName();
