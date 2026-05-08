@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -35,19 +37,19 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 class ConfigureColumnsDialog extends BaseDialog {
     private final List<StreamMappingContainer> mappings;
     private final StreamConsumerSettings settings;
 
-    private TreeViewer viewer;
+    private CheckboxTreeViewer viewer;
     private CLabel errorLabel;
 
     public ConfigureColumnsDialog(
@@ -73,11 +75,11 @@ class ConfigureColumnsDialog extends BaseDialog {
         Composite composite = UIUtils.createComposite(group, 1);
         composite.setLayoutData(gd);
 
-        viewer = new TreeViewer(composite, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
+        viewer = new CheckboxTreeViewer(composite, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTree().setLinesVisible(false);
-        viewer.getTree().setHeaderVisible(true);
         viewer.getTree().setLayoutData(gd);
+
 
         viewer.setContentProvider(new TreeContentProvider() {
             @Override
@@ -106,75 +108,6 @@ class ConfigureColumnsDialog extends BaseDialog {
             column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_name_column_name);
         }
 
-        {
-            TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
-            column.setLabelProvider(new CellLabelProvider() {
-                @Override
-                public void update(ViewerCell cell) {
-                    final Object element = cell.getElement();
-                    if (element instanceof StreamMappingAttribute attribute) {
-                        cell.setText(attribute.getMappingType().name());
-                        cell.setBackground(attribute.getContainer().isComplete() ? null : UIUtils.getSharedTextColors().getColor(
-                            SharedTextColors.COLOR_WARNING));
-                    } else if (element instanceof StreamMappingContainer container) {
-                        final StreamMappingType type = container.getMappingType();
-                        cell.setText(type != null ? type.name() : "");
-                        cell.setBackground(
-                            container.isComplete() ? null : UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
-                    }
-                }
-            });
-            column.setEditingSupport(new EditingSupport(viewer) {
-                @Override
-                protected CellEditor getCellEditor(Object element) {
-                    final String[] items = {
-                        StreamMappingType.export.name(),
-                        StreamMappingType.skip.name()
-                    };
-
-                    return new CustomComboBoxCellEditor(
-                        viewer,
-                        viewer.getTree(),
-                        items,
-                        SWT.DROP_DOWN | SWT.READ_ONLY
-                    );
-                }
-
-                @Override
-                protected boolean canEdit(Object element) {
-                    return true;
-                }
-
-                @Override
-                protected Object getValue(Object element) {
-                    if (element instanceof StreamMappingAttribute attribute) {
-                        return attribute.getMappingType().name();
-                    } else if (element instanceof StreamMappingContainer container) {
-                        final StreamMappingType type = container.getMappingType();
-                        return type != null ? type.name() : null;
-                    } else {
-                        return null;
-                    }
-                }
-
-                @Override
-                protected void setValue(Object element, Object value) {
-                    if (((String) value).isEmpty()) {
-                        return;
-                    }
-                    final StreamMappingType type = StreamMappingType.valueOf(value.toString());
-                    if (element instanceof StreamMappingAttribute attribute) {
-                        attribute.setMappingType(type);
-                    } else if (element instanceof StreamMappingContainer container) {
-                        container.setMappingType(type);
-                    }
-                    viewer.refresh();
-                    updateCompletion();
-                }
-            });
-            column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_mapping_column_name);
-        }
-
         errorLabel = new CLabel(group, SWT.NONE);
         errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
         errorLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_ERROR));
@@ -183,6 +116,21 @@ class ConfigureColumnsDialog extends BaseDialog {
         UIUtils.asyncExec(() -> {
             viewer.setInput(mappings);
             viewer.expandAll(true);
+
+            List<Object> checked = new ArrayList<>();
+            for (StreamMappingContainer element : mappings) {
+                final StreamMappingType type = element.getMappingType();
+                if (type == StreamMappingType.export) {
+                    checked.add(element);
+                }
+                for (StreamMappingAttribute attr : element.getAttributes(new VoidProgressMonitor())) {
+                    if (attr.getMappingType() == StreamMappingType.export) {
+                        checked.add(attr);
+                    }
+                }
+            }
+            viewer.setCheckedElements(checked.toArray());
+
             UIUtils.packColumns(viewer.getTree(), true, new float[] {0.75f, 0.25f});
             updateCompletion();
         });
@@ -194,6 +142,14 @@ class ConfigureColumnsDialog extends BaseDialog {
     protected void okPressed() {
         settings.getDataMappings().clear();
 
+        Set<Object> checkedElements = Set.of(viewer.getCheckedElements());
+        for (StreamMappingContainer container : mappings) {
+            container.setMappingType(checkedElements.contains(container) ? StreamMappingType.export : StreamMappingType.skip);
+            for (StreamMappingAttribute attr : container.getAttributes(new VoidProgressMonitor())) {
+                attr.setMappingType(checkedElements.contains(attr) ? StreamMappingType.export : StreamMappingType.skip);
+            }
+        }
+
         for (StreamMappingContainer mapping : mappings) {
             settings.addDataMapping(mapping);
         }
@@ -203,8 +159,7 @@ class ConfigureColumnsDialog extends BaseDialog {
 
     private void updateCompletion() {
         final boolean isComplete = mappings.stream().allMatch(StreamMappingContainer::isComplete);
-        final Button okButton = getButton(IDialogConstants.OK_ID);
         errorLabel.setVisible(!isComplete);
-        okButton.setEnabled(isComplete);
+        enableButton(IDialogConstants.OK_ID, isComplete);
     }
 }
