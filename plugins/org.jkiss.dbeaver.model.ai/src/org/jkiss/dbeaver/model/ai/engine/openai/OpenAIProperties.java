@@ -180,6 +180,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     public void saveSecrets() throws DBException {
         if (token != null) {
             DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
+            token = null;
         }
     }
 
