@@ -34,8 +34,14 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * PostgreDateTimeValueHandler.
@@ -43,6 +49,8 @@ import java.util.Date;
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     private static final String POSITIVE_INFINITY_STRING_REPRESENTATION = "infinity";
     private static final String NEGATIVE_INFINITY_STRING_REPRESENTATION = "-infinity";
+
+    private static final String TIME_END_OF_DAY_STRING = "24:00:00";
 
     // https://jdbc.postgresql.org/documentation/publicapi/constant-values.html
     private static final long NEGATIVE_INFINITY = -9223372036832400000L;
@@ -84,7 +92,22 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         if (resultSet instanceof JDBCResultSet jdbc) {
             if (type.getTypeID() == Types.TIME && !formatSettings.isUseNativeDateTimeFormat()) {
                 try {
-                    return jdbc.getObject(index + 1, OffsetTime.class);
+                    String rawString = jdbc.getString(index + 1);
+                    // PostgreSQL accepts 24:00:00 for TIME, but java.sql.Time can't display it distinctly from 00:00:00.
+                    if (TIME_END_OF_DAY_STRING.equals(rawString)) {
+                        return EndOfDay.INSTANCE;
+                    }
+                    if (rawString != null) {
+                        if (rawString.contains("+")) {
+                            if (rawString.startsWith(TIME_END_OF_DAY_STRING + "+")) {
+                                return new EndOfDayOffset(ZoneOffset.of(rawString.substring(TIME_END_OF_DAY_STRING.length())));
+                            } else {
+                                return jdbc.getObject(index + 1, OffsetTime.class);
+                            }
+                        } else {
+                            return jdbc.getObject(index + 1, LocalTime.class);
+                        }
+                    }
                 } catch (SQLException e) {
                     log.debug("Exception caught when fetching time value", e);
                 }
@@ -119,4 +142,53 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         return super.getFormatterId(column);
     }
+
+    private static class EndOfDay implements TemporalAccessor {
+
+        public static final EndOfDay INSTANCE = new EndOfDay();
+
+        static final Set<TemporalField> fields = Set.of(
+            ChronoField.HOUR_OF_DAY,
+            ChronoField.MINUTE_OF_DAY,
+            ChronoField.SECOND_OF_MINUTE,
+            ChronoField.MILLI_OF_SECOND
+        );
+
+        protected EndOfDay() {
+        }
+
+        @Override
+        public boolean isSupported(TemporalField field) {
+            return fields.contains(field);
+        }
+
+        @Override
+        public long getLong(TemporalField field) {
+            return ChronoField.HOUR_OF_DAY.equals(field) ? 24 : 0;
+        }
+    }
+
+    private static class EndOfDayOffset extends EndOfDay {
+
+        private final ZoneOffset offset;
+
+        public EndOfDayOffset(ZoneOffset offset) {
+            this.offset = offset;
+        }
+
+        @Override
+        public boolean isSupported(TemporalField field) {
+            return super.isSupported(field) || ChronoField.OFFSET_SECONDS.equals(field);
+        }
+
+        @Override
+        public long getLong(TemporalField field) {
+            if (ChronoField.OFFSET_SECONDS.equals(field)) {
+                return this.offset.getTotalSeconds();
+            } else {
+                return super.getLong(field);
+            }
+        }
+    }
+
 }
