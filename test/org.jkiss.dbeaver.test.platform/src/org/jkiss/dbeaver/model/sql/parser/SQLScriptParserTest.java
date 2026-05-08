@@ -532,6 +532,35 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         assertParse(ORACLE_DIALECT_NAME, statements);
     }
 
+    /**
+     * Issue 40779.
+     * CREATE VIEW with trailing CASE...END must not retain the
+     * statement delimiter — Oracle JDBC rejects ';' with ORA-00911.
+     */
+    @Test
+    public void parseOracleCreateViewWithCaseEnd() throws DBException {
+        String query =
+            "CREATE OR REPLACE view VM_TEST as(\n" +
+            "\tSELECT C,Q\n" +
+            "\tFROM (\n" +
+            "\t\tSELECT 1 AS C,0 AS Q FROM dual\n" +
+            "\t) A WHERE CASE WHEN C = 1 THEN Q ELSE 1 END <> 0\n" +
+            ");";
+        SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), query);
+        // scriptMode=true matches editor behaviour (Execute SQL Script).
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            context, 0, context.getDocument().getLength(), true, false, false);
+        String text = elements.get(0).getText();
+        assertEquals(
+            "CREATE OR REPLACE view VM_TEST as(\n" +
+            "\tSELECT C,Q\n" +
+            "\tFROM (\n" +
+            "\t\tSELECT 1 AS C,0 AS Q FROM dual\n" +
+            "\t) A WHERE CASE WHEN C = 1 THEN Q ELSE 1 END <> 0\n" +
+            ")",
+            text);
+    }
+
     @Test
     public void parseCurrentControlCommandsCursorHead() throws DBException {
         String query = """
