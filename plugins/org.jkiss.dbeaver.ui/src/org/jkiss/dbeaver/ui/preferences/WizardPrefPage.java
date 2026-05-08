@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -146,6 +147,7 @@ public class WizardPrefPage extends WizardPage implements IDialogPageProvider {
         preferencePage.performCancel();
     }
 
+    @Nullable
     @Override
     public WizardPrefPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         if (subPages.isEmpty()) {

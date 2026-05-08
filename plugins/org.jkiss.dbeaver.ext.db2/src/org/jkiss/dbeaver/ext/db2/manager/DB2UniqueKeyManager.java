@@ -65,7 +65,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     public DB2TableUniqueKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object table,
+        @NotNull Object table,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     )

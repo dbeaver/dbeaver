@@ -80,6 +80,14 @@ public class AIFunctionCall {
     }
 
     @NotNull
+    public String getFunctionDisplayName() {
+        if (function != null) {
+            return function.getName();
+        }
+        return functionName;
+    }
+
+    @NotNull
     public Map<String, Object> getArguments() {
         return arguments != null ? arguments : Map.of();
     }
