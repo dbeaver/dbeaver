@@ -124,9 +124,9 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         boolean dataImport = isDataImport();
 
         UIUtils.createControlLabel(panel,
-            (!dataImport ?
-                DTUIMessages.data_transfer_wizard_final_column_target :
-                DTUIMessages.data_transfer_wizard_final_column_source) + " format");
+            !dataImport ?
+                DTUIMessages.data_transfer_wizard_final_column_target_format :
+                DTUIMessages.data_transfer_wizard_final_column_source_format);
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         Table table = nodesTable.getTable();
