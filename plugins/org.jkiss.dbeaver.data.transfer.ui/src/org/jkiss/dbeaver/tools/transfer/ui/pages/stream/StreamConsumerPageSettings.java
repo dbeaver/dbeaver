@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -91,6 +92,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             );
             generalExpander.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
             generalExpander.setText(UIConnectionMessages.dialog_connection_advanced_settings);
+            generalExpander.setFont(BaseThemeSettings.instance.baseFontBold);
             generalExpander.addExpansionListener(new ExpansionAdapter() {
                 @Override
                 public void expansionStateChanged(ExpansionEvent e) {
