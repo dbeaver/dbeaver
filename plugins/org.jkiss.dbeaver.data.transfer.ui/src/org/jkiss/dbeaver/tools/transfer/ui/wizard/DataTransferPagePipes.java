@@ -119,7 +119,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         Table table = nodesTable.getTable();
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 20 * (UIUtils.getFontHeight(table));
+        gd.heightHint = 25 * (UIUtils.getFontHeight(table));
         table.setLayoutData(gd);
         table.setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
@@ -168,9 +168,9 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             columnName.setLabelProvider(labelProvider);
             columnName.getColumn().setText(DTMessages.data_transfer_wizard_init_column_exported);
 
-            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.RIGHT);
-            columnDesc.setLabelProvider(labelProvider);
-            columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
+//            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.RIGHT);
+//            columnDesc.setLabelProvider(labelProvider);
+//            columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
         table.addSelectionListener(new SelectionListener() {
@@ -222,9 +222,12 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createInputsTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        UIUtils.createControlLabel(panel, DTUIMessages.database_producer_page_input_objects_name);
+        UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_source);
 
-        inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        Composite inputTable = UIUtils.createComposite(panel, 2);
+        inputTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        inputsTable = new TableViewer(inputTable, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         Table table = inputsTable.getTable();
         table.setLayoutData(gd);
@@ -276,10 +279,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         ColumnViewerToolTipSupport.enableFor(inputsTable);
         inputsTable.setLabelProvider(labelProvider);
 
-        Composite buttonsPanel = UIUtils.createComposite(panel, 2);
+        Composite buttonsPanel = UIUtils.createComposite(inputTable, 1);
+        buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
         UIUtils.createPushButton(
             buttonsPanel,
-            DTUIMessages.stream_consumer_page_mapping_button_configure,
+            "Columns ...",
             null,
             null,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
