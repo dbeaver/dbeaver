@@ -289,7 +289,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
         UIUtils.createPushButton(
             buttonsPanel,
-            "Columns ...",
+            DTMessages.data_transfer_wizard_settings_group_preview_columns + " ...",
             null,
             null,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
