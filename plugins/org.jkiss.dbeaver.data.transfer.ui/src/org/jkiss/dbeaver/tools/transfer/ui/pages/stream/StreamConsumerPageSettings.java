@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -85,49 +84,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Composite generalSettings = UIUtils.createComposite(composite, 3);
-            formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            formatProfilesCombo.setLayoutData(gd);
-            formatProfilesCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (formatProfilesCombo.getSelectionIndex() > 0) {
-                        settings.setFormatterProfile(
-                            dataFormatterRegistry.getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
-                    } else {
-                        settings.setFormatterProfile(null);
-                    }
-                }
-            });
-
-            Button editProfileButton = UIUtils.createDialogButton(
-                generalSettings,
-                DTMessages.data_transfer_wizard_settings_button_edit,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-                            getShell(),
-                            dataFormatterRegistry,
-                            "org.jkiss.dbeaver.preferences.main.dataformat", // TODO: replace this hardcode with some model invocation
-                            null,
-                            getSelectedFormatterProfile(),
-                            PreferencesUtil.OPTION_NONE);
-                        if (propDialog != null) {
-                            propDialog.open();
-                            reloadFormatProfiles();
-                        }
-                    }
-                }
-            );
-            editProfileButton.setEnabled(true);
-
-            reloadFormatProfiles();
-        }
-
-        {
-            final ExpandableCompositeEx generalExpander = new ExpandableCompositeEx(
+            final ExpandableComposite generalExpander = new ExpandableComposite(
                 composite,
                 ExpandableComposite.CLIENT_INDENT | SWT.SEPARATOR,
                 ExpandableComposite.TWISTIE
@@ -142,9 +99,52 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             });
 
             Composite generalSettings = UIUtils.createComposite(generalExpander, 5);
-            UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_group_general, 5);
+            //UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_group_general, 5);
 
             generalExpander.setClient(generalSettings);
+
+            {
+                formatProfilesCombo = UIUtils.createLabelCombo(generalSettings, DTMessages.data_transfer_wizard_settings_label_formatting, SWT.DROP_DOWN | SWT.READ_ONLY);
+                GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.horizontalSpan = 3;
+                formatProfilesCombo.setLayoutData(gd);
+                formatProfilesCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (formatProfilesCombo.getSelectionIndex() > 0) {
+                            settings.setFormatterProfile(
+                                dataFormatterRegistry.getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
+                        } else {
+                            settings.setFormatterProfile(null);
+                        }
+                    }
+                });
+
+                Button editProfileButton = UIUtils.createDialogButton(
+                    generalSettings,
+                    DTMessages.data_transfer_wizard_settings_button_edit,
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+                                getShell(),
+                                dataFormatterRegistry,
+                                "org.jkiss.dbeaver.preferences.main.dataformat", // TODO: replace this hardcode with some model invocation
+                                null,
+                                getSelectedFormatterProfile(),
+                                PreferencesUtil.OPTION_NONE);
+                            if (propDialog != null) {
+                                propDialog.open();
+                                reloadFormatProfiles();
+                            }
+                        }
+                    }
+                );
+                editProfileButton.setEnabled(true);
+
+                reloadFormatProfiles();
+            }
+
             {
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_label_binaries);
                 Composite binariesPanel = UIUtils.createComposite(generalSettings, 4);
