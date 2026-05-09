@@ -121,7 +121,13 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createNodesTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
+        boolean dataImport = isDataImport();
+
+        UIUtils.createControlLabel(panel,
+            !dataImport ?
+                DTUIMessages.data_transfer_wizard_final_column_target :
+                DTUIMessages.data_transfer_wizard_final_column_source);
+
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         Table table = nodesTable.getTable();
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -228,9 +234,14 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createInputsTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_source);
+        boolean dataImport = isDataImport();
 
-        Composite inputTable = UIUtils.createComposite(panel, 2);
+        UIUtils.createControlLabel(panel,
+            dataImport ?
+                DTUIMessages.data_transfer_wizard_final_column_target :
+                DTUIMessages.data_transfer_wizard_final_column_source);
+
+        Composite inputTable = UIUtils.createComposite(panel, dataImport ? 1 : 2);
         inputTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         inputsTable = new TableViewer(inputTable, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
@@ -285,51 +296,57 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         ColumnViewerToolTipSupport.enableFor(inputsTable);
         inputsTable.setLabelProvider(labelProvider);
 
-        Composite buttonsPanel = UIUtils.createComposite(inputTable, 1);
-        buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
-        UIUtils.createPushButton(
-            buttonsPanel,
-            DTMessages.data_transfer_wizard_settings_group_preview_columns + " ...",
-            null,
-            null,
-            SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                final List<StreamMappingContainer> mappings = new ArrayList<>();
-
-                StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
-                if (streamConsumerSettings == null) {
-                    DBWorkbench.getPlatformUI().showError(
-                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                        "Current configuration do not support stream settings"
-                    );
-                    return;
-                }
-                try {
-                    UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, streamConsumerSettings, mappings));
-                } catch (InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError(
-                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                        DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
-                        e
-                    );
-                    return;
-                }
-
-                new ConfigureColumnsDialog(getShell(), mappings, streamConsumerSettings).open();
-            })
-        );
-        if (false) {
-            // TODO: move extraction settings to dialog a bit later
+        if (!dataImport) {
+            Composite buttonsPanel = UIUtils.createComposite(inputTable, 1);
+            buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
             UIUtils.createPushButton(
                 buttonsPanel,
-                DTUIMessages.database_producer_page_extract_settings_name_and_title,
+                DTMessages.data_transfer_wizard_settings_group_preview_columns + " ...",
                 null,
                 null,
                 SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                    ConfigureDataExtractionDialog dialog = new ConfigureDataExtractionDialog(getShell(), getWizard());
-                    dialog.open();
+                    final List<StreamMappingContainer> mappings = new ArrayList<>();
+
+                    StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
+                    if (streamConsumerSettings == null) {
+                        DBWorkbench.getPlatformUI().showError(
+                            DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                            "Current configuration do not support stream settings"
+                        );
+                        return;
+                    }
+                    try {
+                        UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, streamConsumerSettings, mappings));
+                    } catch (InvocationTargetException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                            DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                            e
+                        );
+                        return;
+                    }
+
+                    new ConfigureColumnsDialog(getShell(), mappings, streamConsumerSettings).open();
                 })
             );
+            if (false) {
+                // TODO: move extraction settings to dialog a bit later
+                UIUtils.createPushButton(
+                    buttonsPanel,
+                    DTUIMessages.database_producer_page_extract_settings_name_and_title,
+                    null,
+                    null,
+                    SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        ConfigureDataExtractionDialog dialog = new ConfigureDataExtractionDialog(getShell(), getWizard());
+                        dialog.open();
+                    })
+                );
+            }
         }
+    }
+
+    private boolean isDataImport() {
+        return getWizard().getPage(StreamConsumerPageSettings.class) == null;
     }
 
     @Nullable

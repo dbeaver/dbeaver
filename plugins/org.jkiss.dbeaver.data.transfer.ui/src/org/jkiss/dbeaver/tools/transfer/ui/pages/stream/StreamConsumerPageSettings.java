@@ -85,6 +85,14 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
+            Composite exporterSettings = UIUtils.createComposite(composite, 1);
+            exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
+            //UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_exporter);
+
+            propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+            propsEditor.getControl().setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(200, 150).create());
+        }
+        {
             final ExpandableComposite generalExpander = new ExpandableComposite(
                 composite,
                 ExpandableComposite.CLIENT_INDENT | SWT.SEPARATOR,
@@ -199,15 +207,6 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 });
                 valueFormatSelector.getCombo().setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 4, 1));
             }
-        }
-
-        {
-            Composite exporterSettings = UIUtils.createComposite(composite, 1);
-            exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_exporter);
-
-            propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
-            propsEditor.getControl().setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(200, 150).create());
         }
 
         setControl(composite);
