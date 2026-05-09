@@ -62,8 +62,8 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -199,13 +199,19 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 5,
                 GridData.FILL_HORIZONTAL
             );
-            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 5);
+            clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 4);
             clipboardCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOutputClipboard(clipboardCheck.getSelection());
                     updateControlsEnablement();
                     updatePageCompletion();
+                }
+            });
+            UIUtils.createLink(generalSettings, DTMessages.data_transfer_wizard_output_label_global_settings, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID);
                 }
             });
 
@@ -215,14 +221,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 settings.setOutputFolder(directoryText.getText());
                 updatePageCompletion();
             });
-            ((GridData) directoryText.getParent().getLayoutData()).horizontalSpan = 3;
-
-            UIUtils.createLink(generalSettings, DTMessages.data_transfer_wizard_output_label_global_settings, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    UIUtils.showPreferencesFor(getShell(), null, PrefPageDataTransfer.PAGE_ID);
-                }
-            });
+            ((GridData) directoryText.getParent().getLayoutData()).horizontalSpan = 4;
 
             UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
@@ -243,9 +242,6 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     settings.setOutputEncoding(encodingCombo.getText());
                     updatePageCompletion();
                 });
-                timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
-                timestampPattern.addModifyListener(e ->
-                    settings.setOutputTimestampPattern(timestampPattern.getText()));
                 encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 1);
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -253,6 +249,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                         settings.setOutputEncodingBOM(encodingBOMCheckbox.getSelection());
                     }
                 });
+                    timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
+                timestampPattern.addModifyListener(e ->
+                    settings.setOutputTimestampPattern(timestampPattern.getText()));
             }
             
             singleFileCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_use_single_file, DTMessages.data_transfer_wizard_output_label_use_single_file_tip, false, 5);

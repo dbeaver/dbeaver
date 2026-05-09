@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -110,6 +111,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         sash.setSashWidth(5);
 
         setControl(composite);
+
+        getShell().addControlListener(ControlListener.controlResizedAdapter(controlEvent -> {
+            UIUtils.packColumns(inputsTable.getTable(), true);
+            UIUtils.packColumns(nodesTable.getTable(), true);
+        }));
     }
 
     private void createNodesTable(Composite composite) {
