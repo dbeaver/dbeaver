@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
@@ -237,7 +236,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     private void addSearchPath(@NotNull String path) {
         searchPath.clear();
         searchPath.add(path);
-        if (!path.contains(activeUser) && !(getDataSource().getServerType() instanceof PostgreServerRedshift)) {
+        if (!path.contains(activeUser) && getDataSource().getServerType().supportsStandardSearchPath()) {
             searchPath.add(activeUser);
         }
     }
@@ -248,7 +247,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         {
             if (schemaIndex < 0) {
                 // Remove from previous position
-                if (getDataSource().getServerType() instanceof PostgreServerRedshift
+                if (!getDataSource().getServerType().supportsStandardSearchPath()
                     && getDefaultCatalog().getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME) == null
                     && !PostgreConstants.PUBLIC_SCHEMA_NAME.equals(defSchemaName)) {
                     newSearchPath.removeIf(PostgreConstants.PUBLIC_SCHEMA_NAME::equals);
