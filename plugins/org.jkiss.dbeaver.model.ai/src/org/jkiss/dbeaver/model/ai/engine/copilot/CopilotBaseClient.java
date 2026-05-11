@@ -55,6 +55,7 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
         this.baseAuthURL = baseAuthURL;
     }
 
+
     /**
      * Chat with Copilot
      */
@@ -91,13 +92,10 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
     @NotNull
     public CopilotLegacyClient.DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
         DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
-            .header("accept", HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON).header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(10)) // Set timeout
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(deviceCodeRequest)))
-            .build();
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(deviceCodeRequest))).build();
 
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotLegacyClient.DeviceCodeResponse.class);
     }
@@ -112,20 +110,14 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
      */
     @NotNull
     public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
-            .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .GET()
-            .timeout(TIMEOUT)
-            .build();
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token).header("Editor-Version", CHAT_EDITOR_VERSION).GET()
+            .timeout(TIMEOUT).build();
 
         var response = client.send(monitor, request);
         var models = CopilotUtils.GSON.fromJson(response, CopilotModelList.class);
-        return models.data().stream()
-            .filter(CopilotModel::isEnabled)
-            .toList();
+        return models.data().stream().filter(CopilotModel::isEnabled).toList();
     }
 
     /**
@@ -142,20 +134,16 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
             deviceCodeResponse.deviceCode(),
             "urn:ietf:params:oauth:grant-type:device_code"
         );
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
-            .header("accept", HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON).header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(5)) // Set timeout
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(accessTokenRequest)))
-            .build();
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(accessTokenRequest))).build();
 
         Duration expiresIn = Duration.ofSeconds(deviceCodeResponse.expiresIn());
         Duration interval = Duration.ofSeconds(deviceCodeResponse.interval());
         Instant start = Instant.now();
 
-        while (Instant.now().isBefore(start.plus(expiresIn)) &&
-            !monitor.isCanceled() && !cancellationToken.isCancelled()) {
+        while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
             String responseString = client.send(monitor, request);
             var body = CopilotUtils.GSON.fromJson(responseString, AccessTokenResponse.class);
             if (CommonUtils.isNotEmpty(body.accessToken())) {
@@ -180,19 +168,11 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
      * Request session token
      */
     @NotNull
-    public CopilotSessionToken requestSessionToken(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull String accessToken
-    ) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
-            .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken)
-            .header("editor-version", EDITOR_VERSION)
-            .header("editor-plugin-version", EDITOR_PLUGIN_VERSION)
-            .header(HttpConstants.HEADER_USER_AGENT, USER_AGENT)
-            .GET()
-            .timeout(TIMEOUT)
-            .build();
+    public CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor, @NotNull String accessToken) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
+            .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken).header("editor-version", EDITOR_VERSION)
+            .header("editor-plugin-version", EDITOR_PLUGIN_VERSION).header(HttpConstants.HEADER_USER_AGENT, USER_AGENT).GET()
+            .timeout(TIMEOUT).build();
 
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
     }
@@ -204,31 +184,21 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
         return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
     }
 
-    private record DeviceCodeRequest(
-        @SerializedName("client_id") String clientId,
-        @SerializedName("scope") String scope
-    ) {
+    private record DeviceCodeRequest(@SerializedName("client_id") String clientId, @SerializedName("scope") String scope) {
     }
 
-    public record DeviceCodeResponse(
-        @SerializedName("device_code") String deviceCode,
+    public record DeviceCodeResponse(@SerializedName("device_code") String deviceCode,
         @SerializedName("user_code") String userCode,
         @SerializedName("verification_uri") String verificationUri,
         @SerializedName("expires_in") int expiresIn,
-        @SerializedName("interval") int interval
-    ) {
+        @SerializedName("interval") int interval) {
     }
 
-    private record AccessTokenRequest(
-        @SerializedName("client_id") String clientId,
+    private record AccessTokenRequest(@SerializedName("client_id") String clientId,
         @SerializedName("device_code") String deviceCode,
-        @SerializedName("grant_type") String grantType
-    ) {
+        @SerializedName("grant_type") String grantType) {
     }
 
-    private record AccessTokenResponse(
-        @SerializedName("error") String error,
-        @SerializedName("access_token") String accessToken
-    ) {
+    private record AccessTokenResponse(@SerializedName("error") String error, @SerializedName("access_token") String accessToken) {
     }
 }
