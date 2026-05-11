@@ -70,6 +70,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder controlLabel(@NotNull String text) {
+        return label(text + ":");
+    }
+
+    @NotNull
     UIRowBuilder link(
         @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
@@ -239,5 +244,10 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder control(@NotNull Function<Composite, Control> factory) {
         return control(factory, identityConsumer());
+    }
+
+    @NotNull
+    default UIRowBuilder spacer() {
+        return label(lb -> lb.align(UIAlignX.FILL).grow());
     }
 }
