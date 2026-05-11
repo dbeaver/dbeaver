@@ -392,6 +392,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
     @Override
     public void activatePage() {
+        getWizard().loadNodeSettings();
+
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
         if (!activated) {
             UIUtils.asyncExec(this::loadNodeSettings);
