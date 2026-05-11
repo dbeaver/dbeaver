@@ -37,13 +37,13 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract
 /**
  * Tunnel action handler
  */
-public class NNAHDataSourceConfigurationMode extends NavigatorNodeActionHandlerAbstract {
+public class NNAHDataSourceNavigatorView extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
-            return !DataSourceNavigatorSettings.getDefaultSettings().equals(chosenSettings);
+            return !DataSourceNavigatorSettings.getProductDefaultSettings().equals(chosenSettings);
         }
         return false;
     }
