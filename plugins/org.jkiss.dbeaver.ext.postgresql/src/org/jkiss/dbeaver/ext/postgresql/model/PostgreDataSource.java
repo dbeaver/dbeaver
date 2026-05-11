@@ -152,7 +152,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        String activeDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(configuration);
+        String activeDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(this, configuration);
         if (CommonUtils.isEmpty(activeDatabaseName)) {
             if (!CommonUtils.isEmpty(configuration.getUserName())) {
                 activeDatabaseName = configuration.getUserName();
@@ -231,7 +231,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
         boolean addExclusionName = false;
-        String connectionDBName = PostgreUtils.getDatabaseNameFromConfiguration(getContainer().getConnectionConfiguration());
+        String connectionDBName = PostgreUtils.getDatabaseNameFromConfiguration(this, getContainer().getConnectionConfiguration());
         {
             final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
             final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
@@ -544,7 +544,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 if (instance != null) {
                     databaseName = instance.getName();
                 } else {
-                    databaseName = PostgreUtils.getDatabaseNameFromConfiguration(conConfig);
+                    databaseName = PostgreUtils.getDatabaseNameFromConfiguration(this, conConfig);
                 }
                 DBPConnectionConfiguration newConfig = new DBPConnectionConfiguration(conConfig);
                 newConfig.setDatabaseName(databaseName);
