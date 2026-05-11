@@ -450,8 +450,8 @@ functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
 
-aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
-aggregateExprParam: DISTINCT|ALL|ORDER|BY|ASC|DESC|LIMIT|SEPARATOR|OFFSET|rowValueConstructor;
+aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
+aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
 
 /*
 All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them
