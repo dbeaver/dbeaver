@@ -103,7 +103,7 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
         exporter.init(newMockSite(properties, writer));
         exporter.exportHeader(mock(DBCSession.class));
         exporter.exportRow(mock(DBCSession.class), mock(DBCResultSet.class), new Object[]{"x"});
-        exporter.exportFooter(null);
+        exporter.exportFooter(monitor);
 
         assertTrue(
             "default double-quote mode must work when quoteChar property is absent",
@@ -121,7 +121,7 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
         exporter.exportHeader(mock(DBCSession.class));
         exporter.exportRow(mock(DBCSession.class), mock(DBCResultSet.class),
             new Object[]{"O'Brien"});
-        exporter.exportFooter(null);
+        exporter.exportFooter(monitor);
 
         // The key and value both use single quotes with the apostrophe escaped
         // as \' so the emitted PHP is syntactically valid (no premature string
@@ -143,7 +143,7 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
         exporter.exportHeader(mock(DBCSession.class));
         exporter.exportRow(mock(DBCSession.class), mock(DBCResultSet.class),
             new Object[]{"hello \"world\""});
-        exporter.exportFooter(null);
+        exporter.exportFooter(monitor);
 
         String output = writer.toString();
         assertTrue(
