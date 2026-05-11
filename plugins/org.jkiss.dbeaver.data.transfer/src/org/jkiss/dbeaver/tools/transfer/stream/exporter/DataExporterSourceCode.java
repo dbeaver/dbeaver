@@ -207,6 +207,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
         }
     }
 
+    @Nullable
     static String escapePhpString(@Nullable String value, char quoteChar) {
         if (value == null) {
             return null;
