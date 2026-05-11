@@ -129,17 +129,16 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         @Nullable Runnable backupOption,
         int statusCode
     ) {
-        if (statusCode == 400 && response.body().anyMatch(line -> line.contains("is not supported via Responses API"))) {
-            if (backupOption == null) {
-                String responseBody = response.body().collect(Collectors.joining());
+        if (statusCode != 200 && response.body().anyMatch(line -> line.contains("is not supported via Responses API"))) {
+            String responseBody = response.body().collect(Collectors.joining());
+            if (backupOption != null && statusCode == 400 && responseBody.contains("is not supported via Responses API")) {
+                backupOption.run();
+            } else {
                 errorHandler.accept(mapper.map(statusCode, responseBody));
-                return true;
             }
-            backupOption.run();
             return true;
-        } else {
-            return super.processErrors(mapper, errorHandler, response, backupOption, statusCode);
         }
+        return false;
     }
 }
 
