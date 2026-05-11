@@ -694,6 +694,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 ConfirmationDialog.INFORMATION,
                 DBeaverPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
                 ConfirmationDialog.CONFIRM,
+                descriptor.getCodeName(),
                 descriptor.getCodeName()
             );
 
