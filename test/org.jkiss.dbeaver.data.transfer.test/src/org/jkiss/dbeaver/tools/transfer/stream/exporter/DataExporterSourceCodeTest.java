@@ -37,6 +37,8 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,8 +70,8 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
 
     @Test
     public void escapePhpStringReturnsNullForNullInput() {
-        assertEquals(null, DataExporterSourceCode.escapePhpString(null, '\''));
-        assertEquals(null, DataExporterSourceCode.escapePhpString(null, '"'));
+        assertNull(DataExporterSourceCode.escapePhpString(null, '\''));
+        assertNull(DataExporterSourceCode.escapePhpString(null, '"'));
     }
 
     @Test
@@ -110,9 +112,8 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
         // as \' so the emitted PHP is syntactically valid (no premature string
         // termination).
         String output = writer.toString();
-        assertEquals(
+        assertTrue(
             "the row content must escape ' as \\' under single-quote mode",
-            true,
             output.contains("'name' => 'O\\'Brien'"));
     }
 
@@ -132,9 +133,8 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
         exporter.exportFooter(null);
 
         String output = writer.toString();
-        assertEquals(
+        assertTrue(
             "the row content must escape \" as \\\" under double-quote mode",
-            true,
             output.contains("\"name\" => \"hello \\\"world\\\"\""));
     }
 
