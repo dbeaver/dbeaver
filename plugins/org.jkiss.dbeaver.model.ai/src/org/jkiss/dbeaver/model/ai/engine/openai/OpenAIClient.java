@@ -17,18 +17,22 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAPIException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OpenAIClient extends OpenAiClientBase {
     private static final Log log = Log.getLog(OpenAIClient.class);
@@ -93,18 +97,16 @@ public class OpenAIClient extends OpenAiClientBase {
             modifiedRequest,
             stringConsumer,
             listener::error,
-            listener::completeBlock
-        ).exceptionally(e -> {
-            if (e instanceof LegacyAPIException) {
-                // If the request failed due to an unsupported model, fallback to the legacy client which might support it
+            listener::completeBlock,
+            () -> {
                 try {
                     backupClient.createChatCompletionStream(monitor, completionRequest, listener);
                 } catch (DBException ex) {
+                    log.error("Error in legacy client fallback", ex);
                     listener.error(ex);
                 }
             }
-            return null;
-        });
+        );
     }
 
     @NotNull
@@ -118,5 +120,26 @@ public class OpenAIClient extends OpenAiClientBase {
         backupClient.close();
     }
 
+
+    @Override
+    protected boolean processErrors(
+        @NotNull MonitoredHttpClient.ErrorMapper mapper,
+        @NotNull Consumer<Throwable> errorHandler,
+        @NotNull HttpResponse<Stream<String>> response,
+        @Nullable Runnable backupOption,
+        int statusCode
+    ) {
+        if (statusCode == 400 && response.body().anyMatch(line -> line.contains("is not supported via Responses API"))) {
+            if (backupOption == null) {
+                String responseBody = response.body().collect(Collectors.joining());
+                errorHandler.accept(mapper.map(statusCode, responseBody));
+                return true;
+            }
+            backupOption.run();
+            return true;
+        } else {
+            return super.processErrors(mapper, errorHandler, response, backupOption, statusCode);
+        }
+    }
 }
 

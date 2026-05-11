@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAPIException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageContent;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesChunk;
@@ -49,7 +48,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     }
 
     @Override
-    public void accept(String event) throws LegacyAPIException {
+    public void accept(String event) {
         if (CommonUtils.isEmpty(event)) {
             return;
         }
@@ -97,9 +96,6 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                     }
                 }
             } catch (Exception e) {
-                if (e.getMessage().contains("is not supported via Responses API")) {
-                    throw new LegacyAPIException("");
-                }
                 listener.error(e);
             }
         } else if (event.startsWith(EVENT_EVENT)) {
