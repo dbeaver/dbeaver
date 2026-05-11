@@ -52,13 +52,19 @@ public class OpenAiUtils {
     }
 
     @NotNull
-    public static OAIResponsesRequest createOpenAiRequest(@NotNull AIEngineRequest request, @Nullable String modelName) {
+    public static OAIResponsesRequest createOpenAiRequest(
+        @NotNull AIEngineRequest request,
+        @Nullable String modelName,
+        @Nullable Double temperature
+    ) {
         OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
         List<AIMessage> messages = request.getMessages();
         oaiRequest.input = fromMessages(messages);
         oaiRequest.store = false;
         oaiRequest.model = modelName;
-
+        if (temperature != null) {
+            oaiRequest.temperature = temperature;
+        }
         if (!CommonUtils.isEmpty(request.getFunctions())) {
             List<OAITool> tools = new ArrayList<>();
             for (AIFunctionDescriptor fd : request.getFunctions()) {

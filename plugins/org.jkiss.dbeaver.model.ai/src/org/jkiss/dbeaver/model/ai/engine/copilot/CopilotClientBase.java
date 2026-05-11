@@ -126,7 +126,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
     @NotNull
     public String requestAccessToken(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull CopilotClientChat.DeviceCodeResponse deviceCodeResponse,
+        @NotNull DeviceCodeResponse deviceCodeResponse,
         @NotNull Future<?> cancellationToken
     ) throws DBException, InterruptedException {
         AccessTokenRequest accessTokenRequest = new AccessTokenRequest(

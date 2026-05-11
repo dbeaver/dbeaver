@@ -62,7 +62,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(legacyChatRequest)))
             .timeout(TIMEOUT)
             .build();
 

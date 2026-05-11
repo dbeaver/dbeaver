@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -42,12 +43,8 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     protected final DisposableLazyValue<CopilotClientResponses, DBException> client = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected CopilotClientResponses initialize() {
-            try {
-                return createClient(getProperties().getBaseAuthUrl());
-            } catch (DBException e) {
-                throw new RuntimeException(e);
-            }
+        protected CopilotClientResponses initialize() throws DBException {
+            return createClient(getProperties().getBaseAuthUrl());
         }
 
         @Override
@@ -65,7 +62,12 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<CopilotModel> copilotModels = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
-        return copilotModels.stream().map(model -> new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT))).toList();
+        List<AIModel> list = new ArrayList<>();
+        for (CopilotModel model : copilotModels) {
+            AIModel aiModel = new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT));
+            list.add(aiModel);
+        }
+        return list;
     }
 
     @NotNull
@@ -78,7 +80,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
             monitor,
             requestSessionToken(monitor).token(),
             createLegacyChatRequest(request, false),
-            OpenAiUtils.createOpenAiRequest(request, getModelName())
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature())
         );
 
         return toEngineResponse(chatResponse);
@@ -93,7 +95,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         client.getInstance().createChatCompletionStream(
             monitor,
             requestSessionToken(monitor).token(),
-            OpenAiUtils.createOpenAiRequest(request, getModelName()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), null),
             createLegacyChatRequest(request, true),
             listener
         );
