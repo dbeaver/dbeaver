@@ -38,11 +38,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.Future;
 
-public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends Object> extends AbstractHttpAIClient {
+public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends Object> extends AbstractHttpAIClient {
     protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
     protected static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
     protected static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Log log = Log.getLog(CopilotBaseClient.class);
+    private static final Log log = Log.getLog(CopilotClientBase.class);
     private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
@@ -51,7 +51,7 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
     @NotNull
     protected final String baseAuthURL;
 
-    protected CopilotBaseClient(@NotNull String baseAuthURL) {
+    protected CopilotClientBase(@NotNull String baseAuthURL) {
         this.baseAuthURL = baseAuthURL;
     }
 
@@ -90,14 +90,14 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
      * Request access to the user's account
      */
     @NotNull
-    public CopilotLegacyClient.DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public CopilotClientLegacy.DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
         DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
         HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
             .header("accept", HttpConstants.CONTENT_TYPE_JSON).header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(10)) // Set timeout
             .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(deviceCodeRequest))).build();
 
-        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotLegacyClient.DeviceCodeResponse.class);
+        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotClientLegacy.DeviceCodeResponse.class);
     }
 
     /**
@@ -126,7 +126,7 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
     @NotNull
     public String requestAccessToken(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull CopilotLegacyClient.DeviceCodeResponse deviceCodeResponse,
+        @NotNull CopilotClientLegacy.DeviceCodeResponse deviceCodeResponse,
         @NotNull Future<?> cancellationToken
     ) throws DBException, InterruptedException {
         AccessTokenRequest accessTokenRequest = new AccessTokenRequest(

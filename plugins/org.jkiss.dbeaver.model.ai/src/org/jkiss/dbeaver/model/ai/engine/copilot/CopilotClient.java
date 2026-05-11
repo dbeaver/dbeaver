@@ -41,11 +41,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIResponsesResponse> {
+public class CopilotClient extends CopilotClientBase<OAIResponsesRequest, OAIResponsesResponse> {
     private static final Log log = Log.getLog(CopilotClient.class);
 
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/v1/responses";
-    private final CopilotLegacyClient backupClient;
+    private final CopilotClientLegacy backupClient;
 
     protected CopilotClient(@NotNull String baseAuthURL) {
         super(baseAuthURL);
@@ -131,8 +131,8 @@ public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIRes
     }
 
     @NotNull
-    protected CopilotLegacyClient createLegacyBackupClient() {
-        return new CopilotLegacyClient(baseAuthURL);
+    protected CopilotClientLegacy createLegacyBackupClient() {
+        return new CopilotClientLegacy(baseAuthURL);
     }
 
     @Override
