@@ -16,73 +16,33 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
-import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
-import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.ai.engine.LegacyAPIException;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
-public class OpenAIClient extends AbstractHttpAIClient {
+public class OpenAIClient extends OpenAiClientBase {
     private static final Log log = Log.getLog(OpenAIClient.class);
 
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
-    private static final String DATA_EVENT = "data: ";
-    private static final String EVENT_EVENT = "event: ";
-
-    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
-    protected static final Gson GSON = JSONUtils.GSON;
-    public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
-    public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
-    public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
-    public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
-
-    protected final String baseUrl;
-    protected final List<HttpRequestFilter> requestFilters;
+    private final OpenAIClientLegacy backupClient;
 
     public OpenAIClient(
         @NotNull String baseUrl,
         @NotNull List<HttpRequestFilter> requestFilters
     ) {
-        if (!baseUrl.endsWith("/")) {
-            baseUrl += "/";
-        }
-        this.baseUrl = baseUrl;
-        this.requestFilters = requestFilters;
-    }
-
-    @NotNull
-    public static AIFunctionCall createFunctionCall(OAIMessage message) throws DBException {
-        String argumentsStr = message.arguments;
-        Map<String, Object> arguments;
-        try {
-            arguments = JSONUtils.GSON.fromJson(argumentsStr, JSONUtils.MAP_TYPE_TOKEN);
-        } catch (JsonSyntaxException e) {
-            throw new DBException("Error parsing function call arguments", e);
-        }
-        Map<String, String> metadata = CommonUtils.isEmpty(message.callId) ? null :
-            Map.of(OpenAIConstants.TOOL_RESULT_CALL_ID, message.callId);
-        return new AIFunctionCall(message.name, arguments, metadata);
+        super(baseUrl, requestFilters);
+        this.backupClient = createBackupClient();
     }
 
     @NotNull
@@ -91,38 +51,11 @@ public class OpenAIClient extends AbstractHttpAIClient {
     }
 
     @NotNull
-    @Override
-    protected DBException mapHttpError(int statusCode, @NotNull String body) {
-        log.debug("OpenAI request failed: " + statusCode + ", " + body);
-        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
-    }
-
     public static OpenAIClient createClient(@NotNull String baseUrl, @NotNull String token) {
         return new OpenAIClient(
             baseUrl,
             List.of(new OpenAIRequestFilter(token))
         );
-    }
-
-    @NotNull
-    public List<OAIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "models"))
-            .GET()
-            .timeout(TIMEOUT)
-            .build();
-
-        HttpRequest modifiedRequest = applyFilters(request);
-        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIModelList.class).data();
-    }
-
-    private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
-        return HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_RESPONSES))
-            .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
-            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
-            .build();
     }
 
     @NotNull
@@ -133,8 +66,17 @@ public class OpenAIClient extends AbstractHttpAIClient {
         HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
-        String responseJson = client.send(monitor, modifiedRequest);
-        return GSON.fromJson(responseJson, OAIResponsesResponse.class);
+        try {
+            String responseJson = client.send(monitor, modifiedRequest);
+            return GSON.fromJson(responseJson, OAIResponsesResponse.class);
+        } catch (Exception exception) {
+            if (exception.getMessage().contains("is not supported via Responses API")) {
+                // If the request failed due to an unsupported model, fallback to the legacy client which might support it
+                return backupClient.createChatCompletion(monitor, completionRequest);
+            } else {
+                throw exception;
+            }
+        }
     }
 
     public void createChatCompletionStream(
@@ -146,120 +88,35 @@ public class OpenAIClient extends AbstractHttpAIClient {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        Consumer<String> stringConsumer = new StreamConsumer(listener);
+        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
         client.sendAsync(
             modifiedRequest,
             stringConsumer,
             listener::error,
             listener::completeBlock
-        );
-    }
-
-
-    public HttpRequest applyFilters(@NotNull HttpRequest request) throws DBException {
-        return applyFilters(request, true);
-    }
-
-    public HttpRequest applyFilters(@NotNull HttpRequest request, boolean setContentType) throws DBException {
-        for (HttpRequestFilter filter : requestFilters) {
-            request = filter.filter(request, setContentType);
-        }
-        return request;
+        ).exceptionally(e -> {
+            if (e instanceof LegacyAPIException) {
+                // If the request failed due to an unsupported model, fallback to the legacy client which might support it
+                try {
+                    backupClient.createChatCompletionStream(monitor, completionRequest, listener);
+                } catch (DBException ex) {
+                    listener.error(ex);
+                }
+            }
+            return null;
+        });
     }
 
     @NotNull
-    protected static String serializeValue(@Nullable Object value) throws DBException {
-        try {
-            return GSON.toJson(value);
-        } catch (Exception e) {
-            throw new DBException("Error serializing value", e);
-        }
+    protected OpenAIClientLegacy createBackupClient() {
+        return new OpenAIClientLegacy(baseUrl, requestFilters);
     }
 
-    public interface HttpRequestFilter {
-        @NotNull
-        HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException;
+    @Override
+    public void close() {
+        super.close();
+        backupClient.close();
     }
 
-    private static class StreamConsumer implements Consumer<String> {
-        private final AIEngineResponseConsumer listener;
-        private boolean functionCall;
-
-        public StreamConsumer(AIEngineResponseConsumer listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void accept(String event) {
-            if (CommonUtils.isEmpty(event)) {
-                return;
-            }
-            if (event.startsWith(DATA_EVENT)) {
-                String data = event.substring(DATA_EVENT.length()).trim();
-                try {
-                    OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
-                    if (chunk.error != null) {
-                        listener.error(new DBException(chunk.error.code + ": " + chunk.error.message));
-                        return;
-                    }
-                    if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                        listener.usage(chunk.response.getAIUsage());
-                    } else {
-
-                        if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
-                            if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                                listener.nextChunk(new AIEngineResponseChunk(
-                                    createFunctionCall(chunk.item)));
-                                functionCall = false;
-                            } else {
-                                functionCall = true;
-                            }
-                            return;
-                        }
-                        if (functionCall) {
-                            // do nothing
-                        } else {
-                            List<String> choices = new ArrayList<>();
-                            if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
-                                choices.add(chunk.delta);
-                            } else if (chunk.response != null) {
-                                for (OAIMessage msg : chunk.response.output) {
-                                    for (OAIMessageContent content : msg.content) {
-                                        if (!CommonUtils.isEmpty(content.text)) {
-                                            choices.add(content.text);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (!choices.isEmpty()) {
-                                listener.nextChunk(new AIEngineResponseChunk(choices));
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    listener.error(e);
-                }
-            } else if (event.startsWith(EVENT_EVENT)) {
-                String eventType = event.substring(EVENT_EVENT.length()).trim();
-                if (!CommonUtils.isEmpty(eventType)) {
-                    switch (eventType) {
-                        case "response.created":
-                        case "response.in_progress":
-                        case "response.output_item.added":
-                        case EVENT_TYPE_TEXT_DELTA:
-                        case "response.output_text.done":
-                        case "response.content_part.done":
-                        case "response.output_item.done":
-                        case EVENT_TYPE_RESPONSE_COMPLETED:
-                            break;
-                        case "error":
-                            break;
-                    }
-                }
-            } else {
-                log.debug("Unknown OpenAI event: " + event);
-            }
-        }
-    }
 }
+

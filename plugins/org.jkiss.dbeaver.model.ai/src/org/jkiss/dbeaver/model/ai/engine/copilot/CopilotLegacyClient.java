@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -39,14 +40,12 @@ public class CopilotLegacyClient extends CopilotBaseClient<CopilotChatRequest, C
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
 
-
-
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
-
 
     public CopilotLegacyClient(@NotNull String authProviderBaseURL) {
         super(authProviderBaseURL);
     }
+
 
     /**
      * Chat with Copilot
@@ -55,6 +54,7 @@ public class CopilotLegacyClient extends CopilotBaseClient<CopilotChatRequest, C
     public CopilotChatResponseLegacy chat(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
+        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull CopilotChatRequest chatRequest
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -70,10 +70,12 @@ public class CopilotLegacyClient extends CopilotBaseClient<CopilotChatRequest, C
         return CopilotUtils.GSON.fromJson(responseJson, CopilotChatResponseLegacy.class);
     }
 
+    @Override
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull CopilotChatRequest chatRequest,
+        @NotNull OAIResponsesRequest chatRequest,
+        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -81,7 +83,7 @@ public class CopilotLegacyClient extends CopilotBaseClient<CopilotChatRequest, C
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(legacyChatRequest)))
             .timeout(TIMEOUT)
             .build();
 
@@ -91,6 +93,7 @@ public class CopilotLegacyClient extends CopilotBaseClient<CopilotChatRequest, C
             listener::error,
             listener::completeBlock
         );
+
     }
 
     private static class StreamConsumer implements Consumer<String> {

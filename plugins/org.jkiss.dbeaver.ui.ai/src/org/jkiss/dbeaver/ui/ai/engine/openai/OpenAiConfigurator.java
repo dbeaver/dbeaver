@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     private Text temperatureText;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
-    private Button legacyApiCheck;
     private Button logQueryCheck;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
@@ -102,7 +101,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         );
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
-        useLegacyApi = configuration.isLegacyApi();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
 
@@ -118,7 +116,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         configuration.setModel(modelSelectorField.getSelectedModel());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
-        configuration.setLegacyApi(useLegacyApi);
         configuration.setLoggingEnabled(logQuery);
     }
 
@@ -127,17 +124,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     }
 
-    protected void createAdditionalSettings(@NotNull Composite parent) {
-        legacyApiCheck = UIUtils.createCheckbox(
-            parent,
-            AIUIMessages.openai_configurator_legacy_api_label,
-            AIUIMessages.openai_configurator_legacy_api_tip,
-            false,
-            2
-        );
-        legacyApiCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-            useLegacyApi = legacyApiCheck.getSelection()
-        ));
+    protected void createAdditionalSettings(@NotNull Composite parent) {;
         logQueryCheck = UIUtils.createCheckbox(
             parent,
             AIUIMessages.openai_configurator_log_query_label,
@@ -257,7 +244,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
 
         temperatureText.setText(temperature);
-        legacyApiCheck.setSelection(useLegacyApi);
         logQueryCheck.setSelection(logQuery);
     }
 
@@ -276,7 +262,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
-        propertiesCopy.setLegacyApi(useLegacyApi);
         propertiesCopy.setLoggingEnabled(logQuery);
         return Optional.of(propertiesCopy);
     }

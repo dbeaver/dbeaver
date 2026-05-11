@@ -14,16 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
+package org.jkiss.dbeaver.model.ai.engine;
 
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesBase;
-
-import java.util.List;
-
-public class CopilotResponsesRequest extends OAIResponsesBase {
-    public List<OAIMessage> input;
-
-    public CopilotResponsesRequest() {
+public class LegacyAPIException extends RuntimeException {
+    public LegacyAPIException(String message) {
+        super(message);
     }
 }

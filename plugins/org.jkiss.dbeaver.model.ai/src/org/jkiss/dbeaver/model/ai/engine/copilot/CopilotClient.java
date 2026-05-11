@@ -16,64 +16,39 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
-import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotResponsesRequest;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotResponsesResponse;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.engine.LegacyAPIException;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModelList;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 
-public class CopilotClient extends CopilotBaseClient<CopilotResponsesRequest, CopilotResponsesResponse>{
+public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIResponsesResponse>{
     private static final Log log = Log.getLog(CopilotClient.class);
 
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/v1/responses";
-
-    private static final String DATA_EVENT = "data: ";
-    private static final String EVENT_EVENT = "event: ";
-
-
-    public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
-    public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
-    public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
-    public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
+    private final CopilotLegacyClient backupClient;
 
     protected CopilotClient(@NotNull String baseAuthURL) {
         super(baseAuthURL);
+        backupClient = createLegacyBackupClient();
     }
 
-    @NotNull
-    private static AIFunctionCall createFunctionCall(OAIMessage message) throws DBException {
-        String argumentsStr = message.arguments;
-        Map<String, Object> arguments;
-        try {
-            arguments = JSONUtils.GSON.fromJson(argumentsStr, JSONUtils.MAP_TYPE_TOKEN);
-        } catch (JsonSyntaxException e) {
-            throw new DBException("Error parsing function call arguments", e);
-        }
-        Map<String, String> metadata = CommonUtils.isEmpty(message.callId) ? null :
-            Map.of(OpenAIConstants.TOOL_RESULT_CALL_ID, message.callId);
-        return new AIFunctionCall(message.name, arguments, metadata);
-    }
 
     @NotNull
     public HttpClient getHttpClient() {
@@ -91,7 +66,8 @@ public class CopilotClient extends CopilotBaseClient<CopilotResponsesRequest, Co
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), OAIModelList.class).data();
     }
 
-    private HttpRequest createCompletionRequest(@NotNull CopilotResponsesRequest completionRequest, String token) throws DBException {
+    @NotNull
+    private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest, String token) throws DBException {
         return HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
@@ -103,33 +79,45 @@ public class CopilotClient extends CopilotBaseClient<CopilotResponsesRequest, Co
     }
 
     @NotNull
-    public CopilotResponsesResponse chat(
+    public OAIResponsesResponse chat(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull CopilotResponsesRequest chatRequest
+        @NotNull CopilotChatRequest legacyChatRequest,
+        @NotNull OAIResponsesRequest chatRequest
     ) throws DBException {
         HttpRequest request = createCompletionRequest(chatRequest, token);
 
         String responseJson = client.send(monitor, request);
-        return CopilotUtils.GSON.fromJson(responseJson, CopilotResponsesResponse.class);
+        return CopilotUtils.GSON.fromJson(responseJson, OAIResponsesResponse.class);
     }
 
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull CopilotResponsesRequest chatRequest,
+        @NotNull OAIResponsesRequest chatRequest,
+        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         chatRequest.stream = true;
         HttpRequest request = createCompletionRequest(chatRequest, token);
 
-        Consumer<String> stringConsumer = new StreamConsumer(listener);
+        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
         client.sendAsync(
             request,
             stringConsumer,
             listener::error,
             listener::completeBlock
-        );
+        ).exceptionally(e -> {
+            if (e instanceof LegacyAPIException) {
+                try {
+                    backupClient.createChatCompletionStream(monitor, token, chatRequest, legacyChatRequest, listener);
+                } catch (DBException ex) {
+                    log.error("Error in legacy client fallback", ex);
+                    listener.error(ex);
+                }
+            }
+            return null;
+        });
     }
 
     @NotNull
@@ -141,85 +129,14 @@ public class CopilotClient extends CopilotBaseClient<CopilotResponsesRequest, Co
         }
     }
 
-    private static class StreamConsumer implements Consumer<String> {
-        private final AIEngineResponseConsumer listener;
-        private boolean functionCall;
+    @NotNull
+    protected CopilotLegacyClient createLegacyBackupClient() {
+        return new CopilotLegacyClient(baseAuthURL);
+    }
 
-        public StreamConsumer(AIEngineResponseConsumer listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void accept(String event) {
-            if (CommonUtils.isEmpty(event)) {
-                return;
-            }
-            if (event.startsWith(DATA_EVENT)) {
-                String data = event.substring(DATA_EVENT.length()).trim();
-                try {
-                    OAIResponsesChunk chunk = CopilotUtils.GSON.fromJson(data, OAIResponsesChunk.class);
-                    if (chunk.error != null) {
-                        listener.error(new DBException(chunk.error.code + ": " + chunk.error.message));
-                        return;
-                    }
-                    if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                        listener.usage(chunk.response.getAIUsage());
-                    } else {
-
-                        if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
-                            if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                                listener.nextChunk(new AIEngineResponseChunk(
-                                    createFunctionCall(chunk.item)));
-                                functionCall = false;
-                            } else {
-                                functionCall = true;
-                            }
-                            return;
-                        }
-                        if (functionCall) {
-                            // do nothing
-                        } else {
-                            List<String> choices = new ArrayList<>();
-                            if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
-                                choices.add(chunk.delta);
-                            } else if (chunk.response != null) {
-                                for (OAIMessage msg : chunk.response.output) {
-                                    for (OAIMessageContent content : msg.content) {
-                                        if (!CommonUtils.isEmpty(content.text)) {
-                                            choices.add(content.text);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (!choices.isEmpty()) {
-                                listener.nextChunk(new AIEngineResponseChunk(choices));
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    listener.error(e);
-                }
-            } else if (event.startsWith(EVENT_EVENT)) {
-                String eventType = event.substring(EVENT_EVENT.length()).trim();
-                if (!CommonUtils.isEmpty(eventType)) {
-                    switch (eventType) {
-                        case "response.created":
-                        case "response.in_progress":
-                        case "response.output_item.added":
-                        case EVENT_TYPE_TEXT_DELTA:
-                        case "response.output_text.done":
-                        case "response.content_part.done":
-                        case "response.output_item.done":
-                        case EVENT_TYPE_RESPONSE_COMPLETED:
-                            break;
-                        case "error":
-                            break;
-                    }
-                }
-            } else {
-                log.debug("Unknown Copilot event: " + event);
-            }
-        }
+    @Override
+    public void close() {
+        super.close();
+        backupClient.close();
     }
 }

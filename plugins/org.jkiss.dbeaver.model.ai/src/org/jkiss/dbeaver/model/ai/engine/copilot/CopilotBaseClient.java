@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModel;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModelList;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -37,26 +39,21 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends Object> extends AbstractHttpAIClient {
-    private static final Log log = Log.getLog(CopilotBaseClient.class);
-
     protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
-
+    protected static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Log log = Log.getLog(CopilotBaseClient.class);
     private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
     private static final String USER_AGENT = "GithubCopilot/1.155.0";
     private static final String COPILOT_SESSION_TOKEN_URL = "/copilot_internal/v2/token";
-
-    protected static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
-    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
-
     @NotNull
     protected final String baseAuthURL;
 
     protected CopilotBaseClient(@NotNull String baseAuthURL) {
         this.baseAuthURL = baseAuthURL;
     }
-
 
     /**
      * Chat with Copilot
@@ -65,13 +62,26 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
     public abstract RESPONSE chat(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
+        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull REQUEST chatRequest
     ) throws DBException;
 
+    /**
+     * Chat with Copilot using streaming API. The implementation should
+     * call listener.onResponseChunk for each received chunk and listener.onComplete when the response is complete.
+     *
+     * @param monitor           the progress monitor to track the request's progress and handle cancellation
+     * @param token             the authorization token used to authenticate the request
+     * @param chatRequest       the chat request to send to the server
+     * @param legacyChatRequest the chat request in legacy format, which can be used for fallback in case the new API fails
+     * @param listener          the listener to receive response chunks and completion events
+     * @throws DBException if the request fails
+     */
     public abstract void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull REQUEST chatRequest,
+        @NotNull OAIResponsesRequest chatRequest,
+        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
@@ -92,17 +102,11 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
         return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotLegacyClient.DeviceCodeResponse.class);
     }
 
-    private record DeviceCodeRequest(
-        @SerializedName("client_id") String clientId,
-        @SerializedName("scope") String scope
-    ) {
-    }
-
     /**
      * Loads a list of available Copilot models from the server.
      *
      * @param monitor the progress monitor to track the request's progress and handle cancellation
-     * @param token the authorization token used to authenticate the request
+     * @param token   the authorization token used to authenticate the request
      * @return a list of {@code CopilotModel} objects representing the enabled models
      * @throws DBException if the request fails
      */
@@ -200,6 +204,11 @@ public abstract class CopilotBaseClient<REQUEST extends Object, RESPONSE extends
         return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
     }
 
+    private record DeviceCodeRequest(
+        @SerializedName("client_id") String clientId,
+        @SerializedName("scope") String scope
+    ) {
+    }
 
     public record DeviceCodeResponse(
         @SerializedName("device_code") String deviceCode,

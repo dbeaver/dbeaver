@@ -89,17 +89,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     public String getToken() {
         return token;
     }
-
-    @Override
-    @Property(order = 7)
-    public boolean isLegacyApi() {
-        return useLegacyApi;
-    }
-
-    public void setLegacyApi(boolean useLegacyApi) {
-        this.useLegacyApi = useLegacyApi;
-    }
-
+    
     public void setToken(@Nullable String token) {
         this.token = token;
     }
