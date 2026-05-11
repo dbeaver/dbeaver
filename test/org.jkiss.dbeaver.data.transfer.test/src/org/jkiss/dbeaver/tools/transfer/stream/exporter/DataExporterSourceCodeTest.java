@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -46,6 +45,20 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
 
     private static final String TABLE_NAME = "test_table";
     private static final String COLUMN_NAME = "name";
+
+    private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_ROW_DELIMITER = "rowDelimiter";
+    private static final String KEY_QUOTE_CHAR = "quoteChar";
+    private static final String LANG_PHP_54_PLUS = "PHP 5.4+";
+    private static final String ROW_DELIMITER_DEFAULT_VAL = "default";
+
+    @NotNull
+    private static Map<String, Object> newPhp54DefaultProperties() {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(KEY_LANGUAGE, LANG_PHP_54_PLUS);
+        properties.put(KEY_ROW_DELIMITER, ROW_DELIMITER_DEFAULT_VAL);
+        return properties;
+    }
 
     @Test
     public void escapePhpStringInSingleQuoteModeEscapesQuoteAndBackslash() {
@@ -75,30 +88,32 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void initDoesNotThrowWhenQuoteCharPropertyIsMissing() throws DBException {
+    public void initDoesNotThrowWhenQuoteCharPropertyIsMissing() throws DBException, IOException {
         // Regression guard: DataExporterSourceCode#init used to call
         // `.equals(...)` on the `quoteChar` property without checking for null,
         // so an export invoked with a property map that omits the key (common
         // when the exporter is driven programmatically or from a saved task
         // spec whose properties have been trimmed to the non-default subset)
         // threw NullPointerException during init.
-        Map<String, Object> properties = new HashMap<>();
+        Map<String, Object> properties = newPhp54DefaultProperties();
         // deliberately omit PROP_QUOTE_CHAR
-        properties.put("language", "PHP 5.4+");
-        properties.put("rowDelimiter", "default");
 
+        StringWriter writer = new StringWriter();
         DataExporterSourceCode exporter = new DataExporterSourceCode();
-        exporter.init(newMockSite(properties));
-        // If we reach here the init did not throw NPE.
-        assertNotNull(exporter);
+        exporter.init(newMockSite(properties, writer));
+        exporter.exportHeader(mock(DBCSession.class));
+        exporter.exportRow(mock(DBCSession.class), mock(DBCResultSet.class), new Object[]{"x"});
+        exporter.exportFooter(null);
+
+        assertTrue(
+            "default double-quote mode must work when quoteChar property is absent",
+            writer.toString().contains("\"name\" => \"x\""));
     }
 
     @Test
     public void exportRowWithSingleQuoteValueInSingleQuoteModeProducesValidPhp() throws DBException, IOException {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("language", "PHP 5.4+");
-        properties.put("rowDelimiter", "default");
-        properties.put("quoteChar", "'");
+        Map<String, Object> properties = newPhp54DefaultProperties();
+        properties.put(KEY_QUOTE_CHAR, "'");
 
         StringWriter writer = new StringWriter();
         DataExporterSourceCode exporter = new DataExporterSourceCode();
@@ -119,9 +134,7 @@ public class DataExporterSourceCodeTest extends DBeaverUnitTest {
 
     @Test
     public void exportRowWithDoubleQuoteValueInDoubleQuoteModeUsesJsonEscapes() throws DBException, IOException {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("language", "PHP 5.4+");
-        properties.put("rowDelimiter", "default");
+        Map<String, Object> properties = newPhp54DefaultProperties();
         // Omit quoteChar — double quote is the default per plugin.xml.
 
         StringWriter writer = new StringWriter();

@@ -197,7 +197,7 @@ public class DataExporterSourceCode extends StreamExporterAbstract implements ID
     private void writeCellValue(Reader reader) throws IOException
     {
         // Copy reader
-        char buffer[] = new char[2000];
+        char[] buffer = new char[2000];
         for (;;) {
             int count = reader.read(buffer);
             if (count <= 0) {
