@@ -223,7 +223,11 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.defaultValue = defaultValue;
         this.validValues = validValues;
         this.editable = editable;
-        this.length = PropertyLength.LONG;
+        if (type != null && type != String.class) {
+            this.length = PropertyLength.LONG;
+        } else {
+            this.length = PropertyLength.MULTILINE;
+        }
         this.hint = null;
     }
 
