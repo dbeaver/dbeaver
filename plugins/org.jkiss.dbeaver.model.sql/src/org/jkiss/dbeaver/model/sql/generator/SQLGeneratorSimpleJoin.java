@@ -20,7 +20,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.lang.reflect.InvocationTargetException;
@@ -70,7 +69,7 @@ public class SQLGeneratorSimpleJoin extends SQLGenerator<DBSEntity> {
         } catch (Exception e) {
             throw new InvocationTargetException(e);
         }
-        result = this.isFormatSql() ? SQLFormatUtils.formatSQL(objects.getFirst().getDataSource(), sql.toString()) : sql.toString().trim();
+        result = formatIfApplicable(objects.getFirst().getDataSource(), sql);
     }
 
     @Override

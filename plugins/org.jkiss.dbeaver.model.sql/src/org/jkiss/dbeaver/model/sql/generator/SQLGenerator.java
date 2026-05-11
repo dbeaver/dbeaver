@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.sql.registry.SQLGeneratorConfigurationRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLGeneratorDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
@@ -220,25 +219,21 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
                     generateSQL(monitor, sql, object);
                 }
                 if (dataSource == null) {
-                    dataSource = getObjectDataSource(object);
+                    dataSource = DBUtils.getObjectDataSource(object);
                 }
             }
         } catch (DBException e) {
             throw new InvocationTargetException(e);
         }
 
-        result = dataSource != null && this.isFormatSql() ? SQLFormatUtils.formatSQL(dataSource, sql.toString()) : sql.toString().trim();
+        result = formatIfApplicable(dataSource, sql);
     }
 
     protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, OBJECT object)
         throws DBException;
 
-    @Nullable
-    public static DBPDataSource getObjectDataSource(@NotNull Object object) {
-        return switch (object) {
-            case DBSObject o -> o.getDataSource();
-            case DBPContextProvider c -> c.getExecutionContext() == null ? null : c.getExecutionContext().getDataSource();
-            default -> null;
-        };
+    @NotNull
+    protected String formatIfApplicable(@Nullable DBPDataSource dataSource, @NotNull StringBuilder sql) {
+        return dataSource != null && this.isFormatSql() ? SQLFormatUtils.formatSQL(dataSource, sql.toString()) : sql.toString().trim();
     }
 }

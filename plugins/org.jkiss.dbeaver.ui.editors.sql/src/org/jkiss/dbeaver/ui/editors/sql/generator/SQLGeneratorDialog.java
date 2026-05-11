@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -120,7 +121,7 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 }
             }
             if (!Boolean.FALSE.equals(supportsFormatting)) {
-                DBPDataSource objectDataSource = SQLGenerator.getObjectDataSource(object);
+                DBPDataSource objectDataSource = DBUtils.getObjectDataSource(object);
                 if (objectDataSource != null) {
                     if (supportsFormatting == null) {
                         supportsFormatting = true;
