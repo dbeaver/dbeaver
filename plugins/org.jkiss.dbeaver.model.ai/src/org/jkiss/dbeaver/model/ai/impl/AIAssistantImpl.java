@@ -241,7 +241,7 @@ public class AIAssistantImpl implements AIAssistant {
             result = function.getToolbox().callFunction(context, function, arguments);
         } catch (DBException e) {
             result = new AIFunctionResult(
-                AIFunctionType.ACTION,
+                function.getType(),
                 "Error calling function '" + function.getId() + "': " + e.getMessage(),
                 null,
                 e
