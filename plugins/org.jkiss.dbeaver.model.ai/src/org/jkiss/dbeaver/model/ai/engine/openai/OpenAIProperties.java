@@ -74,7 +74,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 2, required = true)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
-            return OpenAIClient.OPENAI_ENDPOINT;
+            return OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         return baseUrl;
     }
@@ -89,7 +89,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     public String getToken() {
         return token;
     }
-    
+
     public void setToken(@Nullable String token) {
         this.token = token;
     }

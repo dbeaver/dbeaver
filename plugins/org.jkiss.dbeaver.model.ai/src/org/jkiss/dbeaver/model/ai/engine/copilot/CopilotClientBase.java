@@ -90,14 +90,14 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
      * Request access to the user's account
      */
     @NotNull
-    public CopilotClientLegacy.DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public CopilotClientChat.DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
         DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
         HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
             .header("accept", HttpConstants.CONTENT_TYPE_JSON).header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(Duration.ofSeconds(10)) // Set timeout
             .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(deviceCodeRequest))).build();
 
-        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotClientLegacy.DeviceCodeResponse.class);
+        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotClientChat.DeviceCodeResponse.class);
     }
 
     /**
@@ -126,7 +126,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
     @NotNull
     public String requestAccessToken(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull CopilotClientLegacy.DeviceCodeResponse deviceCodeResponse,
+        @NotNull CopilotClientChat.DeviceCodeResponse deviceCodeResponse,
         @NotNull Future<?> cancellationToken
     ) throws DBException, InterruptedException {
         AccessTokenRequest accessTokenRequest = new AccessTokenRequest(

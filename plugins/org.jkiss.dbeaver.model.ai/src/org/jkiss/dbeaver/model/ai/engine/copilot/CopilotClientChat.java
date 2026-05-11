@@ -35,14 +35,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class CopilotClientLegacy extends CopilotClientBase<CopilotChatRequest, CopilotChatResponseLegacy> {
-    private static final Log log = Log.getLog(CopilotClientLegacy.class);
+public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, CopilotChatResponseLegacy> {
+    private static final Log log = Log.getLog(CopilotClientChat.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
 
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
 
-    public CopilotClientLegacy(@NotNull String authProviderBaseURL) {
+    public CopilotClientChat(@NotNull String authProviderBaseURL) {
         super(authProviderBaseURL);
     }
 

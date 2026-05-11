@@ -39,10 +39,10 @@ import java.util.Set;
 
 public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
 
-    protected final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
+    protected final DisposableLazyValue<CopilotClientResponses, DBException> client = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected CopilotClient initialize() {
+        protected CopilotClientResponses initialize() {
             try {
                 return createClient(getProperties().getBaseAuthUrl());
             } catch (DBException e) {
@@ -51,7 +51,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         }
 
         @Override
-        protected void onDispose(@NotNull CopilotClient disposedValue) {
+        protected void onDispose(@NotNull CopilotClientResponses disposedValue) {
             disposedValue.close();
         }
     };
@@ -192,12 +192,12 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     }
 
     @NotNull
-    protected CopilotClient createClient(@NotNull String baseAuthUrl) throws DBException {
+    protected CopilotClientResponses createClient(@NotNull String baseAuthUrl) throws DBException {
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("Copilot API token is not set");
         }
 
-        return new CopilotClient(baseAuthUrl);
+        return new CopilotClientResponses(baseAuthUrl);
     }
 }

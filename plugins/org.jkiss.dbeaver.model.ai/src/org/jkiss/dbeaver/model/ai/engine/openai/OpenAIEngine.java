@@ -34,15 +34,15 @@ import java.util.List;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
-    protected DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+    protected DisposableLazyValue<OpenAIClientResponses, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected OpenAIClient initialize() throws DBException {
+        protected OpenAIClientResponses initialize() throws DBException {
             return createClient();
         }
 
         @Override
-        protected void onDispose(@NotNull OpenAIClient disposedValue) {
+        protected void onDispose(@NotNull OpenAIClientResponses disposedValue) {
             disposedValue.close();
         }
     };
@@ -132,16 +132,16 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @NotNull
-    protected OpenAIClient createClient() throws DBException {
+    protected OpenAIClientResponses createClient() throws DBException {
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");
         }
         String baseUrl = properties.getBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
-            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+            baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        return OpenAIClient.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token);
     }
 
     @Nullable

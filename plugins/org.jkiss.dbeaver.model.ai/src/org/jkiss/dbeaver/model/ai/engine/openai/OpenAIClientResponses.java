@@ -34,14 +34,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class OpenAIClient extends OpenAiClientBase {
-    private static final Log log = Log.getLog(OpenAIClient.class);
+public class OpenAIClientResponses extends OpenAiClientBase {
+    private static final Log log = Log.getLog(OpenAIClientResponses.class);
 
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
-    private final OpenAIClientLegacy backupClient;
+    private final OpenAIClientChat backupClient;
 
-    public OpenAIClient(
+    public OpenAIClientResponses(
         @NotNull String baseUrl,
         @NotNull List<HttpRequestFilter> requestFilters
     ) {
@@ -55,8 +55,8 @@ public class OpenAIClient extends OpenAiClientBase {
     }
 
     @NotNull
-    public static OpenAIClient createClient(@NotNull String baseUrl, @NotNull String token) {
-        return new OpenAIClient(
+    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @NotNull String token) {
+        return new OpenAIClientResponses(
             baseUrl,
             List.of(new OpenAIRequestFilter(token))
         );
@@ -110,8 +110,8 @@ public class OpenAIClient extends OpenAiClientBase {
     }
 
     @NotNull
-    protected OpenAIClientLegacy createBackupClient() {
-        return new OpenAIClientLegacy(baseUrl, requestFilters);
+    protected OpenAIClientChat createBackupClient() {
+        return new OpenAIClientChat(baseUrl, requestFilters);
     }
 
     @Override

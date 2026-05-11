@@ -41,11 +41,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-public class OpenAIClientLegacy extends OpenAiClientBase {
+public class OpenAIClientChat extends OpenAiClientBase {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Gson GSON = new GsonBuilder().create();
 
-    public OpenAIClientLegacy(
+    public OpenAIClientChat(
         @NotNull String baseUrl,
         @NotNull List<HttpRequestFilter> requestFilters
     ) {
@@ -53,8 +53,8 @@ public class OpenAIClientLegacy extends OpenAiClientBase {
     }
 
     @NotNull
-    public static OpenAIClientLegacy createClient(@NotNull String baseUrl, @NotNull String token) {
-        return new OpenAIClientLegacy(
+    public static OpenAIClientChat createClient(@NotNull String baseUrl, @NotNull String token) {
+        return new OpenAIClientChat(
             baseUrl,
             List.of(new OpenAIRequestFilter(token))
         );

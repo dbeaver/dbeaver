@@ -42,11 +42,11 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
     protected static final Gson GSON = JSONUtils.GSON;
     private static final Log log = Log.getLog(OpenAiClientBase.class);
     protected final String baseUrl;
-    protected final List<OpenAIClient.HttpRequestFilter> requestFilters;
+    protected final List<OpenAIClientResponses.HttpRequestFilter> requestFilters;
 
     public OpenAiClientBase(
         @NotNull String baseUrl,
-        @NotNull List<OpenAIClient.HttpRequestFilter> requestFilters
+        @NotNull List<OpenAIClientResponses.HttpRequestFilter> requestFilters
     ) {
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
