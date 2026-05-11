@@ -76,7 +76,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngineDescriptor object,
+        @NotNull AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);
@@ -124,7 +124,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     }
 
-    protected void createAdditionalSettings(@NotNull Composite parent) {;
+    protected void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
             AIUIMessages.openai_configurator_log_query_label,
@@ -174,7 +174,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
-    private List<AIModel> fetchOpenAiModels(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    private List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (token == null || token.isEmpty()) {
             throw new DBException(AIUIMessages.openai_configurator_token_required);
         }
@@ -221,7 +222,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             NLS.bind(AIUIMessages.gpt_preference_page_token_info, getApiKeyURL()),
             new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     UIUtils.openWebBrowser(getApiKeyURL());
                 }
             }
@@ -231,6 +232,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         link.setLayoutData(gd);
     }
 
+    @NotNull
     protected String getApiKeyURL() {
         return API_KEY_URL;
     }
@@ -255,6 +257,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @Override
+    @NotNull
     public Optional<AIEngineProperties> getCurrentProperties() {
         OpenAIProperties propertiesCopy = new OpenAIProperties();
         propertiesCopy.setBaseUrl(baseUrl);

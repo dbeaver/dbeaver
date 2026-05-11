@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIResponsesResponse>{
+public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIResponsesResponse> {
     private static final Log log = Log.getLog(CopilotClient.class);
 
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/v1/responses";
@@ -70,7 +70,7 @@ public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIRes
     }
 
     @NotNull
-    private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest, String token) throws DBException {
+    private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest, @NotNull String token) throws DBException {
         return HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
@@ -152,7 +152,7 @@ public class CopilotClient extends CopilotBaseClient<OAIResponsesRequest, OAIRes
         if (statusCode == 400 && response.body().anyMatch(line -> line.contains("is not supported via Responses API"))) {
             if (backupOption == null) {
                 String responseBody = response.body().collect(Collectors.joining());
-                errorHandler.accept(mapper.map(statusCode, responseBody));;
+                errorHandler.accept(mapper.map(statusCode, responseBody));
                 return true;
             }
             backupOption.run();

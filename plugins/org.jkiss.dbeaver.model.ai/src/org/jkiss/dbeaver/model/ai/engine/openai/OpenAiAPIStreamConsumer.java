@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.Gson;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
@@ -43,12 +45,12 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     private final AIEngineResponseConsumer listener;
     private boolean functionCall;
 
-    public OpenAiAPIStreamConsumer(AIEngineResponseConsumer listener) {
+    public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener) {
         this.listener = listener;
     }
 
     @Override
-    public void accept(String event) {
+    public void accept(@Nullable String event) {
         if (CommonUtils.isEmpty(event)) {
             return;
         }
@@ -74,21 +76,8 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         }
                         return;
                     }
-                    if (functionCall) {
-                        // do nothing
-                    } else {
-                        List<String> choices = new ArrayList<>();
-                        if (EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
-                            choices.add(chunk.delta);
-                        } else if (chunk.response != null) {
-                            for (OAIMessage msg : chunk.response.output) {
-                                for (OAIMessageContent content : msg.content) {
-                                    if (!CommonUtils.isEmpty(content.text)) {
-                                        choices.add(content.text);
-                                    }
-                                }
-                            }
-                        }
+                    if (!functionCall) {
+                        List<String> choices = processChunk(chunk);
 
                         if (!choices.isEmpty()) {
                             listener.nextChunk(new AIEngineResponseChunk(choices));
@@ -109,14 +98,31 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                     case "response.output_text.done":
                     case "response.content_part.done":
                     case "response.output_item.done":
-                    case EVENT_TYPE_RESPONSE_COMPLETED:
+                    case EVENT_TYPE_RESPONSE_COMPLETED, "error":
                         break;
-                    case "error":
-                        break;
+                    default:
+                        log.debug("Unknown OpenAI event type: " + eventType);
                 }
             }
         } else {
             log.debug("Unknown OpenAI event: " + event);
         }
+    }
+
+    @NotNull
+    private static List<String> processChunk(@NotNull OAIResponsesChunk chunk) {
+        List<String> choices = new ArrayList<>();
+        if (EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
+            choices.add(chunk.delta);
+        } else if (chunk.response != null) {
+            for (OAIMessage msg : chunk.response.output) {
+                for (OAIMessageContent content : msg.content) {
+                    if (!CommonUtils.isEmpty(content.text)) {
+                        choices.add(content.text);
+                    }
+                }
+            }
+        }
+        return choices;
     }
 }

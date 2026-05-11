@@ -77,8 +77,8 @@ public class MonitoredHttpClient implements AutoCloseable {
      */
     @NotNull
     public String send(
-        DBRProgressMonitor monitor,
-        HttpRequest request
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull HttpRequest request
     ) throws DBException {
         monitor.beginTask("Request AI completion", 1);
 
@@ -114,6 +114,7 @@ public class MonitoredHttpClient implements AutoCloseable {
         }
     }
 
+    @NotNull
     public CompletableFuture<Void> sendAsync(
         @NotNull HttpRequest request,
         @NotNull Consumer<String> eventHandler,
@@ -123,6 +124,7 @@ public class MonitoredHttpClient implements AutoCloseable {
         return sendAsync(request, eventHandler, errorHandler, completionHandler, null);
     }
 
+    @NotNull
     public CompletableFuture<Void> sendAsync(
         @NotNull HttpRequest request,
         @NotNull Consumer<String> eventHandler,
