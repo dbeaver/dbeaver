@@ -16,19 +16,14 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
-import com.google.gson.annotations.SerializedName;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesBase;
 
 import java.util.List;
 
-public record CopilotChunkDelta(
-    @Nullable
-    String role,
-    @Nullable
-    String content,
-    @Nullable
-    @SerializedName("tool_calls")
-    List<CopilotChatResponseLegacy.ToolCall> toolCalls
-) {
+public class CopilotResponsesRequest extends OAIResponsesBase {
+    public List<OAIMessage> input;
 
+    public CopilotResponsesRequest() {
+    }
 }

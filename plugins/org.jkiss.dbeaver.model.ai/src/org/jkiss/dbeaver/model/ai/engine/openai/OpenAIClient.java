@@ -72,7 +72,7 @@ public class OpenAIClient extends AbstractHttpAIClient {
     }
 
     @NotNull
-    static AIFunctionCall createFunctionCall(OAIMessage message) throws DBException {
+    public static AIFunctionCall createFunctionCall(OAIMessage message) throws DBException {
         String argumentsStr = message.arguments;
         Map<String, Object> arguments;
         try {

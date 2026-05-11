@@ -17,22 +17,20 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAITool;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
@@ -40,8 +38,12 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     protected final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected CopilotClient initialize() throws DBException {
-            return createClient(getProperties().getBaseAuthUrl());
+        protected CopilotClient initialize() {
+            try {
+                return createClient(getProperties().getBaseAuthUrl());
+            } catch (DBException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -58,7 +60,8 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return client.getInstance().loadModels(monitor, requestSessionToken(monitor).token()).stream()
+        List<CopilotModel> list = client.getInstance().loadModels(monitor, requestSessionToken(monitor).token());
+        return list.stream()
             .map(model -> CopilotModels.getModelByName(model.id()).orElse(
                 new AIModel(model.id(), null, Set.of())
             ))
@@ -71,10 +74,10 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        CopilotChatResponse chatResponse = client.getInstance().chat(
+        CopilotResponsesResponse chatResponse = client.getInstance().chat(
             monitor,
             requestSessionToken(monitor).token(),
-            createChatRequest(request, false)
+            createOpenAiRequest(request)
         );
 
         return toEngineResponse(chatResponse);
@@ -89,7 +92,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         client.getInstance().createChatCompletionStream(
             monitor,
             requestSessionToken(monitor).token(),
-            createChatRequest(request, true),
+            createOpenAiRequest(request),
             listener
         );
     }
@@ -132,7 +135,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     }
 
     @NotNull
-    private CopilotChatRequest createChatRequest(
+    private CopilotChatRequest createLegacyChatRequest(
         @NotNull AIEngineRequest request,
         boolean stream
     ) throws DBException {
@@ -152,35 +155,82 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     }
 
     @NotNull
-    private AIEngineResponse toEngineResponse(@NotNull CopilotChatResponse response) throws DBException {
-        AIUsage usage = response.getAIUsage();
-        CopilotChatResponse.ToolCall toolCall = getFirstToolCall(response);
-        if (toolCall != null) {
-            return new AIEngineResponse(CopilotUtils.createFunctionCall(toolCall), usage);
+    private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
+        List<OAIMessage> result = new ArrayList<>(messages.size());
+        for (AIMessage message : messages) {
+            if (message.getFunctionCall() != null) {
+                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
+                if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
+                    result.add(functionCallMessage);
+                    // OpenAI Responses API requires matching function_call_output for each function_call.
+                    // Keep orphan function calls in history as regular assistant messages.
+                    result.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
+                }
+            } else {
+                result.add(OAIMessageFactory.fromAIMessage(message));
+            }
         }
-
-        List<String> variants = response.choices().stream()
-            .map(CopilotChatResponse.Choice::message)
-            .map(CopilotChatResponse.Message::content)
-            .filter(CommonUtils::isNotEmpty)
-            .toList();
-        if (variants.isEmpty()) {
-            variants = List.of(AIMessages.ai_empty_engine_response);
-        }
-
-        return new AIEngineResponse(AIMessageType.ASSISTANT, variants, usage);
+        return result;
     }
 
-    @Nullable
-    private static CopilotChatResponse.ToolCall getFirstToolCall(@NotNull CopilotChatResponse response) {
-        return response.choices().stream()
-            .map(CopilotChatResponse.Choice::message)
-            .filter(Objects::nonNull)
-            .map(CopilotChatResponse.Message::toolCalls)
-            .filter(calls -> calls != null && !calls.isEmpty())
-            .map(List::getFirst)
-            .findFirst()
-            .orElse(null);
+    @NotNull
+    private CopilotResponsesRequest createOpenAiRequest(@NotNull AIEngineRequest request) throws DBException {
+        CopilotResponsesRequest oaiRequest = new CopilotResponsesRequest();
+        List<AIMessage> messages = request.getMessages();
+        oaiRequest.input = fromMessages(messages);
+        oaiRequest.store = false;
+        oaiRequest.model = getModelName();
+
+        if (!CommonUtils.isEmpty(request.getFunctions())) {
+            List<OAITool> tools = new ArrayList<>();
+            for (AIFunctionDescriptor fd : request.getFunctions()) {
+                OAITool tool = new OAITool();
+                tool.type = OAITool.TYPE_FUNCTION;
+                tool.name = fd.getFullId();
+                tool.description = fd.getAiDescription();
+                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                List<String> requiredFields = new ArrayList<>();
+                for (AIFunctionParameter param : fd.getParameters()) {
+                    OAIToolParameter tp = new OAIToolParameter();
+                    tp.type = param.getType();
+                    tp.description = param.getDescription();
+                    tp.enumItems = param.getValidValues();
+                    requiredFields.add(param.getName());
+                    tool.parameters.properties.put(param.getName(), tp);
+                }
+                tool.parameters.required = requiredFields.toArray(new String[0]);
+                tools.add(tool);
+            }
+            oaiRequest.tools = tools;
+        }
+
+        return oaiRequest;
+    }
+
+    @NotNull
+    private AIEngineResponse toEngineResponse(@NotNull CopilotResponsesResponse response) throws DBException {
+        List<OAIMessage> messages = response.output.stream()
+            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+            .toList();
+        AIUsage usage = response.getAIUsage();
+        if (messages.isEmpty()) {
+            return new AIEngineResponse(
+                AIMessageType.ASSISTANT,
+                List.of(AIMessages.ai_empty_engine_response),
+                usage
+            );
+        }
+        OAIMessage message = messages.getFirst();
+        if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
+            AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
+            return new AIEngineResponse(fc, usage);
+        } else {
+            List<String> choices = messages.stream()
+                .map(OAIMessage::getFullText)
+                .toList();
+
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
+        }
     }
 
     @NotNull
