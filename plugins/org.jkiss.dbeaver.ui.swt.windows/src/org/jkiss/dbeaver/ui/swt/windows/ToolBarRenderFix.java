@@ -95,6 +95,11 @@ public class ToolBarRenderFix implements IPluginService {
             this.windowCallback = new Callback(this, "customWindowProc", 4); //$NON-NLS-1$
             this.myProcPtr = windowCallback.getAddress();
 
+            this.toolBar.addDisposeListener(e -> {
+                OS.SetWindowLongPtr(this.toolBar.handle, OS.GWLP_WNDPROC, this.prevProcPtr);
+                this.windowCallback.dispose();
+            });
+
             OS.AllowDarkModeForWindow(this.toolBar.handle, true);
             OS.SetWindowLongPtr(this.toolBar.handle, OS.GWLP_WNDPROC, this.myProcPtr);
         }
