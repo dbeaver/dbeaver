@@ -2666,7 +2666,7 @@ public class UIUtils {
      * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
      */
     @NotNull
-    public static ExpandableComposite createExpandableCompositeWithSeparator(
+    public static ExpandableCompositeEx createExpandableCompositeWithSeparator(
         @NotNull Composite parent,
         int style,
         int expansionStyle
