@@ -679,7 +679,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Override
     public void flushConfig() {
-        if (project.isInMemory()) {
+        if (project.isInMemory() || DBWorkbench.isDistributed()) {
+            // Do not save in-memory projects.
+
+            // Do not save all project datasources in TE
+            // We save them only thru persistDataSourceX methods
             return;
         }
         // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
