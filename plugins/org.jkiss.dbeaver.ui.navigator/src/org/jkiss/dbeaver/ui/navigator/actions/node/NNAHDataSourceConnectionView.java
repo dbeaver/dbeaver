@@ -35,9 +35,9 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 
 /**
- * Tunnel action handler
+ * Connection view handler
  */
-public class NNAHDataSourceNavigatorView extends NavigatorNodeActionHandlerAbstract {
+public class NNAHDataSourceConnectionView extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
