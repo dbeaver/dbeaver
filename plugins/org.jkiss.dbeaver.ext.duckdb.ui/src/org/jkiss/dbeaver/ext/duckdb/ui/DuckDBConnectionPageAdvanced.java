@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.duckdb.model.DuckDBConstants;
 import org.jkiss.dbeaver.ext.duckdb.ui.internal.DuckDBMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -72,7 +73,7 @@ public class DuckDBConnectionPageAdvanced extends ConnectionPageAbstract {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         dataSource.getConnectionConfiguration().setProviderProperty(
             DuckDBConstants.PROP_DD_PLAIN_STRING,
             CommonUtils.toString(sqlDollarQuotePlainCombo.getSelectionIndex() == 0)
