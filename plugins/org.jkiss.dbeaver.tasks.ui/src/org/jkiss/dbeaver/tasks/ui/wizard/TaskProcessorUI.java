@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     private long startTime;
     private boolean started;
     private long timeSincePreviousTask;
+    private Throwable error;
 
     public TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
         this.staticContext = staticContext;
@@ -68,6 +69,11 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     @NotNull
     public DBTTask getTask() {
         return task;
+    }
+
+    @Nullable
+    public Throwable getError() {
+        return error;
     }
 
     public void executeTask() throws DBException {
@@ -89,6 +95,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
         @Nullable Object settings
     ) {
         this.started = false;
+        this.error = error;
 
         long elapsedTime = System.currentTimeMillis() - startTime;
 
