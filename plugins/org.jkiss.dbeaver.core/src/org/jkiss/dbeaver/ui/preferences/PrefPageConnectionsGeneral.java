@@ -57,7 +57,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
-public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
+public class PrefPageConnectionsGeneral extends AbstractPrefPage
+    implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
@@ -80,7 +81,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
         connectionNamePattern = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings();
+        defaultNavigatorSettings = DataSourceNavigatorSettings.DEFAULT_PRODUCT_NAVIGATOR_SETTINGS;
     }
 
     @NotNull
