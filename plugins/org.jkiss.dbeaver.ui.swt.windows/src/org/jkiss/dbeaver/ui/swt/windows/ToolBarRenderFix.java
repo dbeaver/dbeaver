@@ -27,15 +27,15 @@ import org.eclipse.swt.internal.win32.RECT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.LongKeyMap;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.AccessFlag;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -51,30 +51,48 @@ public class ToolBarRenderFix implements IPluginService {
 
     private static final char[] EXPLORER = "EXPLORER".toCharArray();
 
+    //
+    // We are using only one Callback instance shared between all the toolbars to handle, and we dispatch the logic with HashMap of them
+    // because for whatever reason SWT uses the approach with hard-coded MAX_CALLBACKS limit
+    // and we don't want to implement our own solution to intercept native functions per UI control.
+    //     See also
+    // https://github.com/eclipse-platform/eclipse.platform.swt/blob/master/bundles/org.eclipse.swt/Eclipse%20SWT/common/org/eclipse/swt/internal/Callback.java
+    // https://github.com/eclipse-platform/eclipse.platform.swt/blob/master/bundles/org.eclipse.swt/Eclipse%20SWT/common/library/callback.h
+    // https://github.com/eclipse-platform/eclipse.platform.swt/blob/master/bundles/org.eclipse.swt/Eclipse%20SWT/common/library/callback.c
+    //
+
+    private Callback windowCallback;
+    private LongKeyMap<ToolbarSubclassHandler> handlersByHwnd = new LongKeyMap<>();
+
     public ToolBarRenderFix() {
     }
 
     @Override
     public void activateService() {
         if (UIStyles.isDarkTheme() && System.getProperty("os.name").contains("Windows 11")) {
-            addDarkThemeToolbarsFix();
+            this.windowCallback = new Callback(this, "customWindowProc", 4); //$NON-NLS-1$
+            this.addEventFilterListener(new int[]{ SWT.Paint, SWT.Resize }, event -> {
+                if (event.widget instanceof ToolBar t && t.getData(DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME) == null) {
+                    t.setData(DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME, new ToolbarSubclassHandler(t));
+                }
+            });
         }
     }
 
     @Override
     public void deactivateService() {
-
     }
 
-    private void addDarkThemeToolbarsFix() {
-        int[] eventsToHandle = new int[]{ SWT.Paint, SWT.Resize };
+    protected long customWindowProc(long hwnd, long msg, long wParam, long lParam) {
+        ToolbarSubclassHandler handler = this.handlersByHwnd.get(hwnd);
+        if (handler != null) {
+            return handler.customWindowProc(hwnd, msg, wParam, lParam);
+        } else {
+            return OS.DefWindowProc(hwnd, (int) msg, wParam, lParam);
+        }
+    }
 
-        Listener listener = event -> {
-            if (event.widget instanceof ToolBar t && t.getData(DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME) == null) {
-                t.setData(DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME, new ToolbarSubclassHandler(t));
-            }
-        };
-
+    private void addEventFilterListener(int[] eventsToHandle, Listener listener) {
         Display display = UIUtils.getDisplay();
         for (int eventId : eventsToHandle) {
             display.addFilter(eventId, listener);
@@ -84,20 +102,21 @@ public class ToolBarRenderFix implements IPluginService {
     private class ToolbarSubclassHandler {
         private final ToolBar toolBar;
         private final Font font;
-        private final long prevProcPtr;
-        private final Callback windowCallback;
+        private long prevProcPtr;
         private final long myProcPtr;
 
         public ToolbarSubclassHandler(@NotNull ToolBar toolBar) {
             this.toolBar = toolBar;
             this.font = toolBar.getFont();
             this.prevProcPtr = OS.GetWindowLongPtr(toolBar.handle, OS.GWLP_WNDPROC);
-            this.windowCallback = new Callback(this, "customWindowProc", 4); //$NON-NLS-1$
             this.myProcPtr = windowCallback.getAddress();
 
+            // SetWindowSubclass(..) should have been used here to have formally clear cleanup procedure and per-instance dwRefData value,
+            // but SWT uses SetWindowLongPtr(..) and so we are
+            ToolBarRenderFix.this.handlersByHwnd.put(toolBar.handle, this);
             this.toolBar.addDisposeListener(e -> {
                 OS.SetWindowLongPtr(this.toolBar.handle, OS.GWLP_WNDPROC, this.prevProcPtr);
-                this.windowCallback.dispose();
+                ToolBarRenderFix.this.handlersByHwnd.remove(toolBar.handle);
             });
 
             OS.AllowDarkModeForWindow(this.toolBar.handle, true);
@@ -140,17 +159,6 @@ public class ToolBarRenderFix implements IPluginService {
                 }
 
                 if (rects.size() > 0) {
-                    // switch theming on and render themed toolbar excluding items to fix
-                    OS.SetWindowTheme(this.toolBar.handle, EXPLORER, null);
-                    this.toolBar.setFont(font);
-
-                    for (var rect : rects) {
-                        OS.ValidateRect(this.toolBar.handle, rect);
-                    }
-
-                    this.callPrevWindowProc(hwnd, (int) msg, wParam, lParam);
-                    this.ensureOverride();
-
                     // switch theming off and invalidate for default renderer only items we're unhappy with how the theme renders them
                     OS.SetWindowTheme(this.toolBar.handle, null, null);
                     this.toolBar.setFont(font);
@@ -158,6 +166,18 @@ public class ToolBarRenderFix implements IPluginService {
                     for (var rect : rects) {
                         OS.InvalidateRect(this.toolBar.handle, rect, true);
                     }
+                    this.callPrevWindowProc(hwnd, (int) msg, wParam, lParam);
+                    this.ensureOverride();
+
+                    // switch theming on and render themed toolbar excluding items we've just rendered with the default renderer
+                    OS.SetWindowTheme(this.toolBar.handle, EXPLORER, null);
+                    this.toolBar.setFont(font);
+                    for (var rect : rects) {
+                        OS.ValidateRect(this.toolBar.handle, rect);
+                    }
+
+                    // leaving the theming on because otherwise visual state is compromised when the background color changed dynamically
+                    // (like when activating a fesh instance of colored connection's object editor)
                 }
             }
 
