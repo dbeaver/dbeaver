@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,6 +49,16 @@ public abstract class BaseWizard extends Wizard
         } catch (InterruptedException ignored) {
 
         }
+    }
+
+    @Nullable
+    public <T> T getPage(@NotNull Class<T> clazz) {
+        for (IWizardPage page : getPages()) {
+            if (clazz.isInstance(page)) {
+                return clazz.cast(page);
+            }
+        }
+        return null;
     }
 
 }
