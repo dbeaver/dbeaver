@@ -213,17 +213,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     @NotNull
     private static List<CLICommandDescriptor> extractCommandsToExecuteFromArgs(@NotNull String[] args) {
-//        Map<String, CLICommandDescriptor> commandsByName = commands
-//            .entrySet()
-//            .stream()
-//            .collect(Collectors.toMap(entry -> entry.getValue().getCommandName(), Map.Entry::getValue));
-
-        List<CLICommandDescriptor> commandsToExecute = new ArrayList<>();
-//        for (String arg : args) {
-//            if (commandsByName.containsKey(arg)) {
-//                commandsToExecute.add(commandsByName.get(arg));
-//            }
-//        }
         return commands.values().stream().toList();
     }
 
@@ -236,11 +225,25 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         List<CLICommandDescriptor> matched = new ArrayList<>();
         for (CLICommandDescriptor descriptor : commands.values()) {
             CommandLine.Command annotation = descriptor.getImplClass().getAnnotation(CommandLine.Command.class);
-            if (annotation == null || CommonUtils.isEmpty(annotation.name())) {
+            if (annotation == null) {
                 continue;
             }
-            if (argSet.contains(annotation.name())) {
-                matched.add(descriptor);
+            Set<String> commandNames = new HashSet<>();
+            if (CommonUtils.isNotEmpty(annotation.name())) {
+                commandNames.add(annotation.name());
+            }
+            if (!ArrayUtils.isEmpty(annotation.aliases())) {
+                commandNames.addAll(Arrays.asList(annotation.aliases()));
+            }
+            if (CommonUtils.isEmpty(commandNames)) {
+                continue;
+            }
+
+            for (String commandName : commandNames) {
+                if (argSet.contains(commandName)) {
+                    matched.add(descriptor);
+                    break;
+                }
             }
         }
         return matched;
@@ -265,7 +268,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     }
 
-    @NotNull
     public void preprocessCommandLine(
         @NotNull String[] args
     ) throws DBException {
