@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * ConnectionPageAbstract
@@ -154,8 +154,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         saveConnectionURL(dataSource.getConnectionConfiguration());
         if (savePasswordCheck != null) {
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
@@ -375,11 +374,19 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     protected void createDriverSubstitutionControls(@NotNull Composite parent) {
+        createDriverSubstitutionControls(parent, 1, true);
+    }
+
+    protected void createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
         final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
 
         if (driverSubstitutions.length > 0) {
             final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
-            substitutionGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).align(SWT.END, SWT.BEGINNING).create());
+            GridDataFactory.fillDefaults()
+                .grab(grab, false)
+                .span(hSpan, 1)
+                .align(SWT.END, SWT.BEGINNING)
+                .applyTo(substitutionGroup);
 
             driverSubstitutionCombo = UIUtils.createLabelCombo(
                 substitutionGroup,

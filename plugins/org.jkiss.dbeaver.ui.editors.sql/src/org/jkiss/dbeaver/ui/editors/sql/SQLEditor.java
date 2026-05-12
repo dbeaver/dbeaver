@@ -62,7 +62,6 @@ import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
@@ -123,13 +122,14 @@ import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.io.*;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -149,6 +149,7 @@ public class SQLEditor extends SQLEditorBase implements
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_QUERY_PREVIEW_LENGTH = 8192;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
     private static final String EMBEDDED_BINDING_PREFIX = "-- CONNECTION: ";
@@ -496,7 +497,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        checkConnected(false, status -> UIUtils.asyncExec(() -> {
+        boolean connect = dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
+        checkConnected(connect, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBWorkbench.getPlatformUI().showError(
                     "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
@@ -1026,33 +1028,43 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    public boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish) {
+    /**
+     * Check whether datasource is connected.
+     * <p>
+     * If {@code connect} is {@code true}, the connection will be asynchronously
+     * established if it is not connected yet.
+     *
+     * @param connect  whether to connect if not connected.
+     * @param onFinish callback to be executed after connection attempt is finished.
+     * @return true if datasource is already connected; false otherwise.
+     */
+    public boolean checkConnected(boolean connect, @Nullable DBRProgressListener onFinish) {
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        boolean doConnect = dataSourceContainer != null &&
-            (forceConnect || dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE));
-        if (doConnect) {
-            if (!dataSourceContainer.isConnected()) {
-                UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
-                if (serviceConnections != null) {
-                    // Start connect visualizer
-                    UIUtils.asyncExec(() -> {
-                        ConnectVisualizer connectVisualizer = new ConnectVisualizer();
-                        serviceConnections.connectDataSource(
-                            dataSourceContainer, status -> {
-                                // We must reload syntax to refresh context
-                                UIUtils.asyncExec(this::reloadSyntaxRules);
-                                if (onFinish != null) {
-                                    onFinish.onTaskFinished(status);
-                                }
-                                connectVisualizer.stop();
-                            }
-                        );
-                    });
-                }
+        if (dataSourceContainer == null) {
+            return false;
+        }
+        if (dataSourceContainer.isConnected()) {
+            return true;
+        }
+        if (connect) {
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                // Start connect visualizer
+                ConnectVisualizer connectVisualizer = new ConnectVisualizer();
+                serviceConnections.connectDataSource(
+                    dataSourceContainer, status -> {
+                        // We must reload syntax to refresh context
+                        UIUtils.asyncExec(this::reloadSyntaxRules);
+                        if (onFinish != null) {
+                            onFinish.onTaskFinished(status);
+                        }
+                        connectVisualizer.stop();
+                    }
+                );
             }
         }
-        return dataSourceContainer != null && dataSourceContainer.isConnected();
+        return false;
     }
 
     @Override
@@ -2652,21 +2664,36 @@ public class SQLEditor extends SQLEditorBase implements
         explainQueryPlan((SQLQuery) scriptElement);
     }
 
-    private void explainQueryPlan(SQLQuery sqlQuery) {
-        showResultsPanel(false);
+    private void explainQueryPlan(@NotNull SQLQuery sqlQuery) {
         DBCQueryPlanner planner = GeneralUtils.adapt(getDataSource(), DBCQueryPlanner.class);
-
-        DBCPlanStyle planStyle = planner.getPlanStyle();
-        if (planStyle == DBCPlanStyle.QUERY) {
-            explainPlanFromQuery(planner, sqlQuery);
-        } else if (planStyle == DBCPlanStyle.OUTPUT) {
-            explainPlanFromQuery(planner, sqlQuery);
-            showOutputPanel(true);
-        } else {
-            ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
-
-            if (planView != null) {
-                planView.explainQueryPlan(sqlQuery, planner);
+        if (planner == null) {
+            return;
+        }
+        switch (planner.getPlanStyle()) {
+            case QUERY -> {
+                explainPlanFromQuery(planner, sqlQuery);
+                showResultsPanel(false);
+            }
+            case OUTPUT -> {
+                explainPlanFromQuery(planner, sqlQuery);
+                showResultsPanel(false);
+                showOutputPanel(true);
+            }
+            case PLAN -> {
+                RuntimeUtils.scheduleJob("Explain query plan", monitor -> {
+                    DBCQueryPlannerConfiguration configuration = ExplainPlanViewer.makeExplainPlanConfiguration(monitor, planner);
+                    if (configuration == null) {
+                        return;
+                    }
+                    UIUtils.syncExec(() -> {
+                        ExplainPlanViewer planView = getPlanView(sqlQuery, planner);
+                        if (planView == null) {
+                            return;
+                        }
+                        planView.explainQueryPlan(sqlQuery, planner, configuration);
+                        showResultsPanel(false);
+                    });
+                });
             }
         }
     }
@@ -2682,7 +2709,8 @@ public class SQLEditor extends SQLEditorBase implements
         });
     }
 
-    private ExplainPlanViewer getPlanView(SQLQuery sqlQuery, DBCQueryPlanner planner) {
+    @Nullable
+    private ExplainPlanViewer getPlanView(@NotNull SQLQuery sqlQuery, @Nullable DBCQueryPlanner planner) {
 
         // 1. Determine whether planner supports plan extraction
 
@@ -2742,7 +2770,7 @@ public class SQLEditor extends SQLEditorBase implements
         return planView;
     }
 
-    private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
+    private void explainPlanFromQuery(@NotNull DBCQueryPlanner planner, @NotNull SQLQuery sqlQuery) {
         final String[] planQueryString = new String[1];
         DBRRunnableWithProgress queryObtainTask = monitor -> {
             DBCQueryPlannerConfiguration configuration = ExplainPlanViewer.makeExplainPlanConfiguration(monitor, planner);
@@ -3146,7 +3174,7 @@ public class SQLEditor extends SQLEditorBase implements
             ConfirmationDialog.WARNING,
             ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
-            dropQuery.getText()
+            StringUtils.truncateText(dropQuery.getText(), MAX_QUERY_PREVIEW_LENGTH)
         );
     }
 

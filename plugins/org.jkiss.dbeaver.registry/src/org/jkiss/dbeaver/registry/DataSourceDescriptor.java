@@ -26,11 +26,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
-import org.jkiss.dbeaver.model.access.DBAAuthModelExternal;
-import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
+import org.jkiss.dbeaver.model.access.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
@@ -904,7 +904,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         persistSecrets(secretController, false);
     }
 
@@ -994,7 +994,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         if (!isSharedCredentials()) {
             // try to load private user credentials
             String secretValue = secretController.getPrivateSecretValue(getSecretValueId());
@@ -1189,6 +1189,13 @@ public class DataSourceDescriptor
                 }
 
                 if (tunnelConfiguration != null) {
+                    // SSH tunneling can be disabled in multi-user apps
+                    DBPWorkspace workspace = getProject().getWorkspace();
+                    if (!workspace.supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)) {
+                        throw new DBException(
+                            "SSH tunneling is required for this connection, but it is currently disabled. Please contact your administrator.");
+                    }
+
                     monitor.subTask("Initialize tunnel");
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {
@@ -1685,6 +1692,7 @@ public class DataSourceDescriptor
         this.extensions.putAll(extensions);
     }
 
+    @NotNull
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         if (this.formatterProfile == null) {
@@ -2037,6 +2045,33 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration actualConfig = dataSourceContainer.getActualConnectionConfiguration();
         DBPConnectionConfiguration connConfig = dataSourceContainer.getConnectionConfiguration();
 
+        if (networkHandler == null) {
+            DBAAuthModel<?> authModel = actualConfig.getAuthModel();
+            if (authModel.getClass() != AuthModelDatabaseNative.class) {
+                boolean savedPasswordState = dataSourceContainer.isSavePassword();
+                DBPConnectionConfiguration savedConnectionInfo = new DBPConnectionConfiguration(connConfig);
+                if (!DBWorkbench.getPlatformUI().promptAuthModelCredentials(dataSourceContainer)) {
+                    dataSourceContainer.setSavePassword(savedPasswordState);
+                    return false;
+                }
+                DBPConnectionConfiguration promptConnectionInfo = new DBPConnectionConfiguration(connConfig);
+                if (actualConfig != connConfig || !dataSourceContainer.isSavePassword()) {
+                    dataSourceContainer.resolvedConnectionInfo = promptConnectionInfo;
+                }
+                if (dataSourceContainer.isSavePassword()) {
+                    try {
+                        dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
+                    }
+                } else {
+                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
+                    dataSourceContainer.setSavePassword(savedPasswordState);
+                }
+                return true;
+            }
+        }
+
         final String prompt = networkHandler != null ?
             NLS.bind(RegistryMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
             "'" + dataSourceContainer.getName() + RegistryMessages.dialog_connection_auth_title; //$NON-NLS-1$
@@ -2072,7 +2107,7 @@ public class DataSourceDescriptor
             dataSourceContainer.setSavePassword(authInfo.isSavePassword());
         }
         if (authInfo.isSavePassword()) {
-            if (authInfo.isSavePassword() && connConfig != actualConfig) {
+            if (connConfig != actualConfig) {
                 if (authType == DBWTunnel.AuthCredentials.CREDENTIALS) {
                     if (networkHandler != null) {
                         networkHandler.setUserName(authInfo.getUserName());

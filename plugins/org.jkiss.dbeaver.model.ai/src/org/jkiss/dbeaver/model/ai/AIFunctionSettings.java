@@ -29,6 +29,8 @@ import java.util.*;
 public final class AIFunctionSettings {
     @SerializedName("enabled")
     private boolean functionsEnabled = true;
+    @SerializedName("mcpEncrypted")
+    private boolean mcpConfigEncrypted = false;
     private final Map<String, ToolboxSettings> functions = new LinkedHashMap<>();
 
     /**
@@ -98,9 +100,21 @@ public final class AIFunctionSettings {
         this.functionsEnabled = functionsEnabled;
     }
 
+    public boolean isMcpConfigEncrypted() {
+        return mcpConfigEncrypted;
+    }
+
+    public void setMcpConfigEncrypted(boolean mcpConfigEncrypted) {
+        this.mcpConfigEncrypted = mcpConfigEncrypted;
+    }
+
     @NotNull
     public ToolboxSettings getToolboxSettings(@NotNull AIToolbox toolbox) {
         return functions.computeIfAbsent(toolbox.getToolboxId(), s -> new ToolboxSettings());
+    }
+
+    public void removeToolboxSettings(@NotNull String toolboxId) {
+        functions.remove(toolboxId);
     }
 
 }

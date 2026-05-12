@@ -244,7 +244,12 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     if (row != null && attr != null && !DBExecUtils.isAttributeReadOnly(attr)) {
                         ResultSetValueController valueController = new ResultSetValueController(
                             rsv,
-                            new ResultSetCellLocation(attr, row, selection.getElementRowIndexes(cell)),
+                            new ResultSetCellLocation(
+                                attr,
+                                row,
+                                selection.getElementRowIndexes(cell),
+                                selection.getElementValuePath(cell)
+                            ),
                             IValueController.EditType.NONE,
                             null);
                         if (actionId.equals(IResultSetCommands.CMD_CELL_SET_NULL)) {
@@ -575,10 +580,12 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                                 final DBVEntity vEntity = getColorsVirtualEntity(resultSetViewer);
                                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                                 ResultSetCellLocation cellLocation = ssp.getCurrentCellLocation();
-                                Object cellValue = resultSetViewer.getContainer().getResultSetController().getModel()
-                                    .getCellValue(cellLocation);
-                                vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
-                                updateColors(resultSetViewer, vEntity, true);
+                                IResultSetController controller = resultSetViewer.getContainer().getResultSetController();
+                                if (cellLocation != null && controller != null && attr != null) {
+                                    Object cellValue = controller.getModel().getCellValue(cellLocation);
+                                    vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
+                                    updateColors(resultSetViewer, vEntity, true);
+                                }
                             }
                         });
                     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,12 +62,14 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
         this("", script, ActionType.NORMAL);
     }
 
+    @NotNull
     @Override
     public String getTitle()
     {
         return title;
     }
 
+    @NotNull
     @Override
     public String getScript()
     {
@@ -75,12 +77,12 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
     }
 
     @Override
-    public void beforeExecute(DBCSession session) throws DBCException {
+    public void beforeExecute(@NotNull DBCSession session) throws DBCException {
         // do nothing
     }
 
     @Override
-    public void afterExecute(DBCSession session, Throwable error)
+    public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error)
         throws DBCException
     {
         // do nothing
@@ -90,6 +92,7 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
         afterExecute(session, error);
     }
 
+    @NotNull
     @Override
     public ActionType getType()
     {

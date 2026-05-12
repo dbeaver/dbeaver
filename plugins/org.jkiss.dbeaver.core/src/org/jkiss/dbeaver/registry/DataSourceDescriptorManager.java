@@ -69,6 +69,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
         return object.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
     }
 
+    @Nullable
     @Override
     public DataSourceDescriptor createNewObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, @NotNull Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         if (copyFrom != null) {

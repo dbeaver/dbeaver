@@ -159,6 +159,9 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter.isInstance(dataContainer)) {
+            return adapter.cast(dataContainer);
+        }
         Object result = GeneralUtils.adapt(dataContainer, adapter);
         if (result == null) {
             result = GeneralUtils.adapt(controller, adapter);
@@ -175,8 +178,9 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         return controller.getExecutionContext();
     }
 
+    @NotNull
     @Override
-    public DBDAttributeBinding[] filterAttributeBindings(DBDAttributeBinding[] attributes) {
+    public DBDAttributeBinding[] filterAttributeBindings(@NotNull DBDAttributeBinding[] attributes) {
         DBDDataFilter dataFilter = model.getDataFilter();
         List<DBDAttributeBinding> filtered = new ArrayList<>();
         DBDAttributeBinding[] preFiltered;
