@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
 import org.jkiss.dbeaver.ext.vertica.ui.internal.VerticaUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -92,7 +93,7 @@ public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (disableCommentsReading != null) {
             connectionInfo.setProviderProperty(
