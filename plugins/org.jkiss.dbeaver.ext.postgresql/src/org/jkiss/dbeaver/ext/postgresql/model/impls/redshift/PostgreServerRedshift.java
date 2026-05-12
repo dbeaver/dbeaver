@@ -526,10 +526,4 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         String className = object.getClass().getName();
         return className.equals(RS_OBJECT_CLASS);
     }
-
-    @Nullable
-    @Override
-    public String getDefaultDatabaseName() {
-        return "dev";
-    }
 }

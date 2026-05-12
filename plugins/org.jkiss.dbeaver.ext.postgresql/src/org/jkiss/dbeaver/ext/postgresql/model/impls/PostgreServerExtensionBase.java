@@ -658,10 +658,4 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         String className = object.getClass().getName();
         return PostgreConstants.PG_OBJECT_CLASS.equals(className);
     }
-
-    @Nullable
-    @Override
-    public String getDefaultDatabaseName() {
-        return null;
-    }
 }

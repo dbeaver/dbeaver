@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2026 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1005,10 +1005,7 @@ public class PostgreUtils {
        TODO consider using {@link org.jkiss.dbeaver.model.DBUtils#getConnectivityParameters(DBPConnectionConfiguration, DBPDriver)}.
      */
     @Nullable
-    public static String getDatabaseNameFromConfiguration(
-        @NotNull PostgreDataSource dataSource,
-        @NotNull DBPConnectionConfiguration configuration
-    ) {
+    public static String getDatabaseNameFromConfiguration(@NotNull DBPConnectionConfiguration configuration) {
         String activeDatabaseName = null;
         if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
             activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
@@ -1022,9 +1019,6 @@ public class PostgreUtils {
             if (matcher.find()) {
                 activeDatabaseName = matcher.group(1).replace("%2F", "/");
             }
-        }
-        if (CommonUtils.isEmpty(activeDatabaseName)) {
-            activeDatabaseName = dataSource.getServerType().getDefaultDatabaseName();
         }
         return activeDatabaseName;
     }
