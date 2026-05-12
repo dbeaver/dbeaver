@@ -306,7 +306,7 @@ public class UIUtils {
                     sbWidth = sbWidth + table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
-                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
+                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 2;
                     for (TableColumn tc : columns) {
                         tc.setWidth(tc.getWidth() + extraSpace);
                     }
