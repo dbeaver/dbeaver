@@ -66,8 +66,8 @@ public class ToolBarRenderFix implements IPluginService {
     private Callback windowCallback;
     private final LongKeyMap<ToolbarSubclassHandler> handlersByHwnd = new LongKeyMap<>();
 
-    private final AtomicBoolean isEnabled = new AtomicBoolean(false);
-    private final AtomicBoolean isDeactivating = new AtomicBoolean(false);
+    private volatile boolean isEnabled = false;
+    private volatile boolean isDeactivating = false;
 
     public ToolBarRenderFix() {
     }
