@@ -181,4 +181,9 @@ public final class AIFunctionSettings {
     public ToolboxSettings getToolboxSettings(@NotNull AIToolbox toolbox) {
         return functions.computeIfAbsent(toolbox.getToolboxId(), s -> new ToolboxSettings());
     }
+
+    public void removeToolboxSettings(@NotNull String toolboxId) {
+        functions.remove(toolboxId);
+    }
+
 }
