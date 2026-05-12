@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
@@ -36,20 +38,22 @@ public enum UserPropertyHandler implements DBEPropertyHandler<MySQLUser>, DBEPro
     MAX_USER_CONNECTIONS;
 
 
+    @NotNull
     @Override
     public String getId()
     {
         return name();
     }
 
+    @NotNull
     @Override
-    public MySQLCommandChangeUser createCompositeCommand(MySQLUser object)
+    public MySQLCommandChangeUser createCompositeCommand(@NotNull MySQLUser object)
     {
         return new MySQLCommandChangeUser(object);
     }
 
     @Override
-    public void reflectValueChange(MySQLUser object, Object oldValue, Object newValue)
+    public void reflectValueChange(@NotNull MySQLUser object, @Nullable Object oldValue, @Nullable Object newValue)
     {
         if (this == NAME || this == HOST) {
             if (this == NAME) {

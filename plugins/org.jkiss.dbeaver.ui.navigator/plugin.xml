@@ -1019,6 +1019,9 @@
         <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly" order="100">
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceConnectionView" order="50">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
     </extension>
 
     <extension point="org.jkiss.dbeaver.confirmations">
