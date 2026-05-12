@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase<?>, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase<?>> {
 
     @Override
-    public boolean canRenameObject(PostgreTableConstraintBase<?> object) {
+    public boolean canRenameObject(@NotNull PostgreTableConstraintBase<?> object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
