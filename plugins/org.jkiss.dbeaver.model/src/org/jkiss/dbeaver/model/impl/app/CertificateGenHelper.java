@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
-import javax.net.ssl.X509TrustManager;
 import java.math.BigInteger;
+import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -35,6 +35,9 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.X509ExtendedTrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * Here are some cert gen helpers.
@@ -46,16 +49,33 @@ public class CertificateGenHelper {
     // However some people need to use self-signed and untrusted server.
     // Crap.
     public static final X509TrustManager[] NON_VALIDATING_TRUST_MANAGERS = new X509TrustManager[] {
-        new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+        new X509ExtendedTrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
                 return new X509Certificate[0];
             }
-            public void checkClientTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {
+
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
             }
-            public void checkServerTrusted(
-                java.security.cert.X509Certificate[] certs, String authType) {
+
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
             }
+
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+            }
+
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+            }
+
         }
     };
 

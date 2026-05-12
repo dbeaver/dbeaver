@@ -107,10 +107,14 @@ public class AIMessage {
 
     // Function call confirmation
     public AIMessage(@NotNull AIConfirmation confirmation) {
+        this(confirmation, LocalDateTime.now());
+    }
+
+    public AIMessage(@NotNull AIConfirmation confirmation, @NotNull LocalDateTime time) {
         this.meta = null;
         this.role = AIMessageType.CONFIRMATION;
         this.content = confirmation.getMessage();
-        this.time = LocalDateTime.now();
+        this.time = time;
         this.functionCall = null;
         this.functionResult = null;
         this.confirmation = confirmation;

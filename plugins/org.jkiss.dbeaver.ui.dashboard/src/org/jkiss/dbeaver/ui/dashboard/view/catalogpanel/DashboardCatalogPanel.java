@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistryListener;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
@@ -67,6 +68,14 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
     private final DBPProject project;
     @Nullable
     private final DBPDataSourceContainer dataSourceContainer;
+
+    public void refreshInput() {
+        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
+            dataSourceContainer);
+
+        dashboardTable.setInput(dbProviders);
+        dashboardTable.expandToLevel(2);
+    }
 
     public DashboardCatalogPanel(
         @NotNull Composite parent,
@@ -178,18 +187,12 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
 
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(table, true, null));
-
-        // Add listeners
-        DashboardRegistry.getInstance().addListener(this);
-        addDisposeListener(e -> DashboardRegistry.getInstance().removeListener(this));
-    }
-
-    private void refreshInput() {
-        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
-            dataSourceContainer);
-
-        dashboardTable.setInput(dbProviders);
-        dashboardTable.expandToLevel(2);
+        if (!DBWorkbench.isDistributed()) {
+            // Add listeners only in NON-DISTRIBUTED version
+            // For update in Distributed we use config sync mechanism
+            DashboardRegistry.getInstance().addListener(this);
+            addDisposeListener(e -> DashboardRegistry.getInstance().removeListener(this));
+        }
     }
 
     private static void addDragAndDropSupport(Tree table) {
@@ -261,11 +264,17 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
 
     @Override
     public void handleItemCreate(@NotNull DashboardItemConfiguration item) {
-        refreshInput();
+        dashboardTable.add(item.getDashboardProvider(), item);
     }
 
     @Override
     public void handleItemDelete(@NotNull DashboardItemConfiguration item) {
-        refreshInput();
+        dashboardTable.remove(item.getDashboardProvider(), new Object[]{item});
+    }
+
+    @Override
+    public void handleItemUpdate(@NotNull DashboardItemConfiguration oldItem, @NotNull DashboardItemConfiguration newItem) {
+        dashboardTable.remove(oldItem.getDashboardProvider(), new Object[]{oldItem});
+        dashboardTable.add(newItem.getDashboardProvider(), newItem);
     }
 }
