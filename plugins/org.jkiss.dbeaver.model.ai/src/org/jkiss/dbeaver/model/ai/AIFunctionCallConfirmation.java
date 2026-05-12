@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +49,7 @@ public class AIFunctionCallConfirmation extends AIConfirmation {
     }
 
     public boolean hasInformationFunctions(@NotNull AIToolboxManager toolboxManager) {
-        for (AIFunctionCall fc : functionCalls) {
-            AIFunctionDescriptor function = fc.getOrResolveFunction(toolboxManager);
-            if (function != null && function.getType() == AIFunctionType.INFORMATION) {
-                return true;
-            }
-        }
-        return false;
+        return AIUtils.hasInformationFunctions(toolboxManager, functionCalls);
     }
 
     @NotNull

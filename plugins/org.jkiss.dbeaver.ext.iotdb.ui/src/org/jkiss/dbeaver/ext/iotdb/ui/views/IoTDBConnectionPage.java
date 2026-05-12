@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -86,7 +87,7 @@ public class IoTDBConnectionPage extends GenericConnectionPage {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (sqlDialectCombo != null) {
             connectionInfo.setServerName(sqlDialectCombo.getText().trim());

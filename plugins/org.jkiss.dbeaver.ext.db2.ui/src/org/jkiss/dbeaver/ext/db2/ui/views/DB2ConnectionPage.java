@@ -27,6 +27,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -208,7 +210,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (typeURLRadio != null) {
@@ -230,6 +232,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
