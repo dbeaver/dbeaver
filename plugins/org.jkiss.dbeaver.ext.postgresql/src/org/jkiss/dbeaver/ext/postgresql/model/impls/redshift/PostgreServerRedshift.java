@@ -381,6 +381,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return true;
     }
 
+    @Override
+    public boolean supportsStandardSearchPath() {
+        return false;
+    }
+
     @NotNull
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
