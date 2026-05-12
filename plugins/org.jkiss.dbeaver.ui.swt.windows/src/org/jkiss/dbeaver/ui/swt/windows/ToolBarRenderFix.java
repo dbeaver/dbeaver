@@ -74,12 +74,12 @@ public class ToolBarRenderFix implements IPluginService {
 
     @Override
     public void activateService() {
-        if (UIStyles.isDarkTheme() && System.getProperty("os.name").contains("Windows 11") && !this.isEnabled.get()) {
+        if (UIStyles.isDarkTheme() && System.getProperty("os.name").contains("Windows 11") && !this.isEnabled) {
             if (this.windowCallback == null) {
                 this.windowCallback = new Callback(this, "customWindowProc", 4); //$NON-NLS-1$
             }
-            this.isEnabled.set(true);
-            this.isDeactivating.set(false);
+            this.isEnabled = true;
+            this.isDeactivating = false;
             this.eventFilter = new DisplayEventFilter(UIUtils.getDisplay(), new int[]{ SWT.Paint, SWT.Resize }, event -> {
                 if (event.widget instanceof ToolBar t && t.getData(DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME) == null) {
                     t.setData(DBEAVER_TOOLBAR_SUBCLASS_HANDLER_PROP_NAME, new ToolbarSubclassHandler(t));
@@ -91,9 +91,9 @@ public class ToolBarRenderFix implements IPluginService {
     @Override
     public void deactivateService() {
         // we should prevent Callback from dispose while there are any toolbars that could reference it
-        if (this.isEnabled.get()) {
-            this.isDeactivating.set(true);
-            this.isEnabled.set(false);
+        if (this.isEnabled) {
+            this.isDeactivating = true;
+            this.isEnabled = false;
             if (this.eventFilter != null ) {
                 this.eventFilter.dispose();
                 this.eventFilter = null;
@@ -114,8 +114,8 @@ public class ToolBarRenderFix implements IPluginService {
         OS.SetWindowLongPtr(handler.toolBar.handle, OS.GWLP_WNDPROC, handler.prevProcPtr);
         this.handlersByHwnd.remove(handler.toolBar.handle);
 
-        if (this.handlersByHwnd.isEmpty() && this.isDeactivating.get()) {
-            this.isDeactivating.set(false);
+        if (this.handlersByHwnd.isEmpty() && this.isDeactivating) {
+            this.isDeactivating = false;
             this.windowCallback.dispose();
             this.windowCallback = null;
         }
