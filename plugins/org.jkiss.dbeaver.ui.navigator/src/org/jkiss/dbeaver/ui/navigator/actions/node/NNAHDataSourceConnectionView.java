@@ -22,28 +22,28 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerType;
-import org.jkiss.dbeaver.model.net.DBWUtils;
+import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
-import org.jkiss.utils.CommonUtils;
 
 /**
- * Tunnel action handler
+ * Connection view handler
  */
-public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
+public class NNAHDataSourceConnectionView extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
-            return dbnDataSource.hasNetworkHandlers();
+            DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
+            return !DataSourceNavigatorSettings.getProductDefaultSettings().equals(chosenSettings);
         }
         return false;
     }
@@ -51,40 +51,42 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     @Override
     @Nullable
     public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
-        return UIIcon.BUTTON_TUNNEL;
+        if (node instanceof DBNDataSource dbnDataSource) {
+            DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
+            if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(chosenSettings)) {
+                return UIIcon.SIMPLE_MODE;
+            } else if (DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings().equals(chosenSettings)) {
+                return UIIcon.ADVANCED_MODE;
+            } else {
+                return UIIcon.CUSTOM_MODE;
+            }
+        }
+        return null;
     }
 
     @Override
     @Nullable
     public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
-        StringBuilder tip = new StringBuilder("Network handlers enabled:");
-        for (DBWHandlerConfiguration handler : DBWUtils.getActualNetworkHandlers(((DBNDataSource) node).getDataSourceContainer())) {
-            if (handler.isEnabled()) {
-                tip.append("\n  -").append(handler.getTitle());
-                String hostName = handler.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
-                if (!CommonUtils.isEmpty(hostName)) {
-                    tip.append(": ").append(hostName);
-                }
+        if (node instanceof DBNDataSource dbnDataSource) {
+            DBNBrowseSettings chosenSettings = dbnDataSource.getDataSourceContainer().getNavigatorSettings();
+            if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(chosenSettings)) {
+                return UINavigatorMessages.navigator_node_action_connection_view_simple_tooltip;
+            } else if (DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings().equals(chosenSettings)) {
+                return UINavigatorMessages.navigator_node_action_connection_view_advanced_tooltip;
+            } else {
+                return UINavigatorMessages.navigator_node_action_connection_view_custom_tooltip;
             }
         }
-        return tip.toString();
+        return null;
     }
 
     @Override
     public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
-        if (node instanceof DBNDatabaseNode) {
-            DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
-
-            String nhId = null;
-            for (DBWHandlerConfiguration nhc : DBWUtils.getActualNetworkHandlers(dataSourceContainer)) {
-                if (nhc.isEnabled() && nhc.getType() == DBWHandlerType.TUNNEL) {
-                    nhId = nhc.getId();
-                    break;
-                }
-            }
+        if (node instanceof DBNDatabaseNode  dbnDatabaseNode) {
+            DBPDataSourceContainer dataSourceContainer = dbnDatabaseNode.getDataSourceContainer();
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
             if (serviceConnections != null) {
-                serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageNetworkHandler." + nhId);
+                serviceConnections.openConnectionEditor(dataSourceContainer, "ConnectionPageGeneral");
             }
         }
     }
