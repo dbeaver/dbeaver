@@ -53,7 +53,6 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         ATTR_NAVIGATOR_HIDE_VIRTUAL,
         ATTR_NAVIGATOR_MERGE_ENTITIES
     );
-
     public static final Map<String, Preset> PRESETS = new LinkedHashMap<>();
 
     public static final Preset PRESET_SIMPLE = new Preset(
@@ -71,6 +70,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         RegistryMessages.navigator_settings_preset_custom_view_name,
         RegistryMessages.navigator_settings_preset_custom_view_description
     );
+    public static final DBNBrowseSettings DEFAULT_PRODUCT_NAVIGATOR_SETTINGS = DataSourceNavigatorSettings.PRESET_ADVANCED.getSettings();
 
     public static class Preset {
         private final String id;
@@ -78,24 +78,28 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         private final String description;
         private final DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings();
 
-        public Preset(String id, String name, String description) {
+        public Preset(@NotNull String id, @NotNull String name, @NotNull String description) {
             this.id = id;
             this.name = name;
             this.description = description;
         }
 
+        @NotNull
         public String getId() {
             return id;
         }
 
+        @NotNull
         public String getName() {
             return name;
         }
 
+        @NotNull
         public String getDescription() {
             return description;
         }
 
+        @NotNull
         public DataSourceNavigatorSettings getSettings() {
             return settings;
         }
@@ -105,8 +109,6 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         PRESET_SIMPLE.settings.setShowOnlyEntities(true);
         PRESET_SIMPLE.settings.setHideFolders(true);
         PRESET_SIMPLE.settings.setHideVirtualModel(true);
-
-        PRESET_ADVANCED.settings.setShowSystemObjects(true);
 
         PRESETS.put(PRESET_SIMPLE.name, PRESET_SIMPLE);
         PRESETS.put(PRESET_ADVANCED.name, PRESET_ADVANCED);
@@ -260,10 +262,37 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     @NotNull
+    public static DBNBrowseSettings getProductDefaultSettings() {
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+        String defaultPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
+        if (CommonUtils.isNotEmpty(defaultPreset)) {
+            DataSourceNavigatorSettings settings = getDefaultSettingsFromPreset(defaultPreset);
+            if (settings != null) {
+                return settings;
+            }
+        }
+        return DEFAULT_PRODUCT_NAVIGATOR_SETTINGS;
+    }
+
+    @NotNull
     public static DBNBrowseSettings getDefaultSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+        DataSourceNavigatorSettings settings = getDefaultSettingsFromPreset(preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET));
+        if (settings == null) {
+            settings = new DataSourceNavigatorSettings();
+            settings.setShowSystemObjects(preferences.getBoolean(DEFAULT_SHOW_SYSTEM_OBJECTS));
+            settings.setShowUtilityObjects(preferences.getBoolean(DEFAULT_SHOW_UTILITY_OBJECTS));
+            settings.setShowOnlyEntities(preferences.getBoolean(DEFAULT_SHOW_ONLY_ENTITIES));
+            settings.setMergeEntities(preferences.getBoolean(DEFAULT_MERGE_ENTITIES));
+            settings.setHideFolders(preferences.getBoolean(DEFAULT_HIDE_FOLDERS));
+            settings.setHideSchemas(preferences.getBoolean(DEFAULT_MERGE_SCHEMAS));
+            settings.setHideVirtualModel(preferences.getBoolean(DEFAULT_HIDE_VIRTUAL_MODEL));
+        }
+        return settings;
+    }
 
-        String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
+    @Nullable
+    private static DataSourceNavigatorSettings getDefaultSettingsFromPreset(@Nullable String defPreset) {
         if (!CommonUtils.isEmpty(defPreset)) {
             for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
                 if (p.getId().equals(defPreset)) {
@@ -271,19 +300,10 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
                 }
             }
         }
-        // Custom settings
-        DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings();
-        settings.setShowSystemObjects(preferences.getBoolean(DEFAULT_SHOW_SYSTEM_OBJECTS));
-        settings.setShowUtilityObjects(preferences.getBoolean(DEFAULT_SHOW_UTILITY_OBJECTS));
-        settings.setShowOnlyEntities(preferences.getBoolean(DEFAULT_SHOW_ONLY_ENTITIES));
-        settings.setMergeEntities(preferences.getBoolean(DEFAULT_MERGE_ENTITIES));
-        settings.setHideFolders(preferences.getBoolean(DEFAULT_HIDE_FOLDERS));
-        settings.setHideSchemas(preferences.getBoolean(DEFAULT_MERGE_SCHEMAS));
-        settings.setHideVirtualModel(preferences.getBoolean(DEFAULT_HIDE_VIRTUAL_MODEL));
-        return settings;
+        return null;
     }
 
-    public static void setDefaultSettings(DBNBrowseSettings settings) {
+    public static void setDefaultSettings(@NotNull DBNBrowseSettings settings) {
         // Save preset
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 
@@ -324,12 +344,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         addTrueSetting(json, ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
     }
 
-    private static void addTrueSetting(@NotNull JsonWriter json, @NotNull String name, boolean value) throws IOException {
-        if (value) {
-            JSONUtils.field(json, name, true);
-        }
-    }
-
+    @NotNull
     public static Map<String, String> saveSettingsToMap(@NotNull DataSourceNavigatorSettings navSettings) {
         Map<String, String> map = new LinkedHashMap<>();
         map.put(ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, String.valueOf(navSettings.showSystemObjects));
@@ -342,4 +357,9 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         return map;
     }
 
+    private static void addTrueSetting(@NotNull JsonWriter json, @NotNull String name, boolean value) throws IOException {
+        if (value) {
+            JSONUtils.field(json, name, true);
+        }
+    }
 }
