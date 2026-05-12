@@ -259,6 +259,10 @@ public class UIIcon {
     public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
     public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
 
+    public static final DBIcon SIMPLE_MODE = new DBIcon("misc/simple_mode.svg");
+    public static final DBIcon CUSTOM_MODE = new DBIcon("misc/custom_mode.svg");
+    public static final DBIcon ADVANCED_MODE = new DBIcon("misc/advanced_mode.svg");
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }
