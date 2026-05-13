@@ -45,7 +45,7 @@ public sealed interface UIPanelBuilder extends UIControlBuilder<UIPanelBuilder> 
 
     @NotNull
     default UIPanelBuilder row(@NotNull String label, @NotNull Consumer<? super UIRowBuilder> handler) {
-        return row(rb -> handler.accept(rb.label(label + ":")));
+        return row(rb -> handler.accept(rb.controlLabel(label)));
     }
 
     @NotNull
