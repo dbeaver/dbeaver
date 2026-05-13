@@ -31,7 +31,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OpenAIClientResponses extends OpenAiClientBase {
@@ -109,17 +108,28 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         );
     }
 
-    @NotNull
-    protected OpenAIClientChat createBackupClient() {
-        return new OpenAIClientChat(baseUrl, requestFilters);
-    }
-
     @Override
     public void close() {
         super.close();
         backupClient.close();
     }
 
+    @NotNull
+    protected OpenAIClientChat createBackupClient() {
+        return new OpenAIClientChat(baseUrl, requestFilters);
+    }
+
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        if (statusCode == 400) {
+            if (body.contains("is not supported via Responses API")) {
+                // just return DBException, we will fall back to legacy client in case of this error, no need to log it as error
+                return new DBException("is not supported via Responses API");
+            }
+        }
+        return super.mapHttpError(statusCode, body);
+    }
 
     @Override
     protected boolean processErrors(
@@ -129,16 +139,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         @Nullable Runnable backupOption,
         int statusCode
     ) {
-        if (statusCode != 200 && response.body().anyMatch(line -> line.contains("is not supported via Responses API"))) {
-            String responseBody = response.body().collect(Collectors.joining());
-            if (backupOption != null && statusCode == 400 && responseBody.contains("is not supported via Responses API")) {
-                backupOption.run();
-            } else {
-                errorHandler.accept(mapper.map(statusCode, responseBody));
-            }
-            return true;
-        }
-        return false;
+        return OpenAiUtils.processErrors(mapper, errorHandler, response, backupOption, statusCode);
     }
 }
 

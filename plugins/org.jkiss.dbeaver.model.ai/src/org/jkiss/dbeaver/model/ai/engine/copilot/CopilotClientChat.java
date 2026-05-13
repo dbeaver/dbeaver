@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -54,7 +53,6 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
     public CopilotChatResponseLegacy chat(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull CopilotChatRequest chatRequest
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -62,7 +60,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(legacyChatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
 
@@ -74,8 +72,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull OAIResponsesRequest chatRequest,
-        @NotNull CopilotChatRequest legacyChatRequest,
+        @NotNull CopilotChatRequest chatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -83,7 +80,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(legacyChatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
             .build();
 

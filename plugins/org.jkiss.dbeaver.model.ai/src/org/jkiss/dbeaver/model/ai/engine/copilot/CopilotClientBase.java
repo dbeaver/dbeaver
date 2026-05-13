@@ -22,11 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModel;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModelList;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -63,7 +61,6 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
     public abstract RESPONSE chat(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull CopilotChatRequest legacyChatRequest,
         @NotNull REQUEST chatRequest
     ) throws DBException;
 
@@ -74,15 +71,13 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
      * @param monitor           the progress monitor to track the request's progress and handle cancellation
      * @param token             the authorization token used to authenticate the request
      * @param chatRequest       the chat request to send to the server
-     * @param legacyChatRequest the chat request in legacy format, which can be used for fallback in case the new API fails
      * @param listener          the listener to receive response chunks and completion events
      * @throws DBException if the request fails
      */
     public abstract void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull OAIResponsesRequest chatRequest,
-        @NotNull CopilotChatRequest legacyChatRequest,
+        @NotNull REQUEST chatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
