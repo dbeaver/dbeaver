@@ -93,6 +93,19 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="defaultAllowMode">
+            <annotation>
+               <documentation>
+                  Default confirmation mode for this function. If omitted, internal functions are always allowed and external functions ask for confirmation.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="ALWAYS_ALLOW"/>
+                  <enumeration value="ASK"/>
+               </restriction>
+            </simpleType>
+         </attribute>
          <attribute name="categoryId" type="string">
             <annotation>
                <documentation>
