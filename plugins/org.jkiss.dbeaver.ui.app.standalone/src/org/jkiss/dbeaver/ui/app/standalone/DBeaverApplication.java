@@ -101,7 +101,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
-    public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
     public static final String DEFAULT_WORKSPACES_FILE = ".workspaces";
     public static final String POLICY_WD_CHECK_SUPPRESS = "policy.wd.check.disabled"; //$NON-NLS-1$
 
@@ -137,21 +136,19 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         this(BasePlatformImpl.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
     }
 
-    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName, String defaultWorkspacesFile) {
-
+    protected DBeaverApplication(
+        @NotNull String defaultWorkspaceLocation,
+        @NotNull String defaultAppWorkspaceName,
+        @NotNull String defaultWorkspacesFile
+    ) {
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
         //System.setProperty(StandardConstants.ENV_FILE_ENCODING, GeneralUtils.UTF8_ENCODING);
 
-        // Detect default workspace location
-        // Since 6.1.3 it is different for different OSes
-        // Windows: %AppData%/DBeaverData
-        // MacOS: ~/Library/DBeaverData
-        // Linux: $XDG_DATA_HOME/DBeaverData
         String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
-        defaultWorkspacePath = Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
+        defaultWorkspacePath = RuntimeUtils.getWorkspacePath(workingDirectory, defaultAppWorkspaceName);
         FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
