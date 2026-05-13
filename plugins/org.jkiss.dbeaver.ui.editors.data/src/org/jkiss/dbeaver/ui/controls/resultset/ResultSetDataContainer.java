@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Client-side data container.
@@ -52,9 +53,23 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     private boolean filterAttributes;
 
     public ResultSetDataContainer(@NotNull IResultSetController controller, @NotNull ResultSetDataContainerOptions options) {
+        this(
+            controller,
+            Objects.requireNonNull(controller.getDataContainer()),
+            controller.getModel(),
+            options
+        );
+    }
+
+    public ResultSetDataContainer(
+        @NotNull IResultSetController controller,
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull ResultSetModel model,
+        @NotNull ResultSetDataContainerOptions options
+    ) {
         this.controller = controller;
-        this.dataContainer = controller.getDataContainer();
-        this.model = controller.getModel();
+        this.dataContainer = dataContainer;
+        this.model = model;
         this.options = options;
     }
 
