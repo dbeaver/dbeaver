@@ -30,6 +30,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -136,10 +137,11 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         @NotNull MonitoredHttpClient.ErrorMapper mapper,
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull HttpResponse<Stream<String>> response,
+        @NotNull AtomicBoolean suppressCompletion,
         @Nullable Runnable backupOption,
         int statusCode
     ) {
-        return OpenAiUtils.processErrors(mapper, errorHandler, response, backupOption, statusCode);
+        return OpenAiUtils.processErrors(mapper, errorHandler, response, suppressCompletion, backupOption, statusCode);
     }
 }
 

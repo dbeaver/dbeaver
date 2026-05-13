@@ -138,7 +138,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
             OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
-            createLegacyChatRequest(request, false)
+            createLegacyChatRequest(request, true)
         );
         client.getInstance().createChatCompletionStream(
             monitor,
