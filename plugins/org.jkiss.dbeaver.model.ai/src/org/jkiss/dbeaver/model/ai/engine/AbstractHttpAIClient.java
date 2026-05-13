@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractHttpAIClient implements AutoCloseable {
     protected final MonitoredHttpClient client;
@@ -28,7 +33,8 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
     public AbstractHttpAIClient() {
         this.client = new MonitoredHttpClient(
             HttpClient.newHttpClient(),
-            this::mapHttpError
+            this::mapHttpError,
+            this::processErrors
         );
     }
 
@@ -46,4 +52,20 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
      */
     @NotNull
     protected abstract DBException mapHttpError(int statusCode, @NotNull String body);
+
+    protected boolean processErrors(
+        @NotNull MonitoredHttpClient.ErrorMapper mapper,
+        @NotNull Consumer<Throwable> errorHandler,
+        @NotNull HttpResponse<Stream<String>> response,
+        @Nullable Runnable backupOption,
+        int statusCode
+    ) {
+        if (statusCode != 200) {
+            String responseBody = response.body().collect(Collectors.joining());
+            errorHandler.accept(mapper.map(statusCode, responseBody));
+
+            return true;
+        }
+        return false;
+    }
 }
