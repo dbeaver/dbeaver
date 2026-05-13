@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,5 +50,23 @@ public class AIFunctionCallConfirmation extends AIConfirmation {
 
     public boolean hasInformationFunctions(@NotNull AIToolboxManager toolboxManager) {
         return AIUtils.hasInformationFunctions(toolboxManager, functionCalls);
+    }
+
+    @NotNull
+    public List<AIFunctionCall> getFunctionCallsToConfirm(@NotNull AIToolboxManager toolboxManager) {
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        List<AIFunctionCall> callsToConfirm = new ArrayList<>();
+        for (AIFunctionCall functionCall : functionCalls) {
+            AIFunctionDescriptor function = functionCall.getOrResolveFunction(toolboxManager);
+            if (function == null) {
+                callsToConfirm.add(functionCall);
+                continue;
+            }
+            AIFunctionSettings.ToolboxSettings toolboxSettings = functionSettings.getToolboxSettings(function.getToolbox());
+            if (toolboxSettings.getFunctionAllowMode(function) == AIFunctionAllowMode.ASK) {
+                callsToConfirm.add(functionCall);
+            }
+        }
+        return callsToConfirm;
     }
 }
