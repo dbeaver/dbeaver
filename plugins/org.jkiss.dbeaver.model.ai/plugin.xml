@@ -22,6 +22,11 @@
             properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
             supportsFunctions="false"
             fallbacks="copilot-pro"/>
+        <completionEngine id="minimax"
+            label="MiniMax"
+            class="org.jkiss.dbeaver.model.ai.engine.minimax.MiniMaxEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.minimax.MiniMaxProperties"
+            supportsFunctions="false"/>
     </extension>
 
     <extension point="com.dbeaver.ai.assistant">
