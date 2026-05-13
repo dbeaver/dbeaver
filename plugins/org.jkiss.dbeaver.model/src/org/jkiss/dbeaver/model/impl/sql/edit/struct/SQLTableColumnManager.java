@@ -81,8 +81,8 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         sql.append(column.isRequired() ? " NOT NULL" : " NULL");
 
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (monitor, column, sql, command) -> {
-        if (column.isPersisted() && command instanceof DBECommandComposite) {
-            if (((DBECommandComposite) command).getProperty("required") == null) {
+        if (column.isPersisted() && command instanceof DBECommandComposite<?, ?> dbc) {
+            if (dbc.getProperty("required") == null) {
                 // Do not set NULL/NOT NULL if it wasn't changed
                 return;
             }
@@ -92,6 +92,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
 
     protected ColumnModifier<OBJECT_TYPE> DefaultModifier = new BaseDefaultModifier();
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(OBJECT_TYPE column, Map<String, Object> options)
     {
         return new ColumnModifier[] {DataTypeModifier, NotNullModifier, DefaultModifier};
@@ -101,13 +102,12 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     public boolean canEditObject(@NotNull OBJECT_TYPE object)
     {
         DBSEntity table = object.getParentObject();
-        return table != null && !DBUtils.isView(table);
+        return !DBUtils.isView(table);
     }
 
     @Override
-    public boolean canCreateObject(@NotNull Object container)
-    {
-        return container instanceof DBSTable && !((DBSTable) container).isView();
+    public boolean canCreateObject(@NotNull Object container) {
+        return container instanceof DBSTable table && !table.isView();
     }
 
     @Override
@@ -221,8 +221,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         }
     }
 
-    private static DBSDataType findDataType(DBSObject object, String typeName)
-    {
+    private static DBSDataType findDataType(@NotNull DBSObject object, @NotNull String typeName) {
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, object);
         if (dataTypeProvider != null) {
             return dataTypeProvider.getLocalDataType(typeName);
@@ -230,8 +229,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         return null;
     }
 
-    protected static DBSDataType findBestDataType(DBSObject object, String ... typeNames)
-    {
+    protected static DBSDataType findBestDataType(@NotNull DBSObject object, String ... typeNames) {
         DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, object);
         if (dataTypeProvider != null) {
             return DBUtils.findBestDataType(dataTypeProvider.getLocalDataTypes(), typeNames);
@@ -239,12 +237,12 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         return null;
     }
 
+    @NotNull
     @Override
-    public List<? extends DBSObject> getDependentObjectsList(DBRProgressMonitor monitor, DBSObject object) throws DBException {
+    public List<? extends DBSObject> getDependentObjectsList(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException {
         DBSObject dbsObject = object.getParentObject();
         Set<DBSObject> dependentObjectsList = new HashSet<>();
-        if (dbsObject instanceof DBSEntity && object instanceof DBSEntityAttribute) {
-            DBSEntity parentObject = (DBSEntity) dbsObject;
+        if (dbsObject instanceof DBSEntity parentObject && object instanceof DBSEntityAttribute) {
 
             Collection<? extends DBSEntityConstraint> constraints = parentObject.getConstraints(monitor);
             if (!CommonUtils.isEmpty(constraints)) {
@@ -261,8 +259,8 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
             }
         }
 
-        if (dbsObject instanceof DBSTable) {
-            Collection<? extends DBSTableIndex> indexes = ((DBSTable) dbsObject).getIndexes(monitor);
+        if (dbsObject instanceof DBSTable table) {
+            Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexes)) {
                 for (DBSTableIndex index : indexes) {
                     List<? extends DBSTableIndexColumn> attributeReferences = index.getAttributeReferences(monitor);

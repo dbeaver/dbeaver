@@ -165,7 +165,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public boolean aggregateCommand(DBECommand<?> command)
+        public boolean aggregateCommand(@NotNull DBECommand<?> command)
         {
             if (command instanceof NestedObjectCommand) {
                 final DBPObject object = command.getObject();
@@ -184,7 +184,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             objectCommands.put(getObject(), this);
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();

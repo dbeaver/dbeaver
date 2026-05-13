@@ -99,7 +99,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
             throw e;
         }
 
-        log.debug("Starting instance server at http://localhost:" + serverProperties.port());
+        log.debug("\tStarting instance server at http://localhost:" + serverProperties.port());
     }
 
     @Override
