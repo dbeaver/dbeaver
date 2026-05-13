@@ -76,7 +76,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {

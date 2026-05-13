@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -31,22 +34,34 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingAttribute;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
+import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamConsumerPageSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,8 +78,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         DataTransferNodeDescriptor node;
         DataTransferProcessorDescriptor processor;
 
-        private TransferTarget(DataTransferNodeDescriptor node, DataTransferProcessorDescriptor processor)
-        {
+        private TransferTarget(DataTransferNodeDescriptor node, DataTransferProcessorDescriptor processor) {
             this.node = node;
             this.processor = processor;
         }
@@ -88,27 +102,38 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        SashForm sash = new SashForm(composite, SWT.HORIZONTAL);
+        SashForm sash = new SashForm(composite, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(70, 30);
+        createNodesTable(sash);
+        sash.setWeights(30, 70);
+        sash.setSashWidth(5);
 
         setControl(composite);
+
+        getShell().addControlListener(ControlListener.controlResizedAdapter(controlEvent -> {
+            UIUtils.packColumns(inputsTable.getTable(), true);
+            UIUtils.packColumns(nodesTable.getTable(), true);
+        }));
     }
 
     private void createNodesTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_column_target);
+        boolean dataImport = isDataImport();
+
+        UIUtils.createControlLabel(panel,
+            !dataImport ?
+                DTUIMessages.data_transfer_wizard_final_column_target_format :
+                DTUIMessages.data_transfer_wizard_final_column_source_format);
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        Table table = nodesTable.getTable();
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 350;
-        gd.widthHint = 400;
-        nodesTable.getTable().setLayoutData(gd);
-        nodesTable.getTable().setLinesVisible(true);
+        gd.heightHint = 25 * (UIUtils.getFontHeight(table));
+        table.setLayoutData(gd);
+        table.setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
             if (inputElement instanceof Collection) {
                 return ((Collection<?>) inputElement).toArray();
@@ -134,21 +159,33 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     } else {
                         label = element.node.getDescription();
                     }
+                    cell.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 }
                 cell.setText(label);
             }
+
+            @Override
+            public String getToolTipText(Object element) {
+                if (element instanceof TransferTarget tt) {
+                    if (tt.processor != null) {
+                        return tt.processor.getDescription();
+                    }
+                }
+                return super.getToolTipText(element);
+            }
         };
+        ColumnViewerToolTipSupport.enableFor(nodesTable);
         {
             TableViewerColumn columnName = new TableViewerColumn(nodesTable, SWT.LEFT);
             columnName.setLabelProvider(labelProvider);
             columnName.getColumn().setText(DTMessages.data_transfer_wizard_init_column_exported);
 
-            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.LEFT);
-            columnDesc.setLabelProvider(labelProvider);
-            columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
+//            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.RIGHT);
+//            columnDesc.setLabelProvider(labelProvider);
+//            columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
-        nodesTable.getTable().addSelectionListener(new SelectionListener() {
+        table.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -197,43 +234,166 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private void createInputsTable(Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
-        //UIUtils.createControlLabel(panel, DTUIMessages.data_transfer_wizard_final_group_objects);
+        boolean dataImport = isDataImport();
 
-        inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        UIUtils.createControlLabel(panel,
+            dataImport ?
+                DTUIMessages.data_transfer_wizard_final_column_target :
+                DTUIMessages.data_transfer_wizard_final_column_source);
+
+        Composite inputTable = UIUtils.createComposite(panel, dataImport ? 1 : 2);
+        inputTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        inputsTable = new TableViewer(inputTable, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 200;
-        gd.heightHint = 200;
-        inputsTable.getTable().setLayoutData(gd);
-        inputsTable.getTable().setLinesVisible(true);
+        Table table = inputsTable.getTable();
+        table.setLayoutData(gd);
+        table.setLinesVisible(true);
+        UIUtils.createTableColumn(table, SWT.LEFT, "Table").setWidth(100);
         inputsTable.setContentProvider(new ListContentProvider());
-        UIWidgets.createTableContextMenu(inputsTable.getTable(), null);
+        UIWidgets.createTableContextMenu(table, null);
         DBNModel nModel = DBWorkbench.getPlatform().getNavigatorModel();
         CellLabelProvider labelProvider = new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 DBSObject element = (DBSObject) cell.getElement();
                 if (cell.getColumnIndex() == 0) {
-                    DBNDatabaseNode objectNode = nModel.getNodeByObject(element);
-                    DBPImage icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
+                    DBPImage icon;
+                    DBSEntity entity = DBUtils.getAdapter(DBSEntity.class, element);
+                    if (entity != null) {
+                        DBNDatabaseNode objectNode = nModel.getNodeByObject(entity);
+                        icon = objectNode != null ? objectNode.getNodeIconDefault() : DBValueFormatting.getObjectImage(element);
+                    } else {
+                        icon = UIIcon.SQL_SCRIPT;
+                    }
                     cell.setImage(DBeaverIcons.getImage(icon));
                     final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
                     if (queryContainer != null) {
                         cell.setText(
                             CommonUtils.truncateString(
-                                CommonUtils.getSingleLineString(queryContainer.getQuery().getText()), 64));
+                                CommonUtils.getSingleLineString(queryContainer.getQuery().getText()), 1024));
                     } else {
                         cell.setText(
                             CommonUtils.truncateString(
-                                DBUtils.getObjectFullName(element, DBPEvaluationContext.UI), 64));
+                                DBUtils.getObjectFullName(element, DBPEvaluationContext.UI), 1024));
                     }
                 }
             }
+
+            @Override
+            public String getToolTipText(Object element) {
+                final SQLQueryContainer queryContainer = DBUtils.getAdapter(SQLQueryContainer.class, element);
+                if (queryContainer != null) {
+                    return CommonUtils.truncateString(queryContainer.getQuery().getText(), 64000);
+                } else if (element instanceof DBSObject object) {
+                    return CommonUtils.truncateString(
+                        DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), 64000);
+                } else {
+                    return null;
+                }
+            }
         };
+        ColumnViewerToolTipSupport.enableFor(inputsTable);
         inputsTable.setLabelProvider(labelProvider);
+
+        if (!dataImport) {
+            Composite buttonsPanel = UIUtils.createComposite(inputTable, 1);
+            buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+            UIUtils.createPushButton(
+                buttonsPanel,
+                DTMessages.data_transfer_wizard_settings_group_preview_columns + " ...",
+                null,
+                null,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                    final List<StreamMappingContainer> mappings = new ArrayList<>();
+
+                    StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
+                    if (streamConsumerSettings == null) {
+                        DBWorkbench.getPlatformUI().showError(
+                            DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                            "Current configuration do not support stream settings"
+                        );
+                        return;
+                    }
+                    try {
+                        UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, streamConsumerSettings, mappings));
+                    } catch (InvocationTargetException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                            DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                            e
+                        );
+                        return;
+                    }
+
+                    new ConfigureColumnsDialog(getShell(), mappings, streamConsumerSettings).open();
+                })
+            );
+            if (false) {
+                // TODO: move extraction settings to dialog a bit later
+                UIUtils.createPushButton(
+                    buttonsPanel,
+                    DTUIMessages.database_producer_page_extract_settings_name_and_title,
+                    null,
+                    null,
+                    SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        ConfigureDataExtractionDialog dialog = new ConfigureDataExtractionDialog(getShell(), getWizard());
+                        dialog.open();
+                    })
+                );
+            }
+        }
+    }
+
+    private boolean isDataImport() {
+        return getWizard().getPage(StreamConsumerPageSettings.class) == null;
+    }
+
+    @Nullable
+    private StreamConsumerSettings getStreamConsumerSettings() {
+        StreamConsumerPageSettings page = getWizard().getPage(StreamConsumerPageSettings.class);
+        if (page == null) {
+            return null;
+        }
+        return getWizard().getPageSettings(page, StreamConsumerSettings.class);
+    }
+
+    private void refreshMappings(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StreamConsumerSettings settings,
+        @NotNull List<StreamMappingContainer> mappings
+    ) {
+        final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
+
+        try {
+            monitor.beginTask("Load mappings", pipes.size());
+            for (DataTransferPipe pipe : pipes) {
+                DBSDataContainer source = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
+                StreamMappingContainer mapping = settings.getDataMapping(source);
+
+                if (mapping == null) {
+                    mapping = new StreamMappingContainer(source);
+
+                    for (StreamMappingAttribute attribute : mapping.getAttributes(monitor)) {
+                        attribute.setMappingType(StreamMappingType.export);
+                    }
+                } else {
+                    // Create a copy to avoid direct modifications
+                    mapping = new StreamMappingContainer(mapping);
+                }
+
+                mappings.add(mapping);
+                monitor.worked(1);
+            }
+        } finally {
+            monitor.done();
+        }
     }
 
     @Override
     public void activatePage() {
+        getWizard().loadNodeSettings();
+
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
         if (!activated) {
             UIUtils.asyncExec(this::loadNodeSettings);
@@ -280,7 +440,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             setSelectedSettings(false);
         }
 
-        UIUtils.packColumns(nodesTable.getTable());
+        UIUtils.packColumns(inputsTable.getTable(), true);
+        UIUtils.packColumns(nodesTable.getTable(), true);
 
         updatePageCompletion();
     }
