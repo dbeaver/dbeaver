@@ -1950,14 +1950,9 @@ public class ResultSetViewer extends Viewer
         }
         UIUtils.setControlVisible(
             filtersPanelComposite,
-            !statisticsPresentation && getFilterPanelPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL)
+            !statisticsPresentation && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL)
         );
         mainPanel.layout(true, true);
-    }
-
-    @NotNull
-    private static DBPPreferenceStore getFilterPanelPreferenceStore() {
-        return DBWorkbench.getPlatform().getPreferenceStore();
     }
 
     @NotNull
@@ -5330,12 +5325,12 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public boolean isChecked() {
-            return getFilterPanelPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL);
+            return resultSetViewer.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL);
         }
 
         @Override
         public void run() {
-            DBPPreferenceStore preferenceStore = getFilterPanelPreferenceStore();
+            DBPPreferenceStore preferenceStore = resultSetViewer.getPreferenceStore();
             preferenceStore.setValue(
                 ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL,
                 !preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL));
