@@ -639,24 +639,6 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
-    public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
-        Group group = new Group(parent, SWT.NONE);
-        group.setText(label);
-
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(layoutStyle);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            group.setLayoutData(gd);
-        }
-
-        GridLayout gl = new GridLayout(columns, false);
-        group.setLayout(gl);
-
-        return group;
-    }
-
     @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
@@ -696,6 +678,19 @@ public class UIUtils {
         int widthHint,
         int horizontalSpan
     ) {
+        return createTitledComposite(parent, label, columns, layoutStyle, widthHint, horizontalSpan, SWT.NONE);
+    }
+
+    @NotNull
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle,
+        int widthHint,
+        int horizontalSpan,
+        int titledCompositeStyle
+    ) {
         GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
         if (widthHint > 0) {
             gd.widthHint = widthHint;
@@ -704,7 +699,7 @@ public class UIUtils {
             gd.horizontalSpan = horizontalSpan;
         }
 
-        var host = new TitledComposite(parent, SWT.NONE);
+        var host = new TitledComposite(parent, titledCompositeStyle);
         host.setText(label);
         host.setLayoutData(gd);
 
