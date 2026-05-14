@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -178,5 +179,61 @@ public class InformixMetaModel extends GenericMetaModel
     public boolean isTrimObjectNames() {
         // Some old drivers can return object names with spaces around. And we can't create names with spaces. So let's trim them.
         return true;
+    }
+
+    @Override
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+        // Informix JDBC driver collapses overloaded procedures into a single row in
+        // getProcedures(). Query informix.sysprocedures directly so each overload
+        // becomes its own procedure node, identified by procid.
+        GenericDataSource dataSource = container.getDataSource();
+        String ownerFilter = container.getSchema() == null ? null : container.getSchema().getName();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load Informix procedures")) {
+            StringBuilder sql = new StringBuilder(
+                "SELECT procid, procname, paramtypes, isproc " +
+                "FROM informix.sysprocedures " +
+                "WHERE internal = 'f'");
+            if (ownerFilter != null) {
+                sql.append(" AND TRIM(owner) = ?");
+            }
+            sql.append(" ORDER BY procname, procid");
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+                if (ownerFilter != null) {
+                    dbStat.setString(1, ownerFilter);
+                }
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        int procid = JDBCUtils.safeGetInt(dbResult, "procid");
+                        String procname = JDBCUtils.safeGetString(dbResult, "procname");
+                        if (CommonUtils.isEmpty(procname)) {
+                            continue;
+                        }
+                        procname = procname.trim();
+                        String paramtypes = JDBCUtils.safeGetString(dbResult, "paramtypes");
+                        String isproc = JDBCUtils.safeGetString(dbResult, "isproc");
+                        DBSProcedureType procedureType = "t".equalsIgnoreCase(CommonUtils.notEmpty(isproc).trim())
+                            ? DBSProcedureType.PROCEDURE
+                            : DBSProcedureType.FUNCTION;
+                        String trimmedParams = paramtypes == null ? "" : paramtypes.trim();
+                        String specificName = procname + "(" + trimmedParams + ")";
+                        InformixProcedure procedure = new InformixProcedure(
+                            container,
+                            procid,
+                            procname,
+                            specificName,
+                            trimmedParams,
+                            null,
+                            procedureType,
+                            null);
+                        container.addProcedure(procedure);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, dataSource);
+        }
     }
 }

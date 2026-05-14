@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
+import org.jkiss.dbeaver.ext.informix.model.InformixProcedure;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -75,11 +76,20 @@ public class InformixUtils {
     }
 
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure) throws DBException {
-        String sqlProcedure = String.format("select b.data "
-            + "from sysprocbody b "
-            + "join sysprocedures p on b.procid=p.procid "
-            + "where datakey='T' and p.procname = '%s'"
-            + "order by b.procid, b.seqno", procedure.getName());
+        String sqlProcedure;
+        if (procedure instanceof InformixProcedure ip) {
+            // Filter by procid so overloaded procedures don't share source.
+            sqlProcedure = String.format("select b.data "
+                + "from sysprocbody b "
+                + "where datakey='T' and b.procid = %d "
+                + "order by b.seqno", ip.getProcid());
+        } else {
+            sqlProcedure = String.format("select b.data "
+                + "from sysprocbody b "
+                + "join sysprocedures p on b.procid=p.procid "
+                + "where datakey='T' and p.procname = '%s'"
+                + "order by b.procid, b.seqno", procedure.getName());
+        }
         return listToString(
             getSource(monitor, sqlProcedure, procedure.getName(),
                 procedure.getDataSource()), null);
