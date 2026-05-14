@@ -678,19 +678,6 @@ public class UIUtils {
         int widthHint,
         int horizontalSpan
     ) {
-        return createTitledComposite(parent, label, columns, layoutStyle, widthHint, horizontalSpan, SWT.NONE);
-    }
-
-    @NotNull
-    public static Composite createTitledComposite(
-        @NotNull Composite parent,
-        @NotNull String label,
-        int columns,
-        int layoutStyle,
-        int widthHint,
-        int horizontalSpan,
-        int titledCompositeStyle
-    ) {
         GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
         if (widthHint > 0) {
             gd.widthHint = widthHint;
@@ -699,7 +686,7 @@ public class UIUtils {
             gd.horizontalSpan = horizontalSpan;
         }
 
-        var host = new TitledComposite(parent, titledCompositeStyle);
+        var host = new TitledComposite(parent, SWT.NONE);
         host.setText(label);
         host.setLayoutData(gd);
 
