@@ -90,10 +90,11 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
         Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        SashForm previewSplitter = new SashForm(composite, SWT.VERTICAL);
+        Composite previewSplitter = UIUtils.createComposite(composite, 1);
         previewSplitter.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         SashForm settingsPanel = new SashForm(previewSplitter, SWT.HORIZONTAL);
+        settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         Composite objectsPanel;
         {
             objectsPanel = UIUtils.createTitledComposite(
@@ -209,10 +210,14 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
             );
 
             taskOptionsViewer = new PropertyTreeViewer(optionsPanel, SWT.NONE);
+            taskOptionsViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             taskOptionsViewer.addPropertyChangeListener(event -> updateScriptPreview());
         }
 
         Composite previewPanel = UIUtils.createComposite(previewSplitter, 1);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 200;
+        previewPanel.setLayoutData(gd);
         previewPanel.setLayout(new FillLayout());
         serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
@@ -244,10 +249,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         loadSettings();
 
-        // FIXME: Commented out because maximizing control breaks UI
-        if (false && taskOptionsViewer.getTree().getItemCount() == 0) {
-            settingsPanel.setMaximizedControl(objectsPanel);
-        }
+        settingsPanel.setWeights(500, 500);
 
         setControl(composite);
     }
