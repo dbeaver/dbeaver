@@ -55,6 +55,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean system;
     private final boolean ui;
     private final boolean enabledByDefault;
+    private final AIFunctionAllowMode defaultAllowMode;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
     private final String[] dependsOn;
@@ -77,6 +78,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
         this.system = CommonUtils.toBoolean(config.getAttribute("system"));
         this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
+        this.defaultAllowMode = CommonUtils.valueOf(
+            AIFunctionAllowMode.class,
+            config.getAttribute("defaultAllowMode"),
+            AIFunctionAllowMode.ALWAYS_ALLOW
+        );
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -154,6 +160,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean isEnabledByDefault() {
         return enabledByDefault;
+    }
+
+    @NotNull
+    @Override
+    public AIFunctionAllowMode getDefaultAllowMode() {
+        return defaultAllowMode;
     }
 
     @NotNull

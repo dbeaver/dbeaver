@@ -122,6 +122,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         }
     }
 
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints

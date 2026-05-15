@@ -163,6 +163,9 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
 
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter.isInstance(dataContainer)) {
+            return adapter.cast(dataContainer);
+        }
         Object result = GeneralUtils.adapt(dataContainer, adapter);
         if (result == null) {
             result = GeneralUtils.adapt(controller, adapter);
