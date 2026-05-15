@@ -346,7 +346,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     }
 
     private boolean isDataImport() {
-        return getWizard().getPage(StreamConsumerPageSettings.class) == null;
+        StreamConsumerPageSettings page = getWizard().getPage(StreamConsumerPageSettings.class);
+        return page == null || !page.isPageApplicable();
     }
 
     @Nullable
