@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -62,15 +61,12 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     @Override
     public HexEditControl createControl(IValueController valueController) {
         this.valueController = valueController;
-        HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY);
-        DBPPreferenceListener preferencesChangeListener = new DBPPreferenceListener() {
-            @Override
-            public void preferenceChange(PreferenceChangeEvent event) {
+        HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.READ_ONLY);
+        DBPPreferenceListener preferencesChangeListener = event -> {
 
-                if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
-                    String defValue = (String) event.getNewValue();
-                    hControl.setDefWidth(Integer.parseInt(defValue));
-                }
+            if (HexPreferencesPage.PROP_DEF_WIDTH.equals(event.getProperty())) {
+                String defValue = (String) event.getNewValue();
+                hControl.setDefWidth(Integer.parseInt(defValue));
             }
         };
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
@@ -96,7 +92,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
         monitor.beginTask("Prime content value", 1);
         try {
             DBDContentStorage data = value.getContents(monitor);
-            String charset = null;
+            String charset;
             monitor.subTask("Read binary value");
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             if (data != null) {
@@ -146,7 +142,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final HexEditControl control) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final HexEditControl control) {
         manager.add(new Action("Switch Insert/Overwrite mode", DBeaverIcons.getImageDescriptor(UIIcon.CURSOR)) {
             @Override
             public void run() {
@@ -156,7 +152,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     }
 
     @Override
-    public void contributeSettings(@NotNull IContributionManager manager, @NotNull HexEditControl control) throws DBCException {
+    public void contributeSettings(@NotNull IContributionManager manager, @NotNull HexEditControl control) {
 
     }
 }
