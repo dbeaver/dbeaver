@@ -25,8 +25,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -125,70 +124,78 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
             ToolBar buttonsToolbar = new ToolBar(objectsPanel, SWT.VERTICAL);
             buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_add_string, UIIcon.ROW_ADD, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
-                    SQLToolTaskObjectSelectorDialog objectListDialog = new SQLToolTaskObjectSelectorDialog(
-                        getShell(),
-                        projectNode,
-                        (TaskTypeDescriptor) sqlWizard.getTaskType());
-                    if (objectListDialog.open() == IDialogConstants.OK_ID) {
-                        for (DBSObject object : objectListDialog.getSelectedObjects()) {
-                            if (!selectedObjects.contains(object)) {
-                                selectedObjects.add(object);
+            UIUtils.createToolItem(
+                buttonsToolbar,
+                TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_add_string,
+                UIIcon.ROW_ADD,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(sqlWizard.getProject());
+                        SQLToolTaskObjectSelectorDialog objectListDialog = new SQLToolTaskObjectSelectorDialog(
+                            getShell(),
+                            projectNode,
+                            (TaskTypeDescriptor) sqlWizard.getTaskType());
+                        if (objectListDialog.open() == IDialogConstants.OK_ID) {
+                            for (DBSObject object : objectListDialog.getSelectedObjects()) {
+                                if (!selectedObjects.contains(object)) {
+                                    selectedObjects.add(object);
+                                }
                             }
+                            refreshObjects();
+                            updatePageCompletion();
                         }
-                        refreshObjects();
-                        updatePageCompletion();
-                    }
-                }
-            });
-            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_remove_string, UIIcon.ROW_DELETE, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ISelection selection = objectsViewer.getSelection();
-                    if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-                        for (Object element : ((IStructuredSelection) selection).toArray()) {
-                            if (element instanceof DBSObject) {
-                                selectedObjects.remove(element);
+                    })
+            );
+            ToolItem deleteItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_remove_string,
+                UIIcon.ROW_DELETE,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        ISelection selection = objectsViewer.getSelection();
+                        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                            for (Object element : ((IStructuredSelection) selection).toArray()) {
+                                if (element instanceof DBSObject) {
+                                    selectedObjects.remove(element);
+                                }
                             }
+                            refreshObjects();
+                            updatePageCompletion();
                         }
-                        refreshObjects();
-                        updatePageCompletion();
-                    }
-                }
-            });
+                })
+            );
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
             ToolItem[] moveButtons = new ToolItem[2];
-            moveButtons[0] = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_up, UIIcon.ARROW_UP, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectionIndex = objectTable.getSelectionIndex();
-                    if (selectionIndex > 0) {
-                        DBSObject prevScript = selectedObjects.get(selectionIndex - 1);
-                        selectedObjects.set(selectionIndex - 1, selectedObjects.get(selectionIndex));
-                        selectedObjects.set(selectionIndex, prevScript);
-                        refreshObjects();
-                    }
-                    moveButtons[0].setEnabled(selectionIndex > 1);
-                    moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 1);
-                }
-            });
-            moveButtons[1] = UIUtils.createToolItem(buttonsToolbar, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectionIndex = objectTable.getSelectionIndex();
-                    if (selectionIndex < objectTable.getItemCount() - 1) {
-                        DBSObject nextScript = selectedObjects.get(selectionIndex + 1);
-                        selectedObjects.set(selectionIndex + 1, selectedObjects.get(selectionIndex));
-                        selectedObjects.set(selectionIndex, nextScript);
-                        refreshObjects();
-                    }
-                    moveButtons[0].setEnabled(selectionIndex > 0);
-                    moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 2);
-                }
-            });
+            moveButtons[0] = UIUtils.createToolItem(
+                buttonsToolbar,
+                TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_up,
+                UIIcon.ARROW_UP,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        int selectionIndex = objectTable.getSelectionIndex();
+                        if (selectionIndex > 0) {
+                            DBSObject prevScript = selectedObjects.get(selectionIndex - 1);
+                            selectedObjects.set(selectionIndex - 1, selectedObjects.get(selectionIndex));
+                            selectedObjects.set(selectionIndex, prevScript);
+                            refreshObjects();
+                        }
+                        moveButtons[0].setEnabled(selectionIndex > 1);
+                        moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 1);
+                })
+            );
+            moveButtons[1] = UIUtils.createToolItem(
+                buttonsToolbar,
+                TasksSQLUIMessages.sql_tool_task_wizard_page_settings_tool_item_text_move_script_down,
+                UIIcon.ARROW_DOWN,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                        int selectionIndex = objectTable.getSelectionIndex();
+                        if (selectionIndex < objectTable.getItemCount() - 1) {
+                            DBSObject nextScript = selectedObjects.get(selectionIndex + 1);
+                            selectedObjects.set(selectionIndex + 1, selectedObjects.get(selectionIndex));
+                            selectedObjects.set(selectionIndex, nextScript);
+                            refreshObjects();
+                        }
+                        moveButtons[0].setEnabled(selectionIndex > 0);
+                        moveButtons[1].setEnabled(selectionIndex < objectTable.getItemCount() - 2);
+                })
+            );
             objectsViewer.addSelectionChangedListener(event -> {
                 int selectionIndex = objectTable.getSelectionIndex();
                 deleteItem.setEnabled(selectionIndex >= 0);
@@ -237,15 +244,16 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         Composite controlsPanel = UIUtils.createComposite(composite, 2);
 
-        UIUtils.createDialogButton(controlsPanel, TasksSQLUIMessages.sql_tool_task_wizard_page_settings_dialog_button_label_copy, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        UIUtils.createDialogButton(
+            controlsPanel,
+            TasksSQLUIMessages.sql_tool_task_wizard_page_settings_dialog_button_label_copy,
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 String text = serviceSQL.getSQLPanelText(sqlPreviewPanel);
-                if (!CommonUtils.isEmpty(text)) {
-                    UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
+                    if (!CommonUtils.isEmpty(text)) {
+                        UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
+                    }
                 }
-            }
-        });
+            ));
 
         loadSettings();
 
