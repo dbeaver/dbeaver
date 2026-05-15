@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
@@ -96,7 +97,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             Composite addrGroup = UIUtils.createTitledComposite(
                 settingsGroup,
                 AthenaMessages.label_connection,
-                2,
+                3,
                 GridData.FILL_HORIZONTAL
             );
 
@@ -104,9 +105,13 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             awsRegionCombo.addModifyListener(textListener);
             UIUtils.setDefaultTextControlWidthHint(awsRegionCombo);
 
+            createDriverSubstitutionControls(addrGroup, 1, false);
+
             UIUtils.createControlLabel(addrGroup, AthenaMessages.label_s3_location); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
             Composite s3Group = UIUtils.createComposite(addrGroup, 1);
-            s3Group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            s3Group.setLayoutData(gd);
             s3LocationText = new Text(s3Group, SWT.BORDER);
             s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);
@@ -249,7 +254,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (awsRegionCombo != null) {
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
@@ -264,6 +269,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{

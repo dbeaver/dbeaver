@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -375,7 +376,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             super(object, "Update schedule");
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             final PostgreJobSchedule schedule = getObject();
@@ -417,9 +418,9 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             };
         }
 
-        @NotNull
+        @Nullable
         @Override
-        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             final String name = "schedule#" + getObject().getObjectId();
 
             if (userParams.putIfAbsent(name, this) == null) {

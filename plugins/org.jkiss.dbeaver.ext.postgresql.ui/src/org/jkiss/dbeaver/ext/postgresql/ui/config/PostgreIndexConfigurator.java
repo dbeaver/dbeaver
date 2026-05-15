@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -43,6 +42,7 @@ import java.util.Map;
 public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreIndex> {
 
 
+    @NotNull
     @Override
     public PostgreIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreIndex index, @NotNull Map<String, Object> options) {
         return new UITask<PostgreIndex>() {

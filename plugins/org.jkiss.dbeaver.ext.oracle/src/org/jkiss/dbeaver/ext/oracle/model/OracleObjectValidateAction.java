@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -33,7 +35,7 @@ public class OracleObjectValidateAction extends OracleObjectPersistAction {
     }
 
     @Override
-    public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+    public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBCException {
         if (error != null) {
             return;
         }

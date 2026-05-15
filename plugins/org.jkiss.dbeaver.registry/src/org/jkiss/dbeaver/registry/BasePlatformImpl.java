@@ -119,6 +119,13 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
+        DBPApplication application = getApplication();
+        if (application.isHeadlessMode()) {
+            postInitialize();
+        }
+    }
+
+    public void postInitialize() {
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
             activatePluginServices();

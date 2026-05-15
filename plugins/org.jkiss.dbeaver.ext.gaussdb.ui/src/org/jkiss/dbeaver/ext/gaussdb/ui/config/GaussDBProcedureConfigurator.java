@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBProcedure;
 import org.jkiss.dbeaver.ext.gaussdb.ui.views.CreateFunctionOrProcedurePage;
@@ -37,9 +38,11 @@ public class GaussDBProcedureConfigurator implements DBEObjectConfigurator<Gauss
 
     public static boolean isFunction = false;
 
+    @NotNull
     @Override
-    public GaussDBProcedure configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
-        GaussDBProcedure newProcedure, Map<String, Object> options) {
+    public GaussDBProcedure configureObject(
+        @NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
+        @NotNull GaussDBProcedure newProcedure, @NotNull Map<String, Object> options) {
         return new UITask<GaussDBProcedure>() {
             @Override
             protected GaussDBProcedure runTask() {

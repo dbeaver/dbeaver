@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.dbeaver.ext.hana.internal.HANAMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -46,6 +48,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.eclipse.osgi.util.NLS;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -60,7 +63,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
 
     private HashMap<String, String> sysViewColumnUnits; 
     private boolean isPasswordExpireWarningShown;
-    
+
     public HANADataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
@@ -73,6 +76,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         final HANADataSourceInfo info = new HANADataSourceInfo(metaData);
         return info;
     }
+
     
     @NotNull
     @Override
@@ -96,7 +100,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         }
         return super.getAdapter(adapter);
     }
-    
+
     /*
      * explain
      */
@@ -114,7 +118,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     public DBCPlanStyle getPlanStyle() {
         return DBCPlanStyle.PLAN;
     }
-  
+
     /*
      * application
      */
@@ -152,10 +156,14 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         Connection connection = super.openConnection(monitor, context, purpose);
         try {
             Statement statement = connection.createStatement();
-            statement.execute("SELECT * FROM SYS.DUMMY");
+            statement.execute("SELECT * FROM SYS.M_MONITOR_COLUMNS");
         } catch (SQLException e) {
             if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_PASSWORD_NEEDED) {
                 if (changeExpiredPassword(monitor, context, purpose)) {
+                    return openConnection(monitor, context, purpose);
+                }
+            } else if (e.getErrorCode() == HANAConstants.ERR_SQL_ALTER_LICENSE_NEEDED) {
+                if (changeLicense(monitor, context, purpose)) {
                     return openConnection(monitor, context, purpose);
                 }
             } else {
@@ -179,13 +187,13 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
     private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
         DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
-                "Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword(), false, false);
+                HANAMessages.dialog_user_expired_password_change_label, connectionInfo.getUserName(), connectionInfo.getUserPassword(), false, false);
         if (passwordInfo == null) {
             return false;
         }
         try {
             if (passwordInfo.getNewPassword() == null) {
-                throw new DBException("You can't set empty password");
+                throw new DBException(HANAMessages.dialog_user_expired_password_empty_input);
             }
             Connection connection = super.openConnection(monitor, context, purpose);
             Statement statement = connection.createStatement();
@@ -195,7 +203,34 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
             getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
             getContainer().persistConfiguration();
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Error changing password", "Error changing expired password", e);
+            DBWorkbench.getPlatformUI().showError(HANAMessages.dialog_user_expired_password_error_title, HANAMessages.dialog_user_expired_password_error_message, e);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean changeLicense(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+        String newLicense = DBWorkbench.getPlatformUI().promptText(
+                NLS.bind(HANAMessages.dialog_invalid_license_input_title, getContainer().getName()),
+                NLS.bind(HANAMessages.dialog_invalid_license_input_label, connectionInfo.getUserName(), connectionInfo.getHostPort()),
+                "----- Begin SAP License -----\n...");
+        if (newLicense == null) {
+            return false;
+        }
+        try {
+            if (newLicense.length() < 1) {
+                throw new DBException(HANAMessages.dialog_invalid_license_empty_input);
+            }
+            try (Connection connection = super.openConnection(monitor, context, purpose)) {
+                try (Statement statement = connection.createStatement()) {
+                    // force remove old licenses which can interfere with new
+                    statement.execute("UNSET SYSTEM LICENSE ALL;");
+                    statement.execute("SET SYSTEM LICENSE '" + newLicense + "';");
+                }
+            }
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(HANAMessages.dialog_invalid_license_error_title, HANAMessages.dialog_invalid_license_error_message, e);
             return false;
         }
         return true;

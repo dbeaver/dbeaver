@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * AI function call info
@@ -33,8 +34,10 @@ public class AIFunctionCall {
     private static final Log log = Log.getLog(AIFunctionCall.class);
 
     @NotNull
-    private String functionName;
+    private final UUID id;
     @NotNull
+    private String functionName;
+    @Nullable
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
@@ -49,6 +52,7 @@ public class AIFunctionCall {
     private Map<String, String> messageMetadata;
 
     public AIFunctionCall() {
+        id = UUID.randomUUID();
         functionName = "";
         arguments = Map.of();
     }
@@ -58,6 +62,7 @@ public class AIFunctionCall {
         @NotNull Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
+        this.id = UUID.randomUUID();
         this.functionName = functionName;
         this.arguments = arguments;
         this.messageMetadata = messageMetadata;
@@ -65,6 +70,11 @@ public class AIFunctionCall {
 
     public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
         this(functionName, arguments, null);
+    }
+
+    @NotNull
+    public UUID getId() {
+        return id;
     }
 
     @NotNull
@@ -80,8 +90,16 @@ public class AIFunctionCall {
     }
 
     @NotNull
+    public String getFunctionDisplayName() {
+        if (function != null) {
+            return function.getName();
+        }
+        return functionName;
+    }
+
+    @NotNull
     public Map<String, Object> getArguments() {
-        return arguments;
+        return arguments != null ? arguments : Map.of();
     }
 
     public void setArguments(@NotNull Map<String, Object> arguments) {
@@ -134,7 +152,7 @@ public class AIFunctionCall {
     ) {
         // In headless apps (server apps) we do not call action functions directly
         // We pass all parameters in the result
-        if (function != null) {
+        if (function != null && arguments != null) {
             Map<String, Object> ta = new LinkedHashMap<>(arguments);
             for (Map.Entry<String, Object> arg : arguments.entrySet()) {
                 String paramName = arg.getKey();

@@ -256,7 +256,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.outline" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.outline.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.outline.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.variables" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" name="Switch presentation to" description="Switch SQL editor presentation" categoryId="org.jkiss.dbeaver.core.sql">
+        <command id="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" name="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.description" categoryId="org.jkiss.dbeaver.core.sql">
             <commandParameter
                     id="presentationId"
                     name="Presentation"
@@ -271,6 +271,8 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list" name="%command.org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.morph.delimited.list.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.trim.spaces" name="%org.jkiss.dbeaver.ui.editors.sql.trim.spaces.name" description="%org.jkiss.dbeaver.ui.editors.sql.trim.spaces.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces" name="%org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces.name" description="%org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces" name="%org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces.name" description="%org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.multi" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.word.wrap" name="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -725,6 +727,20 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.trim.spaces" class="org.jkiss.dbeaver.ui.editors.text.handlers.TrimTextSpacesHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.available"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces" class="org.jkiss.dbeaver.ui.editors.text.handlers.TrimLeadingSpacesHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.available"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces" class="org.jkiss.dbeaver.ui.editors.text.handlers.TrimTrailingSpacesHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <test property="org.jkiss.dbeaver.ui.editors.text.available"/>
@@ -1594,7 +1610,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlGenerator">
-        <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="CREATE table" order="6">
+        <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="%generator.org.jkiss.dbeaver.ui.editors.sql.ddlByResultSet.description" order="6">
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
     </extension>

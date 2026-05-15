@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.ui.services.UIServiceApplicationVersionUpdater;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -134,7 +135,12 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         if (showAlways || (!isSuppressed(newVersion) && (SKIP_VERSION_CHECK || newVersion.getProgramVersion().compareTo(currentVersion) > 0))) {
-            showUpdaterDialog(currentVersion, newVersion);
+            UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
+            if (updater != null) {
+                UIUtils.asyncExec(updater::handleVersionUpdate);
+            } else {
+                showUpdaterDialog(currentVersion, newVersion);
+            }
         }
 
         return Status.OK_STATUS;

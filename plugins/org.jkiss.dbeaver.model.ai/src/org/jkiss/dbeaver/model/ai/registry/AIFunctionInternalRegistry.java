@@ -58,9 +58,6 @@ public class AIFunctionInternalRegistry {
     }
 
     private boolean functionFilter(@NotNull AIFunctionDescriptor descriptor, @NotNull AIFunctionPurpose purpose) {
-        if (descriptor.isHidden()) {
-            return false;
-        }
         return descriptor.getPurpose() == purpose
             || descriptor.getPurpose() == AIFunctionPurpose.ALL
             || purpose == AIFunctionPurpose.ALL;
