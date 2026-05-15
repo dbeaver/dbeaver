@@ -28,8 +28,16 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
+
+    // EXECUTE BLOCK (param = ?) requires a '?' placeholder in the parameter slot —
+    // Firebird's DSQL parser rejects a literal there. EXECUTE PROCEDURE p(?) also
+    // has to skip DBeaver's anonymous-parameter preference gate so '?' is bound
+    // out-of-the-box. Both need native JDBC binding instead of text substitution.
+    private static final Pattern EXECUTE_BLOCK_OR_PROCEDURE =
+        Pattern.compile("^\\s*EXECUTE\\s+(BLOCK|PROCEDURE)\\b", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private boolean supportsAsBeforeTableAlias = true;
 
@@ -311,5 +319,10 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
         return BinaryFormatterHexString.INSTANCE;
+    }
+
+    @Override
+    public boolean needsNativeParameterBinding(@NotNull String queryText) {
+        return EXECUTE_BLOCK_OR_PROCEDURE.matcher(queryText).find();
     }
 }

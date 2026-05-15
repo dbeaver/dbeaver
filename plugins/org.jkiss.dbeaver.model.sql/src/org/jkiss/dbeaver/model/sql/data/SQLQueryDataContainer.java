@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -138,11 +140,18 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         try (final DBCStatement dbcStatement = DBUtils.makeStatement(
             source,
             session,
-            DBCStatementType.SCRIPT,
+            sqlQuery.isNativeParameterBinding() ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
             sqlQuery,
             firstRow,
             maxRows))
         {
+            if (sqlQuery.isNativeParameterBinding() && dbcStatement instanceof PreparedStatement ps) {
+                try {
+                    SQLUtils.bindNativeParameters(ps, sqlQuery);
+                } catch (SQLException e) {
+                    throw new DBException("Failed to bind native parameters", e);
+                }
+            }
             DBExecUtils.setStatementFetchSize(dbcStatement, firstRow, maxRows, fetchSize);
 
             // Execute statement

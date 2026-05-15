@@ -38,6 +38,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.MatchResult;
@@ -1222,6 +1225,27 @@ public final class SQLUtils {
     }
 
     public static void fillQueryParameters(SQLQuery sqlStatement, List<SQLQueryParameter> parameters) {
+        // When the dialect requires native JDBC parameter binding, do not substitute
+        // literals — the caller will bind values via PreparedStatement.setXxx later.
+        // Named parameters (e.g. ':x') must still be rewritten to positional '?'
+        // placeholders so JDBC can bind them by index.
+        if (sqlStatement.isNativeParameterBinding()) {
+            String query = sqlStatement.getText();
+            boolean rewrote = false;
+            for (int i = parameters.size(); i > 0; i--) {
+                SQLQueryParameter parameter = parameters.get(i - 1);
+                if (!"?".equals(parameter.getOriginalName())) {
+                    query = query.substring(0, parameter.getTokenOffset())
+                        + "?"
+                        + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+                    rewrote = true;
+                }
+            }
+            if (rewrote) {
+                sqlStatement.setText(query);
+            }
+            return;
+        }
         // Set values for all parameters
         // Replace parameter tokens with parameter values
         String query = sqlStatement.getText();
@@ -1235,6 +1259,27 @@ public final class SQLUtils {
         }
         sqlStatement.setText(query);
         //sqlStatement.setOriginalText(query);
+    }
+
+    /**
+     * Binds each parameter value in {@code sqlQuery} positionally to the given
+     * {@code PreparedStatement} using {@link PreparedStatement#setString} (or
+     * {@link PreparedStatement#setNull} for empty / NULL values). Used by the
+     * executor paths when {@link SQLQuery#isNativeParameterBinding()} is true.
+     */
+    public static void bindNativeParameters(@NotNull PreparedStatement ps, @NotNull SQLQuery sqlQuery) throws SQLException {
+        List<SQLQueryParameter> params = sqlQuery.getParameters();
+        if (params == null) {
+            return;
+        }
+        for (int i = 0; i < params.size(); i++) {
+            String val = params.get(i).getValue();
+            if (val == null || val.isEmpty() || SQLConstants.NULL_VALUE.equals(val)) {
+                ps.setNull(i + 1, Types.NULL);
+            } else {
+                ps.setString(i + 1, val);
+            }
+        }
     }
 
     public static boolean needQueryDelimiter(SQLDialect sqlDialect, String query) {

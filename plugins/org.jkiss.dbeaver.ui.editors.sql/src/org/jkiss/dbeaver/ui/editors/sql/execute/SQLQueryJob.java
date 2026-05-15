@@ -79,6 +79,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -690,10 +692,17 @@ public class SQLQueryJob extends DataSourceJob {
         final DBCStatement dbcStatement = DBUtils.makeStatement(
             source,
             session,
-            DBCStatementType.SCRIPT,
+            sqlQuery.isNativeParameterBinding() ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
             sqlQuery,
             rsOffset,
             rsMaxRows);
+        if (sqlQuery.isNativeParameterBinding() && dbcStatement instanceof PreparedStatement ps) {
+            try {
+                SQLUtils.bindNativeParameters(ps, sqlQuery);
+            } catch (SQLException e) {
+                throw new DBException("Failed to bind native parameters", e);
+            }
+        }
         DBExecUtils.setStatementFetchSize(dbcStatement, rsOffset, rsMaxRows, fetchSize);
         curStatement = dbcStatement;
 

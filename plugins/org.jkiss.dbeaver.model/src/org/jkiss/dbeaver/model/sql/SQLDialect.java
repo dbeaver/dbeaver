@@ -560,4 +560,14 @@ public interface SQLDialect {
     default boolean supportsQualifiedColumnNames() {
         return true;
     }
+
+    /**
+     * Returns true when the query must be executed as a {@code PreparedStatement}
+     * with native JDBC parameter binding rather than DBeaver's default
+     * text-substitution pipeline. Used by dialects whose grammar only accepts
+     * a literal '?' placeholder in certain positions (e.g. Firebird EXECUTE BLOCK).
+     */
+    default boolean needsNativeParameterBinding(@NotNull String queryText) {
+        return false;
+    }
 }
