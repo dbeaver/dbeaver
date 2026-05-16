@@ -163,7 +163,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         jsonWriter.setIndent(JSONUtils.DEFAULT_INDENT);
                     }
                     // Network profiles
-                    List<DBWNetworkProfile> profiles = registry.getNetworkProfiles();
+                    List<DBWNetworkProfile> profiles = registry.getNetworkProfiles().getProfiles();
                     if (!CommonUtils.isEmpty(profiles)) {
                         saveNetworkProfiles(configurationManager, jsonWriter, profiles);
                     }
@@ -523,7 +523,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
-                registry.updateNetworkProfile(profile);
+                registry.getNetworkProfiles().addOrUpdateProfile(profile);
             }
 
             // Auth profiles
@@ -1238,7 +1238,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
                     String configProfileName = connectionInfo.getConfigProfileName();
                     DBWNetworkProfile networkProfile = CommonUtils.isEmpty(configProfileName) ? null :
-                        registry.getNetworkProfile(connectionInfo.getConfigProfileSource(), configProfileName);
+                        registry.getNetworkProfiles().getProfile(connectionInfo.getConfigProfileSource(), configProfileName);
                     for (DBWHandlerConfiguration configuration : connectionInfo.getHandlers()) {
                         if (configuration.isEnabled()) {
                             DBWHandlerConfiguration profileConfig = networkProfile == null ? null :

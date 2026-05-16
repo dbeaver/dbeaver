@@ -1313,7 +1313,7 @@ public class DataSourceDescriptor
         // Update config from profile
         if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
             // Update config from profile
-            DBWNetworkProfile profile = registry.getNetworkProfile(
+            DBWNetworkProfile profile = registry.getNetworkProfiles().getProfile(
                 resolvedConnectionInfo.getConfigProfileSource(),
                 resolvedConnectionInfo.getConfigProfileName());
             if (profile != null) {
@@ -2196,11 +2196,16 @@ public class DataSourceDescriptor
             // Handlers. If config profile is set then props are saved there
             DBWNetworkProfile activeProfile = CommonUtils.isEmpty(connectionInfo.getConfigProfileName())
                 ? null
-                : this.getRegistry().getNetworkProfile(connectionInfo.getConfigProfileSource(), connectionInfo.getConfigProfileName());
+                : this.getRegistry().getNetworkProfiles().getProfile(
+                    connectionInfo.getConfigProfileSource(),
+                    connectionInfo.getConfigProfileName()
+                );
 
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                DBWHandlerConfiguration profileConfig = activeProfile == null ? null : activeProfile.getConfiguration(hc.getHandlerDescriptor());
+                DBWHandlerConfiguration profileConfig = activeProfile == null ?
+                    null :
+                    activeProfile.getConfiguration(hc.getHandlerDescriptor());
                 if (profileConfig == null || !profileConfig.isEnabled()) {
                     Map<String, Object> handlerProps = hc.saveToSecret();
                     if (!handlerProps.isEmpty()) {

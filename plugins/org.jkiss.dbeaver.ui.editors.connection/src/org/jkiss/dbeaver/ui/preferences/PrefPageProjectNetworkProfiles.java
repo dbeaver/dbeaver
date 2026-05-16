@@ -87,14 +87,14 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
     @Override
     protected List<DBWNetworkProfile> getDefaultNetworkProfiles() {
-        return projectMeta.getDataSourceRegistry().getNetworkProfiles();
+        return projectMeta.getDataSourceRegistry().getNetworkProfiles().getProfiles();
     }
 
     @Override
     protected void updateNetworkProfiles(List<DBWNetworkProfile> allProfiles) {
         for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
-            projectMeta.getDataSourceRegistry().updateNetworkProfile(profile);
+            projectMeta.getDataSourceRegistry().getNetworkProfiles().addOrUpdateProfile(profile);
         }
         projectMeta.getDataSourceRegistry().flushConfig();
     }
@@ -127,7 +127,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
                 selectedProfile.getProfileName()
             )
         )) {
-            projectMeta.getDataSourceRegistry().removeNetworkProfile(selectedProfile);
+            projectMeta.getDataSourceRegistry().getNetworkProfiles().removeProfile(selectedProfile);
             projectMeta.getDataSourceRegistry().flushConfig();
 
             return true;
@@ -152,7 +152,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
             profileName = profileName.trim();
 
-            if (projectMeta.getDataSourceRegistry().getNetworkProfile(null, profileName) != null) {
+            if (projectMeta.getDataSourceRegistry().getNetworkProfiles().getProfile(null, profileName) != null) {
                 UIUtils.showMessageBox(
                     getShell(),
                     UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
@@ -169,7 +169,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         DBWNetworkProfile newProfile = new DBWNetworkProfile(projectMeta);
         newProfile.setProfileName(profileName);
 
-        projectMeta.getDataSourceRegistry().updateNetworkProfile(newProfile);
+        projectMeta.getDataSourceRegistry().getNetworkProfiles().addOrUpdateProfile(newProfile);
         projectMeta.getDataSourceRegistry().flushConfig();
 
         return newProfile;
