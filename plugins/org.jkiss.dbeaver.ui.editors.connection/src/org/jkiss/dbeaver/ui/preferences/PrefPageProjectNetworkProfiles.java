@@ -76,6 +76,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         }
     }
 
+    @Nullable
     @Override
     protected DBSSecretController getSecretController() throws DBException {
         DBSSecretController secretController = null;
@@ -85,13 +86,14 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return secretController;
     }
 
+    @NotNull
     @Override
     protected List<DBWNetworkProfile> getDefaultNetworkProfiles() {
         return projectMeta.getDataSourceRegistry().getNetworkProfiles().getProfiles();
     }
 
     @Override
-    protected void updateNetworkProfiles(List<DBWNetworkProfile> allProfiles) {
+    protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
         for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
             projectMeta.getDataSourceRegistry().getNetworkProfiles().addOrUpdateProfile(profile);
@@ -100,7 +102,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     }
 
     @Override
-    protected boolean deleteProfile(DBWNetworkProfile selectedProfile) {
+    protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
         List<? extends DBPDataSourceContainer> usedBy = projectMeta
             .getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
         if (!usedBy.isEmpty()) {
@@ -135,6 +137,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return false;
     }
 
+    @NotNull
     @Override
     protected DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
         String profileName = sourceProfile == null ? "" : sourceProfile.getProfileName();

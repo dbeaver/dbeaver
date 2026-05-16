@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -106,10 +105,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             protected DBSSecretController getSecretController() throws DBException {
                 return DBSSecretController.getProjectSecretController(project);
             }
-            @Nullable
+
+            @NotNull
             @Override
-            protected DBWNetworkProfileProvider getProfileProvider() {
-                return RuntimeUtils.getObjectAdapter(project, DBWNetworkProfileProvider.class);
+            protected DBWNetworkProfileManager getParentManager() {
+                return project.getWorkspace().getPlatform().getNetworkProfiles();
             }
         };
 

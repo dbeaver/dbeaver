@@ -50,11 +50,15 @@ public abstract class DBWNetworkProfileManager {
             }
             return null;
         }
-        // Search in project profiles
+        // Search in profiles
         synchronized (profiles) {
-            return profiles.stream()
-                .filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name))
-                .findFirst().orElse(null);
+            for (DBWNetworkProfile profile : profiles) {
+                if (CommonUtils.equalObjects(profile.getProfileName(), name)) {
+                    return profile;
+                }
+            }
+            DBWNetworkProfileManager parent = getParentManager();
+            return parent == null ? null : parent.getProfile(source, name);
         }
     }
 
@@ -89,4 +93,8 @@ public abstract class DBWNetworkProfileManager {
         return null;
     }
 
+    @Nullable
+    protected DBWNetworkProfileManager getParentManager() {
+        return null;
+    }
 }

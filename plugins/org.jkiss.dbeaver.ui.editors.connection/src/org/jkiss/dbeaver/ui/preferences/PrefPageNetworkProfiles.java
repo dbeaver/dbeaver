@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,11 +59,14 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     private static final Log log = Log.getLog(PrefPageNetworkProfiles.class);
 
+    @Nullable
     protected abstract DBSSecretController getSecretController() throws DBException;
+    @NotNull
     protected abstract List<DBWNetworkProfile> getDefaultNetworkProfiles();
-    protected abstract void updateNetworkProfiles(List<DBWNetworkProfile> allProfiles);
+    protected abstract void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles);
+    @NotNull
     protected abstract DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile);
-    protected abstract boolean deleteProfile(DBWNetworkProfile profile);
+    protected abstract boolean deleteProfile(@NotNull DBWNetworkProfile profile);
 
     private static class HandlerBlock {
         private final IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;

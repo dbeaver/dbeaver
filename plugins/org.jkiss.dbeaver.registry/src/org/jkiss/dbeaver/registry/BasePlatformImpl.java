@@ -34,9 +34,12 @@ import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
@@ -89,10 +92,27 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     private final Map<Bundle, DBConfigurationController> configurationControllerByPlugin = new HashMap<>();
 
     private SQLDialectMetadataRegistry sqlDialectRegistry;
+    private final DBWNetworkProfileManager networkProfileManager;
 
     private DBPPlatformLanguage platformLanguage;
 
     protected Path tempFolder;
+
+    public BasePlatformImpl() {
+        this.networkProfileManager = new DBWNetworkProfileManager() {
+            @NotNull
+            @Override
+            protected DBSSecretController getSecretController() throws DBException {
+                return DBSSecretController.getGlobalSecretController();
+            }
+
+            @Nullable
+            @Override
+            protected DBWNetworkProfileProvider getProfileProvider() {
+                return RuntimeUtils.getObjectAdapter(BasePlatformImpl.this, DBWNetworkProfileProvider.class);
+            }
+        };
+    }
 
     protected void initialize() throws DBException {
         log.debug("Initialize base platform...");
@@ -222,6 +242,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public DBWHandlerRegistry getNetworkHandlerRegistry() {
         return NetworkHandlerRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBWNetworkProfileManager getNetworkProfiles() {
+        return networkProfileManager;
     }
 
     @NotNull
