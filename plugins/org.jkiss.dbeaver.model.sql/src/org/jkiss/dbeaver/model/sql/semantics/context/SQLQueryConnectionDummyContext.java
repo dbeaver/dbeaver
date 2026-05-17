@@ -476,4 +476,10 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
     public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull String name) {
         return null;
     }
+
+    @NotNull
+    @Override
+    public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumns() {
+        return Collections.emptyList();
+    }
 }

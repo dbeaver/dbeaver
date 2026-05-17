@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -1144,8 +1143,8 @@ public abstract class SQLQueryCompletionContext {
                         null,
                         filterOrNull
                     );
-                    LinkedList<SQLQueryCompletionItem> globalVariableItems = this.prepareGlobalVariablesCompletions(
-                        request,
+                    LinkedList<SQLQueryCompletionItem> globalPseudoColumnItems = this.prepareGlobalPseudoColumnCompletions(
+                        context,
                         filterOrNull
                     );
                     resultItems = Stream.of(
@@ -1154,7 +1153,7 @@ public abstract class SQLQueryCompletionContext {
                         tableRefs,
                         procedureItems,
                         sequenceItems,
-                        globalVariableItems
+                        globalPseudoColumnItems
                     ).flatMap(Collection::stream).toList();
                 } else {
                     resultItems = subsetColumns;
@@ -1164,26 +1163,23 @@ public abstract class SQLQueryCompletionContext {
             }
 
             @NotNull
-            private LinkedList<SQLQueryCompletionItem> prepareGlobalVariablesCompletions(
-                @NotNull SQLCompletionRequest request,
+            private LinkedList<SQLQueryCompletionItem> prepareGlobalPseudoColumnCompletions(
+                @NotNull SQLQueryDataContextInfo context,
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
-                LinkedList<SQLQueryCompletionItem> globalVariableItems = new LinkedList<>();
-                if (request.getContext().getDataSource().getSQLDialect() instanceof BasicSQLDialect basicSQLDialect) {
-                    for (SQLDialect.GlobalVariableInfo globalVariable : basicSQLDialect.getGlobalVariables()) {
-                        SQLQueryWordEntry variableName = makeFilterInfo(filterOrNull, globalVariable.name());
-                        int score = variableName.matches(filterOrNull, this.searchInsideWords);
-                        if (score > 0) {
-                            globalVariableItems.addLast(SQLQueryCompletionItem.forSpecialText(
-                                score,
-                                variableName,
-                                globalVariable.name(),
-                                globalVariable.description()
-                            ));
-                        }
+                LinkedList<SQLQueryCompletionItem> globalPseudoColumnItems = new LinkedList<>();
+                for (SQLQueryResultPseudoColumn pseudoColumn : context.getGlobalPseudoColumnsList()) {
+                    SQLQueryWordEntry columnName = makeFilterInfo(filterOrNull, pseudoColumn.symbol.getName());
+                    int score = columnName.matches(filterOrNull, this.searchInsideWords);
+                    if (score > 0) {
+                        globalPseudoColumnItems.addLast(SQLQueryCompletionItem.forGlobalPseudoColumn(
+                            score,
+                            columnName,
+                            pseudoColumn
+                        ));
                     }
                 }
-                return globalVariableItems;
+                return globalPseudoColumnItems;
             }
 
             @NotNull
@@ -1636,6 +1632,9 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         List<SQLQueryResultColumn> getColumnsList();
 
+        @NotNull
+        Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList();
+
         @Nullable
         SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
 
@@ -1686,6 +1685,12 @@ public abstract class SQLQueryCompletionContext {
         @Override
         public List<SQLQueryResultColumn> getColumnsList() {
             return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList() {
+            return this.rowsSourceContext.getConnectionInfo().getGlobalPseudoColumns();
         }
 
         @Nullable
@@ -1800,6 +1805,12 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         @Override
         public List<SQLQueryResultColumn> getColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList() {
             return Collections.emptyList();
         }
 

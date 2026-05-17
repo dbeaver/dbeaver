@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -83,8 +82,8 @@ public class OracleDialectFunctionsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void registerGlobalVariablesAsKeywordsWithoutDriverInitialization() {
-        Assert.assertEquals(DBPKeywordType.OTHER, dialect.getKeywordType("SYSDATE"));
-        Assert.assertEquals(DBPKeywordType.OTHER, dialect.getKeywordType("SYSTIMESTAMP"));
+    public void doesNotRegisterGlobalVariablesAsKeywordsWithoutDriverInitialization() {
+        Assert.assertNull(dialect.getKeywordType("SYSDATE"));
+        Assert.assertNull(dialect.getKeywordType("SYSTIMESTAMP"));
     }
 }
