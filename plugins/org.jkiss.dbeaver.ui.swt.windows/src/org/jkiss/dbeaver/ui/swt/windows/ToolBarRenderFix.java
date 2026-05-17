@@ -20,12 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.Callback;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.internal.Win32DPIUtils;
 import org.eclipse.swt.internal.win32.OS;
 import org.eclipse.swt.internal.win32.RECT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
@@ -34,8 +32,8 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.LongKeyMap;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -190,6 +188,7 @@ public class ToolBarRenderFix implements IPluginService {
                 final int inclusiveMask = SWT.PUSH | SWT.CHECK | SWT.RADIO;
                 final int exclusiveMask = SWT.SEPARATOR | SWT.DROP_DOWN;
 
+                int zoom = toolBar.getDisplay().getPrimaryMonitor().getZoom();
                 List<RECT> rects = new ArrayList<>(items.length);
                 for (var item : items) { // obtain rects of toolItems to fix
                     if (item.isEnabled() &&
@@ -197,10 +196,11 @@ public class ToolBarRenderFix implements IPluginService {
                         (item.getStyle() & exclusiveMask) == 0 &&
                         item.getControl() == null
                     ) {
-                        Rectangle bb = Win32DPIUtils.pointToPixel(item.getBounds(),  DPIUtil.getZoomForAutoscaleProperty(item.nativeZoom));
+                        Rectangle bounds = Win32DPIUtils.pointToPixel(item.getBounds(), zoom);
+                        Rectangle bb = bounds;
                         var rect = new RECT();
-                        rect.left = bb.x;
-                        rect.top = bb.y;
+                        rect.left = bb.x - 1;
+                        rect.top = bb.y - 1;
                         rect.right = bb.x + bb.width;
                         rect.bottom = bb.y + bb.height;
                         rects.add(rect);
