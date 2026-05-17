@@ -967,7 +967,7 @@
                         label="MonetDB"
                         icon="icons/monetdb_icon.png"
                         iconBig="icons/monetdb_icon_big.png"
-                        class="nl.cwi.monetdb.jdbc.MonetDriver"
+                        class="org.monetdb.jdbc.MonetDriver"
                         sampleURL="jdbc:monetdb://{host}[:{port}]/[{database}]"
                         defaultPort="50000"
                         description="MonetDB JDBC driver"
