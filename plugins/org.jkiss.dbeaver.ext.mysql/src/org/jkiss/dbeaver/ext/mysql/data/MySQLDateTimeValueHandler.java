@@ -36,16 +36,54 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalField;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * MySQL datetime handler
  */
 public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
-    private static final Date ZERO_DATE = new Date(0l);
-    private static final Date ZERO_TIMESTAMP = new Date(0l);
+    private static final TemporalAccessor ZERO_DATE = new TemporalAccessor() {
+        static final Set<TemporalField> fields = Set.of(
+            ChronoField.YEAR,
+            ChronoField.MONTH_OF_YEAR,
+            ChronoField.DAY_OF_MONTH
+        );
+        @Override
+        public boolean isSupported(@NotNull TemporalField field) {
+            return fields.contains(field);
+        }
+
+        @Override
+        public long getLong(@NotNull TemporalField field) {
+            return 0;
+        }
+    };
+    private static final TemporalAccessor ZERO_TIMESTAMP = new TemporalAccessor() {
+        static final Set<TemporalField> fields = Set.of(
+            ChronoField.YEAR,
+            ChronoField.MONTH_OF_YEAR,
+            ChronoField.DAY_OF_MONTH,
+            ChronoField.HOUR_OF_DAY,
+            ChronoField.MINUTE_OF_HOUR,
+            ChronoField.SECOND_OF_MINUTE,
+            ChronoField.MILLI_OF_SECOND
+        );
+        @Override
+        public boolean isSupported(@NotNull TemporalField field) {
+            return fields.contains(field);
+        }
+
+        @Override
+        public long getLong(@NotNull TemporalField field) {
+            return 0;
+        }
+    };
 
     private static final String ZERO_DATE_STRING = "0000-00-00";
     private static final String ZERO_TIMESTAMP_STRING = "0000-00-00 00:00:00";
@@ -77,7 +115,10 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     return dbResults.getString(index + 1);
                 }
                 if (isMariaDB && isMariaDBDateTimeStringRead(type)) {
-                    return getValueFromObject(session, type, dbResults.getString(index + 1), false, false);
+                    Object result = this.tryReinterpretEdgeStringAsDateTime(type, dbResults.getString(index + 1));
+                    if (result != null) {
+                        return result;
+                    }
                 }
             } catch (SQLException e) {
                 log.debug("Exception caught when fetching date/time value", e);
@@ -142,31 +183,34 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (value == ZERO_DATE) {
-            return ZERO_DATE_STRING;
-        } else if (value == ZERO_TIMESTAMP) {
-            return ZERO_TIMESTAMP_STRING;
-        }
         return super.getValueDisplayString(column, value, format);
     }
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
-        if (object instanceof String) {
-            switch (type.getTypeID()) {
-                case Types.DATE:
-                    if (object.equals(ZERO_DATE_STRING)) {
-                        return ZERO_DATE;
-                    }
-                    break;
-                default:
-                    if (object.equals(ZERO_TIMESTAMP_STRING)) {
-                        return ZERO_TIMESTAMP;
-                    }
-                    break;
+        if (object instanceof String s) {
+            Object result = this.tryReinterpretEdgeStringAsDateTime(type, s);
+            if (result != null) {
+                return result;
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @Nullable
+    private Object tryReinterpretEdgeStringAsDateTime(@NotNull DBSTypedObject type, @Nullable String object) {
+        if (object != null) {
+            if (type.getTypeID() == Types.DATE) {
+                if (object.equals(ZERO_DATE_STRING)) {
+                    return ZERO_DATE;
+                }
+            } else {
+                if (object.equals(ZERO_TIMESTAMP_STRING)) {
+                    return ZERO_TIMESTAMP;
+                }
+            }
+        }
+        return null;
     }
 
     private boolean isMariaDBDateTimeStringRead(@NotNull DBSTypedObject type) {

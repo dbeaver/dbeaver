@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
@@ -64,11 +63,11 @@ public class CubridConnectionExtraPage extends ConnectionPageAbstract {
     }
 
     private void createShardGroup(Composite parent, boolean enableControls) {
-    	Group shardGroup = new Group(parent, SWT.NONE);
-    	shardGroup.setText(CubridMessages.dialog_connection_cubrid_properties_shard_setting);
-    	shardGroup.setToolTipText(CubridMessages.dialog_connection_cubrid_properties_shard_tooltip);
-    	shardGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-    	shardGroup.setLayout(new GridLayout(2, false));
+    	Composite shardGroup = UIUtils.createTitledComposite(
+            parent,
+            CubridMessages.dialog_connection_cubrid_properties_shard_setting,
+            2,
+        GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
 
         shardTypeCombo = UIUtils.createLabelCombo(shardGroup, "Shard Hint", SWT.DROP_DOWN | SWT.READ_ONLY);
         shardTypeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));

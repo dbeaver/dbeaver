@@ -572,6 +572,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             DBDAttributeBinding column = getAttributeFromGrid(cell.col, cell.row);
+            if (column == null) {
+                log.debug("Null attribute for cell " + cell);
+                continue;
+            }
             Object value = spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false);
             //Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
@@ -1685,7 +1689,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         boolean pin = pinnedAttrsCount > 0;
         int order = delta > 0 ? -1 : 1;
         // right to left while shifting right, left to right while shifting left
-        constraintsToMove.sort((a, b) -> Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
+        constraintsToMove.sort((a, b) ->
+            Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
         List<DBDAttributeConstraint> allConstraints = getOrderedConstraints(dataFilter, pin);
         int leftmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).min().getAsInt();
         int rightmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).max().getAsInt();

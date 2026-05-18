@@ -44,7 +44,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     public static final String BASE_SERVER_NAME = "new_server";
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -203,7 +203,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     }
 
     @Override
-    public boolean canEditObject(CubridServer object) {
+    public boolean canEditObject(@NotNull CubridServer object) {
         return !object.getDataSource().isShard();
     }
 
@@ -213,7 +213,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     }
 
     @Override
-    public boolean canRenameObject(CubridServer object) {
+    public boolean canRenameObject(@NotNull CubridServer object) {
         return !object.getDataSource().isShard();
     }
 }
