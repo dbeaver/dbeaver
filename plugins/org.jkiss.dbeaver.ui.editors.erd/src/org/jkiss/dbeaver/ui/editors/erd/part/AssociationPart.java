@@ -262,7 +262,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 // If the selected association part is a foreign key, adjust the color of the arrow based on its delete-rule.
                 Color attributeColor =
                         this.getModel() instanceof ERDAssociation model && model.getObject() instanceof DBSTableForeignKey foreignKey
-                                ? ERDColors.getForeignKeyModifyRuleColor(foreignKey.getDeleteRule())
+                                ? ERDColors.getForeignKeyModifyRuleColor(foreignKey.getDeleteRule(), true)
                                 : ERDThemeSettings.instance.fkHighlightColor;
                 Color associationColor = attributeColor;
                 ERDHighlightingManager highlightingManager = erdViewer.getEditor().getHighlightingManager();
