@@ -67,8 +67,8 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.Charset;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -346,7 +346,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     }
 
-    private void createGeneralSettingSPanel(Composite composite, StreamConsumerSettings settings) {
+    private void createGeneralSettingSPanel(@NotNull Composite composite, @NotNull StreamConsumerSettings settings) {
         Composite generalSettings = UIUtils.createTitledComposite(
             composite,
             DTMessages.data_transfer_wizard_output_group_general,
@@ -368,7 +368,11 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                 updatePageCompletion();
             }
         });
-        UIUtils.createPushButton(generalSettings, null, null, UIIcon.CONFIGURATION,
+        UIUtils.createPushButton(
+            generalSettings,
+            null,
+            DTMessages.data_transfer_wizard_output_label_global_settings,
+            UIIcon.CONFIGURATION,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -397,7 +401,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         });
     }
 
-    private void createOutputFilesSplitPanel(Composite advancedSettingPanel, StreamConsumerSettings settings) {
+    private void createOutputFilesSplitPanel(@NotNull Composite advancedSettingPanel, @NotNull StreamConsumerSettings settings) {
         GridData gd;
         Composite outFilesSettings = UIUtils.createComposite(advancedSettingPanel, 3);
         outFilesSettings.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 5, 1));
@@ -429,9 +433,16 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         maximumFileSizeText.setLayoutData(gd);
     }
 
-    private void createFileConflictResolutionPanel(Composite advancedSettingPanel, StreamConsumerSettings settings) {
+    private void createFileConflictResolutionPanel(@NotNull Composite advancedSettingPanel, @NotNull StreamConsumerSettings settings) {
         final ExpandableComposite fcExpander = new ExpandableComposite(advancedSettingPanel, SWT.NONE);
-        fcExpander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 5, 1));
+        fcExpander.setLayoutData(new GridData(
+            GridData.FILL,
+            GridData.BEGINNING,
+            false,
+            false,
+            5,
+            1
+        ));
         fcExpander.addExpansionListener(new ExpansionAdapter() {
             @Override
             public void expansionStateChanged(ExpansionEvent e) {
