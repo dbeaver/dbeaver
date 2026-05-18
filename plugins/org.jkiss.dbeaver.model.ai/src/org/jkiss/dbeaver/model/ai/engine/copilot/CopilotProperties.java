@@ -82,16 +82,16 @@ public class CopilotProperties implements AIEngineProperties {
     @Override
     @Property(order = 3)
     public double getTemperature() {
-        if (temperature != 0.0) {
+        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
         return CopilotModels.getModelByName(model)
             .map(AIModel::defaultTemperature)
-            .orElse(0.0);
+            .orElse(AIUtils.DEFAULT_TEMPERATURE);
     }
 
     public void setTemperature(double temperature) {
-        this.temperature = temperature;
+        this.temperature = AIUtils.normalizeTemperature(temperature);
     }
 
     @Override

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -948,7 +949,7 @@ public class JDBCUtils {
             case Types.BIGINT, Types.DECIMAL, Types.DOUBLE, Types.FLOAT, Types.INTEGER, Types.NUMERIC, Types.REAL, Types.SMALLINT ->
                 DBPDataKind.NUMERIC;
             case Types.BIT, Types.TINYINT -> {
-                if (typeName != null && typeName.toLowerCase().contains("bool")) {
+                if (typeName != null && StringUtils.containsIgnoreCase(typeName, "bool")) {
                     // Declared as numeric but actually it's a boolean
                     yield DBPDataKind.BOOLEAN;
                 }

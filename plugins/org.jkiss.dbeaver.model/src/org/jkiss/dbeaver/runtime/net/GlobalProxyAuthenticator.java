@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.EncryptionException;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.Authenticator;
@@ -161,14 +162,19 @@ public class GlobalProxyAuthenticator extends Authenticator {
     }
 
     public static void saveCredentials(@NotNull String username, @NotNull String password) throws DBException {
-        if (CommonUtils.isNotEmpty(username)) {
-            DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
-            secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_USER, username);
-            if (CommonUtils.isNotEmpty(password)) {
-                secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD, password);
-            }
-            secrets.flushChanges();
-        }
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setToDefault(ModelPreferences.UI_PROXY_USER);
+        store.setToDefault(ModelPreferences.UI_PROXY_PASSWORD);
+        PrefUtils.savePreferenceStore(store);
+
+        DBSSecretController secrets = DBSSecretController.getGlobalSecretController();
+        secrets.setPrivateSecretValue(
+            ModelPreferences.UI_PROXY_USER,
+            CommonUtils.isNotEmpty(username) ? username : null);
+        secrets.setPrivateSecretValue(
+            ModelPreferences.UI_PROXY_PASSWORD,
+            CommonUtils.isNotEmpty(username) && CommonUtils.isNotEmpty(password) ? password : null);
+        secrets.flushChanges();
     }
 
 }

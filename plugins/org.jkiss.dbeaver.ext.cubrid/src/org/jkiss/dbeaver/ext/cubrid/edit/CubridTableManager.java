@@ -50,7 +50,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     @Override
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
-        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        CubridDataSource dataSource = user.getDataSource();
         boolean isDBAGroup = dataSource.isDBAGroup();
         boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
         boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
@@ -231,12 +231,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canEditObject(GenericTableBase object) {
+    public boolean canEditObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 

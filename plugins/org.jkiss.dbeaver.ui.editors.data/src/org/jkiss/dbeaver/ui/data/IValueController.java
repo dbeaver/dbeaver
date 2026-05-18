@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,12 +55,14 @@ public interface IValueController
      * Value name (name of attribute or other metadata object)
      * @return value name
      */
+    @NotNull
     String getValueName();
 
     /**
      * Value type
      * @return meta data
      */
+    @NotNull
     DBSTypedObject getValueType();
 
     /**
@@ -87,14 +89,17 @@ public interface IValueController
      * Associated value handler
      * @return value handler
      */
+    @NotNull
     DBDValueHandler getValueHandler();
 
     /**
      * Associated value manager
      * @return value manager
      */
+    @NotNull
     IValueManager getValueManager();
 
+    @NotNull
     EditType getEditType();
 
     /**
@@ -107,6 +112,7 @@ public interface IValueController
      * Controller's host site
      * @return site
      */
+    @NotNull
     IWorkbenchPartSite getValueSite();
 
     /**
@@ -114,6 +120,7 @@ public interface IValueController
      * In case of separated editor it is null.
      * @return placeholder control or null
      */
+    @Nullable
     Composite getEditPlaceholder();
 
     /**
@@ -126,6 +133,6 @@ public interface IValueController
      * @param messageType status message type
      * @param message error message
      */
-    void showMessage(String message, DBPMessageType messageType);
+    void showMessage(@NotNull String message, @NotNull DBPMessageType messageType);
 
 }

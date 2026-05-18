@@ -53,7 +53,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
     }
 
     @Override
-    public boolean canEditObject(GenericSequence object) {
+    public boolean canEditObject(@NotNull GenericSequence object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
@@ -72,7 +72,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
     protected GenericSequence createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
