@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingAttribute;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseProducerPageInputObjects;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamConsumerPageSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -346,8 +347,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     }
 
     private boolean isDataImport() {
-        StreamConsumerPageSettings page = getWizard().getPage(StreamConsumerPageSettings.class);
-        return page == null || !page.isPageApplicable();
+        return getWizard().getPage(DatabaseProducerPageInputObjects.class) != null;
     }
 
     @Nullable
