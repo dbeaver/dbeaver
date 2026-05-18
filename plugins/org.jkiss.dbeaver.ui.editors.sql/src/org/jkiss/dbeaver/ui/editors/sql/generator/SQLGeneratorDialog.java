@@ -34,8 +34,10 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -92,6 +94,10 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         boolean supportFullDDL = false;
         boolean supportSeparateFKStatements = false;
         boolean supportsPartitionsDDL = false;
+
+        Boolean supportsFormatting = null;
+        DBPDataSource dataSource = null;
+
         for (Object object : sqlGenerator.getObjects()) {
             if (object instanceof DBPScriptObjectExt2 sourceObject) {
                 if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
@@ -114,6 +120,21 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                     supportsPartitionsDDL = true;
                 }
             }
+            if (!Boolean.FALSE.equals(supportsFormatting)) {
+                DBPDataSource objectDataSource = DBUtils.getObjectDataSource(object);
+                if (objectDataSource != null) {
+                    if (supportsFormatting == null) {
+                        supportsFormatting = true;
+                        dataSource = objectDataSource;
+                    } else if (supportsFormatting && !dataSource.equals(objectDataSource)) {
+                        supportsFormatting = false;
+                    }
+                }
+            }
+        }
+
+        if (supportsFormatting == null) {
+            supportsFormatting = false;
         }
 
         sqlGenerator.setShowPermissions(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS) != null &&
@@ -122,6 +143,8 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_COMMENTS));
         sqlGenerator.setShowFullDdl(getDialogBoundsSettings().get(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS) != null &&
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
+        sqlGenerator.setFormatSql(supportsFormatting && getDialogBoundsSettings().get(DBPScriptObject.OPTION_FORMAT_SQL) != null &&
+            getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_FORMAT_SQL));
 
         generateDDLJob = new AbstractJob("Generating DDL") {
             @NotNull
@@ -281,6 +304,22 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setShowCastParams(supportsCastParamsButton.getSelection());
                     getDialogBoundsSettings().put(DBPScriptObject.OPTION_CAST_PARAMS, supportsCastParamsButton.getSelection());
+                    startGenerateJob();
+                }
+            });
+        }
+        if (supportsFormatting) {
+            Button chkFormatSql = UIUtils.createCheckbox(
+                settings,
+                SQLEditorMessages.sql_generator_dialog_button_format_sql,
+                sqlGenerator.isFormatSql()
+            );
+            chkFormatSql.setToolTipText(SQLEditorMessages.sql_generator_dialog_button_format_sql_tip);
+            chkFormatSql.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setFormatSql(chkFormatSql.getSelection());
+                    getDialogBoundsSettings().put(DBPScriptObject.OPTION_FORMAT_SQL, chkFormatSql.getSelection());
                     startGenerateJob();
                 }
             });

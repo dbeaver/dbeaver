@@ -61,7 +61,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
     protected GenericTableBase createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -191,12 +191,12 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canEditObject(GenericTableBase object) {
+    public boolean canEditObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 

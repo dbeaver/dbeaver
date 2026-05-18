@@ -85,7 +85,7 @@ public class GeometryPresentation extends AbstractPresentation {
     }
 
     @Override
-    protected void applyThemeSettings(ITheme currentTheme) {
+    protected void applyThemeSettings(@NotNull ITheme currentTheme) {
     }
 
     @Nullable
@@ -129,13 +129,14 @@ public class GeometryPresentation extends AbstractPresentation {
 
     @NotNull
     @Override
-    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+    public Map<Transfer, Object> copySelection(@NotNull ResultSetCopySettings settings) {
         return Collections.emptyMap();
     }
 
     ///////////////////////////////////////////////////////////////////////
     // ISelectionProvider
 
+    @NotNull
     @Override
     public ISelection getSelection() {
         return new StructuredSelection();

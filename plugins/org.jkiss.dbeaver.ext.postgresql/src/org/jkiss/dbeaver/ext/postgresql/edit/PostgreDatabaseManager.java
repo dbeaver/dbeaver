@@ -73,7 +73,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     protected PostgreDatabase createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
@@ -169,7 +169,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         }
 
         @Override
-        public void beforeExecute(DBCSession session) throws DBCException {
+        public void beforeExecute(@NotNull DBCSession session) throws DBCException {
             super.beforeExecute(session);
             database.shutdown(session.getProgressMonitor());
         }
@@ -184,7 +184,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         }
 
         @Override
-        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+        public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBCException {
             super.afterExecute(session, error);
             if (error == null) {
                 try {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -63,7 +62,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
         if (privilegeTypes.isEmpty()) {
@@ -160,9 +159,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         };
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
+    public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
         // In order to properly merge grant/revoke commands, we need to capture
         // the first one which grants and one which revokes and merge privileges
         // from other commands into them. Other commands are consumed later in process.
