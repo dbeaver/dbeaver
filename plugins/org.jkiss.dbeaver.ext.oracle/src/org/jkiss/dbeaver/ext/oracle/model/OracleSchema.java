@@ -1219,23 +1219,16 @@ public class OracleSchema extends OracleGlobalObject implements
                 i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,
                 ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION
                 """);
-            if (dataSource.isAtLeastV9()) {
-                sql.append("FROM ").append(indexesView).append(" i\n")
-                    .append("JOIN ").append(indColumnsView).append(" ic ")
-                    .append("ON i.owner = ic.index_owner AND i.index_name = ic.index_name\n")
-                    .append("LEFT JOIN ").append(indExpressionsView).append(" iex ")
-                    .append("ON iex.index_owner = i.owner AND iex.INDEX_NAME = i.INDEX_NAME AND iex.COLUMN_POSITION = ic.COLUMN_POSITION\n")
-                    .append("WHERE ");
-            } else { // oracle 8.x does not support ANSI JOIN syntax
-                sql.append("FROM ").append(indexesView).append(" i, ")
-                    .append(indColumnsView).append(" ic, ")
-                    .append(indExpressionsView).append(" iex\n")
-                    .append("WHERE ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME\n")
-                    .append("AND iex.INDEX_OWNER(+) = ic.INDEX_OWNER\n")
-                    .append("AND iex.INDEX_NAME(+) = ic.INDEX_NAME\n")
-                    .append("AND iex.COLUMN_POSITION(+) = ic.COLUMN_POSITION\n")
-                    .append("AND ");
-            }
+            // Legacy (+) outer-join syntax is used for all versions because Oracle 8.x
+            // does not support ANSI JOIN.
+            sql.append("FROM ").append(indexesView).append(" i, ")
+                .append(indColumnsView).append(" ic, ")
+                .append(indExpressionsView).append(" iex\n")
+                .append("WHERE ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME\n")
+                .append("AND iex.INDEX_OWNER(+) = ic.INDEX_OWNER\n")
+                .append("AND iex.INDEX_NAME(+) = ic.INDEX_NAME\n")
+                .append("AND iex.COLUMN_POSITION(+) = ic.COLUMN_POSITION\n")
+                .append("AND ");
             if (forTable == null) {
                 sql.append("i.OWNER=?");
             } else {

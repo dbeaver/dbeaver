@@ -159,6 +159,8 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (indexDDL == null && isPersisted()) {
+            // DBMS_METADATA was introduced in Oracle 9i. On Oracle 8.x the call fails with
+            // ORA-00904], so we reconstruct a minimal CREATE INDEX statement from cached metadata instead.
             if (getDataSource().isAtLeastV9()) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
                     indexDDL = JDBCUtils.queryString(session, "SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
