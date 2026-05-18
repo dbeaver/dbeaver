@@ -208,7 +208,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                 GridData.FILL_BOTH
             );
 
-            taskOptionsViewer = new PropertyTreeViewer(optionsPanel, SWT.BORDER);
+            taskOptionsViewer = new PropertyTreeViewer(optionsPanel, SWT.NONE);
             taskOptionsViewer.addPropertyChangeListener(event -> updateScriptPreview());
         }
 
@@ -244,7 +244,8 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
 
         loadSettings();
 
-        if (taskOptionsViewer.getTree().getItemCount() == 0) {
+        // FIXME: Commented out because maximizing control breaks UI
+        if (false && taskOptionsViewer.getTree().getItemCount() == 0) {
             settingsPanel.setMaximizedControl(objectsPanel);
         }
 

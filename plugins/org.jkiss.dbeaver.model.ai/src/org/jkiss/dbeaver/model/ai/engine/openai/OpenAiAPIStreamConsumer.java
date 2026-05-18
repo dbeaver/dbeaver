@@ -100,8 +100,6 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                     case "response.output_item.done":
                     case EVENT_TYPE_RESPONSE_COMPLETED, "error":
                         break;
-                    default:
-                        log.debug("Unknown OpenAI event type: " + eventType);
                 }
             }
         } else {

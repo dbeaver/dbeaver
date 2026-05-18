@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIMessage;
@@ -27,15 +28,18 @@ import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAITool;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
@@ -76,14 +80,54 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesResponse chatResponse = client.getInstance().chat(
+        Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
+            createLegacyChatRequest(request, false)
+        );
+        Object chatResponse = client.getInstance().chat(
             monitor,
             requestSessionToken(monitor).token(),
-            createLegacyChatRequest(request, false),
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature())
+            copilotChatRequestOAIResponsesRequestPair
         );
+        if (chatResponse instanceof OAIResponsesResponse oaiResponse) {
+            return toEngineResponse(oaiResponse);
+        } else if (chatResponse instanceof CopilotChatResponseLegacy copilotResponse) {
+            return toEngineResponse(copilotResponse);
+        } else {
+            throw new DBException("Unexpected response type from Copilot client: " + chatResponse.getClass().getName());
+        }
+    }
 
-        return toEngineResponse(chatResponse);
+    @NotNull
+    private AIEngineResponse toEngineResponse(@NotNull CopilotChatResponseLegacy response) throws DBException {
+        AIUsage usage = response.getAIUsage();
+        CopilotChatResponseLegacy.ToolCall toolCall = getFirstToolCall(response);
+        if (toolCall != null) {
+            return new AIEngineResponse(CopilotUtils.createFunctionCall(toolCall), usage);
+        }
+
+        List<String> variants = response.choices().stream()
+            .map(CopilotChatResponseLegacy.Choice::message)
+            .map(CopilotChatResponseLegacy.Message::content)
+            .filter(CommonUtils::isNotEmpty)
+            .toList();
+        if (variants.isEmpty()) {
+            variants = List.of(AIMessages.ai_empty_engine_response);
+        }
+
+        return new AIEngineResponse(AIMessageType.ASSISTANT, variants, usage);
+    }
+
+    @Nullable
+    private static CopilotChatResponseLegacy.ToolCall getFirstToolCall(@NotNull CopilotChatResponseLegacy response) {
+        return response.choices().stream()
+            .map(CopilotChatResponseLegacy.Choice::message)
+            .filter(Objects::nonNull)
+            .map(CopilotChatResponseLegacy.Message::toolCalls)
+            .filter(calls -> calls != null && !calls.isEmpty())
+            .map(List::getFirst)
+            .findFirst()
+            .orElse(null);
     }
 
     @Override
@@ -92,11 +136,14 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
+        Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
+            createLegacyChatRequest(request, true)
+        );
         client.getInstance().createChatCompletionStream(
             monitor,
             requestSessionToken(monitor).token(),
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), null),
-            createLegacyChatRequest(request, true),
+            copilotChatRequestOAIResponsesRequestPair,
             listener
         );
     }

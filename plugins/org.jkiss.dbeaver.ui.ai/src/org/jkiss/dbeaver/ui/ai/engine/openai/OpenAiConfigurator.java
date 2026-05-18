@@ -58,7 +58,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
-    private boolean useLegacyApi;
     private boolean logQuery = false;
 
     @Nullable

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModelList;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
@@ -31,17 +32,18 @@ import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.Pair;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class CopilotClientResponses extends CopilotClientBase<OAIResponsesRequest, OAIResponsesResponse> {
+public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesRequest, CopilotChatRequest>, Object> {
     private static final Log log = Log.getLog(CopilotClientResponses.class);
 
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/v1/responses";
@@ -82,27 +84,33 @@ public class CopilotClientResponses extends CopilotClientBase<OAIResponsesReques
     }
 
     @NotNull
-    public OAIResponsesResponse chat(
+    public Object chat(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull CopilotChatRequest legacyChatRequest,
-        @NotNull OAIResponsesRequest chatRequest
+        @NotNull Pair<OAIResponsesRequest, CopilotChatRequest> chatRequest
     ) throws DBException {
-        HttpRequest request = createCompletionRequest(chatRequest, token);
-
-        String responseJson = client.send(monitor, request);
-        return CopilotUtils.GSON.fromJson(responseJson, OAIResponsesResponse.class);
+        HttpRequest request = createCompletionRequest(chatRequest.getFirst(), token);
+        try {
+            String responseJson = client.send(monitor, request);
+            return CopilotUtils.GSON.fromJson(responseJson, OAIResponsesResponse.class);
+        } catch (DBException e) {
+            if (e.getMessage() != null && e.getMessage().contains("is not supported via Responses API")) {
+                return backupClient.chat(monitor, token, chatRequest.getSecond());
+            } else {
+                log.error("Error in chat request, falling back to legacy client", e);
+                throw e;
+            }
+        }
     }
 
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
-        @NotNull OAIResponsesRequest chatRequest,
-        @NotNull CopilotChatRequest legacyChatRequest,
+        @NotNull Pair<OAIResponsesRequest, CopilotChatRequest> chatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        chatRequest.stream = true;
-        HttpRequest request = createCompletionRequest(chatRequest, token);
+        chatRequest.getFirst().stream = true;
+        HttpRequest request = createCompletionRequest(chatRequest.getFirst(), token);
 
         Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
         client.sendAsync(
@@ -112,13 +120,31 @@ public class CopilotClientResponses extends CopilotClientBase<OAIResponsesReques
             listener::completeBlock,
             () -> {
                 try {
-                    backupClient.createChatCompletionStream(monitor, token, chatRequest, legacyChatRequest, listener);
+                    backupClient.createChatCompletionStream(monitor, token, chatRequest.getSecond(), listener);
                 } catch (DBException ex) {
                     log.error("Error in legacy client fallback", ex);
                     listener.error(ex);
                 }
             }
         );
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        backupClient.close();
+    }
+
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        if (statusCode == 400) {
+            if (body.contains("is not supported via Responses API")) {
+                // just return DBException, we will fall back to legacy client in case of this error, no need to log it as error
+                return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+            }
+        }
+        return super.mapHttpError(statusCode, body);
     }
 
     @NotNull
@@ -136,27 +162,14 @@ public class CopilotClientResponses extends CopilotClientBase<OAIResponsesReques
     }
 
     @Override
-    public void close() {
-        super.close();
-        backupClient.close();
-    }
-
-    @Override
     protected boolean processErrors(
         @NotNull MonitoredHttpClient.ErrorMapper mapper,
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull HttpResponse<Stream<String>> response,
+        @NotNull AtomicBoolean suppressCompletion,
         @Nullable Runnable backupOption,
         int statusCode
     ) {
-        if (statusCode != 200 && response.body().anyMatch(line -> line.contains("is not supported via Responses API"))) {
-            String responseBody = response.body().collect(Collectors.joining());
-            if (backupOption != null && statusCode == 400 && responseBody.contains("is not supported via Responses API")) {
-                backupOption.run();
-            } else {
-                errorHandler.accept(mapper.map(statusCode, responseBody));
-            }
-            return true;
-        }
-        return false;    }
+        return OpenAiUtils.processErrors(mapper, errorHandler, response, suppressCompletion, backupOption, statusCode);
+    }
 }

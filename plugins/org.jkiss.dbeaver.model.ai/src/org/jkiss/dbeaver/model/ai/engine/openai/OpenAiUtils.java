@@ -26,12 +26,18 @@ import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OpenAiUtils {
     private OpenAiUtils() {
@@ -108,5 +114,26 @@ public class OpenAiUtils {
             }
         }
         return result;
+    }
+
+    public static boolean processErrors(
+        @NotNull MonitoredHttpClient.ErrorMapper mapper,
+        @NotNull Consumer<Throwable> errorHandler,
+        @NotNull HttpResponse<Stream<String>> response,
+        @NotNull AtomicBoolean suppressCompletion,
+        @Nullable Runnable backupOption,
+        int statusCode
+    ) {
+        if (statusCode != 200) {
+            String responseBody = response.body().collect(Collectors.joining());
+            if (backupOption != null && statusCode == 400 && responseBody.contains("is not supported via Responses API")) {
+                suppressCompletion.set(true);
+                backupOption.run();
+            } else {
+                errorHandler.accept(mapper.map(statusCode, responseBody));
+            }
+            return true;
+        }
+        return false;
     }
 }

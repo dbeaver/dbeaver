@@ -373,15 +373,17 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent) {
-        createDriverSubstitutionControls(parent, 1, true);
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent) {
+        return createDriverSubstitutionControls(parent, 1, true);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+        final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
         final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
 
         if (driverSubstitutions.length > 0) {
-            final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
             GridDataFactory.fillDefaults()
                 .grab(grab, false)
                 .span(hSpan, 1)
@@ -411,6 +413,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 driverSubstitutionCombo.add(descriptor.getName());
             }
         }
+
+        return substitutionGroup;
     }
 
     protected boolean isHideNonApplicableControls() {

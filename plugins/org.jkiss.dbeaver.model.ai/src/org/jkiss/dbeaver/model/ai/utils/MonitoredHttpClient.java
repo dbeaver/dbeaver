@@ -27,6 +27,7 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -50,6 +51,7 @@ public class MonitoredHttpClient implements AutoCloseable {
             @NotNull ErrorMapper mapper,
             @NotNull Consumer<Throwable> errorHandler,
             @NotNull HttpResponse<Stream<String>> response,
+            @NotNull AtomicBoolean suppressCompletion,
             @Nullable Runnable backupOption,
             int statusCode
         );
@@ -132,10 +134,11 @@ public class MonitoredHttpClient implements AutoCloseable {
         @NotNull Runnable completionHandler,
         @Nullable Runnable backupOption
     ) {
+        AtomicBoolean suppressCompletion = new AtomicBoolean(false);
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
             .thenAccept(response -> {
                 int statusCode = response.statusCode();
-                if (errorProcessor.process(errorMapper, errorHandler, response, backupOption, statusCode)) {
+                if (errorProcessor.process(errorMapper, errorHandler, response, suppressCompletion, backupOption, statusCode)) {
                     return;
                 }
 
@@ -145,7 +148,9 @@ public class MonitoredHttpClient implements AutoCloseable {
                 if (e != null) {
                     errorHandler.accept(e);
                 } else {
-                    completionHandler.run();
+                    if (!suppressCompletion.get()) {
+                        completionHandler.run();
+                    }
                 }
             });
     }
