@@ -972,7 +972,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     int columnsCount = columnController.getColumnsCount();
                     for (int i = 0; i < columnsCount; i++) {
                         ObjectColumn column = getColumnByIndex(i);
-                        if (column.isNameColumn(object)) {
+                        if (column != null && column.isNameColumn(object)) {
                             nameColumn = column;
                             break;
                         }
@@ -1562,6 +1562,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         public void run() {
                             if (columnPersist) {
                                 groupingColumn = getColumnByIndex(selectedColumnNumber);
+                                if (groupingColumn == null) {
+                                    return;
+                                }
                                 groupingColumn.columnIndex = selectedColumnNumber;
                                 originalColumnOrder = ((TreeViewer) itemsViewer).getTree().getColumnOrder();
                                 moveGroupingColumnInTheBeginning(selectedColumnNumber);
