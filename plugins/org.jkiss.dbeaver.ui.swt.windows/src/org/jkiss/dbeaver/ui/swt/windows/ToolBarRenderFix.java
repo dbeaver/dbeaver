@@ -188,7 +188,6 @@ public class ToolBarRenderFix implements IPluginService {
                 final int inclusiveMask = SWT.PUSH | SWT.CHECK | SWT.RADIO;
                 final int exclusiveMask = SWT.SEPARATOR | SWT.DROP_DOWN;
 
-                int zoom = toolBar.getDisplay().getPrimaryMonitor().getZoom();
                 List<RECT> rects = new ArrayList<>(items.length);
                 for (var item : items) { // obtain rects of toolItems to fix
                     if (item.isEnabled() &&
@@ -196,7 +195,7 @@ public class ToolBarRenderFix implements IPluginService {
                         (item.getStyle() & exclusiveMask) == 0 &&
                         item.getControl() == null
                     ) {
-                        Rectangle bounds = Win32DPIUtils.pointToPixel(item.getBounds(), zoom);
+                        Rectangle bb = Win32DPIUtils.pointToPixel(item.getBounds(),  DPIUtil.getZoomForAutoscaleProperty(item.nativeZoom));
                         Rectangle bb = bounds;
                         var rect = new RECT();
                         rect.left = bb.x - 1;
