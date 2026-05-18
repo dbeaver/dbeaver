@@ -36,7 +36,7 @@ public class AIFunctionCall {
     @NotNull
     private final UUID id;
     @NotNull
-    private final String functionName;
+    private String functionName;
     @Nullable
     private Map<String, Object> arguments;
     @Nullable
@@ -59,7 +59,7 @@ public class AIFunctionCall {
 
     public AIFunctionCall(
         @NotNull String functionName,
-        @Nullable Map<String, Object> arguments,
+        @NotNull Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
         this.id = UUID.randomUUID();
@@ -85,6 +85,10 @@ public class AIFunctionCall {
         return functionName;
     }
 
+    public void setFunctionName(@NotNull String functionName) {
+        this.functionName = functionName;
+    }
+
     @NotNull
     public String getFunctionDisplayName() {
         if (function != null) {
@@ -98,9 +102,17 @@ public class AIFunctionCall {
         return arguments != null ? arguments : Map.of();
     }
 
+    public void setArguments(@NotNull Map<String, Object> arguments) {
+        this.arguments = arguments;
+    }
+
     @Nullable
     public Map<String, String> getMessageMetadata() {
         return messageMetadata;
+    }
+
+    public void setMessageMetadata(@NotNull Map<String, String> messageMetadata) {
+        this.messageMetadata = Map.copyOf(messageMetadata);
     }
 
     @Nullable
