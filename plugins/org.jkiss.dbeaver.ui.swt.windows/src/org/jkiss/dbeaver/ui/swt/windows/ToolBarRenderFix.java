@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.Callback;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.internal.Win32DPIUtils;
 import org.eclipse.swt.internal.win32.OS;
 import org.eclipse.swt.internal.win32.RECT;
