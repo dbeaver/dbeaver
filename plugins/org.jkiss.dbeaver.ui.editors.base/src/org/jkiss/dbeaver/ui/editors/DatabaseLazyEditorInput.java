@@ -45,10 +45,10 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceLazy;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandlerUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -58,7 +58,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Lazy input. Use by entity editors which are created during DBeaver startup (from memo by factory).
@@ -285,14 +284,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         long connectionTimeout = dataSourceContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
-            AtomicBoolean isOK = new AtomicBoolean(true);
+            boolean cancelled = false;
             if (dataSourceContainer.isSharedCredentials()) {
-                DataSourceHandlerUtils.resolveSharedCredentials(
-                    dataSourceContainer,
-                    status -> isOK.set(status.isOK())
-                );
+                UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+                if (serviceConnections != null) {
+                    cancelled = !serviceConnections.resolveSharedCredentials(dataSourceContainer, null);
+                }
             }
-            if (!isOK.get()) {
+
+            if (cancelled) {
                 return this;
             }
             try {

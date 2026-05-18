@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -641,6 +642,17 @@ public final class DBUtils {
             return dataSourceContainer;
         }
         if (!dataSourceContainer.isConnected()) {
+            boolean cancelled = false;
+            if (dataSourceContainer.isSharedCredentials()) {
+                UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+                if (serviceConnections != null) {
+                    cancelled = !serviceConnections.resolveSharedCredentials(dataSourceContainer, null);
+                }
+            }
+
+            if (cancelled) {
+                return null;
+            }
             try {
                 dataSourceContainer.connect(monitor, true, true);
             } catch (DBException e) {
