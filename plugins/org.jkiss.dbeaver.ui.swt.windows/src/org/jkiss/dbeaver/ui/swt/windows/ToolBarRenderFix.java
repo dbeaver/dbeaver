@@ -196,7 +196,6 @@ public class ToolBarRenderFix implements IPluginService {
                         item.getControl() == null
                     ) {
                         Rectangle bb = Win32DPIUtils.pointToPixel(item.getBounds(),  DPIUtil.getZoomForAutoscaleProperty(item.nativeZoom));
-                        Rectangle bb = bounds;
                         var rect = new RECT();
                         rect.left = bb.x - 1;
                         rect.top = bb.y - 1;
