@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
 import org.jkiss.dbeaver.DBException;
@@ -54,7 +56,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -106,12 +107,13 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         if (CommonUtils.isEmpty(typesToSearch)) {
             return null;
         }
-        Group cbGroup = new Group(parent, SWT.NONE);
-        cbGroup.setText("Objects:");
-        RowLayout rowLayout = new RowLayout(SWT.HORIZONTAL);
-        rowLayout.wrap = true;
-        cbGroup.setLayout(rowLayout);
-        cbGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        int btnCount = (int)typesToSearch.stream().filter(this::isValidObjectType).count();
+
+        Composite cbGroup = UIUtils.createTitledComposite(
+            parent,
+            "Objects:",
+            btnCount,
+            GridData.FILL_HORIZONTAL);
         for (DBSObjectType type : typesToSearch) {
             if (!isValidObjectType(type)) {
                 continue;

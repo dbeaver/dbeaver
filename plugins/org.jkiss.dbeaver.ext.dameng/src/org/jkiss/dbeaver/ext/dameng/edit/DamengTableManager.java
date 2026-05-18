@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ public class DamengTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableBase object, Map<String, Object> options, String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableBase object, @NotNull Map<String, Object> options, @NotNull
+    String newName) throws DBException {
         if (object.isView()) {
             throw new DBException("View rename is not supported");
         }
