@@ -560,4 +560,10 @@ public interface SQLDialect {
     default boolean supportsQualifiedColumnNames() {
         return true;
     }
+
+    @NotNull
+    default String toSortableTextColumn(@NotNull String columnName) {
+        return columnName;
+    }
+
 }
