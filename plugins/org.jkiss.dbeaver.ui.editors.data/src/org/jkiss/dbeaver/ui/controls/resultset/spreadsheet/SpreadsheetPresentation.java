@@ -572,6 +572,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             DBDAttributeBinding column = getAttributeFromGrid(cell.col, cell.row);
+            if (column == null) {
+                log.debug("Null attribute for cell " + cell);
+                continue;
+            }
             Object value = spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false);
             //Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
@@ -1685,7 +1689,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         boolean pin = pinnedAttrsCount > 0;
         int order = delta > 0 ? -1 : 1;
         // right to left while shifting right, left to right while shifting left
-        constraintsToMove.sort((a, b) -> Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
+        constraintsToMove.sort((a, b) ->
+            Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
         List<DBDAttributeConstraint> allConstraints = getOrderedConstraints(dataFilter, pin);
         int leftmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).min().getAsInt();
         int rightmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).max().getAsInt();
@@ -1842,7 +1847,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
     }
 
-        private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
+    private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
         if ((attr.getDataKind() == DBPDataKind.STRUCT || attr.getDataKind() == DBPDataKind.ARRAY) && controller.isRecordMode()) {
             return true;
         }
@@ -2616,7 +2621,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Nullable
-        private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
+        private Color getCellForeground(
+            @Nullable DBDAttributeBinding attribute,
+            @Nullable ResultSetRow row,
+            @Nullable Object cellValue,
+            @Nullable Color background,
+            boolean selected
+        ) {
+            if (attribute == null || row == null) {
+                return ResultSetThemeSettings.instance.foregroundNull;
+            }
             if (selected) {
                 Color fg = ResultSetThemeSettings.instance.foregroundSelected;
                 if (colorizeDataTypes && !DBUtils.isNullValue(cellValue)) {

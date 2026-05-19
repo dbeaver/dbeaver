@@ -405,4 +405,14 @@ public final class AIUtils {
     public static double normalizeTemperature(double temperature) {
         return Double.isFinite(temperature) ? temperature : DEFAULT_TEMPERATURE;
     }
+
+    public static boolean hasInformationFunctions(@NotNull AIToolboxManager toolboxManager, @NotNull List<AIFunctionCall> functionCalls) {
+        for (AIFunctionCall fc : functionCalls) {
+            AIFunctionDescriptor function = fc.getOrResolveFunction(toolboxManager);
+            if (function != null && function.getType() == AIFunctionType.INFORMATION) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

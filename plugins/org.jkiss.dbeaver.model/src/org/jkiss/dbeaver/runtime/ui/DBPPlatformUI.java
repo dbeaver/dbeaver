@@ -128,6 +128,17 @@ public interface DBPPlatformUI {
         boolean showSavePassword);
 
     /**
+     * Asks for auth model credentials using a form dialog (for non-native auth models).
+     * Saves credentials into dataSourceContainer on confirmation.
+     * Returns true if the user confirmed, false if the user canceled.
+     */
+    default boolean promptAuthModelCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) {
+        return false;
+    }
+
+    /**
      * Asks for password change. Returns null if user canceled this action.
      */
     @Nullable

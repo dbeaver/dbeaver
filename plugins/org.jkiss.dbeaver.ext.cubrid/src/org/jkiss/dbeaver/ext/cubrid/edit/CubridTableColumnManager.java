@@ -200,7 +200,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
     }
 
     @Override
-    public boolean canRenameObject(GenericTableColumn object) {
+    public boolean canRenameObject(@NotNull GenericTableColumn object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }
