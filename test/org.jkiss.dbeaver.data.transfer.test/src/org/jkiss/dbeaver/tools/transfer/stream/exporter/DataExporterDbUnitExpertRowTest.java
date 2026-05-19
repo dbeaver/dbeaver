@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,13 +71,28 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void textRowWithSingleQuoteShouldBeEscaped() throws DBException, IOException {
+        // given
+        String textRowWithSingleQuote = "'";
+        String expectedRow = "&apos;";
+
+        // when
+        writeRow(textRowWithSingleQuote);
+
+        // then
+        assertOutputMatches(expectedRow);
+    }
+
+    @Test
     public void textRowWithAllSpecialSymbolsShouldBeReplaced() throws DBException, IOException {
         // given
         String textRowWithSpecialXmlChars = """
-        <>&"abc'""";
-        String expectedRow = "&lt;&gt;&amp;&quot;abc'";
+            <>&"'abc'""";
+        String expectedRow = "&lt;&gt;&amp;&quot;&apos;abc&apos;";
+
         // when
         writeRow(textRowWithSpecialXmlChars);
+
         // then
         assertOutputMatches(expectedRow);
     }
@@ -86,13 +101,18 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     public void textRowWithQuotesShouldBeReplaced() throws DBException, IOException {
         // given
         String textRowWithSpecialXmlChars = """
-        {"delivery":"express"}""";
-        String expectedRow = "{&quot;delivery&quot;:&quot;express&quot;}";
+            {"delivery":"express","type":"'vip'"}""";
+
+        String expectedRow =
+            "{&quot;delivery&quot;:&quot;express&quot;,&quot;type&quot;:&quot;&apos;vip&apos;&quot;}";
+
         // when
         writeRow(textRowWithSpecialXmlChars);
+
         // then
         assertOutputMatches(expectedRow);
     }
+
 
     @Before
     public void setUp() throws DBException {

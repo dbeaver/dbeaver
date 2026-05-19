@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * DbUnit Dataset Exporter
@@ -52,6 +53,14 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     private static final String PROP_NULL_VALUE_STRING = "nullValueString";
     private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
     private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
+
+    private static final Map<Character, String> DBUNIT_ESCAPE_CHARS = Map.of(
+        '<', "&lt;",
+        '>', "&gt;",
+        '&', "&amp;",
+        '"', "&quot;",
+        '\'', "&apos;"
+    );
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -197,15 +206,9 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 break;
             }
             for (int i = 0; i < count; i++) {
-                if (buffer[i] == '<') {
-                    out.write("&lt;");
-                }
-                else if (buffer[i] == '>') {
-                    out.write("&gt;");
-                } else if (buffer[i] == '&') {
-                    out.write("&amp;");
-                } else if (buffer[i] == '"') {
-                    out.write("&quot;");
+                String escaped = DBUNIT_ESCAPE_CHARS.get(buffer[i]);
+                if (escaped != null) {
+                    out.write(escaped);
                 } else {
                     out.write(buffer[i]);
                 }
