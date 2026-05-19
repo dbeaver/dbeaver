@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -149,7 +148,7 @@ public class GeometryDataUtils {
     @Nullable
     private static RGB deriveGeometryColor(@NotNull Map<String, String> attributes) {
         String value = attributes.get("color");
-        if (CommonUtils.isEmpty(value)) {
+        if (value == null) {
             return null;
         }
         RGB color = hexStringToRgb(value);
