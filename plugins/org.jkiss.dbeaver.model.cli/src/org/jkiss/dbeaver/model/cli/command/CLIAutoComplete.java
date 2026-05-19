@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.model.cli.command;
 
-import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
-import org.jkiss.dbeaver.model.cli.CLIConstants;
-import org.jkiss.dbeaver.model.cli.CLIException;
-import org.jkiss.dbeaver.model.cli.CLIProcessResult;
+import org.jkiss.dbeaver.model.cli.*;
 import picocli.AutoComplete;
 import picocli.CommandLine;
 
+@AllowWithoutValidation
 @CommandLine.Command(name = "completion", description = "Generate bash/zsh completion script for ${ROOT-COMMAND-NAME}")
 public class CLIAutoComplete extends CLIAbstractSubcommand {
     //todo powershellsupport
