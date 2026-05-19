@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -52,7 +53,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingAttribute;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamMappingType;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.pages.database.DatabaseProducerPageInputObjects;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.stream.StreamConsumerPageSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -347,7 +347,10 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     }
 
     private boolean isDataImport() {
-        return getWizard().getPage(DatabaseProducerPageInputObjects.class) != null;
+        var consumer = getWizard().getSettings().getConsumer();
+        return consumer != null
+            && consumer.getNodeClass() != null
+            && DatabaseTransferConsumer.class.isAssignableFrom(consumer.getNodeClass());
     }
 
     @Nullable
