@@ -119,7 +119,7 @@ public class DBXTreeDescriptor extends DBXTreeItem {
             }
             // Try to go deeper
             if (item.hasChildren(null)) {
-                Class<?> result = findImplementorTypeInDataSourceTree(parent, propertyType, baseType, context);
+                Class<?> result = findImplementorTypeInDataSourceTree(item, propertyType, baseType, context);
                 if (result != null) {
                     return result;
                 }
