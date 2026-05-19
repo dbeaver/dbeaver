@@ -234,7 +234,7 @@ class SQLToolTaskWizardPageSettings extends ActiveWizardPage<SQLToolTaskWizard> 
                     previewPanel,
                     this,
                     TasksSQLUIMessages.sql_tool_task_wizard_page_settings_sql_panel_name,
-                    true,
+                    false,
                     "");
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(TasksSQLUIMessages.sql_tool_task_wizard_page_settings_title_sql_preview_error,
