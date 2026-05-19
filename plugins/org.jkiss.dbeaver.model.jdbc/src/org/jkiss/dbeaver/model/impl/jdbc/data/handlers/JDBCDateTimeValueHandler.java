@@ -42,7 +42,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 
 /**
@@ -63,7 +62,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
         Object value = super.getValueFromObject(session, type, object, copy, validateValue);
-        if (value instanceof Date || value instanceof LocalDate || value instanceof LocalDateTime || value instanceof OffsetDateTime) {
+        if (value instanceof Date || value instanceof LocalDate || value instanceof LocalDateTime) {
             return switch (type.getTypeID()) {
                 case Types.TIME, Types.TIME_WITH_TIMEZONE -> getTimeValue(value);
                 case Types.DATE -> getDateValue(value);
@@ -271,7 +270,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
         } else if (value instanceof LocalDateTime localDateTime) {
             return Timestamp.valueOf(localDateTime);
         } else if (value instanceof OffsetDateTime offsetDateTime) {
-            return Timestamp.valueOf(offsetDateTime.atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime());
+            return Timestamp.valueOf((offsetDateTime.toLocalDateTime()));
         } else if (value != null) {
             return Timestamp.valueOf(value.toString());
         } else {
