@@ -21,6 +21,8 @@ import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.function.BiConsumer;
+
 @SuppressWarnings("CheckStyle")
 record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class<T> type) implements UIObservable<T> {
     @NotNull
@@ -42,5 +44,15 @@ record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class
     @Override
     public Class<T> type() {
         return type;
+    }
+
+    @Override
+    public void addChangeListener(@NotNull BiConsumer<T, T> listener) {
+        // TODO currently used to listen to changes in multiple controls.
+        //  Would be nice to introduce a generic "validation" callback
+        //  that gets invoked recursively when let's say a panel's widget
+        //  changes its validation state. Or at least gets modified without
+        //  validating anything.
+        delegate.addValueChangeListener(event -> listener.accept(event.diff.getOldValue(), event.diff.getNewValue()));
     }
 }
