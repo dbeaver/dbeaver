@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ public interface DBDContent extends DBDValue {
     /**
      * Content length in bytes.
      * @return length
-     * @throws DBCException
      */
     long getContentLength() throws DBCException;
 
@@ -48,6 +47,7 @@ public interface DBDContent extends DBDValue {
     @NotNull
     String getContentType();
 
+    @Nullable
     String getDisplayString(@NotNull DBDDisplayFormat format);
 
     @Nullable
@@ -59,11 +59,10 @@ public interface DBDContent extends DBDValue {
      * @param storage storage
      * @return true if implementation acquires passed storage object.
      *   false if implementation copies storage.
-     * @throws DBException
      */
     boolean updateContents(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDContentStorage storage)
+        @Nullable DBDContentStorage storage)
         throws DBException;
 
     /**

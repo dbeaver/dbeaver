@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,7 @@ public class DataTypeProviderRegistry implements DBDRegistry {
 
     private static DataTypeProviderRegistry instance = null;
 
-    public synchronized static DataTypeProviderRegistry getInstance()
-    {
+    public synchronized static DataTypeProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataTypeProviderRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -53,12 +52,10 @@ public class DataTypeProviderRegistry implements DBDRegistry {
     private final Map<String, ValueHandlerDescriptor> dataTypeProvidersMap = new HashMap<>();
     private final List<AttributeTransformerDescriptor> dataTypeTransformers = new ArrayList<>();
 
-    private DataTypeProviderRegistry()
-    {
+    private DataTypeProviderRegistry() {
     }
 
-    public void loadExtensions(IExtensionRegistry registry)
-    {
+    public void loadExtensions(@NotNull IExtensionRegistry registry) {
         // Load data type providers from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
@@ -125,13 +122,13 @@ public class DataTypeProviderRegistry implements DBDRegistry {
     ////////////////////////////////////////////////////
     // DataType providers
 
+    @Nullable
     ValueHandlerDescriptor getValueHandler(@NotNull String id) {
         return dataTypeProvidersMap.get(id);
     }
 
     @Nullable
-    public DBDValueHandlerProvider getValueHandlerProvider(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject typedObject)
-    {
+    public DBDValueHandlerProvider getValueHandlerProvider(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject typedObject) {
         // First try to find type provider for specific datasource type
         for (ValueHandlerDescriptor dtProvider : dataTypeProviders) {
             if (!dtProvider.isGlobal() && dtProvider.supportsDataSource(dataSource) && dtProvider.supportsType(typedObject)) {
@@ -149,7 +146,11 @@ public class DataTypeProviderRegistry implements DBDRegistry {
     }
 
     @Override
-    public List<AttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject, Boolean custom) {
+    public List<AttributeTransformerDescriptor> findTransformers(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSTypedObject typedObject,
+        @Nullable Boolean custom
+    ) {
         // Find in default providers
         List<AttributeTransformerDescriptor> result = null;
         for (AttributeTransformerDescriptor descriptor : dataTypeTransformers) {
@@ -170,8 +171,9 @@ public class DataTypeProviderRegistry implements DBDRegistry {
         return result;
     }
 
+    @Nullable
     @Override
-    public DBDAttributeTransformerDescriptor getTransformer(String id) {
+    public DBDAttributeTransformerDescriptor getTransformer(@NotNull String id) {
         for (AttributeTransformerDescriptor descriptor : dataTypeTransformers) {
             if (id.equals(descriptor.getId())) {
                 return descriptor;
