@@ -207,11 +207,11 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         // Legacy filter settings
                         String legacyCatalogFilter = attributes.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
                         if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
-                            curDataSource.updateObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
+                            curDataSource.setObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
                         }
                         String legacySchemaFilter = attributes.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
                         if (!CommonUtils.isEmpty(legacySchemaFilter)) {
-                            curDataSource.updateObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
+                            curDataSource.setObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
                         }
                     }
                     if (newDataSource) {
@@ -382,7 +382,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                             curFilter.setName(attributes.getValue(RegistryConstants.ATTR_NAME));
                             curFilter.setDescription(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION));
                             curFilter.setEnabled(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ENABLED), true));
-                            curDataSource.updateObjectFilter(typeName, objectID, curFilter);
+                            curDataSource.setObjectFilter(typeName, objectID, curFilter);
 
                         }
                     } else {
