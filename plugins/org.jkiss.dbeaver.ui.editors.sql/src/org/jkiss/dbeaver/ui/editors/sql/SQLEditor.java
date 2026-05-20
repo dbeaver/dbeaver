@@ -500,7 +500,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        boolean connect = dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
+        boolean connect = container != null && container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         checkConnected(connect, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBWorkbench.getPlatformUI().showError(
