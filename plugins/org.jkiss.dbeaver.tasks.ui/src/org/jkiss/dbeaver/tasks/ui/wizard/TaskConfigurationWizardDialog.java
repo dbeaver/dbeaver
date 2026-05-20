@@ -155,10 +155,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     @Override
     protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
-        GridLayout layout = (GridLayout) parent.getLayout();
-        layout.numColumns++;
-        layout.makeColumnsEqualWidth = false;
-
+        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
         getWizard().createTaskActions(parent);
     }
 
