@@ -79,7 +79,8 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         supportedPageFields="server"
                         categories="sql">
-                    <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.libsql:RELEASE" ignore-dependencies="true"/>
+                    <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.libsql:RELEASE" bundle="!drivers.libsql" ignore-dependencies="true"/>
+                    <file type="jar" path="drivers/libsql" bundle="drivers.libsql"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="true"/>
