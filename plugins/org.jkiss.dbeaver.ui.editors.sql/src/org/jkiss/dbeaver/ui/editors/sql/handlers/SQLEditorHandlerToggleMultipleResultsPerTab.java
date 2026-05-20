@@ -44,12 +44,32 @@ public class SQLEditorHandlerToggleMultipleResultsPerTab extends AbstractHandler
         // We want our update logic to always be the last performed, but internal listener of the workbench uses asyncExec(),
         // so we need to skip a few cycles (no less than two) to ensure we'll override whatever the state workbench sets.
         UIUtils.asyncExec(() -> UIUtils.asyncExec(() -> UIUtils.asyncExec(SQLEditor::updateLocalCommandsState)));
+
+        // Example scenario:
+        //         [workbench activity]                                         [our activity]
+        //  1. command event raised
+        //                                                              2. this listener called and queues callback A1
+        //  3. workbench's listener called and queues callback B1
+        //                                                              4. our callback A1 called and queues callback A2
+        //  5. workbench's callback B1 called and modifies widget state
+        //     (applying unwanted global command state)                 6. our callback A2 called and queues callback A3
+        //  7. maybe other events occur,
+        //     whose outcome we might want to override                  8. our callback A3 called and asks for widget state update
+        //
     };
 
+    private final Command command;
+
     public SQLEditorHandlerToggleMultipleResultsPerTab() {
-        ICommandService cmdSvc = PlatformUI.getWorkbench().getService(ICommandService.class);
-        var cmd = cmdSvc.getCommand(SQLEditorCommands.CMD_MULTIPLE_RESULTS_PER_TAB);
-        cmd.addCommandListener(toolItemSelectionListener);
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        command = commandService.getCommand(SQLEditorCommands.CMD_MULTIPLE_RESULTS_PER_TAB);
+        command.addCommandListener(toolItemSelectionListener);
+    }
+
+    @Override
+    public void dispose() {
+        command.removeCommandListener(toolItemSelectionListener);
+        super.dispose();
     }
 
     @Override
