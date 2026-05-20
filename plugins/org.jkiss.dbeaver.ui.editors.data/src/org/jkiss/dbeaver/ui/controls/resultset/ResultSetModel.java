@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,11 +32,9 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -75,39 +71,6 @@ public class ResultSetModel implements DBDResultSetModel {
     private transient boolean metadataChanged;
     private transient boolean metadataDynamic;
 
-    public static class AttributeColorSettings {
-        private final DBCLogicalOperator operator;
-        private final boolean rangeCheck;
-        private final boolean singleColumn;
-        private final Object[] attributeValues;
-        private final Color colorForeground;
-        private final Color colorForeground2;
-        private final Color colorBackground;
-        private final Color colorBackground2;
-
-        AttributeColorSettings(DBVColorOverride co) {
-            this.operator = co.getOperator();
-            this.rangeCheck = co.isRange();
-            this.singleColumn = co.isSingleColumn();
-            this.colorForeground = getColor(co.getColorForeground());
-            this.colorForeground2 = getColor(co.getColorForeground2());
-            this.colorBackground = getColor(co.getColorBackground());
-            this.colorBackground2 = getColor(co.getColorBackground2());
-            this.attributeValues = co.getAttributeValues();
-        }
-
-        private static Color getColor(String color) {
-            if (CommonUtils.isEmpty(color)) {
-                return null;
-            }
-            return UIUtils.getSharedColor(color);
-        }
-
-        public boolean evaluate(Object cellValue) {
-            return operator.evaluate(cellValue, attributeValues);
-        }
-    }
-
     private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<>() {
         @Override
         public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
@@ -126,9 +89,10 @@ public class ResultSetModel implements DBDResultSetModel {
     };
 
     // Coloring
-    private final Map<DBDAttributeBinding, List<AttributeColorSettings>> colorMapping = new TreeMap<>(POSITION_SORTER);
+    private final ResultSetRowColorHelper colorHelper;
 
     public ResultSetModel() {
+        this.colorHelper = new ResultSetRowColorHelper(this, POSITION_SORTER);
         this.hintContext = new ResultSetHintContext(this::getDataContainer, this::getSingleSource);
         this.dataFilter = createDataFilter();
     }
@@ -377,8 +341,14 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
-    private DBSDataContainer getDataContainer() {
+    protected DBSDataContainer getDataContainer() {
         return executionSource == null ? null : executionSource.getDataContainer();
+    }
+
+    @Nullable
+    private DBVEntity resolveVirtualEntity() {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer == null ? null : DBVUtils.getVirtualEntity(dataContainer, false);
     }
 
     public boolean isEmpty() {
@@ -758,138 +728,12 @@ public class ResultSetModel implements DBDResultSetModel {
         hasData = true;
     }
 
-    private void processColorOverrides(@NotNull DBVEntity virtualEntity) {
-        List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
-        if (!CommonUtils.isEmpty(coList)) {
-            for (DBVColorOverride co : coList) {
-                DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
-                if (binding != null) {
-                    List<AttributeColorSettings> cmList =
-                        colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
-                    cmList.add(new AttributeColorSettings(co));
-                } else {
-                    log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
-                }
-            }
-        }
-    }
-
     public void updateColorMapping(@NotNull DBVEntity virtualEntity, boolean reset) {
-        colorMapping.clear();
-        processColorOverrides(virtualEntity);
-        if (reset) {
-            updateRowColors(true, curRows);
-        }
+        colorHelper.updateColorMapping(virtualEntity, reset);
     }
 
     public void updateColorMapping(boolean reset) {
-        colorMapping.clear();
-
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer == null) {
-            return;
-        }
-        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
-        if (virtualEntity == null) {
-            return;
-        }
-        processColorOverrides(virtualEntity);
-        if (reset) {
-            updateRowColors(true, curRows);
-        }
-    }
-
-    private void updateRowColors(boolean reset, List<ResultSetRow> rows) {
-        if (colorMapping.isEmpty() || reset) {
-            for (ResultSetRow row : rows) {
-                row.colorInfo = null;
-            }
-        }
-        if (!colorMapping.isEmpty()) {
-            for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
-                if (!ArrayUtils.contains(attributes, entry.getKey())) {
-                    // This may happen during FK navigation - attributes are already updated while colors mapping are still old
-                    continue;
-                }
-
-                for (ResultSetRow row : rows) {
-                    ResultSetCellLocation cellLocation = new ResultSetCellLocation(entry.getKey(), row);
-                    for (AttributeColorSettings acs : entry.getValue()) {
-                        Color background = null, foreground = null;
-                        if (acs.rangeCheck) {
-                            if (acs.attributeValues != null && acs.attributeValues.length > 1) {
-                                double minValue = DBExecUtils.makeNumericValue(acs.attributeValues[0]);
-                                double maxValue = DBExecUtils.makeNumericValue(acs.attributeValues[1]);
-                                final Object cellValue = getCellValue(cellLocation);
-                                double value = DBExecUtils.makeNumericValue(cellValue);
-                                if (value >= minValue && value <= maxValue) {
-                                    if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
-                                        RGB bgRowRGB = ResultSetUtils.makeGradientValue(
-                                            acs.colorBackground.getRGB(),
-                                            acs.colorBackground2.getRGB(),
-                                            minValue,
-                                            maxValue,
-                                            value
-                                        );
-                                        background = UIUtils.getSharedColor(bgRowRGB);
-
-                                        // FIXME: coloring value before and after range. Maybe we need an option for this.
-                                        /* else if (value < minValue) {
-                                            foreground = acs.colorForeground;
-                                            background = acs.colorBackground;
-                                        } else if (value > maxValue) {
-                                            foreground = acs.colorForeground2;
-                                            background = acs.colorBackground2;
-                                        }*/
-                                    }
-                                    if (acs.colorForeground != null && acs.colorForeground2 != null) {
-                                        RGB fgRowRGB1 = ResultSetUtils.makeGradientValue(acs.colorForeground.getRGB(), acs.colorForeground2.getRGB(), minValue, maxValue, value);
-                                        foreground = UIUtils.getSharedColor(fgRowRGB1);
-                                    } else if (acs.colorForeground != null || acs.colorForeground2 != null) {
-                                        foreground = acs.colorForeground != null ? acs.colorForeground : acs.colorForeground2;
-                                    }
-                                }
-                            }
-                        } else {
-                            final Object cellValue = getCellValue(cellLocation);
-                            if (acs.evaluate(cellValue)) {
-                                foreground = acs.colorForeground;
-                                background = acs.colorBackground;
-                            }
-                        }
-                        if (foreground != null || background != null) {
-                            ResultSetRow.ColorInfo colorInfo = row.colorInfo;
-                            if (colorInfo == null) {
-                                colorInfo = new ResultSetRow.ColorInfo();
-                                row.colorInfo = colorInfo;
-                            }
-                            if (!acs.singleColumn) {
-                                colorInfo.rowForeground = foreground;
-                                colorInfo.rowBackground = background;
-                            } else {
-                                // Single column color
-                                if (foreground != null) {
-                                    Color[] cellFgColors = colorInfo.cellFgColors;
-                                    if (cellFgColors == null) {
-                                        cellFgColors = new Color[attributes.length];
-                                        colorInfo.cellFgColors = cellFgColors;
-                                    }
-                                    cellFgColors[entry.getKey().getOrdinalPosition()] = foreground;
-                                }
-                                if (background != null) {
-                                    Color[] cellBgColors = colorInfo.cellBgColors;
-                                    if (cellBgColors == null) {
-                                        cellBgColors = new Color[attributes.length];
-                                        colorInfo.cellBgColors = cellBgColors;
-                                    }
-                                    cellBgColors[entry.getKey().getOrdinalPosition()] = background;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        colorHelper.updateColorMapping(reset);
     }
 
     void appendData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows, boolean resetOldRows) {
@@ -905,7 +749,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }
         curRows.addAll(newRows);
 
-        updateRowColors(resetOldRows, newRows);
+        colorHelper.handleAppendDataColors(resolveVirtualEntity(), resetOldRows, newRows);
 
         refreshHintsInfo(monitor, newRows, resetOldRows);
     }
@@ -1199,6 +1043,7 @@ public class ResultSetModel implements DBDResultSetModel {
         for (int i = 0; i < curRows.size(); i++) {
             curRows.get(i).setVisualNumber(i);
         }
+        colorHelper.handlePostOrdering(resolveVirtualEntity());
     }
 
     private void fillVisibleAttributes() {

@@ -306,7 +306,7 @@ public class UIUtils {
                     sbWidth = sbWidth + table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
-                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
+                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 2;
                     for (TableColumn tc : columns) {
                         tc.setWidth(tc.getWidth() + extraSpace);
                     }
@@ -2666,7 +2666,7 @@ public class UIUtils {
      * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
      */
     @NotNull
-    public static ExpandableComposite createExpandableCompositeWithSeparator(
+    public static ExpandableCompositeEx createExpandableCompositeWithSeparator(
         @NotNull Composite parent,
         int style,
         int expansionStyle

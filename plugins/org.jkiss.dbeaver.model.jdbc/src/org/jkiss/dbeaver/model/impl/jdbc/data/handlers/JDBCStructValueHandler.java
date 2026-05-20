@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -121,7 +122,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
                 typeName = type.getTypeName();
             }
         } catch (Exception e) {
-            log.debug("Error reading SQL type name", e);
+            log.debug("Error reading SQL type name: " + GeneralUtils.makeStandardErrorMessage(e));
         }
         DBSDataType dataType = null;
         if (typeName != null) {

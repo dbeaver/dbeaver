@@ -236,7 +236,19 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return function.getToolbox().callFunction(context, function, arguments);
+        AIFunctionResult result;
+        try {
+            result = function.getToolbox().callFunction(context, function, arguments);
+        } catch (DBException e) {
+            result = new AIFunctionResult(
+                function.getType(),
+                "Error calling function '" + function.getId() + "': " + e.getMessage(),
+                null,
+                e
+            );
+        }
+
+        return result;
     }
 
     protected void checkAiEnablement() throws DBException {
