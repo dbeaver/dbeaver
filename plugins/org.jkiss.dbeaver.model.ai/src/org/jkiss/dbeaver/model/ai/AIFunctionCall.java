@@ -59,7 +59,7 @@ public class AIFunctionCall {
 
     public AIFunctionCall(
         @NotNull String functionName,
-        @NotNull Map<String, Object> arguments,
+        @Nullable Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
         this.id = UUID.randomUUID();
@@ -129,7 +129,7 @@ public class AIFunctionCall {
         return function;
     }
 
-     public void setFunction(@NotNull AIFunctionDescriptor function) {
+    public void setFunction(@NotNull AIFunctionDescriptor function) {
         this.function = function;
     }
 
