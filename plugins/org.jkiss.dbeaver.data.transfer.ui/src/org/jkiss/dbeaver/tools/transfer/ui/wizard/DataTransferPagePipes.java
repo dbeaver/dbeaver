@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -346,7 +347,10 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     }
 
     private boolean isDataImport() {
-        return getWizard().getPage(StreamConsumerPageSettings.class) == null;
+        var consumer = getWizard().getSettings().getConsumer();
+        return consumer != null
+            && consumer.getNodeClass() != null
+            && DatabaseTransferConsumer.class.isAssignableFrom(consumer.getNodeClass());
     }
 
     @Nullable
