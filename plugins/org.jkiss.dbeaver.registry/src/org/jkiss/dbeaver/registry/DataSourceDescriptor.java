@@ -533,6 +533,8 @@ public class DataSourceDescriptor
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
         this.selectedSharedCredentials = null;
+        // we need to reset username and password for connection that are not connected to database
+        // in some cases, when connection is established, username is needed (e.g. retrieving current user info in Cubrid)
         if (sharedCredentials && !isConnected()) {
             // For shared credentials reset cache also
             connectionInfo.setUserName(null);
