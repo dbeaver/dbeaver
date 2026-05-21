@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSUserDisabledEvent extends WSAbstractEvent {
     public static final String ID = "cb_user_disabled";
-    private final boolean invalidateLicense;
+    private final boolean refreshServerState;
 
     @NotNull
     public WSUserDisabledEvent(@NotNull String userId) {
@@ -29,12 +29,12 @@ public class WSUserDisabledEvent extends WSAbstractEvent {
     }
 
     @NotNull
-    public WSUserDisabledEvent(@NotNull String userId, boolean invalidateLicense) {
+    public WSUserDisabledEvent(@NotNull String userId, boolean refreshServerState) {
         super(ID, WSConstants.TOPIC_USER, null, userId);
-        this.invalidateLicense = invalidateLicense;
+        this.refreshServerState = refreshServerState;
     }
 
-    public boolean shouldInvalidateLicense() {
-        return invalidateLicense;
+    public boolean shouldRefreshServerState() {
+        return refreshServerState;
     }
 }
