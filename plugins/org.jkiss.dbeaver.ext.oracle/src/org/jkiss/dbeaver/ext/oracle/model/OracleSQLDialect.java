@@ -849,4 +849,10 @@ public class OracleSQLDialect extends JDBCSQLDialect
             ProjectionAliasVisibilityScope.ORDER_BY
         );
     }
+
+    @NotNull
+    @Override
+    public String toSortableTextColumn(@NotNull String columnName) {
+        return "DBMS_LOB.SUBSTR(" + columnName + ", 1000, 1)";
+    }
 }

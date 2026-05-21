@@ -2772,6 +2772,15 @@ public final class DBUtils {
         return items;
     }
 
+    @Nullable
+    public static DBPDataSource getObjectDataSource(@NotNull Object object) {
+        return switch (object) {
+            case DBSObject o -> o.getDataSource();
+            case DBPContextProvider c -> c.getExecutionContext() == null ? null : c.getExecutionContext().getDataSource();
+            default -> null;
+        };
+    }
+
     public interface ChildExtractor<PARENT, CHILD> {
         @Nullable
         CHILD extract(@NotNull PARENT parent, @NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException;

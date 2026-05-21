@@ -129,7 +129,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         projectListener = new DBPProjectListener() {
             @Override
             public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
-                UIExecutionQueue.queueExec(() -> UIUtils.syncExec(() -> refresh()));
+                UIExecutionQueue.queueExec(() -> UIUtils.asyncExec(() -> refresh()));
             }
         };
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
