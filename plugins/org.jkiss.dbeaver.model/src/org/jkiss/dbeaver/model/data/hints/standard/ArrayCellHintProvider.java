@@ -50,11 +50,18 @@ public class ArrayCellHintProvider implements DBDCellHintProvider {
             value instanceof DBDCollection collection
         ) {
             if (collection.size() > 1) {
-                String sizeString = String.valueOf(collection.size());
+
+                String text;
+                if (CommonUtils.isBitSet(options, OPTION_TOOLTIP)) {
+                    text = String.valueOf(collection.size());
+                } else if (CommonUtils.isBitSet(options, OPTION_RECORD_MODE)) {
+                    text = "[" + collection.size() + "]";
+                } else {
+                    text = "[+" + (collection.size() - 1) + "]";
+                }
+
                 return new DBDValueHint[] {
-                    new ValueHintText(
-                        CommonUtils.isBitSet(options, OPTION_TOOLTIP) ? sizeString : "[" + sizeString + "]",
-                        "Size", null)
+                    new ValueHintText(text, "Size", null)
                 };
             }
         }
