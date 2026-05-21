@@ -86,8 +86,8 @@ import org.jkiss.utils.LongKeyMap;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * QueryLogViewer
@@ -102,6 +102,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QMDB_UNAVAILABLE_TITLE = "Query Manager is unavailable";
     private static final String QMDB_UNAVAILABLE_MESSAGE =
         "Query Manager was disabled for this session because the managed QMDB service could not be started.";
+    private static final String QMDB_INCOMPATIBLE_DATABASE_MESSAGE =
+        "Query Manager data was created by a newer DBeaver version and is not supported by this client. This session will continue without Query Manager.";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
     private final IWorkbenchPartSite site;
@@ -1252,7 +1254,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         private boolean isQmdbUnavailable() {
-            return error != null && CommonUtils.getCauseOfType(error, QMDBUnavailableException.class) != null;
+            return error != null && CommonUtils.getCauseOfType(error, QMUnavailableException.class) != null;
+        }
+
+        private boolean isQmdbIncompatibleDatabase() {
+            return error != null && CommonUtils.getCauseOfType(error, QMIncompatibleDatabaseException.class) != null;
         }
     }
 
@@ -1334,9 +1340,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 }
                 if (result != null && result.getError() != null) {
                     if (result.isQmdbUnavailable()) {
-                        if (!qmdbUnavailableDialogShown) {
+                        if (!qmdbUnavailableDialogShown && !result.isQmdbIncompatibleDatabase()) {
                             qmdbUnavailableDialogShown = true;
-                            DBWorkbench.getPlatformUI().showError(QMDB_UNAVAILABLE_TITLE, QMDB_UNAVAILABLE_MESSAGE, result.getError());
+                            DBWorkbench.getPlatformUI().showError(
+                                QMDB_UNAVAILABLE_TITLE,
+                                result.isQmdbIncompatibleDatabase() ? QMDB_INCOMPATIBLE_DATABASE_MESSAGE : QMDB_UNAVAILABLE_MESSAGE,
+                                result.getError()
+                            );
                         }
                     } else {
                         DBWorkbench.getPlatformUI().showError(getLoadService().getServiceName(), null, result.getError());
