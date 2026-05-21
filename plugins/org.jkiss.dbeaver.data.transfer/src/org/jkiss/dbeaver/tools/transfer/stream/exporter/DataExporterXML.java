@@ -33,6 +33,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * XML Exporter
@@ -40,6 +42,17 @@ import java.io.Reader;
 public class DataExporterXML extends StreamExporterAbstract {
 
     private static final String PROP_INCLUDE_DOCTYPE_DECLARATION = "includeDoctype";
+
+    private static final Map<Character, String> XML_ESCAPE_CHARS = Map.of(
+        '<', "&lt;",
+        '>', "&gt;",
+        '&', "&amp;",
+        '\'', "&apos;"
+    );
+    private static final Map<String, String> XML_ESCAPE_STRINGS = XML_ESCAPE_CHARS
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -140,7 +153,9 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+            for (Map.Entry<String, String> entry : XML_ESCAPE_STRINGS.entrySet()) {
+                value = value.replace(entry.getKey(), entry.getValue());
+            }
             getWriter().write(value);
         }
     }
@@ -155,13 +170,9 @@ public class DataExporterXML extends StreamExporterAbstract {
                 break;
             }
             for (int i = 0; i < count; i++) {
-                if (buffer[i] == '<') {
-                    getWriter().write("&lt;");
-                }
-                else if (buffer[i] == '>') {
-                    getWriter().write("&gt;");
-                } else if (buffer[i] == '&') {
-                    getWriter().write("&amp;");
+                String escaped = XML_ESCAPE_CHARS.get(buffer[i]);
+                if (escaped != null) {
+                    getWriter().write(escaped);
                 } else {
                     getWriter().write(buffer[i]);
                 }
