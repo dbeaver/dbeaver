@@ -1051,6 +1051,27 @@
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- GizmoSQL -->
+                <driver
+                    id="gizmosql"
+                    label="GizmoSQL"
+                    icon="icons/gizmosql_icon.png"
+                    iconBig="icons/gizmosql_icon_big.png"
+                    class="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"
+                    sampleURL="jdbc:gizmosql://{host}:{port}[?catalog={database}]"
+                    defaultPort="31337"
+                    description="GizmoSQL JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/gizmodata/gizmosql-jdbc-driver"
+                    allowsEmptyPassword="false"
+                    categories="sql,analytic">
+                    <file type="jar" path="maven:/com.gizmodata:gizmosql-jdbc-driver:RELEASE"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <property name="useEncryption" value="true"/>
+                    <property name="disableCertificateVerification" value="false"/>
+                    <property name="catalog" value=""/>
+                </driver>
+
                 <!-- FoundationDB
                 <driver
                         id="foundationdb"
@@ -1583,6 +1604,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>

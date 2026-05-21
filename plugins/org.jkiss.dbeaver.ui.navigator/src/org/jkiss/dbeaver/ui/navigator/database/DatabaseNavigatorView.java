@@ -22,6 +22,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersister;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
+
+    private static final Log log = Log.getLog(DatabaseNavigatorView.class);
     private IMemento memento;
 
     public DatabaseNavigatorView() {
@@ -105,7 +108,14 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         UIExecutionQueue.queueExec(() -> {
-            getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
+            DBNNode rootNode;
+            try {
+                rootNode = getRootNode();
+            } catch (Exception e) {
+                log.error(e);
+                rootNode = new DBNEmptyNode();
+            }
+            getNavigatorTree().setInput(rootNode);
             getSite().getSelectionProvider().setSelection(new StructuredSelection());
         });
 
