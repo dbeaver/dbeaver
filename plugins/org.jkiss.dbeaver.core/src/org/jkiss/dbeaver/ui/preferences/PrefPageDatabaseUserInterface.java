@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -157,7 +158,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             IContentProposalProvider proposalProvider = (contents, position) -> {
                 List<IContentProposal> proposals = new ArrayList<>();
                 for (String item : clientTimezone.getItems()) {
-                    if (item.toLowerCase().contains(contents.toLowerCase())) {
+                    if (StringUtils.containsIgnoreCase(item, contents.toLowerCase())) {
                         proposals.add(new ContentProposal(item));
                     }
                 }

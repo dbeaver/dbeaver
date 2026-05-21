@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,16 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -47,7 +50,7 @@ public class TextWithOpen {
 
     protected final Composite panel;
     private final Text text;
-    private final ToolBar toolbar;
+    private final Composite toolbar;
     private final boolean multiFS;
     private final boolean binary;
 
@@ -83,12 +86,18 @@ public class TextWithOpen {
         }
         text.setLayoutData(gd);
 
-        toolbar = new ToolBar(panel, SWT.FLAT);
+        toolbar = new Composite(panel, SWT.NONE);
+        RowLayout layout = new RowLayout();
+        layout.marginTop = 0;
+        layout.marginBottom = 0;
+        toolbar.setLayout(layout);
         if (useTextEditor) {
-            final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
-            toolItem.setImage(DBeaverIcons.getImage(UIIcon.TEXTFIELD));
-            toolItem.setToolTipText(secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text);
-            toolItem.addSelectionListener(new SelectionAdapter() {
+            UIUtils.createPushButton(
+                toolbar,
+                null,
+                secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
+                UIIcon.TEXTFIELD,
+            new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     String newText = getNewTextFromUser(secured);
@@ -102,10 +111,12 @@ public class TextWithOpen {
             {
                 // Local FS works only on local machine. Will not work for TE remote tasks.
                 // Do we need to do anything about it in UI?
-                final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
-                toolItem.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-                toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
-                toolItem.addSelectionListener(new SelectionAdapter() {
+                UIUtils.createPushButton(
+                    toolbar,
+                    null,
+                    UIMessages.text_with_open_dialog_browse,
+                    UIIcon.OPEN,
+                    new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         openBrowser(false);
@@ -113,11 +124,12 @@ public class TextWithOpen {
                 });
             }
             if (isMultiFileSystem()) {
-                final ToolItem remoteFsItem = new ToolItem(toolbar, SWT.NONE);
-                remoteFsItem.setImage(DBeaverIcons.getImage(
-                    (getPanelStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL));
-                remoteFsItem.setToolTipText(UIMessages.text_with_open_dialog_browse_remote);
-                remoteFsItem.addSelectionListener(new SelectionAdapter() {
+                UIUtils.createPushButton(
+                    toolbar,
+                    null,
+                    UIMessages.text_with_open_dialog_browse_remote,
+                    (getPanelStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL,
+                    new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         openBrowser(true);
@@ -128,22 +140,25 @@ public class TextWithOpen {
 
         if (!useTextEditor && !isBinaryContents() && !isFolderContents()) {
             // Open file text in embedded editor
-            final ToolItem editItem = new ToolItem(toolbar, SWT.NONE);
-            editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
-            editItem.setToolTipText(UIMessages.text_with_open_dialog_edit_file);
-            editItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    String filePath = TextWithOpen.this.text.getText();
+            Button editItem = UIUtils.createPushButton(
+                toolbar,
+                null,
+                UIMessages.text_with_open_dialog_edit_file,
+                UIIcon.EDIT,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        String filePath = TextWithOpen.this.text.getText();
 
-                    IFileStore store = EFS.getLocalFileSystem().getStore(Path.of(filePath).toUri());
-                    try {
-                        IDE.openEditorOnFileStore(UIUtils.getActiveWorkbenchWindow().getActivePage(), store);
-                    } catch (Exception ex) {
-                        DBWorkbench.getPlatformUI().showError("File open error", null, ex);
+                        IFileStore store = EFS.getLocalFileSystem().getStore(Path.of(filePath).toUri());
+                        try {
+                            IDE.openEditorOnFileStore(UIUtils.getActiveWorkbenchWindow().getActivePage(), store);
+                        } catch (Exception ex) {
+                            DBWorkbench.getPlatformUI().showError("File open error", null, ex);
+                        }
                     }
                 }
-            });
+            );
             TextWithOpen.this.text.addModifyListener(e -> {
                 String fileName = TextWithOpen.this.text.getText().trim();
                 Path targetFile;
@@ -210,7 +225,7 @@ public class TextWithOpen {
         return text;
     }
 
-    public ToolBar getToolbar() {
+    public Composite getToolbar() {
         return toolbar;
     }
 

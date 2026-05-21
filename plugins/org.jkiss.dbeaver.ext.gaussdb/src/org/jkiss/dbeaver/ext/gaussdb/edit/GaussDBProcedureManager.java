@@ -86,7 +86,7 @@ public class GaussDBProcedureManager extends SQLObjectEditor<GaussDBProcedure, G
     protected GaussDBProcedure createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable final Object container,
+        @NotNull final Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {

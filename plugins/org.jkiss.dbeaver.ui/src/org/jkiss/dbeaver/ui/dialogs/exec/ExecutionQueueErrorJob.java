@@ -31,13 +31,12 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class ExecutionQueueErrorJob extends AbstractUIJob {
 
-    private String errorName;
-    private Throwable error;
-    private boolean queue;
+    private final String errorName;
+    private final Throwable error;
+    private final boolean queue;
     private DBPPlatformUI.UserResponse response = DBPPlatformUI.UserResponse.STOP;
 
-    public ExecutionQueueErrorJob(String errorName, Throwable error, boolean queue)
-    {
+    public ExecutionQueueErrorJob(@NotNull String errorName, @NotNull Throwable error, boolean queue) {
         super("Execution Error Job");
         this.errorName = errorName;
         this.error = error;
@@ -46,8 +45,7 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
 
     @NotNull
     @Override
-    public IStatus runInUIThread(@NotNull DBRProgressMonitor monitor)
-    {
+    public IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
         ExecutionQueueErrorDialog dialog = new ExecutionQueueErrorDialog(
             UIUtils.getActiveWorkbenchShell(),
             "Execution Error",
@@ -78,12 +76,14 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
         return Status.OK_STATUS;
     }
 
+    @NotNull
     public DBPPlatformUI.UserResponse getResponse()
     {
         return response;
     }
 
-    public static DBPPlatformUI.UserResponse showError(String task, Throwable error, boolean queue) {
+    @NotNull
+    public static DBPPlatformUI.UserResponse showError(@NotNull String task, @NotNull Throwable error, boolean queue) {
         ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(task, error, queue);
         errorJob.schedule();
         try {

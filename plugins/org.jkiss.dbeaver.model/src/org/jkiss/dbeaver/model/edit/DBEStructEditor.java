@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,9 @@ public interface DBEStructEditor<OBJECT_TYPE extends DBPObject> extends DBEObjec
     Class<? extends DBSObject>[] getChildTypes();
 
     @Nullable
-    Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, OBJECT_TYPE object, Class<? extends DBSObject> childType)
-        throws DBException;
+    Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE object,
+        @NotNull Class<? extends DBSObject> childType
+    ) throws DBException;
 }

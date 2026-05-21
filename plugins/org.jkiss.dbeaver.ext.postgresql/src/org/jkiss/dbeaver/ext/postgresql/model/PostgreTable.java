@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -231,6 +231,7 @@ public abstract class PostgreTable extends PostgreTableReal
         return this.hasOids && getDataSource().getServerType().supportsOids();
     }
 
+    @Nullable
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() {
         if (this.hasOidPseudoAttribute()) {
@@ -240,6 +241,7 @@ public abstract class PostgreTable extends PostgreTableReal
         }
     }
 
+    @NotNull
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return DBDPseudoAttribute.EMPTY_ARRAY;
