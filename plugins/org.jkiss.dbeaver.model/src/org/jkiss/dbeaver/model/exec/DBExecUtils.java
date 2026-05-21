@@ -846,13 +846,16 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        if (sqlQuery == null) {
+                        boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
+                        boolean isPlainOrAsterisk = selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*"));
+                        if (sqlQuery == null || isAllColumns || isPlainOrAsterisk) {
+                            // Ensure all attributes are cached.
+                            // Some implementations of DBSEntity use struct caches that provide granular
+                            // caching for children (attributes), which is good in some cases, but awful
+                            // here, since we might end up querying one attribute at a time
+                            attrEntity.getAttributes(monitor);
+
                             tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
-                        } else {
-                            boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
-                            if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
-                                tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
-                            }
                         }
                     }
 
