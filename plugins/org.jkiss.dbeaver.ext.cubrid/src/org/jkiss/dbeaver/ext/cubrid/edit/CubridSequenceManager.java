@@ -53,7 +53,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
     }
 
     @Override
-    public boolean canEditObject(GenericSequence object) {
+    public boolean canEditObject(@NotNull GenericSequence object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 

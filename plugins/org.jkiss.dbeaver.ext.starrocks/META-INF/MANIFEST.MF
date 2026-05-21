@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver StarRocks Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.starrocks;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.0.1.qualifier
 Bundle-Activator: org.jkiss.dbeaver.ext.starrocks.internal.StarRocksActivator
 Bundle-Vendor: DBeaver Corp
 Require-Bundle: org.eclipse.core.runtime,
