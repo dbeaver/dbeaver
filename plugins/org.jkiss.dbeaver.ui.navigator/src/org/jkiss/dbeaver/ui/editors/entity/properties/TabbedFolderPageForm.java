@@ -118,7 +118,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (commandContext != null) {
             commandContext.addCommandListener(new DBECommandAdapter() {
                 @Override
-                public void onCommandChange(DBECommand<?> command) {
+                public void onCommandChange(@NotNull DBECommand<?> command) {
                     UIUtils.asyncExec(() -> {
                         updateEditButtonsState();
                         if (command instanceof DBECommandProperty<?> cp) {

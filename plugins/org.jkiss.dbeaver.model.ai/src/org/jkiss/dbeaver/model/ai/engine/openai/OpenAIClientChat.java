@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIMetaTypes;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageFactory;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
@@ -38,12 +39,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
-public class OpenAIClientLegacy extends OpenAIClient {
+public class OpenAIClientChat extends OpenAiClientBase {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Gson GSON = new GsonBuilder().create();
 
-    public OpenAIClientLegacy(
+    public OpenAIClientChat(
         @NotNull String baseUrl,
         @NotNull List<HttpRequestFilter> requestFilters
     ) {
@@ -51,8 +53,8 @@ public class OpenAIClientLegacy extends OpenAIClient {
     }
 
     @NotNull
-    public static OpenAIClientLegacy createClient(@NotNull String baseUrl, @NotNull String token) {
-        return new OpenAIClientLegacy(
+    public static OpenAIClientChat createClient(@NotNull String baseUrl, @NotNull String token) {
+        return new OpenAIClientChat(
             baseUrl,
             List.of(new OpenAIRequestFilter(token))
         );
@@ -110,5 +112,24 @@ public class OpenAIClientLegacy extends OpenAIClient {
                 )
             )).toList();
         return oaiResponse;
+    }
+
+    @Override
+    public void createChatCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OAIResponsesRequest completionRequest,
+        @NotNull AIEngineResponseConsumer listener
+    ) throws DBException {
+        HttpRequest request = createCompletionRequest(completionRequest);
+
+        HttpRequest modifiedRequest = applyFilters(request);
+
+        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        client.sendAsync(
+            modifiedRequest,
+            stringConsumer,
+            listener::error,
+            listener::completeBlock
+        );
     }
 }

@@ -189,26 +189,32 @@ public class SQLGroupingQueryGenerator {
     private String makeGroupFunctionAlias(List<String> groupFunctions, int funcIndex) {
         String function = groupFunctions.get(funcIndex);
         StringBuilder alias = new StringBuilder();
-        char delimeter = '_';
+        char delimiter = '_';
         for (int i = 0; i < function.length(); i++) {
             char c = function.charAt(i);
-            if (Character.isLetterOrDigit(c) || c == delimeter) {
+            if (Character.isLetterOrDigit(c) || c == delimiter) {
                 alias.append(c);
             } else if (c == '(' || c == ')') {
-                alias.append(delimeter);
+                alias.append(delimiter);
             }
         }
-        while (!alias.isEmpty() && alias.charAt(alias.length() - 1) == delimeter) {
+        while (!alias.isEmpty() && alias.charAt(alias.length() - 1) == delimiter) {
             alias.deleteCharAt(alias.length() - 1);
         }
+
         if (!alias.isEmpty()) {
             long numberOfSameColumnNames = Arrays.stream(funcAliases)
                 .filter(Objects::nonNull)
                 .filter(a -> a.startsWith(alias.toString().toLowerCase(Locale.ENGLISH)))
                 .count();
 
-            if (numberOfSameColumnNames > 0) {
-                alias.append(delimeter).append(numberOfSameColumnNames);
+            boolean isAliasReservedWord = dialect.getReservedWords()
+                    .stream()
+                    .anyMatch(kw -> kw.equalsIgnoreCase(alias.toString()));
+
+            // Add suffix for duplicate or reserved aliases
+            if (numberOfSameColumnNames > 0 || isAliasReservedWord) {
+                alias.append(delimiter).append(numberOfSameColumnNames);
             }
             return alias.toString().toLowerCase(Locale.ENGLISH);
         }
