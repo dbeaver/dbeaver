@@ -41,11 +41,9 @@ public interface DBEPersistAction {
     @NotNull
     String getScript();
 
-    void beforeExecute(@NotNull DBCSession session)
-        throws DBException;
+    void beforeExecute(@NotNull DBCSession session) throws DBException;
 
-    void afterExecute(@NotNull DBCSession session, @Nullable Throwable error)
-        throws DBException;
+    void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBException;
 
     @NotNull
     ActionType getType();

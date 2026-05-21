@@ -26,12 +26,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
-import org.jkiss.dbeaver.model.access.DBAAuthModel;
-import org.jkiss.dbeaver.model.access.DBAAuthModelExternal;
-import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
+import org.jkiss.dbeaver.model.access.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -637,13 +635,13 @@ public class DataSourceDescriptor
         if (filterMapping != null) {
             // Update filter
             if (parentObject == null) {
-                filterMapping.defaultFilter = filter;
+                filterMapping.globalFilter = filter;
             } else {
                 filterMapping.customFilters.put(FilterMapping.getFilterContainerUniqueID(parentObject), filter);
             }
+        } else {
+            setObjectFilter(type.getName(), toObjectID(parentObject), filter);
         }
-
-        updateObjectFilter(type.getName(), toObjectID(parentObject), filter);
     }
 
     @Nullable
@@ -666,14 +664,14 @@ public class DataSourceDescriptor
         filterMap.clear();
     }
 
-    protected void updateObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
+    protected void setObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
             filterMapping = new FilterMapping(typeName);
             filterMap.put(typeName, filterMapping);
         }
         if (objectID == null) {
-            filterMapping.defaultFilter = filter;
+            filterMapping.globalFilter = filter;
         } else {
             filterMapping.customFilters.put(objectID, filter);
         }
@@ -1191,6 +1189,13 @@ public class DataSourceDescriptor
                 }
 
                 if (tunnelConfiguration != null) {
+                    // SSH tunneling can be disabled in multi-user apps
+                    DBPWorkspace workspace = getProject().getWorkspace();
+                    if (!workspace.supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)) {
+                        throw new DBException(
+                            "SSH tunneling is required for this connection, but it is currently disabled. Please contact your administrator.");
+                    }
+
                     monitor.subTask("Initialize tunnel");
                     tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                     try {

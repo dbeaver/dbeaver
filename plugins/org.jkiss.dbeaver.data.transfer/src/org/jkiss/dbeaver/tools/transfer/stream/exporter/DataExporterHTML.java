@@ -101,9 +101,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
             out.write("<tr>");
             writeTableTitle(name, columns.length);
             out.write("</tr>");
-            out.write("<tr>");
         }
         if (outputColumnHeaders) {
+            out.write("<tr>");
             for (DBDAttributeBinding column : columns) {
                 String colName = column.getLabel();
                 if (CommonUtils.isEmpty(colName)) {

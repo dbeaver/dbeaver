@@ -275,6 +275,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @NotNull
     protected SQLException handleExecuteError(@NotNull Throwable ex) {
+        this.executeError = ex;
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
             try {
                 if (!connection.isClosed() && !connection.getAutoCommit()) {

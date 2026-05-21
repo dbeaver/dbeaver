@@ -572,6 +572,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             DBDAttributeBinding column = getAttributeFromGrid(cell.col, cell.row);
+            if (column == null) {
+                log.debug("Null attribute for cell " + cell);
+                continue;
+            }
             Object value = spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false);
             //Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
@@ -648,6 +652,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (CommonUtils.isEmpty(strValue)) {
                     return;
                 }
+                boolean insertNewRows = settings.isInsertNewRows();
                 final Pair<GridPos, GridPos> targetRange;
                 if (spreadsheet.getItemCount() == 0) {
                     // A special case when the grid is empty
@@ -672,16 +677,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                     String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows(), settings.isIgnoreQuotes());
 
-                    // FIXME: do not create rows twice! Probably need to delete comment after testing. #9095
-                    /*if (overNewRow) {
-                        for (int i = 0 ; i < newLines.length - 1; i++) {
-                            controller.addNewRow(false, true, false);
+                    if (insertNewRows) {
+                        for (int i = 0; i < newLines.length; i++) {
+                            controller.addNewRow(RowPlacement.BEFORE_SELECTION, false, false);
                         }
                         spreadsheet.refreshRowsData();
-                    } else {*/
-                    while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
-                        controller.addNewRow(RowPlacement.AT_END, false, false);
-                        spreadsheet.refreshRowsData();
+                        //rowNum++;
+                    } else {
+                        while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
+                            controller.addNewRow(RowPlacement.AT_END, false, false);
+                            spreadsheet.refreshRowsData();
+                        }
                     }
                     //}
                     if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
@@ -1685,7 +1691,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         boolean pin = pinnedAttrsCount > 0;
         int order = delta > 0 ? -1 : 1;
         // right to left while shifting right, left to right while shifting left
-        constraintsToMove.sort((a, b) -> Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
+        constraintsToMove.sort((a, b) ->
+            Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
         List<DBDAttributeConstraint> allConstraints = getOrderedConstraints(dataFilter, pin);
         int leftmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).min().getAsInt();
         int rightmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).max().getAsInt();
