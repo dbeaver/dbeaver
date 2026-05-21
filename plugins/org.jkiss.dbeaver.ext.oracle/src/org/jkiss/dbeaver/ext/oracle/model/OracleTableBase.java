@@ -373,7 +373,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             final boolean hasDBA = dataSource
                 .isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, OracleConstants.VIEW_DBA_TAB_PRIVS);
             final boolean hasCommonTypeCols = dataSource.isAtLeastV12();
-            // HIERARCHY column was added in version 9i
             final boolean hasHierarchy = dataSource.isAtLeastV9();
 
             final String ownerColTab = hasDBA ? "OWNER" : "TABLE_SCHEMA";
