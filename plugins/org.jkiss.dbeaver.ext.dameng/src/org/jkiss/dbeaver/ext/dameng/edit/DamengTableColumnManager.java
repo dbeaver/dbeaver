@@ -56,7 +56,8 @@ public class DamengTableColumnManager extends GenericTableColumnManager implemen
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableColumn object, Map<String, Object> options, String newName) throws DBException {
+    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableColumn object, @NotNull Map<String, Object> options, @NotNull
+    String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 

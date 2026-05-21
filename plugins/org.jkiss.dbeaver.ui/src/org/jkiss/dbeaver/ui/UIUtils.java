@@ -639,24 +639,6 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
-    public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
-        Group group = new Group(parent, SWT.NONE);
-        group.setText(label);
-
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(layoutStyle);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            group.setLayoutData(gd);
-        }
-
-        GridLayout gl = new GridLayout(columns, false);
-        group.setLayout(gl);
-
-        return group;
-    }
-
     @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
@@ -2666,7 +2648,7 @@ public class UIUtils {
      * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
      */
     @NotNull
-    public static ExpandableComposite createExpandableCompositeWithSeparator(
+    public static ExpandableCompositeEx createExpandableCompositeWithSeparator(
         @NotNull Composite parent,
         int style,
         int expansionStyle

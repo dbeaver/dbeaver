@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         // Increment clause already append with the IncrementModifier
     }
 
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         if (CommonUtils.isNotEmpty(((FireBirdTableColumn) column).getComputedDefinition())) {
@@ -169,12 +170,12 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    public int getMinimumOrdinalPosition(GenericTableColumn object) {
+    public int getMinimumOrdinalPosition(@NotNull GenericTableColumn object) {
         return 1;
     }
 
     @Override
-    public int getMaximumOrdinalPosition(GenericTableColumn object) {
+    public int getMaximumOrdinalPosition(@NotNull GenericTableColumn object) {
         try {
             return object.getTable().getAttributes(new VoidProgressMonitor()).size();
         } catch (DBException e) {
@@ -184,7 +185,7 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    public void setObjectOrdinalPosition(DBECommandContext commandContext, GenericTableColumn object, List<GenericTableColumn> siblingObjects, int newPosition) throws DBException {
+    public void setObjectOrdinalPosition(@NotNull DBECommandContext commandContext, @NotNull GenericTableColumn object, @NotNull List<GenericTableColumn> siblingObjects, int newPosition) throws DBException {
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 
