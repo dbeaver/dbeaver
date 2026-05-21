@@ -214,6 +214,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             boolean forceDataReadTransactions
                 = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
             boolean selectiveExportFromUI = useFetchedRows != null;
+            boolean extractInSegments = useFetchedRows == null &&
+                settings.getExtractType() == DatabaseProducerSettings.ExtractType.SEGMENTS;
 
             DBCExecutionContext context;
             if (dataContainer instanceof DBPContextProvider contextProvider) {
@@ -284,7 +286,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         monitor.subTask("Read data");
 
                         // Perform export
-                        if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
+                        if (!extractInSegments) {
                             checkCanceled(monitor);
                             // Just do it in single query
                             producerStatistics.accumulate(dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize()));
