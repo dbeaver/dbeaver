@@ -842,6 +842,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "ANALYZE",
             "CONCURRENTLY",
             "FREEZE",
+            "MAINTAIN", // PostgreSQL 16+ table privilege (GRANT MAINTAIN ON TABLE ...)
             "LANGUAGE",
             "MODULE",
             "OFFSET",

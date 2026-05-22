@@ -79,6 +79,9 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         supportedPageFields="server"
                         categories="sql">
+                    <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.libsql:RELEASE" bundle="!drivers.libsql" ignore-dependencies="true"/>
+                    <file type="jar" path="drivers/libsql" bundle="drivers.libsql"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="true"/>
                     <parameter name="supports-indexes" value="true"/>
@@ -98,14 +101,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager"
-                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager"
-                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableForeignKeyManager"
-                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteViewManager"
-                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableForeignKeyManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteViewManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

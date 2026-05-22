@@ -76,6 +76,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         return true;
     }
 
+    @Nullable
     @Override
     public MySQLUser createNewObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, @NotNull Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
@@ -101,7 +102,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public void filterCommands(DBECommandQueue<MySQLUser> queue)
+    public void filterCommands(@NotNull DBECommandQueue<MySQLUser> queue)
     {
         if (USE_DIRECT_UPDATE && !queue.isEmpty() && !MySQLUtils.isAlterUSerSupported(queue.getObject().getDataSource())) {
             // Add privileges flush to the tail
@@ -109,7 +110,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
                 new DBECommandAbstract<MySQLUser>(
                     queue.getObject(),
                     MySQLUIMessages.edit_user_manager_command_flush_privileges) {
-                    @NotNull
+                    @Nullable
                     @Override
                     public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
                         if (CommonUtils.getOption(options, OPTION_SUPPRESS_FLUSH_PRIVILEGES)) {
@@ -165,7 +166,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         {
             super(user, MySQLUIMessages.edit_user_manager_command_drop_user);
         }
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
         {
@@ -242,7 +243,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             newHost = newName.substring(atPosition + 1);
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             if (CommonUtils.equalObjects(oldName, newName)) {
@@ -265,9 +266,9 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             return DBUtils.getQuotedIdentifier(dataSource, userName) + "@" + DBUtils.getQuotedIdentifier(dataSource, host);
         }
 
-        @NotNull
+        @Nullable
         @Override
-        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             // We need very first and very last rename commands. They produce final rename
             final String mergeId = "rename" + getObject().hashCode();
             CommandRenameUser renameCmd = (CommandRenameUser) userParams.get(mergeId);

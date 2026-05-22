@@ -101,7 +101,11 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, SQLServerTableColumn object, Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerTableColumn object,
+        @NotNull Class<? extends DBSObject> childType
+    ) {
         return null;
     }
 
@@ -112,6 +116,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
         if (CommonUtils.isNotEmpty(column.getComputedDefinition())) {

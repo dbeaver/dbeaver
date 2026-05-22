@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnEx
 import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -268,7 +269,8 @@ public class SQLQueryJob extends DataSourceJob {
                         log.error(lastError);
                         boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
-                            isQueue ? "SQL script execution" : "SQL query execution",
+                            (isQueue ? "SQL script execution" : "SQL query execution") +
+                                "\n" +  GeneralUtils.getFirstMessage(lastError),
                             lastError,
                             isQueue);
 
