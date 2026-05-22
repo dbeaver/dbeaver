@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIUsage;
 import java.util.List;
 import java.util.Map;
 
-public record CopilotChatResponse(
+public record CopilotChatResponseLegacy(
     @Nullable
     String id,
     @NotNull

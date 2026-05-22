@@ -21,21 +21,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 /**
- * Indicates that QMDB is unavailable for the current session.
+ * Indicates that QM is unavailable for the current session.
  */
-public class QMDBUnavailableException extends DBException {
+public class QMUnavailableException extends DBException {
 
     public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
 
-    public QMDBUnavailableException() {
+    public QMUnavailableException() {
         super(DEFAULT_MESSAGE);
     }
 
-    public QMDBUnavailableException(@NotNull String message) {
+    public QMUnavailableException(@NotNull String message) {
         super(message);
     }
 
-    public QMDBUnavailableException(@NotNull String message, @NotNull Throwable cause) {
+    public QMUnavailableException(@NotNull String message, @NotNull Throwable cause) {
         super(message, cause);
     }
 }

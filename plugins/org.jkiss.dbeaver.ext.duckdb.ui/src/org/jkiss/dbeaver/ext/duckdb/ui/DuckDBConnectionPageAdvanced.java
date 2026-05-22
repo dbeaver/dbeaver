@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.duckdb.model.DuckDBConstants;
 import org.jkiss.dbeaver.ext.duckdb.ui.internal.DuckDBMessages;
@@ -47,10 +46,11 @@ public class DuckDBConnectionPageAdvanced extends ConnectionPageAbstract {
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group sqlGroup = new Group(group, SWT.NONE);
-            sqlGroup.setText(DuckDBMessages.dialog_setting_sql);
-            sqlGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            sqlGroup.setLayout(new GridLayout(2, false));
+            Composite sqlGroup = UIUtils.createTitledComposite(
+                group,
+                DuckDBMessages.dialog_setting_sql,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             sqlDollarQuotePlainCombo = UIUtils.createLabelCombo(sqlGroup, DuckDBMessages.dialog_setting_sql_dd_plain_label, SWT.DROP_DOWN | SWT.READ_ONLY);
             sqlDollarQuotePlainCombo.add(DuckDBMessages.dialog_setting_sql_dd_string);
