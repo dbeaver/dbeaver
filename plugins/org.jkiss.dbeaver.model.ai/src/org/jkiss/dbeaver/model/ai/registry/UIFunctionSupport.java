@@ -14,28 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.ai.registry;
 
-package org.jkiss.dbeaver.model.qm;
+public enum UIFunctionSupport {
+    ALL,
+    AFTER_FIRST, //both UI and ACTION functions are included starting from the second message, keeping the initial context smaller.
+    ONLY_UI,
+    ONLY_ACTION,
+    NONE;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-
-/**
- * Indicates that QMDB is unavailable for the current session.
- */
-public class QMDBUnavailableException extends DBException {
-
-    public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
-
-    public QMDBUnavailableException() {
-        super(DEFAULT_MESSAGE);
+    public boolean supportsActions(long messageUserCount) {
+        return this == ALL || this == ONLY_ACTION  || (messageUserCount > 1 && this == AFTER_FIRST);
     }
 
-    public QMDBUnavailableException(@NotNull String message) {
-        super(message);
-    }
-
-    public QMDBUnavailableException(@NotNull String message, @NotNull Throwable cause) {
-        super(message, cause);
+    public boolean supportsUi(long messageUserCount) {
+        return this == ALL || this == ONLY_UI || (messageUserCount > 1 && this == AFTER_FIRST);
     }
 }

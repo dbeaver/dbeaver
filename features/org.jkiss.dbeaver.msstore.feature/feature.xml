@@ -2,7 +2,7 @@
 <feature
     id="org.jkiss.dbeaver.msstore.feature"
     label="DBeaver MSStore"
-        version="26.0.5.qualifier"
+        version="26.1.0.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 

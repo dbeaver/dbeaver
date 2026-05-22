@@ -1835,6 +1835,10 @@ public class ResultSetViewer extends Viewer
 
         // Check that we could have hints
         boolean needRefresh = false;
+        int hintOptions = DBDValueHintProvider.OPTION_INLINE;
+        if (this.isRecordMode()) {
+            hintOptions |= DBDValueHintProvider.OPTION_RECORD_MODE;
+        }
         for (DBDAttributeBinding attr : attrs) {
             for (DBDValueRow row : rows) {
                 // TODO introduce value path here
@@ -1847,7 +1851,8 @@ public class ResultSetViewer extends Viewer
                         row,
                         cellValue,
                         EnumSet.of(DBDValueHint.HintType.STRING),
-                        DBDValueHintProvider.OPTION_INLINE);
+                        hintOptions
+                    );
                     if (hints != null) {
                         for (DBDValueHint hint : hints) {
                             if (!CommonUtils.isEmpty(hint.getHintText())) {
@@ -3354,9 +3359,12 @@ public class ResultSetViewer extends Viewer
             return;
         }
         menuManager.add(new EmptyAction(getHintObjectLabel(ho) + " hints"));
+        int hintOptions = DBDValueHintProvider.OPTION_APPROXIMATE;
+        if (this.isRecordMode()) {
+            hintOptions |= DBDValueHintProvider.OPTION_RECORD_MODE;
+        }
         for (ValueHintProviderDescriptor hd : hdList) {
             menuManager.add(new HintEnablementAction(this, hd, attr));
-
             if (hd.getInstance() instanceof DBDCellHintProvider chp) {
                 DBDValueHint[] valueHint = chp.getCellHints(
                     getModel(),
@@ -3364,7 +3372,8 @@ public class ResultSetViewer extends Viewer
                     row,
                     cellValue,
                     EnumSet.of(DBDValueHint.HintType.STRING),
-                    DBDValueHintProvider.OPTION_APPROXIMATE);
+                    hintOptions
+                );
                 if (valueHint == null) {
                     continue;
                 }
