@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit.generic;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 
@@ -26,6 +27,7 @@ import java.util.Map;
  */
 public class SQLServerGenericTableColumnManager extends GenericTableColumnManager
 {
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         return new ColumnModifier[]{DataTypeModifier, DefaultModifier, NullNotNullModifier};

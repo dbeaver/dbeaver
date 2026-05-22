@@ -430,6 +430,7 @@ public class CLIUtils {
             var print = new PrintWriter(out)
         ) {
             var updatedCmd = new CommandLine(commandForHelp);
+            updatedCmd.setUsageHelpWidth(120);
             //to avoid split sections between 'root' commands and subcommands
             updatedCmd.getHelpSectionMap().remove(CommandLine.Model.UsageMessageSpec.SECTION_KEY_COMMAND_LIST_HEADING);
             updatedCmd.usage(print);

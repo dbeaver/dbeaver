@@ -1,0 +1,199 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.ai.engine.copilot;
+
+import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
+import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModel;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotModelList;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
+
+import java.net.http.HttpRequest;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.Future;
+
+public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends Object> extends AbstractHttpAIClient {
+    protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
+    protected static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Log log = Log.getLog(CopilotClientBase.class);
+    private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
+    private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
+    private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
+    private static final String USER_AGENT = "GithubCopilot/1.155.0";
+    private static final String COPILOT_SESSION_TOKEN_URL = "/copilot_internal/v2/token";
+    @NotNull
+    protected final String baseAuthURL;
+
+    protected CopilotClientBase(@NotNull String baseAuthURL) {
+        this.baseAuthURL = baseAuthURL;
+    }
+
+
+    /**
+     * Chat with Copilot
+     */
+    @NotNull
+    public abstract RESPONSE chat(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String token,
+        @NotNull REQUEST chatRequest
+    ) throws DBException;
+
+    /**
+     * Chat with Copilot using streaming API. The implementation should
+     * call listener.onResponseChunk for each received chunk and listener.onComplete when the response is complete.
+     *
+     * @param monitor           the progress monitor to track the request's progress and handle cancellation
+     * @param token             the authorization token used to authenticate the request
+     * @param chatRequest       the chat request to send to the server
+     * @param listener          the listener to receive response chunks and completion events
+     * @throws DBException if the request fails
+     */
+    public abstract void createChatCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String token,
+        @NotNull REQUEST chatRequest,
+        @NotNull AIEngineResponseConsumer listener
+    ) throws DBException;
+
+    /**
+     * Request access to the user's account
+     */
+    @NotNull
+    public CopilotClientChat.DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON).header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .timeout(Duration.ofSeconds(10)) // Set timeout
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(deviceCodeRequest))).build();
+
+        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotClientChat.DeviceCodeResponse.class);
+    }
+
+    /**
+     * Loads a list of available Copilot models from the server.
+     *
+     * @param monitor the progress monitor to track the request's progress and handle cancellation
+     * @param token   the authorization token used to authenticate the request
+     * @return a list of {@code CopilotModel} objects representing the enabled models
+     * @throws DBException if the request fails
+     */
+    @NotNull
+    public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token).header("Editor-Version", CHAT_EDITOR_VERSION).GET()
+            .timeout(TIMEOUT).build();
+
+        var response = client.send(monitor, request);
+        var models = CopilotUtils.GSON.fromJson(response, CopilotModelList.class);
+        return models.data().stream().filter(CopilotModel::isEnabled).toList();
+    }
+
+    /**
+     * Request access token
+     */
+    @NotNull
+    public String requestAccessToken(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DeviceCodeResponse deviceCodeResponse,
+        @NotNull Future<?> cancellationToken
+    ) throws DBException, InterruptedException {
+        AccessTokenRequest accessTokenRequest = new AccessTokenRequest(
+            DBEAVER_OAUTH_APP,
+            deviceCodeResponse.deviceCode(),
+            "urn:ietf:params:oauth:grant-type:device_code"
+        );
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
+            .header("accept", HttpConstants.CONTENT_TYPE_JSON).header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .timeout(Duration.ofSeconds(5)) // Set timeout
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(accessTokenRequest))).build();
+
+        Duration expiresIn = Duration.ofSeconds(deviceCodeResponse.expiresIn());
+        Duration interval = Duration.ofSeconds(deviceCodeResponse.interval());
+        Instant start = Instant.now();
+
+        while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
+            String responseString = client.send(monitor, request);
+            var body = CopilotUtils.GSON.fromJson(responseString, AccessTokenResponse.class);
+            if (CommonUtils.isNotEmpty(body.accessToken())) {
+                return body.accessToken();
+            }
+            switch (body.error()) {
+                // https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#error-codes-for-the-device-flow
+                case "authorization_pending" -> Thread.sleep(interval.toMillis());
+                case "slow_down" -> Thread.sleep(interval.plusSeconds(5).toMillis());
+                default -> throw new DBException("Error requesting access token: " + body.error());
+            }
+        }
+
+        if (monitor.isCanceled() || cancellationToken.isCancelled()) {
+            throw new DBException("Access token request was canceled by the user");
+        } else {
+            throw new DBException("Access token request timed out");
+        }
+    }
+
+    /**
+     * Request session token
+     */
+    @NotNull
+    public CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor, @NotNull String accessToken) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder().uri(AIHttpUtils.resolve(baseAuthURL + COPILOT_SESSION_TOKEN_URL))
+            .header(HttpConstants.HEADER_AUTHORIZATION, "token " + accessToken).header("editor-version", EDITOR_VERSION)
+            .header("editor-plugin-version", EDITOR_PLUGIN_VERSION).header(HttpConstants.HEADER_USER_AGENT, USER_AGENT).GET()
+            .timeout(TIMEOUT).build();
+
+        return CopilotUtils.GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
+    }
+
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("Copilot request failed: " + statusCode + ", " + body);
+        return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+    }
+
+    private record DeviceCodeRequest(@SerializedName("client_id") String clientId, @SerializedName("scope") String scope) {
+    }
+
+    public record DeviceCodeResponse(@SerializedName("device_code") String deviceCode,
+        @SerializedName("user_code") String userCode,
+        @SerializedName("verification_uri") String verificationUri,
+        @SerializedName("expires_in") int expiresIn,
+        @SerializedName("interval") int interval) {
+    }
+
+    private record AccessTokenRequest(@SerializedName("client_id") String clientId,
+        @SerializedName("device_code") String deviceCode,
+        @SerializedName("grant_type") String grantType) {
+    }
+
+    private record AccessTokenResponse(@SerializedName("error") String error, @SerializedName("access_token") String accessToken) {
+    }
+}

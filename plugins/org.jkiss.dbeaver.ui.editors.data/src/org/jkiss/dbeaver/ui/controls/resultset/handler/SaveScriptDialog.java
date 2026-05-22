@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.handler;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,7 +25,6 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -51,12 +48,10 @@ import java.util.List;
 
 class SaveScriptDialog extends BaseDialog {
 
-    private static final String DIALOG_ID = "DBeaver.RSV.SaveScriptDialog";//$NON-NLS-1$
-
-    private ResultSetViewer viewer;
+    private final ResultSetViewer viewer;
     private Object sqlPanel;
-    private ResultSetSaveSettings saveSettings;
-    private ResultSetSaveReport saveReport;
+    private final ResultSetSaveSettings saveSettings;
+    private final ResultSetSaveReport saveReport;
     private String scriptText;
 
     SaveScriptDialog(ResultSetViewer viewer, ResultSetSaveReport saveReport) {
@@ -76,8 +71,9 @@ class SaveScriptDialog extends BaseDialog {
         return null;//UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite messageGroup = super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 400;
@@ -85,7 +81,7 @@ class SaveScriptDialog extends BaseDialog {
 
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
-            Composite sqlContainer = new Composite(messageGroup, SWT.BORDER);
+            Composite sqlContainer = new Composite(messageGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
             sqlContainer.setLayout(new FillLayout());
             gd.widthHint = 500;
@@ -97,7 +93,7 @@ class SaveScriptDialog extends BaseDialog {
                     sqlContainer,
                     viewer,
                     UINavigatorMessages.editors_entity_dialog_preview_title,
-                    true,
+                    false,
                     "");
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
@@ -117,10 +113,11 @@ class SaveScriptDialog extends BaseDialog {
         boolean enableControls,
         Runnable settingsRefreshHandler)
     {
-        Group settingsComposite = new Group(messageGroup, SWT.NONE);
-        settingsComposite.setText(ResultSetMessages.dialog_save_script_settings_title);
-        settingsComposite.setLayout(GridLayoutFactory.swtDefaults().numColumns(3).create());
-        settingsComposite.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        Composite settingsComposite = UIUtils.createTitledComposite(
+            messageGroup,
+            ResultSetMessages.dialog_save_script_settings_title,
+            3,
+            GridData.FILL_HORIZONTAL);
 
         Button useFQNamesCheck = UIUtils.createCheckbox(settingsComposite,
             ResultSetMessages.dialog_save_script_button_use_qualified_names,
@@ -175,15 +172,6 @@ class SaveScriptDialog extends BaseDialog {
         }
     }
 
-    private static String appendReportLine(String report, int count, String info) {
-        if (!report.isEmpty()) report += ", ";
-        return report + count + " " + info;
-    }
-
-    protected String getDetailsLabel(boolean show) {
-        return show ? "SQL >>" : "SQL <<";
-    }
-
     @Override
     protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, ResultSetMessages.dialog_save_script_button_bar_button_execute, false);
@@ -214,7 +202,8 @@ class SaveScriptDialog extends BaseDialog {
                 scriptText =
                     SQLUtils.generateCommentLine(
                         viewer.getDataSource(),
-                        "Auto-generated SQL script #" + new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN).format(new Date())) +
+                        "Auto-generated SQL script #" +
+                            new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN).format(new Date())) +
                         scriptText;
                 UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                 if (serviceSQL != null) {
@@ -222,7 +211,11 @@ class SaveScriptDialog extends BaseDialog {
                 }
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("Can't generate SQL script", "Error generating SQL script from data changes", e);
+            DBWorkbench.getPlatformUI().showError(
+                "Can't generate SQL script",
+                "Error generating SQL script from data changes",
+                e
+            );
         }
     }
 
