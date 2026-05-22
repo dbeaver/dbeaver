@@ -144,6 +144,8 @@ public class DataExporterXML extends StreamExporterAbstract {
             String escapedValue = XMLUtils.escapeXml(value);
             if (escapedValue != null) {
                 getWriter().write(escapedValue);
+            } else {
+                getWriter().write(value);
             }
         }
     }
