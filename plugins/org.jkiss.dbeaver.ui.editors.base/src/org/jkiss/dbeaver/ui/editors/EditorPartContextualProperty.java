@@ -35,14 +35,15 @@ import java.util.Map;
 public class EditorPartContextualProperty {
 
     private static final Log log = Log.getLog(EditorPartContextualProperty.class);
-    
-    private static final Map<String, EditorPartContextualProperty> knownProps = Collections.synchronizedMap(new HashMap<>());
-    
+
+    private static final Map<String, EditorPartContextualProperty> knownPropsByAnyPropName = Collections.synchronizedMap(new HashMap<>());
+
     public final String partPropName;
     public final QualifiedName filePropName;
     public final String globalPrefName;
     public final String defaultValue;
-    
+    public final boolean triggersDataSourceChangedEvent = false;
+
     public static class PartCustomPropertyValueInfo {
         public final String value;
         public final boolean isInitial;
@@ -51,6 +52,11 @@ public class EditorPartContextualProperty {
             this.value = value;
             this.isInitial = isInitial;
         }
+    }
+
+    @Nullable
+    public static EditorPartContextualProperty findInfo(@NotNull String propName) {
+        return knownPropsByAnyPropName.get(propName);
     }
     
     private EditorPartContextualProperty(
@@ -71,10 +77,14 @@ public class EditorPartContextualProperty {
         @NotNull String globalPrefName,
         @NotNull String defaultValue
     ) {
-        return knownProps.computeIfAbsent(
-            partPropName,
-            partPropName2 -> new EditorPartContextualProperty(partPropName2, filePropName, globalPrefName, defaultValue)
-        );
+        EditorPartContextualProperty propInfo = new EditorPartContextualProperty(partPropName, filePropName, globalPrefName, defaultValue);
+        if (knownPropsByAnyPropName.computeIfAbsent(partPropName, partPropName2 -> propInfo)  != propInfo ||
+            knownPropsByAnyPropName.computeIfAbsent(filePropName.toString(), partPropName2 -> propInfo) != propInfo ||
+            knownPropsByAnyPropName.computeIfAbsent(globalPrefName, partPropName2 -> propInfo) != propInfo
+        ) {
+            throw new RuntimeException("Duplicate EditorPartContextualProperty definition!");
+        }
+        return propInfo;
     }
     
     /**
