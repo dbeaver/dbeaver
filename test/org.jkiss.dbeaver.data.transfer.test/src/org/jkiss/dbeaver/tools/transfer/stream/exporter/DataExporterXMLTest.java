@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
-import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
@@ -33,16 +32,14 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 
-public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
-
+public class DataExporterXMLTest {
     private String outputEncoding = "UTF-8";
 
     private String tableName = "test_table";
 
     private String columnName = "test_column";
 
-
-    private DataExporterDbUnit exporter;
+    private DataExporterXML exporter;
 
     private StringWriter stringWriter;
 
@@ -56,8 +53,10 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     public void simpleTextRowNoSubstitutions() throws DBException, IOException {
         // given
         String simpleTextRow = "simple text row";
+
         // when
         writeRow(simpleTextRow);
+
         // then
         assertOutputMatches(simpleTextRow);
     }
@@ -80,6 +79,7 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         // given
         String textRowWithSpecialXmlChars = """
             <>&"'abc'""";
+
         String expectedRow = "&lt;&gt;&amp;&quot;&#39;abc&#39;";
 
         // when
@@ -105,18 +105,19 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         assertOutputMatches(expectedRow);
     }
 
-
     @Before
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
-        IStreamDataExporterSite mockSite = ExporterTestsUtils.getIStreamDataExporterSiteMock(
-            tableName,
-            columnName,
-            stringWriter,
-            outputEncoding
-        );
 
-        exporter = new DataExporterDbUnit();
+        IStreamDataExporterSite mockSite =
+            ExporterTestsUtils.getIStreamDataExporterSiteMock(
+                tableName,
+                columnName,
+                stringWriter,
+                outputEncoding
+            );
+
+        exporter = new DataExporterXML();
         exporter.init(mockSite);
     }
 
@@ -127,9 +128,10 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
-        //EOT independent comparison
+        // EOT independent comparison
         var actualOutput = stringWriter.toString().lines().toList();
         var expectedOutput = constructExpectedOutput(expectedRow).lines().toList();
+
         IntStream.range(0, actualOutput.size())
             .forEach(i -> assertEquals(expectedOutput.get(i), actualOutput.get(i)));
     }
@@ -137,9 +139,18 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     private String constructExpectedOutput(@NotNull String row) {
         return """
             <?xml version="1.0" encoding="%s"?>
-            <dataset>
-                <%s %s="%s"/>
-            </dataset>
-            """.formatted(outputEncoding, tableName.toUpperCase(), columnName.toUpperCase(), row);
+            <%s>
+              <DATA_RECORD>
+                <%s>%s</%s>
+              </DATA_RECORD>
+            </%s>
+            """.formatted(
+            outputEncoding,
+            tableName,
+            columnName,
+            row,
+            columnName,
+            tableName
+        );
     }
 }
