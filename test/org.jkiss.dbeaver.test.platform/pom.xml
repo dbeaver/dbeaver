@@ -13,4 +13,16 @@
     <version>1.0.137-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Duser.language=en -Duser.country=US</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>
