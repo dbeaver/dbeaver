@@ -679,6 +679,7 @@ public final class DBUtils {
                 if (child == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
                     // Try refreshing, maybe object was not cached
                     ro.refreshObject(monitor);
+                    child = sc.getChild(monitor, name);
                 }
                 if (child == null) {
                     log.debug("Can't find child container " + name + " in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
@@ -702,6 +703,7 @@ public final class DBUtils {
             if (object == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
                 // Try refreshing, maybe object was not cached
                 ro.refreshObject(monitor);
+                object = sc.getChild(monitor, objectName);
             }
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
