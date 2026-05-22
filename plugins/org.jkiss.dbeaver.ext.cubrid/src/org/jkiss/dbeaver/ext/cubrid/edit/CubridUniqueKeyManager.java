@@ -34,7 +34,7 @@ public class CubridUniqueKeyManager extends GenericPrimaryKeyManager {
     protected CubridUniqueKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options) {
         CubridTable table = (CubridTable) container;

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hive.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.hive.model.handlers.HiveBinaryDataValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -29,7 +30,11 @@ public class HiveValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
+    public DBDValueHandler getValueHandler(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDFormatSettings preferences,
+        @NotNull DBSTypedObject typedObject
+    ) {
         return typedObject.getDataKind() == DBPDataKind.BINARY
             ? new HiveBinaryDataValueHandler()
             : null;

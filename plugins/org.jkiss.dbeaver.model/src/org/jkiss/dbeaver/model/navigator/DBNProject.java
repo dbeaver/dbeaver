@@ -149,27 +149,32 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
-    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    protected DBNNode[] readChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (getModel().isGlobal() && !project.isOpen()) {
             project.ensureOpen();
         }
 
-        final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-
         try {
+            DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
+
             dataSourceRegistry.checkForErrors();
+
+            List<DBNNode> children = new ArrayList<>();
+
+            children.add(new DBNProjectDatabases(this, dataSourceRegistry));
+            addProjectNodes(monitor, children);
+
+            filterChildren(children);
+            return children.toArray(DBNNode[]::new);
         } catch (Throwable e) {
             project.dispose();
-            throw e;
+            if (e instanceof DBException) {
+                throw e;
+            } else {
+                throw new DBException("Internal error", e);
+            }
         }
-
-        final List<DBNNode> children = new ArrayList<>();
-
-        children.add(new DBNProjectDatabases(this, dataSourceRegistry));
-        addProjectNodes(monitor, children);
-
-        filterChildren(children);
-        return children.toArray(DBNNode[]::new);
     }
 
     protected void addProjectNodes(DBRProgressMonitor monitor, List<DBNNode> children) throws DBException {

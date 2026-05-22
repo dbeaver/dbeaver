@@ -121,7 +121,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         }
 
         public void configFilterInDialog() throws DBException {
-            boolean globalFilter = originalNode.getValueObject() instanceof DBPDataSource;
+            boolean globalFilter = isGlobalFilter();
             String dialogObjectTitle = createDialogTitle(globalFilter);
             DBSObjectFilter objectFilter = getObjectFilter();
             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
@@ -132,6 +132,12 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 globalFilter
             );
             processDialogResponse(dialog);
+        }
+
+        protected boolean isGlobalFilter() {
+            return originalNode.getValueObject() instanceof DBPDataSource
+                // if the parent node is at datasource level, child is database/catalog
+                || parentNode.getValueObject() instanceof DBPDataSource;
         }
 
         @NotNull
@@ -162,9 +168,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             if (originalNode instanceof DBNDatabaseFolder folder) {
                 childrenClass = folder.getChildrenClass();
             } else {
-                List<DBXTreeNode> childMeta = originalNode.getMeta().getChildren(originalNode);
-                if (!childMeta.isEmpty() && childMeta.get(0) instanceof DBXTreeItem item) {
-                    childrenClass = originalNode.getChildrenClass(item);
+                List<DBXTreeNode> childMeta = parentNode.getMeta().getChildren(parentNode);
+                if (!childMeta.isEmpty() && childMeta.getFirst() instanceof DBXTreeItem item) {
+                    childrenClass = parentNode.getChildrenClass(item);
                 }
             }
             if (childrenClass == null) {

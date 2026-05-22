@@ -24,9 +24,9 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 /**
  * Provides possibility to override default SQL query binding
  */
-public interface DBDValueBinder extends DBDValueHandler
-{
+public interface DBDValueBinder extends DBDValueHandler {
 
+    @NotNull
     String makeQueryBind(@NotNull DBSAttributeBase attribute, @NotNull Object value) throws DBCException;
 
 }

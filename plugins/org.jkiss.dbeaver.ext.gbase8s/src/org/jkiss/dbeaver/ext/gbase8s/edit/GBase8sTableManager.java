@@ -81,7 +81,7 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return false;
     }
 
@@ -116,10 +116,10 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     }
 
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull GenericTableBase object,
-            @NotNull Map<String, Object> options,
-            @Nullable String newName) throws DBException {
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableBase object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName) throws DBException {
         if (object.isView()) {
             throw new DBException("View rename is not supported");
         }
