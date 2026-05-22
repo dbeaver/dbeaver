@@ -31,7 +31,7 @@
     </extension>
 
     <extension point="com.dbeaver.ai.prompt">
-        <prompt id="sql" label="SQL query generation" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql" description="Generates SQL query by user description in a natural language." supportsActions="true" supportsUi="true">
+        <prompt id="sql" label="SQL query generation" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql" description="Generates SQL query by user description in a natural language." uiFunctions="ALL">
             <uses function="getCurrentScript" instructions="Use getCurrentScript function to get the current script text"/>
         </prompt>
     </extension>

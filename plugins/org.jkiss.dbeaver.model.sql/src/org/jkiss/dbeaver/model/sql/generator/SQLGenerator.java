@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.model.sql.generator;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.sql.registry.SQLGeneratorConfigurationRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLGeneratorDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -44,6 +44,7 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
     private boolean useSeparateForeignKeys = true;
     private boolean showPartitionsDDL = false;
     private boolean showCastParams = false;
+    private boolean formatSql = false;
 
     private final Map<String, Object> generatorOptions = new LinkedHashMap<>();
 
@@ -135,6 +136,14 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         this.showCastParams = showCastParams;
     }
 
+    public boolean isFormatSql() {
+        return formatSql;
+    }
+
+    public void setFormatSql(boolean formatSql) {
+        this.formatSql = formatSql;
+    }
+
     public boolean isDDLOption() {
         return false;
     }
@@ -195,27 +204,36 @@ public abstract class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String>
         options.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, isUseSeparateForeignKeys());
         options.put(DBPScriptObject.OPTION_INCLUDE_PARTITIONS, isShowPartitionsDDL());
         options.put(DBPScriptObject.OPTION_CAST_PARAMS, isShowCastParams());
+        options.put(DBPScriptObject.OPTION_FORMAT_SQL, isFormatSql());
         options.putAll(generatorOptions);
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-    {
+    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         SQLGeneratorDescriptor descriptor = SQLGeneratorConfigurationRegistry.getInstance().getGeneratorDescriptor(this);
         StringBuilder sql = new StringBuilder(100);
+        DBPDataSource dataSource = null;
         try {
             for (OBJECT object : objects) {
                 if (!(object instanceof DBPObject) || descriptor.appliesTo((DBPObject) object)) {
                     generateSQL(monitor, sql, object);
                 }
+                if (dataSource == null) {
+                    dataSource = DBUtils.getObjectDataSource(object);
+                }
             }
         } catch (DBException e) {
             throw new InvocationTargetException(e);
         }
-        result = sql.toString().trim();
+
+        result = formatIfApplicable(dataSource, sql);
     }
 
     protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, OBJECT object)
         throws DBException;
 
+    @NotNull
+    protected String formatIfApplicable(@Nullable DBPDataSource dataSource, @NotNull StringBuilder sql) {
+        return dataSource != null && this.isFormatSql() ? SQLFormatUtils.formatSQL(dataSource, sql.toString()) : sql.toString().trim();
+    }
 }

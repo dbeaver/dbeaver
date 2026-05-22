@@ -238,7 +238,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         if (service == null) {
             throw new DBException("No authentication service available");
         }
-        try (var client = new CopilotClient(getCurrentAuthURL())) {
+        try (var client = new CopilotClientChat(getCurrentAuthURL())) {
             monitor.subTask("Requesting device code");
             var deviceCodeResponse = client.requestDeviceCode(monitor);
 

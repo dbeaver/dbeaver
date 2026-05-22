@@ -623,7 +623,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             // Add resolved files from default loader
             resolvedFiles.putAll(driver.getDefaultDriverLoader().resolvedFiles);
         }
-        return localFilePaths;
+        return DriverUtils.extractZipArchives(localFilePaths);
     }
 
     private static boolean crcNotMatch(@NotNull DriverFileInfo depFile, @NotNull Path localDriverFile) {

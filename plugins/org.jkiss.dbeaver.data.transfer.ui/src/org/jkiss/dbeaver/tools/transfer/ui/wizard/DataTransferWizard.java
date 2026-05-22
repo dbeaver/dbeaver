@@ -363,9 +363,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     DTMessages.data_transfer_wizard_job_name,
                     getSettings());
                 executor.executeTask();
+                if (executor.getError() instanceof DBException dbe) {
+                    throw dbe;
+                } else if (executor.getError() != null) {
+                    throw new DBException("Data transfer error", executor.getError());
+                }
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), DTUIMessages.data_transfer_wizard_message_init_data_transfer, e);
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
         }
 
