@@ -2907,7 +2907,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
-
+            if (controller.isRecordMode()) {
+                hintOptions |= DBDValueHintProvider.OPTION_RECORD_MODE;
+            }
             List<IGridHint> gridHints = null;
             for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getCellHints(
