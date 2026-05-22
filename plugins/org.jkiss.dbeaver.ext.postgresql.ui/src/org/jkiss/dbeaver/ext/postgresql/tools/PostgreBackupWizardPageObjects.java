@@ -83,9 +83,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             composite,
             PostgreMessages.wizard_backup_page_object_group_object,
             1,
-            GridData.FILL_HORIZONTAL
+            GridData.FILL_BOTH
         );
-        objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         connInfo = new CLabel(objectsGroup, SWT.WRAP);
         connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));

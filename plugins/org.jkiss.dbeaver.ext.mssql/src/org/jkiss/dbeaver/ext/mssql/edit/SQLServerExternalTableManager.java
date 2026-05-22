@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerExternalTable;
@@ -44,7 +45,7 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
         @NotNull Object container,
-        @NotNull Object copyFrom,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
         final SQLServerSchema schema = (SQLServerSchema) container;
