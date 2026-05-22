@@ -507,10 +507,35 @@ public class ResultSetModel implements DBDResultSetModel {
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            changesCount++;
+            if (attr == topAttribute && !attr.getDataKind().isComplex() && !(valueToEdit instanceof DBDValue)) {
+                Object originalValue = row.getChange(topAttribute);
+                if (row.isChanged(topAttribute) && equalCellValues(attr, originalValue, valueToEdit)) {
+                    row.clearChange(topAttribute);
+                    refreshChangeCount();
+                    return true;
+                }
+            }
+            if (isOldHistoricValueAbsent) {
+                changesCount++;
+            }
         }
 
         return true;
+    }
+
+    private static boolean equalCellValues(
+        @NotNull DBDAttributeBinding attr,
+        @Nullable Object value1,
+        @Nullable Object value2
+    ) {
+        if (DBUtils.isNullValue(value1) || DBUtils.isNullValue(value2)) {
+            return DBUtils.compareDataValues(value1, value2) == 0;
+        }
+        Comparator<Object> comparator = attr.getValueHandler().getComparator();
+        if (comparator != null) {
+            return comparator.compare(value1, value2) == 0;
+        }
+        return DBUtils.compareDataValues(value1, value2) == 0;
     }
 
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
