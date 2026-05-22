@@ -73,7 +73,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     protected GenericTableColumn createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
@@ -122,6 +122,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         }
     }
 
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
         // According to SQL92 DEFAULT comes before constraints

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         treeContainer = UIUtils.createComposite(parent, 1);
         super.createPartControl(treeContainer);
 
@@ -94,7 +94,6 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         UIExecutionQueue.queueExec(() -> {
             if (!viewer.getControl().isDisposed()) {
                 createColumns(viewer);
-                updateTitle();
             }
         });
         // Remove all non-resource nodes
@@ -317,8 +316,10 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
                 return;
             }
             getNavigatorTree().reloadTree(getRootNode());
-            updateTitle();
-            boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(getRootNode(), RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW);
+            boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(
+                getRootNode(),
+                RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW
+            );
             getNavigatorTree().setVisible(viewable);
             treeViewLayoutInfo.exclude = !viewable;
             lockPlaceholder.setVisible(!viewable);
@@ -326,10 +327,6 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
             treeContainer.layout(true, true);
         });
         //columnController.autoSizeColumns();
-    }
-
-    private void updateTitle() {
-        setPartName("Files - " + getRootNode().getNodeDisplayName());
     }
 
 }

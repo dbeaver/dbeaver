@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -40,14 +41,15 @@ import java.util.Optional;
 public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
     private static final Log log = Log.getLog(PostgreInsertReplaceMethod.class);
 
-    @NotNull
+    @Nullable
     @Override
-    public String getOpeningClause(@NotNull DBSTable table, @NotNull DBRProgressMonitor monitor) {
+    public String getOpeningClause(@NotNull DBRProgressMonitor monitor, @NotNull DBSTable table) {
         return "INSERT INTO";
     }
 
+    @Nullable
     @Override
-    public String getTrailingClause(@NotNull DBSTable table, @NotNull DBRProgressMonitor monitor, DBSAttributeBase[] attributes) {
+    public String getTrailingClause(@NotNull DBRProgressMonitor monitor, @NotNull DBSTable table, @NotNull DBSAttributeBase[] attributes) {
         StringBuilder query = new StringBuilder();
         try {
             String onConflictExpression = "ON CONFLICT (%s) DO UPDATE SET %s";

@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableForeignKey, PostgreTableBase> implements DBEObjectRenamer<PostgreTableForeignKey> {
 
     @Override
-    public boolean canRenameObject(PostgreTableForeignKey object) {
+    public boolean canRenameObject(@NotNull PostgreTableForeignKey object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
@@ -66,7 +66,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     protected PostgreTableForeignKey createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
