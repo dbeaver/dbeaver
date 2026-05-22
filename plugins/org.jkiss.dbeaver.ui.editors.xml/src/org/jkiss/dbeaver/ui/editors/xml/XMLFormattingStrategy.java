@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.xml;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 import org.xml.sax.InputSource;
 
 import java.io.StringReader;
@@ -63,9 +64,9 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy {
             SAXParserFactory spf = SAXParserFactory.newInstance();
             spf.setNamespaceAware(true);
             spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            spf.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            spf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            spf.setFeature(XMLUtils.FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+            spf.setFeature(XMLUtils.FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
+            spf.setFeature(XMLUtils.FEATURE_DISALLOW_DOCTYPE_DECL, true);
 
             Source src = new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(new StringReader(content)));
 
