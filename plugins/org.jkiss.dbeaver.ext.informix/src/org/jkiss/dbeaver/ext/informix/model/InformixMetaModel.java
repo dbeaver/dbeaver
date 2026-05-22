@@ -60,7 +60,7 @@ public class InformixMetaModel extends GenericMetaModel
 
     @Override
     public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
-        return InformixUtils.getProcedureSource(monitor, sourceObject);
+        return InformixUtils.getProcedureSource(monitor, (InformixProcedure) sourceObject);
     }
     
     @Override
