@@ -306,7 +306,7 @@ public class ResultSetViewer extends Viewer
 
             var composite = createFilterPanel();
             composite.setLayoutData(gd);
-            updateFilterPanelVisibility(false);
+            updateFilterPanelVisibility();
         }
 
         if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_PRESENTATIONS)) {
@@ -538,7 +538,7 @@ public class ResultSetViewer extends Viewer
         if (ResultSetPreferences.RESULT_SET_COLORIZE_DATA_TYPES.equals(property)) {
             scheduleThemeUpdate();
         } else if (ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL.equals(property)) {
-            updateFilterPanelVisibility(getActivePresentation() instanceof StatisticsPresentation);
+            updateFilterPanelVisibility();
         }
     }
 
@@ -821,17 +821,16 @@ public class ResultSetViewer extends Viewer
             isUIUpdateRunning = true;
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
-                updateFilterPanelVisibility(true);
                 if (statusBar != null) {
                     UIUtils.setControlVisible(statusBar.getParent(), false);
                 }
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
+                updateFilterPanelVisibility();
                 changed = true;
             } else {
                 // Regular results
-                updateFilterPanelVisibility(false);
                 if (statusBar != null) {
                     UIUtils.setControlVisible(statusBar.getParent(), true);
                 }
@@ -857,6 +856,7 @@ public class ResultSetViewer extends Viewer
                     if (activePresentationDescriptor != null && (!metadataChanged || activePresentationDescriptor.getPresentationType().isPersistent())) {
                         if (this.availablePresentations.contains(activePresentationDescriptor)) {
                             // Keep the same presentation
+                            updateFilterPanelVisibility();
                             fireResultSetModelPrepared();
                             return;
                         }
@@ -886,6 +886,7 @@ public class ResultSetViewer extends Viewer
                     log.debug("No presentations for result set [" + resultSet.getClass().getSimpleName() + "]");
                     showEmptyPresentation();
                 }
+                updateFilterPanelVisibility();
                 fireResultSetModelPrepared();
             }
         } finally {
@@ -1924,7 +1925,7 @@ public class ResultSetViewer extends Viewer
                 public void handleEvent(@NotNull Event event) {
                     createFilterPanel0(composite);
                     updateFiltersText(false);
-                    updateFilterPanelVisibility(getActivePresentation() instanceof StatisticsPresentation);
+                    updateFilterPanelVisibility();
 
                     mainPanel.removeListener(SWT.Activate, this);
                 }
@@ -1944,13 +1945,14 @@ public class ResultSetViewer extends Viewer
         );
     }
 
-    private void updateFilterPanelVisibility(boolean statisticsPresentation) {
+    private void updateFilterPanelVisibility() {
         if (filtersPanelComposite == null || filtersPanelComposite.isDisposed()) {
             return;
         }
         UIUtils.setControlVisible(
             filtersPanelComposite,
-            !statisticsPresentation && getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL)
+            !(getActivePresentation() instanceof StatisticsPresentation) &&
+                getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL)
         );
         mainPanel.layout(true, true);
     }
@@ -5335,8 +5337,7 @@ public class ResultSetViewer extends Viewer
                 ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL,
                 !preferenceStore.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL));
             PrefUtils.savePreferenceStore(preferenceStore);
-            resultSetViewer.updateFilterPanelVisibility(
-                resultSetViewer.getActivePresentation() instanceof StatisticsPresentation);
+            resultSetViewer.updateFilterPanelVisibility();
         }
     }
 
