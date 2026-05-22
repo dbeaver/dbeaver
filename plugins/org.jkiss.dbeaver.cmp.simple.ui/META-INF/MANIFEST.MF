@@ -8,7 +8,7 @@ Bundle-Release-Date: 20260504
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package:  org.jkiss.dbeaver.tools.compare.simple.ui
- Require-Bundle: org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.sql,
