@@ -74,7 +74,7 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     public void textRowWithSingleQuoteShouldBeEscaped() throws DBException, IOException {
         // given
         String textRowWithSingleQuote = "'";
-        String expectedRow = "&apos;";
+        String expectedRow = "&#39;";
 
         // when
         writeRow(textRowWithSingleQuote);
@@ -88,7 +88,7 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         // given
         String textRowWithSpecialXmlChars = """
             <>&"'abc'""";
-        String expectedRow = "&lt;&gt;&amp;&quot;&apos;abc&apos;";
+        String expectedRow = "&lt;&gt;&amp;&quot;&#39;abc&#39;";
 
         // when
         writeRow(textRowWithSpecialXmlChars);
@@ -104,7 +104,7 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
             {"delivery":"express","type":"'vip'"}""";
 
         String expectedRow =
-            "{&quot;delivery&quot;:&quot;express&quot;,&quot;type&quot;:&quot;&apos;vip&apos;&quot;}";
+            "{&quot;delivery&quot;:&quot;express&quot;,&quot;type&quot;:&quot;&#39;vip&#39;&quot;}";
 
         // when
         writeRow(textRowWithSpecialXmlChars);

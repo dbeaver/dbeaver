@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -38,7 +39,6 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * DbUnit Dataset Exporter
@@ -54,13 +54,6 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
     private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
     private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
 
-    private static final Map<Character, String> DBUNIT_ESCAPE_CHARS = Map.of(
-        '<', "&lt;",
-        '>', "&gt;",
-        '&', "&amp;",
-        '"', "&quot;",
-        '\'', "&apos;"
-    );
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -206,7 +199,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 break;
             }
             for (int i = 0; i < count; i++) {
-                String escaped = DBUNIT_ESCAPE_CHARS.get(buffer[i]);
+                String escaped = XMLUtils.encodeXMLChar(buffer[i]);
                 if (escaped != null) {
                     out.write(escaped);
                 } else {

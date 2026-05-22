@@ -29,12 +29,11 @@ import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * XML Exporter
@@ -42,17 +41,6 @@ import java.util.stream.Collectors;
 public class DataExporterXML extends StreamExporterAbstract {
 
     private static final String PROP_INCLUDE_DOCTYPE_DECLARATION = "includeDoctype";
-
-    private static final Map<Character, String> XML_ESCAPE_CHARS = Map.of(
-        '<', "&lt;",
-        '>', "&gt;",
-        '&', "&amp;",
-        '\'', "&apos;"
-    );
-    private static final Map<String, String> XML_ESCAPE_STRINGS = XML_ESCAPE_CHARS
-        .entrySet()
-        .stream()
-        .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -153,10 +141,10 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            for (Map.Entry<String, String> entry : XML_ESCAPE_STRINGS.entrySet()) {
-                value = value.replace(entry.getKey(), entry.getValue());
+            String escapedValue = XMLUtils.escapeXml(value);
+            if (escapedValue != null) {
+                getWriter().write(escapedValue);
             }
-            getWriter().write(value);
         }
     }
 
@@ -170,7 +158,7 @@ public class DataExporterXML extends StreamExporterAbstract {
                 break;
             }
             for (int i = 0; i < count; i++) {
-                String escaped = XML_ESCAPE_CHARS.get(buffer[i]);
+                String escaped = XMLUtils.encodeXMLChar(buffer[i]);
                 if (escaped != null) {
                     getWriter().write(escaped);
                 } else {
