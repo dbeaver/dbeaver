@@ -764,6 +764,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     // Wrong type
                     continue;
                 }
+                if (isNonPersistedChild(oldChild)) {
+                    // Preserve newly-created (non-persisted) child across refresh.
+                    // Its underlying DBSObject isn't visible to the database query yet,
+                    // so the matching loop above can't find it. Disposing it would close
+                    // the in-progress entity editor and lose the user's work (#40920).
+                    toList.add(oldChild);
+                    continue;
+                }
                 boolean found = false;
                 for (Object childItem : itemList) {
                     if (childItem instanceof DBSObject && equalObjects(oldChild.getObject(), (DBSObject) childItem)) {
@@ -778,6 +786,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
         return true;
+    }
+
+    // Preserve in-progress (non-persisted) children across a parent-node refresh: the
+    // database query can't see them yet, but the user's open editor depends on them.
+    private static boolean isNonPersistedChild(@NotNull DBNDatabaseNode child) {
+        DBSObject object = child.getObject();
+        return object != null && !object.isPersisted();
     }
 
     @Nullable
