@@ -191,12 +191,12 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canEditObject(GenericTableBase object) {
+    public boolean canEditObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 

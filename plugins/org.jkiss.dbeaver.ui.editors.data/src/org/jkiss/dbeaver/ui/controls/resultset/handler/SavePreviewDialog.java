@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SavePreviewDialog extends DetailsViewDialog {
-
-    private static final String DIALOG_ID = "DBeaver.RSV.SavePreviewDialog";//$NON-NLS-1$
 
     private final ResultSetViewer viewer;
     private final boolean showCascadeSettings;
@@ -94,7 +92,8 @@ public class SavePreviewDialog extends DetailsViewDialog {
             Label imgLabel = new Label(msgComposite, SWT.NONE);
             imgLabel.setImage(DBeaverIcons.getImage(DBIcon.STATUS_WARNING));
             Label msgText = new Label(msgComposite, SWT.NONE);
-            msgText.setText("You are about to save your changes into the database (" + viewer.getDataSource().getContainer().getName() + ").\n" +
+            msgText.setText("You are about to save your changes into the database (" +
+                viewer.getDataSource().getContainer().getName() + ").\n" +
                 (CommonUtils.isEmpty(changesReport) ? "" : "\t" + changesReport + ".") + "\nAre you sure you want to proceed?");
         }
 
@@ -154,7 +153,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
         Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(new GridLayout(1, true));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Composite previewFrame = new Composite(group, SWT.BORDER);
+        Composite previewFrame = new Composite(group, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 250;
         previewFrame.setLayoutData(gd);
@@ -168,7 +167,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                     previewFrame,
                     viewer,
                     UINavigatorMessages.editors_entity_dialog_preview_title,
-                    true,
+                    false,
                     "");
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Can't create SQL panel", "Error creating SQL panel", e);
@@ -189,7 +188,7 @@ public class SavePreviewDialog extends DetailsViewDialog {
                 }
             });
 
-            String scriptText = "";
+            String scriptText;
             if (!sqlScript.isEmpty()) {
                 scriptText = SQLUtils.generateScript(
                     viewer.getDataSource(),

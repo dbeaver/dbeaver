@@ -55,6 +55,7 @@ public class PostgreExplainPlanConfigurator implements DBEObjectConfigurator<DBC
 
     private static PostgreDataSource dataSource;
 
+    @NotNull
     @Override
     public DBCQueryPlannerConfiguration configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DBCQueryPlannerConfiguration configuration, @NotNull Map<String, Object> options) {
         if (container instanceof DBCQueryPlanner) {

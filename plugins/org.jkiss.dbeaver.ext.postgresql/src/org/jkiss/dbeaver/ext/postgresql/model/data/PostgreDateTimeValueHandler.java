@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.data.value.PostgreEndOfDay;
+import org.jkiss.dbeaver.ext.postgresql.model.data.value.PostgreOffsetEndOfDay;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -34,7 +36,9 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 /**
@@ -43,6 +47,8 @@ import java.util.Date;
 public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     private static final String POSITIVE_INFINITY_STRING_REPRESENTATION = "infinity";
     private static final String NEGATIVE_INFINITY_STRING_REPRESENTATION = "-infinity";
+
+    private static final String TIME_END_OF_DAY_STRING = "24:00:00";
 
     // https://jdbc.postgresql.org/documentation/publicapi/constant-values.html
     private static final long NEGATIVE_INFINITY = -9223372036832400000L;
@@ -84,7 +90,39 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         if (resultSet instanceof JDBCResultSet jdbc) {
             if (type.getTypeID() == Types.TIME && !formatSettings.isUseNativeDateTimeFormat()) {
                 try {
-                    return jdbc.getObject(index + 1, OffsetTime.class);
+                    //
+                    // psql driver carries all the values in a byte arrays inside the PgResultSet::thisRow::data field,
+                    // which is being parsed by get-methods without reloading, so it is ok to access one multiple times
+                    // (previous approach WAS doing that always anyway)
+                    String rawString = jdbc.getString(index + 1);
+                    if (rawString == null) {
+                        return null;
+                    } else {
+                        // org.postgresql.jdbc.TypeInfoCache has hardcoded Types.TIME for both TIMETZ and TIME, so it itself recognizes them
+                        // but DOES NOT EXPOSE this information for us. While should have been returning Types.TIME_WITH_TIMEZONE for TIMETZ
+                        // jdbc.getObject<OffsetTime> on a LocalTime value throws conversion exception and vice versa, we don't want that!
+                        if (rawString.contains("+")) {
+                            // psql driver does the same startsWith(..) then custom string parsing manually, see
+                            // org.postgresql.jdbc.TimestampUtils::toOffsetTime called from PgResultSet::getOffsetTime
+                            // let's do the same
+                            if (rawString.startsWith(TIME_END_OF_DAY_STRING)) {
+                                // but instead of OffsetTime.MAX which is '23:59:59.999999999-18:00', we want zone-specific END_OF_DAY
+                                return new PostgreOffsetEndOfDay(ZoneOffset.of(rawString.substring(TIME_END_OF_DAY_STRING.length())));
+                            } else {
+                                return jdbc.getObject(index + 1, OffsetTime.class);
+                            }
+                        } else {
+                            // psql driver does literally the same, see
+                            // org.postgresql.jdbc.TimestampUtils::toLocalTime called from PgResultSet::getLocalTime
+                            // let's do the same as postgresql jdbc driver
+                            if (TIME_END_OF_DAY_STRING.equals(rawString)) {
+                                // but instead of LocalTime.MAX which is '23:59:59.999999999' in-the-day, we want zone-less END_OF_DAY
+                                return PostgreEndOfDay.withoutOffset();
+                            } else {
+                                return jdbc.getObject(index + 1, LocalTime.class);
+                            }
+                        }
+                    }
                 } catch (SQLException e) {
                     log.debug("Exception caught when fetching time value", e);
                 }
@@ -119,4 +157,5 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         }
         return super.getFormatterId(column);
     }
+
 }

@@ -72,7 +72,7 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.11]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
@@ -118,7 +118,7 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-cloudberry-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.11]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
@@ -163,7 +163,7 @@
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greengage-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.11]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
