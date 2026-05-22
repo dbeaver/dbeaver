@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
@@ -253,7 +254,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (awsRegionCombo != null) {
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
@@ -268,6 +269,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{

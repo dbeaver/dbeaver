@@ -175,7 +175,7 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
         processObjectRename(commandContext, object, options, newName);
     }
 
-    public boolean canEditObject(CubridTrigger object) {
+    public boolean canEditObject(@NotNull CubridTrigger object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 

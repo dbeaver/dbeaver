@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.bigquery.auth.BQAuthModel;
 import org.jkiss.dbeaver.ext.bigquery.model.BQConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.BigQueryActivator;
@@ -170,7 +171,7 @@ public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogP
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (projectText != null) {
@@ -194,6 +195,7 @@ public class BQConnectionPage extends ConnectionPageWithAuth implements IDialogP
         return BQAuthModel.ID;
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {
