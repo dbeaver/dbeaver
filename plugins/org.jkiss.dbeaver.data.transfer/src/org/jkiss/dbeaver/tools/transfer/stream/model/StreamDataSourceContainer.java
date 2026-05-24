@@ -433,6 +433,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         return true;
     }
 
+    @NotNull
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
         return DBWorkbench.getPlatform().getDataFormatterRegistry().getGlobalProfile();

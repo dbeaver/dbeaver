@@ -105,7 +105,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     protected MySQLTableConstraint createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,17 +31,13 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IDataController;
 import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueManager;
-import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 
 import java.util.Arrays;
@@ -66,14 +62,15 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         @NotNull IResultSetController controller,
         @NotNull ResultSetCellLocation cellLocation,
         @NotNull EditType editType,
-        @Nullable Composite inlinePlaceholder) {
+        @Nullable Composite inlinePlaceholder
+    ) {
         this.controller = controller;
         this.cellLocation = cellLocation;
         this.editType = editType;
         this.inlinePlaceholder = inlinePlaceholder;
     }
 
-    public void setCellLocation(ResultSetCellLocation cellLocation) {
+    public void setCellLocation(@NotNull ResultSetCellLocation cellLocation) {
         this.cellLocation = cellLocation;
     }
 
@@ -111,12 +108,13 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return controller;
     }
 
+    @NotNull
     @Override
     public String getValueName() {
         return getBinding().getName();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBSTypedObject getValueType() {
         if (cellLocation.getValuePath() != null) {
@@ -143,22 +141,31 @@ public class ResultSetValueController implements IAttributeController, IRowContr
                 }
             }
         }
-        return valueType;
+        if (valueType != null) {
+            return valueType;
+        }
+        return getBinding().getAttribute();
     }
 
+    @NotNull
     @Override
     public DBDValueHandler getValueHandler() {
         DBDValueHandler valueHandler = getBinding().getValueHandler();
         if (cellLocation.getRowIndexes() != null || cellLocation.getValuePath() != null) {
             DBSTypedObject valueType = getValueType();
-            DBPDataSource dataSource = getDataController().getDataContainer().getDataSource();
-            return DBUtils.findValueHandler(dataSource, valueType);
+            DBSDataContainer dataContainer = getDataController().getDataContainer();
+            if (dataContainer != null) {
+                DBPDataSource dataSource = dataContainer.getDataSource();
+                if (dataSource != null) {
+                    return DBUtils.findValueHandler(dataSource, valueType);
+                }
+            }
         }
         return valueHandler;
     }
 
     @Nullable
-    private static DBSDataType getComponentType(DBSTypedObject valueType) {
+    private static DBSDataType getComponentType(@NotNull DBSTypedObject valueType) {
         DBSDataType dataType = DBUtils.getDataType(valueType);
         if (dataType != null) {
             try {
@@ -202,12 +209,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         if (metaAttribute == null) {
             metaAttribute = getBinding().getAttribute();
         }
-        if (metaAttribute == null) {
-            return getBinding().getName();
-        }
         return DBUtils.getSimpleQualifiedName(
             context == null ? null : context.getDataSource().getContainer().getName(),
-            metaAttribute instanceof DBCAttributeMetaData ? ((DBCAttributeMetaData) metaAttribute).getEntityName() : "",
+            metaAttribute instanceof DBCAttributeMetaData amd ? amd.getEntityName() : "",
             metaAttribute.getName());
     }
 
@@ -234,9 +238,8 @@ public class ResultSetValueController implements IAttributeController, IRowContr
             updated = controller.updateCellValue(
                 cellLocation.getAttribute(), cellLocation.getRow(), cellLocation.getRowIndexes(), value, updatePresentation);
         } catch (Exception e) {
-            UIUtils.asyncExec(() -> {
-                DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e);
-            });
+            UIUtils.asyncExec(() ->
+                DBWorkbench.getPlatformUI().showError("Value update", "Error updating value: " + e.getMessage(), e));
             return;
         }
         if (updated && updatePresentation) {
@@ -259,13 +262,10 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return getBinding().getRowIdentifier();
     }
 
+    @NotNull
     @Override
     public IValueManager getValueManager() {
         DBSTypedObject valueType = getValueType();
-        if (valueType == null) {
-            return DefaultValueManager.INSTANCE;
-        }
-
         Object value = getValue();
 //        // Workaround for dynamic metadata
 //        // Value type may refer to leaf attribute (e.g. String) while value is an array
@@ -347,6 +347,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
             valueObjectType);
     }
 
+    @NotNull
     @Override
     public EditType getEditType() {
         return editType;
@@ -368,6 +369,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return controller.getAttributeReadOnlyStatus(getBinding(), true, false) != null;
     }
 
+    @NotNull
     @Override
     public IWorkbenchPartSite getValueSite() {
         return controller.getSite();
@@ -385,7 +387,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public void showMessage(String message, DBPMessageType messageType) {
+    public void showMessage(@NotNull String message, @NotNull DBPMessageType messageType) {
         UIUtils.asyncExec(() -> controller.setStatus(message, messageType));
     }
 

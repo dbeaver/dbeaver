@@ -158,6 +158,7 @@
                     <property id="use-search-string-escape" label="Escape LIKE masks in search queries" description="Use to access JDBC metadata API. Enabled by default but should be disabled for some (broken) drivers" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
+                    <property id="supports-ddl-transactions" label="Driver supports DDL transactions" description="Driver supports running DDL statements inside transactions" type="boolean" required="false" defaultValue="true"/>
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
                     <property id="ddl-drop-column-brackets" label="Drop column - use brackets" description="Use 'ALTER TABLE DROP (column-name)'" type="boolean" required="false" defaultValue="false"/>
                     <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
@@ -1051,6 +1052,27 @@
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- GizmoSQL -->
+                <driver
+                    id="gizmosql"
+                    label="GizmoSQL"
+                    icon="icons/gizmosql_icon.png"
+                    iconBig="icons/gizmosql_icon_big.png"
+                    class="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"
+                    sampleURL="jdbc:gizmosql://{host}:{port}[?catalog={database}]"
+                    defaultPort="31337"
+                    description="GizmoSQL JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/gizmodata/gizmosql-jdbc-driver"
+                    allowsEmptyPassword="false"
+                    categories="sql,analytic">
+                    <file type="jar" path="maven:/com.gizmodata:gizmosql-jdbc-driver:RELEASE"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <property name="useEncryption" value="true"/>
+                    <property name="disableCertificateVerification" value="false"/>
+                    <property name="catalog" value=""/>
+                </driver>
+
                 <!-- FoundationDB
                 <driver
                         id="foundationdb"
@@ -1240,7 +1262,7 @@
                         webURL="https://jdbc.postgresql.org/"
                         description="PostgreSQL JDBC driver. Can be used for old PostgreSQL versions or some PostgreSQL based databases (before 8.x).">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.11]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
 
@@ -1583,6 +1605,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
                 <column id="TABLE_CAT" index="1"/>

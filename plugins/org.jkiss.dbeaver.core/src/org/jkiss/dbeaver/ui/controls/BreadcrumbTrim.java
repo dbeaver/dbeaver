@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import jakarta.annotation.PostConstruct;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.Workbench;
@@ -50,8 +51,11 @@ public class BreadcrumbTrim {
     private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status"; //$NON-NLS-1$
 
     @PostConstruct
-    public void createControls(Composite parent) {
-        var viewer = new NodeBreadcrumbViewer(parent, SWT.BOTTOM);
+    public void createControls(@NotNull Composite parent) {
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
+        ((GridLayout)composite.getLayout()).marginLeft = 5;
+        ProjectsPanel projectsPanel = new ProjectsPanel(composite);
+        var viewer = new NodeBreadcrumbViewer(composite, SWT.BOTTOM);
 
         installListeners(viewer);
         UIUtils.asyncExec(BreadcrumbTrim::updateElementVisibility);

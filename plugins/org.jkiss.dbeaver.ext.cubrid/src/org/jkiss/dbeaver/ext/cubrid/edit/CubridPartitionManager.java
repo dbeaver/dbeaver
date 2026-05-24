@@ -30,7 +30,7 @@ public class CubridPartitionManager extends CubridTableManager {
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return false;
     }
 
