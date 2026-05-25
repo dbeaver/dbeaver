@@ -90,7 +90,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     ) throws DBException {
         List<GenericSchema> schemas = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SHOW SCHEMAS" + (catalog == null ? "" : " IN " + catalog.getName())
+            "SHOW SCHEMAS" + (catalog == null ? "" : " IN " + DBUtils.getQuotedIdentifier(catalog))
         )) {
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {

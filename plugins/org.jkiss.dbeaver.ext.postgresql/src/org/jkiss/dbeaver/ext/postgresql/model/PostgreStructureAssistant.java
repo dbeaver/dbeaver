@@ -97,13 +97,13 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
     @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
-        //TODO: currently, we do not search for data types, although it's absolutely possible.
         return new DBSObjectType[]{
             RelationalObjectType.TYPE_SCHEMA,
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_CONSTRAINT,
             RelationalObjectType.TYPE_PROCEDURE,
             RelationalObjectType.TYPE_TABLE_COLUMN,
+            RelationalObjectType.TYPE_DATA_TYPE,
         };
     }
 
@@ -164,6 +164,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                     findTableColumnsByMask(session, database, nsList, params, references);
                 } else if (type == RelationalObjectType.TYPE_SCHEMA) {
                     findSchemaByMask(session, database, params, references);
+                } else if (type == RelationalObjectType.TYPE_DATA_TYPE) {
+                    findDataTypesByMask(session, database, nsList, params, references);
                 }
                 if (references.size() >= params.getMaxResults()) {
                     break;
@@ -173,6 +175,55 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             throw new DBDatabaseException(ex, getDataSource());
         }
         return references;
+    }
+
+    private static void findDataTypesByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database,
+                                              @NotNull final List<PostgreSchema> schemas, @NotNull ObjectsSearchParams params,
+                                              @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+
+        QueryParams queryParams = new QueryParams(
+            "t.oid, t.typname, t.typnamespace",
+            "pg_catalog.pg_type t",
+            "t.typname",
+            schemas,
+            "t.typnamespace",
+            "t.typname"
+        );
+        // Exclude implicit array types (named _typename) and pseudo-types
+        queryParams.setWhereClause("t.typname NOT LIKE '\\_%' AND t.typtype <> 'p'");
+        queryParams.setCaseSensitive(params.isCaseSensitive());
+        if (params.isSearchInComments()) {
+            queryParams.setDescriptionClause("obj_description(t.oid, 'pg_type')");
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = buildFindQuery(queryParams);
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, params, schemas, false);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (!monitor.isCanceled() && dbResult.next()) {
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+                    final long typeOid = JDBCUtils.safeGetLong(dbResult, "oid");
+                    final String typeName = JDBCUtils.safeGetString(dbResult, "typname");
+                    final PostgreSchema typeSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+                    if (typeSchema == null) {
+                        log.debug("Data type's schema '" + schemaId + "' not found");
+                        continue;
+                    }
+                    objects.add(new AbstractObjectReference<>(typeName, typeSchema, null, PostgreDataType.class, RelationalObjectType.TYPE_DATA_TYPE) {
+                        @Override
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                            PostgreDataType dataType = database.getDataType(monitor, typeOid);
+                            if (dataType == null) {
+                                throw new DBException("Data type '" + typeName + "' not found in schema '" + typeSchema.getName() + "'");
+                            }
+                            return dataType;
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private void findSchemaByMask(
