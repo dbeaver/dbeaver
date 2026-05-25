@@ -24,8 +24,10 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * DBXTreeDescriptor
@@ -77,7 +79,13 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @Nullable DBNNode context
     ) {
         // checked nodes are needed to avoid infinite recursion in case node contains itself somewhere in its children
-        return findImplementorTypeInDataSourceTree(parent, parentClass, baseType, context, new IdentityHashMap<>());
+        return findImplementorTypeInDataSourceTree(
+            parent,
+            parentClass,
+            baseType,
+            context,
+            Collections.newSetFromMap(new IdentityHashMap<>())
+        );
     }
 
 
@@ -87,15 +95,14 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @NotNull Class<?> parentClass,
         @NotNull Class<? extends DBSObject> baseType,
         @Nullable DBNNode context,
-        @NotNull IdentityHashMap<DBXTreeNode, Boolean> checkedNodes
+        @NotNull Set<DBXTreeNode> checkedNodes
     ) {
         List<DBXTreeNode> children = parent.getChildren(context);
         {
             for (DBXTreeNode node : children) {
-                if (checkedNodes.containsKey(node)) {
+                // skip node if already present in set
+                if (!checkedNodes.add(node)) {
                     continue;
-                } else {
-                    checkedNodes.put(node, Boolean.TRUE);
                 }
                 if (node instanceof DBXTreeItem item) {
                     // Check item for a match
@@ -142,7 +149,7 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @NotNull Class<? extends DBSObject> baseType,
         @NotNull DBXTreeItem item,
         @Nullable DBNNode context,
-        @NotNull IdentityHashMap<DBXTreeNode, Boolean> checkedNodes
+        @NotNull Set<DBXTreeNode> checkedNodes
     ) {
         Class<?> propertyType = item.getPropertyOrCollectionItemType(parentClass);
         if (propertyType != null) {
