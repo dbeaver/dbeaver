@@ -414,7 +414,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public void setEditMode(boolean editMode) {
-        if (editModeComposite != null) {
+        if (editModeComposite != null && !editModeComposite.isDisposed()) {
             editModeComposite.setEditMode(editMode);
         }
     }
@@ -1756,8 +1756,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public ProgressControl getProgressControl() {
-        if (progressControl == null || progressControl.isDisposed()) {
-            progressControl = new ProgressControl((Composite) super.getGraphicalControl(), SWT.SHEET);
+        Control parent = super.getGraphicalControl();
+        if (parent != null && (progressControl == null || progressControl.isDisposed())) {
+            progressControl = new ProgressControl((Composite) parent, SWT.SHEET);
             progressControl.setShowDivider(true);
         }
         return this.progressControl;

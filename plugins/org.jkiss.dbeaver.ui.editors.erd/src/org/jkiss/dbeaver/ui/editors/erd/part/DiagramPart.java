@@ -126,7 +126,7 @@ public class DiagramPart extends PropertyAwarePart {
         figure.setLayoutManager(delegatingLayoutManager);
         Control control = getViewer().getControl();
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
-        if ((control.getStyle() & SWT.MIRRORED) == 0) {
+        if (control != null && (control.getStyle() & SWT.MIRRORED) == 0) {
             cLayer.setAntialias(SWT.ON);
         }
         ERDEditorPart editor = getEditor();

@@ -52,6 +52,5 @@
    <plugin id="org.jkiss.dbeaver.ext.starrocks" version="0.0.0" />
 
    <plugin id="com.dbeaver.jdbc.api" version="0.0.0"/>
-   <plugin id="com.dbeaver.jdbc.driver.libsql" version="0.0.0"/>
 
 </feature>
