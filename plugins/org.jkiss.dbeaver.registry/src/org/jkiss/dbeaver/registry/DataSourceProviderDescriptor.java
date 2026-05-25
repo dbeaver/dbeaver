@@ -478,8 +478,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     public synchronized boolean removeDriver(@NotNull String driverId) {
         DBPDriver driver = getDriver(driverId);
-        if (driver != null) {
-            removeDriver(driverId);
+        if (driver instanceof DriverDescriptor dd) {
+            removeDriver(dd);
             return true;
         } else {
             return false;

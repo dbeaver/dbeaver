@@ -222,6 +222,19 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 rsv.getActivePresentation().getControl().setFocus();
                 break;
             }
+            case IResultSetCommands.CMD_ROW_ADD_BEFORE:
+            case IResultSetCommands.CMD_ROW_COPY_BEFORE: {
+                boolean copy = actionId.equals(IResultSetCommands.CMD_ROW_COPY_BEFORE);
+                final RowPlacement placement;
+                if (rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER)) {
+                    placement = RowPlacement.BEFORE_SELECTION;
+                } else {
+                    placement = RowPlacement.AFTER_SELECTION;
+                }
+                rsv.addNewRow(placement, copy, true);
+                rsv.getActivePresentation().getControl().setFocus();
+                break;
+            }
             case IResultSetCommands.CMD_ROW_COPY_FROM_ABOVE:
             case IResultSetCommands.CMD_ROW_COPY_FROM_BELOW: {
                 rsv.copyRowValues(actionId.equals(IResultSetCommands.CMD_ROW_COPY_FROM_ABOVE), true);
