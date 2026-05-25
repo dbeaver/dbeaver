@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.IdentityHashMap;
 import java.util.List;
 
 /**
@@ -67,6 +68,7 @@ public class DBXTreeDescriptor extends DBXTreeItem {
      * Implementors are property types in DBXTreeItem.
      * Search is performed hierarchically
      */
+
     @Nullable
     public static Class<?> findImplementorTypeInDataSourceTree(
         @NotNull DBXTreeNode parent,
@@ -74,12 +76,30 @@ public class DBXTreeDescriptor extends DBXTreeItem {
         @NotNull Class<? extends DBSObject> baseType,
         @Nullable DBNNode context
     ) {
+        // checked nodes are needed to avoid infinite recursion in case node contains itself somewhere in its children
+        return findImplementorTypeInDataSourceTree(parent, parentClass, baseType, context, new IdentityHashMap<>());
+    }
+
+
+    @Nullable
+    private static Class<?> findImplementorTypeInDataSourceTree(
+        @NotNull DBXTreeNode parent,
+        @NotNull Class<?> parentClass,
+        @NotNull Class<? extends DBSObject> baseType,
+        @Nullable DBNNode context,
+        @NotNull IdentityHashMap<DBXTreeNode, Boolean> checkedNodes
+    ) {
         List<DBXTreeNode> children = parent.getChildren(context);
         {
             for (DBXTreeNode node : children) {
+                if (checkedNodes.containsKey(node)) {
+                    continue;
+                } else {
+                    checkedNodes.put(node, Boolean.TRUE);
+                }
                 if (node instanceof DBXTreeItem item) {
                     // Check item for a match
-                    Class<?> propertyType = findImplementorTypeInItem(node, parentClass, baseType, item, context);
+                    Class<?> propertyType = findImplementorTypeInItem(parentClass, baseType, item, context, checkedNodes);
                     if (propertyType != null) {
                         return propertyType;
                     }
@@ -87,12 +107,24 @@ public class DBXTreeDescriptor extends DBXTreeItem {
                     // Browse thru all folder children
                     for (DBXTreeNode folderChild : folder.getChildren(context)) {
                         if (folderChild instanceof DBXTreeItem folderItem) {
-                            Class<?> propertyType = findImplementorTypeInItem(node, parentClass, baseType, folderItem, context);
+                            Class<?> propertyType = findImplementorTypeInItem(
+                                parentClass,
+                                baseType,
+                                folderItem,
+                                context,
+                                checkedNodes
+                            );
                             if (propertyType != null) {
                                 return propertyType;
                             }
                         } else {
-                            Class<?> result = findImplementorTypeInDataSourceTree(folderChild, parentClass, baseType, context);
+                            Class<?> result = findImplementorTypeInDataSourceTree(
+                                folderChild,
+                                parentClass,
+                                baseType,
+                                context,
+                                checkedNodes
+                            );
                             if (result != null) {
                                 return result;
                             }
@@ -105,12 +137,12 @@ public class DBXTreeDescriptor extends DBXTreeItem {
     }
 
     @Nullable
-    public static Class<?> findImplementorTypeInItem(
-        @NotNull DBXTreeNode parent,
+    private static Class<?> findImplementorTypeInItem(
         @NotNull Class<?> parentClass,
         @NotNull Class<? extends DBSObject> baseType,
         @NotNull DBXTreeItem item,
-        @Nullable DBNNode context
+        @Nullable DBNNode context,
+        @NotNull IdentityHashMap<DBXTreeNode, Boolean> checkedNodes
     ) {
         Class<?> propertyType = item.getPropertyOrCollectionItemType(parentClass);
         if (propertyType != null) {
@@ -119,7 +151,7 @@ public class DBXTreeDescriptor extends DBXTreeItem {
             }
             // Try to go deeper
             if (item.hasChildren(null)) {
-                Class<?> result = findImplementorTypeInDataSourceTree(item, propertyType, baseType, context);
+                Class<?> result = findImplementorTypeInDataSourceTree(item, propertyType, baseType, context, checkedNodes);
                 if (result != null) {
                     return result;
                 }
