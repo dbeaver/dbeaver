@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.DBDZeroDateValue;
+import org.jkiss.dbeaver.model.data.DBDZeroTimestampValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -36,54 +38,13 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalField;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * MySQL datetime handler
  */
 public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
-
-    private static final TemporalAccessor ZERO_DATE = new TemporalAccessor() {
-        static final Set<TemporalField> fields = Set.of(
-            ChronoField.YEAR,
-            ChronoField.MONTH_OF_YEAR,
-            ChronoField.DAY_OF_MONTH
-        );
-        @Override
-        public boolean isSupported(@NotNull TemporalField field) {
-            return fields.contains(field);
-        }
-
-        @Override
-        public long getLong(@NotNull TemporalField field) {
-            return 0;
-        }
-    };
-    private static final TemporalAccessor ZERO_TIMESTAMP = new TemporalAccessor() {
-        static final Set<TemporalField> fields = Set.of(
-            ChronoField.YEAR,
-            ChronoField.MONTH_OF_YEAR,
-            ChronoField.DAY_OF_MONTH,
-            ChronoField.HOUR_OF_DAY,
-            ChronoField.MINUTE_OF_HOUR,
-            ChronoField.SECOND_OF_MINUTE,
-            ChronoField.MILLI_OF_SECOND
-        );
-        @Override
-        public boolean isSupported(@NotNull TemporalField field) {
-            return fields.contains(field);
-        }
-
-        @Override
-        public long getLong(@NotNull TemporalField field) {
-            return 0;
-        }
-    };
 
     private static final String ZERO_DATE_STRING = "0000-00-00";
     private static final String ZERO_TIMESTAMP_STRING = "0000-00-00 00:00:00";
@@ -144,11 +105,11 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
 
     @Override
     public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, @Nullable Object value) throws DBCException {
-        if (value == ZERO_DATE || value == ZERO_TIMESTAMP) {
+        if (value == DBDZeroDateValue.INSTANCE || value == DBDZeroTimestampValue.INSTANCE) {
             // Workaround for zero values (#1127)
             try {
                 JDBCPreparedStatement dbStat = (JDBCPreparedStatement)statement;
-                if (value == ZERO_DATE) {
+                if (value == DBDZeroDateValue.INSTANCE) {
                     dbStat.setString(index + 1, ZERO_DATE_STRING);
                 } else {
                     dbStat.setString(index + 1, ZERO_TIMESTAMP_STRING);
@@ -202,11 +163,11 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
         if (object != null) {
             if (type.getTypeID() == Types.DATE) {
                 if (object.equals(ZERO_DATE_STRING)) {
-                    return ZERO_DATE;
+                    return DBDZeroDateValue.INSTANCE;
                 }
             } else {
                 if (object.equals(ZERO_TIMESTAMP_STRING)) {
-                    return ZERO_TIMESTAMP;
+                    return DBDZeroTimestampValue.INSTANCE;
                 }
             }
         }
