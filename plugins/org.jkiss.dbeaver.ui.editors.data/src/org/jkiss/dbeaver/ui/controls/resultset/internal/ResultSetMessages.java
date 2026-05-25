@@ -66,6 +66,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_show_selected_row_count;
     public static String controls_resultset_viewer_action_show_selected_column_count;
     public static String controls_resultset_viewer_action_show_selected_cell_count;
+    public static String controls_resultset_viewer_action_show_filter_panel;
     public static String controls_resultset_viewer_action_open_value_editor_column_readonly;
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
