@@ -88,7 +88,7 @@ public class CubridDataSource extends GenericDataSource
 
     @NotNull
     public String getCurrentUser() {
-        return getContainer().getActualConnectionConfiguration().getUserName().toUpperCase();
+        return CommonUtils.notEmpty(getContainer().getActualConnectionConfiguration().getUserName()).toUpperCase();
     }
 
     public boolean isDBAGroup() {
