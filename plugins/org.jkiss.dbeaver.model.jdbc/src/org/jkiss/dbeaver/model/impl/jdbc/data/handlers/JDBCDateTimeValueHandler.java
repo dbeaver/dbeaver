@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -238,7 +236,9 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Time.valueOf(localDateTime.toLocalTime());
         } else if (value instanceof LocalTime localTime) {
             return java.sql.Time.valueOf(localTime);
-        } else if (value != null) {
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            return new java.sql.Time(0);
+        }  else if (value != null) {
             return java.sql.Time.valueOf(value.toString());
         } else {
             return null;
@@ -255,6 +255,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Date.valueOf(localDate);
         } else if (value instanceof LocalDateTime localDateTime) {
             return java.sql.Date.valueOf(localDateTime.toLocalDate());
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            return new java.sql.Date(0);
         } else if (value != null) {
             return java.sql.Date.valueOf(value.toString());
         } else {
@@ -274,6 +276,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return Timestamp.valueOf(localDateTime);
         } else if (value instanceof OffsetDateTime offsetDateTime) {
             return Timestamp.valueOf((offsetDateTime.toLocalDateTime()));
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            return new Timestamp(0);
         } else if (value != null) {
             return Timestamp.valueOf(value.toString());
         } else {
