@@ -41,6 +41,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
 
@@ -235,6 +236,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Time.valueOf(localDate.atStartOfDay().toLocalTime());
         } else if (value instanceof LocalDateTime localDateTime) {
             return java.sql.Time.valueOf(localDateTime.toLocalTime());
+        } else if (value instanceof LocalTime localTime) {
+            return java.sql.Time.valueOf(localTime);
         } else if (value != null) {
             return java.sql.Time.valueOf(value.toString());
         } else {
