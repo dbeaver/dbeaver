@@ -130,7 +130,6 @@ public class AIAssistantImpl implements AIAssistant {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
                             AIMessage fcMessage = AIMessage.functionCall(functionCall, result);
                             newMessages.add(fcMessage);
-                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue, null));
                             AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
