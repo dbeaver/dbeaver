@@ -112,7 +112,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
 
     @Override
     public void visualizeLoading() {
-        if (!progressPane.isDisposed()) {
+        if (progressPane != null && !progressPane.isDisposed()) {
             if (shadowColor == null) {
                 shadowColor = progressPane.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
             }
