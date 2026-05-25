@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -102,7 +103,13 @@ public class DBFFileSystemManager implements DBFEventListener {
         }
         DBFVirtualFileSystem[] fsCandidates = dbfFileSystems.values().stream()
             .filter(fs -> fs.getProviderId().equals(fsProvider.getId())).toArray(DBFVirtualFileSystem[]::new);
-
+        if (ArrayUtils.isEmpty(fsCandidates)) {
+            Path path = DBFUtils.getPathFromURI(uri.toString());
+            if (path == null) {
+                throw new DBException("File system URI '" + uri + "' is not recognized");
+            }
+            return path;
+        }
         return fsProvider.getInstance().getPathByURI(monitor, uri, fsCandidates);
     }
 

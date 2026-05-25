@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
@@ -91,6 +92,8 @@ public class TransactionMonitorToolbar {
             monitorPanel.addDisposeListener(e -> activePage.removePartListener(partListener));
         }
 
+        monitorPanel.refresh();
+
         return monitorPanel;
     }
 
@@ -122,7 +125,7 @@ public class TransactionMonitorToolbar {
         private QMTransactionState txnState;
 
         MonitorPanel(Composite parent) {
-            super(parent, SWT.BORDER);
+            super(parent, SWT.NONE);
             setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
             addPaintListener(this::paint);
 
@@ -191,8 +194,14 @@ public class TransactionMonitorToolbar {
                 }
             }
             Rectangle bounds = getBounds();
+
+            // Draw border
+            e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            e.gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
+
+            // Draw content
             e.gc.setBackground(bg);
-            e.gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+            e.gc.fillRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
             String count;
             if (txnState == null) {
                 count = "N/A";

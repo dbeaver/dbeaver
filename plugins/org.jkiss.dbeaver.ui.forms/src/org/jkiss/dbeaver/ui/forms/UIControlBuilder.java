@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.forms;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,14 +29,17 @@ import java.util.function.Function;
  * The builder for a control.
  */
 public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
-    permits UIControlBuilder.ButtonBuilder,UIControlBuilder.ComboBuilder, UIControlBuilder.LabelBuilder, UIControlBuilder.TextBuilder,
-    UIControlBuilderImpl, UIPanelBuilder {
+    permits UIControlBuilder.ButtonBuilder, UIControlBuilder.ComboBuilder, UIControlBuilder.ControlBuilder, UIControlBuilder.LabelBuilder,
+    UIControlBuilder.LinkBuilder, UIControlBuilder.TextBuilder, UIControlBuilderImpl, UIPanelBuilder {
 
     @NotNull
     B visible(@NotNull UIObservable<Boolean> binding);
 
     @NotNull
     B enabled(@NotNull UIObservable<Boolean> binding);
+
+    @NotNull
+    B font(@NotNull UIObservable<Font> value);
 
     @NotNull
     B tooltip(@NotNull String value);
@@ -67,6 +73,27 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      * The builder for a label control.
      */
     sealed interface LabelBuilder extends UIControlBuilder<LabelBuilder> permits UIControlBuilderImpl.LabelBuilderImpl {
+        @NotNull
+        LabelBuilder text(@Nullable UIObservable<String> text);
+
+        @NotNull
+        default LabelBuilder text(@Nullable String text) {
+            return text(text != null ? UIObservable.of(text) : null);
+        }
+
+        @NotNull
+        LabelBuilder image(@Nullable UIObservable<DBIcon> image);
+
+        @NotNull
+        default LabelBuilder image(@Nullable DBIcon image) {
+            return image(image != null ? UIObservable.of(image, DBIcon.class) : null);
+        }
+    }
+
+    /**
+     * The builder for a link control.
+     */
+    sealed interface LinkBuilder extends UIControlBuilder<LinkBuilder> permits UIControlBuilderImpl.LinkBuilderImpl {
     }
 
     /**
@@ -97,5 +124,11 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      * The builder for a combo control.
      */
     sealed interface ComboBuilder<T> extends UIControlBuilder<ComboBuilder<T>> permits UIControlBuilderImpl.ComboBuilderImpl {
+    }
+
+    /**
+     * The builder for a generic control (e.g. a custom control created by a client code).
+     */
+    sealed interface ControlBuilder extends UIControlBuilder<ControlBuilder> permits UIControlBuilderImpl.ControlBuilderImpl {
     }
 }

@@ -82,6 +82,7 @@ public class SQLBackgroundParsingJob {
         @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+            this.setSkipErrorOnCanceling(true);
             try {
                 SQLBackgroundParsingJob.this.doWork(monitor);
                 return Status.OK_STATUS;

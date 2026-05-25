@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
+import org.jkiss.dbeaver.tools.transfer.ui.DataTransferFeatures;
+import org.jkiss.dbeaver.tools.transfer.ui.dialog.DataTransferConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
@@ -351,7 +353,12 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             IWizardPage[] pages = getPages();
             getContainer().showPage(pages[pages.length - 1]);
         }
-
+        DataTransferFeatures.DATA_TRANSFER.use(Map.of(
+            DataTransferFeatures.PARAM_TRANSFER_TYPE, settings.isProducerProcessor() ? "import" : "export",
+            DataTransferFeatures.PARAM_TRANSFER_DATA_TYPE, settings.getProcessor().getName(),
+            DataTransferFeatures.IS_TASK, isCurrentTaskSaved()
+            )
+        );
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask == null) {
@@ -362,9 +369,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     DTMessages.data_transfer_wizard_job_name,
                     getSettings());
                 executor.executeTask();
+                if (executor.getError() instanceof DBException dbe) {
+                    throw dbe;
+                } else if (executor.getError() != null) {
+                    throw new DBException("Data transfer error", executor.getError());
+                }
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), DTUIMessages.data_transfer_wizard_message_init_data_transfer, e);
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
         }
 
@@ -697,7 +709,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             }
         };
 
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection, Map.of());
+        TaskConfigurationWizardDialog dialog = new DataTransferConfigurationWizardDialog(workbenchWindow, wizard, selection);
         dialog.open();
     }
 

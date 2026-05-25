@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,11 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, SQLServerTableColumn object, Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerTableColumn object,
+        @NotNull Class<? extends DBSObject> childType
+    ) {
         return null;
     }
 
@@ -112,6 +116,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(SQLServerTableColumn column, Map<String, Object> options)
     {
         if (CommonUtils.isNotEmpty(column.getComputedDefinition())) {
@@ -135,8 +140,13 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected SQLServerTableColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException
-    {
+    protected SQLServerTableColumn createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final SQLServerTableBase table = (SQLServerTableBase) container;
         final DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
 

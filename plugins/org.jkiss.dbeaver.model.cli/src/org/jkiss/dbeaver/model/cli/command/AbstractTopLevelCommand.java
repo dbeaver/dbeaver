@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
-import org.jkiss.dbeaver.model.cli.model.CommandLineAuthenticator;
+import org.jkiss.dbeaver.model.cli.help.CLIGlobalOption;
 import org.jkiss.dbeaver.model.cli.model.option.EclipseOptions;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptions;
 import picocli.CommandLine;
@@ -34,13 +34,13 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     public static final String TRACE_LOGS_OPTION = "--trace-logs";
 
     @CommandLine.Option(names = {"-dump"},
-        description = "Print instance thread dump.")
+        description = "Print instance thread dump")
     private boolean dump;
 
 
     @CommandLine.Option(
         names = {"-h", "-help", HELP_OPTION},
-        description = "Show this help message and exit.",
+        description = "Show this help message and exit",
         usageHelp = true,
         scope = CommandLine.ScopeType.INHERIT
     )
@@ -48,20 +48,21 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
 
     @CommandLine.Option(
         names = {"-V", "--version"},
-        description = "Print version information and exit.",
+        description = "Print version information and exit",
         versionHelp = true,
         scope = CommandLine.ScopeType.INHERIT
     )
     private boolean version;
 
+    @CLIGlobalOption
     @CommandLine.Option(names = {DEBUG_LOGS_OPTION},
-        description = "Enable debug logging.",
+        description = "Enable debug logging",
         scope = CommandLine.ScopeType.INHERIT
     )
     private boolean debugLogs;
 
     @CommandLine.Option(names = {TRACE_LOGS_OPTION},
-        description = "Enable trace logging.",
+        description = "Enable trace logging",
         scope = CommandLine.ScopeType.INHERIT,
         hidden = true
     )
@@ -135,10 +136,5 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     @NotNull
     public CLIRunMeta getMeta() {
         return meta;
-    }
-
-    @Nullable
-    public CommandLineAuthenticator getAuthenticator() {
-        return null;
     }
 }

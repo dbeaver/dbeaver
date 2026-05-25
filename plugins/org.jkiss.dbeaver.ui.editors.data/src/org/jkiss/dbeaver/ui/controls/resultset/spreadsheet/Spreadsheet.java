@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -332,7 +332,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                                 IResultSetValueReflector.class);
                             if (valueReflector != null) {
                                 ResultSetCellLocation currentCellLocation = presentation.getCurrentCellLocation();
-                                if (currentCellLocation.getAttribute() != null && currentCellLocation.getRow() != null) {
+                                if (currentCellLocation != null) {
                                     Object cellValue = presentation.getController().getModel().getCellValue(currentCellLocation);
                                     ResultSetCopySettings copySettings = new ResultSetCopySettings();
                                     Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);

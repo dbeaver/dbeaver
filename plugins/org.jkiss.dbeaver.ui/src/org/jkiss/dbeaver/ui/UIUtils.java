@@ -88,6 +88,8 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
+import org.jkiss.dbeaver.ui.controls.TitledComposite;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
@@ -304,7 +306,7 @@ public class UIUtils {
                     sbWidth = sbWidth + table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
-                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 1;
+                    int extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length - 2;
                     for (TableColumn tc : columns) {
                         tc.setWidth(tc.getWidth() + extraSpace);
                     }
@@ -637,24 +639,7 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
-    public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
-        Group group = new Group(parent, SWT.NONE);
-        group.setText(label);
-
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(layoutStyle);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            group.setLayoutData(gd);
-        }
-
-        GridLayout gl = new GridLayout(columns, false);
-        group.setLayout(gl);
-
-        return group;
-    }
-
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
@@ -663,6 +648,7 @@ public class UIUtils {
         return createTitledComposite(parent, label, columns, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
@@ -672,6 +658,7 @@ public class UIUtils {
         return createTitledComposite(parent, label, columns, layoutStyle, SWT.DEFAULT);
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
@@ -682,84 +669,43 @@ public class UIUtils {
         return createTitledComposite(parent, label, columns, layoutStyle, widthHint, 1);
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
         int columns,
         int layoutStyle,
         int widthHint,
-        int hSpan
+        int horizontalSpan
     ) {
-        return createTitledComposite(parent, label, null, columns, layoutStyle, widthHint, hSpan);
+        GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (widthHint > 0) {
+            gd.widthHint = widthHint;
+        }
+        if (horizontalSpan > 1) {
+            gd.horizontalSpan = horizontalSpan;
+        }
 
+        var host = new TitledComposite(parent, SWT.NONE);
+        host.setText(label);
+        host.setLayoutData(gd);
+
+        var client = new Composite(host, SWT.NONE);
+        GridLayoutFactory.fillDefaults()
+            .margins(0, 5)
+            .numColumns(columns)
+            .applyTo(client);
+
+        host.setClient(client);
+        return client;
     }
 
-    public static Composite createTitledComposite(
-        @NotNull Composite parent,
-        @NotNull String label,
-        @Nullable String tooltip,
-        int columns,
-        int layoutStyle,
-        int widthHint,
-        int hSpan
-    ) {
-        Composite composite = UIUtils.createComposite(parent, 1);
-        {
-            GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            if (hSpan > 1) {
-                gd.horizontalSpan = hSpan;
-            }
-            composite.setLayoutData(gd);
-        }
-
-        Label titleLabel = new Label(composite, SWT.NONE);
-        titleLabel.setText(label);
-        if (CommonUtils.isNotEmpty(tooltip)) {
-            titleLabel.setToolTipText(tooltip);
-        }
-        if (PlatformUI.isWorkbenchRunning()) {
-            titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
-        }
-        if (false) {
-            titleLabel.addPaintListener(e -> {
-                e.gc.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                e.gc.drawLine(0, e.height - 1, e.width, e.height - 1);
-            });
-        }
-        titleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-        GridLayout layout = new GridLayout(columns, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.marginTop = 0;
-        layout.marginLeft = 7;
-        layout.marginBottom = 3;
-        Composite group = new Composite(composite, SWT.NONE);
-        group.setLayout(layout);
-        group.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        return group;
-    }
-
-    public static void updateTitledComposite(@NotNull Composite titledComposite, @NotNull String title) {
-        Control[] children = titledComposite.getChildren();
-        if (children.length > 0 && children[0] instanceof Label label) {
-            label.setText(title);
+    public static void updateTitledComposite(@NotNull Composite client, @NotNull String title) {
+        if (!(client.getParent() instanceof TitledComposite titledComposite)) {
+            log.error("Composite is not titled!");
             return;
         }
-        log.error("Composite is not titled!");
-    }
-
-    public static void updateTitledCompositeTooltip(@NotNull Composite titledComposite, @NotNull String tooltip) {
-        Control[] children = titledComposite.getChildren();
-        if (children.length > 0 && children[0] instanceof Label label) {
-            label.setToolTipText(tooltip);
-            return;
-        }
-        log.error("Composite is not titled!");
+        titledComposite.setText(title);
     }
 
     public static Label createControlLabel(Composite parent, String label) {
@@ -2702,26 +2648,12 @@ public class UIUtils {
      * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
      */
     @NotNull
-    public static ExpandableComposite createExpandableCompositeWithSeparator(
+    public static ExpandableCompositeEx createExpandableCompositeWithSeparator(
         @NotNull Composite parent,
         int style,
         int expansionStyle
     ) {
-        // We have to use an anonymous class because "textLabel" has protected access
-        return new ExpandableComposite(parent, style, expansionStyle) {{
-            addPaintListener(e -> {
-                Rectangle bounds = getBounds();
-                Rectangle label = textLabel.getBounds();
-
-                e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                e.gc.drawLine(
-                    label.x + label.width + 6,
-                    label.y + label.height / 2,
-                    bounds.width,
-                    label.y + label.height / 2
-                );
-            });
-        }};
+        return new ExpandableCompositeEx(parent, style | SWT.SEPARATOR, expansionStyle);
     }
 
     /**

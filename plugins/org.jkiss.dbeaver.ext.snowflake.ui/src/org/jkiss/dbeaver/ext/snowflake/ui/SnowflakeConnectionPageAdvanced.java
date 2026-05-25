@@ -21,6 +21,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -77,7 +78,7 @@ public class SnowflakeConnectionPageAdvanced extends ConnectionPageAbstract {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         dataSource.getConnectionConfiguration().setProviderProperty(
             SnowflakeConstants.PROP_DD_STRING,
             CommonUtils.toString(sqlDollarQuoteBehaviorCombo.getSelectionIndex() == 0)

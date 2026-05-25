@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,7 +210,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
         ClassLoader baseClassLoader = rootClassLoader;
         if (baseClassLoader == null) {
             DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
-            if (dataSourceProvider.providesDriverClasses()) {
+            if (dataSourceProvider.providesDriverClasses(driver)) {
                 // Use driver provider class loader
                 baseClassLoader = dataSourceProvider.getClass().getClassLoader();
             } else {
@@ -301,12 +301,13 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
+                        if (file.getFile() == null) {
+                            continue;
+                        }
                         if (!IOUtils.isFileFromDefaultFS(file.getFile())) {
                             copyLibsFromExternalStorage(library, file.getFile(), result);
-                        } else {
-                            if (file.getFile() != null && !result.contains(file.getFile())) {
-                                result.add(file.getFile());
-                            }
+                        } else if (!result.contains(file.getFile())) {
+                            result.add(file.getFile());
                         }
                     }
                 }
@@ -527,7 +528,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             return list
                 .filter(p -> {
                     String fileName = p.getFileName().toString();
-                    return fileName.endsWith(".jar") || fileName.endsWith(".zip");
+                    return fileName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) || fileName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP);
                 })
                 .collect(Collectors.toList());
         } catch (IOException e) {
@@ -622,7 +623,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             // Add resolved files from default loader
             resolvedFiles.putAll(driver.getDefaultDriverLoader().resolvedFiles);
         }
-        return localFilePaths;
+        return DriverUtils.extractZipArchives(localFilePaths);
     }
 
     private static boolean crcNotMatch(@NotNull DriverFileInfo depFile, @NotNull Path localDriverFile) {
@@ -809,7 +810,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             for (Path dirFile : srcDirFiles) {
                 String fileName = dirFile.getFileName().toString();
                 // Skip non-libraries
-                if (fileName.endsWith(".txt")) {
+                if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_TXT)) {
                     continue;
                 }
                 Path trgDirFile = trgLocalFile.resolve(dirFile.getFileName().toString());

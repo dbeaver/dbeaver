@@ -57,7 +57,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     private final UIObservable<Integer> fetchSize = UIObservable.of(10000);
     private final UIObservable<Integer> threadCount = UIObservable.of(1);
     private final UIObservable<Integer> segmentSize = UIObservable.of(10000);
-    private final UIObservable<ExtractType> extractType = UIObservable.of(ExtractType.SINGLE_QUERY);
+    private final UIObservable<Boolean> extractInSegments = UIObservable.of(false);
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -75,7 +75,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         UIPanelBuilder.build(composite, pb -> pb
             .margins(0, 0)
             .row(rb -> rb
-                .group("Extraction", buildExtractionPanel())));
+                .titledPanel("Extraction", buildExtractionPanel())));
 
         if (getWizard().getCurrentTask() != null) {
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
@@ -111,8 +111,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         return pb -> pb
             .row(rb -> rb
-                .radioButton("Query the database", bb -> bb.selected(queryDatabase))
-                .radioButton("Use fetched rows", bb -> bb.selected(useFetchedData)))
+                .radioButton("Query the database", queryDatabase)
+                .radioButton("Use fetched rows", useFetchedData))
             .row(rb -> rb
                 .panel(buildQueryDatabasePanel(queryDatabase))
                 .panel(buildUseFetchedRowsPanel(useFetchedData)))
@@ -141,24 +141,23 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         return pb -> pb
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
+                .checkBox("Selected rows only", selectedRowsOnly))
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
+                .checkBox("Selected columns only", selectedColumnsOnly));
     }
 
     @NotNull
     private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
         return rb -> rb
-            .expandableGroup("Advanced", false, pb -> pb
+            .expandablePanel("Advanced", false, pb -> pb
                 .align(UIAlignX.FILL).grow()
                 .accept(buildAdvancedPanel(queryDatabase)));
     }
 
     @NotNull
     private Consumer<UIPanelBuilder> buildAdvancedPanel(@NotNull UIObservable<Boolean> queryDatabase) {
-        var canChangeThreads = UIObservable.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
-        var canChangeSegment = UIObservable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
+        var canChangeThreads = UIObservables.predicate(() -> getWizard().getSettings().getDataPipes().size() > 1);
 
         return pb -> pb
             .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
@@ -169,12 +168,12 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 .enabled(queryDatabase)
                 .intTextField(fetchSize, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip)))
-            .row(DTMessages.data_transfer_wizard_output_label_extract_type, rb -> rb
+            .row(rb -> rb
+                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches, bb -> bb
+                    .tooltip(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
+                    .selected(extractInSegments))
                 .enabled(queryDatabase)
-                .comboBox(extractType, DatabaseProducerPageExtractSettings::getExtractTypeLabel))
-            .row(DTMessages.data_transfer_wizard_output_label_segment_size, rb -> rb
-                .enabled(UIObservables.and(queryDatabase, canChangeSegment))
-                .intTextField(segmentSize));
+                .intTextField(segmentSize, tb -> tb.enabled(extractInSegments)));
     }
 
     @Override
@@ -197,7 +196,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         fetchSize.set(settings.getFetchSize());
         threadCount.set(getWizard().getSettings().getMaxJobCount());
         segmentSize.set(settings.getSegmentSize());
-        extractType.set(settings.getExtractType());
+        extractInSegments.set(settings.getExtractType() == ExtractType.SEGMENTS);
 
         updatePageCompletion();
     }
@@ -225,20 +224,12 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         settings.setFetchSize(fetchSize.get());
         getWizard().getSettings().setMaxJobCount(threadCount.get());
         settings.setSegmentSize(segmentSize.get());
-        settings.setExtractType(extractType.get());
+        settings.setExtractType(extractInSegments.get() ? ExtractType.SEGMENTS : ExtractType.SINGLE_QUERY);
     }
 
     @Override
     public boolean isPageApplicable() {
         return isProducerOfType(DatabaseTransferProducer.class);
-    }
-
-    @NotNull
-    private static String getExtractTypeLabel(@NotNull ExtractType type) {
-        return switch (type) {
-            case SINGLE_QUERY -> DTMessages.data_transfer_wizard_output_combo_extract_type_item_single_query;
-            case SEGMENTS -> DTMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments;
-        };
     }
 
     private boolean hasSelection() {

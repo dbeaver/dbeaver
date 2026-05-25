@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -241,7 +242,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         public ProgressVisualizer<List<MySQLPrivilege>> createLoadVisualizer() {
             return new ProgressVisualizer<>() {
                 @Override
-                public void completeLoading(List<MySQLPrivilege> privs) {
+                public void completeLoading(@Nullable List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     privTable.fillPrivileges(privs);
                     loadGrants();
@@ -265,7 +266,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
 
         @Override
-        public void onCommandChange(DBECommand<?> command) {
+        public void onCommandChange(@NotNull DBECommand<?> command) {
             if (command instanceof MySQLUserManager.CommandRenameUser mysqlCommand) {
                 setUsernameAndHost(mysqlCommand.getNewUserName(), mysqlCommand.getNewHost());
             }

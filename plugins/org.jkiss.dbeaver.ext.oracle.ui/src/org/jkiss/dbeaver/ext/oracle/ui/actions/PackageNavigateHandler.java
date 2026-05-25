@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,10 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
             }
             final IDocument document = sqlEditor.getDocument();
             if (document != null) {
-                String procRegex = procedure.getProcedureType().name() + "\\s+" + procedure.getName();
+                // excludes any line that starts wih --
+                String commentSkip = """
+                    ^(?!\\s*--)\\s*""";
+                String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
                 final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
                 if (parameters != null) {
                     List<OracleProcedureArgument> inParams = new ArrayList<>();

@@ -81,8 +81,6 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
     swt-selected-tabs-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%;
     swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100%;
     swt-unselected-hot-tab-color-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START'; /* Can't use gradient on Windows; it resolves to pure white color */
-
-    swt-corner-radius: 6;
 }
 
 CTabFolder {
@@ -94,4 +92,11 @@ CTabFolder {
     swt-selected-tab-highlight: #2b79d7;
     swt-selected-highlight-top: true;
     swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100% 100%;
+}
+
+ExpandableComposite,
+ExpandableCompositeEx {
+    swt-titlebar-color: #cccccc;
+	tb-toggle-hover-color: #F4F7F7;
+	tb-toggle-color: #F4F7F7;
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,13 +58,17 @@ public class GeometryPresentation extends AbstractPresentation {
             .map(GeometryDataUtils.GeomAttrs::getGeomAttr)
             .toArray(DBDAttributeBinding[]::new);
 
-        leafletViewer = new GISLeafletViewer(
-            parent,
-            bindings,
-            GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()),
-            this
-        );
-        leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
+        try {
+            leafletViewer = new GISLeafletViewer(
+                parent,
+                bindings,
+                GisTransformUtils.getSpatialDataProvider(controller.getDataContainer().getDataSource()),
+                this
+            );
+            leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("GIS Viewer", "Error initializing GIS viewer", e);
+        }
     }
 
     @Override
@@ -81,12 +85,15 @@ public class GeometryPresentation extends AbstractPresentation {
     }
 
     @Override
-    protected void applyThemeSettings(ITheme currentTheme) {
+    protected void applyThemeSettings(@NotNull ITheme currentTheme) {
     }
 
     @Nullable
     @Override
     public Composite getControl() {
+        if (leafletViewer == null) {
+            return null;
+        }
         return leafletViewer.getBrowser();
     }
 
@@ -122,13 +129,14 @@ public class GeometryPresentation extends AbstractPresentation {
 
     @NotNull
     @Override
-    public Map<Transfer, Object> copySelection(ResultSetCopySettings settings) {
+    public Map<Transfer, Object> copySelection(@NotNull ResultSetCopySettings settings) {
         return Collections.emptyMap();
     }
 
     ///////////////////////////////////////////////////////////////////////
     // ISelectionProvider
 
+    @NotNull
     @Override
     public ISelection getSelection() {
         return new StructuredSelection();

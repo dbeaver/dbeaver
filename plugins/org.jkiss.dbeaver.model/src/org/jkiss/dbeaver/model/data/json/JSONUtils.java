@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -50,7 +49,9 @@ public class JSONUtils {
         .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
         .withZone(ZoneId.of("UTC"));
     public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
+    public static final Type LIST_TYPE_TOKEN = TypeToken.getParameterized(List.class, MAP_TYPE_TOKEN).getType();
     public static final Gson GSON = new GsonBuilder().create();
+    public static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static String formatDate(Date date) {
         try {
@@ -287,9 +288,18 @@ public class JSONUtils {
     public static <OBJECT_TYPE> OBJECT_TYPE deserializeObject(
         @NotNull Map<String, Object> map,
         @NotNull Class<OBJECT_TYPE> type
-    ) throws DBCException {
+    ) {
         String json = GSON.toJson(map);
         return GSON.fromJson(json, type);
+    }
+
+    @NotNull
+    public static List<Map<String, Object>> parseList(@NotNull Gson gson, @NotNull Reader reader) {
+        List<Map<String, Object>> result = gson.fromJson(reader, LIST_TYPE_TOKEN);
+        if (result == null) {
+            return List.of();
+        }
+        return result;
     }
 
     @NotNull

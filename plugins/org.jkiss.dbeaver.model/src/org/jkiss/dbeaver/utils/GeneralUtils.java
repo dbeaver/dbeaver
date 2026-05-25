@@ -450,6 +450,21 @@ public class GeneralUtils {
         return c <= ' ' || c == 0x160;
     }
 
+    @NotNull
+    public static String findJavaExecutable() throws IOException {
+        String javaHome = System.getProperty("java.home");
+        if (javaHome == null) {
+            throw new IOException("java.home is not set");
+        }
+
+        Path java = Path.of(javaHome, "bin", RuntimeUtils.isWindows() ? "java.exe" : "java");
+        if (!Files.isExecutable(java)) {
+            throw new IOException("Java executable not found at " + java);
+        }
+
+        return java.toAbsolutePath().toString();
+    }
+
     public interface IParameterHandler {
         boolean setParameter(String name, String value);
     }
@@ -1014,6 +1029,10 @@ public class GeneralUtils {
             return "Class not found: " + cnfe.getMessage();
         } else if (error instanceof NoClassDefFoundError ncdf) {
             return "Class definition not found: " + ncdf.getMessage();
+        } else if (error instanceof IllegalArgumentException iae) {
+            if (!CommonUtils.isEmptyTrimmed(iae.getMessage())) {
+                return "Invalid argument: " + iae.getMessage();
+            }
         }
         String localizedMessage = error.getLocalizedMessage();
         if (CommonUtils.isEmpty(localizedMessage)) {

@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -70,8 +70,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Composite objectsGroup = UIUtils.createTitledComposite(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL);
-        objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite objectsGroup = UIUtils.createTitledComposite(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_BOTH);
 
         connInfo = new CLabel(objectsGroup, SWT.WRAP);
         connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -132,6 +131,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                     loadTables(null);
                 }
             });
+            exportViewsCheck.setSelection(wizard.getSettings().isShowViews());
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);
         }

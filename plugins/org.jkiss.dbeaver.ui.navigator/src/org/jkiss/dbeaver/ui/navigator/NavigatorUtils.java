@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -95,16 +96,17 @@ import java.util.*;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-    public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
-    {
+
+    @Nullable
+    public static DBNNode getSelectedNode(@Nullable ISelectionProvider selectionProvider) {
         if (selectionProvider == null) {
             return null;
         }
         return getSelectedNode(selectionProvider.getSelection());
     }
 
-    public static DBNNode getSelectedNode(ISelection selection)
-    {
+    @Nullable
+    public static DBNNode getSelectedNode(@NotNull ISelection selection) {
         if (selection.isEmpty()) {
             return null;
         }
@@ -159,8 +161,8 @@ public class NavigatorUtils {
      * @param element ui element
      * @return node or null
      */
-    public static DBNNode getSelectedNode(UIElement element)
-    {
+    @Nullable
+    public static DBNNode getSelectedNode(@NotNull UIElement element) {
         ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
         if (selectionProvider != null) {
             return NavigatorUtils.getSelectedNode(selectionProvider);
@@ -169,23 +171,23 @@ public class NavigatorUtils {
         }
     }
 
-    public static DBSObject getSelectedObject(ISelection selection)
-    {
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
+    @Nullable
+    public static DBSObject getSelectedObject(@NotNull ISelection selection) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection ss)) {
             return null;
         }
-        return DBUtils.getFromObject(((IStructuredSelection)selection).getFirstElement());
+        return DBUtils.getFromObject(ss.getFirstElement());
     }
 
-    public static List<DBSObject> getSelectedObjects(ISelection selection)
-    {
+    @NotNull
+    public static List<DBSObject> getSelectedObjects(@NotNull ISelection selection) {
         if (selection.isEmpty()) {
             return Collections.emptyList();
         }
         List<DBSObject> result = new ArrayList<>();
-        if (selection instanceof IStructuredSelection) {
-            for (Iterator iter = ((IStructuredSelection)selection).iterator(); iter.hasNext(); ) {
-                DBSObject selectedObject = DBUtils.getFromObject(iter.next());
+        if (selection instanceof IStructuredSelection ss) {
+            for (Object o : ss) {
+                DBSObject selectedObject = DBUtils.getFromObject(o);
                 if (selectedObject != null) {
                     result.add(selectedObject);
                 }
@@ -440,6 +442,7 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
+            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -471,6 +474,7 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
+                    nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
                 }
             }
             // Save folders
@@ -481,12 +485,17 @@ public class NavigatorUtils {
                 targetNode.setNodeFilter(
                     nodeMeta,
                     entry.getValue(),
-                    false);
+                    false
+                );
                 changedContainers.add(targetNode.getDataSourceContainer());
             }
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
-                ds.persistConfiguration();
+                if (isSaveAsCurrentUserFilterOnly) {
+                    UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
+                } else {
+                    ds.persistConfiguration();
+                }
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());

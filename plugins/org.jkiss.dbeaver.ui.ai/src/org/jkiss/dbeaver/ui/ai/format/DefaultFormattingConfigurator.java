@@ -44,7 +44,6 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     private Button executeQueryImmediatelyCheck;
 
     private Button sendTypeInfoCheck;
-
     private Button sendDescriptionCheck;
 
     protected Composite settingsPanel;

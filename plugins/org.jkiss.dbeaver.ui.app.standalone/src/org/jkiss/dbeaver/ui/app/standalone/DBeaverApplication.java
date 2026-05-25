@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
@@ -211,7 +210,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
 
@@ -303,6 +302,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
+        log.debug("\tPatch workbench configuration");
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
 
         // Run instance server
@@ -374,7 +374,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         try {
-            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+            DBeaverCommandLine.getInstance().preprocessCommandLine(args);
         } catch (DBException e) {
             log.error("Error preprocessing command line", e);
         }
@@ -388,7 +388,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             isReadOnlyField.set(instanceLoc, true);
         } catch (Throwable e) {
             // ignore
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 
@@ -447,19 +447,19 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 defaultHomePath = RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL());
             } catch (IOException e) {
                 System.err.println("Unable to resolve workspace location " + instanceLoc);
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
         }
         return defaultHomePath;
     }
 
-    private void updateSplashHandler() {
+    public Shell updateSplashHandler() {
         if (ArrayUtils.contains(Platform.getApplicationArgs(), "-nosplash")) {
-            return;
+            return null;
         }
         try {
             // look and see if there's a splash shell we can parent off of
-            Shell shell = WorkbenchPlugin.getSplashShell(display);
+            Shell shell = WorkbenchPlugin.getSplashShell(getDisplay());
             if (shell != null) {
                 // should set the icon and message for this shell to be the
                 // same as the chooser dialog - this will be the guy that lives in
@@ -467,12 +467,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 // with no message.
                 shell.setText(ChooseWorkspaceDialog.getWindowTitle());
                 shell.setImages(Window.getDefaultImages());
+                return shell;
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);
             System.err.println("Error updating splash shell");
         }
-
+        return null;
     }
 
     /**
@@ -493,9 +494,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             System.setProperty("javax.net.debug", "all");
         }
 
-        // Configure proxy
-        activateProxyService();
-
         // Policy
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
             try {
@@ -508,18 +506,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
-    private static void activateProxyService() {
-        try {
-            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
-        } catch (Throwable e) {
-            log.debug("Proxy service not found");
-        }
-    }
-
-
     private Display getDisplay() {
         if (display == null) {
-            log.debug("Create display");
+            log.debug("\tCreate display");
             // Set display name at the very beginning (#609)
             // This doesn't initialize display - just sets default title
             Display.setAppName(GeneralUtils.getProductName());

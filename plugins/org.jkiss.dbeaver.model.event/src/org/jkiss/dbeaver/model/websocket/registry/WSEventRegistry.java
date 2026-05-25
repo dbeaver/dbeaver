@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WSEventRegistry {
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.ws.event";
@@ -31,17 +34,23 @@ public class WSEventRegistry {
 
     private static WSEventRegistry instance = null;
     private final List<WSServerEventDescriptor> serverEvents = new ArrayList<>();
-    private final List<WSClientEventDescriptor> clientEvents = new ArrayList<>();
+    private final Map<String, WSClientEventDescriptor> clientEvents = new HashMap<>();
 
     private WSEventRegistry() {
     }
 
+    @NotNull
     public synchronized static WSEventRegistry getInstance() {
         if (instance == null) {
             instance = new WSEventRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
         }
         return instance;
+    }
+
+    @Nullable
+    public WSClientEventDescriptor getClientEvent(@NotNull String eventId) {
+        return clientEvents.get(eventId);
     }
 
     private void loadExtensions(@NotNull IExtensionRegistry registry) {
@@ -52,7 +61,7 @@ public class WSEventRegistry {
                 serverEvents.add(descriptor);
             } else if(CLIENT_EVENT_TAG.equals(ext.getName())) {
                 var descriptor = new WSClientEventDescriptor(ext);
-                clientEvents.add(descriptor);
+                clientEvents.put(descriptor.getId(), descriptor);
             }
         }
     }
@@ -64,6 +73,6 @@ public class WSEventRegistry {
 
     @NotNull
     public List<WSClientEventDescriptor> getClientEvents() {
-        return new ArrayList<>(clientEvents);
+        return new ArrayList<>(clientEvents.values());
     }
 }

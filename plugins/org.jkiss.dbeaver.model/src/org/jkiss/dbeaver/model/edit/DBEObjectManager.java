@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -41,9 +42,9 @@ public interface DBEObjectManager<OBJECT_TYPE extends DBPObject> {
     String OPTION_ACTIVE_EDITOR = "activeEditor";
 
     void executePersistAction(
-        DBCSession session,
-        DBECommand<OBJECT_TYPE> command,
-        DBEPersistAction action)
-        throws DBException;
+        @NotNull DBCSession session,
+        @NotNull DBECommand<OBJECT_TYPE> command,
+        @NotNull DBEPersistAction action
+    ) throws DBException;
 
 }
