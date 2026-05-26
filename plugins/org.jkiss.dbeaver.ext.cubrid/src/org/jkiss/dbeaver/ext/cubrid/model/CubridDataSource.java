@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,8 +86,9 @@ public class CubridDataSource extends GenericDataSource
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     public String getCurrentUser() {
-        return getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+        return CommonUtils.notEmpty(getContainer().getActualConnectionConfiguration().getUserName()).toUpperCase();
     }
 
     public boolean isDBAGroup() {
@@ -202,12 +203,12 @@ public class CubridDataSource extends GenericDataSource
         return collationList;
     }
 
-    public void loadPrivilege(DBRProgressMonitor monitor) throws DBException {
+    public void loadPrivilege(@NotNull DBRProgressMonitor monitor) throws DBException {
         privilegeGroups = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load privilege Group")) {
             String query = wrapShardQuery("select db_user.name, user_group.name from db_user, table(groups) as groups_tb(user_group) where db_user.name = ?");
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                String currentUser = getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+                String currentUser = getCurrentUser();
                 dbStat.setString(1, currentUser);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
