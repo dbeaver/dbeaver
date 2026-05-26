@@ -34,6 +34,16 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
     }
 
     @Override
+    protected void onOpenContext() {
+        // don't log it
+    }
+
+    @Override
+    protected void onCloseContext() {
+        // don't log it
+    }
+
+    @Override
     public boolean isConnected() {
         return true;
     }
