@@ -112,6 +112,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
     private static final String DEFAULT_PROJECT_NAME = "General";
 
+    /**
+     * Specified in {@code dbeaver.ini} as a JVM parameter during packaging. Possible values are:
+     * <ul>
+     *     <li>{@code zip}, {@code exe}, {@code msstore} on Windows;</li>
+     *     <li>{@code deb}, {@code rpm} on Linux;</li>
+     *     <li>{@code dmg} on macOS.</li>
+     * </ul>
+     */
     public static final String PROP_DISTRIBUTION_TYPE = "dbeaver.distribution.type";
 
     private final Path FILE_WITH_WORKSPACES;
