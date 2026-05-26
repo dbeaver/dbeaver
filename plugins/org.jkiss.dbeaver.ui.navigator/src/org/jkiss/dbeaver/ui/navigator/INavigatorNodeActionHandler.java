@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
@@ -26,14 +28,16 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public interface INavigatorNodeActionHandler {
 
-    boolean isEnabledFor(INavigatorModelView view, DBNNode node);
+    boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node);
 
-    boolean isSticky(INavigatorModelView view, DBNNode node);
+    boolean isSticky(@NotNull INavigatorModelView view, @NotNull DBNNode node);
 
-    DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node);
+    @Nullable
+    DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node);
 
-    String getNodeActionToolTip(INavigatorModelView view, DBNNode node);
+    @Nullable
+    String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node);
 
-    void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction);
+    void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction);
 
 }

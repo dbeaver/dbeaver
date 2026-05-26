@@ -38,7 +38,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
-    private static final String GPT_LEGACY_API = "gpt.api.legacy";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -63,9 +62,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName(GPT_LOG_QUERY)
     private Boolean loggingEnabled;
 
-    @SerializedName(GPT_LEGACY_API)
-    private boolean useLegacyApi;
-
     public OpenAIProperties() {
     }
 
@@ -74,7 +70,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 2, required = true)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
-            return OpenAIClient.OPENAI_ENDPOINT;
+            return OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         return baseUrl;
     }
@@ -88,16 +84,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
-    }
-
-    @Override
-    @Property(order = 7)
-    public boolean isLegacyApi() {
-        return useLegacyApi;
-    }
-
-    public void setLegacyApi(boolean useLegacyApi) {
-        this.useLegacyApi = useLegacyApi;
     }
 
     public void setToken(@Nullable String token) {

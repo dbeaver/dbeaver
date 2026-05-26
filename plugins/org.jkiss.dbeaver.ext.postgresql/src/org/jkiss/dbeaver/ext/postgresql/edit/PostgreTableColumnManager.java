@@ -152,6 +152,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return object.getParentObject().getContainer().getSchema().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
         ColumnModifier[] modifiers = {

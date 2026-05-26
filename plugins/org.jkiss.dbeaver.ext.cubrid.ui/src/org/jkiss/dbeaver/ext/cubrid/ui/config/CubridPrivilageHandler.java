@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
@@ -28,21 +30,23 @@ public enum CubridPrivilageHandler implements DBEPropertyHandler<CubridPrivilage
     DESCRIPTION, GROUPS;
 
     @Override
-    public void reflectValueChange(CubridPrivilage object, Object oldValue, Object newValue) {
+    public void reflectValueChange(@NotNull CubridPrivilage object, @Nullable Object oldValue, @Nullable Object newValue) {
         // TODO Auto-generated method stub
         if (this == NAME) {
             object.setName(newValue.toString());
         }
     }
 
+    @NotNull
     @Override
     public String getId() {
         // TODO Auto-generated method stub
         return name();
     }
 
+    @NotNull
     @Override
-    public DBECommandComposite createCompositeCommand(CubridPrivilage object) {
+    public DBECommandComposite createCompositeCommand(@NotNull CubridPrivilage object) {
         // TODO Auto-generated method stub
         return new CubridCommandHandler(object);
     }

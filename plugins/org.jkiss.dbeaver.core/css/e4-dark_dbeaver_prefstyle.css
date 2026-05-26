@@ -93,3 +93,10 @@ CTabFolder {
     swt-selected-highlight-top: true;
     swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100% 100%;
 }
+
+ExpandableComposite,
+ExpandableCompositeEx {
+    swt-titlebar-color: #cccccc;
+	tb-toggle-hover-color: #F4F7F7;
+	tb-toggle-color: #F4F7F7;
+}
