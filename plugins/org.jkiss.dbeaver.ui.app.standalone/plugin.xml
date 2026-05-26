@@ -79,13 +79,13 @@
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Reset Settings..."
-            description="Reset settings and restart"/>
+            name="%command.org.jkiss.dbeaver.core.util.resetSettings.name"
+            description="%command.org.jkiss.dbeaver.core.util.resetSettings.description"/>
         <command
             id="org.jkiss.dbeaver.core.util.clearHistory"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Clear History..."
-            description="Clear logs, query history and restart"/>
+            name="%command.org.jkiss.dbeaver.core.util.clearHistory.name"
+            description="%command.org.jkiss.dbeaver.core.util.clearHistory.description"/>
         <command
                 id="org.jkiss.dbeaver.core.try.pro"
                 name="%command.org.jkiss.dbeaver.ui.try.pro.name"
@@ -98,8 +98,8 @@
                 categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command
                 id="org.jkiss.dbeaver.ui.window.minimize"
-                name="Minimize Window"
-                description="Minimize the current window"
+                name="%command.org.jkiss.dbeaver.ui.window.minimize.name"
+                description="%command.org.jkiss.dbeaver.ui.window.minimize.description"
                 categoryId="org.eclipse.ui.category.window"/>
     </extension>
 
