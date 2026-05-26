@@ -500,7 +500,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        boolean connect = dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
+        boolean connect = container != null && container.getPreferenceStore().getBoolean(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE);
         checkConnected(connect, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBWorkbench.getPlatformUI().showError(
@@ -3936,6 +3936,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        EditorPartContextualProperty contextualPropInfo = event.getProperty() == null
+            ? null
+            : EditorPartContextualProperty.findInfo(event.getProperty());
+        boolean triggersDataSourceChanged = contextualPropInfo == null || contextualPropInfo.triggersDataSourceChangedEvent;
+
         UIUtils.asyncExec(() -> {
             if (topBarMan != null) {
                 topBarMan.update(true);
@@ -3943,7 +3948,11 @@ public class SQLEditor extends SQLEditorBase implements
             this.updateMultipleResultsPerTabToolItem();
         });
         this.setCompletionContext(new SQLEditorCompletionContext(this));
-        fireDataSourceChanged(event);
+
+        if (triggersDataSourceChanged) {
+            fireDataSourceChanged(event);
+        }
+
         super.preferenceChange(event);
     }
 
