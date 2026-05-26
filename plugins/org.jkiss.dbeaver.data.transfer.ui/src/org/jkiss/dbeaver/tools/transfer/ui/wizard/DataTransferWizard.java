@@ -353,12 +353,17 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             IWizardPage[] pages = getPages();
             getContainer().showPage(pages[pages.length - 1]);
         }
-        DataTransferFeatures.DATA_TRANSFER.use(Map.of(
-            DataTransferFeatures.PARAM_TRANSFER_TYPE, settings.isProducerProcessor() ? "import" : "export",
-            DataTransferFeatures.PARAM_TRANSFER_DATA_TYPE, settings.getProcessor().getName(),
-            DataTransferFeatures.IS_TASK, isCurrentTaskSaved()
-            )
-        );
+        {
+            // Track feature
+            Map<String, Object> params = new LinkedHashMap<>();
+            params.put(DataTransferFeatures.PARAM_TRANSFER_TYPE,
+                settings.isProducerProcessor() ? "import" : "export");
+            if (settings.getProcessor() != null) {
+                params.put(DataTransferFeatures.PARAM_TRANSFER_DATA_TYPE, settings.getProcessor().getName());
+            }
+            params.put(DataTransferFeatures.IS_TASK, isCurrentTaskSaved());
+            DataTransferFeatures.DATA_TRANSFER.use(params);
+        }
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask == null) {
