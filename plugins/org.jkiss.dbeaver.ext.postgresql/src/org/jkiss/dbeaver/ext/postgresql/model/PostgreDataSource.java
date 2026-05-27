@@ -560,6 +560,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
                 newConfig.setUrl(newURL);
+                // Also patch the proxy source URL so DPI/UPD server connects to the requested database
+                String proxySourceUrl = newConfig.getProperty(DBConstants.PROP_PROXY_SOURCE_URL);
+                if (proxySourceUrl != null) {
+                    newConfig.setProperty(
+                        DBConstants.PROP_PROXY_SOURCE_URL,
+                        PostgreUtils.updateDatabaseNameInURL(proxySourceUrl, databaseName)
+                    );
+                }
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);
             } else {
                 pgConnection = super.openConnection(monitor, context, purpose);
@@ -606,8 +614,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public <T> T getAdapter(@NotNull Class<T> adapter)
-    {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
