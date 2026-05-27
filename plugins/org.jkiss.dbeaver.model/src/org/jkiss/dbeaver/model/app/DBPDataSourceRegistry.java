@@ -201,5 +201,9 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
+    // Can be called only once
+    // FIXME: move it in another abstraction
+    void initializeDataSources();
+
     void dispose();
 }
