@@ -517,7 +517,8 @@
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
 
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.2.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.2.6]" load-optional-dependencies="true"
+                          bundle="!drivers.redshift"/>
                     <file type="jar" path="maven:/com.fasterxml.jackson.core:jackson-core:RELEASE[2.16.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="jar" path="maven:/com.fasterxml.jackson.core:jackson-databind:RELEASE[2.16.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
 
