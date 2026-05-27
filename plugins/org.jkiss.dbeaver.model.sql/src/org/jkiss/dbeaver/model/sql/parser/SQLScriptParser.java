@@ -889,15 +889,9 @@ public class SQLScriptParser {
                             parameters = new ArrayList<>();
                         }
 
-                        String preparedParamName = null;
+                        String preparedParamName = SQLQueryParameter.stripVariablePattern(paramName);
                         String paramMark = paramName.substring(0, 1);
-                        if (paramMark.equals("$")) {
-                            String variableName = SQLQueryParameter.stripVariablePattern(paramName);
-                            if (!variableName.equals(paramName)) {
-                                preparedParamName = variableName;
-                            }
-                        }
-                        if (preparedParamName == null) {
+                        if (preparedParamName.equals(paramName)) {
                             if (ArrayUtils.contains(syntaxManager.getNamedParameterPrefixes(), paramMark)) {
                                 preparedParamName = paramName.substring(1);
                             } else {
@@ -948,7 +942,7 @@ public class SQLScriptParser {
                         }
 
                         if (param == null) {
-                            String paramName = matcher.group(SQLQueryParameter.VARIABLE_NAME_GROUP_NAME);
+                            String paramName = SQLQueryParameter.getVariableName(matcher);
                             param = new SQLQueryParameter(
                                 syntaxManager,
                                 orderPos,
