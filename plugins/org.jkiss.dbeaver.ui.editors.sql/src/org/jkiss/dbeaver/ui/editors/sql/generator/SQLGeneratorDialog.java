@@ -75,6 +75,10 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         createSaveToFileButton(parent);
         createRefreshButton(parent);
         super.createButtonsForButtonBar(parent);
+        Button copyButton = getButton(IDialogConstants.DETAILS_ID);
+        if (copyButton != null) {
+            copyButton.setEnabled(false);
+        }
     }
     
     @NotNull
