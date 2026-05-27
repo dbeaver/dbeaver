@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -113,8 +112,14 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    protected void bindParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
-        if (value instanceof DBDCollection collection && !((DBDValue) value).isNull()) {
+    protected void bindParameter(
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
+        int paramIndex,
+        @Nullable Object value
+    ) throws DBCException, SQLException {
+        if (value instanceof DBDCollection collection && !collection.isNull()) {
             statement.setObject(paramIndex, convertArrayToString(paramType, collection, DBDDisplayFormat.NATIVE, true), Types.OTHER);
         } else {
             super.bindParameter(session, statement, paramType, paramIndex, value);
