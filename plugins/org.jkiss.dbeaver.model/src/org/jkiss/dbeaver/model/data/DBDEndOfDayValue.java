@@ -34,10 +34,12 @@ public class DBDEndOfDayValue implements TemporalAccessor {
         LocalDateTime.ofInstant(Instant.ofEpochMilli(Duration.ofHours(24).toMillis()), ZoneId.of(ZoneOffset.UTC.getId()))
     );
 
+    @NotNull
     public static DBDEndOfDayValue withoutOffset() {
         return INSTANCE;
     }
 
+    @NotNull
     public static DBDEndOfDayValue withOffset(@NotNull ZoneOffset offset) {
         return new DBDOffsetEndOfDayValue(offset);
     }
@@ -67,6 +69,7 @@ public class DBDEndOfDayValue implements TemporalAccessor {
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "24:00:00";

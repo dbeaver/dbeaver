@@ -30,6 +30,7 @@ public class DBDOffsetEndOfDayValue extends DBDEndOfDayValue {
         this.offset = offset;
     }
 
+    @NotNull
     public ZoneOffset getOffset() {
         return this.offset;
     }
@@ -48,6 +49,7 @@ public class DBDOffsetEndOfDayValue extends DBDEndOfDayValue {
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "24:00:00" + offset;
