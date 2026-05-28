@@ -271,9 +271,7 @@ public class SQLSemanticProcessor {
         List<DBDAttributeConstraint> orderConstraints = filter.getOrderConstraints();
         if (!CommonUtils.isEmpty(orderConstraints)) {
             for (DBDAttributeConstraint co : orderConstraints) {
-                String columnName = co.getAttributeName();
-                boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
-                Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, filter, co, forceNumeric);
+                Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, filter, co);
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
@@ -301,7 +299,12 @@ public class SQLSemanticProcessor {
         return DBUtils.isDynamicAttribute(attributeBinding.getAttribute());
     }
 
-    private static boolean isValidTableColumn(DBRProgressMonitor monitor, DBPDataSource dataSource, Table table, DBDAttributeConstraint co) throws DBException {
+    private static boolean isValidTableColumn(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @Nullable Table table,
+        @NotNull DBDAttributeConstraint co
+    ) throws DBException {
         DBSAttributeBase attribute = co.getAttribute();
 
         if (isDynamicAttribute(attribute)) {
@@ -327,10 +330,20 @@ public class SQLSemanticProcessor {
         return true;
     }
 
-    private static Expression getOrderConstraintExpression(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter, DBDAttributeConstraint co, boolean forceNumeric) throws DBException {
+    @Nullable
+    private static Expression getOrderConstraintExpression(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull PlainSelect select,
+        @NotNull DBDDataFilter filter,
+        @NotNull DBDAttributeConstraint co
+    ) throws DBException {
+        String columnName = co.getAttributeName();
+        boolean supportsIndexOrdering = dataSource.getSQLDialect().supportsColumnIndexOrdering();
+        boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
         Expression orderExpr;
         String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttributeName());
-        if (forceNumeric || attrName.isEmpty()) {
+        if (supportsIndexOrdering && (forceNumeric || attrName.isEmpty())) {
             int orderColumnIndex = SQLUtils.getConstraintOrderIndex(filter, co);
             if (orderColumnIndex == -1) {
                 throw new DBException("Can't generate column order: no position found");
@@ -359,7 +372,11 @@ public class SQLSemanticProcessor {
      * Searches in FROM and JOIN
      */
     @Nullable
-    public static Table getConstraintTable(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint constraint) {
+    public static Table getConstraintTable(
+        @NotNull DBPDataSource dataSource,
+        @NotNull PlainSelect select,
+        @NotNull DBDAttributeConstraint constraint
+    ) {
         String constrTable;
         DBSAttributeBase ca = constraint.getAttribute();
         if (ca instanceof DBDAttributeBinding binding) {
