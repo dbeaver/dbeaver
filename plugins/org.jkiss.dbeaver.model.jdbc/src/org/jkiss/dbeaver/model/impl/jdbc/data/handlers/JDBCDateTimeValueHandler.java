@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -174,10 +175,21 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (format == DBDDisplayFormat.NATIVE) {
+            // // Looks like it should have been like this, but this is not for hotfix, because touches everything
+            // value = switch (column.getTypeID()) {
+            //     case Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> getTimestampValue(value);
+            //     case Types.TIME, Types.TIME_WITH_TIMEZONE -> getTimeValue(value);
+            //     case Types.DATE -> getDateValue(value);
+            //     default -> value;
+            // };
             if (value instanceof LocalDate localDate) {
                 value = getDateValue(localDate);
             } else if (value instanceof LocalDateTime localDateTime) {
                 value = getTimestampValue(localDateTime);
+            } else if (value instanceof LocalTime localTime) {
+                value = getTimeValue(localTime);
+            } else if (value instanceof OffsetTime offsetTime) {
+                value = getTimeValue(offsetTime);
             }
             if (value instanceof Date) {
                 Format nativeFormat = getNativeValueFormat(column);

@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.model.data.DBDEndOfDayValue;
-import org.jkiss.dbeaver.model.data.DBDOffsetEndOfDayValue;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -146,6 +143,19 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
             return;
         }
         super.bindValueObject(session, statement, type, index, value);
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE) {
+            if (value instanceof DBDOffsetEndOfDayValue endOfDay) {
+                return "'" + TIME_END_OF_DAY_STRING + endOfDay.getOffset() + "'";
+            } else if (value instanceof DBDEndOfDayValue) {
+                return "'" + TIME_END_OF_DAY_STRING + "'";
+            }
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     @NotNull

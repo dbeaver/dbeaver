@@ -30,6 +30,10 @@ public class DBDOffsetEndOfDayValue extends DBDEndOfDayValue {
         this.offset = offset;
     }
 
+    public ZoneOffset getOffset() {
+        return this.offset;
+    }
+
     @Override
     public boolean isSupported(@NotNull TemporalField field) {
         return super.isSupported(field) || ChronoField.OFFSET_SECONDS.equals(field);
