@@ -176,8 +176,9 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     }
 
     public static class CatalogNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {
+        @Nullable
         @Override
-        public String transform(DBSObject object, String value) throws IllegalArgumentException {
+        public String transform(@NotNull DBSObject object, @Nullable String value) throws IllegalArgumentException {
             String catalogTerm = object.getDataSource().getInfo().getCatalogTerm();
             if (!CommonUtils.isEmpty(catalogTerm)) {
                 return catalogTerm + " " + ModelMessages.model_navigator_Name;

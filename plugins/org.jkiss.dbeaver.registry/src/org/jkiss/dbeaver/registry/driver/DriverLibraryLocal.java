@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -79,10 +80,9 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
-
 
     @Nullable
     @Override
@@ -93,7 +93,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             Path resolvedCache;
             List<DriverFileInfo> driverFileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
             if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
-                DriverFileInfo driverFileInfo = driverFileInfos.get(0);
+                DriverFileInfo driverFileInfo = driverFileInfos.getFirst();
                 resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile().toString());
             } else {
                 // need to correct driver initialization, otherwise, if at least one file was copied,
@@ -151,6 +151,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         return platformFile;
     }
 
+    @NotNull
     private Path resolveCacheDir() {
         if (isUseOriginalJar()) {
             return DriverDescriptor.getProvidedDriversStorageFolder();
@@ -158,7 +159,10 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         if (DBWorkbench.isDistributed() || isCustom()) {
             return DriverDescriptor.getExternalDriversStorageFolder();
         }
-
+        var providedFolder = DriverDescriptor.getProvidedDriversStorageFolder();
+        if (!IOUtils.isFileFromDefaultFS(providedFolder) && isDownloadable()) {
+            return DriverDescriptor.getExternalDriversStorageFolder();
+        }
         return DriverDescriptor.getProvidedDriversStorageFolder();
     }
 
@@ -208,6 +212,10 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     @NotNull
     @Override
     public DBIcon getIcon() {
+        // for distributed application driver libraries could not be located locally
+        if (DBWorkbench.isDistributed() && isDistributedDriverLibraryFolder()) {
+            return DBIcon.TREE_FOLDER_ADMIN;
+        }
         Path localFile = getLocalFile();
         if (localFile != null && Files.isDirectory(localFile)) {
             return DBIcon.TREE_FOLDER_ADMIN;
@@ -219,6 +227,24 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
                 default -> DBIcon.TYPE_UNKNOWN;
             };
         }
+    }
+
+    private boolean isDistributedDriverLibraryFolder() {
+        if (driver == null) {
+            return false;
+        }
+        List<DriverFileInfo> fileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
+        if (fileInfos == null || fileInfos.isEmpty()) {
+            log.warn("Driver files are empty for driver %s (%s)".formatted(driver.getId(), getId()));
+            return true;
+        }
+        if (fileInfos.size() > 1) {
+            return true;
+        }
+        // check that there are no file extensions in library, but resolved file has extension
+        String libraryExt = IOUtils.getFileExtension(getLocalFilePath());
+        String resolvedFileExt = IOUtils.getFileExtension(fileInfos.getFirst().getFile());
+        return CommonUtils.isEmpty(libraryExt) && !CommonUtils.isEmpty(resolvedFileExt);
     }
 
     /**

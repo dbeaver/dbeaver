@@ -1,0 +1,164 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.cli.model.option;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.cli.CLIException;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
+import org.jkiss.utils.CommonUtils;
+import picocli.CommandLine;
+
+public class DataSourceOptions implements DataSourceUpdater {
+    public static final String OPTION_DATABASE = "--database";
+    public static final String OPTION_HOST = "--host";
+    public static final String OPTION_PORT = "--port";
+    public static final String OPTION_USER = "--user";
+    public static final String OPTION_PASSWORD = "--user";
+    @Nullable
+    @CommandLine.ArgGroup(exclusive = true)
+    private ConnectionOptions connectionOptions;
+
+    private static class ConnectionOptions {
+        @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
+        private String url;
+
+        @CommandLine.ArgGroup(exclusive = false)
+        private ConnectionDetails connectionDetails;
+    }
+
+    private static class ConnectionDetails {
+        @CommandLine.Option(names = {OPTION_HOST}, arity = "1", description = "Database host")
+        private String host;
+
+        @CommandLine.Option(names = {OPTION_DATABASE}, arity = "1", description = "Database name")
+        private String dbName;
+
+        @CommandLine.Option(names = {"--server"}, arity = "1", description = "Database server")
+        private String server;
+
+        @CommandLine.Option(names = {OPTION_PORT}, arity = "1", description = "Database port")
+        private Integer port;
+    }
+
+    @Nullable
+    @CommandLine.Option(names = {"--auth-model"}, arity = "1", description = "Database auth model")
+    private String authModel;
+
+    @Nullable
+    @CommandLine.Option(names = {"--folder"}, arity = "1", description = "Connection folder")
+    private String folder;
+
+    @Nullable
+    @CommandLine.Option(names = {"--name"}, arity = "1", description = "Connection name")
+    private String dataSourceName;
+
+    @CommandLine.Option(
+        names = {"--save-password"},
+        arity = "1",
+        defaultValue = "true",
+        description = "Save password"
+    )
+    private boolean savePassword;
+
+    @Nullable
+    public String getAuthModel() {
+        return authModel;
+    }
+
+    @Nullable
+    public String getFolder() {
+        return folder;
+    }
+
+    @Nullable
+    public String getHost() {
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.host;
+        }
+        return null;
+    }
+
+    @Nullable
+    public Integer getPort() {
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.port;
+        }
+        return null;
+    }
+
+    @Nullable
+    public String getServer() {
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.server;
+        }
+        return null;
+    }
+
+    @Nullable
+    public String getUrl() {
+        if (connectionOptions != null) {
+            return connectionOptions.url;
+        }
+        return null;
+    }
+
+    @Nullable
+    public String getDbName() {
+        if (connectionOptions != null && connectionOptions.connectionDetails != null) {
+            return connectionOptions.connectionDetails.dbName;
+        }
+        return null;
+    }
+
+    @Nullable
+    public String getDatasourceName() {
+        return dataSourceName;
+    }
+
+    public boolean isSavePassword() {
+        return savePassword;
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+        String dsName = getDatasourceName();
+        var registry = dataSource.getRegistry();
+        if (CommonUtils.isNotEmpty(dsName)) {
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        } else if (CommonUtils.isEmpty(dataSource.getName()) || dataSource.getName().equals("?")) {
+            dsName = dataSource.getDriver().getName();
+            if (CommonUtils.isNotEmpty(getDbName())) {
+                dsName += " - " + getDbName();
+            } else if (CommonUtils.isNotEmpty(getHost())) {
+                dsName += " - " + getHost();
+            } else if (CommonUtils.isNotEmpty(getServer())) {
+                dsName += " - " + getServer();
+            }
+            dataSource.setName(DataSourceUtils.generateUniqueDataSourceName(registry, dsName, 0));
+        }
+        if (CommonUtils.isNotEmpty(getFolder())) {
+            DBPDataSourceFolder registryFolder = registry.getFolder(getFolder());
+            dataSource.setFolder(registryFolder);
+        }
+        dataSource.setSavePassword(isSavePassword());
+    }
+
+}

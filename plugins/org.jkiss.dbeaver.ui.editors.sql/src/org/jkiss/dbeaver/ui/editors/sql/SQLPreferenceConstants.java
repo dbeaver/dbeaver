@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,7 +223,8 @@ public class SQLPreferenceConstants {
 
     public static final String SCRIPT_DELETE_EMPTY                      = "script.delete.empty"; //$NON-NLS-1$
     public static final String SCRIPT_AUTO_FOLDERS                      = "script.auto.folders"; //$NON-NLS-1$
-    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS         = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS = "script.auto.connection.attach"; //$NON-NLS-1$
     public static final String SCRIPT_TITLE_PATTERN                     = "script.title.pattern"; //$NON-NLS-1$
     public static final String SCRIPT_FILE_NAME_PATTERN                 = "script.file.name.pattern";
 
@@ -248,8 +249,6 @@ public class SQLPreferenceConstants {
     public static final String EDITOR_CONNECT_ON_ACTIVATE               = "database.editor.connect.on.activate"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_EXECUTE                = "database.editor.connect.on.execute"; //$NON-NLS-1$
 
-    public static final String CONFIRM_DANGER_SQL                       = "dangerous_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_DROP_SQL                         = "drop_sql"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE              = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_RESULT_TABS_CLOSE                = "close_result_tabs"; //$NON-NLS-1$
     public static final String CONFIRM_SAVE_SQL_CONSOLE                 = "save_sql_console"; //$NON-NLS-1$

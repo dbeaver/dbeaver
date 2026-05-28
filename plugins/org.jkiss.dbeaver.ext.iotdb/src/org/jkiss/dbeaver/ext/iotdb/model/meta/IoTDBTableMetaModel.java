@@ -26,11 +26,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.List;
 
 public class IoTDBTableMetaModel extends GenericMetaModel {
 
@@ -138,18 +140,22 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
             String sql = String.format("select * from information_schema.tables where database like '%s'", databaseName);
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                ttl = rs.getString("ttl(ms)");
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    if (rs != null && rs.next()) {
+                        ttl = rs.getString("ttl(ms)");
+                    }
+                }
             }
         } catch (Exception e) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
-                String sql = String.format("show tables details from %s", databaseName);
-                JDBCStatement stmt = session.createStatement();
-                JDBCResultSet rs = stmt.executeQuery(sql);
-                while (rs.next()) {
-                    ttl = rs.getString("TTL(ms)");
+                String sql = String.format("show tables details from %s", DBUtils.getQuotedIdentifier(((DBSEntity)sourceObject).getDataSource(), databaseName, true, true));
+                try (JDBCStatement stmt = session.createStatement()) {
+                    try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                        if (rs != null && rs.next()) {
+                            ttl = rs.getString("TTL(ms)");
+                        }
+                    }
                 }
             } catch (Exception e1) {
                 log.error("Error executing sql", e1);
@@ -157,7 +163,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         }
 
         if (ttl.equals("INF")) {
-            ttl = "'INF'";
+            ttl = SQLUtils.quoteString(sourceObject, "INF");
         }
 
         return ttl;
@@ -168,32 +174,9 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                                                   String databaseName,
                                                   String insertTableName,
                                                   String ttl) throws SQLException {
-        StringBuilder toAppend = new StringBuilder(200);
         String sql = String.format(
                 "select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
-        JDBCStatement stmt = session.createStatement();
-        JDBCResultSet rs = stmt.executeQuery(sql);
-        toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-        while (rs.next()) {
-            toAppend.append("\t").append(rs.getString("column_name")).append(" ");
-            toAppend.append(rs.getString("datatype")).append(" ");
-            toAppend.append(rs.getString("category"));
-            String columnComment = rs.getString("comment");
-            if (columnComment != null && !columnComment.isEmpty()) {
-                toAppend.append(" COMMENT '").append(columnComment).append("'");
-            }
-            toAppend.append(",\n");
-        }
-        toAppend.setLength(toAppend.length() - 2);
-        String tableComment = ((DBSEntity) sourceObject).getDescription();
-        if (tableComment != null && !tableComment.isEmpty()) {
-            toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
-            toAppend.append("WITH (TTL=").append(ttl).append(");");
-        } else {
-            toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
-        }
-
-        return toAppend.toString();
+        return getTableDDLWithSQL(session, sourceObject, insertTableName, ttl, sql, List.of("column_name", "datatype", "category", "comment"));
     }
 
     private String getTableDDLInfoWithoutISPrivilege(JDBCSession session,
@@ -201,30 +184,45 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                                                      String databaseName,
                                                      String insertTableName,
                                                      String ttl) throws SQLException {
-        StringBuilder toAppend = new StringBuilder(200);
         String sql = String.format("desc %s.%s details", databaseName, insertTableName);
-        JDBCStatement stmt = session.createStatement();
-        JDBCResultSet rs = stmt.executeQuery(sql);
-        toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-        while (rs.next()) {
-            toAppend.append("\t").append(rs.getString("ColumnName")).append(" ");
-            toAppend.append(rs.getString("DataType")).append(" ");
-            toAppend.append(rs.getString("Category"));
-            String columnComment = rs.getString("Comment");
-            if (columnComment != null && !columnComment.isEmpty()) {
-                toAppend.append(" COMMENT '").append(columnComment).append("'");
-            }
-            toAppend.append(",\n");
-        }
-        toAppend.setLength(toAppend.length() - 2);
-        String tableComment = ((DBSEntity) sourceObject).getDescription();
-        if (tableComment != null && !tableComment.isEmpty()) {
-            toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
-            toAppend.append("WITH (TTL=").append(ttl).append(");");
-        } else {
-            toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
-        }
+        return getTableDDLWithSQL(session, sourceObject, insertTableName, ttl, sql, List.of("ColumnName, DataType, Category, Comment"));
+    }
 
+    @NotNull
+    private String getTableDDLWithSQL(
+            @NotNull JDBCSession session,
+            @NotNull GenericTableBase sourceObject,
+            @NotNull String insertTableName,
+            @NotNull String ttl,
+            @NotNull String sql,
+            @NotNull List<String> columnTitles) throws SQLException {
+        StringBuilder toAppend = new StringBuilder(200);
+        try (JDBCStatement stmt = session.createStatement()) {
+            try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                toAppend.append("CREATE TABLE ").append(DBUtils.getQuotedIdentifier(((DBSEntity)sourceObject).getDataSource(), insertTableName)).append(" (\n");
+                boolean hasColumn = false;
+                while (rs.next()) {
+                    hasColumn = true;
+                    toAppend.append("\t").append(rs.getString(columnTitles.get(0))).append(" ");
+                    toAppend.append(rs.getString(columnTitles.get(1))).append(" ");
+                    toAppend.append(rs.getString(columnTitles.get(2)));
+                    String columnComment = rs.getString(columnTitles.get(3));
+                    if (columnComment != null && !columnComment.isEmpty()) {
+                        toAppend.append(" COMMENT ").append(SQLUtils.quoteString(sourceObject, columnComment)).append("");
+                    }
+                    toAppend.append(",\n");
+                }
+                if (hasColumn) {
+                    toAppend.setLength(toAppend.length() - 2);
+                }
+                String tableComment = sourceObject.getDescription();
+                toAppend.append("\n) ");
+                if (tableComment != null && !tableComment.isEmpty()) {
+                    toAppend.append("COMMENT ").append(SQLUtils.quoteString(sourceObject, tableComment)).append(" ");
+                }
+                toAppend.append("WITH (TTL=").append(ttl).append(");");
+            }
+        }
         return toAppend.toString();
     }
 

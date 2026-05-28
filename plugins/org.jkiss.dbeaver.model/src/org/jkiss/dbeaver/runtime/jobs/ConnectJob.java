@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -58,11 +58,12 @@ public class ConnectJob extends AbstractJob
         return connectError;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
+    protected IStatus run(@NotNull DBRProgressMonitor monitor)
     {
         try {
-            if (container.getDriver().isNotAvailable()) {
+            if (container.getDriver().getDriverStub() != null) {
                 throw new DBException(
                     "Driver " + container.getDriver().getFullName()+ " is not available." +
                     " Please see the connection page for more info.");
@@ -87,11 +88,7 @@ public class ConnectJob extends AbstractJob
         }
         catch (Throwable ex) {
             connectError = ex;
-            connectStatus = new Status(
-                IStatus.ERROR,
-                ModelPreferences.PLUGIN_ID,
-                GeneralUtils.getExceptionMessage(ex),
-                ex);
+            connectStatus = GeneralUtils.makeExceptionStatus(ex);
         }
 
         return Status.OK_STATUS;

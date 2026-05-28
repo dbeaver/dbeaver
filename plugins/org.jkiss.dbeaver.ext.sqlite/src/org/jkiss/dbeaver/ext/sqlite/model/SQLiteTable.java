@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.sqlite.internal.SQLiteMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -41,9 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,6 +84,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     }
 
     // We use ROWID only if we don't have primary key. Looks like it is the only way to determine ROWID column presence.
+    @Nullable
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
         if (hasPrimaryKey()) {
@@ -96,6 +93,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         return new DBDPseudoAttribute[] { PSEUDO_ATTR_ROWID };
     }
 
+    @NotNull
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (this.allPseudoAttributes == null) {
@@ -204,10 +202,30 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
     }
 
+    @Override
+    public Collection<SQLiteTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor.isForceCacheUsage()) {
+            return new ArrayList<>();
+        }
+        List<SQLiteTableForeignKey> list = new ArrayList<>();
+        for (GenericTableBase table : getDataSource().getTables(monitor)) {
+            Collection<? extends GenericTableForeignKey> tableForeignKeys = table.getAssociations(monitor);
+            if (Objects.nonNull(tableForeignKeys)) {
+                tableForeignKeys
+                    .stream()
+                    .filter(fk -> fk instanceof SQLiteTableForeignKey)
+                    .map(fk -> (SQLiteTableForeignKey) fk)
+                    .filter(fk -> fk.refersToTable(this))
+                    .forEach(list::add);
+            }
+        }
+        return list;
+    }
+
     public static class TableStrictTypingValidator implements IPropertyValueValidator<SQLiteTable, Object> {
 
         @Override
-        public boolean isValidValue(SQLiteTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull SQLiteTable object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource() instanceof SQLiteDataSource dataSource &&
                 dataSource.supportsStrictTyping();
         }

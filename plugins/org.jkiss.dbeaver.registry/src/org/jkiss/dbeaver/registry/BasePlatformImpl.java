@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPApplicationConfigurator;
-import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -36,32 +35,35 @@ import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.registry.settings.GlobalSettings;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * BaseWorkspaceImpl.
  * Base implementation of DBeaver platform for all products
  */
-public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
+public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator, DBPPlatformLanguageManager {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
@@ -69,9 +71,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
+    private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 
     public static final String CONFIG_FOLDER = ".config";
     public static final String FILES_FOLDER = ".files";
+
+    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     protected OSDescriptor localSystem;
 
@@ -85,7 +90,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private SQLDialectMetadataRegistry sqlDialectRegistry;
 
-    protected void initialize() {
+    private DBPPlatformLanguage platformLanguage;
+
+    protected Path tempFolder;
+
+    protected void initialize() throws DBException {
         log.debug("Initialize base platform...");
 
         DBPPreferenceStore prefStore = getPreferenceStore();
@@ -97,11 +106,26 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
             }
         });
 
+        {
+            this.platformLanguage = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
+            if (this.platformLanguage == null) {
+                log.debug("Language for locale '" + Locale.getDefault() + "' not found. Use default.");
+                this.platformLanguage = PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
+            }
+        }
+
         // Navigator model
         this.navigatorModel = createNavigatorModel();
         this.navigatorModel.setModelAuthContext(getWorkspace().getAuthContext());
         this.navigatorModel.initialize();
 
+        DBPApplication application = getApplication();
+        if (application.isHeadlessMode()) {
+            postInitialize();
+        }
+    }
+
+    public void postInitialize() {
         if (!getApplication().isExclusiveMode()) {
             // Activate plugin services
             activatePluginServices();
@@ -139,6 +163,13 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         }
         activatedServices.clear();
 
+        // Remove temp folder
+        if (tempFolder != null) {
+            if (!ContentUtils.deleteFileRecursive(tempFolder)) {
+                log.warn("Can not delete temp folder '" + tempFolder + "'");
+            }
+            tempFolder = null;
+        }
         // Dispose navigator model first
         // It is a part of UI
         disposeNavigatorModel();
@@ -174,10 +205,15 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public SQLDialectMetadataRegistry getSQLDialectRegistry() {
         if (sqlDialectRegistry == null) {
-            sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class, true);
+            BundleServiceRef<SQLDialectMetadataRegistry> registryRef = RuntimeUtils.getBundleService(
+                SQLDialectMetadataRegistry.class,
+                true
+            );
+            sqlDialectRegistry = registryRef.service();
             if (sqlDialectRegistry == null) {
                 throw new IllegalStateException("Cannot determine SQL dialect registry for " + getClass());
             }
+            registryRef.initializeService();
         }
         return sqlDialectRegistry;
     }
@@ -349,6 +385,83 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBPPlatformLanguage getPlatformLanguage() {
+        return platformLanguage;
+    }
+
+    @Override
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+        if (CommonUtils.equalObjects(language, this.platformLanguage)) {
+            return;
+        }
+
+        GlobalSettings.getInstance().setGlobalProperty(DBEAVER_PROP_LANGUAGE, language.getCode());
+        this.platformLanguage = language;
+        // This property is fake. But we set it to trigger property change listener
+        // which will ask to restart workbench.
+        getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
+    }
+
+    @NotNull
+    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+        if (tempFolder == null) {
+            // Make temp folder
+            try {
+                String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
+                if (!CommonUtils.isEmpty(tempFolderPath)) {
+                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, new SystemVariablesResolver());
+
+                    File dbTempFolder = new File(tempFolderPath);
+                    if (!dbTempFolder.mkdirs()) {
+                        throw new IOException("Can't create temp directory '" + dbTempFolder.getAbsolutePath() + "'");
+                    }
+                } else {
+                    tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
+                }
+                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
+                Path tmpFolder = Paths.get(tempFolderPath);
+                if (!Files.exists(tmpFolder)) {
+                    log.debug("Create global temp folder '" + tmpFolder + "'");
+                    Files.createDirectories(tmpFolder);
+                }
+                tempFolder = Files.createTempDirectory(tmpFolder, TEMP_PROJECT_NAME);
+            } catch (IOException e) {
+                final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
+                if (!CommonUtils.isEmpty(sysTempFolder)) {
+                    tempFolder = Path.of(sysTempFolder).resolve(TEMP_PROJECT_NAME);
+                    if (!Files.exists(tempFolder)) {
+                        try {
+                            Files.createDirectories(tempFolder);
+                        } catch (IOException ex) {
+                            final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
+                            if (!CommonUtils.isEmpty(sysUserFolder)) {
+                                tempFolder = Path.of(sysUserFolder).resolve(TEMP_PROJECT_NAME);
+                                if (!Files.exists(tempFolder)) {
+                                    try {
+                                        Files.createDirectories(tempFolder);
+                                    } catch (IOException exc) {
+                                        tempFolder = Path.of(TEMP_PROJECT_NAME);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Path localTemp = name == null ? tempFolder : tempFolder.resolve(name);
+        if (!Files.exists(localTemp)) {
+            try {
+                Files.createDirectories(localTemp);
+            } catch (IOException e) {
+                log.error("Can't create temp directory " + localTemp, e);
+            }
+        }
+        return localTemp;
     }
 
 }

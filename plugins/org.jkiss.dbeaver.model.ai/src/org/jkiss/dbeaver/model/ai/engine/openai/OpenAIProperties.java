@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -38,6 +38,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
+
     @Nullable
     @SerializedName(GPT_BASE_URL)
     private String baseUrl;
@@ -64,9 +65,13 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     public OpenAIProperties() {
     }
 
-    @Nullable
+    @NotNull
     @Override
+    @Property(order = 2, required = true)
     public String getBaseUrl() {
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            return OpenAIClientResponses.OPENAI_ENDPOINT;
+        }
         return baseUrl;
     }
 
@@ -76,7 +81,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 1, id = GPT_TOKEN, password = true)
+    @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
     }
@@ -85,8 +90,9 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         this.token = token;
     }
 
+    @Nullable
     @Override
-    @Property(order = 2, id = GPT_MODEL, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3, listProvider = OpenAIModelListProvider.class)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -103,9 +109,9 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    @Property(order = 3, id = GPT_MODEL_TEMPERATURE)
+    @Property(order = 4)
     public double getTemperature() {
-        if (temperature != null) {
+        if (temperature != null && Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
 
@@ -115,11 +121,11 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     public void setTemperature(double temperature) {
-        this.temperature = temperature;
+        this.temperature = AIUtils.normalizeTemperature(temperature);
     }
 
     @Override
-    @Property(order = 4, id = GPT_LOG_QUERY)
+    @Property(order = 5)
     public boolean isLoggingEnabled() {
         if (loggingEnabled != null) {
             return loggingEnabled;
@@ -127,7 +133,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
         return DBWorkbench.getPlatform()
             .getPreferenceStore()
-            .getBoolean(AIConstants.AI_LOG_QUERY);
+            .getBoolean(OpenAIConstants.AI_LOG_QUERY);
     }
 
     public void setLoggingEnabled(boolean loggingEnabled) {
@@ -136,7 +142,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 5, id = GPT_CONTEXT_WINDOW_SIZE, required = true)
+    @Property(order = 6)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -170,6 +176,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(OpenAIProperties object) {
             return OpenAIModels.KNOWN_MODELS.entrySet().stream()

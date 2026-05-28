@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.mysql.ui.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
@@ -44,7 +46,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         LoadingJob.createService(
             new DatabaseLoadService<List<MySQLGrant>>(MySQLUIMessages.editors_user_editor_abstract_load_grants, getDatabaseObject().getDataSource()) {
                 @Override
-                public java.util.List<MySQLGrant> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public java.util.List<MySQLGrant> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         return getDatabaseObject().getGrants(monitor);
                     } catch (DBException e) {
@@ -75,7 +77,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         public ProgressVisualizer<List<MySQLGrant>> createGrantsLoadVisualizer() {
             return new ProgressVisualizer<List<MySQLGrant>>() {
                 @Override
-                public void completeLoading(List<MySQLGrant> grants) {
+                public void completeLoading(@Nullable List<MySQLGrant> grants) {
                     super.completeLoading(grants);
                     processGrants(grants);
                 }
@@ -83,7 +85,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
         }

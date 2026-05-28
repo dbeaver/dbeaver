@@ -112,10 +112,10 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-            namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,distributed,bundleInstalled,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable,hasPreference,hasEnvVariable"
+            class="org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global.ui"
+            properties="hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
@@ -281,8 +281,8 @@
         </command>
 
         <command id="org.jkiss.dbeaver.core.new.folder" name="%command.org.jkiss.dbeaver.core.new.folder.name" description="%command.org.jkiss.dbeaver.core.new.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
-        <command id="org.jkiss.dbeaver.core.navigator.view.configure" name="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" description="%command.org.jkiss.dbeaver.core.navigator.view.configure.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" description="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.filter.focus" name="%command.org.jkiss.dbeaver.core.navigator.filter.focus.name" description="%command.org.jkiss.dbeaver.core.navigator.filter.focus.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.preferences" name="%command.org.jkiss.dbeaver.core.navigator.preferences.name" description="%command.org.jkiss.dbeaver.core.navigator.preferences.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.default" name="%command.org.jkiss.dbeaver.core.navigator.set.default.name" description="%command.org.jkiss.dbeaver.core.navigator.set.default.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.open.browser" name="%command.org.jkiss.dbeaver.core.navigator.open.browser.name" description="%command.org.jkiss.dbeaver.core.navigator.open.browser.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -329,11 +329,11 @@
         <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.new.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.navigator.view.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/link_to_editor.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.preferences" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.open.browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.svg"/>
         <image commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_native.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.show.in.explorer" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg"/>
         <image commandId="org.jkiss.dbeaver.ui.tools.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.svg"/>
         <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.svg"/>
 
@@ -700,7 +700,7 @@
         <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate">
             <enabledWhen>
                 <with variable="selection">
-                    <test property="org.jkiss.dbeaver.core.global.canCreateProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateProject"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -708,7 +708,7 @@
         <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSelect">
             <enabledWhen>
                 <with variable="selection">
-                    <test property="org.jkiss.dbeaver.core.global.hasMultipleProjects"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasMultipleProjects"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -874,7 +874,7 @@
         <handler commandId="org.jkiss.dbeaver.core.view.toggle" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerToggleView"/>
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerCollapseAll"/>
         <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerExpandAll"/>
-        <handler commandId="org.jkiss.dbeaver.core.navigator.view.configure" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerViewConfigure"/>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.filter.focus" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFocusFilter"/>
         <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -931,17 +931,17 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar?after=additions">
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.connected?after=additions">
             <separator name="filters" visible="true"/>
             <command commandId="org.jkiss.dbeaver.navigator.filter.connected"/>
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" id="org.jkiss.dbeaver.navigator.connectionFilterMenu" style="pulldown"/>
         </menuContribution>
 
-        <!-- Connection filter menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.connectionFilterMenu">
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="connection"/></command>
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="container"/></command>
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="table"/></command>
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.type?after=additions">
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" id="org.jkiss.dbeaver.navigator.filter.object.type.menu" style="pulldown"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.filter.object.type.menu">
+            <dynamic id="org.jkiss.dbeaver.navigator.filter.object.type.dynamic" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterObjectType$MenuContributor"/>
         </menuContribution>
 
         <!-- Tools toolbar -->
@@ -1017,6 +1017,9 @@
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
         <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceReadOnly" order="100">
+            <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+        </nodeAction>
+        <nodeAction class="org.jkiss.dbeaver.ui.navigator.actions.node.NNAHDataSourceConnectionView" order="50">
             <objectType name="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
         </nodeAction>
     </extension>

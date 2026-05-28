@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.Viewer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerSerializable;
@@ -88,7 +89,12 @@ public abstract class SQLPlanSaveProvider implements SQLPlanViewProvider {
     }
 
     @Override
-    public void contributeActions(Viewer viewer, IContributionManager contributionManager, SQLQuery lastQuery, DBCPlan lastPlan) {
+    public void contributeActions(
+        @NotNull Viewer viewer,
+        @NotNull IContributionManager contributionManager,
+        @NotNull SQLQuery lastQuery,
+        @NotNull DBCPlan lastPlan
+    ) {
         this.viewer = viewer;
 
         if (saveAction.isEnabled()) {

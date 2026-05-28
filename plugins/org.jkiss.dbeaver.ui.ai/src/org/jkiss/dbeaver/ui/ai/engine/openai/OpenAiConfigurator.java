@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
@@ -54,6 +53,7 @@ import java.util.Optional;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
@@ -75,7 +75,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngineDescriptor object,
+        @NotNull AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);
@@ -92,13 +92,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     public void loadSettings(@NotNull PROPERTIES configuration) {
         baseUrl = CommonUtils.toString(configuration.getBaseUrl());
         if (baseUrl.isEmpty()) {
-            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+            baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
 
@@ -125,17 +126,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     protected void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write AI queries to debug log",
-            "Write AI queries with metadata info in debug logs",
+            AIUIMessages.openai_configurator_log_query_label,
+            AIUIMessages.openai_configurator_log_query_tip,
             false,
             2
         );
-        logQueryCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                logQuery = logQueryCheck.getSelection();
-            }
-        });
+        logQueryCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            logQuery = logQueryCheck.getSelection()
+        ));
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
@@ -148,19 +146,20 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .map(AIModel::name)
                     .toList()
             )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            .withModifyListener(() ->
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
                             temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
                             temperatureText.setText("0.0");
+                            temperatureText.setEnabled(true);
                         }
-                    );
-            }))
-            .build();
+                    ))
+                .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -170,15 +169,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
-
-        temperatureText.setToolTipText("Lower temperatures give more precise results");
-        temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
+        temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
-    private List<AIModel> fetchOpenAiModels(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    private List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (token == null || token.isEmpty()) {
-            throw new DBException("Token is not set");
+            throw new DBException(AIUIMessages.openai_configurator_token_required);
         }
 
         OpenAIProperties properties = new OpenAIProperties();
@@ -201,7 +199,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         gd.widthHint = 150;
         tokenText.setLayoutData(gd);
         tokenText.addModifyListener((e -> token = tokenText.getText()));
-        tokenText.setMessage("API access token");
+        tokenText.setMessage(AIUIMessages.openai_configurator_token_placeholder);
         createURLInfoLink(parent);
     }
 
@@ -223,7 +221,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             NLS.bind(AIUIMessages.gpt_preference_page_token_info, getApiKeyURL()),
             new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void widgetSelected(@NotNull SelectionEvent e) {
                     UIUtils.openWebBrowser(getApiKeyURL());
                 }
             }
@@ -233,6 +231,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         link.setLayoutData(gd);
     }
 
+    @NotNull
     protected String getApiKeyURL() {
         return API_KEY_URL;
     }
@@ -257,6 +256,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @Override
+    @NotNull
     public Optional<AIEngineProperties> getCurrentProperties() {
         OpenAIProperties propertiesCopy = new OpenAIProperties();
         propertiesCopy.setBaseUrl(baseUrl);

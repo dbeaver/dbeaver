@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.themes.ITheme;
@@ -55,7 +54,6 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     private static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
 
-    @NotNull
     protected IResultSetController controller;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
 
@@ -85,14 +83,14 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     }
 
     protected void applyCurrentThemeSettings() {
-        applyThemeSettings(PlatformUI.getWorkbench().getThemeManager().getCurrentTheme());
+        applyThemeSettings(UIUtils.getCurrentTheme());
     }
 
     @Override
     public void dispose() {
     }
 
-    protected void applyThemeSettings(ITheme currentTheme) {
+    protected void applyThemeSettings(@NotNull ITheme currentTheme) {
 
     }
 
@@ -157,6 +155,14 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         return getCurrentAttribute();
     }
 
+    @Nullable
+    @Override
+    public ResultSetCellLocation getCurrentCellLocation() {
+        DBDAttributeBinding attr = this.getFocusAttribute();
+        ResultSetRow row = this.controller.getCurrentRow();
+        return attr == null || row == null ? null : new ResultSetCellLocation(attr, row);
+    }
+
     @Override
     public void showAttribute(@NotNull DBDAttributeBinding attribute) {
         // do nothing
@@ -197,6 +203,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
             manager,
             getCurrentAttribute(),
             controller.getCurrentRow(),
+            null,
             null,
             IResultSetController.ContextMenuLocation.UNKNOWN
         ));
@@ -279,6 +286,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         selectionChangedListenerList.remove(listener);
     }
 
+    @NotNull
     @Override
     public ISelection getSelection() {
         return EMPTY_SELECTION;

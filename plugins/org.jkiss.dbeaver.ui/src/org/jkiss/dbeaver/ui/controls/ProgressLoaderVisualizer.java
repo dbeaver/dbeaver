@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,10 +37,12 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.DurationFormat;
+import org.jkiss.dbeaver.utils.DurationFormatter;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 
 /**
  * PairListControl
@@ -72,11 +76,12 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
         this.progressMessage = "Initializing";
     }
 
+    @NotNull
     @Override
-    public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
+    public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor) {
         DBRProgressMonitor progressMonitor = new ProxyProgressMonitor(monitor) {
             @Override
-            public void subTask(String name) {
+            public void subTask(@NotNull String name) {
                 if (loadStartTime == 0) {
                     resetStartTime();
                 }
@@ -101,13 +106,13 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
     }
 
     @Override
-    public void completeLoading(RESULT result) {
+    public void completeLoading(@Nullable RESULT result) {
         this.finished = true;
     }
 
     @Override
     public void visualizeLoading() {
-        if (!progressPane.isDisposed()) {
+        if (progressPane != null && !progressPane.isDisposed()) {
             if (shadowColor == null) {
                 shadowColor = progressPane.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
             }
@@ -175,7 +180,10 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                     NLS.bind(
                         "{0} - {1}",
                         CommonUtils.truncateString(progressMessage.replaceAll("\\s", " "), 64),
-                        RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - loadStartTime)
+                        DurationFormatter.format(
+                            Duration.ofMillis(System.currentTimeMillis() - loadStartTime),
+                            DurationFormat.SHORT
+                        )
                     ),
                     buttonBounds.x + buttonBounds.width / 2,
                     buttonBounds.y - imageBounds.height - 10

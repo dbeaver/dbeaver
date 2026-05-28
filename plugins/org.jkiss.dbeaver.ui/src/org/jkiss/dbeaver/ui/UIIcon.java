@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,6 +131,8 @@ public class UIIcon {
     public static final DBIcon LOAD = new DBIcon("load", "file/load.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RESET = new DBIcon("reset", "file/reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon COMPARE = new DBIcon("compare", "file/compare.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon MOVE = new DBIcon("sql_move", "sql/sql_move.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COPY = new DBIcon("sql_copy", "sql/sql_copy.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ACCEPT = new DBIcon("accept", "sql/accept.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon REJECT = new DBIcon("reject", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon REVERT = new DBIcon("revert", "sql/revert.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -144,6 +146,7 @@ public class UIIcon {
     public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PRINT = new DBIcon("print", "misc/print.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EXPAND = new DBIcon("expand", "expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT = new DBIcon("edit", "edit.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -190,6 +193,7 @@ public class UIIcon {
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SECURITY = new DBIcon("security", "security.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon READONLY_RESOURCES = new DBIcon("readonly", "readonly_resources.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PERCENT = new DBIcon("percent", "misc/percent.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon SQL_NEW_CONNECTION = new DBIcon("sql_new_connection", "database_connect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -197,6 +201,7 @@ public class UIIcon {
     public static final DBIcon SQL_READONLY = new DBIcon("readonly", "sql/readonly.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONSOLE = new DBIcon("sql_console", "sql/sql_console.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT_CREATE = new DBIcon("sql_script_create", "sql/sql_script_create.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE = new DBIcon("sql_script_exec", "sql/sql_script_exec.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE_NATIVE = new DBIcon("sql_exec_native", "sql/sql_exec_native.svg");//$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_FALSE = new DBIcon(
@@ -241,7 +246,7 @@ public class UIIcon {
     public static final DBIcon NOTIFICATION_CLOSE_HOVER = new DBIcon("misc/notifications/notification-close-active.gif"); //$NON-NLS-1$
     
     public static final DBIcon SHOW_ALL_DETAILS = new DBIcon("misc/show_all_details.svg"); //$NON-NLS-1$
-    public static final DBIcon SHOW_MAIN_DETAILS = new DBIcon("misc/show_main_details.svg "); //$NON-NLS-1$
+    public static final DBIcon SHOW_MAIN_DETAILS = new DBIcon("misc/show_main_details.svg"); //$NON-NLS-1$
     public static final DBIcon HIDE_ALL_DETAILS = new DBIcon("misc/hide_all_details.svg"); //$NON-NLS-1$
 
     public static final DBIcon RUN = new DBIcon("run.svg"); //$NON-NLS-1$
@@ -254,6 +259,10 @@ public class UIIcon {
     public static final DBIcon OPEN = new DBIcon("file/open.png"); //$NON-NLS-1$
     public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
     public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
+
+    public static final DBIcon SIMPLE_MODE = new DBIcon("misc/simple_mode.svg");
+    public static final DBIcon CUSTOM_MODE = new DBIcon("misc/custom_mode.svg");
+    public static final DBIcon ADVANCED_MODE = new DBIcon("misc/advanced_mode.svg");
 
     static  {
         DBIcon.loadIcons(UIIcon.class);

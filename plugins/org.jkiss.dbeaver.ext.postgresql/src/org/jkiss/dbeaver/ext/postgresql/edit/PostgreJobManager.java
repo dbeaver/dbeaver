@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -62,14 +65,26 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
     }
 
     @Override
-    protected PostgreJob createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected PostgreJob createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final PostgreDatabase database = ((PostgreDataSource) container).getDefaultInstance();
         final String name = DBUtils.makeNewObjectName(monitor, "Job{0}", database, PostgreJob.class, PostgreDatabase::getJob, context);
         return new PostgreJob(monitor, database, name);
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) {
+    protected void addStructObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull StructCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final PostgreJob job = command.getObject();
         final StringJoiner values = new StringJoiner(", ", "(", ")");
 
@@ -118,7 +133,7 @@ public class PostgreJobManager extends SQLStructEditor<PostgreJob, PostgreDataSo
 
         actions.add(new SQLDatabasePersistAction("Create job", buffer.toString()) {
             @Override
-            public void afterExecute(@NotNull DBCSession session, @Nullable DBCStatement stmt, @Nullable Throwable error) throws DBCException {
+            public void afterExecute(@NotNull DBCSession session, @Nullable DBCStatement stmt, @Nullable Throwable error) throws DBException {
                 if (stmt == null || error != null) {
                     return;
                 }

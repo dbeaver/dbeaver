@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -62,7 +62,10 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 if (provider.isTemporary()) {
                     continue;
                 }
-                List<DriverDescriptor> drivers = provider.getDrivers().stream().filter(DriverDescriptor::isModified)
+                List<DriverDescriptor> drivers = provider.getDrivers().stream()
+                    .filter(DriverDescriptor.class::isInstance)
+                    .map(DriverDescriptor.class::cast)
+                    .filter(DriverDescriptor::isModified)
                     .collect(Collectors.toList());
                 drivers.removeIf(driverDescriptor -> driverDescriptor.getReplacedBy() != null);
                 if (drivers.isEmpty()) {
@@ -213,6 +216,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                             // we need to relativize path and exclude path variables in config file
                                             normalizedFilePath = DriverUtils.getDistributedLibraryPath(file.getFile()).replace('\\', '/');
                                         }
+                                        if (!IOUtils.isFileFromDefaultFS(file.getFile()) && file.getFile().isAbsolute()) {
+                                            // relativize path to workspace folder because in external fs path
+                                            // may contain additional information like a bucket name
+                                            var workspaceFolder = DBWorkbench
+                                                .getPlatform().getWorkspace()
+                                                .getAbsolutePath();
+                                            normalizedFilePath = workspaceFolder.relativize(file.getFile()).toString();
+                                        }
                                         xml.addAttribute(
                                             RegistryConstants.ATTR_PATH,
                                             substitutePathVariables(pathSubstitutions, normalizedFilePath)
@@ -244,13 +255,6 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         xml.addAttribute(RegistryConstants.ATTR_NAME, paramEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                     }
-                }
-            }
-
-            // Extra icon parameter for the custom driver
-            if (driver.isCustom()) {
-                try (XMLBuilder.Element ignored1 = xml.startElement(RegistryConstants.TAG_PARAMETER)) {
-                    xml.addAttribute(RegistryConstants.ATTR_ICON, driver.getIcon().getLocation());
                 }
             }
 
@@ -316,7 +320,15 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             return;
                         }
                     }
-                    curDriver = curProvider.getDriver(idAttr);
+                    DBPDriver driver = curProvider.getDriver(idAttr);
+                    if (driver == null) {
+                        curDriver = null;
+                    } else if (driver instanceof DriverDescriptor dd) {
+                        curDriver = dd;
+                    } else {
+                        log.error("Read-only driver " + idAttr + " was changed in the configuration");
+                        break;
+                    }
                     if (curDriver == null) {
                         curDriver = new DriverDescriptor(curProvider, idAttr);
                         curProvider.addDriver(curDriver);
@@ -333,7 +345,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             curDriver.setName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
                         }
                         curDriver.setDescription(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
-                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
+                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()), false);
                         curDriver.setSampleURL(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
                         curDriver.setDriverDefaultPort(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
                         curDriver.setDriverDefaultDatabase(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DEFAULT_DATABASE), curDriver.getDefaultDatabase()));
@@ -351,7 +363,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false)));
                     }
                     if (attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
-                        curDriver.setUseURL((
+                        curDriver.setUseURLTemplate((
                             CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
                     }
                     if (attributes.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {
@@ -428,22 +440,30 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         lib.setDisabled(true);
                     } else if (lib == null) {
                         lib = DriverLibraryAbstract.createFromPath(curDriver, type, path, version);
-                        curDriver.addDriverLibrary(lib, false);
-                    } else if (!CommonUtils.isEmpty(version) && lib instanceof DriverLibraryMavenArtifact mavenLib) {
-                        // Overwrite version only if it is higher than the original one
-                        String preferredVersion = CommonUtils.toString(lib.getPreferredVersion(), "0");
-                        int versionMatch = VersionUtils.compareVersions(version, preferredVersion);
-                        if (versionMatch > 0 || mavenLib.isForcedVersion()) {
-                            // Version in config higher than in bundles. Probably a manual update - just overwrite it.
-                            mavenLib.setPreferredVersion(version);
-                        } else if (versionMatch < 0 && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE)) {
-                            // Version in config is lower than in bundle. Probably it came from product version update - just reset it.
-                            mavenLib.resetVersion();
-                            isLibraryUpgraded = true;
+                        if (loaderId == null) {
+                            // Driver library will be loaded from the custom library provider if a loader is defined
+                            // (DriverLoaderDescriptor#getAllLibraries)
+                            curDriver.addDriverLibrary(lib, false);
                         }
-                    } else if (lib.isDisabled()) {
-                        // library was enabled in config file
-                        lib.setDisabled(false);
+                    } else {
+                        if (!CommonUtils.isEmpty(version) && lib instanceof DriverLibraryMavenArtifact mavenLib) {
+                            // Overwrite version only if it is higher than the original one
+                            String preferredVersion = CommonUtils.toString(lib.getPreferredVersion(), "0");
+                            int versionMatch = VersionUtils.compareVersions(version, preferredVersion);
+                            if (versionMatch > 0 || mavenLib.isForcedVersion()) {
+                                // Version in config higher than in bundles. Probably a manual update - just overwrite it.
+                                mavenLib.setPreferredVersion(version);
+                            } else if (versionMatch < 0 && DBWorkbench.getPlatform().getPreferenceStore()
+                                .getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE)) {
+                                // Version in config is lower than in bundle. Probably it came from product version update - just reset it.
+                                mavenLib.resetVersion();
+                                isLibraryUpgraded = true;
+                            }
+                        }
+                        if (lib.isDisabled()) {
+                            // library was enabled in config file
+                            lib.setDisabled(false);
+                        }
                     }
                     curLibrary = lib;
                     break;
@@ -456,11 +476,24 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             if (CommonUtils.isEmpty(path)) {
                                 log.warn("Empty path for library file");
                             } else {
+
+                                Path filePath = Path.of(path);
+                                if ((curDriver.isCustom() || curLibrary.isDownloadable())
+                                    && DBWorkbench.getPlatform().getApplication().isMultiuser()
+                                ) {
+                                    var workspaceFolder = DBWorkbench
+                                        .getPlatform().getWorkspace()
+                                        .getAbsolutePath();
+                                    if (!IOUtils.isFileFromDefaultFS(workspaceFolder)) {
+                                        filePath = workspaceFolder.resolve(path);
+                                    }
+                                }
                                 DriverFileInfo info = new DriverFileInfo(
                                         attributes.getValue(RegistryConstants.ATTR_ID),
                                         attributes.getValue(RegistryConstants.ATTR_VERSION),
                                         curLibrary.getType(),
-                                        Path.of(path), path);
+                                    filePath, path
+                                );
                                 String crcString = attributes.getValue("crc");
                                 if (!CommonUtils.isEmpty(crcString)) {
                                     long crc = Long.parseLong(crcString, 16);
@@ -488,15 +521,6 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         final String paramValue = attributes.getValue(RegistryConstants.ATTR_VALUE);
                         if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                             curDriver.setDriverParameter(paramName, paramValue, false);
-                        }
-                        // Read extra icon parameter for custom drivers
-                        if (curDriver.isCustom()) {
-                            final String iconParam = attributes.getValue(RegistryConstants.ATTR_ICON);
-                            if (!CommonUtils.isEmpty(iconParam)) {
-                                DBPImage icon = curDriver.iconToImage(iconParam);
-                                curDriver.setIconPlain(icon);
-                                curDriver.makeIconExtensions();
-                            }
                         }
                     }
                     break;

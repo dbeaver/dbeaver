@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
-public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
+public class PrefPageConnectionsGeneral extends AbstractPrefPage
+    implements IWorkbenchPreferencePage, IWorkbenchPropertyPage, NavigatorSettingsStorage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.connections";
 
     private static final String VALUE_TRUST_STORE_TYPE_WINDOWS = "WINDOWS-ROOT"; //$NON-NLS-1$
@@ -80,16 +81,20 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
         connectionNamePattern = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        defaultNavigatorSettings = DataSourceNavigatorSettings.PRESET_FULL.getSettings();
+        defaultNavigatorSettings = DataSourceNavigatorSettings.DEFAULT_PRODUCT_NAVIGATOR_SETTINGS;
     }
 
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group groupDefaults = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_default_settings, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite groupDefaults = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_connection_label_default_settings,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING);
             Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
             connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
@@ -125,7 +130,12 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
 
         {
-            Group groupBehavior = UIUtils.createControlGroup(composite, CoreMessages.pref_page_connection_label_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite groupBehavior = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_connection_label_general,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
             closeConnectionOnOsSleepCheck = UIUtils.createCheckbox(
                 groupBehavior,
                 CoreMessages.pref_page_connection_label_close_connection_on_sleep,
@@ -139,7 +149,10 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
 
         {
-            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
+            Composite groupObjects = UIUtils.createComposite(
+                composite,
+                1);
             Label descLabel = new Label(groupObjects, SWT.WRAP);
             descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
 
@@ -169,13 +182,12 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
 
     private void createWinstoreSettings(Composite composite) {
         if (RuntimeUtils.isWindows()) {
-            Group settings = UIUtils.createControlGroup(
+            Composite settings = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_connections_group_security,
                 2,
                 GridData.FILL_HORIZONTAL,
-                300
-            );
+                300);
             if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
                 || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
                 && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STORE_TYPE_WINDOWS))
@@ -206,7 +218,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
 
     private ConnectionNameResolver generateSampleDatasourceResolver() {
         final DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).get(0);
+        DBPDriver driver = DriverUtils.getRecentDrivers(DriverUtils.getAllDrivers(), 1).getFirst();
         DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
         conConfig.setHostName("hostname");
         conConfig.setUserPassword("password1");
@@ -234,13 +246,15 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     private void addLinkToSettings(Composite composite, String pageID) {
-        UIUtils.createPreferenceLink(
-            composite,
-            "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
-            pageID,
-            (IWorkbenchPreferenceContainer) getContainer(),
-            null
-        );
+        if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+            UIUtils.createPreferenceLink(
+                composite,
+                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
+                pageID,
+                wpc,
+                null
+            );
+        }
     }
 
     @Override
@@ -249,7 +263,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
     }
 
     @Override
-    public void setNavigatorSettings(DBNBrowseSettings settings) {
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings settings) {
         this.defaultNavigatorSettings = settings;
     }
 

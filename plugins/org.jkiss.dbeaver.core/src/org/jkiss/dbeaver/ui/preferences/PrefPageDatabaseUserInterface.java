@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -56,6 +59,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -64,8 +68,7 @@ import java.util.List;
 /**
  * PrefPageDatabaseUserInterface
  */
-public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main"; //$NON-NLS-1$
 
     private Button automaticUpdateCheck;
@@ -100,10 +103,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-            Group groupObjects = UIUtils.createControlGroup(
-                composite, CoreMessages.pref_page_ui_general_group_general, 2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0);
+            Composite groupObjects = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_general,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
             automaticUpdateCheck = UIUtils.createCheckbox(
                 groupObjects,
                 CoreMessages.pref_page_ui_general_checkbox_automatic_updates,
@@ -112,12 +117,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 2);
         }
         if (isStandalone) {
-            Group regionalSettingsGroup = UIUtils.createControlGroup(composite,
+            Composite regionalSettingsGroup = UIUtils.createTitledComposite(
+                composite,
                 CoreMessages.pref_page_ui_general_group_regional,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
             workspaceLanguage = UIUtils.createLabelCombo(regionalSettingsGroup,
                 CoreMessages.pref_page_ui_general_combo_language,
                 CoreMessages.pref_page_ui_general_combo_language_tip,
@@ -125,7 +129,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             );
             workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
-            DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getLanguage();
+            DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
             for (int i = 0; i < languages.size(); i++) {
                 PlatformLanguageDescriptor lang = languages.get(i);
                 workspaceLanguage.add(lang.getLabel());
@@ -154,7 +158,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             IContentProposalProvider proposalProvider = (contents, position) -> {
                 List<IContentProposal> proposals = new ArrayList<>();
                 for (String item : clientTimezone.getItems()) {
-                    if (item.toLowerCase().contains(contents.toLowerCase())) {
+                    if (StringUtils.containsIgnoreCase(item, contents.toLowerCase())) {
                         proposals.add(new ContentProposal(item));
                     }
                 }
@@ -173,10 +177,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
 
-            Group groupObjects = UIUtils.createControlGroup(
+            Composite groupObjects = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_ui_general_group_browser, 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
+                CoreMessages.pref_page_ui_general_group_browser,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
             if (RuntimeUtils.isWindows()) {
                 browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
@@ -221,12 +226,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
 
-        Group breadcrumbs = UIUtils.createControlGroup(
+        Composite breadcrumbs = UIUtils.createTitledComposite(
             composite,
             CoreMessages.pref_page_ui_status_bar,
             2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-            0
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
         );
         statusBarShowBreadcrumbsCheck = UIUtils.createCheckbox(
             breadcrumbs,
@@ -359,7 +363,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
                     .get(workspaceLanguage.getSelectionIndex());
-                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
+                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
 
                 try {
                     if (curLanguage != language) {

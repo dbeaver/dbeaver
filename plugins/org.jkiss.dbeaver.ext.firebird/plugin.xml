@@ -52,33 +52,6 @@
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
-
-<!--
-                <driver
-                        id="jaybird_embedded"
-                        label="Firebird Embedded"
-                        icon="icons/firebird_icon.png"
-                        class="org.firebirdsql.jdbc.FBDriver"
-                        sampleURL="jdbc:firebirdsql:embedded://{file}"
-                        embedded="true"
-                        webURL=""
-                        description="Firebird Jaybird embedded driver">
-
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk18:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
-
-                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jna.jar" bundle="drivers.firebird"/>
-
-                    <property name="encoding" value="UTF8"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
--->
-
             </drivers>
 
         </datasource>
@@ -98,6 +71,23 @@
         <dialect id="firebird" parent="generic" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdSQLDialect" label="Firebird" description="Firebird SQL dialect." icon="icons/firebird_icon.png">
             <property name="insertMethods" value="firebirdReplaceIgnore"/>
         </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <generator id="firebirdUpdateOrInsert"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorUpdateOrInsert"
+            label="UPDATE OR INSERT"
+            description="UPDATE OR INSERT INTO with MATCHING clause"
+            order="7">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
+        <generator id="firebirdExecuteBlock"
+            class="org.jkiss.dbeaver.ext.firebird.model.sql.generator.SQLGeneratorExecuteBlock"
+            label="EXECUTE BLOCK"
+            description="EXECUTE BLOCK with variable declarations"
+            order="8">
+            <objectType name="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
+        </generator>
     </extension>
 
 </plugin>

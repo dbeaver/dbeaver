@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -508,7 +508,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public void completeLoading(DBDContent result) {
+        public void completeLoading(@Nullable DBDContent result) {
             super.completeLoading(result);
             super.visualizeLoading();
         }
@@ -521,7 +521,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) {
+        public DBDContent evaluate(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Load LOB value");
@@ -543,7 +543,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public void completeLoading(DBDContent result) {
+        public void completeLoading(@Nullable DBDContent result) {
             super.completeLoading(result);
             // Clear placeholder
             UIUtils.disposeChildControls(editPlaceholder);
@@ -567,7 +567,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) {
+        public DBDContent evaluate(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Prime LOB value");
@@ -595,7 +595,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public void completeLoading(DBDContent result) {
+        public void completeLoading(@Nullable DBDContent result) {
             super.completeLoading(result);
         }
     }

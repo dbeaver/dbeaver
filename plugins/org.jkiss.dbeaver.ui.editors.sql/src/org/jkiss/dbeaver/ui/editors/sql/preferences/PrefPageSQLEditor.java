@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,23 +102,29 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 10);
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            ((GridData) connectionsGroup.getLayoutData()).horizontalSpan = 2;
+            Composite connectionsGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_connections,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0,
+                2
+            );
             editorSeparateConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(connectionsGroup, 3),
                 SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, DriverUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
+                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
                 editorSeparateConnectionCombo.setEnabled(false);
-            } else {
-                editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
-                    .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             }
+
             editorSeparateConnectionCombo.setToolTipText(
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, DriverUtils.collectSingleConnectionDrivers())
             );
@@ -128,7 +134,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Group autoSaveGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite autoSaveGroup = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             autoSaveOnChange = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_change, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_change_tip, false, 1);
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_close, false);
             saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false, 1);
@@ -136,8 +142,14 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-            ((GridData) layoutGroup.getLayoutData()).horizontalSpan = 2;
+            Composite layoutGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_result_view,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0,
+                2
+            );
 
             closeTabOnErrorCheck = UIUtils.createCheckbox(
                 layoutGroup,
@@ -172,51 +184,57 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                 .toList();
 
             if (!presentationToggles.isEmpty()) {
-                Group group = UIUtils.createControlGroup(
+                Composite group = UIUtils.createTitledComposite(
                     composite,
                     SQLEditorMessages.pref_page_sql_editor_group_presentations,
                     1,
                     GridData.VERTICAL_ALIGN_BEGINNING,
-                    0
+                    0,
+                    2
                 );
-                ((GridData) group.getLayoutData()).horizontalSpan = 2;
                 presentationToggles.forEach(toggle ->
                     toggle.button = UIUtils.createCheckbox(group, toggle.descriptor.getPrefLabel(), toggle.descriptor.getPrefTip(), true, 1)
                 );
             }
         }
 
-        {
-            Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+            Composite linksGroup = UIUtils.createComposite(composite, 1);
 
             UIUtils.createPreferenceLink(
                 linksGroup,
                 "<a>''{0}''</a> " + SQLEditorMessages.pref_page_sql_editor_link_text_editor,
                 PrefPageSQLEditor.TEXT_EDITOR_PAGE_ID,
-                (IWorkbenchPreferenceContainer) getContainer(), null
+                wpc, null
             );
             UIUtils.createPreferenceLink(
                 linksGroup,
                 SQLEditorMessages.pref_page_sql_editor_link_colors_and_fonts,
                 EditorUtils.COLORS_AND_FONTS_PAGE_ID,
-                (IWorkbenchPreferenceContainer) getContainer(), null
+                wpc, null
             );
         }
         return composite;
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         loadPreferences(getTargetPreferenceStore(), false);
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
-            store.setValue(
-                SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
-                editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
-            );
+            // Persist editor separate-connection preference only when appropriate:
+            // - global preferences (no data-source), or
+            // - data-source-specific preferences when the driver is not embedded.
+            DBPDataSourceContainer dsContainer = this.getDataSourceContainer();
+            if (dsContainer == null || !dsContainer.getDriver().isEmbedded()) {
+                store.setValue(
+                    SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
+                    editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
+                );
+            }
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 
@@ -275,6 +293,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;

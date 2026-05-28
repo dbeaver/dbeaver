@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Font baseFont;
     @ThemeFont(value = UIFonts.DBeaver.MAIN_FONT, bold = true)
     public volatile Font baseFontBold;
+    @ThemeFont(value = UIFonts.DBeaver.MAIN_FONT, italic = true)
+    public volatile Font baseFontItalic;
 
     @ThemeFont(value = UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS)
     public volatile Font treeAndTableFont;
@@ -50,6 +52,8 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Color colorError;
     @ThemeColor(BaseEditorColors.COLOR_WARNING)
     public volatile Color colorWarning;
+    @ThemeColor(BaseEditorColors.COLOR_ACCENT)
+    public volatile Color colorAccent;
 
     public static final BaseThemeSettings instance = new BaseThemeSettings();
 }

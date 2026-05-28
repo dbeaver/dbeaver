@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * ConnectionPageAbstract
@@ -154,8 +154,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         saveConnectionURL(dataSource.getConnectionConfiguration());
         if (savePasswordCheck != null) {
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
@@ -217,10 +216,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             UIUtils.createEmptyLabel(panel, 1, 1);
         }
 
-        Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 5;
-        divLabel.setLayoutData(gd);
+        UIUtils.createLabelSeparator(panel, SWT.HORIZONTAL, 5);
 
         {
             Composite driverInfoComp = UIUtils.createComposite(panel, 5);
@@ -365,7 +361,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void createConnectionModeSwitcher(Composite parent, SelectionListener typeSwitcher) {
         Label cnnTypeLabel = UIUtils.createControlLabel(parent, UIConnectionMessages.dialog_connection_mode_label);
-        cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         Composite modeGroup = UIUtils.createComposite(parent, 3);
         typeManualRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_host_label, false, typeSwitcher);
         typeURLRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_url_label, true, typeSwitcher);
@@ -377,12 +373,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent) {
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent) {
+        return createDriverSubstitutionControls(parent, 1, true);
+    }
+
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+        final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
         final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
 
         if (driverSubstitutions.length > 0) {
-            final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
-            substitutionGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).align(SWT.END, SWT.BEGINNING).create());
+            GridDataFactory.fillDefaults()
+                .grab(grab, false)
+                .span(hSpan, 1)
+                .align(SWT.END, SWT.BEGINNING)
+                .applyTo(substitutionGroup);
 
             driverSubstitutionCombo = UIUtils.createLabelCombo(
                 substitutionGroup,
@@ -407,6 +413,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 driverSubstitutionCombo.add(descriptor.getName());
             }
         }
+
+        return substitutionGroup;
     }
 
     protected boolean isHideNonApplicableControls() {

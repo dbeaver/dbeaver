@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
     protected GenericTableBase createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -88,13 +88,14 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
 
     @Override
     protected void addObjectModifyActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actionList,
-        @NotNull ObjectChangeCommand command,
-        @NotNull Map<String, Object> options
-    ) {
-        createOrReplaceViewQuery(actionList, command);
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull ObjectChangeCommand command,
+            @NotNull Map<String, Object> options) {
+        if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
+            createOrReplaceViewQuery(actionList, command);
+        }
     }
 
     private void createOrReplaceViewQuery(
@@ -190,17 +191,17 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canEditObject(GenericTableBase object) {
+    public boolean canEditObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableBase object) {
+    public boolean canDeleteObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

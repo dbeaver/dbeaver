@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, DBPAdaptable, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -141,7 +141,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) {
         // Recreate URL from parameters
         // Driver settings and URL template may have change since connection creation
         String connectionURL = getContainer().getDriver().getConnectionURL(connectionInfo);
@@ -300,6 +300,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return catalogs;
     }
 
+    @Nullable
     public GenericCatalog getCatalog(String name) {
         return DBUtils.findObject(getCatalogs(), name);
     }

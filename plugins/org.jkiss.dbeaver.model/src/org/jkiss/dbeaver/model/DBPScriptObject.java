@@ -57,7 +57,6 @@ public interface DBPScriptObject extends DBPObject {
 
     String OPTION_DDL_SKIP_FOREIGN_KEYS = "ddl.skipForeignKeys"; //$NON-NLS-1$
     String OPTION_DDL_ONLY_FOREIGN_KEYS = "ddl.onlyForeignKeys"; //$NON-NLS-1$
-    String OPTION_DDL_ONLY_PERSISTED_ATTRIBUTES = "ddl.onlyPersistedAttributes"; //$NON-NLS-1$
     String OPTION_SKIP_UNIQUE_KEYS = "ddl.skipUniqueKeys"; //$NON-NLS-1$
     String OPTION_SKIP_INDEXES = "ddl.skipIndexes"; //$NON-NLS-1$
     String OPTION_SKIP_DROPS = "ddl.skipDrops"; //$NON-NLS-1$
@@ -70,8 +69,10 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_INCLUDE_PARTITIONS = "ddl.includePartitions"; //$NON-NLS-1$
 
     String OPTION_USE_SPECIAL_NAME = "ddl.useSpecialName"; //$NON-NLS-1$
-    
+
     String OPTION_CAST_PARAMS = "sql.castParameter"; //$NON-NLS-1$
+
+    String OPTION_FORMAT_SQL = "sql.format"; //$NON-NLS-1$
 
     Map<String, Object> EMPTY_OPTIONS = Map.of();
 

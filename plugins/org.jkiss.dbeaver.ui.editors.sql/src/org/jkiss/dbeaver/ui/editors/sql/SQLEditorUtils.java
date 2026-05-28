@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
@@ -138,7 +139,7 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (String path : project.findResources(Map.of(EditorUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+            for (String path : project.findResources(Map.of(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, container.getId()))) {
                 final IResource resource = project.getRootResource().findMember(path);
                 if (resource instanceof IFile) {
                     result.add(new ResourceInfo((IFile) resource, container));
@@ -623,6 +624,13 @@ public class SQLEditorUtils {
             }
         }
         return result;
+    }
+
+    public static boolean isAttachScriptsToConnections() {
+        return DBWorkbench.isDistributed() ||
+            DBWorkbench.getPlatform()
+                .getPreferenceStore()
+                .getBoolean(SQLPreferenceConstants.SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS);
     }
     
     /**

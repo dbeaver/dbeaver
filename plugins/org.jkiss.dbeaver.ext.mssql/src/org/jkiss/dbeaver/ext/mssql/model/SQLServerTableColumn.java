@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
 
     public static class IdentityInfoValidator implements IPropertyCacheValidator<SQLServerTableColumn> {
         @Override
-        public boolean isPropertyCached(SQLServerTableColumn object, Object propertyId) {
+        public boolean isPropertyCached(@NotNull SQLServerTableColumn object, @NotNull Object propertyId) {
             return object.identityInfo.loaded;
         }
     }
@@ -139,14 +139,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
         }
         if (this.maxLength == 0) {
             this.maxLength = JDBCUtils.safeGetInt(dbResult, "max_length");
-
-            if (maxLength > 0 && SQLServerUtils.isUnicodeCharStoredAsBytePairs(getDataSource())) {
-                final String typeName = getTypeName();
-                if (typeName.equals(SQLServerConstants.TYPE_NVARCHAR) || typeName.equals(SQLServerConstants.TYPE_NCHAR)) {
-                    // https://docs.microsoft.com/en-us/sql/t-sql/data-types/nchar-and-nvarchar-transact-sql#arguments
-                    this.maxLength /= 2;
-                }
-            }
+            this.maxLength = SQLServerUtils.getDisplayMaxLength(getDataSource(), getTypeName(), CommonUtils.toInt(this.maxLength));
         }
         setRequired(JDBCUtils.safeGetInt(dbResult, "is_nullable") == 0);
         setScale(JDBCUtils.safeGetInteger(dbResult, "scale"));
@@ -432,6 +425,7 @@ public class SQLServerTableColumn extends JDBCTableColumn<SQLServerTableBase> im
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(SQLServerTableColumn object) {
             List<SQLServerDataType> allTypes = new ArrayList<>(object.getDataSource().getLocalDataTypes());

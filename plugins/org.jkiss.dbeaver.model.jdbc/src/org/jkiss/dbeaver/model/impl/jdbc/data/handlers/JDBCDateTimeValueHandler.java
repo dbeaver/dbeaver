@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -41,6 +39,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
 
@@ -60,7 +59,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
         Object value = super.getValueFromObject(session, type, object, copy, validateValue);
         if (value instanceof Date || value instanceof LocalDate || value instanceof LocalDateTime) {
             return switch (type.getTypeID()) {
@@ -235,7 +234,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Time.valueOf(localDate.atStartOfDay().toLocalTime());
         } else if (value instanceof LocalDateTime localDateTime) {
             return java.sql.Time.valueOf(localDateTime.toLocalTime());
-        } else if (value != null) {
+        } else if (value instanceof LocalTime localTime) {
+            return java.sql.Time.valueOf(localTime);
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            return new java.sql.Time(0);
+        }  else if (value != null) {
             return java.sql.Time.valueOf(value.toString());
         } else {
             return null;
@@ -252,6 +255,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Date.valueOf(localDate);
         } else if (value instanceof LocalDateTime localDateTime) {
             return java.sql.Date.valueOf(localDateTime.toLocalDate());
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            return new java.sql.Date(0);
         } else if (value != null) {
             return java.sql.Date.valueOf(value.toString());
         } else {
@@ -271,6 +276,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return Timestamp.valueOf(localDateTime);
         } else if (value instanceof OffsetDateTime offsetDateTime) {
             return Timestamp.valueOf((offsetDateTime.toLocalDateTime()));
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            return new Timestamp(0);
         } else if (value != null) {
             return Timestamp.valueOf(value.toString());
         } else {

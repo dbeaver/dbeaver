@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -753,7 +753,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
         } else if (adapter == SQLHelpProvider.class) {
@@ -1061,6 +1061,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     /**
+     * Returns true if ADD COLUMN syntax is required for column creation.
+     */
+    @Association
+    public boolean supportsAlterTableAddColumn() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("alter-table-add-column"), false);
+    }
+
+    /**
      * Returns true if local clients using is supported.
      */
     @Association
@@ -1141,7 +1149,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+    protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
         super.fillConnectionProperties(connectionInfo, connectProps);
 
         if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {

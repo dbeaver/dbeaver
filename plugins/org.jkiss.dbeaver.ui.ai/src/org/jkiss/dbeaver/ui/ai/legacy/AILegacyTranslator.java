@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,8 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
-import org.jkiss.dbeaver.ui.ai.internal.AIFeatures;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,7 +57,7 @@ public class AILegacyTranslator {
 
     public void performAiTranslation(ExecutionEvent event) {
         // CE legacy popup
-        AIFeatures.SQL_AI_POPUP.use();
+        AIUIFeatures.SQL_AI_POPUP.use();
 
         if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             return;
@@ -68,22 +67,24 @@ public class AILegacyTranslator {
         }
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();
         if (dataSourceContainer == null) {
-            DBWorkbench.getPlatformUI().showError("No datasource", "Connection must be associated with the SQL script");
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_no_datasource_title,
+                AIUIMessages.legacy_translator_error_no_datasource_message
+            );
             return;
         }
         DBCExecutionContext executionContext = editor.getExecutionContext();
         if (executionContext == null) {
-            DBWorkbench.getPlatformUI().showError("No connection", "You must connect to the database before performing completion");
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_no_connection_title,
+                AIUIMessages.legacy_translator_error_no_connection_message
+            );
             return;
         }
 
         try {
             if (!AIUtils.hasValidConfiguration()) {
-                UIUtils.showPreferencesFor(
-                    editor.getSite().getShell(),
-                    AISettingsManager.getInstance().getSettings(),
-                    AIPreferencePageMain.PAGE_ID
-                );
+                AIUIUtils.showPreferences(editor.getSite().getShell(), true);
                 return;
             }
 
@@ -107,7 +108,11 @@ public class AILegacyTranslator {
                 doAutoCompletion(executionContext, lDataSource, editor, aiCompletionPopup);
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_ai_title,
+                AIUIMessages.legacy_translator_error_ai_engine_message,
+                e
+            );
         }
     }
 
@@ -128,7 +133,10 @@ public class AILegacyTranslator {
             );
 
             if (sql == null || sql.isEmpty()) {
-                DBWorkbench.getPlatformUI().showError("AI error", "No smart completions returned");
+                DBWorkbench.getPlatformUI().showError(
+                    AIUIMessages.legacy_translator_error_ai_title,
+                    AIUIMessages.legacy_translator_error_no_completions_message
+                );
                 return;
             }
 
@@ -136,11 +144,15 @@ public class AILegacyTranslator {
 
             insertSqlCompletion(editor, sql);
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
+            DBWorkbench.getPlatformUI().showError(
+                AIUIMessages.legacy_translator_error_completion_title,
+                null,
+                e.getTargetException()
+            );
             return;
         }
 
-        AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
+        AIUIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", dataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "scope", popup.getScope().name()
         ));
@@ -164,21 +176,23 @@ public class AILegacyTranslator {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                AIDatabaseContext dbContext = new AIDatabaseContext.Builder(dataSource)
+                AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(dataSource)
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
-                    .setExecutionContext(executionContext)
-                    .build();
+                    .setExecutionContext(executionContext);
 
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
-                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
+                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant(workspace);
 
-                AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
+                AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
+                contextBuilder = sysPromptBuilder.configureDatabaseContext(contextBuilder);
+
                 AIMessage userMessage = AIMessage.userMessage(userInput);
+
+                AIDatabaseContext dbContext = contextBuilder.build();
                 AIAssistantResponse result = aiAssistant.generateText(
                     monitor,
-                    dbContext,
-                    sysPromptBuilder,
+                    new AIFunctionContext(monitor, dbContext, sysPromptBuilder),
                     List.of(userMessage)
                 );
 
@@ -222,7 +236,11 @@ public class AILegacyTranslator {
                 document.replace(offset, length, text);
                 editor.getSelectionProvider().setSelection(new TextSelection(offset + text.length(), 0));
             } catch (BadLocationException e) {
-                DBWorkbench.getPlatformUI().showError("Insert SQL", "Error inserting SQL completion in text editor", e);
+                DBWorkbench.getPlatformUI().showError(
+                    AIUIMessages.legacy_translator_error_insert_sql_title,
+                    AIUIMessages.legacy_translator_error_insert_sql_message,
+                    e
+                );
             }
         }
     }

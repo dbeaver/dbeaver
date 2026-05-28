@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -51,7 +52,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
  * TargetPrefPage
  */
 public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
-    static final Log log = Log.getLog(TargetPrefPage.class);
+    protected static final Log log = Log.getLog(TargetPrefPage.class);
 
     private IAdaptable element;
     private DBPDataSourceContainer dataSourceContainer;
@@ -80,12 +81,13 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     protected void createPreferenceHeader(Composite composite) {
     }
 
-    protected abstract void loadPreferences(DBPPreferenceStore store);
+    protected abstract void loadPreferences(@NotNull DBPPreferenceStore store);
 
-    protected abstract void savePreferences(DBPPreferenceStore store);
+    protected abstract void savePreferences(@NotNull DBPPreferenceStore store);
 
-    protected abstract void clearPreferences(DBPPreferenceStore store);
+    protected abstract void clearPreferences(@NotNull DBPPreferenceStore store);
 
+    @NotNull
     protected abstract String getPropertyPageID();
 
     @Nullable
@@ -182,8 +184,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
         }
 
-        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
+//        Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+//        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 2, 1));
+        UIUtils.createLabelSeparator(parent, SWT.HORIZONTAL);
 
         createPreferenceHeader(parent);
 

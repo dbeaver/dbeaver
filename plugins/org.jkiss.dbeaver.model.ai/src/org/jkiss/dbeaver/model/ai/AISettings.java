@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,50 +16,72 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
-import com.google.gson.ToNumberPolicy;
-import com.google.gson.reflect.TypeToken;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
-import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI global settings.
  * Keeps global parameters and configuration of all AI engines
  */
-public class AISettings implements IAdaptable {
+public class AISettings implements DBPAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
 
-    private static final Gson GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
-        .create();
+    private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
-    public static AIEngineProperties updatePropertiesFromMap(AIEngineProperties configuration, Map<String, Object> properties) {
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-
-        Map<String, Object> propMap = GSON.fromJson(GSON.toJson(configuration), type);
-        Map<String, Object> mergedMap = new LinkedHashMap<>(propMap);
-        mergedMap.putAll(properties);
-
-        return GSON.fromJson(GSON.toJsonTree(mergedMap), configuration.getClass());
+    public AISettings() {
     }
+
+    @NotNull
+    public Map<String, Object> getAllProperties() {
+        return properties;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(@NotNull String name) {
+        return (T) properties.get(name);
+    }
+
+    @NotNull
+    public <T> T getProperty(@NotNull String name, @NotNull T defaultValue) {
+        return Objects.requireNonNullElse(getProperty(name), defaultValue);
+    }
+
+    public void setProperty(@NotNull String name, @Nullable Object value) {
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
+    }
+
+    @NotNull
+    public Map<String, String> getCustomInstructions() {
+        return Map.copyOf(customInstructions);
+    }
+
+    @Nullable
+    public String getCustomInstructions(@NotNull String promptGeneratorId) {
+        return customInstructions.get(promptGeneratorId);
+    }
+
+    public void setCustomInstructions(@NotNull Map<String, String> instructions) {
+        customInstructions.clear();
+        customInstructions.putAll(instructions);
+    }
+
 
     public boolean isAiDisabled() {
         return aiDisabled;

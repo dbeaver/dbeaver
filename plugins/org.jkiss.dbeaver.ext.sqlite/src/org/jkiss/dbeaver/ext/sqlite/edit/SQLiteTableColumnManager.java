@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
+import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -43,6 +45,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
         return true;
     }
 
+    @NotNull
     @Override
     protected ColumnModifier[] getSupportedModifiers(
         GenericTableColumn column, Map<String, Object> options
@@ -61,12 +64,19 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
 
     @Override
     protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
-        SQLiteUtils.createTableAlterActions(
-            monitor,
-            "Drop column " + DBUtils.getQuotedIdentifier(command.getObject()),
-            command.getObject().getTable(),
-            actions
-        );
+        throw new DBException("Column deletion needs table recreation");
+    }
+
+    @Override
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableColumn object, @NotNull Map<String, Object> options) throws DBException {
+        ObjectDeleteCommand deleteCommand = new ObjectDeleteCommand(object, ModelMessages.model_jdbc_delete_object);
+        commandContext.addCommand(
+            deleteCommand,
+            new DeleteObjectReflector<>(this),
+            true);
+        if (object.getTable() instanceof SQLiteTable table && table.isPersisted()) {
+            SQLiteUtils.makeRecreateTableCommand(commandContext, table, deleteCommand);
+        }
     }
 
     @Override

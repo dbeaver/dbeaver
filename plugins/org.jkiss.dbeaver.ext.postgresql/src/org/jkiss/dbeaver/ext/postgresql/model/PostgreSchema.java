@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,12 +106,19 @@ public class PostgreSchema implements
         dataTypeCache = new PostgreDataTypeCache();
     }
 
+    @NotNull
     @Override
     public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return List.of(
-            this.database.getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME),
-            this.database.getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME)
-        );
+        PostgreSchema pgCatalogSchema = this.database.getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME);
+        PostgreSchema publicSchema = this.database.getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME);
+        List<DBSObjectContainer> result = new ArrayList<>();
+        if (publicSchema != null) {
+            result.add(publicSchema);
+        }
+        if (pgCatalogSchema != null) {
+            result.add(pgCatalogSchema);
+        }
+        return result;
     }
 
     @NotNull
@@ -442,7 +449,7 @@ public class PostgreSchema implements
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 """
-                    SELECT i.inhrelid relid, pc.relnamespace parent_ns, pc.oid parent_oid, i.inheritor
+                    SELECT i.inhrelid relid, pc.relnamespace parent_ns, pc.oid parent_oid, i.inhseqno
                     FROM pg_catalog.pg_inherits i, pg_class rc, pg_class pc
                     WHERE rc.oid=i.inhrelid AND rc.relnamespace=? AND pc.oid=i.inhparent""")) {
                 dbStat.setLong(1, getObjectId());

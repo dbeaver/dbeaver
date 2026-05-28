@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -842,6 +842,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "ANALYZE",
             "CONCURRENTLY",
             "FREEZE",
+            "MAINTAIN", // PostgreSQL 16+ table privilege (GRANT MAINTAIN ON TABLE ...)
             "LANGUAGE",
             "MODULE",
             "OFFSET",
@@ -991,7 +992,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         // Some data for some types of columns data types must be cast. It can be simple casting only with data type name like "::pg_class" or casting with fully qualified names for user defined types like "::schemaName.testType".
         // Or very special clauses with JSON and XML columns, when we have to cast both column data and column name to text.
         return getCastedString(attribute, expression, isInCondition, false);

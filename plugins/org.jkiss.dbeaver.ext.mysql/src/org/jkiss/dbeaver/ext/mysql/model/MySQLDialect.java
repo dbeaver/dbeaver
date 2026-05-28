@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         "ALGORITHM",
         "REPAIR",
         "ENGINE",
+        "MANUAL",
         "STRAIGHT_JOIN"
     };
 
@@ -266,7 +267,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String escapeString(String string) {
+    public String escapeString(@NotNull String string) {
         return escapeString(string, null);
     }
 
@@ -355,11 +356,16 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String getTypeCastClause(@NotNull DBSTypedObject attribute, @NotNull String expression, boolean isInCondition) {
+    public String getTypeCastClause(
+        @NotNull DBSTypedObject attribute,
+        @NotNull String expression,
+        boolean isInCondition,
+        boolean exprIsAttrRef
+    ) {
         if (isInCondition && attribute.getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_JSON)) {
             return "CAST(" + expression + " AS JSON)";
         } else {
-            return super.getTypeCastClause(attribute, expression, isInCondition);
+            return super.getTypeCastClause(attribute, expression, isInCondition, exprIsAttrRef);
         }
     }
 
@@ -449,6 +455,15 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public boolean supportsAlterHasColumn() {
-        return true;
+        return false;
+    }
+
+    @Nullable
+    @Override
+    public String getColumnCharsetModifier(@NotNull ColumnCharset charset) {
+        if (charset == ColumnCharset.ASCII) {
+            return "CHARACTER SET latin1";
+        }
+        return null;
     }
 }

@@ -79,8 +79,10 @@ public class SQLBackgroundParsingJob {
     private IDocument document = null;
     @NotNull
     private final AbstractJob job = new AbstractJob("Background parsing job") {
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+            this.setSkipErrorOnCanceling(true);
             try {
                 SQLBackgroundParsingJob.this.doWork(monitor);
                 return Status.OK_STATUS;

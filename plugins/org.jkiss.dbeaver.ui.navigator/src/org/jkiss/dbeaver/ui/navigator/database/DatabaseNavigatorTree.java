@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,9 +56,9 @@ import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -75,7 +75,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
-    private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
+    private static final String FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.connected"; //$NON-NLS-1$
+    private static final String FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.type"; //$NON-NLS-1$
     private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
     private static final boolean INLINE_RENAME_ENABLED = false;
 
@@ -701,8 +702,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 super("Rename ");
             }
 
+            @NotNull
             @Override
-            protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
                 try {
                     if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
                         final TreeItem itemToRename = selection;
@@ -983,20 +985,30 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter dnf && !dnf.isConnectionsOnly()) {
                 ((GridLayout) parent.getLayout()).numColumns++;
 
-                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-
-                ToolBarManager filterManager = new ToolBarManager();
+                final ToolBarManager filterManager = new ToolBarManager();
                 filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+                IWorkbenchWindow workbenchWindow = UIUtils.findWorkbenchWindow(parent);
+                if (workbenchWindow == null) {
+                    workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                }
+
+                var supportedObjectTypes = dnf.getSupportedObjectTypes();
                 final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
-                if (menuService != null) {
-                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
+                if (menuService != null && !CommonUtils.isEmpty(supportedObjectTypes) && supportedObjectTypes.size() > 1) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID);
+                    if (!supportedObjectTypes.contains(filterObjectType)) {
+                        ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_OBJECT_TYPE);
+                    }
+                }
+                if (menuService != null && supportedObjectTypes.contains(DatabaseNavigatorTreeFilterObjectType.connection)) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID);
                 }
 
                 filterManager.createControl(parent);
-
                 parent.addDisposeListener(e -> filterManager.dispose());
             }
 

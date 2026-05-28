@@ -65,7 +65,7 @@ public class DBNEmptyNode extends DBNNode
         return false;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {

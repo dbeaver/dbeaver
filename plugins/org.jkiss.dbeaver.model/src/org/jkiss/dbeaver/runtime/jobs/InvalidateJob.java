@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -109,8 +110,9 @@ public class InvalidateJob extends DataSourceJob
         this.feedbackHandler = feedbackHandler;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
+    protected IStatus run(@NotNull DBRProgressMonitor monitor)
     {
         DBPDataSource dataSource = getExecutionContext().getDataSource();
 
@@ -367,7 +369,7 @@ public class InvalidateJob extends DataSourceJob
                         txnManager.rollback(session, null);
                     }
                 }
-            } catch (DBCException e) {
+            } catch (DBException e) {
                 log.error("Error invalidating aborted transaction", e);
             }
         }

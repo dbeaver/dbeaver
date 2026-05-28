@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -153,7 +153,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
+    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, @Nullable DBRProgressListener onFinish) throws DBException {
         return DBUtils.initDataSource(monitor, dataSource, onFinish);
     }
 
@@ -182,12 +182,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     public boolean hasNetworkHandlers() {
-        for (DBWHandlerConfiguration handler : dataSource.getConnectionConfiguration().getHandlers()) {
-            if (handler.isEnabled()) {
-                return true;
-            }
-        }
-        return false;
+        return !DBWUtils.getActualNetworkHandlers(dataSource).isEmpty();
     }
 
     @Override

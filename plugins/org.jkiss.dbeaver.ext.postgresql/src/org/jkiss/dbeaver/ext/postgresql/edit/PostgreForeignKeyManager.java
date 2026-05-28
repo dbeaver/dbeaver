@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableForeignKey, PostgreTableBase> implements DBEObjectRenamer<PostgreTableForeignKey> {
 
     @Override
-    public boolean canRenameObject(PostgreTableForeignKey object) {
+    public boolean canRenameObject(@NotNull PostgreTableForeignKey object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
@@ -63,8 +63,13 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    protected PostgreTableForeignKey createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object from, @NotNull Map<String, Object> options)
-    {
+    protected PostgreTableForeignKey createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
+    ) {
         PostgreTableBase table = (PostgreTableBase) container;
         final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
             table,
@@ -76,7 +81,12 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableForeignKey> command, Map<String, Object> options) {
+    public StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase owner,
+        @NotNull DBECommandAbstract<PostgreTableForeignKey> command,
+        @NotNull Map<String, Object> options
+    ) {
         PostgreTableForeignKey fk = command.getObject();
         /*if (fk.isPersisted()) {
             try {

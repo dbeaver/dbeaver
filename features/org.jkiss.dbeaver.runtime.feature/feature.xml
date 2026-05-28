@@ -2,14 +2,13 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="DBeaver Runtime"
-        version="25.2.3.qualifier"
+        version="26.1.1.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.model">
 
     <description>Universal Database Manager Runtime</description>
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <!-- 3rd party -->
     <plugin id="slf4j.api" version="0.0.0" />
@@ -19,6 +18,7 @@
     <plugin id="bcpkix" version="0.0.0" />
     <plugin id="bcutil" version="0.0.0" />
 
+    <plugin id="picocli" version="0.0.0" />
     <plugin id="org.antlr.antlr4-runtime" version="0.0.0" />
     <plugin id="com.github.jsqlparser" version="0.0.0" />
     <plugin id="org.apache.commons.jexl" version="0.0.0" />

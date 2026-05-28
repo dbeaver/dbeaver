@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.tasks;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
@@ -55,7 +56,7 @@ public class OracleToolTableGatherStatisticsSettings extends SQLToolExecuteSetti
     public static class OracleStatisticPercentLimiter implements IPropertyValueValidator<OracleToolTableGatherStatisticsSettings, Object> {
 
         @Override
-        public boolean isValidValue(OracleToolTableGatherStatisticsSettings object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleToolTableGatherStatisticsSettings object, @Nullable Object value) throws IllegalArgumentException {
             int valueInt = CommonUtils.toInt(value);
             return 0 <= valueInt && valueInt <= 100;
         }

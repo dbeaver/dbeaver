@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -54,9 +55,14 @@ public class CopilotProperties implements AIEngineProperties {
     private boolean loggingEnabled;
 
     @Nullable
-    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true)
+    @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
+    }
+
+    @NotNull
+    public String getBaseAuthUrl() {
+        return CopilotConstants.BASE_AUTH_URL;
     }
 
     public void setToken(@Nullable String token) {
@@ -64,7 +70,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
-    @Property(order = 2, id = GPT_MODEL)
+    @Property(order = 2)
     public String getModel() {
         return model;
     }
@@ -73,17 +79,24 @@ public class CopilotProperties implements AIEngineProperties {
         this.model = model;
     }
 
-    @Property(order = 3, id = GPT_MODEL_TEMPERATURE)
+    @Override
+    @Property(order = 3)
     public double getTemperature() {
-        return temperature;
+        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+            return temperature;
+        }
+        return CopilotModels.getModelByName(model)
+            .map(AIModel::defaultTemperature)
+            .orElse(AIUtils.DEFAULT_TEMPERATURE);
     }
 
     public void setTemperature(double temperature) {
-        this.temperature = temperature;
+        this.temperature = AIUtils.normalizeTemperature(temperature);
     }
 
+    @Override
     @Nullable
-    @Property(order = 4, id = GPT_CONTEXT_WINDOW_SIZE)
+    @Property(order = 4)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -98,7 +111,7 @@ public class CopilotProperties implements AIEngineProperties {
         this.contextWindowSize = contextWindowSize;
     }
 
-    @Property(order = 5, id = GPT_LOG_QUERY)
+    @Property(order = 5)
     public boolean isLoggingEnabled() {
         return loggingEnabled;
     }

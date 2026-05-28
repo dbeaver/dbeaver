@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * PostgreExecutionContext
@@ -44,7 +45,6 @@ import java.util.List;
 public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
 
     private final List<String> searchPath = new ArrayList<>();
-    private List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
     private long activeSchemaId;
     private boolean isolatedContext;
@@ -135,16 +135,18 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         setDefaultCatalog(monitor, schema.getDatabase(), schema, false);
     }
 
-    boolean changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect, boolean force) throws DBCException {
+    boolean changeDefaultSchema(DBRProgressMonitor monitor, PostgreSchema schema, boolean reflect, boolean force) throws DBException {
         if (activeSchemaId == schema.getObjectId() && !force) {
             return false;
         }
-        if (schema.isExternal()) {
+        if (schema.isExternal() || schema.isSystem()) {
             return false;
         }
 
-        setSearchPath(monitor, schema);
-        setSearchPath(schema.getName());
+        if (!schema.isSystem() && !schema.isPublicSchema()) {
+            setSearchPath(monitor, schema.getName());
+            addSearchPath(schema.getName());
+        }
 
         final PostgreSchema oldActiveSchema = getDefaultSchema();
 
@@ -203,11 +205,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
             }
 
-            if (defaultSearchPath.isEmpty()) {
-                setUserInTheEndOfThePath(searchPath);
-                defaultSearchPath = new ArrayList<>(searchPath);
-            }
-
             if (useBootstrapSettings) {
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
                 String bsSchemaName = bootstrap.getDefaultSchemaName();
@@ -226,42 +223,45 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return true;
     }
 
+    @Nullable
     public String getActiveUser() {
         return activeUser;
     }
 
+    @NotNull
     public List<String> getSearchPath() {
         return searchPath;
     }
 
-    List<String> getDefaultSearchPath() {
-        return defaultSearchPath;
+    private void addSearchPath(@NotNull String path) {
+        searchPath.clear();
+        searchPath.add(path);
+        if (!path.contains(activeUser) && getDataSource().getServerType().supportsStandardSearchPath()) {
+            searchPath.add(activeUser);
+        }
     }
 
-    private void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
-        // Construct search path from current search path but put default schema first
-        setSearchPath(monitor, schema.getName());
-    }
-
-    private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
-        List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
+    private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBException {
+        List<String> newSearchPath = new ArrayList<>(searchPath);
         int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        /*if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
-            // Already default schema
-            return;
-        } else*/
         {
-            if (schemaIndex > 0) {
+            if (schemaIndex < 0) {
                 // Remove from previous position
-                newSearchPath.remove(schemaIndex);
+                if (!getDataSource().getServerType().supportsStandardSearchPath()
+                    && getDefaultCatalog().getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME) == null
+                    && !PostgreConstants.PUBLIC_SCHEMA_NAME.equals(defSchemaName)) {
+                    newSearchPath.removeIf(PostgreConstants.PUBLIC_SCHEMA_NAME::equals);
+                }
+                newSearchPath.addFirst(defSchemaName);
             }
-            // Add it first
-            newSearchPath.add(0, defSchemaName);
+        }
+        if (Objects.equals(newSearchPath, searchPath)) {
+            return;
         }
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
-            if (spString.length() > 0) spString.append(",");
+            if (!spString.isEmpty()) spString.append(",");
             spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
         }
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
@@ -274,40 +274,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             });
         } catch (DBException e) {
             throw new DBCException("Error setting search path", e, this);
-        }
-    }
-
-    private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
-    }
-
-    private void setUserInTheEndOfThePath(List<String> searchPath) {
-        if (CommonUtils.isEmpty(searchPath)) {
-            return;
-        }
-        if (isUserFirstInPath(searchPath)) {
-            searchPath.remove(0);
-            searchPath.add(PostgreConstants.USER_VARIABLE);
-        } else {
-            int userIndex = -1;
-            for (int i = 0; i < searchPath.size(); i++) {
-                if (searchPath.get(i).equals(PostgreConstants.USER_VARIABLE)) {
-                    userIndex = i;
-                    break;
-                }
-            }
-            if (userIndex != -1) {
-                searchPath.remove(userIndex);
-                searchPath.add(PostgreConstants.USER_VARIABLE);
-            }
-        }
-    }
-
-    private void setSearchPath(String path) {
-        searchPath.clear();
-        searchPath.add(path);
-        if (!path.equals(activeUser)) {
-            searchPath.add(activeUser);
         }
     }
 

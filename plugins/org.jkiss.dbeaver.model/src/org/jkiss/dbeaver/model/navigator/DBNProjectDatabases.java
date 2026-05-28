@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return dbnProject == null ? null : dbnProject.getProject().getName() + ModelMessages.model_navigator__connections;
     }
 
-    @Nullable
+    @NotNull
     public DBNProject getParentNode() {
         return (DBNProject) super.getParentNode();
     }
@@ -154,7 +154,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
@@ -264,8 +264,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    public List<DBNDataSource> getDataSources() {
-        return dataSources;
+    public DBNDataSource[] getDataSources() {
+        synchronized (dataSources) {
+            return dataSources.toArray(new DBNDataSource[0]);
+        }
     }
 
     public DBNDataSource getDataSource(String id) {
@@ -375,8 +377,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 {
                                     setUser(true);
                                 }
+                                @NotNull
                                 @Override
-                                protected IStatus run(DBRProgressMonitor monitor) {
+                                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                                     try {
                                         nodeToLoad.getChildren(monitor);
                                     } catch (Exception e) {

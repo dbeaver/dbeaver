@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,32 +20,72 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * Keeps configuration for database context generation.
+ * When interacting with AI engine database snapshot will be generated according to this configuration.
+ */
 public class AIDatabaseContext {
     private final DBSLogicalDataSource dataSource;
     private final AIDatabaseScope scope;
     private final List<DBSObject> customEntities;
+    private final Set<DBSCatalog> customCatalogs;
+    private final Set<DBSSchema> customSchemas;
     private final DBCExecutionContext executionContext;
+
+    private final AISchemaGenerationOptions schemaGenerationOptions;
 
     private AIDatabaseContext(
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull AIDatabaseScope scope,
         @Nullable List<DBSObject> customEntities,
-        @NotNull DBCExecutionContext executionContext
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull AISchemaGenerationOptions schemaGenerationOptions
     ) {
         this.dataSource = dataSource;
         this.scope = scope;
         this.customEntities = customEntities;
+
+        if (customEntities != null) {
+            // Calculate custom catalogs and schemas
+            Set<DBSCatalog> catalogs = new LinkedHashSet<>();
+            for (DBSObject object : customEntities) {
+                DBSCatalog catalog = DBStructUtils.getObjectCatalog(object);
+                if (catalog != null) {
+                    catalogs.add(catalog);
+                }
+            }
+            this.customCatalogs = catalogs;
+
+            Set<DBSSchema> schemas = new LinkedHashSet<>();
+            for (DBSObject object : customEntities) {
+                DBSSchema schema = DBStructUtils.getObjectSchema(object);
+                if (schema != null) {
+                    schemas.add(schema);
+                }
+            }
+            this.customSchemas = schemas;
+
+        } else {
+            this.customCatalogs = Set.of();
+            this.customSchemas = Set.of();
+        }
         this.executionContext = executionContext;
+
+        this.schemaGenerationOptions = schemaGenerationOptions;
     }
 
     @NotNull
@@ -64,18 +104,35 @@ public class AIDatabaseContext {
     }
 
     @NotNull
+    public Set<DBSCatalog> getCustomCatalogs() {
+        return customCatalogs;
+    }
+
+    @NotNull
+    public Set<DBSSchema> getCustomSchemas() {
+        return customSchemas;
+    }
+
+    @NotNull
+    public AISchemaGenerationOptions getSchemaGenerationOptions() {
+        return schemaGenerationOptions;
+    }
+
+    @NotNull
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
     }
 
     public static class Builder {
-        private DBSLogicalDataSource dataSource;
+        private final DBSLogicalDataSource dataSource;
         private AIDatabaseScope scope;
         private List<DBSObject> customEntities;
         private DBCExecutionContext executionContext;
+        private AISchemaGenerationOptions schemaGenerationOptions;
 
         public Builder(@NotNull DBSLogicalDataSource dataSource) {
             this.dataSource = dataSource;
+            this.schemaGenerationOptions = AISchemaGenerationOptions.builder().build();
         }
 
         @NotNull
@@ -87,6 +144,12 @@ public class AIDatabaseContext {
         @NotNull
         public Builder setCustomEntities(@NotNull List<DBSObject> customEntities) {
             this.customEntities = customEntities;
+            return this;
+        }
+
+        @NotNull
+        public Builder setSchemaGenerationOptions(@NotNull AISchemaGenerationOptions schemaGenerationOptions) {
+            this.schemaGenerationOptions = schemaGenerationOptions;
             return this;
         }
 
@@ -117,14 +180,24 @@ public class AIDatabaseContext {
                 dataSource.setCurrentSchema(defaultSchema == null ? null : defaultSchema.getName());
             }
 
-            return new AIDatabaseContext(dataSource, scope, customEntities, executionContext);
+            return new AIDatabaseContext(
+                dataSource,
+                scope,
+                customEntities,
+                executionContext,
+                schemaGenerationOptions
+            );
         }
     }
 
+    @Nullable
     public DBSObjectContainer getScopeObject() {
         DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults == null) {
-            return (DBSObjectContainer) executionContext.getDataSource();
+            if (executionContext.getDataSource() instanceof DBSObjectContainer oc) {
+                return oc;
+            }
+            return null;
         }
 
         DBSObjectContainer scoped = switch (getScope()) {

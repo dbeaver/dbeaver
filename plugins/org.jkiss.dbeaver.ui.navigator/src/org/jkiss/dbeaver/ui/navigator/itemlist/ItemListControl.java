@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
@@ -121,7 +120,7 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    public void fillCustomActions(IContributionManager contributionManager) {
+    public void fillCustomActions(@NotNull IContributionManager contributionManager) {
         IWorkbenchSite workbenchSite = getWorkbenchSite();
         // Save/revert
         if (workbenchSite instanceof MultiPageEditorSite mes) {
@@ -240,6 +239,7 @@ public class ItemListControl extends NodeListControl
         super.setListData(items, append, forUpdate);
     }
 
+    @Nullable
     @Override
     protected ISearchExecutor getSearchRunner()
     {
@@ -458,7 +458,7 @@ public class ItemListControl extends NodeListControl
 
             if (isNewObject(node)) {
                 if (!isNewObject(getRootNode())) {
-                    return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_NEW);
+                    return UIUtils.getCurrentTheme().getColorRegistry().get(COLOR_NEW);
                 }
             } else {
                 Map<String, Object> propMap = changedProperties.get(node);
@@ -466,7 +466,7 @@ public class ItemListControl extends NodeListControl
                     final Object objectValue = getObjectValue(node);
                     final ObjectPropertyDescriptor prop = objectColumn.getProperty(objectValue);
                     if (prop != null && propMap.containsKey(prop.getId())) {
-                        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_MODIFIED);
+                        return UIUtils.getCurrentTheme().getColorRegistry().get(COLOR_MODIFIED);
                     }
                 }
             }

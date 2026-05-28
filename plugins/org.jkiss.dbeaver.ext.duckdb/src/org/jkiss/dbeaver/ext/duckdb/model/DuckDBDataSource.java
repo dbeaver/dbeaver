@@ -21,10 +21,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.Locale;
 
 /**
  * DuckDB Data source
@@ -37,9 +39,19 @@ public class DuckDBDataSource extends GenericDataSource {
     @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        return switch (typeName.toUpperCase(Locale.ROOT)) {
-            case DuckDBConstants.TYPE_GEOMETRY -> DBPDataKind.OBJECT;
-            default -> super.resolveDataKind(typeName, valueType);
-        };
+        if (DuckDBConstants.isGeometryType(typeName)) {
+            return DBPDataKind.OBJECT;
+        }
+        return super.resolveDataKind(typeName, valueType);
+    }
+
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+        return new DuckDBDataSourceInfo(getContainer().getDriver(), metaData);
+    }
+
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new DuckDBExecutionContext(instance, type);
     }
 }

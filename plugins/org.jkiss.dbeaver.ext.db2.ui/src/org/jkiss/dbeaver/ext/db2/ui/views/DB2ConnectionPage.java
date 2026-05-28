@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -84,9 +86,12 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         };
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, DB2Messages.db2_connection_page_tab_database, 4, 0, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            addrGroup.setLayoutData(gd);
+            Composite addrGroup = UIUtils.createTitledComposite(
+                control,
+                DB2Messages.db2_connection_page_tab_database,
+                4,
+                GridData.FILL_HORIZONTAL
+            );
 
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
@@ -99,7 +104,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
 
             UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
             urlText = new Text(addrGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
             gd.widthHint = 355;
@@ -205,7 +210,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (typeURLRadio != null) {
@@ -227,6 +232,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,26 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.internal.findandreplace.overlay.FindReplaceOverlay;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor.QueryMode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Set;
+
 /**
  * SQLEditorPropertyTester
  */
-public class SQLEditorPropertyTester extends PropertyTester
-{
+public class SQLEditorPropertyTester extends PropertyTester {
     static final Log log = Log.getLog(SQLEditorPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql";
@@ -53,34 +57,36 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
 
+    private static final String OVERLAY_ID_DATA_KEY = FindReplaceOverlay.ID_DATA_KEY;
+    private static final Set<String> OVERLAY_ID_INPUTS = Set.of("replaceInput", "searchInput");
+
     public SQLEditorPropertyTester() {
         super();
     }
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof SQLEditorBase)) {
+        if (!(receiver instanceof SQLEditor editor)) {
             return false;
         }
-        SQLEditor editor = (SQLEditor)receiver;
         final Control editorControl = editor.getEditorControl();
         if (editorControl == null) {
             return false;
         }
-        boolean hasConnection = editor.getDataSourceContainer() != null;
+        boolean hasConnection = editor.getDataSourceContainer() != null && editor.getExecutionContext() != null;
         switch (property) {
             case PROP_CAN_EXECUTE: {
                 var descriptor = editor.getActivePresentationDescriptor();
                 var mode = descriptor != null ? descriptor.getQueryMode() : QueryMode.MULTIPLE;
                 return switch (CommonUtils.toString(expectedValue)) {
-                    case "statement" -> mode != QueryMode.NONE;
+                    case "statement" -> mode != QueryMode.NONE && isFocusNotInFindReplaceOverlay();
                     case "script" -> mode == QueryMode.MULTIPLE;
                     default -> false;
                 };
             }
             case PROP_CAN_EXECUTE_NATIVE: {
                 try {
-                    if (editor.getDataSourceContainer() == null) {
+                    if (!hasConnection) {
                         return false;
                     }
                     SQLNativeExecutorDescriptor executorDescriptor =
@@ -101,15 +107,11 @@ public class SQLEditorPropertyTester extends PropertyTester
                 }
                 ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
                 IDocument document = editor.getDocument();
-                return
-                    selection != null &&
-                        document != null &&
-                        !new SQLIdentifierDetector(
-                            editor.getSyntaxManager().getDialect(),
-                            editor.getSyntaxManager().getStructSeparator(),
-                            editor.getSyntaxManager().getIdentifierQuoteStrings())
-                            .extractIdentifier(document, new Region(selection.getOffset(), selection.getLength()), editor.getRuleManager())
-                            .isEmpty();
+                return selection != null && document != null && !new SQLIdentifierDetector(
+                    editor.getSyntaxManager().getDialect(),
+                    editor.getSyntaxManager().getStructSeparator(),
+                    editor.getSyntaxManager().getIdentifierQuoteStrings()
+                ).extractIdentifier(document, new Region(selection.getOffset(), selection.getLength()), editor.getRuleManager()).isEmpty();
             }
             case PROP_CAN_EXPORT:
                 return hasConnection && editor.hasActiveQuery();
@@ -129,9 +131,17 @@ public class SQLEditorPropertyTester extends PropertyTester
         return false;
     }
 
-    public static void firePropertyChange(String propName)
-    {
-        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
+    private static boolean isFocusNotInFindReplaceOverlay() {
+        Display display = UIUtils.getDisplay();
+        Control focus = display.getFocusControl();
+        if (focus != null && !focus.isDisposed() && focus.getParent() != null && !focus.getParent().isDisposed()) {
+            Object id = focus.getParent().getData(OVERLAY_ID_DATA_KEY);
+            return !(id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid));
+        }
+        return true;
     }
 
+    public static void firePropertyChange(String propName) {
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
+    }
 }

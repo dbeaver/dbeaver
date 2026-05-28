@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.spanner.auth.SpannerAuthModel;
 import org.jkiss.dbeaver.ext.spanner.ui.SpannerActivator;
@@ -72,7 +73,12 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, SpannerMessages.label_connection, 2, 0, 0);
+            Composite addrGroup = UIUtils.createTitledComposite(
+                settingsGroup,
+                SpannerMessages.label_connection,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             projectText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_project, ""); //$NON-NLS-2$
@@ -119,7 +125,7 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (projectText != null) {
@@ -140,6 +146,7 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
         return SpannerAuthModel.ID;
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {

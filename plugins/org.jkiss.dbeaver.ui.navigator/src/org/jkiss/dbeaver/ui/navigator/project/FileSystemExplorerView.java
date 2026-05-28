@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.SimpleNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -104,8 +106,14 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
         UIExecutionQueue.queueExec(() -> createColumns(viewer));
     }
 
+    @NotNull
     @Override
-    protected void installDragAndDropSupport(DatabaseNavigatorTree navigatorTree) {
+    protected DatabaseNavigatorTreeFilterObjectType getDefaultFilterType() {
+        return DatabaseNavigatorTreeFilterObjectType.file;
+    }
+
+    @Override
+    protected void installDragAndDropSupport(@NotNull DatabaseNavigatorTree navigatorTree) {
         super.installDragAndDropSupport(navigatorTree);
     }
 

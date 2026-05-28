@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.generic;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
@@ -24,11 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class GenericMetaModelRegistry {
     static final protected Log log = Log.getLog(GenericMetaModelRegistry.class);
@@ -48,17 +46,37 @@ public class GenericMetaModelRegistry {
     private GenericMetaModelRegistry(IExtensionRegistry extensionRegistry) {
         metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModelDescriptor());
 
-        IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            GenericMetaModelDescriptor metaModel = new GenericMetaModelDescriptor(ext);
-            metaModels.put(metaModel.getId(), metaModel);
-            for (String replaces : metaModel.getModelReplacements()) {
-                metaModels.put(replaces, metaModel);
+        var metaModelDescriptors = Stream.of(extensionRegistry.getConfigurationElementsFor(EXTENSION_ID))
+            .map(GenericMetaModelDescriptor::new)
+            .toList();
+
+        // Add "root" meta models that don't replace other meta models
+        for (GenericMetaModelDescriptor metaModel : metaModelDescriptors) {
+            if (!metaModel.getModelReplacements().isEmpty()) {
+                continue;
+            }
+            if (metaModels.putIfAbsent(metaModel.getId(), metaModel) != null) {
+                log.debug("Duplicate meta model ID '" + metaModel.getId() + "' detected:\n\t" +
+                    metaModels.get(metaModel.getId()).getContributorBundle() + "\n\t" +
+                    metaModel.getContributorBundle());
+                continue;
+            }
+            for (String driverClass : metaModel.getDriverClass()) {
+                metaModels.putIfAbsent(driverClass, metaModel);
             }
         }
-        for (GenericMetaModelDescriptor metaModel : new ArrayList<>(metaModels.values())) {
-            for (String driverClass : ArrayUtils.safeArray(metaModel.getDriverClass())) {
-                metaModels.put(driverClass, metaModel);
+
+        // Now substitute replaced meta models
+        for (GenericMetaModelDescriptor metaModel : metaModelDescriptors) {
+            for (String replaces : metaModel.getModelReplacements()) {
+                var replacedMetaModel = metaModels.replace(replaces, metaModel);
+                if (replacedMetaModel == null) {
+                    log.debug("Meta model '" + metaModel.getId() + "' declares replacement of unknown meta model '" + replaces + "'");
+                    continue;
+                }
+                for (String driverClass : replacedMetaModel.getDriverClass()) {
+                    metaModels.put(driverClass, metaModel);
+                }
             }
         }
     }

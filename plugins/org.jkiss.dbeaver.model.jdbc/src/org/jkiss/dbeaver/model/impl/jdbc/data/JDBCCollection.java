@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Array holder
@@ -95,11 +94,13 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         return valueHandler;
     }
 
+    @NotNull
     @Override
-    public DBDValueCloneable cloneValue(DBRProgressMonitor monitor) {
+    public DBDValueCloneable cloneValue(@NotNull DBRProgressMonitor monitor) {
         return new JDBCCollection(monitor, type, valueHandler, contents);
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return contents;
@@ -160,19 +161,20 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         return contents == null ? 0 : contents.length;
     }
 
+    @Nullable
     @Override
     public Object getItem(int index) {
         return contents[index];
     }
 
     @Override
-    public void setItem(int index, Object value) {
+    public void setItem(int index, @Nullable Object value) {
         contents[index] = value;
         modified = true;
     }
 
     @Override
-    public void setContents(Object[] contents) {
+    public void setContents(@NotNull Object[] contents) {
         this.contents = contents;
         this.modified = true;
     }
@@ -485,17 +487,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         // Try to divide on string elements
         if (!CommonUtils.isEmpty(value)) {
             if (value.startsWith("[") && value.endsWith("]")) {
-                // FIXME: use real parser (nested arrays, quotes escape, etc)
-                String arrayString = value.substring(1, value.length() - 1);
-                List<Object> items = new ArrayList<>();
-                StringTokenizer st = new StringTokenizer(arrayString, ",", false);
-                while (st.hasMoreTokens()) {
-                    String token = st.nextToken().trim();
-                    if (token.startsWith("\"") && token.endsWith("\"")) {
-                        token = token.substring(1, token.length() - 1);
-                    }
-                    items.add(token);
-                }
+                List<String> items = DBUtils.convertArrayStringToList(value);
 
                 return new JDBCCollectionString(session.getProgressMonitor(), dataType, valueHandler, value, items.toArray());
             }

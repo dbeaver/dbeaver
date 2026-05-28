@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,7 +171,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                 ((DBPRefreshableObject) targetEntity).refreshObject(monitor);
                 targetAttributes = targetEntity.getAttributes(monitor);
             }
-            if (targetAttributes != null) {
+            if (targetAttributes != null && targetEntity.getDataSource() != null) {
                 target = CommonUtils.findBestCaseAwareMatch(
                     targetAttributes,
                     DBUtils.getUnQuotedIdentifier(targetEntity.getDataSource(), targetName),
@@ -314,15 +314,22 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers) {
+    public String getTargetType(@Nullable DBPDataSource targetDataSource, boolean addModifiers) {
         if (!addModifiers && !CommonUtils.isEmpty(targetType)) {
             return targetType;
         } else if (addModifiers && !CommonUtils.isEmpty(targetTypeWithModifiers)) {
             return targetTypeWithModifiers;
         }
 
-        changeDataTypeLength(targetDataSource);
-        return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
+        if (targetDataSource != null) {
+            changeDataTypeLength(targetDataSource);
+        }
+        if (source == null) {
+            // Internal error?
+            return DBConstants.DEFAULT_DATATYPE_NAMES[0];
+        } else {
+            return DBStructUtils.mapTargetDataType(targetDataSource, source, addModifiers);
+        }
     }
 
     private void changeDataTypeLength(@NotNull DBPDataSource targetDataSource) {

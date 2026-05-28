@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,9 +59,8 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * ReferenceValueEditor
@@ -379,7 +378,7 @@ public class ReferenceValueEditor {
             });
         }
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
-        editorSelector.setLinesVisible(true);
+        editorSelector.setLinesVisible(false);
         editorSelector.setHeaderVisible(true);
         editorSelector.setFont(ResultSetThemeSettings.instance.resultSetFont);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -648,18 +647,14 @@ public class ReferenceValueEditor {
         }
 
         @Override
-        public EnumValuesData evaluate(DBRProgressMonitor monitor) {
+        public EnumValuesData evaluate(@NotNull DBRProgressMonitor monitor) {
             if (editorSelector.isDisposed() || valueController.getExecutionContext() == null) {
                 return null;
             }
             EnumValuesData[] result = new EnumValuesData[1];
             try {
                 DBExecUtils.tryExecuteRecover(monitor, valueController.getExecutionContext().getDataSource(), param -> {
-                    try {
-                        result[0] = readEnum(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    result[0] = readEnum(monitor);
                 });
             } catch (DBException e) {
                 // error
@@ -774,7 +769,7 @@ public class ReferenceValueEditor {
         }
 
         @Override
-        public void completeLoading(EnumValuesData result) {
+        public void completeLoading(@Nullable EnumValuesData result) {
             boolean dataObtained = result != null && !result.keyValues.isEmpty();
             
             super.completeLoading(result);

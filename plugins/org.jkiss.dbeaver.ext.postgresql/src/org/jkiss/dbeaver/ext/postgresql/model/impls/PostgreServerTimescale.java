@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.timescale.TimescaleSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.timescale.TimescaleTable;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
+import java.sql.SQLException;
 /**
  * PostgreServerTimescale
  */
@@ -37,9 +46,36 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
         return true;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "Timescale";
     }
-}
 
+    @Nullable
+    @Override
+    public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.r ||
+            kind == PostgreClass.RelKind.t ||
+            kind == PostgreClass.RelKind.p
+        ) {
+            return new TimescaleTable(schema, dbResult);
+        }
+        return super.createRelationOfClass(schema, kind, dbResult);
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
+        return new TimescaleSchemaCache();
+    }
+
+    private static class TimescaleSchemaCache extends PostgreDatabase.SchemaCache {
+
+        @Override
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String name = JDBCUtils.safeGetString(resultSet, "nspname");
+            return new TimescaleSchema(owner, name, resultSet);
+        }
+    }
+}

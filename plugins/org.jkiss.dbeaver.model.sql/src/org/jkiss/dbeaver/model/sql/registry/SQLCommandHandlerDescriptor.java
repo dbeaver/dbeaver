@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@
 
 package org.jkiss.dbeaver.model.sql.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLCommandHandlerDescriptor
@@ -35,36 +39,50 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
+    private final boolean interactive;
+    private final Expression enablementExpression;
 
-    public SQLCommandHandlerDescriptor(IConfigurationElement config)
-    {
+    public SQLCommandHandlerDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.icon = iconToImage(config.getAttribute("icon"));
+        this.interactive = CommonUtils.getBoolean(config.getAttribute("interactive"), false);
+        this.enablementExpression = getEnablementExpression(config);
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLabel() {
         return label;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
 
+    @Nullable
     public DBPImage getIcon() {
         return icon;
     }
 
-    public SQLControlCommandHandler createHandler()
-        throws DBException
-    {
+    public boolean isInteractive() {
+        return interactive;
+    }
+
+    public boolean isEnabled() {
+        return isExpressionTrue(enablementExpression, this);
+    }
+
+    @NotNull
+    public SQLControlCommandHandler createHandler() throws DBException {
         return implClass.createInstance(SQLControlCommandHandler.class);
     }
 

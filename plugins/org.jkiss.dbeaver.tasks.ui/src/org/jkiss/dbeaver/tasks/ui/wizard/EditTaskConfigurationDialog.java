@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tasks.ui.wizard;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -41,9 +42,11 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Create task dialog
@@ -54,31 +57,40 @@ public class EditTaskConfigurationDialog extends BaseDialog
 
     private TaskImpl task;
     private final DBPProject project;
-    private DBTTaskType taskType;
-    private Map<String, Object> state;
+    private final DBTTaskType taskType;
+    private final Map<String, Object> state;
+    private final Duration maxExecutionTime;
 
     private Combo taskLabelCombo;
     private Text taskDescriptionText;
     private Combo taskFoldersCombo;
 
-    public EditTaskConfigurationDialog(Shell parentShell, @NotNull DBTTask task)
-    {
-        super(parentShell,
-            TaskUIMessages.edit_task_config_dialog_title_edit_task + " [" + task.getName() + "]",
-            task.getType().getIcon() == null ? DBIcon.TREE_TASK: task.getType().getIcon());
+    public EditTaskConfigurationDialog(@NotNull Shell parentShell, @NotNull DBTTask task) {
+        super(
+            parentShell,
+            NLS.bind("%s [%s]", TaskUIMessages.edit_task_config_dialog_title_edit_task, task.getName()),
+            Objects.requireNonNullElse(task.getType().getIcon(), DBIcon.TREE_TASK)
+        );
+
         this.task = (TaskImpl) task;
         this.project = task.getProject();
         this.taskType = task.getType();
         this.state = task.getProperties();
+        this.maxExecutionTime = task.getMaxExecutionTime();
     }
 
-    public EditTaskConfigurationDialog(Shell parentShell, @NotNull DBPProject project, @NotNull DBTTaskType taskType)
-    {
+    public EditTaskConfigurationDialog(
+        @NotNull Shell parentShell,
+        @NotNull DBPProject project,
+        @NotNull DBTTaskType taskType,
+        @NotNull Duration maxExecutionTime
+    ) {
         super(parentShell, TaskUIMessages.edit_task_config_dialog_title_create_task, DBIcon.TREE_TASK);
         this.task = null;
         this.project = project;
         this.taskType = taskType;
         this.state = new LinkedHashMap<>();
+        this.maxExecutionTime = maxExecutionTime;
     }
 
     @Override
@@ -188,6 +200,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
             task.setDescription(taskDescriptionText.getText());
             task.setUpdateTime(new Date());
             task.setProperties(state);
+            task.setMaxExecutionTime(maxExecutionTime);
             taskManager.updateTaskConfiguration(task);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Create task", "Error creating data transfer task", e);

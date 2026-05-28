@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,8 +38,7 @@ public class EnterNameDialog extends Dialog {
     protected Text propNameText;
     private String result;
 
-    public EnterNameDialog(Shell parentShell, String propertyName, String propertyValue)
-    {
+    public EnterNameDialog(@NotNull Shell parentShell, @NotNull String propertyName, @Nullable String propertyValue) {
         super(parentShell);
         this.propertyName = propertyName;
         this.propertyValue = propertyValue;
@@ -61,7 +62,7 @@ public class EnterNameDialog extends Dialog {
     @Override
     protected Composite createDialogArea(Composite parent)
     {
-        getShell().setText(propertyName);
+        getShell().setText(createTitle());
 
         Composite propGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
@@ -92,6 +93,11 @@ public class EnterNameDialog extends Dialog {
 
     protected void createControlsAfterName(Composite composite) {
 
+    }
+
+    @NotNull
+    protected String createTitle() {
+        return propertyName;
     }
 
     @Override

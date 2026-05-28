@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -38,22 +41,24 @@ import org.jkiss.utils.CommonUtils;
 public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
     @Override
-    public boolean isEnabledFor(INavigatorModelView view, DBNNode node) {
-        if (node instanceof DBNDataSource) {
-            return ((DBNDataSource) node).hasNetworkHandlers();
+    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+        if (node instanceof DBNDataSource dbnDataSource) {
+            return dbnDataSource.hasNetworkHandlers();
         }
         return false;
     }
 
     @Override
-    public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
+    @Nullable
+    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         return UIIcon.BUTTON_TUNNEL;
     }
 
     @Override
-    public String getNodeActionToolTip(INavigatorModelView view, DBNNode node) {
+    @Nullable
+    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         StringBuilder tip = new StringBuilder("Network handlers enabled:");
-        for (DBWHandlerConfiguration handler : ((DBNDataSource)node).getDataSourceContainer().getConnectionConfiguration().getHandlers()) {
+        for (DBWHandlerConfiguration handler : DBWUtils.getActualNetworkHandlers(((DBNDataSource) node).getDataSourceContainer())) {
             if (handler.isEnabled()) {
                 tip.append("\n  -").append(handler.getTitle());
                 String hostName = handler.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
@@ -66,12 +71,12 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     }
 
     @Override
-    public void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction) {
+    public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
         if (node instanceof DBNDatabaseNode) {
             DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
 
             String nhId = null;
-            for (DBWHandlerConfiguration nhc : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
+            for (DBWHandlerConfiguration nhc : DBWUtils.getActualNetworkHandlers(dataSourceContainer)) {
                 if (nhc.isEnabled() && nhc.getType() == DBWHandlerType.TUNNEL) {
                     nhId = nhc.getId();
                     break;
@@ -83,5 +88,4 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
             }
         }
     }
-
 }

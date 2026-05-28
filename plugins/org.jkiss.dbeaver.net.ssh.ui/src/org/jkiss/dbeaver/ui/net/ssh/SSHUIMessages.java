@@ -55,6 +55,7 @@ public class SSHUIMessages extends NLS {
     public static String model_ssh_configurator_group_timeouts_text;
     public static String model_ssh_configurator_group_port_forwarding_text;
     public static String model_ssh_configurator_group_jump_server_settings_text;
+    public static String model_ssh_configurator_label_jump_server_edit_hint;
     public static String model_ssh_configurator_variables_hint_label;
     public static String model_ssh_configurator_ssh_documentation_link;
 
@@ -62,6 +63,9 @@ public class SSHUIMessages extends NLS {
     public static String model_ssh_dialog_credentials_username;
     public static String model_ssh_dialog_credentials_password;
     public static String model_ssh_dialog_credentials_passphrase;
+
+    public static String model_ssh_dialog_edit_private_key;
+    public static String model_ssh_dialog_set_private_key;
 
     public static String jsch_remote_host_identifier_changed_warning_title;
 

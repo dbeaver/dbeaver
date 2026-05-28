@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,19 +119,21 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return sourceObject;
     }
 
+    @NotNull
     @Override
     public Object getEditableValue()
     {
         return object;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     @Override
-    public boolean isPropertySet(String id) {
+    public boolean isPropertySet(@NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
             return isPropertySet(getEditableValue(), opd);
@@ -150,8 +152,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
     }
 
+    @Nullable
     @Override
-    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final String id) {
+    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull final String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
             value = getPropertyValue(monitor, getEditableValue(), opd, true);
@@ -221,7 +224,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
             return isPropertyResettable(getEditableValue(), opd);
@@ -238,7 +241,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
+    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
             resetPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
@@ -253,12 +256,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     @Override
-    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
+    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value)
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
@@ -270,14 +273,20 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull Object object, @NotNull ObjectPropertyDescriptor prop, @Nullable
-    Object value)
-    {
+    public void setPropertyValue(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull Object object,
+        @NotNull ObjectPropertyDescriptor prop,
+        @Nullable Object value
+    ) {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
     }
 
-    public boolean collectProperties()
-    {
+    public boolean collectProperties() {
+        return collectProperties(true);
+    }
+
+    public boolean collectProperties(boolean collectLocalizedNames) {
         lazyValues.clear();
         props.clear();
         propValues.clear();
@@ -298,7 +307,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 filter = null;
             }
             List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(
-                this, ObjectPropertyDescriptor.getObjectClass(editableValue), filter, locale);
+                this,
+                ObjectPropertyDescriptor.getObjectClass(editableValue),
+                filter,
+                locale,
+                collectLocalizedNames
+            );
             for (final ObjectPropertyDescriptor desc : annoProps) {
                 if (desc.isPropertyVisible(editableValue, editableValue)) {
                     addProperty(desc);
@@ -354,7 +368,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public Map<ObjectPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor)
+        public Map<ObjectPropertyDescriptor, Object> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException
         {
             try {
@@ -404,8 +418,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         {
         }
 
+        @NotNull
         @Override
-        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
+        public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor)
         {
             return monitor;
         }
@@ -433,7 +448,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public void completeLoading(Map<ObjectPropertyDescriptor, Object> result)
+        public void completeLoading(@Nullable Map<ObjectPropertyDescriptor, Object> result)
         {
             completed = true;
             if (result != null) {

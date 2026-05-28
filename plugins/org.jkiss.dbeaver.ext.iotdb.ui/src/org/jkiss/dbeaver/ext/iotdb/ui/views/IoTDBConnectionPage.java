@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -43,7 +44,7 @@ public class IoTDBConnectionPage extends GenericConnectionPage {
                 saveAndUpdate();
             }
         };
-        Composite additionalSettingsGroup = UIUtils.createControlGroup(composite, "Additional Settings", 4, GridData.FILL_HORIZONTAL, 0);
+        Composite additionalSettingsGroup = UIUtils.createTitledComposite(composite, "Additional Settings", 4, GridData.FILL_HORIZONTAL);
         additionalSettingsGroup.setLayout(new GridLayout(4, false));
         sqlDialectCombo = UIUtils.createLabelCombo(additionalSettingsGroup, "Sql Dialect", SWT.DROP_DOWN | SWT.READ_ONLY);
         sqlDialectCombo.addModifyListener(textListener);
@@ -86,7 +87,7 @@ public class IoTDBConnectionPage extends GenericConnectionPage {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (sqlDialectCombo != null) {
             connectionInfo.setServerName(sqlDialectCombo.getText().trim());

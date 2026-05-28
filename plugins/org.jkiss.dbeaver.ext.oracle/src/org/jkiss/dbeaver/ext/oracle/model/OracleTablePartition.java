@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,6 +190,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(OracleTablePhysical table) {
             return PartitionByIntervalKind.values();
@@ -280,14 +281,14 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
 
         public static class OraclePartitionIntervalValidator implements IPropertyValueValidator<OracleTableBase, Object> {
             @Override
-            public boolean isValidValue(OracleTableBase object, Object value) throws IllegalArgumentException {
+            public boolean isValidValue(@NotNull OracleTableBase object, @Nullable Object value) throws IllegalArgumentException {
                 return !(object instanceof OracleTablePartition);
             }
         }
     }
 
-    private OracleTablePhysical parent;
-    private OracleTablePartition partitionParent;
+    private final OracleTablePhysical parent;
+    private final OracleTablePartition partitionParent;
     private int position;
     private String highValue;
     private boolean usable;
@@ -363,7 +364,8 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
     }
 
     @Association
-    public List<OracleTablePartition> getSubPartitions(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public List<OracleTablePartition> getSubPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (partitionParent != null) {
             return Collections.emptyList();
         }
@@ -376,6 +378,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
     /**
      * Returns list of already cached subpartitions. First of all - for newly created tables.
      */
+    @Nullable
     public List<OracleTablePartition> getCachedSubPartitions() {
         if (partitionParent != null) {
             return Collections.emptyList();
@@ -383,6 +386,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return subPartitions;
     }
 
+    @NotNull
     private List<OracleTablePartition> readSubPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
         subPartitions = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read subpartitions")) {
@@ -422,6 +426,7 @@ public class OracleTablePartition extends OracleTablePhysical implements DBSTabl
         return DBIcon.TREE_PARTITION;
     }
 
+    @Nullable
     @Override
     public TableAdditionalInfo getAdditionalInfo() {
         return new TableAdditionalInfo();

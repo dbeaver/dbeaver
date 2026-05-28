@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             }
             //UIUtils.createControlLabel(settingsGroup, SQLEditorMessages.pref_page_sql_format_label_settings, 2);
 
-            Group kwGroup = UIUtils.createControlGroup(settingsGroup, "Keywords", 2, GridData.FILL_HORIZONTAL, 0);
+            Composite kwGroup = UIUtils.createTitledComposite(settingsGroup, "Keywords", 2, GridData.FILL_HORIZONTAL);
             ((GridData)kwGroup.getLayoutData()).horizontalSpan = 2;
             reservedWordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Reserved words", "", SWT.BORDER);
             dataTypesText = UIUtils.createLabelTextAdvanced(kwGroup, "Data Types", "", SWT.BORDER);
@@ -126,7 +126,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             transactionKeywordsText = UIUtils.createLabelTextAdvanced(kwGroup, "Transaction keywords", "", SWT.BORDER);
             blockStatementsText = UIUtils.createLabelTextAdvanced(kwGroup, "Block statements", "", SWT.BORDER);
 
-            Group miscGroup = UIUtils.createControlGroup(settingsGroup, "Miscellaneous", 2, GridData.FILL_HORIZONTAL, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(settingsGroup, "Miscellaneous", 2, GridData.FILL_HORIZONTAL);
             statementDelimiterText = UIUtils.createLabelText(miscGroup, "Statement delimiter", "", SWT.BORDER);
             dualTableNameText = UIUtils.createLabelText(miscGroup, "Dual table name", "", SWT.BORDER);
             testQueryText = UIUtils.createLabelText(miscGroup, "Test query", "", SWT.BORDER);

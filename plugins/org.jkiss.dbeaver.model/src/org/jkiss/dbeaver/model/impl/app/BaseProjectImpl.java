@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -65,6 +66,20 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public static final String PROP_PROJECT_NAME = "name";
     public static final String PROP_PROJECT_DESCRIPTION = "description";
     public static final String PROJECT_FILE = ".project";
+
+    private static final String EMPTY_PROJECT_TEMPLATE = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <projectDescription>
+        <name>${project-name}</name>
+        <comment></comment>
+        <projects>
+        </projects>
+        <buildSpec>
+        </buildSpec>
+        <natures>
+            <nature>org.jkiss.dbeaver.DBeaverNature</nature>
+        </natures>
+        </projectDescription>""";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -208,6 +223,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                         ensureOpen();
                         if (dataSourceRegistry == null) {
                             dataSourceRegistry = createDataSourceRegistry();
+                            dataSourceRegistry.initializeDataSources();
                         }
                     }
                 }
@@ -218,6 +234,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                 registryOpener.run();
             } else {
                 RuntimeUtils.runTask(monitor -> registryOpener.run(), "Load registry", 0);
+            }
+            if (dataSourceRegistry == null) {
+                throw new DBRuntimeException("Internal error - datasource registry is null after init");
             }
         }
         return dataSourceRegistry;
@@ -462,6 +481,34 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     }
 
+    /**
+     * Replace project name in .project file
+     * @param projectPath path to project folder
+     * @param name project name
+     */
+    public static void updateProjectFile(@NotNull Path projectPath, @NotNull String name) throws IOException {
+        Path projectFile = projectPath.resolve(PROJECT_FILE);
+        if (Files.exists(projectFile)) {
+            String content = Files.readString(projectFile);
+            if (content.contains("<name>") && content.contains("</name>")) {
+                int start = content.indexOf("<name>");
+                int end = content.indexOf("</name>", start);
+                if (start != -1 && end != -1) {
+                    String newContent = content.substring(0, start + 6) + name + content.substring(end);
+                    if (!content.equals(newContent)) {
+                        Files.writeString(projectFile, newContent);
+                    }
+                    return;
+                }
+            }
+        }
+        Files.writeString(projectFile, EMPTY_PROJECT_TEMPLATE.replace("${project-name}", name));
+    }
+
+    public static boolean isHiddenProjectName(@NotNull String name) {
+        return name.startsWith(".");
+    }
+
     @Override
     public void updateProject(@Nullable String newName, @Nullable String description) throws DBException {
         Map<String, Object> properties = new LinkedHashMap<>();
@@ -624,8 +671,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             super("Project metadata sync");
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             setName("Project '" + BaseProjectImpl.this.getName() + "' sync job");
 
             ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
@@ -698,4 +746,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return fileNotEmpty;
     }
 
+    // Called by model itself when some project-dependent entities change their state
+    // E.g. when we save/load datasource registry
+    // By default does nothing
+    public void updateProjectNature() {
+
+    }
 }

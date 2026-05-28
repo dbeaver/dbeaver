@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -79,8 +81,86 @@ public final class SQLUtils {
         return false;
     }
 
-    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query)
-    {
+    /**
+     * Comment text fragment location information
+     *
+     * @param start comment position in the original SQL text
+     * @param length if the comment fragment
+     * @param accumulatedOffset total amount of comment characters dropped after this comment,
+     *                          e.g. difference between the non-commented text positions in original vs clean SQL text
+     * @param cleanPosition position of the corresponding location in the clean SQL text,
+     *                      e.g. start-prevComment.accumulatedOffset
+     * */
+    public record CommentEntry(
+        int start,
+        int length,
+        int accumulatedOffset,
+        int cleanPosition
+    ){
+    }
+
+    /**
+     * SQL comments collection result
+     *
+     * @param originalSqlText containing comments
+     * @param cleanSqlText the same as original but with comments extracted
+     * @param comments extracted comment entries from the original text augmented with position's mapping information
+     */
+    public record CommentsCollectionResult(
+        @NotNull
+        String originalSqlText,
+        @NotNull
+        String cleanSqlText,
+        @NotNull
+        CommentEntry[] comments
+    ) {
+    }
+
+    @NotNull
+    public static CommentsCollectionResult collectComments(
+        @NotNull String sqlText,
+        @Nullable Pair<String, String> mlComments,
+        @Nullable String[] slComments
+    ) {
+        // prepare regex pattern to match all the comments according to dialect
+        List<String> subpatterns = new ArrayList<>();
+        if (mlComments != null) {
+            String prefix = Pattern.quote(mlComments.getFirst());
+            String suffix = Pattern.quote(mlComments.getSecond());
+            subpatterns.add(prefix + "(((?!" + suffix + ")(.|[\\r\\n]))*)" + suffix);
+        }
+        if (slComments != null) {
+            for (String prefix : slComments) {
+                subpatterns.add(Pattern.quote(prefix) + "[^\\n\\r]*");
+            }
+        }
+        String anyCommentPattern = "((" + String.join(")|(", subpatterns) + "))";
+        Pattern p = Pattern.compile(anyCommentPattern + "([\\r\\n\\s]" + anyCommentPattern + ")*+");
+
+        // extract all the comments and collect their location info in one go
+        Matcher m = p.matcher(sqlText);
+        List<CommentEntry> comments = new LinkedList<>();
+        String cleanSqlText = m.replaceAll(
+            new Function<>() {
+                private int accumulatedOffset = 0;
+
+                @NotNull
+                @Override
+                public String apply(@NotNull MatchResult mr) {
+                    int length = mr.end() - mr.start();
+                    int cleanPosition = mr.start() - this.accumulatedOffset;
+                    this.accumulatedOffset += length;
+                    comments.add(new CommentEntry(mr.start(), length, this.accumulatedOffset, cleanPosition));
+                    return "";
+                }
+            }
+        );
+
+        return new CommentsCollectionResult(sqlText, cleanSqlText, comments.toArray(CommentEntry[]::new));
+    }
+
+    @NotNull
+    public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query) {
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         return stripComments(
             query,
@@ -649,16 +729,17 @@ public final class SQLUtils {
         DBPDataKind dataKind = attribute.getDataKind();
         switch (dataKind) {
             case CONTENT:
-                if (value instanceof DBDContent) {
-                    String contentType = ((DBDContent) value).getContentType();
+                if (value instanceof DBDContent contentValue) {
+                    String contentType = contentValue.getContentType();
                     if (contentType != null && !contentType.startsWith("text")) {
                         return strValue;
                     }
                 }
                 // Text content. Fall down
             case STRING:
+                return sqlDialect.getQuotedString(strValue);
             case ROWID:
-                if (sqlDialect != null) {
+                if (!sqlDialect.isQuotedString(strValue)) {
                     return sqlDialect.getQuotedString(strValue);
                 }
                 return strValue;
@@ -1231,5 +1312,99 @@ public final class SQLUtils {
         }
         actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
         return actualIdentifierString;
+    }
+
+    /**
+     * <p>Removes parameter names and preserves type details and nesting.</p>
+     *
+     * <pre>{@code
+     * Input : "(x ARRAY, y OBJECT)"
+     * Output: "(ARRAY, OBJECT)"
+     * }</pre>
+     */
+    public static String extractProcedureParameterTypes(@Nullable String sig) {
+        if (CommonUtils.isEmpty(sig)) {
+            return "()";
+        }
+        String s = sig.trim();
+        if (s.startsWith("(") && s.endsWith(")")) {
+            s = s.substring(1, s.length() - 1).trim();
+        }
+        if (s.isEmpty()) {
+            return "()";
+        }
+        List<String> parts = extractParts(s);
+        List<String> types = new ArrayList<>(parts.size());
+        for (String p : parts) {
+            int spaceIndex = p.lastIndexOf(' ');
+            String type = spaceIndex >= 0 ? p.substring(spaceIndex + 1) : p;
+            types.add(type.toUpperCase());
+        }
+        return "(" + String.join(", ", types) + ")";
+    }
+
+    @NotNull
+    private static List<String> extractParts(String s) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        int depth = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                depth++;
+            }
+            if (c == ')') {
+                depth = Math.max(0, depth - 1);
+            }
+            if (c == ',' && depth == 0) {
+                parts.add(cur.toString().trim());
+                cur.setLength(0);
+            } else {
+                cur.append(c);
+            }
+        }
+        if (!cur.isEmpty()) {
+            parts.add(cur.toString().trim());
+        }
+        return parts;
+    }
+
+    public static void addMultiStatementDDL(
+        @NotNull SQLDialect sqlDialect,
+        @NotNull StringBuilder sql,
+        @Nullable String ddl
+    ) {
+        if (CommonUtils.isEmpty(ddl)) {
+            return;
+        }
+
+        String[] lines = ddl.trim().split("\\r?\\n");
+        boolean hasStatements = false;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (CommonUtils.isEmpty(trimmed)) {
+                continue;
+            }
+
+            hasStatements = true;
+            boolean hasDelimiter = false;
+            for (String scriptDelimiter : sqlDialect.getScriptDelimiters()) {
+                if (trimmed.endsWith(scriptDelimiter)) {
+                    hasDelimiter = true;
+                    break;
+                }
+            }
+            sql.append(trimmed);
+            if (!hasDelimiter) {
+                sql.append(getDefaultScriptDelimiter(sqlDialect));
+            }
+
+            sql.append("\n");
+        }
+
+        if (hasStatements) {
+            sql.append("\n");
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class Log {
         return new Context(name);
     }
 
-    private static final boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
+    private static boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
     public static final boolean DEV_DEBUG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.debug.enabled"));
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
@@ -84,7 +84,8 @@ public class Log {
 
         quietMode = ArrayUtils.containsAny(
             Platform.getApplicationArgs(),
-            "-q", "--q", "-help", "--help", "-version", "--version");
+            "-q", "--q", "-quiet", "-h", "-help", "--help", "-version", "--version"
+        );
     }
 
     private static final ThreadLocal<Context> activeContext = new ThreadLocal<>();
@@ -101,6 +102,10 @@ public class Log {
 
     public static void setLogHandler(@Nullable LogHandler handler) {
         Log.handler = handler;
+    }
+
+    public static void enableTraceLogs(boolean enable) {
+        TRACE_LOG_ENABLED = enable;
     }
 
     public static void setDefaultDebugStream(@NotNull PrintStream defaultDebugStream) {
@@ -399,23 +404,29 @@ public class Log {
     }
 
     private void writeExceptionStatus(int severity, Object message, Throwable t) {
-        debugMessage(message, t);
+        boolean logWritten = false;
         if (logWriter.get() == null) {
             if (t == null) {
-                writeEclipseLog(createStatus(severity, message));
+                logWritten = writeEclipseLog(createStatus(severity, message));
             } else {
                 if (message == null) {
-                    writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
+                    logWritten = writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
                 } else {
-                    writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
+                    logWritten = writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
                 }
             }
         }
+        if (!logWritten) {
+            debugMessage(message, t);
+        }
     }
 
-    private void writeEclipseLog(IStatus status) {
+    private boolean writeEclipseLog(IStatus status) {
         if (doEclipseLog && logWriter.get() == null && eclipseLog != null) {
             eclipseLog.log(status);
+            return true;
+        } else {
+            return false;
         }
     }
 

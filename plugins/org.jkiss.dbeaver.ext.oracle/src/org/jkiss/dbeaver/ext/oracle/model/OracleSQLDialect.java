@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -759,6 +759,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return false;
     }
 
+    @Override
+    public String getTextDataType() {
+        return getClobDataType();
+    }
+
     @NotNull
     @Override
     public String getTimestampDataType() {
@@ -775,6 +780,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @Override
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
+    }
+
+    @Override
+    public String getNClobDataType() {
+        return OracleConstants.TYPE_NCLOB;
     }
 
     @NotNull
@@ -838,5 +848,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return EnumSet.of(
             ProjectionAliasVisibilityScope.ORDER_BY
         );
+    }
+
+    @NotNull
+    @Override
+    public String toSortableTextColumn(@NotNull String columnName) {
+        return "DBMS_LOB.SUBSTR(" + columnName + ", 1000, 1)";
     }
 }

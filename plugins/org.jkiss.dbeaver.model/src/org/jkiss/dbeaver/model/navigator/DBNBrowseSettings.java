@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.model.navigator;
+
+import org.jkiss.code.NotNull;
 
 /**
  * Browse settings
@@ -35,4 +37,26 @@ public interface DBNBrowseSettings {
 
     boolean isHideVirtualModel();
 
+    /**
+     * If settings were redefined for current user.
+     */
+    boolean isUserSettings();
+
+    /**
+     * Get original settings (before user customization)
+     */
+    @NotNull
+    DBNBrowseSettings getOriginalSettings();
+
+    void setShowSystemObjects(boolean showSystemObjects);
+
+    void setShowUtilityObjects(boolean showUtilityObjects);
+
+    void setShowOnlyEntities(boolean showOnlyEntities);
+
+    void setHideSchemas(boolean hideSchemas);
+
+    void setHideFolders(boolean hideFolders);
+
+    void setMergeEntities(boolean mergeEntities);
 }

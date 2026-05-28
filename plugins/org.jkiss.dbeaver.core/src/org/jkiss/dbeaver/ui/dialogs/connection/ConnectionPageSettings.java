@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -345,6 +346,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         activateCurrentItem();
                     }
                 });
+                // Set focus to the first tab
+                // Otherwise focus foes into top right control which breaks traverse keys
+                tabFolder.getSelection().getControl().setFocus();
             }
 
             activateCurrentItem();
@@ -690,6 +694,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 ConfirmationDialog.INFORMATION,
                 DBeaverPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
                 ConfirmationDialog.CONFIRM,
+                descriptor.getCodeName(),
                 descriptor.getCodeName()
             );
 
@@ -714,11 +719,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             return false;
         }
 
-        final NetworkHandlerDescriptor descriptor = ((ConnectionPageNetworkHandler) page).getHandlerDescriptor();
-        final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
-        final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
+        NetworkHandlerDescriptor descriptor = ((ConnectionPageNetworkHandler) page).getHandlerDescriptor();
+        for (DBWHandlerConfiguration handler : DBWUtils.getActualNetworkHandlers(getActiveDataSource())) {
+            if (handler.getId().equals(descriptor.getId())) {
+                return !handler.isEnabled();
+            }
+        }
 
-        return handler == null || !handler.isEnabled();
+        return true;
     }
 
     private static boolean isHandlerPage(@NotNull IDialogPage page) {

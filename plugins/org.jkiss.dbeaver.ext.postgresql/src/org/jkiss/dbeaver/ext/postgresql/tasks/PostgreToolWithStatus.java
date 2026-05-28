@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -36,8 +37,10 @@ import java.util.List;
 public abstract class PostgreToolWithStatus<OBJECT_TYPE extends DBSObject, SETTINGS extends SQLToolExecuteSettings<OBJECT_TYPE>>
         extends SQLToolExecuteHandler<OBJECT_TYPE, SETTINGS> implements SQLToolRunStatisticsGenerator<OBJECT_TYPE, SETTINGS, DBEPersistAction> {
 
+    @NotNull
     @Override
-    public List<ToolStatus> getExecuteStatistics(OBJECT_TYPE object, SETTINGS settings, DBEPersistAction action, DBCSession session, DBCStatement dbStat) throws DBCException {
+    public List<ToolStatus> getExecuteStatistics(@NotNull OBJECT_TYPE object, @NotNull SETTINGS settings, @NotNull DBEPersistAction action, @NotNull
+    DBCSession session, @NotNull DBCStatement dbStat) throws DBCException {
         List<ToolStatus> statusList = new ArrayList<>();
         try {
             int warnNum = 0;

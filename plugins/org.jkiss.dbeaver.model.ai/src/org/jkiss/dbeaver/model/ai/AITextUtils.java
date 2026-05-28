@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.impl.LinkPosition;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -45,6 +47,10 @@ import java.util.regex.Pattern;
 public class AITextUtils {
     private static final Log log = Log.getLog(AITextUtils.class);
     public static final String SQL_LANGUAGE_ID = "sql";
+
+    private static final Pattern MARKDOWN_LINK_PARSER = Pattern.compile("\\[([^]]+)]\\(([^)]+)\\)");
+    private static final Pattern URL_PARSER = Pattern.compile("\\b(https?://|ftp://)[^\\s<>\"{}|\\\\^`\\[\\]]+");
+    public static final String CODE_BLOCK_MARK = "```";
 
     private AITextUtils() {
         // prevents instantiation
@@ -56,7 +62,7 @@ public class AITextUtils {
 
     /**
      * Extracts the contents of the first Markdown code block in the input.
-     * If the code ends with a semicolon, it’s removed.
+     * If the code ends with a semicolon, it's removed.
      *
      * @param markdown the full Markdown string
      * @return the inner code without trailing semicolon, or an empty string if none found
@@ -100,24 +106,31 @@ public class AITextUtils {
     }
 
     @NotNull
-    public static MessageChunk[] splitIntoChunks(@NotNull String text) {
-        return splitIntoChunks(BasicSQLDialect.INSTANCE, text);
+    public static MessageChunk[] splitIntoChunks(@NotNull String text, boolean parseLinks) {
+        return splitIntoChunks(BasicSQLDialect.INSTANCE, text, parseLinks);
     }
 
     @NotNull
-    public static MessageChunk[] splitIntoChunks(@NotNull SQLDialect dialect, @NotNull String text) {
+    public static MessageChunk[] splitIntoChunks(@NotNull SQLDialect dialect, @NotNull String text, boolean parseLinks) {
         final List<MessageChunk> chunks = new ArrayList<>();
         StringBuilder buffer = new StringBuilder();
         String codeBlockTag = null;
 
         for (String line : text.lines().toArray(String[]::new)) {
-            if (line.startsWith("```")) {
+            int markIndex = line.indexOf(CODE_BLOCK_MARK);
+            if (markIndex >= 0) {
+                if (markIndex > 0) {
+                    String tail = line.substring(0, markIndex);
+                    buffer.append(tail.trim());
+                }
                 // Add pending chunk
                 if (!buffer.isEmpty()) {
                     if (codeBlockTag != null) {
                         chunks.add(new MessageChunk.Code(buffer.toString(), codeBlockTag));
+                    } else if (parseLinks){
+                        addTextWithLinks(chunks, buffer.toString());
                     } else {
-                        chunks.add(new MessageChunk.Text(buffer.toString()));
+                        chunks.add(new MessageChunk.Text(buffer.toString(), List.of()));
                     }
 
                     buffer.setLength(0);
@@ -126,7 +139,7 @@ public class AITextUtils {
                 if (codeBlockTag != null) {
                     codeBlockTag = null;
                 } else {
-                    codeBlockTag = line.substring(3);
+                    codeBlockTag = line.substring(markIndex + 3);
                 }
 
                 continue;
@@ -148,13 +161,92 @@ public class AITextUtils {
         if (!buffer.isEmpty()) {
             if (codeBlockTag != null) {
                 chunks.add(new MessageChunk.Code(buffer.toString(), codeBlockTag));
+            } else if (parseLinks) {
+                addTextWithLinks(chunks, buffer.toString());
             } else {
-                chunks.add(new MessageChunk.Text(buffer.toString()));
+                chunks.add(new MessageChunk.Text(buffer.toString(), List.of()));
             }
         }
 
         return chunks.toArray(MessageChunk[]::new);
     }
+
+    private static void addTextWithLinks(
+        @NotNull List<MessageChunk> chunks,
+        @NotNull String text
+    ) {
+        List<LinkPosition> links = new ArrayList<>();
+        StringBuilder buffer = new StringBuilder();
+        int lastEnd = 0;
+
+        List<MatchInfo> allMatches = new ArrayList<>();
+
+        Matcher markdownMatcher = MARKDOWN_LINK_PARSER.matcher(text);
+        while (markdownMatcher.find()) {
+            allMatches.add(new MatchInfo(
+                markdownMatcher.start(),
+                markdownMatcher.end(),
+                markdownMatcher.group(1),
+                markdownMatcher.group(2),
+                true
+            ));
+        }
+
+        Matcher urlMatcher = URL_PARSER.matcher(text);
+        while (urlMatcher.find()) {
+            allMatches.add(new MatchInfo(
+                urlMatcher.start(),
+                urlMatcher.end(),
+                urlMatcher.group(),
+                urlMatcher.group(),
+                false
+            ));
+        }
+
+        allMatches.sort(Comparator.comparingInt(a -> a.start));
+
+        for (MatchInfo match : allMatches) {
+            if (match.start < lastEnd) {
+                continue;
+            }
+
+            if (match.start > lastEnd) {
+                buffer.append(text, lastEnd, match.start);
+            }
+
+            links.add(new LinkPosition(buffer.length(), match.displayText.length(), match.url));
+            buffer.append(match.displayText);
+
+            lastEnd = match.end;
+        }
+
+        if (lastEnd < text.length()) {
+            buffer.append(text, lastEnd, text.length());
+        }
+
+        if (links.isEmpty()) {
+            chunks.add(new MessageChunk.Text(text, List.of()));
+        } else {
+            chunks.add(new MessageChunk.Text(buffer.toString(), links));
+        }
+    }
+
+    private static class MatchInfo {
+        final int start;
+        final int end;
+        final String displayText;
+        final String url;
+        final boolean isMarkdown;
+
+        MatchInfo(int start, int end, String displayText, String url, boolean isMarkdown) {
+            this.start = start;
+            this.end = end;
+            this.displayText = displayText;
+            this.url = url;
+            this.isMarkdown = isMarkdown;
+        }
+    }
+
 
     @NotNull
     public static List<DBSObject> loadCustomEntities(
@@ -166,7 +258,7 @@ public class AITextUtils {
         try {
             return loadCheckedEntitiesById(monitor, dataSource.getContainer().getProject(), ids);
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
             return List.of();
         } finally {
             monitor.done();
@@ -182,7 +274,14 @@ public class AITextUtils {
         final List<DBSObject> output = new ArrayList<>();
 
         for (String id : ids) {
-            output.add(DBUtils.findObjectById(monitor, project, id));
+            try {
+                DBSObject object = DBUtils.findObjectById(monitor, project, id);
+                if (object != null) {
+                    output.add(object);
+                }
+            } catch (DBException e) {
+                log.debug("Error loading object '" + id + "': " + e.getMessage());
+            }
             monitor.worked(1);
         }
 
@@ -203,7 +302,8 @@ public class AITextUtils {
 
         return splitIntoChunks(
             SQLUtils.getDialectFromDataSource(context.getExecutionContext().getDataSource()),
-            processedCompletion
+            processedCompletion,
+            true
         );
     }
 

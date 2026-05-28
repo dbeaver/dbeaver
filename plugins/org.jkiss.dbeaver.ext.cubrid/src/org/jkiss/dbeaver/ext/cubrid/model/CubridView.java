@@ -120,7 +120,7 @@ public class CubridView extends GenericView
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridView object) {
             return object.getDataSource().getSchemas().toArray();

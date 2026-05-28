@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreJobSchedule;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -75,7 +76,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             final Calendar calendar = Calendar.getInstance();
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Week Days", 4, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Week Days", 4, GridData.FILL_HORIZONTAL),
                 DayOfWeek.values(),
                 new Decorator<>() {
                     @NotNull
@@ -98,7 +99,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             ));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Month Days", 4, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Month Days", 4, GridData.FILL_HORIZONTAL),
                 IntStream.range(1, 33).boxed().toArray(Integer[]::new),
                 new Decorator<>() {
                     @NotNull
@@ -137,7 +138,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             ));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Months", 4, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Months", 4, GridData.FILL_HORIZONTAL),
                 Month.values(),
                 new Decorator<>() {
                     @NotNull
@@ -178,7 +179,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             category.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Hours", 6, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Hours", 6, GridData.FILL_HORIZONTAL),
                 IntStream.range(0, 24).boxed().toArray(Integer[]::new),
                 new Decorator<>() {
                     @NotNull
@@ -201,7 +202,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             ));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Minutes", 6, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Minutes", 6, GridData.FILL_HORIZONTAL),
                 IntStream.range(0, 60).boxed().toArray(Integer[]::new),
                 new Decorator<>() {
                     @NotNull
@@ -270,12 +271,12 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
     private void addScheduleChange() {
         addChangeCommand(new UpdateCommand(getDatabaseObject()), new DBECommandReflector<>() {
             @Override
-            public void redoCommand(DBECommand<PostgreJobSchedule> command) {
+            public void redoCommand(@NotNull DBECommand<PostgreJobSchedule> command) {
                 // not implemented
             }
 
             @Override
-            public void undoCommand(DBECommand<PostgreJobSchedule> command) {
+            public void undoCommand(@NotNull DBECommand<PostgreJobSchedule> command) {
                 // not implemented
             }
         });
@@ -375,7 +376,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             super(object, "Update schedule");
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             final PostgreJobSchedule schedule = getObject();
@@ -417,9 +418,9 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             };
         }
 
-        @NotNull
+        @Nullable
         @Override
-        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             final String name = "schedule#" + getObject().getObjectId();
 
             if (userParams.putIfAbsent(name, this) == null) {

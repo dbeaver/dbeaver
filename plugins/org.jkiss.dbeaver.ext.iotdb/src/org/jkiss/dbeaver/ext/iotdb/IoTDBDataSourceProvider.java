@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.iotdb.model.IoTDBDataSource;
 import org.jkiss.dbeaver.ext.iotdb.model.meta.IoTDBMetaModel;
 import org.jkiss.dbeaver.ext.iotdb.model.meta.IoTDBTableMetaModel;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -32,11 +31,15 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
+public class IoTDBDataSourceProvider extends GenericDataSourceProvider<IoTDBDataSource> {
+
+    public IoTDBDataSourceProvider() {
+        super(IoTDBDataSource.class);
+    }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor,
+    public IoTDBDataSource openDataSource(@NotNull DBRProgressMonitor monitor,
                                         @NotNull DBPDataSourceContainer container) throws DBException {
         String url = container.getConnectionConfiguration().getUrl();
         if (url.endsWith("?sql_dialect=table")) {
@@ -84,20 +87,29 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
     }
 
     @NotNull
+    private String processUrl(@NotNull String url) {
+        int index = url.indexOf("?");
+        if (index > 0 && url.charAt(index - 1) == '/') {
+            return url.substring(0, index - 1).concat(url.substring(index));
+        }
+        return url;
+    }
+
+    @NotNull
     @Override
     public String getConnectionURL(
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo) {
         String urlTemplate = driver.getSampleURL();
         if (useRawUrl(connectionInfo)) {
-            return connectionInfo.getUrl();
+            return processUrl(connectionInfo.getUrl());
         }
         if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
             return connectionInfo.getUrl();
         }
 
         try {
-            return buildUrlFromTemplate(connectionInfo, urlTemplate);
+            return processUrl(buildUrlFromTemplate(connectionInfo, urlTemplate));
         } catch (DBException e) {
             log.error(e);
             return null;

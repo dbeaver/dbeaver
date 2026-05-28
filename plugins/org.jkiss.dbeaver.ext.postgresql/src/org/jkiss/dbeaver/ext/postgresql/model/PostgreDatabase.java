@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -338,11 +337,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
     }
 
     @NotNull
@@ -941,6 +935,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     public PostgreDataType getDataType(DBRProgressMonitor monitor, long typeId) {
         if (typeId <= 0) {
             return null;
@@ -1048,12 +1043,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     public void setDbTotalSize(long dbTotalSize) {
         this.dbTotalSize = dbTotalSize;
-    }
-
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
     }
 
     @Override
@@ -1347,7 +1336,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 "SELECT n.oid,n.*,d.description FROM pg_catalog.pg_namespace n\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=n.oid AND d.objsubid=0 AND d.classoid='pg_namespace'::regclass\n");
             boolean extraConditionAdded = addExtraCondition(session, catalogQuery);
-            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
+            DBSObjectFilter catalogFilters = database.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, database, false);
             if ((catalogFilters != null && !catalogFilters.isNotApplicable()) || object != null || objectName != null) {
                 if (object != null || objectName != null) {
                     catalogFilters = new DBSObjectFilter();
@@ -1472,6 +1461,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1492,6 +1482,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1512,6 +1503,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {

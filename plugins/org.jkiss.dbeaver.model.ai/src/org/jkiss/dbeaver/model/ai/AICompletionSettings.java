@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class AICompletionSettings extends AIContextSettings {
         this(getPreferenceStore(), dataSourceContainer);
     }
 
-    public AICompletionSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
+    private AICompletionSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
         this.preferenceStore = preferenceStore;
         loadSettings();
@@ -85,7 +85,7 @@ public class AICompletionSettings extends AIContextSettings {
         settings.scope = CommonUtils.valueOf(
             AIDatabaseScope.class,
             preferenceStore.getString(getParameterName(AI_META_SCOPE)),
-            AIDatabaseScope.CURRENT_SCHEMA);
+            null);
         String csString = preferenceStore.getString(getParameterName(AI_META_CUSTOM));
         settings.objects = CommonUtils.isEmpty(csString) ? new String[0] : csString.split(",");
     }

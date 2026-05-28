@@ -304,7 +304,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     .updateValue(originalValue, !replaceAll);
             } else {
                 // Standard value update
-                owner.getController().updateCellValue(
+                owner.getController().updateCellValue( // TODO introduce value path here
                     cellLocation.getAttribute(),
                     cellLocation.getRow(),
                     cellLocation.getRowIndexes(),
@@ -333,8 +333,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 updatedRows.add(cellLocation.getRow());
                 if (redrawJob == null) {
                     redrawJob = new AbstractJob("Redraw grid after replace") {
+                        @NotNull
                         @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
+                        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                             Set<DBDAttributeBinding> attrs;
                             Set<DBDValueRow> rows;
                             synchronized (REDRAW_SYNC) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -49,17 +48,20 @@ import java.lang.reflect.InvocationTargetException;
 abstract class ActiveStatusMessage extends Composite {
     private static final Log log = Log.getLog(ActiveStatusMessage.class);
 
-    private final ResultSetViewer viewer;
     private final Image actionImage;
     private final Text messageText;
     private final ToolItem actionItem;
 
     private ILoadService<String> loadService;
 
-    public ActiveStatusMessage(@NotNull Composite parent, Image actionImage, String actionText, @Nullable final ResultSetViewer viewer) {
+    public ActiveStatusMessage(
+        @NotNull Composite parent,
+        @Nullable Image actionImage,
+        @NotNull String actionText,
+        @Nullable final ResultSetViewer viewer
+    ) {
         super(parent, SWT.NONE);
-
-        this.viewer = viewer;
+        CSSUtils.markConnectionTypeColor(this);
         this.actionImage = actionImage;
 
         GridLayout layout = new GridLayout(2, false);
@@ -70,18 +72,10 @@ abstract class ActiveStatusMessage extends Composite {
 
         // Toolbar
         ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
-        CSSUtils.markConnectionTypeColor(tb);
-        actionItem = new ToolItem(tb, SWT.NONE);
-        actionItem.setImage(this.actionImage);
-        if (actionText != null) {
-            actionItem.setToolTipText(actionText);
-        }
-        actionItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                executeAction();
-            }
-        });
+        actionItem = new ToolItem(tb, SWT.PUSH);
+        actionItem.setImage(actionImage);
+        actionItem.setToolTipText(actionText);
+        actionItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> executeAction(true)));
 
         messageText = new Text(this, SWT.READ_ONLY);
         if (RuntimeUtils.isWindows()) {
@@ -89,8 +83,7 @@ abstract class ActiveStatusMessage extends Composite {
         } else {
             messageText.setBackground(parent.getBackground());
         }
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        messageText.setLayoutData(gd);
+        messageText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         if (viewer != null) {
             TextEditorUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.messageText);
@@ -98,14 +91,14 @@ abstract class ActiveStatusMessage extends Composite {
         }
     }
 
-    public void setMessage(String message)
-    {
+    public void setMessage(@NotNull String message) {
         if (messageText.isDisposed()) {
             return;
         }
         messageText.setText(message);
     }
 
+    @NotNull
     public String getMessage() {
         return messageText.getText();
     }
@@ -116,20 +109,22 @@ abstract class ActiveStatusMessage extends Composite {
         }
     }
 
-    public void executeAction() {
+    public void executeAction(boolean showErrors) {
         if (loadService != null) {
             try {
                 loadService.cancel();
             } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
+                log.debug(e.getTargetException());
             }
             loadService = null;
-        } else {
-            loadService = createLoadService();
-            LoadingJob.createService(
-                loadService,
-                new LoadVisualizer()).schedule();
         }
+        loadService = createLoadService();
+        LoadingJob<String> service = LoadingJob.createService(
+            loadService,
+            new LoadVisualizer()
+        );
+        service.setShowErrors(showErrors);
+        service.schedule();
     }
 
     protected abstract boolean isActionEnabled();
@@ -138,14 +133,15 @@ abstract class ActiveStatusMessage extends Composite {
 
     private class LoadVisualizer implements ILoadVisualizer<String> {
         private boolean completed;
+        @NotNull
         @Override
-        public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
+        public DBRProgressMonitor overwriteMonitor(@NotNull DBRProgressMonitor monitor) {
             return monitor;
         }
 
         @Override
         public boolean isCompleted() {
-            return completed || ActiveStatusMessage.this.isDisposed();
+            return completed || isDisposed();
         }
 
         @Override
@@ -154,13 +150,15 @@ abstract class ActiveStatusMessage extends Composite {
         }
 
         @Override
-        public void completeLoading(String message) {
+        public void completeLoading(@Nullable String message) {
             completed = true;
-            if (!CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
+            if (!messageText.isDisposed() && !CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
                 setMessage(message);
                 getParent().layout(true, true);
             }
-            actionItem.setImage(actionImage);
+            if (!actionItem.isDisposed()) {
+                actionItem.setImage(actionImage);
+            }
             loadService = null;
         }
     }

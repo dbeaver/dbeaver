@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,30 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
-    protected final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+    protected DisposableLazyValue<OpenAIClientResponses, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected OpenAIClient initialize() throws DBException {
+        protected OpenAIClientResponses initialize() throws DBException {
             return createClient();
         }
 
         @Override
-        protected void onDispose(@NotNull OpenAIClient disposedValue) {
+        protected void onDispose(@NotNull OpenAIClientResponses disposedValue) {
             disposedValue.close();
         }
     };
@@ -70,20 +70,28 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request
     ) throws DBException {
         OAIResponsesResponse completionResult = complete(monitor, request);
-        List<OAIMessage> messages = completionResult.output;
+        // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
+        List<OAIMessage> messages = completionResult.output.stream()
+            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+            .toList();
+        AIUsage usage = completionResult.getAIUsage();
         if (messages.isEmpty()) {
-            return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
+            return new AIEngineResponse(
+                AIMessageType.ASSISTANT,
+                List.of(AIMessages.ai_empty_engine_response),
+                usage
+            );
         }
         OAIMessage message = messages.getFirst();
         if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
-            AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
-            return new AIEngineResponse(fc);
+            AIFunctionCall fc = OpenAiUtils.createFunctionCall(message);
+            return new AIEngineResponse(fc, usage);
         } else {
             List<String> choices = messages.stream()
                 .map(OAIMessage::getFullText)
                 .toList();
 
-            return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
         }
     }
 
@@ -93,7 +101,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
         oaiRequest.stream = true;
         openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest, listener);
     }
@@ -118,61 +126,22 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
 
         return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
     }
 
     @NotNull
-    private OAIResponsesRequest createOpenAiRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
-        List<AIMessage> messages = request.getMessages();
-        oaiRequest.input = fromMessages(messages);
-        oaiRequest.temperature = temperature();
-        oaiRequest.store = false;
-        oaiRequest.model = model();
-
-        if (!CommonUtils.isEmpty(request.getFunctions())) {
-            List<OAITool> tools = new ArrayList<>();
-            for (AIFunctionDescriptor fd : request.getFunctions()) {
-                OAITool tool = new OAITool();
-                tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getName();
-                tool.description = fd.getDescription();
-                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
-                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
-                    OAIToolParameter tp = new OAIToolParameter();
-                    tp.type = param.getType();
-                    tp.description = param.getDescription();
-                    tp.enumItems = param.getValidValues();
-                    tool.parameters.properties.put(param.getName(), tp);
-                }
-                tools.add(tool);
-            }
-            oaiRequest.tools = tools;
-        }
-
-        return oaiRequest;
-    }
-
-    @NotNull
-    private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(OAIMessage::new)
-            .toList();
-    }
-
-    @NotNull
-    protected OpenAIClient createClient() throws DBException {
+    protected OpenAIClientResponses createClient() throws DBException {
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");
         }
         String baseUrl = properties.getBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
-            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+            baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        return OpenAIClient.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token);
     }
 
     @Nullable

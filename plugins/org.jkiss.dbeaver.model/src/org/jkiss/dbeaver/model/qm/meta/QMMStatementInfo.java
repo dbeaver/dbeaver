@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
@@ -46,10 +48,11 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         super.close();
-        reference = null;
+        if (reference != null) {
+            reference = null;
+        }
     }
 
     @Override
@@ -57,26 +60,33 @@ public class QMMStatementInfo extends QMMObject {
         return connection.getText();
     }
 
-    DBCStatement getReference() {
+    @Nullable
+    public DBCStatement getReference() {
         return reference;
     }
 
+    public String getReferenceText() {
+        return reference != null ? reference.getQueryString() : "N/A";
+    }
+
+    @NotNull
     public QMMConnectionInfo getConnection() {
         return connection;
     }
 
+    @NotNull
     public DBCExecutionPurpose getPurpose() {
         return purpose;
     }
 
+    @Nullable
     public QMMStatementInfo getPrevious() {
         return previous;
     }
 
     @Override
-    public String toString()
-    {
-        return "STATEMENT";
+    public String toString() {
+        return "STATEMENT " + getReferenceText();
     }
 
 }

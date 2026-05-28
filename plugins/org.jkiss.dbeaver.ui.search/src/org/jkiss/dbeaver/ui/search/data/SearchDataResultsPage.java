@@ -81,6 +81,7 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
             return new Class<?>[] {DBPNamedObject.class, SearchDataObject.class};
         }
 
+        @NotNull
         @Override
         protected Object getObjectValue(@NotNull DBNNode item) {
             for (SearchDataObject obj : foundObjects) {

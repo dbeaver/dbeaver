@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.tasks;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -106,6 +107,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(DB2RunstatsToolSettings object) {
             return columnStats;
@@ -119,6 +121,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(DB2RunstatsToolSettings object) {
             return indexStats;
@@ -128,7 +131,7 @@ public class DB2RunstatsToolSettings extends SQLToolExecuteSettings<DB2TableBase
     public static class DB2StatisticPercentLimiter implements IPropertyValueValidator<DB2RunstatsToolSettings, Object> {
 
         @Override
-        public boolean isValidValue(DB2RunstatsToolSettings object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull DB2RunstatsToolSettings object, @Nullable Object value) throws IllegalArgumentException {
             int i = -1;
             if (value instanceof String) {
                 i = Integer.parseInt((String) value);

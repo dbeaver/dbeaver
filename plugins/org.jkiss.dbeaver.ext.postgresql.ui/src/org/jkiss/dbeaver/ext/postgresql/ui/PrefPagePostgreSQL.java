@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -60,20 +62,18 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite cfgGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        cfgGroup.setLayout(gl);
+        Composite cfgGroup = UIUtils.createComposite(parent, 1);
         cfgGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Group secureGroup = new Group(cfgGroup, SWT.NONE);
-            secureGroup.setText(PostgreMessages.dialog_setting_connection_settings);
-            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            secureGroup.setLayout(new GridLayout(2, false));
+            Composite secureGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_connection_settings,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             showNonDefault = UIUtils.createCheckbox(secureGroup,
                 PostgreMessages.dialog_setting_connection_nondefaultDatabase,
@@ -125,10 +125,12 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         }
 
         {
-            Group secureGroup = new Group(cfgGroup, SWT.NONE);
-            secureGroup.setText(PostgreMessages.dialog_setting_group_sql);
-            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            secureGroup.setLayout(new GridLayout(2, false));
+            Composite secureGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_group_sql,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             ddPlainBehaviorCombo = UIUtils.createLabelCombo(secureGroup, PostgreMessages.dialog_setting_sql_dd_plain_label, PostgreMessages.dialog_setting_sql_dd_plain_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
             ddPlainBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);

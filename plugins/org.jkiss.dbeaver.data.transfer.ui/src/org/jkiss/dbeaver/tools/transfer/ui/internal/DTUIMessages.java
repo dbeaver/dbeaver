@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ public class DTUIMessages extends NLS {
     public static String data_transfer_wizard_name;
     public static String data_transfer_wizard_final_column_source;
     public static String data_transfer_wizard_final_column_source_container;
+    public static String data_transfer_wizard_final_column_source_format;
     public static String data_transfer_wizard_final_column_target;
     public static String data_transfer_wizard_final_column_target_container;
+    public static String data_transfer_wizard_final_column_target_format;
     public static String data_transfer_wizard_final_description;
     public static String data_transfer_wizard_final_group_tables;
     public static String data_transfer_wizard_final_group_objects;
@@ -236,6 +238,8 @@ public class DTUIMessages extends NLS {
     public static String pref_data_transfer_replacing_combo_tip;
     public static String pref_data_transfer_spanner_max_length;
     public static String pref_data_transfer_spanner_max_length_tip;
+    public static String pref_open_fs_browser_on_enter;
+    public static String pref_open_fs_browser_on_enter_tooltip;
 
     public static String mappings_rules_dialog_title;
     public static String mappings_rules_dialog_save_settings_checkbox;

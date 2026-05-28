@@ -274,7 +274,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @Override
     public void close() {
-        columnBindings = null;
     }
     
     private boolean resolveOverwriteBlobFileConflict(@NotNull String fileName) {

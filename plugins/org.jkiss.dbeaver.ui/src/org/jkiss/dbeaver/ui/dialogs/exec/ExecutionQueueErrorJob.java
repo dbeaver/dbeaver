@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.exec;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
@@ -30,22 +31,21 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class ExecutionQueueErrorJob extends AbstractUIJob {
 
-    private String errorName;
-    private Throwable error;
-    private boolean queue;
+    private final String errorName;
+    private final Throwable error;
+    private final boolean queue;
     private DBPPlatformUI.UserResponse response = DBPPlatformUI.UserResponse.STOP;
 
-    public ExecutionQueueErrorJob(String errorName, Throwable error, boolean queue)
-    {
+    public ExecutionQueueErrorJob(@NotNull String errorName, @NotNull Throwable error, boolean queue) {
         super("Execution Error Job");
         this.errorName = errorName;
         this.error = error;
         this.queue = queue;
     }
 
+    @NotNull
     @Override
-    public IStatus runInUIThread(DBRProgressMonitor monitor)
-    {
+    public IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
         ExecutionQueueErrorDialog dialog = new ExecutionQueueErrorDialog(
             UIUtils.getActiveWorkbenchShell(),
             "Execution Error",
@@ -76,12 +76,14 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
         return Status.OK_STATUS;
     }
 
+    @NotNull
     public DBPPlatformUI.UserResponse getResponse()
     {
         return response;
     }
 
-    public static DBPPlatformUI.UserResponse showError(String task, Throwable error, boolean queue) {
+    @NotNull
+    public static DBPPlatformUI.UserResponse showError(@NotNull String task, @NotNull Throwable error, boolean queue) {
         ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(task, error, queue);
         errorJob.schedule();
         try {

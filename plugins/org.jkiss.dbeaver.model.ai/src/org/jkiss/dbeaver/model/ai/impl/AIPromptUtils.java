@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -36,54 +39,65 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AIPromptUtils {
+    public static final String[] SQL_OUTPUT_FORMATS = {
+        "Place any explanation or comments before the SQL code block.",
+        "Provide the SQL query in a fenced Markdown code block."
+    };
+
+    public static int calcSystemPromptLength(@NotNull List<AIMessage> messages) {
+        return messages.stream()
+            .filter(it -> it.getRole() == AIMessageType.SYSTEM)
+            .mapToInt(it -> it.getContent().length())
+            .sum();
+    }
 
     public static String[] describeDataSourceInfo(@Nullable DBSLogicalDataSource dataSource) {
-        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
-            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
 
         if (dataSource != null) {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
+            SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
+            lines.add("SQL dialect: " + dialect.getDialectName());
+            if (dsInfo != null) {
+                lines.add("Server version: " + dsInfo.getDatabaseProductName() + " " + dsInfo.getDatabaseVersion());
+            }
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
                 lines.add("DBeaver connection name: " + dataSource.getDataSourceContainer().getName());
                 DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
                 if (ds instanceof JDBCDataSource) {
                     lines.add("JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
                 } else {
-                    lines.add("Java driver: " + driver.getFullName() + ")");
+                    lines.add("Java driver: " + driver.getFullName());
                 }
             }
 
-            String currentSchema = dataSource.getCurrentSchema();
-            if (!CommonUtils.isEmpty(currentSchema)) {
-                lines.add("Current " + (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
-            }
             String currentCatalog = dataSource.getCurrentCatalog();
             if (!CommonUtils.isEmpty(currentCatalog)) {
-                lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
+                String catalogTerm = (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()).toLowerCase();
+                lines.add("Default " + catalogTerm + ": " + currentCatalog);
+            }
+            String currentSchema = dataSource.getCurrentSchema();
+            if (!CommonUtils.isEmpty(currentSchema)) {
+                String schemaTerm = (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()).toLowerCase();
+                lines.add("Default " + schemaTerm + ": " + currentSchema);
+            }
+            if (dataSource.getDataSourceContainer().isConnectionReadOnly()) {
+                lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
             }
         }
-        lines.add("SQL dialect: " + dialect.getDialectName());
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
+
         return lines.toArray(String[]::new);
     }
 
-    public static String[] createDatabaseInstructions(@Nullable DBSLogicalDataSource dataSource) {
+    public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
-        instructions.add("You are the DBeaver AI assistant.");
-        instructions.add("Act as a database architect and SQL expert.");
-        instructions.add("Rely only on the schema information provided below.");
+        instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
+        instructions.add("If user wants to see table data then show it in markdown table format by default.");
         instructions.add("Stick strictly to SQL dialect syntax.");
-        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
-
-        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
-        if (!CommonUtils.isEmpty(useLanguage)) {
-            instructions.add("Use " + useLanguage + " language in your responses.");
-        } else {
-            instructions.add("Use the same language as the user.");
-        }
+        instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
@@ -96,6 +110,21 @@ public class AIPromptUtils {
             instructions.add(stringsQuoteRule);
         }
 
+        return instructions.toArray(new String[0]);
+    }
+
+    public static String[] createGeneralRulesInstructions() {
+        List<String> instructions = new ArrayList<>();
+        instructions.add("You are the DBeaver AI assistant.");
+        instructions.add("Act as a database architect and SQL expert.");
+        instructions.add("Use tools to ask for database schema information.");
+        instructions.add("Rely only on the provided schema information, do not make assumptions.");
+        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
+        if (!CommonUtils.isEmpty(useLanguage)) {
+            instructions.add("Use " + useLanguage + " language in your responses.");
+        } else {
+            instructions.add("Use the same language as the user.");
+        }
         return instructions.toArray(new String[0]);
     }
 

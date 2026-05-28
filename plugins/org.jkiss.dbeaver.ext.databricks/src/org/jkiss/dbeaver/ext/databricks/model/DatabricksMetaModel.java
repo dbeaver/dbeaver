@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,13 +84,13 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     @Nullable
     @Override
     public List<GenericSchema> loadSchemas(
-        JDBCSession session,
-        GenericDataSource dataSource,
-        GenericCatalog catalog
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
     ) throws DBException {
         List<GenericSchema> schemas = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SHOW SCHEMAS IN " + catalog.getName()
+            "SHOW SCHEMAS" + (catalog == null ? "" : " IN " + DBUtils.getQuotedIdentifier(catalog))
         )) {
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {
@@ -166,9 +166,10 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         return super.prepareTableLoadStatement(session, owner, object, objectName);
     }
 
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult) {

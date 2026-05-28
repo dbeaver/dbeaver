@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUIConstants;
 import org.jkiss.dbeaver.ext.exasol.ui.internal.ExasolMessages;
@@ -76,7 +78,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
         ModifyListener textListener = e -> evaluateURL();
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, ExasolMessages.label_database, 2, 0, 0);
+            Composite addrGroup = UIUtils.createTitledComposite(control, ExasolMessages.label_database, 2, GridData.FILL_HORIZONTAL);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             addrGroup.setLayoutData(gd);
 
@@ -191,7 +193,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -214,6 +216,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
         site.updateButtons();
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{

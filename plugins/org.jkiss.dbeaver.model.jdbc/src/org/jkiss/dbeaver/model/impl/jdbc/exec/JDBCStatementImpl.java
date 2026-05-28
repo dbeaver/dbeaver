@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -57,6 +58,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     private long updateCount;
     private Throwable executeError;
+    private boolean closed;
 
     public JDBCStatementImpl(
         @NotNull JDBCSession connection,
@@ -189,6 +191,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public long getUpdateRowCount() throws DBCException {
+        if (closed) {
+            return updateCount;
+        }
         try {
             try {
                 return getLargeUpdateCount();
@@ -268,8 +273,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         return result;
     }
 
-    protected SQLException handleExecuteError(Throwable ex) {
-        executeError = ex;
+    @NotNull
+    protected SQLException handleExecuteError(@NotNull Throwable ex) {
+        this.executeError = ex;
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
             try {
                 if (!connection.isClosed() && !connection.getAutoCommit()) {
@@ -279,8 +285,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
                 log.error("Can't rollback connection after error (" + ex.getMessage() + ")", e); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
-        if (ex instanceof SQLException) {
-            return (SQLException) ex;
+        if (ex instanceof SQLException sqlException) {
+            return sqlException;
         } else {
             return new SQLException(ModelMessages.model_jdbc_exception_internal_jdbc_driver_error, ex);
         }
@@ -289,7 +295,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     protected void beforeExecute() {
         this.updateCount = -1;
         this.executeError = null;
-        this.connection.getExecutionContext().lockQueryExecution();
+        this.connection.getExecutionContext().lockStatementExecution(this);
         this.connection.setBlockThread(Thread.currentThread());
 
         if (isQMLoggingEnabled()) {
@@ -303,7 +309,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     protected void afterExecute() {
         this.connection.setBlockThread(null);
-        this.connection.getExecutionContext().unlockQueryExecution();
         if (JDBCUtils.LOG_JDBC_WARNINGS) {
             try {
                 JDBCUtils.reportWarnings(getSession(), this.getWarnings());
@@ -466,16 +471,27 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
 */
 
-        if (isQMLoggingEnabled()) {
-            // Handle close
-            QMUtils.getDefaultHandler().handleStatementClose(this, updateCount);
-        }
-
         // Close statement
+        Throwable closeError = null;
         try {
             getOriginal().close();
         } catch (Throwable e) {
-            log.error("Can't close statement", e); //$NON-NLS-1$
+            closeError = e;
+        }
+
+        this.closed = true;
+        getConnection().getExecutionContext().unlockStatementExecution(this);
+
+        try {
+            super.close();
+        } catch (Throwable e) {
+            if (closeError != null) {
+                log.error("Error closing statement (suppressed", e);
+            }
+            throw new DBRuntimeException(e);
+        }
+        if (closeError != null) {
+            throw new DBRuntimeException(closeError);
         }
     }
 
@@ -594,6 +610,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public int getUpdateCount() throws SQLException {
+        if (closed) {
+            return (int) updateCount;
+        }
         int uc = getOriginal().getUpdateCount();
         if (uc >= 0) {
             // Cache update count (for QM logging)
@@ -604,6 +623,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public long getLargeUpdateCount() throws SQLException {
+        if (closed) {
+            return updateCount;
+        }
         final long uc = getOriginal().getLargeUpdateCount();
         if (uc >= 0) {
             // Cache update count (for QM logging)

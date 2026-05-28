@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
 import java.text.DecimalFormat;
@@ -35,9 +36,11 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_USE_TYPE_SCALE  ="useTypeScale";
     public static final String PROP_ROUNDING_MODE ="roundingMode";
     public static final String PROP_NATIVE_SPECIAL_VALUES = "nativeSpecialValues";
+    public static final String PROP_EXCLUDE_ID_COLUMNS = "excludeIdColumns";
 
+    @NotNull
     @Override
-    public Map<String, Object> getDefaultProperties(Locale locale)
+    public Map<String, Object> getDefaultProperties(@NotNull Locale locale)
     {
         final DecimalFormat tmp = (DecimalFormat) NumberFormat.getNumberInstance(locale);
         final Map<String, Object> props = new HashMap<>();
@@ -49,12 +52,14 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_USE_TYPE_SCALE, false);
         props.put(PROP_NATIVE_SPECIAL_VALUES, false);
+        props.put(PROP_EXCLUDE_ID_COLUMNS, false);
         // Use UNNECESSARY by default [#6493]
         // FIX: Use default. The problem in rounding was caused by float->double conversions.
         //props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());
         return props;
     }
 
+    @NotNull
     @Override
     public Object getSampleValue()
     {

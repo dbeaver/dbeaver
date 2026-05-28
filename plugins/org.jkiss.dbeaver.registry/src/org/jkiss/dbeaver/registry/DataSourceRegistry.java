@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -44,8 +45,8 @@ import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,11 +98,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true) != null;
-        if (!isMultiUser() && isLoaded) {
-            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
-            addDataSourceListener(modelChangeListener);
-        }
     }
 
     // Multi-user registry:
@@ -263,12 +259,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
+    public DataSourceDescriptor createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(
+    public DataSourceDescriptor createDataSource(
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connConfig
@@ -276,8 +273,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return new DataSourceDescriptor(this, id, driver, connConfig);
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(
+    public DataSourceDescriptor createDataSource(
         @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
         @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
@@ -289,10 +287,23 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source) {
+    public DataSourceDescriptor createDataSource(@NotNull DBPDataSourceContainer source) {
         DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source, this);
         newDS.setId(DataSourceDescriptor.generateNewId(source.getDriver()));
         return newDS;
+    }
+
+    @NotNull
+    public DataSourceDescriptor createDataSource(
+        @NotNull DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver originalDriver,
+        @NotNull DBPDriver substitutedDriver,
+        @NotNull DBPConnectionConfiguration dbpConnectionConfiguration
+    ) {
+        return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
+            substitutedDriver, dbpConnectionConfiguration);
     }
 
     @NotNull
@@ -663,7 +674,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Override
     public void flushConfig() {
-        if (project.isInMemory()) {
+        if (project.isInMemory() || DBWorkbench.isDistributed()) {
+            // Do not save in-memory projects.
+
+            // Do not save all project datasources in TE
+            // We save them only thru persistDataSourceX methods
             return;
         }
         // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
@@ -798,6 +813,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
         }
         return result;
+    }
+
+    @Override
+    public void initializeDataSources() {
+        boolean isLoaded = loadDataSources(true) != null;
+        if (!isMultiUser() && isLoaded) {
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+            addDataSourceListener(modelChangeListener);
+        }
     }
 
     private DataSourceParseResults loadDataSources(boolean refresh) {
@@ -974,7 +998,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    protected void updateProjectNature() {
+    private void updateProjectNature() {
+        if (project instanceof BaseProjectImpl bp) {
+            bp.updateProjectNature();
+        }
     }
 
     @NotNull
@@ -1039,7 +1066,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.persistSecrets(secretController);
         }
@@ -1052,7 +1079,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.resolveSecrets(secretController);
         }
@@ -1062,18 +1089,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         for (DBAAuthProfile ap : getAllAuthProfiles()) {
             ap.resolveSecrets(secretController);
         }
-    }
-
-    public DBPDataSourceContainer createDataSource(
-        DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
-        DBPDataSourceOrigin origin,
-        String id,
-        DriverDescriptor originalDriver,
-        DriverDescriptor substitutedDriver,
-        DBPConnectionConfiguration dbpConnectionConfiguration
-    ) {
-        return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
-            substitutedDriver, dbpConnectionConfiguration);
     }
 
     private class EventProcessJob extends Job {
@@ -1133,8 +1148,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         ConfigSaver() {
             super("Datasource configuration save");
         }
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (DataSourceRegistry.this) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 saveDataSources(monitor);
