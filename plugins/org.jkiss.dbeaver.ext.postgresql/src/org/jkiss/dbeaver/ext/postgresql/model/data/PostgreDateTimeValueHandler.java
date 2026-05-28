@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.data.value.PostgreEndOfDay;
-import org.jkiss.dbeaver.ext.postgresql.model.data.value.PostgreOffsetEndOfDay;
+import org.jkiss.dbeaver.model.data.DBDEndOfDayValue;
+import org.jkiss.dbeaver.model.data.DBDOffsetEndOfDayValue;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -107,7 +107,9 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
                             // let's do the same
                             if (rawString.startsWith(TIME_END_OF_DAY_STRING)) {
                                 // but instead of OffsetTime.MAX which is '23:59:59.999999999-18:00', we want zone-specific END_OF_DAY
-                                return new PostgreOffsetEndOfDay(ZoneOffset.of(rawString.substring(TIME_END_OF_DAY_STRING.length())));
+                                return DBDOffsetEndOfDayValue.withOffset(
+                                    ZoneOffset.of(rawString.substring(TIME_END_OF_DAY_STRING.length()))
+                                );
                             } else {
                                 return jdbc.getObject(index + 1, OffsetTime.class);
                             }
@@ -117,7 +119,7 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
                             // let's do the same as postgresql jdbc driver
                             if (TIME_END_OF_DAY_STRING.equals(rawString)) {
                                 // but instead of LocalTime.MAX which is '23:59:59.999999999' in-the-day, we want zone-less END_OF_DAY
-                                return PostgreEndOfDay.withoutOffset();
+                                return DBDEndOfDayValue.withoutOffset();
                             } else {
                                 return jdbc.getObject(index + 1, LocalTime.class);
                             }

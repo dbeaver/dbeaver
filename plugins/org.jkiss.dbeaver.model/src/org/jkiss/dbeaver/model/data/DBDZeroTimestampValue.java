@@ -56,4 +56,9 @@ public class DBDZeroTimestampValue implements TemporalAccessor {
             throw new UnsupportedTemporalTypeException("Unsupported field: " + field);
         }
     }
+
+    @Override
+    public String toString() {
+        return "0000-00-00 00:00:00";
+    }
 }

@@ -37,10 +37,7 @@ import java.sql.Types;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
+import java.time.*;
 import java.util.Date;
 
 /**
@@ -236,6 +233,10 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Time.valueOf(localDateTime.toLocalTime());
         } else if (value instanceof LocalTime localTime) {
             return java.sql.Time.valueOf(localTime);
+        } else if (value instanceof OffsetTime offsetTime) {
+            return java.sql.Time.valueOf(offsetTime.toLocalTime());
+        } else if (value instanceof DBDEndOfDayValue) {
+            return java.sql.Time.valueOf(LocalTime.MAX);
         } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
             return new java.sql.Time(0);
         }  else if (value != null) {
@@ -276,6 +277,12 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return Timestamp.valueOf(localDateTime);
         } else if (value instanceof OffsetDateTime offsetDateTime) {
             return Timestamp.valueOf((offsetDateTime.toLocalDateTime()));
+        } else if (value instanceof LocalTime localTime) {
+            return Timestamp.valueOf(localTime.atDate(LocalDate.EPOCH));
+        } else if (value instanceof OffsetTime offsetTime) {
+            return Timestamp.valueOf(offsetTime.toLocalTime().atDate(LocalDate.EPOCH));
+        } else if (value instanceof DBDEndOfDayValue) {
+            return DBDEndOfDayValue.TIMESTAMP;
         } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
             return new Timestamp(0);
         } else if (value != null) {
