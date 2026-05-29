@@ -993,6 +993,22 @@ public class SQLQueryJob extends DataSourceJob {
                             }
                         }
                     }
+                    // Fallback: extract table name from parsed SQL query AST.
+                    // Some drivers (e.g. Oracle JDBC thin) do not return table names
+                    // from ResultSetMetaData.getTableName(), so we use JSQLParser results instead.
+                    if (CommonUtils.isEmpty(sourceName)) {
+                        SQLQuery sqlQuery = result.getStatement();
+                        DBCEntityMetaData entityMeta = sqlQuery.getEntityMetadata(false);
+                        if (entityMeta != null) {
+                            sourceName = entityMeta.getEntityName();
+                        } else if (!sqlQuery.getAllSelectEntitiesNames().isEmpty()) {
+                            // Query has JOINs - use first table name with (+) marker
+                            sourceName = sqlQuery.getAllSelectEntitiesNames().getFirst();
+                            if (sqlQuery.getAllSelectEntitiesNames().size() > 1) {
+                                sourceName += "(+)";
+                            }
+                        }
+                    }
                     if (CommonUtils.isEmpty(sourceName)) {
                         try {
                             sourceName = resultSet.getResultSetName();
