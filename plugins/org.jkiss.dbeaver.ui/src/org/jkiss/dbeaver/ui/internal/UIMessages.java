@@ -48,7 +48,9 @@ public class UIMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_btn_config_refresh;
     public static String sql_editor_resultset_filter_panel_btn_stop_refresh;
     public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+    public static String sql_editor_resultset_filter_panel_menu_refresh_interval_s;
     public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1;
+    public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1_s;
     public static String sql_editor_resultset_filter_panel_menu_stop;
     public static String sql_editor_resultset_filter_panel_menu_customize;
 

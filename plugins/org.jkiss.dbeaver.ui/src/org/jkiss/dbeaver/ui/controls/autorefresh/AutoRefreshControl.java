@@ -244,8 +244,8 @@ public class AutoRefreshControl {
                         final Integer timeout = presetList.get(i);
                         mi = new MenuItem(schedulerMenu, SWT.PUSH);
                         String text = i == 0 ?
-                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval, timeout) :
-                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1, timeout);
+                            NLS.bind(timeout == 1 ? UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval : UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_s, timeout) :
+                            NLS.bind(timeout == 1 ? UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1 : UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1_s, timeout);
                         mi.setText(text);
                         if (isAutoRefreshEnabled() && timeout == defaultInterval) {
                             schedulerMenu.setDefaultItem(mi);
