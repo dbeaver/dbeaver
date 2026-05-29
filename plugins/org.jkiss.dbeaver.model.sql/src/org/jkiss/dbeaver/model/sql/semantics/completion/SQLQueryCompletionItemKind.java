@@ -62,7 +62,7 @@ public enum SQLQueryCompletionItemKind {
      * Global pseudo-column provided by the dialect
      * <p> (simple identifier)
      */
-    GLOBAL_PSEUDO_COLUMN(false, true, 100),
+    GLOBAL_PSEUDO_COLUMN(false, true, 500),
     /**
      * Composite field name
      * <p> (simple identifier)
