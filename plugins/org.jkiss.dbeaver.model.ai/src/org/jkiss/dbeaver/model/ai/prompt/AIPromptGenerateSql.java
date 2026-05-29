@@ -30,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 public class AIPromptGenerateSql extends AIPromptAbstract {
 
     public static final String SQL_GENERATOR_ID = "sql";
+    private boolean sqlQueriesOnly = false;
 
     @NotNull
     @Override
@@ -69,8 +70,18 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         builder.addInstructions(joinHint);
     }
 
+    public void setSqlQueriesOnly(boolean sqlQueriesOnly) {
+        this.sqlQueriesOnly = sqlQueriesOnly;
+    }
+
     @Override
     protected void initializePrompt(@Nullable AIDatabaseContext context) {
+        if (sqlQueriesOnly) {
+            addInstructions(
+                "Your main goal to return at least one SQL query",
+                "You shouldn't return any comments or descriptions, only SQL code blocks."
+            );
+        }
         addSqlGenerateInstructions(() -> context == null ? null : context.getDataSource(), this);
     }
 }
