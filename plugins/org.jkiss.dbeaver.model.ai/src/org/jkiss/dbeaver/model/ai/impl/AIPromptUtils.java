@@ -94,10 +94,12 @@ public class AIPromptUtils {
     }
 
     @NotNull
-    public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
+    public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource, boolean isInAIChat) {
         List<String> instructions = new ArrayList<>();
         instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
-        instructions.add("If user wants to see table data then show it in markdown table format by default.");
+        if (isInAIChat) {
+            instructions.add("If user wants to see table data then show it in markdown table format by default.");
+        }
         instructions.add("Stick strictly to SQL dialect syntax.");
         instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
