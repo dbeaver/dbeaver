@@ -24,7 +24,9 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.ControlEditor;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -192,16 +194,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DTMessages.data_transfer_db_consumer_button_customise,
                 DBIcon.TREE_COLUMNS,
                 DTMessages.data_transfer_db_consumer_button_customise_description,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        DatabaseMappingObject selectedMapping = getSelectedMapping();
-                        mapColumnsAndTable(
-                            selectedMapping instanceof DatabaseMappingContainer
-                                ? (DatabaseMappingContainer) selectedMapping : ((DatabaseMappingAttribute) selectedMapping).getParent());
-                    }
-                });
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                    DatabaseMappingObject selectedMapping = getSelectedMapping();
+                    mapColumnsAndTable(
+                        selectedMapping instanceof DatabaseMappingContainer dmc ? dmc :
+                            ((DatabaseMappingAttribute) selectedMapping).getParent());
+                }));
             configureButton.setEnabled(false);
 
             previewButton = UIUtils.createDialogButton(
@@ -276,12 +274,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DTMessages.data_transfer_db_consumer_mapping_rules_button,
                 UIIcon.CONFIGURATION,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button_tip,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updateMappingRules();
-                    }
-                });
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> updateMappingRules()));
             mappingRules.setEnabled(false);
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
@@ -447,7 +440,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             public void run() {
                                 AttributeTransformerSettingsDialog settingsDialog = new AttributeTransformerSettingsDialog(
                                     getShell(),
-                                    (DatabaseMappingAttribute) element,
+                                    mapping,
                                     mapping.getTransformer());
                                 if (settingsDialog.open() != IDialogConstants.OK_ID) {
                                     return;
@@ -829,20 +822,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 combo.setItems(items.toArray(new String[0]));
                 combo.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-                combo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        String sel = combo.getText();
-                        if (TARGET_NAME_BROWSE.equals(sel) && finalIsContainer) {
-                            doSetValue(doGetValue());
-                            openDialogBox(composite);
-                        } else {
-                            markDirty();
-                            doSetValue(sel);
-                            fireApplyEditorValue();
-                        }
+                combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    String sel = combo.getText();
+                    if (TARGET_NAME_BROWSE.equals(sel) && finalIsContainer) {
+                        doSetValue(doGetValue());
+                        openDialogBox(composite);
+                    } else {
+                        markDirty();
+                        doSetValue(sel);
+                        fireApplyEditorValue();
                     }
-                });
+                }));
 
                 combo.addTraverseListener(e -> {
                     fireApplyEditorValue();
@@ -850,17 +840,18 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 });
 
                 if (finalIsContainer) {
-                    Button browseButton = new Button(composite, SWT.PUSH);
-                    browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
-                    browseButton.setToolTipText(DTUIMessages.database_consumer_page_mapping_browse_button_tooltip);
-                    browseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-                    browseButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                        Object newVal = openDialogBox(composite);
-                        doSetValue(newVal);
-                        markDirty();
-                        fireApplyEditorValue();
-                    }));
+                    UIUtils.createPushButton(
+                        composite,
+                        null,
+                        DTUIMessages.database_consumer_page_mapping_browse_button_tooltip,
+                        UIIcon.DOTS_BUTTON,
+                        SelectionListener.widgetSelectedAdapter(e -> {
+                            Object newVal = openDialogBox(composite);
+                            doSetValue(newVal);
+                            markDirty();
+                            fireApplyEditorValue();
+                        })
+                    );
                 }
 
                 return composite;
@@ -1096,13 +1087,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
                 new Class[] {DBSDataManipulator.class},
                 null);
-            if (node != null && node instanceof DBSWrapper) {
-                DBSObject object = ((DBSWrapper) node).getObject();
+            if (node instanceof DBSWrapper dbw) {
+                DBSObject object = dbw.getObject();
                 try {
                     boolean needsUpdate = false;
-                    for (final DatabaseMappingContainer mapping : mappings) {
-                        if (object instanceof DBSDataManipulator) {
-                            mapping.setTarget((DBSDataManipulator) object);
+                    for (DatabaseMappingContainer mapping : mappings) {
+                        if (object instanceof DBSDataManipulator dm) {
+                            mapping.setTarget(dm);
                             mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
                             if (mappings.length == 1) {
                                 // Call to this method also shows up a dialog.
