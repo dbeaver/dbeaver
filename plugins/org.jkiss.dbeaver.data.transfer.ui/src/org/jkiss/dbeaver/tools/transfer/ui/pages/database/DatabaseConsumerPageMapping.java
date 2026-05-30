@@ -827,7 +827,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     String sel = combo.getText();
                     if (TARGET_NAME_BROWSE.equals(sel) && finalIsContainer) {
                         doSetValue(doGetValue());
-                        openDialogBox(composite);
+                        openDialogBox();
                     } else {
                         markDirty();
                         doSetValue(sel);
@@ -847,7 +847,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         DTUIMessages.database_consumer_page_mapping_browse_button_tooltip,
                         UIIcon.DOTS_BUTTON,
                         SelectionListener.widgetSelectedAdapter(e -> {
-                            Object newVal = openDialogBox(composite);
+                            Object newVal = openDialogBox();
                             doSetValue(newVal);
                             markDirty();
                             fireApplyEditorValue();
@@ -865,7 +865,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
 
-            private Object openDialogBox(Control cellEditorWindow) {
+            private Object openDialogBox() {
                 DatabaseMappingContainer dmc = (DatabaseMappingContainer) element;
                 mapExistingTables(new DatabaseMappingContainer[]{dmc});
                 return (dmc).getTargetName();
