@@ -70,6 +70,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
     private Text clientApplicationNameText;
 
     private Button connUseEnvVariables;
+    private Button addAutoQueryIdentificationCommentCheck;
 
     public PrefPageConnectionClient() {
         super();
@@ -80,10 +81,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(ModelPreferences.META_CLIENT_NAME_DISABLE) ||
-            store.contains(ModelPreferences.META_CLIENT_NAME_OVERRIDE) ||
-            store.contains(ModelPreferences.META_CLIENT_NAME_VALUE) ||
+                store.contains(ModelPreferences.META_CLIENT_NAME_OVERRIDE) ||
+                store.contains(ModelPreferences.META_CLIENT_NAME_VALUE) ||
 
-            store.contains(ModelPreferences.CONNECT_USE_ENV_VARS)
+                store.contains(ModelPreferences.CONNECT_USE_ENV_VARS)
             ;
     }
 
@@ -101,7 +102,8 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 composite,
                 CoreMessages.pref_page_database_client_name_group,
                 2,
-                GridData.FILL_HORIZONTAL);
+                GridData.FILL_HORIZONTAL
+            );
 
             disableClientApplicationNameCheck = UIUtils.createCheckbox(
                 clientNameGroup,
@@ -111,8 +113,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 2
             );
 
-            final Label label = UIUtils.createLabel(clientNameGroup,
-                CoreMessages.pref_page_database_client_name_group_description);
+            final Label label = UIUtils.createLabel(
+                clientNameGroup,
+                CoreMessages.pref_page_database_client_name_group_description
+            );
             GridData gd = new GridData();
             gd.horizontalSpan = 2;
             label.setLayoutData(gd);
@@ -138,11 +142,20 @@ public class PrefPageConnectionClient extends TargetPrefPage {
             ContentAssistUtils.installContentProposal(
                 clientApplicationNameText,
                 new SmartTextContentAdapter(),
-                new StringContentProposalProvider(ALLOWED_VARIABLES));
+                new StringContentProposalProvider(ALLOWED_VARIABLES)
+            );
             UIUtils.setContentProposalToolTip(
                 clientApplicationNameText,
                 CoreMessages.pref_page_connections_application_name_text,
                 ALLOWED_VARIABLES
+            );
+
+            addAutoQueryIdentificationCommentCheck = UIUtils.createCheckbox(
+                clientNameGroup,
+                CoreMessages.pref_page_database_label_add_auto_query_identification_comment,
+                CoreMessages.pref_page_database_label_add_auto_query_identification_comment_tip,
+                false,
+                2
             );
         }
 
@@ -151,7 +164,8 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 composite,
                 CoreMessages.pref_page_connection_label_general,
                 2,
-                GridData.FILL_HORIZONTAL);
+                GridData.FILL_HORIZONTAL
+            );
             connUseEnvVariables = UIUtils.createCheckbox(
                 connGroup,
                 CoreMessages.pref_page_connection_label_use_environment,
@@ -177,6 +191,9 @@ public class PrefPageConnectionClient extends TargetPrefPage {
             overrideClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE));
             clientApplicationNameText.setText(store.getString(ModelPreferences.META_CLIENT_NAME_VALUE));
             connUseEnvVariables.setSelection(store.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS));
+            addAutoQueryIdentificationCommentCheck.setSelection(
+                store.getBoolean(ModelPreferences.META_ADD_AUTO_QUERY_IDENTIFICATION_COMMENT)
+            );
 
             updateClientAppEnablement();
         } catch (Exception e) {
@@ -194,6 +211,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
             store.setValue(ModelPreferences.META_CLIENT_NAME_OVERRIDE, overrideClientApplicationNameCheck.getSelection());
             store.setValue(ModelPreferences.META_CLIENT_NAME_VALUE, clientApplicationNameText.getText());
             store.setValue(ModelPreferences.CONNECT_USE_ENV_VARS, connUseEnvVariables.getSelection());
+            store.setValue(
+                ModelPreferences.META_ADD_AUTO_QUERY_IDENTIFICATION_COMMENT,
+                addAutoQueryIdentificationCommentCheck.getSelection()
+            );
         } catch (Exception e) {
             log.warn(e);
         }
@@ -206,6 +227,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         store.setToDefault(ModelPreferences.META_CLIENT_NAME_OVERRIDE);
         store.setToDefault(ModelPreferences.META_CLIENT_NAME_VALUE);
         store.setToDefault(ModelPreferences.CONNECT_USE_ENV_VARS);
+        store.setToDefault(ModelPreferences.META_ADD_AUTO_QUERY_IDENTIFICATION_COMMENT);
     }
 
     @NotNull
@@ -221,6 +243,9 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         overrideClientApplicationNameCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE));
         clientApplicationNameText.setText(store.getDefaultString(ModelPreferences.META_CLIENT_NAME_VALUE));
         connUseEnvVariables.setSelection(store.getDefaultBoolean(ModelPreferences.CONNECT_USE_ENV_VARS));
+        addAutoQueryIdentificationCommentCheck.setSelection(
+            store.getDefaultBoolean(ModelPreferences.META_ADD_AUTO_QUERY_IDENTIFICATION_COMMENT)
+        );
         updateClientAppEnablement();
     }
 }

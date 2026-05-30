@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRFinder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -853,6 +855,25 @@ public final class SQLUtils {
             sb.append(slComment).append(" ").append(line).append(separator);
         }
         return sb.toString();
+    }
+
+    /**
+     * Appends query identification comment if it is enabled in preferences.
+     */
+    @NotNull
+    public static String addQueryIdentificationComment(@NotNull DBCSession session, @NotNull String query) {
+        String comment = NLS.bind(ModelMessages.sql_utils_query_generated_by, GeneralUtils.getProductName());
+        if (query.contains(comment)) {
+            return query;
+        }
+        var prefStore = session.getDataSource().getContainer().getPreferenceStore();
+        if (!prefStore.getBoolean(org.jkiss.dbeaver.ModelPreferences.META_ADD_AUTO_QUERY_IDENTIFICATION_COMMENT)) {
+            return query;
+        }
+        if (session.getPurpose().isUser()) {
+            return query;
+        }
+        return generateCommentLine(session.getDataSource(), comment) + query;
     }
 
     public static String generateParamList(int paramCount) {
