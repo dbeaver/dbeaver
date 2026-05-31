@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
+import org.jkiss.dbeaver.tools.transfer.ui.DataTransferFeatures;
 import org.jkiss.dbeaver.tools.transfer.ui.dialog.DataTransferConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -352,7 +353,17 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             IWizardPage[] pages = getPages();
             getContainer().showPage(pages[pages.length - 1]);
         }
-
+        {
+            // Track feature
+            Map<String, Object> params = new LinkedHashMap<>();
+            params.put(DataTransferFeatures.PARAM_TRANSFER_TYPE,
+                settings.isProducerProcessor() ? "import" : "export");
+            if (settings.getProcessor() != null) {
+                params.put(DataTransferFeatures.PARAM_TRANSFER_DATA_TYPE, settings.getProcessor().getName());
+            }
+            params.put(DataTransferFeatures.IS_TASK, isCurrentTaskSaved());
+            DataTransferFeatures.DATA_TRANSFER.use(params);
+        }
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask == null) {
@@ -363,9 +374,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     DTMessages.data_transfer_wizard_job_name,
                     getSettings());
                 executor.executeTask();
+                if (executor.getError() instanceof DBException dbe) {
+                    throw dbe;
+                } else if (executor.getError() != null) {
+                    throw new DBException("Data transfer error", executor.getError());
+                }
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), DTUIMessages.data_transfer_wizard_message_init_data_transfer, e);
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
         }
 

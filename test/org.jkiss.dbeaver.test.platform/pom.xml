@@ -10,7 +10,7 @@
         <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.test.platform</artifactId>
-    <version>1.0.135-SNAPSHOT</version>
+    <version>1.0.138-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
     <build>
@@ -20,6 +20,7 @@
                 <artifactId>tycho-surefire-plugin</artifactId>
                 <configuration>
                     <testClass>org.jkiss.dbeaver.test.platform.DBeaerTestPlatformSuite</testClass>
+                    <argLine>-Duser.language=en -Duser.country=US</argLine>
                 </configuration>
             </plugin>
         </plugins>

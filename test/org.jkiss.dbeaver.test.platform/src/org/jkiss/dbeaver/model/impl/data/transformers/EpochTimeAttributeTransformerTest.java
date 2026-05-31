@@ -200,6 +200,7 @@ public class EpochTimeAttributeTransformerTest extends DBeaverUnitTest {
             return null;
         }
 
+        @Nullable
         @Override
         public String getRowIdentifierStatus() {
             return null;

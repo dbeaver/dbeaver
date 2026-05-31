@@ -31,6 +31,6 @@ public interface DBPLockManagerProvider {
     LockManager createLockManager() throws DBException;
 
     @NotNull
-    LockManager createLockManager(@NotNull Path metadataFolder) throws DBException;
+    LockManager createLockManager(@NotNull String applicationId, @NotNull Path metadataFolder) throws DBException;
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,15 +42,17 @@ public class JDBCReference implements DBDReference {
     private Object value;
     private Object refObject;
 
-    public JDBCReference(DBSDataType type, Object value) throws DBCException {
+    public JDBCReference(@NotNull DBSDataType type, @Nullable Object value) throws DBCException {
         this.type = type;
         this.value = value;
     }
 
+    @Nullable
     public Object getValue() throws DBCException {
         return value;
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return value;
@@ -70,13 +74,15 @@ public class JDBCReference implements DBDReference {
         value = null;
     }
 
+    @NotNull
     @Override
     public DBSDataType getReferencedType() {
         return type;
     }
 
+    @Nullable
     @Override
-    public Object getReferencedObject(DBCSession session) throws DBCException {
+    public Object getReferencedObject(@NotNull DBCSession session) throws DBCException {
         if (refObject == null && value instanceof Ref ref) {
             try {
                 DBRProgressMonitor monitor = session.getProgressMonitor();

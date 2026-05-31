@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     }
 
     // We use ROWID only if we don't have primary key. Looks like it is the only way to determine ROWID column presence.
+    @Nullable
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
         if (hasPrimaryKey()) {
@@ -92,6 +93,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         return new DBDPseudoAttribute[] { PSEUDO_ATTR_ROWID };
     }
 
+    @NotNull
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (this.allPseudoAttributes == null) {

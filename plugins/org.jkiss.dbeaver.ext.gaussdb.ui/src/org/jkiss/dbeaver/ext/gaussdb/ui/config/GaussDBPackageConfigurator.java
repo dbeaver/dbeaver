@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.ui.config;
 
-import java.util.Map;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBPackage;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -29,13 +28,17 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EntityEditPage;
 
+import java.util.Map;
+
 public class GaussDBPackageConfigurator implements DBEObjectConfigurator<GaussDBPackage> {
 
     public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
 
+    @NotNull
     @Override
-    public GaussDBPackage configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
-        GaussDBPackage gaussdbPackage, Map<String, Object> options) {
+    public GaussDBPackage configureObject(
+        @NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, Object container,
+        @NotNull GaussDBPackage gaussdbPackage, @NotNull Map<String, Object> options) {
         return new UITask<GaussDBPackage>() {
             @Override
             protected GaussDBPackage runTask() throws DBException {

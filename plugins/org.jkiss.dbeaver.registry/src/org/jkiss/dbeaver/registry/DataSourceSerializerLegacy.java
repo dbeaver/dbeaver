@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,20 +162,21 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         return;
                     }
                     String driverId = attributes.getValue(RegistryConstants.ATTR_DRIVER);
-                    DriverDescriptor driver = provider.getDriver(driverId);
+                    DBPDriver driver = provider.getDriver(driverId);
                     if (driver == null) {
                         log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + name + "'. Create new driver");
-                        driver = provider.createDriver(driverId);
-                        provider.addDriver(driver);
+                        DriverDescriptor newDriver = provider.createDriver(driverId);
+                        provider.addDriver(newDriver);
+                        driver = newDriver;
                     }
                     curDataSource = registry.getDataSource(id);
                     boolean newDataSource = (curDataSource == null);
                     if (newDataSource) {
-                        curDataSource = new DataSourceDescriptor(
-                            registry,
+                        curDataSource = registry.createDataSource(
                             storage,
                             DataSourceOriginLocal.INSTANCE,
                             id,
+                            driver,
                             driver,
                             new DBPConnectionConfiguration());
                     } else {
@@ -206,11 +207,11 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         // Legacy filter settings
                         String legacyCatalogFilter = attributes.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
                         if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
-                            curDataSource.updateObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
+                            curDataSource.setObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
                         }
                         String legacySchemaFilter = attributes.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
                         if (!CommonUtils.isEmpty(legacySchemaFilter)) {
-                            curDataSource.updateObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
+                            curDataSource.setObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
                         }
                     }
                     if (newDataSource) {
@@ -224,10 +225,10 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     if (curDataSource != null) {
                         DBPDriver driver = curDataSource.getDriver();
                         if (CommonUtils.isEmpty(driver.getName())) {
-                            if (driver instanceof DriverDescriptor) {
+                            if (driver instanceof DriverDescriptor dd) {
                                 // Broken driver - seems to be just created
-                                ((DriverDescriptor)driver).setName(attributes.getValue(RegistryConstants.ATTR_URL));
-                                ((DriverDescriptor)driver).setDriverClassName("java.sql.Driver");
+                                dd.setName(attributes.getValue(RegistryConstants.ATTR_URL));
+                                dd.setDriverClassName("java.sql.Driver", false);
                             }
                         }
                         DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
@@ -381,7 +382,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                             curFilter.setName(attributes.getValue(RegistryConstants.ATTR_NAME));
                             curFilter.setDescription(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION));
                             curFilter.setEnabled(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ENABLED), true));
-                            curDataSource.updateObjectFilter(typeName, objectID, curFilter);
+                            curDataSource.setObjectFilter(typeName, objectID, curFilter);
 
                         }
                     } else {

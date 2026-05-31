@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,13 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     }
 
     @Override
-    protected PostgreRole createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected PostgreRole createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return new PostgreRole((PostgreDatabase) container, "NewRole", "", true);
     }
 

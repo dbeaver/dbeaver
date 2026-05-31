@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,8 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreGeneratedModifier = (monitor, column, sql, command) -> {
         String generatedValue = column.getGeneratedValue();
         if (!CommonUtils.isEmpty(generatedValue)) {
-            sql.append(" GENERATED ALWAYS AS (").append(generatedValue).append(") STORED");
+            sql.append(" GENERATED ALWAYS AS (").append(generatedValue).append(") ")
+                .append(column.getGeneratedColumnTypeName());
         }
     };
 
@@ -151,6 +152,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return object.getParentObject().getContainer().getSchema().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
         ColumnModifier[] modifiers = {
@@ -181,7 +183,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected PostgreTableColumn createDatabaseObject(@NotNull final DBRProgressMonitor monitor, @NotNull final DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected PostgreTableColumn createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         PostgreTableBase table = (PostgreTableBase) container;
 
         final PostgreTableColumn column;
