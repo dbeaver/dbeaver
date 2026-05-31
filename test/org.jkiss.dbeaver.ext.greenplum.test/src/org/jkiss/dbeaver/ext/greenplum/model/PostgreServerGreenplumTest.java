@@ -87,7 +87,7 @@ public class PostgreServerGreenplumTest extends DBeaverUnitTest {
         // backed by the gp_exttable_fdw FDW (pg_class.relkind = 'f'). The GreenplumTableCache
         // still reports is_ext_table = true for them via the pg_exttable view.
         Mockito.when(mockResults.getBoolean("is_ext_table")).thenReturn(true);
-        Assert.assertEquals(GreenplumExternalTable.class,
+        Assertions.assertEquals(GreenplumExternalTable.class,
                 server.createRelationOfClass(mockSchema, PostgreClass.RelKind.f, mockResults).getClass());
     }
 

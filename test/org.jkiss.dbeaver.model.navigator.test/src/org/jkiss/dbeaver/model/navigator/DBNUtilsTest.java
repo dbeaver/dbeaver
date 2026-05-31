@@ -20,13 +20,13 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static junit.framework.TestCase.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class DBNUtilsTest extends DBeaverUnitTest {
@@ -82,7 +82,7 @@ public class DBNUtilsTest extends DBeaverUnitTest {
         // when
         var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
         // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
+        Assertions.assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
     }
 
 
@@ -110,7 +110,7 @@ public class DBNUtilsTest extends DBeaverUnitTest {
     private void assertCorrectSortingIgnoreCase(List<String> expectedNames, List<String> givenNames) {
         var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
         // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
+        Assertions.assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
     }
 
 

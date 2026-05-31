@@ -332,7 +332,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
+        Assertions.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
     }
 
     @Test
@@ -362,7 +362,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+        Assertions.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
     }
 
     @Test
@@ -392,7 +392,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         for (SQLQueryParameter sqlQueryParameter : params) {
             actualParamNames.add(sqlQueryParameter.getName());
         }
-        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+        Assertions.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
     }
 
     @Test

@@ -17,6 +17,7 @@
 package org.jkiss.utils;
 
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 //@RunWith(PowerMockRunner.class)

@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assume;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.*;
@@ -48,7 +48,7 @@ public class OpenAIModelsTest extends DBeaverUnitTest {
     public void effectiveModelNameUnknownUppercaseShouldReturnKnownModelUppercase() {
         //given
         var inputModelName = "some-UNKNOWN-MODEL";
-        Assume.assumeFalse(KNOWN_MODELS.containsKey(inputModelName.toLowerCase()));
+        Assumptions.assumeFalse(KNOWN_MODELS.containsKey(inputModelName.toLowerCase()));
         //when
         var result = getEffectiveModelName(inputModelName);
         //then
