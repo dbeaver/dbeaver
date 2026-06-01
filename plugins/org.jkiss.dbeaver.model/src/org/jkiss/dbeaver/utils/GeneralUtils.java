@@ -560,6 +560,12 @@ public class GeneralUtils {
         if (CommonUtils.isEmpty(string)) {
             return string;
         }
+        // Normalize Unix tilde prefix to ${home} so it goes through the same variable resolution
+        if (string.startsWith("~/") || string.startsWith("~\\")) {
+            string = "${home}" + string.substring(1);
+        } else if ("~".equals(string)) {
+            string = "${home}";
+        }
         // We save resolved vars here to avoid resolve recursive cycles
         Map<String, String> resolvedVars = null;
         try {
