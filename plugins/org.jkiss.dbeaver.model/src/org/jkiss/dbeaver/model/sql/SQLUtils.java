@@ -54,7 +54,10 @@ public final class SQLUtils {
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+    private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile(
+        "(CREATE (:OR REPLACE)?).+",
+        Pattern.CASE_INSENSITIVE | Pattern.MULTILINE
+    );
 
     private static final int MAX_SQL_DESCRIPTION_LENGTH = 500;
 
@@ -62,17 +65,17 @@ public final class SQLUtils {
     private static final String DBEAVER_DDL_WARNING = "-- WARNING: It may differ from actual native database DDL";
     private static final String DBEAVER_SCRIPT_DELIMITER = "$$";
 
-    public static String stripTransformations(String query)
-    {
+    @Nullable
+    public static String stripTransformations(@Nullable String query) {
         return query;
-//        if (!query.contains(TOKEN_TRANSFORM_START)) {
-//            return query;
-//        } else {
-//            return PATTERN_XFORM.matcher(query).replaceAll("");
-//        }
+        //        if (!query.contains(TOKEN_TRANSFORM_START)) {
+        //            return query;
+        //        } else {
+        //            return PATTERN_XFORM.matcher(query).replaceAll("");
+        //        }
     }
 
-    public static boolean isCommentLine(SQLDialect dialect, String line) {
+    public static boolean isCommentLine(@NotNull SQLDialect dialect, @NotNull String line) {
         for (String slc : dialect.getSingleLineComments()) {
             if (line.startsWith(slc)) {
                 return true;
@@ -84,27 +87,28 @@ public final class SQLUtils {
     /**
      * Comment text fragment location information
      *
-     * @param start comment position in the original SQL text
-     * @param length if the comment fragment
+     * @param start             comment position in the original SQL text
+     * @param length            if the comment fragment
      * @param accumulatedOffset total amount of comment characters dropped after this comment,
      *                          e.g. difference between the non-commented text positions in original vs clean SQL text
-     * @param cleanPosition position of the corresponding location in the clean SQL text,
-     *                      e.g. start-prevComment.accumulatedOffset
-     * */
+     * @param cleanPosition     position of the corresponding location in the clean SQL text,
+     *                          e.g. start-prevComment.accumulatedOffset
+     *
+     */
     public record CommentEntry(
         int start,
         int length,
         int accumulatedOffset,
         int cleanPosition
-    ){
+    ) {
     }
 
     /**
      * SQL comments collection result
      *
      * @param originalSqlText containing comments
-     * @param cleanSqlText the same as original but with comments extracted
-     * @param comments extracted comment entries from the original text augmented with position's mapping information
+     * @param cleanSqlText    the same as original but with comments extracted
+     * @param comments        extracted comment entries from the original text augmented with position's mapping information
      */
     public record CommentsCollectionResult(
         @NotNull
@@ -166,7 +170,8 @@ public final class SQLUtils {
             query,
             multiLineComments == null ? null : multiLineComments.getFirst(),
             multiLineComments == null ? null : multiLineComments.getSecond(),
-            dialect.getSingleLineComments());
+            dialect.getSingleLineComments()
+        );
     }
 
     @NotNull
@@ -265,16 +270,14 @@ public final class SQLUtils {
         return query;
     }
 
-    public static List<String> splitFilter(String filter)
-    {
+    public static List<String> splitFilter(String filter) {
         if (CommonUtils.isEmpty(filter)) {
             return Collections.emptyList();
         }
         return CommonUtils.splitString(filter, ',');
     }
 
-    public static boolean matchesAnyLike(String string, Collection<String> likes)
-    {
+    public static boolean matchesAnyLike(String string, Collection<String> likes) {
         for (String like : likes) {
             if (matchesLike(string, like)) {
                 return true;
@@ -283,9 +286,9 @@ public final class SQLUtils {
         return false;
     }
 
-    public static boolean isLikePattern(String like)
-    {
-        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('_') != -1 || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
+    public static boolean isLikePattern(String like) {
+        return like.indexOf('%') != -1 || like.indexOf('*') != -1 || like.indexOf('_') != -1
+            || like.indexOf('?') != -1;// || like.indexOf('_') != -1;
     }
 
     @NotNull
@@ -345,8 +348,7 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    public static String makeSQLLike(String like)
-    {
+    public static String makeSQLLike(String like) {
         return like.replace("*", "%").replace("?", "_");
     }
 
@@ -366,14 +368,12 @@ public final class SQLUtils {
         return result.toString();
     }
 
-    public static boolean matchesLike(String string, String like)
-    {
+    public static boolean matchesLike(String string, String like) {
         Pattern pattern = Pattern.compile(makeLikePattern(like), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
         return pattern.matcher(string).matches();
     }
 
-    public static void appendValue(StringBuilder buffer, DBSTypedObject type, Object value)
-    {
+    public static void appendValue(StringBuilder buffer, DBSTypedObject type, Object value) {
         if (type.getDataKind() == DBPDataKind.NUMERIC || type.getDataKind() == DBPDataKind.BOOLEAN) {
             buffer.append(value);
         } else {
@@ -385,31 +385,26 @@ public final class SQLUtils {
         return object.getDataSource().getSQLDialect().isQuotedString(string);
     }
 
-    public static String quoteString(DBSObject object, String string)
-    {
+    public static String quoteString(DBSObject object, String string) {
         return quoteString(object.getDataSource(), string);
     }
 
-    public static String quoteString(DBPDataSource dataSource, String string)
-    {
+    public static String quoteString(DBPDataSource dataSource, String string) {
         return dataSource.getSQLDialect().getQuotedString(string);
     }
 
-    public static String escapeString(DBPDataSource dataSource, String string)
-    {
+    public static String escapeString(DBPDataSource dataSource, String string) {
         return dataSource.getSQLDialect().escapeString(string);
     }
 
-    public static String unQuoteString(DBPDataSource dataSource, String string)
-    {
+    public static String unQuoteString(DBPDataSource dataSource, String string) {
         if (string.length() > 1 && string.charAt(0) == '\'' && string.charAt(string.length() - 1) == '\'') {
             return dataSource.getSQLDialect().unEscapeString(string.substring(1, string.length() - 1));
         }
         return string;
     }
 
-    public static String getFirstKeyword(SQLDialect dialect, String query)
-    {
+    public static String getFirstKeyword(SQLDialect dialect, String query) {
         query = stripComments(dialect, query);
         int startPos = 0, endPos = -1;
         for (int i = 0; i < query.length(); i++) {
@@ -431,8 +426,7 @@ public final class SQLUtils {
     }
 
     @Nullable
-    public static String getQueryOutputParameter(DBCSession session, String query)
-    {
+    public static String getQueryOutputParameter(DBCSession session, String query) {
         final Matcher matcher = PATTERN_OUT_PARAM.matcher(query);
         if (matcher.find()) {
             return matcher.group(1);
@@ -445,11 +439,10 @@ public final class SQLUtils {
      * Actually this is done specially for Oracle due to some bug in it's driver
      *
      * @param dataSource
-     * @param query query
+     * @param query      query
      * @return normalized query
      */
-    public static String makeUnifiedLineFeeds(DBPDataSource dataSource, String query)
-    {
+    public static String makeUnifiedLineFeeds(DBPDataSource dataSource, String query) {
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         if (!dialect.isCRLFBroken()) {
             return query;
@@ -468,14 +461,15 @@ public final class SQLUtils {
         return result.toString();
     }
 
-    public static void appendLikeCondition(@NotNull StringBuilder sql,@NotNull String value, boolean not,@Nullable SQLDialect dialect) {
+    public static void appendLikeCondition(@NotNull StringBuilder sql, @NotNull String value, boolean not, @Nullable SQLDialect dialect) {
         value = makeSQLLike(value);
         if (value.contains("%") || value.contains("_")) {
-            if (not) sql.append(" NOT");
+            if (not) {
+                sql.append(" NOT");
+            }
             sql.append(" LIKE ?");
             if (dialect instanceof SQLDialectRelational &&
-                ((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null)
-            {
+                ((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null) {
                 sql.append(((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
             }
         } else {
@@ -483,8 +477,7 @@ public final class SQLUtils {
         }
     }
 
-    public static boolean appendFirstClause(StringBuilder sql, boolean firstClause)
-    {
+    public static boolean appendFirstClause(StringBuilder sql, boolean firstClause) {
         if (firstClause) {
             sql.append(" WHERE ");
         } else {
@@ -493,8 +486,7 @@ public final class SQLUtils {
         return false;
     }
 
-    public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter)
-    {
+    public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter) {
         // This is called only when use selects query (i.e. no automatic query detection)
         if (sql.isEmpty() || !trimDelimiter) {
             // Do not trim delimiter
@@ -587,10 +579,9 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static SQLDialect getDialectFromObject(DBPObject object)
-    {
+    public static SQLDialect getDialectFromObject(DBPObject object) {
         if (object instanceof DBSObject) {
-            DBPDataSource dataSource = ((DBSObject)object).getDataSource();
+            DBPDataSource dataSource = ((DBSObject) object).getDataSource();
             return getDialectFromDataSource(dataSource);
         }
         return BasicSQLDialect.INSTANCE;
@@ -654,20 +645,33 @@ public final class SQLUtils {
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         boolean subQuery,
-        @NotNull StringBuilder query) {
+        @NotNull StringBuilder query
+    ) {
         dataSource.getSQLDialect()
             .getQueryGenerator()
             .appendOrderString(filter, dataSource, conditionTable, subQuery, query);
     }
 
     @Nullable
-    public static String getConstraintCondition(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, @Nullable String conditionTable, boolean inlineCriteria) {
-        return dataSource.getSQLDialect().getQueryGenerator().getConstraintCondition(dataSource, constraint,
+    public static String getConstraintCondition(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDAttributeConstraint constraint,
+        @Nullable String conditionTable,
+        boolean inlineCriteria
+    ) {
+        return dataSource.getSQLDialect().getQueryGenerator().getConstraintCondition(
+            dataSource, constraint,
             conditionTable,
-            inlineCriteria);
+            inlineCriteria
+        );
     }
 
-    private static String getStringValue(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, boolean inlineCriteria, Object value) {
+    private static String getStringValue(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDAttributeConstraint constraint,
+        boolean inlineCriteria,
+        Object value
+    ) {
         String strValue;
         if (constraint.getAttribute() == null) {
             // We have only attribute name
@@ -709,10 +713,17 @@ public final class SQLUtils {
 
         return dataSource.getSQLDialect().getTypeCastClause(
             attribute,
-            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat), isInCondition);
+            convertValueToSQLFormat(dataSource, attribute, valueHandler, value, displayFormat), isInCondition
+        );
     }
 
-    private static String convertValueToSQLFormat(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value, DBDDisplayFormat displayFormat) {
+    private static String convertValueToSQLFormat(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSTypedObject attribute,
+        @NotNull DBDValueHandler valueHandler,
+        @Nullable Object value,
+        DBDDisplayFormat displayFormat
+    ) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
@@ -753,7 +764,12 @@ public final class SQLUtils {
         }
     }
 
-    public static String convertStreamToSQL(DBSTypedObject attribute, DBDContent content, DBDValueHandler valueHandler, DBPDataSource dataSource) {
+    public static String convertStreamToSQL(
+        DBSTypedObject attribute,
+        DBDContent content,
+        DBDValueHandler valueHandler,
+        DBPDataSource dataSource
+    ) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
             if (!content.isNull() && ContentUtils.isTextContent(content)) {
@@ -765,14 +781,18 @@ public final class SQLUtils {
                 }
                 return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             log.warn(e);
             return SQLConstants.NULL_VALUE;
         }
     }
 
-    public static String getColumnTypeModifiers(@Nullable DBPDataSource dataSource, DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+    public static String getColumnTypeModifiers(
+        @Nullable DBPDataSource dataSource,
+        DBSTypedObject column,
+        @NotNull String typeName,
+        @NotNull DBPDataKind dataKind
+    ) {
         if (column == null) {
             return null;
         }
@@ -795,7 +815,8 @@ public final class SQLUtils {
         return sql;
     }
 
-    public static String generateEntityAlias(DBSEntity entity, DBRFinder<Boolean, String> aliasFinder) {
+    @NotNull
+    public static String generateEntityAlias(@NotNull DBSEntity entity, @NotNull DBRFinder<Boolean, String> aliasFinder) {
         String name = entity.getName();
         if (CommonUtils.isEmpty(name)) {
             return name;
@@ -807,7 +828,10 @@ public final class SQLUtils {
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(c, false));
+            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(
+                c,
+                false
+            ));
             if (!Character.isLetter(c)) {
                 prevNonLetter = true;
             } else {
@@ -943,8 +967,7 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
-    {
+    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments) {
         final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
@@ -973,7 +996,9 @@ public final class SQLUtils {
                             if (!Character.isWhitespace(script.charAt(i))) {
                                 break;
                             }
-                            if (script.charAt(i) == '\n') lfCount++;
+                            if (script.charAt(i) == '\n') {
+                                lfCount++;
+                            }
                         }
                         if (lfCount < 2) {
                             // Add line feed if we do not have empty line before
@@ -1001,8 +1026,7 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateComments(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
-    {
+    public static String generateComments(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments) {
         final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
@@ -1058,7 +1082,7 @@ public final class SQLUtils {
         }
         if (!name.contains(nameSeparator)) {
             name = keepQuotes ? name : DBUtils.getUnQuotedIdentifier(name, quoteStrings);
-            return new String[]{name};
+            return new String[] {name};
         }
         List<String> nameList = new ArrayList<>();
         while (!name.isEmpty()) {
@@ -1102,25 +1126,43 @@ public final class SQLUtils {
         return nameList.toArray(new String[0]);
     }
 
-    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+    public static String generateTableJoin(
+        DBRProgressMonitor monitor,
+        DBSEntity leftTable,
+        String leftAlias,
+        DBSEntity rightTable,
+        String rightAlias
+    ) throws DBException {
         // Try to find FK in left table referencing to right table
         String sql = generateTableJoinByAssociation(monitor, leftTable, leftAlias, rightTable, rightAlias);
-        if (sql != null) return sql;
+        if (sql != null) {
+            return sql;
+        }
 
         // Now try right to left
         sql = generateTableJoinByAssociation(monitor, rightTable, rightAlias, leftTable, leftAlias);
-        if (sql != null) return sql;
+        if (sql != null) {
+            return sql;
+        }
 
         // Try to find columns in left table which match unique key in right table
         sql = generateTableJoinByColumns(monitor, leftTable, leftAlias, rightTable, rightAlias);
-        if (sql != null) return sql;
+        if (sql != null) {
+            return sql;
+        }
 
         // In reverse order
         sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
         return sql;
     }
 
-    private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+    private static String generateTableJoinByColumns(
+        DBRProgressMonitor monitor,
+        DBSEntity leftTable,
+        String leftAlias,
+        DBSEntity rightTable,
+        String rightAlias
+    ) throws DBException {
         List<DBSEntityAttribute> leftIdentifier = new ArrayList<>(DBUtils.getBestTableIdentifier(monitor, leftTable));
         if (!leftIdentifier.isEmpty()) {
             List<DBSEntityAttribute> rightAttributes = new ArrayList<>();
@@ -1145,19 +1187,26 @@ public final class SQLUtils {
         return null;
     }
 
-    private static String generateTableJoinByAssociation(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+    private static String generateTableJoinByAssociation(
+        DBRProgressMonitor monitor,
+        DBSEntity leftTable,
+        String leftAlias,
+        DBSEntity rightTable,
+        String rightAlias
+    ) throws DBException {
         Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
         if (!CommonUtils.isEmpty(associations)) {
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == rightTable) {
-                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, leftAlias, rightAlias);
+                    return generateTablesJoin(monitor, (DBSTableForeignKey) fk, leftAlias, rightAlias);
                 }
             }
         }
         return null;
     }
 
-    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias) throws DBException {
+    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias)
+    throws DBException {
         boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
@@ -1231,7 +1280,8 @@ public final class SQLUtils {
             if (paramValue == null || paramValue.isEmpty()) {
                 paramValue = SQLConstants.NULL_VALUE;
             }
-            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
+            query = query.substring(0, parameter.getTokenOffset()) + paramValue + query.substring(
+                parameter.getTokenOffset() + parameter.getTokenLength());
         }
         sqlStatement.setText(query);
         //sqlStatement.setOriginalText(query);
