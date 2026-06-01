@@ -33,8 +33,10 @@ import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenizedTest;
 import org.jkiss.dbeaver.model.sql.parser.DiffTest;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParserGenericsTest;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParserTest;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticUtilsTest;
 import org.jkiss.dbeaver.model.sql.parser.TokenPredicatesConditionTest;
 import org.jkiss.dbeaver.model.sql.parser.TrieTest;
+import org.jkiss.dbeaver.model.virtual.GroupRowStripingUtilsTest;
 import org.jkiss.dbeaver.tools.transfer.CSVImporterTest;
 import org.jkiss.dbeaver.tools.transfer.DataExporterCSVTest;
 import org.jkiss.dbeaver.ui.svg.SVGTest;
@@ -74,6 +76,8 @@ import org.junit.platform.suite.api.Suite;
     FunctionCountNullsTest.class,
     JSONUtilsTest.class,
     SQLScriptParserGenericsTest.class,
+    SQLSemanticUtilsTest.class,
+    GroupRowStripingUtilsTest.class,
     TokenPredicatesConditionTest.class,
     TrieTest.class,
     DiffTest.class,
