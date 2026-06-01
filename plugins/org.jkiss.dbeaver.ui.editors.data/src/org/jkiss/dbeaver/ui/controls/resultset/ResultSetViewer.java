@@ -125,8 +125,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -4655,31 +4655,22 @@ public class ResultSetViewer extends Viewer
     void removeDataPump(ResultSetJobAbstract dataPumpJob) {
         synchronized (dataPumpJobQueue) {
             dataPumpJobQueue.remove(dataPumpJob);
-            if (!dataPumpRunning.get()) {
+            if (!dataPumpRunning.compareAndSet(true, false)) {
                 log.debug("Internal error: data read status is empty");
             }
-            dataPumpRunning.set(false);
         }
     }
 
     void releaseDataReadLock() {
-        synchronized (dataPumpJobQueue) {
-            if (!dataPumpRunning.get()) {
-                log.debug("Internal error: data read status is empty");
-            }
-            dataPumpRunning.set(false);
+        if (!dataPumpRunning.compareAndSet(true, false)) {
+            log.debug("Internal error: data read status is empty");
         }
     }
 
     boolean acquireDataReadLock() {
         synchronized (dataPumpJobQueue) {
-            if (dataPumpRunning.get()) {
-                log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
-                return false;
-            }
-            dataPumpRunning.set(true);
+            return dataPumpRunning.compareAndSet(false, true);
         }
-        return true;
     }
 
     public void clearData(boolean clearMetaData)
@@ -5438,7 +5429,6 @@ public class ResultSetViewer extends Viewer
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
-                // Must run finalizer in any case
                 if (finalizer != null) {
                     finalizer.run();
                 }
