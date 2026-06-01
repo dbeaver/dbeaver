@@ -110,15 +110,19 @@ public class DBDDataFilter {
     }
 
     public void addConstraints(@NotNull List<DBDAttributeConstraint> constraints) {
-        this.constraints.addAll(constraints);
+        synchronized (this.constraints) {
+            this.constraints.addAll(constraints);
+        }
     }
 
     @NotNull
     public List<DBSAttributeBase> getOrderedVisibleAttributes() {
         List<DBDAttributeConstraint> visibleConstraints = new ArrayList<>();
-        for (DBDAttributeConstraint constraint : constraints) {
-            if (constraint.isVisible()) {
-                visibleConstraints.add(constraint);
+        synchronized (constraints) {
+            for (DBDAttributeConstraint constraint : constraints) {
+                if (constraint.isVisible()) {
+                    visibleConstraints.add(constraint);
+                }
             }
         }
         visibleConstraints.sort(Comparator.comparingInt(DBDAttributeConstraintBase::getVisualPosition));

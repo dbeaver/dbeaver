@@ -40,7 +40,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Result set model
@@ -71,7 +70,6 @@ public class ResultSetModel implements DBDResultSetModel {
     private DBCTrace trace;
     private transient boolean metadataChanged;
     private transient boolean metadataDynamic;
-    private final transient AtomicBoolean updatingDataFilter = new AtomicBoolean(false);
 
     private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<>() {
         @Override
@@ -887,130 +885,116 @@ public class ResultSetModel implements DBDResultSetModel {
      * @return true if visible attributes were changed. Spreadsheet has to be refreshed
      */
     boolean setDataFilter(DBDDataFilter dataFilter) {
-        while (!updatingDataFilter.compareAndSet(false, true)) {
-            Thread.onSpinWait();
-        }
         this.dataFilter = dataFilter;
-        try {
-            // Check if filter misses some attributes
-            List<DBDAttributeConstraint> newConstraints = new ArrayList<>();
-            for (DBDAttributeBinding binding : attributes) {
-                if (dataFilter.getConstraint(binding) == null) {
-                    addConstraints(newConstraints, binding);
-                }
+        // Check if filter misses some attributes
+        List<DBDAttributeConstraint> newConstraints = new ArrayList<>();
+        for (DBDAttributeBinding binding : attributes) {
+            if (dataFilter.getConstraint(binding) == null) {
+                addConstraints(newConstraints, binding);
             }
-            if (!newConstraints.isEmpty()) {
-                dataFilter.addConstraints(newConstraints);
-            }
-
-            // Construct new bindings from constraints. Exclude nested bindings
-            List<DBDAttributeBinding> newBindings = new ArrayList<>();
-
-            for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
-                DBDAttributeBinding binding = getAttributeBinding(attr);
-                if (binding != null && (binding.getParentObject() == null || binding.getParentObject() == documentAttribute)) {
-                    newBindings.add(binding);
-                }
-            }
-            if (!newBindings.isEmpty() && !newBindings.equals(visibleAttributes)) {
-                visibleAttributes = newBindings;
-                updateColorMapping(true);
-                return true;
-            }
-            return false;
-        } finally {
-            this.updatingDataFilter.set(false);
         }
+        if (!newConstraints.isEmpty()) {
+            dataFilter.addConstraints(newConstraints);
+        }
+
+        // Construct new bindings from constraints. Exclude nested bindings
+        List<DBDAttributeBinding> newBindings = new ArrayList<>();
+
+        for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
+            DBDAttributeBinding binding = getAttributeBinding(attr);
+            if (binding != null && (binding.getParentObject() == null || binding.getParentObject() == documentAttribute)) {
+                newBindings.add(binding);
+            }
+        }
+        if (!newBindings.isEmpty() && !newBindings.equals(visibleAttributes)) {
+            visibleAttributes = newBindings;
+            updateColorMapping(true);
+            return true;
+        }
+        return false;
     }
 
     void updateDataFilter(DBDDataFilter filter, boolean forceUpdate) {
-        while (!updatingDataFilter.compareAndSet(false, true)) {
-            Thread.onSpinWait();
-        }
-        try {
-            this.visibleAttributes.clear();
-            Collections.addAll(this.visibleAttributes, this.attributes);
-            List<DBDAttributeConstraint> missingConstraints = new ArrayList<>();
-            for (DBDAttributeConstraint constraint : filter.getConstraints()) {
-                DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
-                if (filterConstraint == null) {
-                    // Constraint not found
-                    // Let's add it just to visualize condition in filters text
-                    if (constraint.getOperator() != null) {
-                        missingConstraints.add(constraint);
-                    }
-                    continue;
-                }
-                if ((!forceUpdate &&
-                    constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION
-                    && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
-                    constraint.getVisualPosition() == constraint.getOriginalVisualPosition())) {
-                    // If ordinal position doesn't match then probably it is a wrong attribute.
-                    // There can be multiple attributes with the same name in rs (in some databases)
-
-                    // Also check that original visual pos is the same as current position.
-                    // Otherwise this means that column was reordered visually and we must respect this change
-
-                    // We check order position only when forceUpdate=true (otherwise all previous filters will be reset, see #6311)
-                    continue;
-                }
+        this.visibleAttributes.clear();
+        Collections.addAll(this.visibleAttributes, this.attributes);
+        List<DBDAttributeConstraint> missingConstraints = new ArrayList<>();
+        for (DBDAttributeConstraint constraint : filter.getConstraints()) {
+            DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
+            if (filterConstraint == null) {
+                // Constraint not found
+                // Let's add it just to visualize condition in filters text
                 if (constraint.getOperator() != null) {
-                    filterConstraint.setOperator(constraint.getOperator());
-                    filterConstraint.setReverseOperator(constraint.isReverseOperator());
-                    filterConstraint.setValue(constraint.getValue());
+                    missingConstraints.add(constraint);
+                }
+                continue;
+            }
+            if ((!forceUpdate &&
+                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION
+                && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
+                constraint.getVisualPosition() == constraint.getOriginalVisualPosition())) {
+                // If ordinal position doesn't match then probably it is a wrong attribute.
+                // There can be multiple attributes with the same name in rs (in some databases)
+
+                // Also check that original visual pos is the same as current position.
+                // Otherwise this means that column was reordered visually and we must respect this change
+
+                // We check order position only when forceUpdate=true (otherwise all previous filters will be reset, see #6311)
+                continue;
+            }
+            if (constraint.getOperator() != null) {
+                filterConstraint.setOperator(constraint.getOperator());
+                filterConstraint.setReverseOperator(constraint.isReverseOperator());
+                filterConstraint.setValue(constraint.getValue());
+            } else {
+                filterConstraint.setCriteria(constraint.getCriteria());
+            }
+            filterConstraint.setOrderPosition(constraint.getOrderPosition());
+            filterConstraint.setOrderDescending(constraint.isOrderDescending());
+            filterConstraint.setVisible(constraint.isVisible());
+            if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
+                filterConstraint.setVisualPosition(constraint.getVisualPosition());
+            }
+            filterConstraint.setOptions(constraint.getOptions());
+            DBSAttributeBase cAttr = filterConstraint.getAttribute();
+            if (cAttr instanceof DBDAttributeBinding) {
+                if (!constraint.isVisible()) {
+                    visibleAttributes.remove(cAttr);
                 } else {
-                    filterConstraint.setCriteria(constraint.getCriteria());
-                }
-                filterConstraint.setOrderPosition(constraint.getOrderPosition());
-                filterConstraint.setOrderDescending(constraint.isOrderDescending());
-                filterConstraint.setVisible(constraint.isVisible());
-                if (constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION) {
-                    filterConstraint.setVisualPosition(constraint.getVisualPosition());
-                }
-                filterConstraint.setOptions(constraint.getOptions());
-                DBSAttributeBase cAttr = filterConstraint.getAttribute();
-                if (cAttr instanceof DBDAttributeBinding) {
-                    if (!constraint.isVisible()) {
-                        visibleAttributes.remove(cAttr);
-                    } else {
-                        if (!visibleAttributes.contains(cAttr)) {
-                            DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
-                            if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
-                                // Add only root attributes
-                                visibleAttributes.add(attribute);
-                            }
+                    if (!visibleAttributes.contains(cAttr)) {
+                        DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
+                        if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
+                            // Add only root attributes
+                            visibleAttributes.add(attribute);
                         }
                     }
                 }
             }
-
-            if (!missingConstraints.isEmpty()) {
-                this.dataFilter.addConstraints(missingConstraints);
-            }
-
-            if (filter.getConstraints().size() != attributes.length) {
-                // Update visibility
-                for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
-                    final DBDAttributeBinding attr = iter.next();
-                    if (filter.getConstraint(attr, true) == null) {
-                        // No constraint for this attribute: use default visibility
-                        if (!DBDAttributeConstraint.isVisibleByDefault(attr)) {
-                            iter.remove();
-                        }
-                    }
-                }
-            }
-
-            this.visibleAttributes.sort(POSITION_SORTER);
-
-            this.dataFilter.setWhere(filter.getWhere());
-            this.dataFilter.setOrder(filter.getOrder());
-            this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
-
-            updateColorMapping(true);
-        } finally {
-            this.updatingDataFilter.set(false);
         }
+
+        if (!missingConstraints.isEmpty()) {
+            this.dataFilter.addConstraints(missingConstraints);
+        }
+
+        if (filter.getConstraints().size() != attributes.length) {
+            // Update visibility
+            for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
+                final DBDAttributeBinding attr = iter.next();
+                if (filter.getConstraint(attr, true) == null) {
+                    // No constraint for this attribute: use default visibility
+                    if (!DBDAttributeConstraint.isVisibleByDefault(attr)) {
+                        iter.remove();
+                    }
+                }
+            }
+        }
+
+        this.visibleAttributes.sort(POSITION_SORTER);
+
+        this.dataFilter.setWhere(filter.getWhere());
+        this.dataFilter.setOrder(filter.getOrder());
+        this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
+
+        updateColorMapping(true);
     }
 
     public void resetOrdering(@NotNull Collection<? extends DBDAttributeBinding> bindings) {
