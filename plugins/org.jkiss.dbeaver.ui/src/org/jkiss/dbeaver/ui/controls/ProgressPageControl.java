@@ -653,7 +653,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                         }
                     }
                 }
-                if (curStatus != null) {
+                if (curStatus != null && !curStatus.isEmpty()) {
                     setInfo(curStatus);
                 }
                 loadCount++;
