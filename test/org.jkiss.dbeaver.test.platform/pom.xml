@@ -19,7 +19,6 @@
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-surefire-plugin</artifactId>
                 <configuration>
-                    <testClass>org.jkiss.dbeaver.test.platform.DBeaerTestPlatformSuite</testClass>
                     <argLine>-Duser.language=en -Duser.country=US</argLine>
                 </configuration>
             </plugin>

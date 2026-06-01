@@ -29,16 +29,4 @@
     <version>1.0.42-SNAPSHOT</version>
     <packaging>eclipse-test-plugin</packaging>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-surefire-plugin</artifactId>
-                <configuration>
-                    <testClass>org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTestSuite</testClass>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>
