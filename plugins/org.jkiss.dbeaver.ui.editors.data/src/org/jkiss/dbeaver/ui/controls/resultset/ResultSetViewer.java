@@ -4668,9 +4668,7 @@ public class ResultSetViewer extends Viewer
     }
 
     boolean acquireDataReadLock() {
-        synchronized (dataPumpJobQueue) {
-            return dataPumpRunning.compareAndSet(false, true);
-        }
+        return dataPumpRunning.compareAndSet(false, true);
     }
 
     public void clearData(boolean clearMetaData)
