@@ -4655,20 +4655,30 @@ public class ResultSetViewer extends Viewer
     void removeDataPump(ResultSetJobAbstract dataPumpJob) {
         synchronized (dataPumpJobQueue) {
             dataPumpJobQueue.remove(dataPumpJob);
-            if (!dataPumpRunning.compareAndSet(true, false)) {
+            if (!dataPumpRunning.get()) {
                 log.debug("Internal error: data read status is empty");
             }
+            dataPumpRunning.set(false);
         }
     }
 
     void releaseDataReadLock() {
-        if (!dataPumpRunning.compareAndSet(true, false)) {
-            log.debug("Internal error: data read status is empty");
+        synchronized (dataPumpJobQueue) {
+            if (!dataPumpRunning.get()) {
+                log.debug("Internal error: data read status is empty");
+            }
+            dataPumpRunning.set(false);
         }
     }
 
     boolean acquireDataReadLock() {
-        return dataPumpRunning.compareAndSet(false, true);
+        synchronized (dataPumpJobQueue) {
+            if (dataPumpRunning.get()) {
+                return false;
+            }
+            dataPumpRunning.set(true);
+        }
+        return true;
     }
 
     public void clearData(boolean clearMetaData)
@@ -5427,6 +5437,7 @@ public class ResultSetViewer extends Viewer
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
+                // Must run finalizer in any case
                 if (finalizer != null) {
                     finalizer.run();
                 }
