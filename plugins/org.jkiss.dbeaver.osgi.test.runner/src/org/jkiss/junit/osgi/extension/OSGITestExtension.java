@@ -36,23 +36,23 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
      */
     private static final ConcurrentHashMap<String, OSGITestRunner> runners = new ConcurrentHashMap<>();
 
-    /** Per-key locks for double-checked locking during runner creation. */
+    /** per-key locks for double-checked locking during runner creation. */
     private static final ConcurrentHashMap<String, Object> runnerLocks = new ConcurrentHashMap<>();
 
     /**
-     * Per-thread: the runner that is active for the test class currently executing
+     * per-thread: the runner that is active for the test class currently executing
      * on this thread.  Set in beforeAll(), cleared in afterAll().
      */
     private static final ThreadLocal<OSGITestRunner> currentRunner = new ThreadLocal<>();
 
     /**
-     * Per-thread storage for the classloader that was active before we switched
+     * per-thread storage for the classloader that was active before we switched
      * to the OSGi bundle classloader, so we can restore it in afterAll().
      */
     private static final ThreadLocal<ClassLoader> savedClassLoader = new ThreadLocal<>();
 
     /**
-     * Maps IDEA-classloader test instances to their OSGi-classloader counterparts.
+     * maps IDEA-classloader test instances to their OSGi-classloader counterparts.
      * Keyed weakly so entries are GC'd automatically after each test method.
      */
     private static final java.util.Map<Object, Object> osgiInstanceMap =
