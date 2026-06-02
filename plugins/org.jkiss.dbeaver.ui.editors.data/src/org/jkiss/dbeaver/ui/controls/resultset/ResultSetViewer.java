@@ -656,6 +656,29 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    public boolean hasSavedDataFilter() {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer instanceof DBSEntity && DataFilterRegistry.getInstance().hasDataFilter(dataContainer);
+    }
+
+    public void resetSavedDataFilter() {
+        DBCExecutionContext context = getExecutionContext();
+        DBSDataContainer dataContainer = getDataContainer();
+        if (context == null || dataContainer == null) {
+            log.error("Can't reset saved data filter with null context");
+            return;
+        }
+        DataFilterRegistry.getInstance().removeDataFilter(dataContainer);
+
+        if (filtersPanel != null) {
+            DBeaverNotifications.showNotification(
+                DBeaverNotifications.NT_GENERIC,
+                ResultSetMessages.controls_resultset_filter_saved_filter_reset_message,
+                filtersPanel.getFilterText(),
+                DBPMessageType.INFORMATION, null);
+        }
+    }
+
     public void switchFilterFocus() {
         if (filtersPanel == null) {
             return;
@@ -3847,6 +3870,7 @@ public class ResultSetViewer extends Viewer
         filtersMenu.add(new Separator());
         if (getDataContainer() instanceof DBSEntity) {
             filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_SAVE_SETTING));
+            filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_RESET_SETTING));
         }
         filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_CLEAR_SETTING));
         filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_EDIT_SETTINGS));
