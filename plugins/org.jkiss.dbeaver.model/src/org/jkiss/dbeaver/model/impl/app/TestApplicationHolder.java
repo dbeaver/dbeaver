@@ -23,20 +23,18 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 // across classloaders (the static INSTANCE is per-classloader); active only under the harness
 public final class TestApplicationHolder {
 
-    private static final String CONTEXT_KEY = "dbeaver.osgi.context";
-    private static final String INSTANCE_KEY = "dbeaver.app.instance";
-
     private TestApplicationHolder() {
     }
 
     public static void register(@Nullable DBPApplication application) {
-        if (application != null && System.getProperties().get(CONTEXT_KEY) != null) {
-            System.getProperties().put(INSTANCE_KEY, application);
+        if (application != null && System.getProperties().get(TestHarnessConstants.PROP_OSGI_CONTEXT) != null) {
+            System.getProperties().put(TestHarnessConstants.PROP_APP_INSTANCE, application);
         }
     }
 
     @Nullable
     public static DBPApplication get() {
-        return System.getProperties().get(INSTANCE_KEY) instanceof DBPApplication application ? application : null;
+        return System.getProperties().get(TestHarnessConstants.PROP_APP_INSTANCE) instanceof DBPApplication application
+            ? application : null;
     }
 }

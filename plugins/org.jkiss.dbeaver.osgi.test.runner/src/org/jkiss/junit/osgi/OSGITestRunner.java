@@ -25,6 +25,7 @@ import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.app.TestHarnessConstants;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
@@ -266,15 +267,19 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     public void waitUntilReady() {
-        if (testBundle == null) return;
-        ClassLoader testBundleClassLoader = testBundle.adapt(BundleWiring.class).getClassLoader();
-
+        if (testBundle == null) {
+            return;
+        }
         // wait for the BundleContext to appear in system properties
         long startTime = System.currentTimeMillis();
-        while (System.getProperties().get("dbeaver.osgi.context") == null && System.currentTimeMillis() - startTime < 300000) {
-            try { Thread.sleep(100); } catch (InterruptedException expected) { }
+        while (System.getProperties().get(TestHarnessConstants.PROP_OSGI_CONTEXT) == null
+            && System.currentTimeMillis() - startTime < 300000) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException expected) {
+            }
         }
-        BundleContext context = (BundleContext) System.getProperties().get("dbeaver.osgi.context");
+        BundleContext context = (BundleContext) System.getProperties().get(TestHarnessConstants.PROP_OSGI_CONTEXT);
         if (context == null) {
             log.error("OSGi context not found in system properties");
             return;
@@ -411,7 +416,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         framework.init();
         // Start the OSGi framework
         BundleContext context = framework.getBundleContext();
-        System.getProperties().put("dbeaver.osgi.context", context);
+        System.getProperties().put(TestHarnessConstants.PROP_OSGI_CONTEXT, context);
         // Load and start all bundles
         loadAndStartBundles(context);
         EquinoxConfiguration equinoxConfig = null;

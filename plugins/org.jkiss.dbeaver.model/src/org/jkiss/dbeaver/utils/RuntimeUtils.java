@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.impl.app.TestHarnessConstants;
 import org.jkiss.dbeaver.model.meta.ComponentReference;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -814,7 +815,7 @@ public final class RuntimeUtils {
     }
 
     private static BundleContext getTestBundleContext() {
-        return (BundleContext) System.getProperties().get("dbeaver.osgi.context");
+        return (BundleContext) System.getProperties().get(TestHarnessConstants.PROP_OSGI_CONTEXT);
     }
 
     private enum CommandLineState {

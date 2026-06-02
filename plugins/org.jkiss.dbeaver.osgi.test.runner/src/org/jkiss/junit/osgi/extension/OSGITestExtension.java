@@ -33,6 +33,11 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
 
     private static final Log log = Log.getLog(OSGITestExtension.class);
 
+    // classloader-name markers that identify a non-OSGi (IDE) launch
+    private static final String MARKER_APP_CLASSLOADER = "AppClassLoader";
+    private static final String MARKER_IDEA = "Idea";
+    private static final String MARKER_APP_LOADER_NAME = "app";
+
     // one OSGi container per product+application, so different products get isolated runtimes
     private static final ConcurrentHashMap<String, OSGITestRunner> runners = new ConcurrentHashMap<>();
 
@@ -106,9 +111,9 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     private boolean isLauncherClassLoader() {
         ClassLoader myLoader = this.getClass().getClassLoader();
         return myLoader != null
-            && (myLoader.toString().contains("AppClassLoader")
-            || myLoader.toString().contains("Idea")
-            || (myLoader.getName() != null && myLoader.getName().equals("app")));
+            && (myLoader.toString().contains(MARKER_APP_CLASSLOADER)
+            || myLoader.toString().contains(MARKER_IDEA)
+            || (myLoader.getName() != null && myLoader.getName().equals(MARKER_APP_LOADER_NAME)));
     }
 
     @Override
