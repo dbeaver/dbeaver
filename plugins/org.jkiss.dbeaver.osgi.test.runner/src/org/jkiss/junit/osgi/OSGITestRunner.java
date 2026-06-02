@@ -134,7 +134,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected void collectInitializationErrors(List<Throwable> errors) {
-        // skip junit4 method validation — we drive a proxy runner, this avoids "No runnable methods" for junit5 tests
+        // skip junit4 method validation — we drive a proxy runner, this avoids "No runnable methods" for junit6 tests
     }
 
     @Override
