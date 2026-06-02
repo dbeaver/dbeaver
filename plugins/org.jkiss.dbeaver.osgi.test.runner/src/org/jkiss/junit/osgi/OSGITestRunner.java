@@ -290,7 +290,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         }
 
         // headless apps need DBPApplicationWorkbench before startup; CLI apps never register it,
-        // so skipping the wait saves ~10s for them
+        // so skipping the wait saves about 10s for em
         if (waitForWorkbench) {
             long workbenchWaitDeadline = System.currentTimeMillis() + 10000;
             while (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") == null
