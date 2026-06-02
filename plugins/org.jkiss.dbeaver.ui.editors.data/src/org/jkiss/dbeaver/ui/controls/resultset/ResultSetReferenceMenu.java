@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.EmptyAction;
@@ -72,11 +72,11 @@ public class ResultSetReferenceMenu
 
         DBRRunnableWithProgress refCollector = monitor -> {
             try {
-                references.addAll(DBExecUtils.readReferences(monitor, singleSource, attr -> viewer.getModel().getAttributeBinding(attr)));
+                references.addAll(DBStructUtils.readReferences(monitor, singleSource, attr -> viewer.getModel().getAttributeBinding(attr)));
                 if (monitor.isCanceled()) {
                     return;
                 }
-                associations.addAll(DBExecUtils.readAssociations(monitor, singleSource, attr -> viewer.getModel().getAttributeBinding(attr)));
+                associations.addAll(DBStructUtils.readAssociations(monitor, singleSource, attr -> viewer.getModel().getAttributeBinding(attr)));
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
