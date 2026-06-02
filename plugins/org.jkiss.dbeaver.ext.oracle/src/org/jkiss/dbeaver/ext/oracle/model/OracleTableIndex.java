@@ -159,15 +159,61 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (indexDDL == null && isPersisted()) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
-                indexDDL = JDBCUtils.queryString(session, "SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
-                    getName(),
-                    getTable().getSchema().getName()
-                );
-            } catch (SQLException e) {
-                throw new DBDatabaseException(e, getDataSource());
+            // DBMS_METADATA was introduced in Oracle 9i. On Oracle 8.x the call fails with
+            // ORA-00904], so we reconstruct a minimal CREATE INDEX statement from cached metadata instead.
+            if (getDataSource().isAtLeastV9()) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
+                    indexDDL = JDBCUtils.queryString(session, "SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
+                        getName(),
+                        getTable().getSchema().getName()
+                    );
+                } catch (SQLException e) {
+                    throw new DBDatabaseException(e, getDataSource());
+                }
+            } else {
+                indexDDL = buildIndexDDL();
             }
         }
         return indexDDL;
+    }
+
+    private @NotNull String buildIndexDDL() {
+        StringBuilder ddl = new StringBuilder("CREATE ");
+        if (!nonUnique) {
+            ddl.append("UNIQUE ");
+        } else if (OracleConstants.INDEX_TYPE_BITMAP.equals(indexType)
+            || OracleConstants.INDEX_TYPE_FUNCTION_BASED_BITMAP.equals(indexType)) {
+            ddl.append("BITMAP ");
+        }
+        ddl.append("INDEX ").append(getFullyQualifiedName(DBPEvaluationContext.DDL))
+            .append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
+            .append(" (");
+        if (columns != null) {
+            boolean first = true;
+            for (OracleTableIndexColumn col : columns) {
+                if (!first) {
+                    ddl.append(", ");
+                }
+                first = false;
+                String expression = col.getColumnExpression();
+                if (expression != null && !expression.isEmpty()) {
+                    ddl.append(expression);
+                } else if (col.getTableColumn() != null) {
+                    ddl.append(DBUtils.getQuotedIdentifier(col.getTableColumn()));
+                } else {
+                    ddl.append(col.getName());
+                }
+                if (!col.isAscending()) {
+                    ddl.append(" DESC");
+                }
+            }
+        }
+        ddl.append(")");
+        if (tablespace instanceof OracleTablespace ts) {
+            ddl.append("\nTABLESPACE ").append(ts.getName());
+        } else if (tablespace instanceof String ts && !ts.isEmpty()) {
+            ddl.append("\nTABLESPACE ").append(ts);
+        }
+        return ddl.toString();
     }
 }

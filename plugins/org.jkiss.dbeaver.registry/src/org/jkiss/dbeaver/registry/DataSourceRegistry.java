@@ -791,6 +791,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
+    @Override
+    public void initializeDataSources() {
+        boolean isLoaded = loadDataSources(true) != null;
+        if (!isMultiUser() && isLoaded) {
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+            addDataSourceListener(modelChangeListener);
+        }
+    }
+
     private DataSourceParseResults loadDataSources(boolean refresh) {
        return loadDataSources(
             configurationManager.getConfigurationStorages(),

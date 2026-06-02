@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public interface DBDDataReceiver extends AutoCloseable {
             try (dataReceiver) {
                 dataReceiver.fetchEnd(session, resultSet);
             } catch (DBCException e) {
-                throw new DBRuntimeException("Error while finishing result set fetching into " + dataReceiver, e);
+                throw new DBRuntimeException("Error while finishing result set fetching into '" + dataReceiver + "'", e);
             }
         });
     }

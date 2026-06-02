@@ -14,28 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.tools.transfer.ui;
 
-package org.jkiss.dbeaver.model.qm;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+public interface DataTransferFeatures {
+    DBRFeature CATEGORY_DATA_TRANSFER = DBRFeature.createCategory("DATA_TRANSFER", "Data Transfer features");
+    DBRFeature DATA_TRANSFER = DBRFeature.createFeature(CATEGORY_DATA_TRANSFER, "DATA_TRANSFER_START");
 
-/**
- * Indicates that QMDB is unavailable for the current session.
- */
-public class QMDBUnavailableException extends DBException {
-
-    public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
-
-    public QMDBUnavailableException() {
-        super(DEFAULT_MESSAGE);
-    }
-
-    public QMDBUnavailableException(@NotNull String message) {
-        super(message);
-    }
-
-    public QMDBUnavailableException(@NotNull String message, @NotNull Throwable cause) {
-        super(message, cause);
-    }
+    String PARAM_TRANSFER_DATA_TYPE = "dataType";
+    String PARAM_TRANSFER_TYPE = "transferType";
+    String IS_TASK = "isTask";
 }

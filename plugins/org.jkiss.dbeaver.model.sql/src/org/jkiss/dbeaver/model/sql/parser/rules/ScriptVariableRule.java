@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 
 /**
-* SQL variable rule.
-* ${varName}
-*/
+ * SQL variable rule.
+ * ${varName} or {{varName}}
+ */
 public class ScriptVariableRule implements TPRule {
 
     private final TPToken parameterToken;
@@ -39,41 +39,82 @@ public class ScriptVariableRule implements TPRule {
     {
         int c = scanner.read();
         if (c == '$') {
-            int prefixLength = 0;
-            c = scanner.read();
-            if (SQLQueryParameter.supportsJasperSyntax()) {
-                if (c == 'P') {
-                    c = scanner.read();
-                    prefixLength++;
-                    if (c == '!') {
-                        c = scanner.read();
-                        prefixLength++;
-                    }
-                }
+            if (evaluateDollarVariable(scanner)) {
+                return parameterToken;
             }
-            if (c == '{') {
-                int varLength = 0;
-                for (;;) {
-                    c = scanner.read();
-                    if (c == '}' || Character.isWhitespace(c) || c == TPCharacterScanner.EOF) {
-                        break;
-                    }
-                    varLength++;
-                }
-                if (varLength > 0 && c == '}') {
-                    return parameterToken;
-                }
-                scanner.unread();
-
-                for (int i = varLength - 1 + prefixLength; i >= 0; i--) {
-                    scanner.unread();
-                }
+        } else if (c == '{') {
+            if (evaluateDoubleCurlyVariable(scanner)) {
+                return parameterToken;
             }
-            scanner.unread();
         }
         scanner.unread();
 
         return TPTokenAbstract.UNDEFINED;
+    }
+
+    private boolean evaluateDollarVariable(TPCharacterScanner scanner) {
+        int c = scanner.read();
+        int prefixLength = 0;
+        if (SQLQueryParameter.supportsJasperSyntax()) {
+            if (c == 'P') {
+                c = scanner.read();
+                prefixLength++;
+                if (c == '!') {
+                    c = scanner.read();
+                    prefixLength++;
+                }
+            }
+        }
+        if (c == '{') {
+            if (evaluateVariableName(scanner, 1)) {
+                return true;
+            }
+            scanner.unread();
+        } else {
+            scanner.unread();
+        }
+        for (int i = 0; i < prefixLength; i++) {
+            scanner.unread();
+        }
+        return false;
+    }
+
+    private boolean evaluateDoubleCurlyVariable(TPCharacterScanner scanner) {
+        int c = scanner.read();
+        if (c == '{') {
+            if (evaluateVariableName(scanner, 2)) {
+                return true;
+            }
+        }
+        scanner.unread();
+        return false;
+    }
+
+    private boolean evaluateVariableName(TPCharacterScanner scanner, int closingBraceCount) {
+        int c;
+        int varLength = 0;
+        for (;;) {
+            c = scanner.read();
+            if (c == '}' || Character.isWhitespace(c) || c == TPCharacterScanner.EOF) {
+                break;
+            }
+            varLength++;
+        }
+        if (varLength > 0 && c == '}') {
+            if (closingBraceCount == 1) {
+                return true;
+            }
+            c = scanner.read();
+            if (c == '}') {
+                return true;
+            }
+            scanner.unread();
+        }
+        scanner.unread();
+        for (int i = 0; i < varLength; i++) {
+            scanner.unread();
+        }
+        return false;
     }
 
 }

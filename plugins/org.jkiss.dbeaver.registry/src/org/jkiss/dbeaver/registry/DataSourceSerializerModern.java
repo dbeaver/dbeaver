@@ -768,7 +768,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 for (Map<String, Object> filterCfg : JSONUtils.getObjectList(conObject, RegistryConstants.TAG_FILTERS)) {
                     var filterConfiguration = filterSerializer.deserializeObjectFilterConfig(filterCfg);
                     if (filterConfiguration.typeNamePresent()) {
-                        dataSource.updateObjectFilter(
+                        dataSource.setObjectFilter(
                             filterConfiguration.typeName(),
                             filterConfiguration.objectID(),
                             filterConfiguration.filter()

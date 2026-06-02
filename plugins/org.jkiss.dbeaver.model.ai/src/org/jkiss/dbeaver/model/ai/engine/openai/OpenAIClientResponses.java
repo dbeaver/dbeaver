@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -38,6 +40,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     private static final Log log = Log.getLog(OpenAIClientResponses.class);
 
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
+    private static final Set<String> MODELS_WITHOUT_TEMPERATURE = new HashSet<>();
 
     private final OpenAIClientChat backupClient;
 
@@ -98,15 +101,25 @@ public class OpenAIClientResponses extends OpenAiClientBase {
             stringConsumer,
             listener::error,
             listener::completeBlock,
-            () -> {
-                try {
-                    backupClient.createChatCompletionStream(monitor, completionRequest, listener);
-                } catch (DBException ex) {
-                    log.error("Error in legacy client fallback", ex);
-                    listener.error(ex);
+            (failureReason) -> {
+                if (OpenAIConstants.LEGACY_FALLBACK.equals(failureReason)) {
+                    try {
+                        backupClient.createChatCompletionStream(monitor, completionRequest, listener);
+                    } catch (DBException ex) {
+                        log.error("Error in legacy client fallback", ex);
+                        listener.error(ex);
+                    }
+                } else if (OpenAIConstants.TEMPERATURE_NOT_SUPPORTED.equals(failureReason)) {
+                    completionRequest.temperature = null;
+                    MODELS_WITHOUT_TEMPERATURE.add(completionRequest.model);
+                    try {
+                        createChatCompletionStream(monitor, completionRequest, listener);
+                    } catch (DBException e) {
+                        log.error("Error in client fallback", e);
+                        listener.error(e);
+                    }
                 }
-            }
-        );
+            });
     }
 
     @Override
@@ -138,7 +151,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull HttpResponse<Stream<String>> response,
         @NotNull AtomicBoolean suppressCompletion,
-        @Nullable Runnable backupOption,
+        @Nullable Consumer<String> backupOption,
         int statusCode
     ) {
         return OpenAiUtils.processErrors(mapper, errorHandler, response, suppressCompletion, backupOption, statusCode);

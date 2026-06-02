@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
@@ -37,7 +38,9 @@ import org.jkiss.utils.Pair;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -45,8 +48,9 @@ import java.util.stream.Stream;
 
 public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesRequest, CopilotChatRequest>, Object> {
     private static final Log log = Log.getLog(CopilotClientResponses.class);
-
+    private static final Set<String> MODELS_WITHOUT_TEMPERATURE = new HashSet<>();
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/v1/responses";
+
     private final CopilotClientChat backupClient;
 
     protected CopilotClientResponses(@NotNull String baseAuthURL) {
@@ -73,6 +77,9 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
 
     @NotNull
     private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest, @NotNull String token) throws DBException {
+        if (completionRequest.model != null && MODELS_WITHOUT_TEMPERATURE.contains(completionRequest.model)) {
+            completionRequest.temperature = null;
+        }
         return HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
@@ -118,12 +125,23 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
             stringConsumer,
             listener::error,
             listener::completeBlock,
-            () -> {
-                try {
-                    backupClient.createChatCompletionStream(monitor, token, chatRequest.getSecond(), listener);
-                } catch (DBException ex) {
-                    log.error("Error in legacy client fallback", ex);
-                    listener.error(ex);
+            (failureReason) -> {
+                if (OpenAIConstants.LEGACY_FALLBACK.equals(failureReason)) {
+                    try {
+                        backupClient.createChatCompletionStream(monitor, token, chatRequest.getSecond(), listener);
+                    } catch (DBException ex) {
+                        log.error("Error in legacy client fallback", ex);
+                        listener.error(ex);
+                    }
+                } else if (OpenAIConstants.TEMPERATURE_NOT_SUPPORTED.equals(failureReason)) {
+                    chatRequest.getFirst().temperature = null;
+                    MODELS_WITHOUT_TEMPERATURE.add(chatRequest.getFirst().model);
+                    try {
+                        createChatCompletionStream(monitor, token, chatRequest, listener);
+                    } catch (DBException e) {
+                        log.error("Error in client fallback", e);
+                        listener.error(e);
+                    }
                 }
             }
         );
@@ -167,7 +185,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull HttpResponse<Stream<String>> response,
         @NotNull AtomicBoolean suppressCompletion,
-        @Nullable Runnable backupOption,
+        @Nullable Consumer<String> backupOption,
         int statusCode
     ) {
         return OpenAiUtils.processErrors(mapper, errorHandler, response, suppressCompletion, backupOption, statusCode);
