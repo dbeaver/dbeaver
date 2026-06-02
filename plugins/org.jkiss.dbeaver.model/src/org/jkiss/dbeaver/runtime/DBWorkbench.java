@@ -48,22 +48,14 @@ public class DBWorkbench {
             if (AbstractApplication.getInstanceOrNull() == null) {
                 try {
                     AbstractApplication.getInstance();
-                } catch (Exception expected) {
-                    // app not started yet
+                } catch (Exception e) {
+                    log.debug("Error checking application instance", e);
                 }
             }
-            if (AbstractApplication.getInstanceOrNull() == null) {
-                // no app instance yet — resolve the service without requiring it (async startup window)
-                BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, false);
-                applicationWorkbench = workbenchRef.service();
-            }
-            // service must be initialized whether or not it was already resolved without requirement above
             BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+            applicationWorkbench = workbenchRef.service();
             if (applicationWorkbench == null) {
-                applicationWorkbench = workbenchRef.service();
-                if (applicationWorkbench == null) {
-                    throw new IllegalStateException("Internal error: application workbench is not instantiated");
-                }
+                throw new IllegalStateException("Internal error: application workbench is not instantiated");
             }
             workbenchRef.initializeService();
             DBPPlatform platform = applicationWorkbench.getPlatform();
