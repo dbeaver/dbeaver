@@ -53,10 +53,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
-        // Shared instance for tests
-        if (System.getProperty("osgi.instance.area") != null) {
-            System.getProperties().put("dbeaver.app.instance", this);
-        }
+        TestApplicationHolder.register(this);
     }
 
     public static DBPApplication getInstance() {
@@ -65,7 +62,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             try {
                 instance = ApplicationRegistry.getInstance().getApplication().getInstance();
             } catch (Throwable e) {
-                log.debug(e.getMessage());
+                log.error(e);
             }
             if (instance == null) {
                 throw new IllegalStateException("No DBeaver application found");
@@ -78,10 +75,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
     @Nullable
     public static DBPApplication getInstanceOrNull() {
         if (INSTANCE == null) {
-            Object instance = System.getProperties().get("dbeaver.app.instance");
-            if (instance instanceof DBPApplication application) {
-                INSTANCE = application;
-            }
+            INSTANCE = TestApplicationHolder.get();
         }
         return INSTANCE;
     }
