@@ -67,8 +67,7 @@ public class DBWorkbench {
                 }
                 workbenchRef.initializeService();
             } else {
-                // If it was non-required but worked - we still need to initialize it
-                // We'll call getBundleService(..., true) just to be sure we get the full ref and init it
+                // if it was non-required but worked - we still need to initialize it
                 BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
                 workbenchRef.initializeService();
             }

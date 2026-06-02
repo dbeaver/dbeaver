@@ -30,7 +30,6 @@
     <plugin id="junit-jupiter-api" version="0.0.0" />
     <plugin id="junit-jupiter-engine" version="0.0.0" />
     <plugin id="junit-platform-launcher" version="0.0.0" />
-    <plugin id="junit-platform-runner" version="0.0.0" />
     <plugin id="junit-platform-engine" version="0.0.0" />
     <plugin id="junit-platform-commons" version="0.0.0" />
     <plugin id="junit-platform-suite-api" version="0.0.0" />
