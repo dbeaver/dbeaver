@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.app.DBPApplication;
 // across classloaders (the static INSTANCE is per-classloader); active only under the harness
 public final class TestApplicationHolder {
 
-    private static final String CONTEXT_KEY = "dbeaver.osgi.context"; // set by OSGITestRunner only
+    private static final String CONTEXT_KEY = "dbeaver.osgi.context";
     private static final String INSTANCE_KEY = "dbeaver.app.instance";
 
     private TestApplicationHolder() {

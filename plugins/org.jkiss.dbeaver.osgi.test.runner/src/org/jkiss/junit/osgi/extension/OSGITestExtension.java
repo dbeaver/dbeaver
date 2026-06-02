@@ -16,6 +16,7 @@
  */
 package org.jkiss.junit.osgi.extension;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.junit.osgi.OSGITestRunner;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
@@ -24,10 +25,13 @@ import org.junit.jupiter.api.extension.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, InvocationInterceptor {
+
+    private static final Log log = Log.getLog(OSGITestExtension.class);
 
     // one OSGi container per product+application, so different products get isolated runtimes
     private static final ConcurrentHashMap<String, OSGITestRunner> runners = new ConcurrentHashMap<>();
@@ -42,8 +46,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     private static final ThreadLocal<ClassLoader> savedClassLoader = new ThreadLocal<>();
 
     // IDEA-classloader test instance -> its OSGi-classloader counterpart; weak so entries are GC'd per test
-    private static final java.util.Map<Object, Object> osgiInstanceMap =
-        Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<Object, Object> osgiInstanceMap = Collections.synchronizedMap(new WeakHashMap<>());
 
     // stable key per product+application; null when the class has no OSGi annotations
     private static String getRunnerKey(Class<?> testClass) {
@@ -56,42 +59,17 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     }
 
     @Override
-    public void beforeAll(ExtensionContext context) throws Exception {
+    public void beforeAll(ExtensionContext context) {
         Class<?> testClass = context.getRequiredTestClass();
         if (testClass.getAnnotation(RunWithProduct.class) == null
-                && testClass.getAnnotation(RunWithApplication.class) == null) {
+            && testClass.getAnnotation(RunWithApplication.class) == null) {
             return;
         }
-
         String key = getRunnerKey(testClass);
         if (key == null) {
             return;
         }
-
-        OSGITestRunner runner = runners.get(key);
-        if (runner == null) {
-            Object lock = runnerLocks.computeIfAbsent(key, k -> new Object());
-            synchronized (lock) {
-                runner = runners.get(key);
-                if (runner == null) {
-                    try {
-                        ClassLoader myLoader = this.getClass().getClassLoader();
-                        if (myLoader != null
-                                && (myLoader.toString().contains("AppClassLoader")
-                                    || myLoader.toString().contains("Idea")
-                                    || (myLoader.getName() != null && myLoader.getName().equals("app")))) {
-                            OSGITestRunner newRunner = new OSGITestRunner(testClass);
-                            newRunner.waitUntilReady();
-                            runners.put(key, newRunner);
-                            runner = newRunner;
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
+        OSGITestRunner runner = getOrCreateRunner(key, testClass);
         if (runner != null) {
             currentRunner.set(runner);
             ClassLoader testBundleClassLoader = runner.getTestBundleClassLoader();
@@ -102,8 +80,39 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         }
     }
 
+    private OSGITestRunner getOrCreateRunner(String key, Class<?> testClass) {
+        OSGITestRunner runner = runners.get(key);
+        if (runner != null) {
+            return runner;
+        }
+        Object lock = runnerLocks.computeIfAbsent(key, k -> new Object());
+        synchronized (lock) {
+            runner = runners.get(key);
+            if (runner == null && isLauncherClassLoader()) {
+                try {
+                    runner = new OSGITestRunner(testClass);
+                    runner.waitUntilReady();
+                    runners.put(key, runner);
+                } catch (Exception e) {
+                    log.error("Failed to create OSGi test runner for " + key, e);
+                    runner = null;
+                }
+            }
+        }
+        return runner;
+    }
+
+    // bootstrap OSGi only when loaded from the IDE/app classloader (inside Tycho the test already runs in OSGi)
+    private boolean isLauncherClassLoader() {
+        ClassLoader myLoader = this.getClass().getClassLoader();
+        return myLoader != null
+            && (myLoader.toString().contains("AppClassLoader")
+            || myLoader.toString().contains("Idea")
+            || (myLoader.getName() != null && myLoader.getName().equals("app")));
+    }
+
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
+    public void afterAll(ExtensionContext context) {
         ClassLoader previous = savedClassLoader.get();
         if (previous != null) {
             Thread.currentThread().setContextClassLoader(previous);
@@ -112,14 +121,11 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         currentRunner.remove();
     }
 
-    // InvocationInterceptor: run test/lifecycle methods inside the OSGi classloader
-
     private boolean isRunningFromIdea() {
         OSGITestRunner runner = currentRunner.get();
         return runner != null && runner.getTestBundleClassLoader() != null;
     }
 
-    // from IDEA: re-run the method inside the OSGi classloader; otherwise default invocation
     private void interceptWithOsgi(
         Invocation<Void> invocation,
         ReflectiveInvocationContext<Method> invocationContext
@@ -131,22 +137,22 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         }
     }
 
-    // OSGi-classloader counterpart of the IDEA test instance, created on first access
     private Object resolveOsgiInstance(Object ideaTarget, ClassLoader osgiLoader) {
         if (ideaTarget == null) {
             return null;
         }
-        return osgiInstanceMap.computeIfAbsent(ideaTarget, k -> {
-            try {
-                Class<?> osgiClass = osgiLoader.loadClass(k.getClass().getName());
-                return osgiClass.getConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create OSGi test instance for " + k.getClass(), e);
+        return osgiInstanceMap.computeIfAbsent(
+            ideaTarget, k -> {
+                try {
+                    Class<?> osgiClass = osgiLoader.loadClass(k.getClass().getName());
+                    return osgiClass.getConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new IllegalStateException("Failed to create OSGi test instance for " + k.getClass(), e);
+                }
             }
-        });
+        );
     }
 
-    // primitives unchanged, reference types re-loaded from the OSGi classloader
     private Class<?>[] resolveParamTypes(Class<?>[] types, ClassLoader osgiLoader) throws ClassNotFoundException {
         if (types.length == 0) {
             return types;
@@ -158,7 +164,6 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         return resolved;
     }
 
-    // re-run the method inside the OSGi classloader so static singletons resolve from the right loader
     private void invokeInOsgi(
         Invocation<Void> invocation,
         ReflectiveInvocationContext<Method> invocationContext
@@ -190,27 +195,47 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     }
 
     @Override
-    public void interceptTestMethod(Invocation<Void> inv, ReflectiveInvocationContext<Method> ctx, ExtensionContext ext) throws Throwable {
+    public void interceptTestMethod(
+        Invocation<Void> inv,
+        ReflectiveInvocationContext<Method> ctx,
+        ExtensionContext ext
+    ) throws Throwable {
         interceptWithOsgi(inv, ctx);
     }
 
     @Override
-    public void interceptBeforeEachMethod(Invocation<Void> inv, ReflectiveInvocationContext<Method> ctx, ExtensionContext ext) throws Throwable {
+    public void interceptBeforeEachMethod(
+        Invocation<Void> inv,
+        ReflectiveInvocationContext<Method> ctx,
+        ExtensionContext ext
+    ) throws Throwable {
         interceptWithOsgi(inv, ctx);
     }
 
     @Override
-    public void interceptAfterEachMethod(Invocation<Void> inv, ReflectiveInvocationContext<Method> ctx, ExtensionContext ext) throws Throwable {
+    public void interceptAfterEachMethod(
+        Invocation<Void> inv,
+        ReflectiveInvocationContext<Method> ctx,
+        ExtensionContext ext
+    ) throws Throwable {
         interceptWithOsgi(inv, ctx);
     }
 
     @Override
-    public void interceptBeforeAllMethod(Invocation<Void> inv, ReflectiveInvocationContext<Method> ctx, ExtensionContext ext) throws Throwable {
+    public void interceptBeforeAllMethod(
+        Invocation<Void> inv,
+        ReflectiveInvocationContext<Method> ctx,
+        ExtensionContext ext
+    ) throws Throwable {
         interceptWithOsgi(inv, ctx);
     }
 
     @Override
-    public void interceptAfterAllMethod(Invocation<Void> inv, ReflectiveInvocationContext<Method> ctx, ExtensionContext ext) throws Throwable {
+    public void interceptAfterAllMethod(
+        Invocation<Void> inv,
+        ReflectiveInvocationContext<Method> ctx,
+        ExtensionContext ext
+    ) throws Throwable {
         interceptWithOsgi(inv, ctx);
     }
 }
