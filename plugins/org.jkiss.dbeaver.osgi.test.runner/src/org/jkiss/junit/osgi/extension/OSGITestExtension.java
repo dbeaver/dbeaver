@@ -29,40 +29,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, InvocationInterceptor {
 
-    /**
-     * One OSGi container per product+application combination, so that test classes
-     * using different products (e.g. dbvr-unittest vs DBeaverUltimate) each get
-     * their own isolated OSGi runtime instead of sharing one global singleton.
-     */
+    // one OSGi container per product+application, so different products get isolated runtimes
     private static final ConcurrentHashMap<String, OSGITestRunner> runners = new ConcurrentHashMap<>();
 
-    /** per-key locks for double-checked locking during runner creation. */
+    // per-key locks for double-checked locking on runner creation
     private static final ConcurrentHashMap<String, Object> runnerLocks = new ConcurrentHashMap<>();
 
-    /**
-     * per-thread: the runner that is active for the test class currently executing
-     * on this thread.  Set in beforeAll(), cleared in afterAll().
-     */
+    // runner active for the test class on this thread; set in beforeAll, cleared in afterAll
     private static final ThreadLocal<OSGITestRunner> currentRunner = new ThreadLocal<>();
 
-    /**
-     * per-thread storage for the classloader that was active before we switched
-     * to the OSGi bundle classloader, so we can restore it in afterAll().
-     */
+    // context classloader active before the switch to the OSGi bundle classloader, restored in afterAll
     private static final ThreadLocal<ClassLoader> savedClassLoader = new ThreadLocal<>();
 
-    /**
-     * maps IDEA-classloader test instances to their OSGi-classloader counterparts.
-     * Keyed weakly so entries are GC'd automatically after each test method.
-     */
+    // IDEA-classloader test instance -> its OSGi-classloader counterpart; weak so entries are GC'd per test
     private static final java.util.Map<Object, Object> osgiInstanceMap =
         Collections.synchronizedMap(new WeakHashMap<>());
 
-    /**
-     * Derives a stable key from the product + application annotations so that
-     * test classes sharing the same product/app reuse the same OSGi container.
-     * Returns {@code null} when the class has no OSGi annotations.
-     */
+    // stable key per product+application; null when the class has no OSGi annotations
     private static String getRunnerKey(Class<?> testClass) {
         RunWithProduct product = testClass.getAnnotation(RunWithProduct.class);
         RunWithApplication app = testClass.getAnnotation(RunWithApplication.class);
@@ -129,19 +112,14 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         currentRunner.remove();
     }
 
-    // -------------------------------------------------------------------------
-    // InvocationInterceptor – run test/lifecycle methods inside OSGi classloader
-    // -------------------------------------------------------------------------
+    // InvocationInterceptor: run test/lifecycle methods inside the OSGi classloader
 
     private boolean isRunningFromIdea() {
         OSGITestRunner runner = currentRunner.get();
         return runner != null && runner.getTestBundleClassLoader() != null;
     }
 
-    /**
-     * Shared dispatch: if running from IDEA, re-run the method inside the OSGi
-     * bundle's classloader; otherwise proceed with the default JUnit invocation.
-     */
+    // from IDEA: re-run the method inside the OSGi classloader; otherwise default invocation
     private void interceptWithOsgi(
         Invocation<Void> invocation,
         ReflectiveInvocationContext<Method> invocationContext
@@ -153,10 +131,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         }
     }
 
-    /**
-     * Returns the OSGi-classloader instance that corresponds to the given IDEA
-     * test instance, creating it on first access.
-     */
+    // OSGi-classloader counterpart of the IDEA test instance, created on first access
     private Object resolveOsgiInstance(Object ideaTarget, ClassLoader osgiLoader) {
         if (ideaTarget == null) {
             return null;
@@ -171,10 +146,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         });
     }
 
-    /**
-     * Resolves JVM parameter types against the OSGi classloader.
-     * Primitive types are returned unchanged.
-     */
+    // primitives unchanged, reference types re-loaded from the OSGi classloader
     private Class<?>[] resolveParamTypes(Class<?>[] types, ClassLoader osgiLoader) throws ClassNotFoundException {
         if (types.length == 0) {
             return types;
@@ -186,11 +158,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         return resolved;
     }
 
-    /**
-     * Skips the default JUnit invocation and re-runs the method inside the OSGi
-     * bundle's classloader so that all static singletons (application, platform,
-     * etc.) are resolved from the correct classloader.
-     */
+    // re-run the method inside the OSGi classloader so static singletons resolve from the right loader
     private void invokeInOsgi(
         Invocation<Void> invocation,
         ReflectiveInvocationContext<Method> invocationContext

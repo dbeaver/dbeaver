@@ -60,10 +60,8 @@ public @interface RunWithApplication {
     String[] vmArgs() default {};
 
     /**
-     * Whether to wait for the {@code DBPApplicationWorkbench} OSGi service before
-     * starting the application.  Set to {@code false} for headless CLI applications
-     * (DBVR, DBVR-pro, etc.) that never register this service, avoiding a 10-second
-     * startup delay.
+     * Wait for the {@code DBPApplicationWorkbench} service before starting the app.
+     * Set {@code false} for headless CLI apps (DBVR, etc.) that never register it — avoids delay.
      */
     boolean waitForWorkbench() default true;
 

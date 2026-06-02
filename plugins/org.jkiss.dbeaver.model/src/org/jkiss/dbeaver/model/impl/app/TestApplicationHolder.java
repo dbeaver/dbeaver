@@ -20,12 +20,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 
 /**
- * Cross-classloader bridge for the singleton application instance, used only by the OSGi test
- * harness: there the test runs in a different classloader than the launched application, so the
- * per-classloader {@link AbstractApplication} INSTANCE static is invisible from the test side.
- * System properties are the only JVM-wide store shared across classloaders, so the live instance
- * is published there — but only while the harness is active (it puts {@code dbeaver.osgi.context}
- * before launching the application; that key is absent in production).
+ * Cross-classloader bridge for the singleton {@link AbstractApplication} instance: under the OSGi test
+ * harness the test and the application run in different classloaders, so the per-classloader INSTANCE
+ * static is invisible from the test side. System properties are the only JVM-wide store shared across
+ * classloaders; the instance is published there only under the harness ({@code dbeaver.osgi.context}).
  */
 public final class TestApplicationHolder {
 

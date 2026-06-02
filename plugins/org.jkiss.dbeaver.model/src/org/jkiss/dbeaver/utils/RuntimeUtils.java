@@ -715,8 +715,7 @@ public final class RuntimeUtils {
         Bundle bundle = FrameworkUtil.getBundle(theClass);
         BundleContext bundleContext = null;
         if (bundle == null) {
-            // Fallback for cases when theClass is loaded by AppClassLoader (e.g. in tests)
-            // Use RuntimeUtils's own bundle context to find the service
+            // theClass loaded by AppClassLoader (tests) — fall back to RuntimeUtils's own bundle context
             bundle = FrameworkUtil.getBundle(RuntimeUtils.class);
             if (bundle != null) {
                 bundleContext = bundle.getBundleContext();
@@ -726,7 +725,7 @@ public final class RuntimeUtils {
         }
 
         if (bundleContext == null) {
-            // Last resort: try to get context from OSGITestRunner via reflection (for tests in IDEA)
+            // last resort (IDEA tests): get the context from OSGITestRunner via reflection
             bundleContext = getTestBundleContext();
         }
 

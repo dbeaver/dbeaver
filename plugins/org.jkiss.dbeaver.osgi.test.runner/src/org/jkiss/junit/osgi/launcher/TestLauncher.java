@@ -55,7 +55,7 @@ public class TestLauncher implements ApplicationLauncher {
             if (args != null && args.length != 0) {
                 ((BundleContextImpl) context).getContainer().getConfiguration().setAllArgs(args);
             }
-            // Wait for runnable to be set by Equinox via launch() callback
+            // wait for Equinox to set runnable via the launch() callback
             long startTime = System.currentTimeMillis();
             while (runnable == null && System.currentTimeMillis() - startTime < 30000) {
                 Thread.sleep(100);
