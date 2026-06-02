@@ -641,10 +641,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
-@Override
-public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
-    updateDataSource(dataSource, true);
-}
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        updateDataSource(dataSource, true);
+    }
 
     @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
