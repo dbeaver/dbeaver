@@ -50,11 +50,12 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     private UIObservable<Font> font;
     private String tooltip;
 
-    int alignX = SWT.BEGINNING;
-    int alignY = SWT.CENTER;
+    UIAlignX alignX = UIAlignX.LEFT;
+    UIAlignY alignY = UIAlignY.CENTER;
+    UIGrowX growX = UIGrowX.NEVER;
+    UIGrowY growY = UIGrowY.NEVER;
     int widthHint = SWT.DEFAULT;
     int heightHint = SWT.DEFAULT;
-    boolean grow = false;
 
     @NotNull
     @Override
@@ -86,30 +87,45 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     @NotNull
     @Override
-    public B grow() {
-        grow = true;
+    public B grow(@NotNull UIGrowX x, @NotNull UIGrowY y) {
+        growX = x;
+        growY = y;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow(@NotNull UIGrowX x) {
+        growX = x;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow(@NotNull UIGrowY y) {
+        growY = y;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignX x, @NotNull UIAlignY y) {
-        alignX = x.toSWT();
-        alignY = y.toSWT();
+        alignX = x;
+        alignY = y;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignX x) {
-        alignX = x.toSWT();
+        alignX = x;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignY y) {
-        alignY = y.toSWT();
+        alignY = y;
         return builder();
     }
 
@@ -190,6 +206,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
         private UIObservable<String> text;
         private UIObservable<DBIcon> image;
+        private int style = SWT.NONE;
 
         @NotNull
         @Override
@@ -207,8 +224,15 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
+        public LabelBuilder wrap() {
+            style |= SWT.WRAP;
+            return this;
+        }
+
+        @NotNull
+        @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return UIControlFactory.createLabel(parent, SWT.NONE);
+            return UIControlFactory.createLabel(parent, style);
         }
 
         @Override
