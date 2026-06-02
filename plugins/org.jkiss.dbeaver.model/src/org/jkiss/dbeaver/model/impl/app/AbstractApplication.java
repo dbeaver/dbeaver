@@ -75,6 +75,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
     @Nullable
     public static DBPApplication getInstanceOrNull() {
         if (INSTANCE == null) {
+            // under the OSGi test harness INSTANCE lives in another classloader
             INSTANCE = TestApplicationHolder.get();
         }
         return INSTANCE;
