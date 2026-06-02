@@ -146,12 +146,8 @@ public class DorisExecutionContext extends JDBCExecutionContext
         @Nullable DorisDatabase oldSchema,
         @Nullable DorisDatabase newSchema
     ) {
-        if (oldCatalog != null) {
-            DBUtils.fireObjectSelectionChange(oldCatalog, newCatalog, this);
-        }
-        if (oldSchema != null && newSchema != null) {
-            DBUtils.fireObjectSelectionChange(oldSchema, newSchema, this);
-        }
+        DBUtils.fireObjectSelectionChange(oldCatalog, newCatalog, this);
+        DBUtils.fireObjectSelectionChange(oldSchema, newSchema, this);
     }
 
     @Override
@@ -175,9 +171,7 @@ public class DorisExecutionContext extends JDBCExecutionContext
         activeDatabaseName = schema.getName();
 
         // Send notifications
-        if (oldSchema != null) {
-            DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
-        }
+        DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
     }
 
     @Override

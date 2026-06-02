@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
@@ -50,47 +49,18 @@ public abstract class DorisViewBase extends GenericView {
     @Nullable
     @Override
     public GenericCatalog getCatalog() {
-        // Get catalog from the container hierarchy
-        GenericStructContainer container = getContainer();
-        if (container instanceof GenericSchema schema) {
-            return schema.getCatalog();
-        }
-        return container.getCatalog();
+        return DorisObjectNameUtils.getCatalog(getContainer());
     }
 
     @Nullable
     @Override
     public GenericSchema getSchema() {
-        // The container should be the schema (DorisDatabase)
-        GenericStructContainer container = getContainer();
-        if (container instanceof GenericSchema schema) {
-            return schema;
-        }
-        return container.getSchema();
+        return DorisObjectNameUtils.getSchema(getContainer());
     }
 
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        // Doris always requires 3-level FQN: catalog.database.view
-        // This is required for cross-catalog queries and data reading
-        GenericCatalog catalog = getCatalog();
-        GenericSchema schema = getSchema();
-
-        if (catalog != null && schema != null) {
-            // catalog.schema.view
-            return DBUtils.getFullQualifiedName(
-                getDataSource(),
-                catalog,
-                schema,
-                this);
-        } else if (schema != null) {
-            // schema.view
-            return DBUtils.getFullQualifiedName(
-                getDataSource(),
-                schema,
-                this);
-        }
-        return DBUtils.getQuotedIdentifier(getDataSource(), getName());
+        return DorisObjectNameUtils.getFullyQualifiedName(getDataSource(), getCatalog(), getSchema(), this);
     }
 }

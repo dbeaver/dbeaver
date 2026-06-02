@@ -30,7 +30,7 @@
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="rewriteBatchedStatements" value="true"/>
-                    <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"/>
+                    <property name="enabledTLSProtocols" value="TLSv1.2,TLSv1.3"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>

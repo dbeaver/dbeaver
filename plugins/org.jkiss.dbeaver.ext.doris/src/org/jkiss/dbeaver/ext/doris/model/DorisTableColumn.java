@@ -63,7 +63,7 @@ public class DorisTableColumn extends GenericTableColumn {
             extractScale(JDBCUtils.safeGetString(dbResult, COL_COLUMN_TYPE)),
             null,
             10,
-            "YES".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, COL_IS_NULLABLE)),
+            "NO".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, COL_IS_NULLABLE)),
             JDBCUtils.safeGetString(dbResult, COL_COLUMN_COMMENT),
             JDBCUtils.safeGetString(dbResult, COL_COLUMN_DEFAULT),
             false,

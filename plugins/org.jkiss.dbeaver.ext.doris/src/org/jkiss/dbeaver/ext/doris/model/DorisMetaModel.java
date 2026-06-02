@@ -246,6 +246,9 @@ public class DorisMetaModel extends GenericMetaModel {
         @NotNull GenericView sourceObject,
         @NotNull Map<String, Object> options
     ) throws DBException {
+        if (sourceObject instanceof DorisView view) {
+            return view.getObjectDefinitionText(monitor, options);
+        }
         return sourceObject.getDDL();
     }
 

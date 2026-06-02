@@ -44,8 +44,8 @@ public class DorisView extends DorisViewBase implements DBSView, DBPScriptObject
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
-        private String definition;
-        private String definer;
+        private volatile String definition;
+        private volatile String definer;
 
         public boolean isLoaded() {
             return loaded;
