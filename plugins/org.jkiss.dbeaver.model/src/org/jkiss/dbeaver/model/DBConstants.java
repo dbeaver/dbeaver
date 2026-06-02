@@ -169,6 +169,10 @@ public class DBConstants {
     public static final String PROP_PASSWORD = "password"; //$NON-NLS-1$
     public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
 
+    // Driver property used by proxy wrappers like DPI.
+    // Stores the original JDBC URL.
+    public static final String PROP_PROXY_SOURCE_URL = "proxy.source.url"; //$NON-NLS-1$
+
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
 
     public static final String PROP_RESOURCE_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$

@@ -223,6 +223,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                         ensureOpen();
                         if (dataSourceRegistry == null) {
                             dataSourceRegistry = createDataSourceRegistry();
+                            dataSourceRegistry.initializeDataSources();
                         }
                     }
                 }
