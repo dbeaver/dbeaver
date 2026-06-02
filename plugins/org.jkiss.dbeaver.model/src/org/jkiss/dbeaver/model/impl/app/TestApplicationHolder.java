@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.impl.app;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 
-// shares the application instance via JVM-wide system properties so the OSGi test harness can read it
-// across classloaders (the static INSTANCE is per-classloader); active only under the harness
+// shares the application instance via JVM system properties so the OSGi test harness can read it
+// active only under the harness
 public final class TestApplicationHolder {
 
     private TestApplicationHolder() {
