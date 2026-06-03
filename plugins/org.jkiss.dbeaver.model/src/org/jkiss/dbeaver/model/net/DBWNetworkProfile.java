@@ -48,7 +48,7 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     public DBWNetworkProfile() {
     }
 
-    public DBWNetworkProfile(@NotNull DBPProject project) {
+    public DBWNetworkProfile(@Nullable DBPProject project) {
         super(project);
     }
 

@@ -223,6 +223,9 @@ public final class DBUtils {
         if (dataSource == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
+                if (namePart == null) {
+                    continue;
+                }
                 if (isVirtualObject(namePart)) {
                     continue;
                 }

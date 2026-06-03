@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * PrefPageNetworkProfiles
@@ -219,7 +219,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
             });
     }
 
-    private void createAndShowProfile(DBWNetworkProfile sourceProfile) {
+    private void createAndShowProfile(@Nullable DBWNetworkProfile sourceProfile) {
         DBWNetworkProfile newProfile = createNewProfile(sourceProfile);
         if (newProfile == null) {
             return;
