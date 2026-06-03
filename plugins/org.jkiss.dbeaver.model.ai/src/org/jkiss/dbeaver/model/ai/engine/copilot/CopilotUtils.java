@@ -23,7 +23,7 @@ import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponse;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponseLegacy;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,9 +52,9 @@ public final class CopilotUtils {
 
     @NotNull
     public static AIFunctionCall createFunctionCall(
-        @NotNull CopilotChatResponse.ToolCall toolCall
+        @NotNull CopilotChatResponseLegacy.ToolCall toolCall
     ) throws DBException {
-        CopilotChatResponse.Function function = toolCall.function();
+        CopilotChatResponseLegacy.Function function = toolCall.function();
         if (function == null) {
             throw new DBException("Copilot tool call doesn't contain function payload");
         }

@@ -126,7 +126,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             this.itemsMeta = itemsMeta;
             this.dsRegistry = originalNode.getOwnerProject().getDataSourceRegistry();
         }
-        
+
         public void configFilterInDialog() throws DBException {
             boolean globalFilter = isGlobalFilter(originalNode, parentNode);
             String dialogObjectTitle = createDialogTitle(globalFilter);
@@ -140,7 +140,6 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             );
             processDialogResponse(dialog);
         }
-
 
         @NotNull
         protected DBSObjectFilter getObjectFilter() {

@@ -127,7 +127,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 DBWorkbench.getPlatformUI()
                     .showWarningMessageBox(
                         ResultSetMessages.dialog_value_view_error_parsing_date_title,
-                        ResultSetMessages.dialog_value_view_error_parsing_date_message
+                        NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, exception.getMessage())
                     );
                 DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
                 this.setChecked(false);
