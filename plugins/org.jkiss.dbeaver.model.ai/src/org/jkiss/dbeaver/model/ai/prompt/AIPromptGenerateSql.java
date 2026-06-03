@@ -82,7 +82,7 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
     protected void initializePrompt(@Nullable AIDatabaseContext context) {
         if (sqlQueriesOnly) {
             addInstructions(
-                "Your main goal to return at least one SQL query",
+                "Your main goal is to return at least one SQL query",
                 "You shouldn't return any comments or descriptions, only SQL code blocks."
             );
         }

@@ -94,6 +94,11 @@ public class AIPromptUtils {
     }
 
     @NotNull
+    public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
+        return createGenerateQueryInstructions(dataSource, true);
+    }
+
+    @NotNull
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource, boolean isInAIChat) {
         List<String> instructions = new ArrayList<>();
         instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
