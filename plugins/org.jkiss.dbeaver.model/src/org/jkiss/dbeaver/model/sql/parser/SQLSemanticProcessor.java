@@ -128,12 +128,12 @@ public class SQLSemanticProcessor {
     }
 
     @Nullable
-    public static Expression parseExpression(@Nullable String expression) throws DBCException {
+    public static Expression parseExpression(@NotNull String expression) throws DBCException {
         return parseExpression(expression, true);
     }
 
     @Nullable
-    public static Expression parseExpression(@Nullable String expression, boolean allowPartialParse) throws DBCException {
+    public static Expression parseExpression(@NotNull String expression, boolean allowPartialParse) throws DBCException {
         try {
             return CCJSqlParserUtil.parseExpression(expression, allowPartialParse);
         } catch (JSQLParserException e) {
@@ -142,12 +142,12 @@ public class SQLSemanticProcessor {
     }
 
     @Nullable
-    public static Expression parseCondExpression(@Nullable String expression) throws DBCException {
+    public static Expression parseCondExpression(@NotNull String expression) throws DBCException {
         return parseCondExpression(expression, true);
     }
 
     @Nullable
-    public static Expression parseCondExpression(@Nullable String expression, boolean allowPartialParse) throws DBCException {
+    public static Expression parseCondExpression(@NotNull String expression, boolean allowPartialParse) throws DBCException {
         try {
             return CCJSqlParserUtil.parseCondExpression(expression, allowPartialParse);
         } catch (JSQLParserException e) {
