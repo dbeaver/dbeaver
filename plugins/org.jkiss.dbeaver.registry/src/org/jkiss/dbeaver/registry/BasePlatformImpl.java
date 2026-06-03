@@ -510,8 +510,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 List<DBWNetworkProfile> profiles = getProfiles();
                 DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
                     null,
-                    new DataSourceConfigurationManagerBuffer(),
-                    Map.of()
+                    null,
+                    new LinkedHashMap<>()
                 );
                 StringWriter strWriter = new StringWriter();
                 JsonWriter jsonWriter = new JsonWriter(strWriter);

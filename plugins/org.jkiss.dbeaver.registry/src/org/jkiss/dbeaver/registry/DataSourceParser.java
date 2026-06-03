@@ -89,7 +89,7 @@ public class DataSourceParser {
                         null,
                         np,
                         configuration,
-                        !contextParameters.configurationManager().isTrusted()
+                        !contextParameters.isTrusted()
                     );
                 }
             }
@@ -101,9 +101,15 @@ public class DataSourceParser {
 
     public record ContextParameters(
         @Nullable DBPProject project,
-        @NotNull DataSourceConfigurationManager configurationManager,
+        @Nullable DataSourceConfigurationManager configurationManager,
         @NotNull Map<String, Map<String, Map<String, String>>> secureProperties
     ) {
+        public boolean isTrusted() {
+            return configurationManager == null || configurationManager.isTrusted();
+        }
+        public boolean isSecure() {
+            return configurationManager != null && configurationManager.isSecure();
+        }
     }
 
     static void saveNetworkHandlerConfiguration(
@@ -114,8 +120,6 @@ public class DataSourceParser {
         @NotNull DBWHandlerConfiguration configuration,
         boolean referenceOnly
     ) throws IOException {
-        DataSourceConfigurationManager configurationManager = contextParameters.configurationManager();
-
         json.name(CommonUtils.notEmpty(configuration.getId()));
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
@@ -132,8 +136,8 @@ public class DataSourceParser {
                 DBPProject project = dataSource != null ?
                     dataSource.getProject() : (profile != null ? profile.getProject() : null);
 
-                if (configurationManager.isTrusted()) {
-                    if (configurationManager.isSecure() ||
+                if (contextParameters.isTrusted()) {
+                    if (contextParameters.isSecure() ||
                         (project != null && project.isUseSecretStorage() && profile == null && dataSource.isSharedCredentials())) {
                         // For secured projects save only shared credentials
                         // Others are stored in secret storage
@@ -281,7 +285,7 @@ public class DataSourceParser {
             curNetworkHandler.setEnabled(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_ENABLED));
             curNetworkHandler.setSavePassword(JSONUtils.getBoolean(handlerCfg, RegistryConstants.ATTR_SAVE_PASSWORD));
             {
-                final SecureCredentials creds = parameters.configurationManager.isSecure() ?
+                final SecureCredentials creds = parameters.isSecure() ?
                     readPlainCredentials(handlerCfg) :
                     readSecuredCredentials(
                         parameters,
