@@ -90,34 +90,30 @@ public class ResultSetRowColorHelper {
     }
 
     public void updateColorMapping(@NotNull DBVEntity virtualEntity, boolean reset) {
-        synchronized (colorMapping) {
-            colorMapping.clear();
-            processColorOverrides(virtualEntity);
-            if (reset) {
-                updateRowColors(true, model.getAllRows());
-            }
-            applyGroupRowStripingForEntity(virtualEntity, false);
+        colorMapping.clear();
+        processColorOverrides(virtualEntity);
+        if (reset) {
+            updateRowColors(true, model.getAllRows());
         }
+        applyGroupRowStripingForEntity(virtualEntity, false);
     }
 
     public void updateColorMapping(boolean reset) {
-        synchronized (colorMapping) {
-            colorMapping.clear();
+        colorMapping.clear();
 
-            DBSDataContainer dataContainer = model.getDataContainer();
-            if (dataContainer == null) {
-                return;
-            }
-            DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
-            if (virtualEntity == null) {
-                return;
-            }
-            processColorOverrides(virtualEntity);
-            if (reset) {
-                updateRowColors(true, model.getAllRows());
-            }
-            applyGroupRowStripingForEntity(virtualEntity, false);
+        DBSDataContainer dataContainer = model.getDataContainer();
+        if (dataContainer == null) {
+            return;
         }
+        DBVEntity virtualEntity = DBVUtils.getVirtualEntity(dataContainer, false);
+        if (virtualEntity == null) {
+            return;
+        }
+        processColorOverrides(virtualEntity);
+        if (reset) {
+            updateRowColors(true, model.getAllRows());
+        }
+        applyGroupRowStripingForEntity(virtualEntity, false);
     }
 
     public void handleAppendDataColors(
@@ -150,11 +146,9 @@ public class ResultSetRowColorHelper {
             for (DBVColorOverride co : coList) {
                 DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
                 if (binding != null) {
-                    synchronized (colorMapping) {
-                        List<AttributeColorSettings> cmList =
-                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
-                        cmList.add(new AttributeColorSettings(co));
-                    }
+                    List<AttributeColorSettings> cmList =
+                        colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                    cmList.add(new AttributeColorSettings(co));
                 } else {
                     log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
                 }
@@ -163,22 +157,20 @@ public class ResultSetRowColorHelper {
     }
 
     private void updateRowColors(boolean reset, @NotNull List<ResultSetRow> rows) {
-        synchronized (colorMapping) {
-            DBDAttributeBinding[] attributes = model.getAttributes();
-            if (colorMapping.isEmpty() || reset) {
-                for (ResultSetRow row : rows) {
-                    row.colorInfo = null;
-                }
+        DBDAttributeBinding[] attributes = model.getAttributes();
+        if (colorMapping.isEmpty() || reset) {
+            for (ResultSetRow row : rows) {
+                row.colorInfo = null;
             }
-            if (!colorMapping.isEmpty()) {
-                for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
-                    if (!ArrayUtils.contains(attributes, entry.getKey())) {
-                        // This may happen during FK navigation - attributes are already updated while colors mapping are still old
-                        continue;
-                    }
-                    for (ResultSetRow row : rows) {
-                        applyAttributeColors(entry.getKey(), row, entry.getValue(), attributes);
-                    }
+        }
+        if (!colorMapping.isEmpty()) {
+            for (Map.Entry<DBDAttributeBinding, List<AttributeColorSettings>> entry : colorMapping.entrySet()) {
+                if (!ArrayUtils.contains(attributes, entry.getKey())) {
+                    // This may happen during FK navigation - attributes are already updated while colors mapping are still old
+                    continue;
+                }
+                for (ResultSetRow row : rows) {
+                    applyAttributeColors(entry.getKey(), row, entry.getValue(), attributes);
                 }
             }
         }

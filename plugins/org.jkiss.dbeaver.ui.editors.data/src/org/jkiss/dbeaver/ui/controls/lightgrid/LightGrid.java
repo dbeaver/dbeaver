@@ -3022,22 +3022,21 @@ public abstract class LightGrid extends Canvas {
 
     private void updateSelectionCache()
     {
-        synchronized (selectedRows) {
-            //Update the list of which columns have all their cells selected
-            selectedColumns.clear();
-            selectedRows.clear();
-            IntKeyMap<Boolean> columnIndices = new IntKeyMap<>();
-            for (GridPos cell : selectedCells) {
-                if (cell.col >= 0) {
-                    columnIndices.put(cell.col, Boolean.TRUE);
-                }
-                if (cell.row >= 0) {
-                    selectedRows.put(cell.row, Boolean.TRUE);
-                }
+        //Update the list of which columns have all their cells selected
+        selectedColumns.clear();
+        selectedRows.clear();
+
+        IntKeyMap<Boolean> columnIndices = new IntKeyMap<>();
+        for (GridPos cell : selectedCells) {
+            if (cell.col >= 0) {
+                columnIndices.put(cell.col, Boolean.TRUE);
             }
-            for (Integer columnIndex : columnIndices.keySet()) {
-                selectedColumns.add(columns.get(columnIndex));
+            if (cell.row >= 0) {
+                selectedRows.put(cell.row, Boolean.TRUE);
             }
+        }
+        for (Integer columnIndex : columnIndices.keySet()) {
+            selectedColumns.add(columns.get(columnIndex));
         }
         selectedColumns.sort(Comparator.comparingInt(GridColumn::getIndex));
     }
@@ -4590,11 +4589,8 @@ public abstract class LightGrid extends Canvas {
      * Returns selected rows indexes
      * @return indexes of selected rows
      */
-    public Collection<Integer> getRowSelection()
-    {
-        synchronized (selectedCells) {
-            return Collections.unmodifiableCollection(selectedRows.keySet());
-        }
+    public Collection<Integer> getRowSelection() {
+        return Collections.unmodifiableCollection(selectedRows.keySet());
     }
 
     public int getRowSelectionSize() {
