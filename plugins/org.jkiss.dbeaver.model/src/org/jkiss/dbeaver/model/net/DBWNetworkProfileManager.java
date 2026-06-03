@@ -32,12 +32,36 @@ import java.util.List;
 public abstract class DBWNetworkProfileManager {
     private static final Log log = Log.getLog(DBWNetworkProfileManager.class);
 
-    @NotNull
-    private final List<DBWNetworkProfile> profiles = new ArrayList<>();
+    @Nullable
+    private volatile List<DBWNetworkProfile> profiles;
+
+    public DBWNetworkProfileManager() {
+    }
 
     @NotNull
     public List<DBWNetworkProfile> getProfiles() {
+        return getProfilesSafe();
+    }
+
+    private List<DBWNetworkProfile> getProfilesSafe() {
+        if (profiles != null) {
+            return profiles;
+        }
+        List<DBWNetworkProfile> pl = loadProfiles();
+        synchronized (this) {
+            if (profiles != null) {
+                return profiles;
+            }
+            profiles = new ArrayList<>(pl);
+        }
+
         return profiles;
+    }
+
+    @NotNull
+    protected List<DBWNetworkProfile> loadProfiles() {
+        // Do nothing by default
+        return new ArrayList<>();
     }
 
     @Nullable
@@ -51,8 +75,9 @@ public abstract class DBWNetworkProfileManager {
             return null;
         }
         // Search in profiles
-        synchronized (profiles) {
-            for (DBWNetworkProfile profile : profiles) {
+        List<DBWNetworkProfile> profilesSafe = getProfilesSafe();
+        synchronized (profilesSafe) {
+            for (DBWNetworkProfile profile : profilesSafe) {
                 if (CommonUtils.equalObjects(profile.getProfileName(), name)) {
                     return profile;
                 }
@@ -63,27 +88,38 @@ public abstract class DBWNetworkProfileManager {
     }
 
     public void addOrUpdateProfile(@NotNull DBWNetworkProfile profile) {
-        for (int i = 0; i < profiles.size(); i++) {
-            if (CommonUtils.equalObjects(profiles.get(i).getProfileName(), profile.getProfileName())) {
-                profiles.set(i, profile);
-                return;
+        List<DBWNetworkProfile> profilesSafe = getProfilesSafe();
+        synchronized (profilesSafe) {
+            for (int i = 0; i < profilesSafe.size(); i++) {
+                if (CommonUtils.equalObjects(profilesSafe.get(i).getProfileName(), profile.getProfileName())) {
+                    profilesSafe.set(i, profile);
+                    return;
+                }
             }
+            profilesSafe.add(profile);
         }
-        profiles.add(profile);
     }
 
     public void removeProfile(@NotNull DBWNetworkProfile profile) {
-        profiles.remove(profile);
-        try {
-            DBSSecretController secretController = getSecretController();
-            secretController.setPrivateSecretValue(
-                profile.getSecretKeyId(),
-                null);
-            secretController.flushChanges();
-        } catch (DBException e) {
-            log.error("Error removing network profile secrets", e);
+        List<DBWNetworkProfile> profilesSafe = getProfilesSafe();
+        synchronized (profilesSafe) {
+            profilesSafe.remove(profile);
+            try {
+                DBSSecretController secretController = getSecretController();
+                secretController.setPrivateSecretValue(
+                    profile.getSecretKeyId(),
+                    null
+                );
+                secretController.flushChanges();
+            } catch (DBException e) {
+                log.error("Error removing network profile secrets", e);
+            }
         }
     }
+
+    // Saves profiles in persistent configuration
+    // Doesn't throw errors, any errors will be in the log
+    public abstract void saveSettings();
 
     @NotNull
     protected abstract DBSSecretController getSecretController() throws DBException;
@@ -97,4 +133,5 @@ public abstract class DBWNetworkProfileManager {
     protected DBWNetworkProfileManager getParentManager() {
         return null;
     }
+
 }

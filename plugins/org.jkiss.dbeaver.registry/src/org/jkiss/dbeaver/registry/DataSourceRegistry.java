@@ -100,6 +100,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.preferenceStore = preferenceStore;
 
         this.networkProfileManager = new DBWNetworkProfileManager() {
+            @Override
+            public void saveSettings() {
+                project.getDataSourceRegistry().flushConfig();
+            }
+
             @NotNull
             @Override
             protected DBSSecretController getSecretController() throws DBException {

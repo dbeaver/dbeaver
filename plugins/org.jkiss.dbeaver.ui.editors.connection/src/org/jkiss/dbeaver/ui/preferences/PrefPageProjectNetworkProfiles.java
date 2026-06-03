@@ -112,13 +112,12 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
     @Override
     protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
+        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
         for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
-            getProfilesRegistry().addOrUpdateProfile(profile);
+            profilesRegistry.addOrUpdateProfile(profile);
         }
-        if (projectMeta != null) {
-            projectMeta.getDataSourceRegistry().flushConfig();
-        }
+        profilesRegistry.saveSettings();
     }
 
     @Override
@@ -153,11 +152,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
                 selectedProfile.getProfileName()
             )
         )) {
-            getProfilesRegistry().removeProfile(selectedProfile);
-            if (projectMeta != null) {
-                projectMeta.getDataSourceRegistry().flushConfig();
-            }
-
+            DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+            profilesRegistry.removeProfile(selectedProfile);
+            profilesRegistry.saveSettings();
             return true;
         }
         return false;
@@ -168,6 +165,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     protected DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
         String profileName = sourceProfile == null ? "" : sourceProfile.getProfileName();
 
+        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
         while (true) {
             profileName = EnterNameDialog.chooseName(
                 getShell(),
@@ -181,7 +179,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
             profileName = profileName.trim();
 
-            if (getProfilesRegistry().getProfile(null, profileName) != null) {
+            if (profilesRegistry.getProfile(null, profileName) != null) {
                 UIUtils.showMessageBox(
                     getShell(),
                     UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
@@ -200,10 +198,8 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         DBWNetworkProfile newProfile = new DBWNetworkProfile(projectMeta);
         newProfile.setProfileName(profileName);
 
-        getProfilesRegistry().addOrUpdateProfile(newProfile);
-        if (projectMeta != null) {
-            projectMeta.getDataSourceRegistry().flushConfig();
-        }
+        profilesRegistry.addOrUpdateProfile(newProfile);
+        profilesRegistry.saveSettings();
 
         return newProfile;
     }
