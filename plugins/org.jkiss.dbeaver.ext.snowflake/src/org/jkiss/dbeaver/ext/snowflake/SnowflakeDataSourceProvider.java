@@ -30,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -191,7 +192,7 @@ public class SnowflakeDataSourceProvider extends GenericDataSourceProvider<Snowf
         String cSec, 
         String user, 
         String pass, 
-        String sc) throws Exception 
+        String sc) throws IOException 
     {
         URL url = new URL(endpoint);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -217,9 +218,7 @@ public class SnowflakeDataSourceProvider extends GenericDataSourceProvider<Snowf
             }
             dataBuilder.append(URLEncoder.encode(entry.getKey(), "UTF-8").replace("+", "%20"));
             dataBuilder.append('=');
-            String val = entry.getValue();
-            String encodedVal = URLEncoder.encode(val, "UTF-8").replace("+", "%20");
-            dataBuilder.append(encodedVal);
+            dataBuilder.append(URLEncoder.encode(entry.getValue(), "UTF-8").replace("+", "%20"));
         }
 
         byte[] postBytes = dataBuilder.toString().getBytes(StandardCharsets.UTF_8);
@@ -229,42 +228,57 @@ public class SnowflakeDataSourceProvider extends GenericDataSourceProvider<Snowf
         }
 
         int code = conn.getResponseCode();
-        InputStream stream = (code >= 200 && code < 350) ? conn.getInputStream() : conn.getErrorStream();
+        try (InputStream stream = (code >= 200 && code < 350) ? conn.getInputStream() : conn.getErrorStream()) {
+            ByteArrayOutputStream responseOutput = new ByteArrayOutputStream();
+            byte[] readBuffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = stream.read(readBuffer)) != -1) {
+                responseOutput.write(readBuffer, 0, bytesRead);
+            }
+            
+            String responseRaw = responseOutput.toString(StandardCharsets.UTF_8.name());
 
-        ByteArrayOutputStream responseOutput = new ByteArrayOutputStream();
-        byte[] readBuffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = stream.read(readBuffer)) != -1) {
-            responseOutput.write(readBuffer, 0, bytesRead);
+            if (code < 200 || code >= 350) {
+                throw new IOException("IDP server returned HTTP " + code + ": " + responseRaw);
+            }
+
+            return extractToken(responseRaw);
         }
-        
-        String responseRaw = responseOutput.toString(StandardCharsets.UTF_8.name());
+    }
 
-        if (code < 200 || code >= 350) {
-            throw new Exception("IDP server returned HTTP " + code + ": " + responseRaw);
-        }
-
+    /**
+     * Extracts access_token value from raw JSON response using flat guard clauses to minimize NPath complexity.
+     */
+    private String extractToken(String responseRaw) throws IOException {
         int tokenIndex = responseRaw.indexOf("access_token");
-        if (tokenIndex != -1) {
-            int colonIndex = responseRaw.indexOf(":", tokenIndex);
-            if (colonIndex != -1) {
-                int firstQuote = -1;
-                for (int i = colonIndex + 1; i < responseRaw.length(); i++) {
-                    char c = responseRaw.charAt(i);
-                    if (c == 34 || c == 39) {
-                        firstQuote = i;
-                        break;
-                    }
-                }
-                if (firstQuote != -1) {
-                    char quoteChar = responseRaw.charAt(firstQuote);
-                    int lastQuote = responseRaw.indexOf(quoteChar, firstQuote + 1);
-                    if (lastQuote != -1) {
-                        return responseRaw.substring(firstQuote + 1, lastQuote);
-                    }
-                }
+        if (tokenIndex == -1) {
+            throw new IOException("JSON response does not contain 'access_token' field.");
+        }
+
+        int colonIndex = responseRaw.indexOf(":", tokenIndex);
+        if (colonIndex == -1) {
+            throw new IOException("Malformed JSON response payload: missing colon delimiter.");
+        }
+
+        int firstQuote = -1;
+        for (int i = colonIndex + 1; i < responseRaw.length(); i++) {
+            char c = responseRaw.charAt(i);
+            if (c == 34 || c == 39) { // Single or double quote matching
+                firstQuote = i;
+                break;
             }
         }
-        throw new Exception("JSON response does not contain 'access_token' field.");
+
+        if (firstQuote == -1) {
+            throw new IOException("Malformed JSON response payload: missing opening token quote identifier.");
+        }
+
+        char quoteChar = responseRaw.charAt(firstQuote);
+        int lastQuote = responseRaw.indexOf(quoteChar, firstQuote + 1);
+        if (lastQuote == -1) {
+            throw new IOException("Malformed JSON response payload: missing closing token quote identifier.");
+        }
+
+        return responseRaw.substring(firstQuote + 1, lastQuote);
     }
 }
