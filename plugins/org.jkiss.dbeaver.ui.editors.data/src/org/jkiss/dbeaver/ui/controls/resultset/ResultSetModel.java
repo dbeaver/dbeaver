@@ -933,9 +933,9 @@ public class ResultSetModel implements DBDResultSetModel {
                 continue;
             }
             if ((!forceUpdate &&
-                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
-                constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
-            {
+                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION
+                && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
+                constraint.getVisualPosition() == constraint.getOriginalVisualPosition())) {
                 // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
