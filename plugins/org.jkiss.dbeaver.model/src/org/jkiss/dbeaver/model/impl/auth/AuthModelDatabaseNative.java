@@ -33,14 +33,13 @@ import java.util.Properties;
 
 /**
  * Database username/password auth model.
- *
  * No-op model. Leaves all configuration as is.
  */
 public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNativeCredentials> implements DBAAuthModel<CREDENTIALS> {
 
     public static final String ID = "native";
 
-    public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative();
+    public static final AuthModelDatabaseNative INSTANCE = new AuthModelDatabaseNative<>();
 
     @NotNull
     public CREDENTIALS createCredentials() {
@@ -56,7 +55,7 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
     }
 
     protected void loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration, CREDENTIALS credentials) {
-        DBPDataSourceProvider dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
+        DBPDataSourceProvider<?> dataSourceProvider = dataSource.getDriver().getDataSourceProvider();
         if (dataSourceProvider instanceof DBAUserCredentialsProvider) {
             credentials.setUserName(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserName(configuration));
             credentials.setUserPassword(((DBAUserCredentialsProvider) dataSourceProvider).getConnectionUserPassword(configuration));

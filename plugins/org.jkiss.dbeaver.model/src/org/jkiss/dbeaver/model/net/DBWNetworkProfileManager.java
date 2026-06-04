@@ -43,6 +43,25 @@ public abstract class DBWNetworkProfileManager {
         return getProfilesSafe();
     }
 
+    @NotNull
+    public List<DBWNetworkProfile> getAllProfiles() {
+        List<DBWNetworkProfile> profileList = getProfiles();
+        DBWNetworkProfileManager parentManager = getParentManager();
+        if (parentManager != null) {
+            List<DBWNetworkProfile> pp = parentManager.getProfiles();
+            if (!pp.isEmpty()) {
+                if (profileList.isEmpty()) {
+                    return pp;
+                }
+                List<DBWNetworkProfile> cl = new ArrayList<>(profileList.size() + pp.size());
+                cl.addAll(pp);
+                cl.addAll(profileList);
+                return cl;
+            }
+        }
+        return profileList;
+    }
+
     private List<DBWNetworkProfile> getProfilesSafe() {
         if (profiles != null) {
             return profiles;
@@ -72,7 +91,8 @@ public abstract class DBWNetworkProfileManager {
             if (profileProvider != null) {
                 return profileProvider.getNetworkProfile(source, name);
             }
-            return null;
+            DBWNetworkProfileManager parent = getParentManager();
+            return parent == null ? null : parent.getProfile(source, name);
         }
         // Search in profiles
         List<DBWNetworkProfile> profilesSafe = getProfilesSafe();

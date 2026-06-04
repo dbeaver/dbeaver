@@ -407,7 +407,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             manager.add(new Separator());
 
-            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles().getProfiles()) {
+            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles().getAllProfiles()) {
                 manager.add(new ChooseNetworkProfileAction(dataSource, profile, null, index++));
             }
 
