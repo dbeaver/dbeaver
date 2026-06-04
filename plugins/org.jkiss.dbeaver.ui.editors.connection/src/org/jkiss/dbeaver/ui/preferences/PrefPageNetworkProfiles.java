@@ -140,7 +140,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         return divider;
     }
 
-    protected boolean isHandlerApplicable(DBWHandlerDescriptor nhd) {
+    protected boolean isHandlerApplicable(@NotNull DBWHandlerDescriptor nhd) {
         return true;
     }
 
@@ -148,6 +148,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         return true;
     }
 
+    @Nullable
     public DBWNetworkProfile getSelectedProfile() {
         return selectedProfile;
     }
@@ -156,7 +157,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         performDefaults();
     }
 
-    private void createProfilesTable(Composite profilesGroup) {
+    private void createProfilesTable(@NotNull Composite profilesGroup) {
         GridData gd;
         profilesTable = new Table(profilesGroup, SWT.SINGLE);
         gd = new GridData(GridData.FILL_BOTH);
@@ -172,7 +173,9 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 } else {
                     selectedProfile = (DBWNetworkProfile) selection[0].getData();
                 }
-                updateSelectedProfile(selectedProfile);
+                if (selectedProfile != null) {
+                    updateSelectedProfile(selectedProfile);
+                }
                 updateControlsState();
             }
         });
@@ -221,9 +224,6 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     private void createAndShowProfile(@Nullable DBWNetworkProfile sourceProfile) {
         DBWNetworkProfile newProfile = createNewProfile(sourceProfile);
-        if (newProfile == null) {
-            return;
-        }
 
         if (sourceProfile != null) {
             newProfile.setProperties(new LinkedHashMap<>(sourceProfile.getProperties()));
@@ -273,7 +273,9 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     private void updateControlsState() {
         NetworkHandlerDescriptor descriptor = getSelectedHandler();
-        enableHandlerContent(descriptor);
+        if (descriptor != null) {
+            enableHandlerContent(descriptor);
+        }
 
         if (descriptor != null && selectedProfile != null) {
             HandlerBlock handlerBlock = configurations.get(descriptor);
@@ -298,8 +300,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         return selection == null ? null : (NetworkHandlerDescriptor) selection.getData();
     }
 
-    private void createHandlerTab(final NetworkHandlerDescriptor descriptor)
-    {
+    private void createHandlerTab(@NotNull NetworkHandlerDescriptor descriptor) {
         IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
         try {
             String implName = descriptor.getHandlerType().getImplName();
@@ -355,19 +356,19 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         enableHandlerContent(descriptor);
     }
 
-    protected void updateSelectedProfile(DBWNetworkProfile profile) {
+    protected void updateSelectedProfile(@NotNull DBWNetworkProfile profile) {
 
     }
 
-    protected void preCreateHandlerControls(Composite composite) {
+    protected void preCreateHandlerControls(@NotNull Composite composite) {
 
     }
 
-    protected void postCreateHandlerControls(Composite composite) {
+    protected void postCreateHandlerControls(@NotNull Composite composite) {
 
     }
 
-    private void enableHandlerContent(NetworkHandlerDescriptor descriptor)
+    private void enableHandlerContent(@NotNull NetworkHandlerDescriptor descriptor)
     {
         HandlerBlock handlerBlock = configurations.get(descriptor);
         DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(selectedProfile);
@@ -382,7 +383,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         }
     }
 
-    public void saveSettings(DBWNetworkProfile profile) {
+    public void saveSettings(@NotNull DBWNetworkProfile profile) {
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(profile);
             if (configuration != null) {

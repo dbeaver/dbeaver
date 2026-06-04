@@ -66,7 +66,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     }
 
     @Override
-    public void saveSettings(DBWNetworkProfile profile) {
+    public void saveSettings(@NotNull DBWNetworkProfile profile) {
         super.saveSettings(profile);
 
         try {
