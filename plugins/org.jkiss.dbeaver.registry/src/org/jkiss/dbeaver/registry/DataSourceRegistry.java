@@ -134,12 +134,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                 }
             }
         };
-
-        boolean isLoaded = loadDataSources(true) != null;
-        if (!isMultiUser() && isLoaded) {
-            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
-            addDataSourceListener(modelChangeListener);
-        }
     }
 
     // Multi-user registry:
