@@ -124,16 +124,6 @@ public abstract class DBWNetworkProfileManager {
         List<DBWNetworkProfile> profilesSafe = getProfilesSafe();
         synchronized (profilesSafe) {
             profilesSafe.remove(profile);
-            try {
-                DBSSecretController secretController = getSecretController();
-                secretController.setPrivateSecretValue(
-                    profile.getSecretKeyId(),
-                    null
-                );
-                secretController.flushChanges();
-            } catch (DBException e) {
-                log.error("Error removing network profile secrets", e);
-            }
         }
     }
 

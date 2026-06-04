@@ -116,6 +116,23 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             protected DBWNetworkProfileManager getParentManager() {
                 return project.getWorkspace().getPlatform().getNetworkProfiles();
             }
+
+            @Override
+            public void removeProfile(@NotNull DBWNetworkProfile profile) {
+                super.removeProfile(profile);
+                if (getProject().isUseSecretStorage()) {
+                    try {
+                        DBSSecretController secretController = getSecretController();
+                        secretController.setPrivateSecretValue(
+                            profile.getSecretKeyId(),
+                            null
+                        );
+                        secretController.flushChanges();
+                    } catch (DBException e) {
+                        log.error("Error removing network profile secrets", e);
+                    }
+                }
+            }
         };
 
         boolean isLoaded = loadDataSources(true) != null;
