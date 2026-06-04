@@ -99,41 +99,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
 
-        this.networkProfileManager = new DBWNetworkProfileManager() {
-            @Override
-            public void saveSettings() {
-                project.getDataSourceRegistry().flushConfig();
-            }
-
-            @NotNull
-            @Override
-            protected DBSSecretController getSecretController() throws DBException {
-                return DBSSecretController.getProjectSecretController(project);
-            }
-
-            @NotNull
-            @Override
-            protected DBWNetworkProfileManager getParentManager() {
-                return project.getWorkspace().getPlatform().getNetworkProfiles();
-            }
-
-            @Override
-            public void removeProfile(@NotNull DBWNetworkProfile profile) {
-                super.removeProfile(profile);
-                if (getProject().isUseSecretStorage()) {
-                    try {
-                        DBSSecretController secretController = getSecretController();
-                        secretController.setPrivateSecretValue(
-                            profile.getSecretKeyId(),
-                            null
-                        );
-                        secretController.flushChanges();
-                    } catch (DBException e) {
-                        log.error("Error removing network profile secrets", e);
-                    }
-                }
-            }
-        };
+        this.networkProfileManager = new ProjectNetworkProfileManager(project);
     }
 
     // Multi-user registry:
@@ -1151,4 +1117,46 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    private static class ProjectNetworkProfileManager extends DBWNetworkProfileManager {
+        @NotNull
+        private final DBPProject project;
+
+        public ProjectNetworkProfileManager(@NotNull DBPProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void saveSettings() {
+            project.getDataSourceRegistry().flushConfig();
+        }
+
+        @NotNull
+        @Override
+        protected DBSSecretController getSecretController() throws DBException {
+            return DBSSecretController.getProjectSecretController(project);
+        }
+
+        @NotNull
+        @Override
+        protected DBWNetworkProfileManager getParentManager() {
+            return project.getWorkspace().getPlatform().getNetworkProfiles();
+        }
+
+        @Override
+        public void removeProfile(@NotNull DBWNetworkProfile profile) {
+            super.removeProfile(profile);
+            if (project.isUseSecretStorage()) {
+                try {
+                    DBSSecretController secretController = getSecretController();
+                    secretController.setPrivateSecretValue(
+                        profile.getSecretKeyId(),
+                        null
+                    );
+                    secretController.flushChanges();
+                } catch (DBException e) {
+                    log.error("Error removing network profile secrets", e);
+                }
+            }
+        }
+    }
 }
