@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -82,7 +83,7 @@ public class DBNModel {
     }
 
     private final DBPPlatform platform;
-    private final List<? extends DBPProject> modelProjects;
+    private final DBPWorkspace modelWorkspace;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
@@ -96,11 +97,11 @@ public class DBNModel {
     /**
      * Creates navigator model.
      *
-     * @param modelProjects Model projects. If null then this is global navigator model. Otherwise it points to a session-like object.
+     * @param workspace Model workspace. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, @Nullable List<? extends DBPProject> modelProjects) {
+    public DBNModel(DBPPlatform platform, @Nullable DBPWorkspace workspace) {
         this.platform = platform;
-        this.modelProjects = modelProjects;
+        this.modelWorkspace = workspace;
     }
 
     public DBPPlatform getPlatform() {
@@ -108,8 +109,13 @@ public class DBNModel {
     }
 
     @Nullable
+    public DBPWorkspace getModelWorkspace() {
+        return modelWorkspace;
+    }
+
+    @Nullable
     public List<? extends DBPProject> getModelProjects() {
-        return modelProjects;
+        return modelWorkspace == null ? null : modelWorkspace.getProjects();
     }
 
     public SMSessionContext getModelAuthContext() {
@@ -121,7 +127,7 @@ public class DBNModel {
     }
 
     public boolean isGlobal() {
-        return modelProjects == null;
+        return modelWorkspace == null;
     }
 
     public void initialize()

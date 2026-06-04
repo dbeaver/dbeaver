@@ -294,8 +294,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     @Nullable
     public DBPProject getOwnerProjectOrNull() {
         for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
-            if (node instanceof DBNProject) {
-                return ((DBNProject) node).getProject();
+            if (node instanceof DBNProject nodeProject) {
+                return nodeProject.getProject();
             }
         }
         return null;

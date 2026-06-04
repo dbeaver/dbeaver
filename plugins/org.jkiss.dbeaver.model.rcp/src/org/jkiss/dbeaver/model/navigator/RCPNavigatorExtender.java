@@ -34,7 +34,7 @@ public class RCPNavigatorExtender implements DBNModelExtender {
             if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
                 return null;
             }
-            DBNFileSystems fsNode = new DBNFileSystems((DBNProject) parentNode) {
+            DBNFileSystems fsNode = new DBNFileSystems(parentNode) {
                 @Override
                 protected void dispose(boolean reflect) {
                     super.dispose(reflect);

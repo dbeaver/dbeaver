@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -288,5 +290,15 @@ public class DBFUtils {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public static SMSessionContext getSessionContext(@NotNull DBFFileSystemContainer fsContainer) throws DBException {
+        if (fsContainer instanceof DBPProject project) {
+            return project.getSessionContext();
+        } else if (fsContainer instanceof DBPWorkspace workspace) {
+            return workspace.getAuthContext();
+        }
+        throw new DBException("File system container '" + fsContainer + "' doesn't support session context");
     }
 }

@@ -18,30 +18,14 @@
 package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.Map;
 
 /**
- * Virtual file system provider
+ * Virtual file system container
  */
-public interface DBFFileSystemProvider extends DBPObject {
+public interface DBFFileSystemContainer extends DBPObject {
 
     @NotNull
-    Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri, @NotNull DBFVirtualFileSystem[] fileSystems) throws DBException;
+    DBFFileSystemManager getFileSystemManager();
 
-    @NotNull
-    DBFVirtualFileSystem[] getAvailableFileSystems(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBFFileSystemContainer fsContainer
-    ) throws DBException;
-
-    @NotNull
-    default Map<String, ?> prepareEnv(@NotNull Map<String, ?> env) {
-        return env;
-    }
 }
