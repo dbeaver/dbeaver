@@ -4589,8 +4589,7 @@ public abstract class LightGrid extends Canvas {
      * Returns selected rows indexes
      * @return indexes of selected rows
      */
-    public Collection<Integer> getRowSelection()
-    {
+    public Collection<Integer> getRowSelection() {
         return Collections.unmodifiableCollection(selectedRows.keySet());
     }
 
