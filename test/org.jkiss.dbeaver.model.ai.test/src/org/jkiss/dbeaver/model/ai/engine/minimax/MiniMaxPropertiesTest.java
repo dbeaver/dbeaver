@@ -44,9 +44,10 @@ public class MiniMaxPropertiesTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void defaultModelShouldBeMiniMaxM27() {
+    public void defaultModelShouldBeMiniMaxM3() {
         MiniMaxProperties props = new MiniMaxProperties();
         assertEquals(MiniMaxConstants.DEFAULT_MODEL, props.getModel());
+        assertEquals("MiniMax-M3", props.getModel());
     }
 
     @Test
@@ -112,14 +113,14 @@ public class MiniMaxPropertiesTest extends DBeaverUnitTest {
     @Test
     public void contextWindowSizeShouldDefaultFromModel() {
         MiniMaxProperties props = new MiniMaxProperties();
-        props.setModel("MiniMax-M2.7");
-        assertEquals(Integer.valueOf(204_800), props.getContextWindowSize());
+        props.setModel("MiniMax-M3");
+        assertEquals(Integer.valueOf(512_000), props.getContextWindowSize());
     }
 
     @Test
     public void contextWindowSizeCustomShouldOverrideModel() {
         MiniMaxProperties props = new MiniMaxProperties();
-        props.setModel("MiniMax-M2.7");
+        props.setModel("MiniMax-M3");
         props.setContextWindowSize(100_000);
         assertEquals(Integer.valueOf(100_000), props.getContextWindowSize());
     }

@@ -49,8 +49,8 @@ public class MiniMaxEngine extends OpenAIEngine<MiniMaxProperties> {
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
-        // Default context window size for MiniMax models
-        return 204_800;
+        // Default context window size for MiniMax models (M3 = 512K)
+        return 512_000;
     }
 
     @NotNull

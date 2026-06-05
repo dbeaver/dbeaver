@@ -23,7 +23,7 @@ public class MiniMaxConstants {
     public static final String MINIMAX_ENGINE = "minimax"; //$NON-NLS-1$
     public static final String MINIMAX_ENDPOINT = "https://api.minimax.io/v1/"; //$NON-NLS-1$
     public static final String MINIMAX_API_TOKEN = "minimax.token"; //$NON-NLS-1$
-    public static final String DEFAULT_MODEL = "MiniMax-M2.7"; //$NON-NLS-1$
+    public static final String DEFAULT_MODEL = "MiniMax-M3"; //$NON-NLS-1$
     public static final double DEFAULT_TEMPERATURE = 1.0;
 
     private MiniMaxConstants() {

@@ -36,6 +36,12 @@ public final class MiniMaxModels {
 
     public static final Map<String, AIModel> KNOWN_MODELS = AIUtils.modelMap(
         new AIModel(
+            "MiniMax-M3", //$NON-NLS-1$
+            512_000,
+            Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING),
+            MiniMaxConstants.DEFAULT_TEMPERATURE
+        ),
+        new AIModel(
             "MiniMax-M2.7", //$NON-NLS-1$
             204_800,
             Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING),

@@ -25,17 +25,18 @@ public class MiniMaxModelsTest extends DBeaverUnitTest {
 
     @Test
     public void knownModelsShouldContainExpectedModels() {
+        assertTrue(MiniMaxModels.KNOWN_MODELS.containsKey("MiniMax-M3"));
         assertTrue(MiniMaxModels.KNOWN_MODELS.containsKey("MiniMax-M2.7"));
         assertTrue(MiniMaxModels.KNOWN_MODELS.containsKey("MiniMax-M2.7-highspeed"));
-        assertEquals(2, MiniMaxModels.KNOWN_MODELS.size());
+        assertEquals(3, MiniMaxModels.KNOWN_MODELS.size());
     }
 
     @Test
     public void getModelByNameShouldReturnKnownModel() {
-        var model = MiniMaxModels.getModelByName("MiniMax-M2.7");
+        var model = MiniMaxModels.getModelByName("MiniMax-M3");
         assertTrue(model.isPresent());
-        assertEquals("MiniMax-M2.7", model.get().name());
-        assertEquals(Integer.valueOf(204_800), model.get().contextWindowSize());
+        assertEquals("MiniMax-M3", model.get().name());
+        assertEquals(Integer.valueOf(512_000), model.get().contextWindowSize());
     }
 
     @Test
@@ -52,7 +53,7 @@ public class MiniMaxModelsTest extends DBeaverUnitTest {
 
     @Test
     public void modelDefaultTemperatureShouldBeOne() {
-        var model = MiniMaxModels.getModelByName("MiniMax-M2.7");
+        var model = MiniMaxModels.getModelByName("MiniMax-M3");
         assertTrue(model.isPresent());
         assertEquals(1.0, model.get().defaultTemperature(), 0.001);
     }
