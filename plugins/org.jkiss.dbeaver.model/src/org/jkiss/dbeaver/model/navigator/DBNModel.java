@@ -393,6 +393,10 @@ public class DBNModel {
         }
         if (detectedNode instanceof DBNNodeExtension nodeExtension) {
             detectedNode = nodeExtension.resolveRealNode();
+            if (detectedNode == null) {
+                log.error("Error resolving extension node for " + nodeExtension);
+                return null;
+            }
         }
 
         if (currentLevel == nodePath.pathItems.size() - 1) {

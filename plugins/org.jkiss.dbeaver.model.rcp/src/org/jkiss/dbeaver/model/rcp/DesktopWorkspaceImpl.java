@@ -28,9 +28,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,6 +37,7 @@ import org.jkiss.dbeaver.registry.ResourceTypeDescriptor;
 import org.jkiss.dbeaver.registry.ResourceTypeRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -82,23 +80,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             if (!(activeProject instanceof DesktopProjectImpl dp)) {
                 return null;
             }
-            return adapter.cast(createResourceFromPath(dp, fsRoot, path));
+            return adapter.cast(ResourceUtils.createResourceFromPath(fsRoot, dp.getEclipseProject(), path));
         }
         return null;
-    }
-
-    @NotNull
-    private IResource createResourceFromPath(DesktopProjectImpl activeProject, DBFVirtualFileSystemRoot fsRoot, Path path) {
-        EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
-            activeProject.getEclipseProject(),
-            fsRoot,
-            fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
-        );
-        if (fsRoot.getFileSystem().isDirectory(path)) {
-            return new EFSNIOFolder(root, path);
-        } else {
-            return new EFSNIOFile(root, path);
-        }
     }
 
     private void loadExtensions(@NotNull IExtensionRegistry registry) {
