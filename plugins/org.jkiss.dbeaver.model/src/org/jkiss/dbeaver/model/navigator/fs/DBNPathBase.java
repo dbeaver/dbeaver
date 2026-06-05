@@ -239,7 +239,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return getParentNode().supportsDrop(otherNode);
         }
 
-        if (getOwnerProjectOrNull() instanceof DBFResourceAdapter rm) {
+        if (getOwnerResourceAdapter() != null) {
             // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
             return (otherNode.getAdapter(Path.class) != null || (otherNode instanceof DBNStreamData source && source.supportsStreamData()))
                 && otherNode != this
@@ -428,6 +428,15 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return getPath() != null && Files.exists(getPath());
     }
 
+    @Nullable
+    public DBFResourceAdapter getOwnerResourceAdapter() {
+        DBPObject owner = getOwnerProjectOrNull();
+        if (owner == null) {
+            owner = getOwnerWorkspace();
+        }
+        return owner instanceof DBFResourceAdapter ra ? ra : null;
+    }
+
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == Path.class) {
@@ -436,11 +445,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         // Try to get resource adapter from parent (project or workspace)
         DBNFileSystemRoot rootNode = getFileSystemRoot();
         if (rootNode != null) {
-            DBPObject rm = getOwnerProjectOrNull();
-            if (rm == null) {
-                rm = getOwnerWorkspace();
-            }
-            if (rm instanceof DBFResourceAdapter ra) {
+            DBFResourceAdapter ra = getOwnerResourceAdapter();
+            if (ra != null) {
                 T result = ra.adaptResource(rootNode.getRoot(), getPath(), adapter);
                 if (result != null) {
                     return result;
