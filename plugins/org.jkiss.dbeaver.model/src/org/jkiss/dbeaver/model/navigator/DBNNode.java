@@ -360,8 +360,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         List<DBXTreeNode> children = meta.getChildren(node);
         if (!CommonUtils.isEmpty(children)) {
             for (DBXTreeNode child : children) {
-                if (child instanceof DBXTreeFolder) {
-                    Class<? extends DBSObject> childrenClass = DBNNode.getFolderChildrenClass((DBXTreeFolder) child);
+                if (child instanceof DBXTreeFolder tf) {
+                    Class<? extends DBSObject> childrenClass = DBNNode.getFolderChildrenClass(tf);
                     if (childrenClass != null && DBSObjectContainer.class.isAssignableFrom(childrenClass)) {
                         return true;
                     }

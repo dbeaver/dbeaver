@@ -63,20 +63,16 @@ public class DBNModel {
     public static final String FAKE_RESOURCE_ROOT_NODE = "resources";
     private static final Log log = Log.getLog(DBNModel.class);
 
-    public static class NodePath {
+    private static class NodePath {
         final List<String> pathItems;
 
         NodePath(@NotNull List<String> pathItems) {
             this.pathItems = pathItems;
         }
 
-        public String first() {
-            return pathItems.isEmpty() ? null : pathItems.getFirst();
-        }
-
         @Override
         public String toString() {
-            return DBNNode.NODE_URI_PREFIX + pathItems.toString();
+            return DBNNode.NODE_URI_PREFIX + pathItems;
         }
     }
 
@@ -97,11 +93,12 @@ public class DBNModel {
      *
      * @param workspace Model workspace. If null then this is global navigator model. Otherwise it points to a session-like object.
      */
-    public DBNModel(DBPPlatform platform, @Nullable DBPWorkspace workspace) {
+    public DBNModel(@NotNull DBPPlatform platform, @Nullable DBPWorkspace workspace) {
         this.platform = platform;
         this.modelWorkspace = workspace;
     }
 
+    @NotNull
     public DBPPlatform getPlatform() {
         return platform;
     }
@@ -128,8 +125,7 @@ public class DBNModel {
         return modelWorkspace == null;
     }
 
-    public void initialize()
-    {
+    public void initialize() {
         if (this.root != null) {
             throw new IllegalStateException("Can't initialize navigator model more than once");
         }
@@ -163,6 +159,7 @@ public class DBNModel {
         }
     }
 
+    @NotNull
     public DBNRoot getRoot()
     {
         return root;
@@ -173,8 +170,7 @@ public class DBNModel {
     }
 
     @Nullable
-    public DBNDatabaseNode findNode(DBSObject object)
-    {
+    public DBNDatabaseNode findNode(@NotNull DBSObject object) {
         if (object instanceof DBNDatabaseNode) {
             return (DBNDatabaseNode)object;
         } else {
@@ -183,8 +179,7 @@ public class DBNModel {
     }
 
     @Nullable
-    public DBNDatabaseNode getNodeByObject(DBSObject object)
-    {
+    public DBNDatabaseNode getNodeByObject(@NotNull DBSObject object) {
         if (object instanceof DBNDatabaseNode) {
             return (DBNDatabaseNode)object;
         }
@@ -196,8 +191,8 @@ public class DBNModel {
         }
         if (obj == null) {
             return null;
-        } else if (obj instanceof DBNDatabaseNode) {
-            return (DBNDatabaseNode)obj;
+        } else if (obj instanceof DBNDatabaseNode dbNode) {
+            return dbNode;
         } else if (obj instanceof List) {
             @SuppressWarnings("unchecked")
             List<DBNDatabaseNode> nodeList = (List<DBNDatabaseNode>) obj;
@@ -217,20 +212,13 @@ public class DBNModel {
             // Never be here
             throw new IllegalStateException();
         }
-/*
-        if (node == null) {
-            log.warn("Can't find tree node for object " + object.getName() + " (" + object.getClass().getName() + ")");
-        }
-        return node;
-*/
     }
 
     @Nullable
-    public DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered)
-    {
-        if (object instanceof DBSEntity) {
+    public DBNDatabaseNode getNodeByObject(@NotNull DBRProgressMonitor monitor, @Nullable DBSObject object, boolean addFiltered) {
+        if (object instanceof DBSEntity entity) {
             try {
-                object = DBVUtils.getRealEntity(monitor, (DBSEntity)object);
+                object = DBVUtils.getRealEntity(monitor, entity);
             } catch (DBException e) {
                 log.debug("Error dereferencing virtual entity", e);
             }
@@ -262,7 +250,7 @@ public class DBNModel {
 
     @NotNull
     private static NodePath getNodePath(@NotNull String path) {
-        final String prefix = DBNNode.NODE_URI_PREFIX;
+        String prefix = DBNNode.NODE_URI_PREFIX;
         if (path.startsWith(prefix)) {
             path = path.substring(prefix.length());
         }
@@ -348,6 +336,7 @@ public class DBNModel {
         return findNodeByPath(monitor, projectNode, nodePath, nodeLevel);
     }
 
+    @Nullable
     private DBNNode findNodeByPath(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBNNode currentNode,
@@ -398,8 +387,12 @@ public class DBNModel {
     }
 
 
-    private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered) throws DBException
-    {
+    private boolean cacheNodeChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNDatabaseNode node,
+        @NotNull DBSObject objectToCache,
+        boolean addFiltered
+    ) throws DBException {
         DBNDatabaseNode[] children = node.getChildren(monitor);
         boolean cached = false;
         if (!ArrayUtils.isEmpty(children)) {
@@ -428,7 +421,7 @@ public class DBNModel {
     }
 
     @Nullable
-    public DBNDatabaseNode getParentNode(DBSObject object) {
+    public DBNDatabaseNode getParentNode(@NotNull DBSObject object) {
         DBNDatabaseNode node = getNodeByObject(object);
         if (node != null) {
             if (node.getParentNode() instanceof DBNDatabaseNode) {
@@ -477,24 +470,24 @@ public class DBNModel {
         return null;
     }
 
-    void addNode(DBNDatabaseNode node)
+    void addNode(@NotNull DBNDatabaseNode node)
     {
         addNode(node, false);
     }
 
-    void addNode(DBNDatabaseNode node, boolean reflect) {
+    void addNode(@NotNull DBNDatabaseNode node, boolean reflect) {
         synchronized (nodeMap) {
             Object obj = nodeMap.get(node.getObject());
             if (obj == null) {
                 // New node
                 nodeMap.put(node.getObject(), node);
-            } else if (obj instanceof DBNNode) {
+            } else if (obj instanceof DBNNode no) {
                 // Second node - make a list
                 List<DBNNode> nodeList = new ArrayList<>(2);
-                nodeList.add((DBNNode)obj);
+                nodeList.add(no);
                 nodeList.add(node);
                 nodeMap.put(node.getObject(), nodeList);
-            } else if (obj instanceof List) {
+            } else if (obj instanceof List<?>) {
                 // Multiple nodes
                 @SuppressWarnings("unchecked")
                 List<DBNNode> nodeList = (List<DBNNode>) obj;
@@ -506,7 +499,7 @@ public class DBNModel {
         }
     }
 
-    void removeNode(DBNDatabaseNode node, boolean reflect) {
+    void removeNode(@NotNull DBNDatabaseNode node, boolean reflect) {
         boolean badNode = false;
         synchronized (nodeMap) {
             Object obj = nodeMap.get(node.getObject());
@@ -539,7 +532,7 @@ public class DBNModel {
         }
     }
 
-    public void addListener(INavigatorListener listener) {
+    public void addListener(@NotNull INavigatorListener listener) {
         synchronized (this.listeners) {
             if (this.listeners.contains(listener)) {
                 log.warn("Listener " + listener + " already registered in model");
@@ -550,7 +543,7 @@ public class DBNModel {
         }
     }
 
-    public void removeListener(INavigatorListener listener) {
+    public void removeListener(@NotNull INavigatorListener listener) {
         synchronized (this.listeners) {
             if (!this.listeners.remove(listener)) {
                 log.warn("Listener " + listener + " wasn't registered in model");
@@ -559,11 +552,11 @@ public class DBNModel {
         }
     }
 
-    public void fireNodeUpdate(Object source, DBNNode node, DBNEvent.NodeChange nodeChange) {
+    public void fireNodeUpdate(@NotNull Object source, @NotNull DBNNode node, @NotNull DBNEvent.NodeChange nodeChange) {
         this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, nodeChange, node));
     }
 
-    public void fireNodeEvent(final DBNEvent event) {
+    public void fireNodeEvent(@NotNull DBNEvent event) {
         if (!isGlobal() || platform.isShuttingDown()) {
             return;
         }
@@ -572,7 +565,8 @@ public class DBNModel {
         }
     }
 
-    public static synchronized DBPImage getStateOverlayImage(DBPImage image, DBSObjectState state) {
+    @NotNull
+    public static synchronized DBPImage getStateOverlayImage(@NotNull DBPImage image, @Nullable DBSObjectState state) {
         if (state == null) {
             // Empty state
             return image;
@@ -582,14 +576,14 @@ public class DBNModel {
             // No overlay
             return image;
         }
-        if (image instanceof DBIconComposite) {
-            ((DBIconComposite) image).setBottomRight(overlayImage);
+        if (image instanceof DBIconComposite ic) {
+            ic.setBottomRight(overlayImage);
             return image;
         }
         return new DBIconComposite(image, false, null, null, null, overlayImage);
     }
 
-    public static void updateConfigAndRefreshDatabases(DBNNode node) {
+    public static void updateConfigAndRefreshDatabases(@NotNull DBNNode node) {
         for (DBNNode parentNode = node; parentNode != null; parentNode = parentNode.getParentNode()) {
             if (parentNode instanceof DBNProjectDatabases projectDatabases) {
                 projectDatabases.getDataSourceRegistry().flushConfig();
@@ -599,18 +593,18 @@ public class DBNModel {
         }
     }
 
-    public void ensureProjectLoaded(DBPProject project) {
+    public void ensureProjectLoaded(@NotNull DBPProject project) {
         DBNProject projectNode = root == null ? null : root.getProjectNode(project);
         if (projectNode != null) {
             projectNode.getDatabases();
         }
     }
 
-    public void addFilter(Function<DBNNode, Boolean> filter) {
+    public void addFilter(@NotNull Function<DBNNode, Boolean> filter) {
         nodeFilters.add(filter);
     }
 
-    boolean isNodeVisible(DBNNode node) {
+    boolean isNodeVisible(@NotNull DBNNode node) {
         if (!nodeFilters.isEmpty()) {
             for (Function<DBNNode, Boolean> f : nodeFilters) {
                 if (!f.apply(node)) {
