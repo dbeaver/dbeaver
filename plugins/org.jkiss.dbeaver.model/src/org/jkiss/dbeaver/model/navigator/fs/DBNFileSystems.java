@@ -171,9 +171,6 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
                 fsContainer = DBWorkbench.getPlatform().getWorkspace();
             }
         }
-        if (fsContainer == null) {
-            throw new DBException("No file system container found");
-        }
         DBFFileSystemManager fileSystemManager = fsContainer.getFileSystemManager();
 
         for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems(monitor)) {
@@ -283,11 +280,6 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
             }
             children = null;
         }
-    }
-
-    @Override
-    public boolean supportsRename() {
-        return false;
     }
 
     @Override
