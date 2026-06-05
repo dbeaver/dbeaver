@@ -462,9 +462,9 @@
                         description="%driver.cockroach.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.11]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql-cockroach-jdbc"/>
                     <file type="license" path="licenses/external/pg.txt"/>
-                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql-cockroach-jdbc" bundle="drivers.postgresql-cockroach-jdbc"/>
                     <parameter name="serverType" value="cockroach"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
