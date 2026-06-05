@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,8 +102,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
             return null;
         }
         DBXTreeNode childNode = metaChildren.getFirst();
-        if (childNode instanceof DBXTreeItem) {
-            return getChildrenClass((DBXTreeItem) childNode);
+        if (childNode instanceof DBXTreeItem ti) {
+            return getChildrenClass(ti);
         }
         return null;
     }
@@ -164,9 +164,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         if (USE_ICON_DECORATIONS) {
             boolean hasNetworkHandlers = hasNetworkHandlers();
             if (dataSource.isConnectionReadOnly() || hasNetworkHandlers) {
-                if (image instanceof DBIconComposite) {
-                    ((DBIconComposite) image).setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
-                    ((DBIconComposite) image).setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
+                if (image instanceof DBIconComposite ic) {
+                    ic.setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
+                    ic.setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
                 } else {
                     image = new DBIconComposite(
                         image,
@@ -242,12 +242,12 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
-            if (node instanceof DBNDataSource) {
-                if (!((DBNDataSource) node).moveToFolder(getOwnerProject(), folder)) {
+            if (node instanceof DBNDataSource dsNode) {
+                if (!dsNode.moveToFolder(getOwnerProject(), folder)) {
                     return;
                 }
-            } else if (node instanceof DBNLocalFolder) {
-                ((DBNLocalFolder) node).getFolder().setParent(dataSource.getFolder());
+            } else if (node instanceof DBNLocalFolder lfNode) {
+                lfNode.getFolder().setParent(dataSource.getFolder());
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);
@@ -287,16 +287,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
 
     public static DBNDataSource getDataSourceNode(DBNNode node) {
         for (DBNNode pn = node; pn != null; pn = pn.getParentNode()) {
-            if (pn instanceof DBNDataSource) {
-                return (DBNDataSource) pn;
+            if (pn instanceof DBNDataSource dsNode) {
+                return dsNode;
             }
         }
         return null;
-    }
-
-    @NotNull
-    public static String makeDataSourceItemPath(DBPDataSourceContainer dataSource) {
-        return NodePathType.database.getPrefix() + DBNUtils.encodeNodePath(dataSource.getId());
     }
 
 }
