@@ -62,13 +62,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     @NotNull
     @Override
     public String getNodeType() {
-        return NodePathType.dbvfs.name();
+        return DBFUtils.DBVFS_NODE_TYPE;
     }
 
     @NotNull
     @Override
     public String getNodeId() {
-        return NodePathType.dbvfs.name();
+        return DBFUtils.DBVFS_NODE_TYPE;
     }
 
     @NotNull
@@ -87,7 +87,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     @NotNull
     @Override
     public String getName() {
-        return NodePathType.dbvfs.name();
+        return DBFUtils.DBVFS_NODE_TYPE;
     }
 
     @Nullable

@@ -54,6 +54,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DBFUtils {
 
     private static final Log log = Log.getLog(DBFUtils.class);
+
+    public static final String DBVFS_NODE_TYPE = "dbvfs";
     public static final String PRODUCT_FEATURE_MULTI_FS = "multi-fs";
     private static final String FILE_DATABASES_FOLDER = "File databases";
 

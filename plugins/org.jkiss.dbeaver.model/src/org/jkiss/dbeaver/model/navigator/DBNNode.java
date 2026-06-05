@@ -41,17 +41,7 @@ import java.util.List;
 public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPObjectWithDescription, DBPPersistedObject, DBPAdaptable {
     static final Log log = Log.getLog(DBNNode.class);
 
-    public enum NodePathType {
-        resource,
-        dbvfs,
-        folder,
-        database,
-        ext, other, node;
-
-        public String getPrefix() {
-            return name() + "://";
-        }
-    }
+    public static final String NODE_URI_PREFIX= "node://";
 
     protected final DBNNode parentNode;
 
@@ -285,7 +275,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             }
         }
 
-        return NodePathType.node.getPrefix() + pathBuilder;
+        return DBNNode.NODE_URI_PREFIX + pathBuilder;
     }
 
     @Override

@@ -64,11 +64,9 @@ public class DBNModel {
     private static final Log log = Log.getLog(DBNModel.class);
 
     public static class NodePath {
-        DBNNode.NodePathType type;
-        List<String> pathItems;
+        final List<String> pathItems;
 
-        NodePath(DBNNode.NodePathType type, List<String> pathItems) {
-            this.type = type;
+        NodePath(@NotNull List<String> pathItems) {
             this.pathItems = pathItems;
         }
 
@@ -78,7 +76,7 @@ public class DBNModel {
 
         @Override
         public String toString() {
-            return type.getPrefix() + pathItems.toString();
+            return DBNNode.NODE_URI_PREFIX + pathItems.toString();
         }
     }
 
@@ -264,18 +262,14 @@ public class DBNModel {
 
     @NotNull
     private static NodePath getNodePath(@NotNull String path) {
-        DBNNode.NodePathType nodeType = DBNNode.NodePathType.other;
-        for (DBNNode.NodePathType type : DBNNode.NodePathType.values()) {
-            final String prefix = type.getPrefix();
-            if (path.startsWith(prefix)) {
-                path = path.substring(prefix.length());
-                nodeType = type;
-                break;
-            }
+        final String prefix = DBNNode.NODE_URI_PREFIX;
+        if (path.startsWith(prefix)) {
+            path = path.substring(prefix.length());
         }
+
         final List<String> items = CommonUtils.splitString(path, '/');
         items.replaceAll(DBNUtils::decodeNodePath);
-        return new NodePath(nodeType, items);
+        return new NodePath(items);
     }
 
     @Nullable
@@ -328,12 +322,9 @@ public class DBNModel {
             return null;
         }
         NodePath path = getNodePath(relativePath);
-        if (path.type == DBNNode.NodePathType.other) {
-            return projectNode.getNodeUri() + '/' + path.pathItems.stream()
-                .map(DBNUtils::encodeNodePath)
-                .collect(Collectors.joining("/"));
-        }
-        return null;
+        return projectNode.getNodeUri() + '/' + path.pathItems.stream()
+            .map(DBNUtils::encodeNodePath)
+            .collect(Collectors.joining("/"));
     }
 
     @Nullable

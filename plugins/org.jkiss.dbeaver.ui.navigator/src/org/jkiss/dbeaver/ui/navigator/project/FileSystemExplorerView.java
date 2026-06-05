@@ -77,6 +77,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
         return super.getRootNode();
     }
 
+    @NotNull
     @Override
     protected DBNNode getDefaultRootNode() {
         DBNFileSystems fsRootNode = getFileSystemsNode();

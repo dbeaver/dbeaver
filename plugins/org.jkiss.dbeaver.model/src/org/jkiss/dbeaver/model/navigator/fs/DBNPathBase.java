@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -75,7 +76,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     @NotNull
     @Override
     public String getNodeType() {
-        return NodePathType.dbvfs.name() + ".path";
+        return DBFUtils.DBVFS_NODE_TYPE + ".path";
     }
 
     @NotNull
