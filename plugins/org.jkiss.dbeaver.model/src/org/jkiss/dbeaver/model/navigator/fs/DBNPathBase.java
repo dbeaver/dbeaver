@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -94,7 +95,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     @Nullable
     @Override
     public DBPImage getNodeIcon() {
-        return getOwnerProject().getWorkspace().getResourceIcon(this);
+        return getOwnerWorkspace().getResourceIcon(this);
     }
 
     @Override
@@ -238,7 +239,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return getParentNode().supportsDrop(otherNode);
         }
 
-        if (getOwnerProject() instanceof DBFResourceAdapter rm) {
+        if (getOwnerProjectOrNull() instanceof DBFResourceAdapter rm) {
             // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
             return (otherNode.getAdapter(Path.class) != null || (otherNode instanceof DBNStreamData source && source.supportsStreamData()))
                 && otherNode != this
@@ -432,11 +433,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         }
+        // Try to get resource adapter from parent (project or workspace)
         DBNFileSystemRoot rootNode = getFileSystemRoot();
-        if (rootNode != null && getOwnerProject() instanceof DBFResourceAdapter rm) {
-            T result = rm.adaptResource(rootNode.getRoot(), getPath(), adapter);
-            if (result != null) {
-                return result;
+        if (rootNode != null) {
+            DBPObject rm = getOwnerProjectOrNull();
+            if (rm == null) {
+                rm = getOwnerWorkspace();
+            }
+            if (rm instanceof DBFResourceAdapter ra) {
+                T result = ra.adaptResource(rootNode.getRoot(), getPath(), adapter);
+                if (result != null) {
+                    return result;
+                }
             }
         }
         return super.getAdapter(adapter);

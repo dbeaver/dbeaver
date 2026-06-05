@@ -22,11 +22,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -299,6 +301,19 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             }
         }
         return null;
+    }
+
+    @NotNull
+    public DBPWorkspace getOwnerWorkspace() {
+        DBPProject project = getOwnerProjectOrNull();
+        if (project != null) {
+            return project.getWorkspace();
+        }
+        DBPWorkspace modelWorkspace = getModel().getModelWorkspace();
+        if (modelWorkspace != null) {
+            return modelWorkspace;
+        }
+        return DBWorkbench.getPlatform().getWorkspace();
     }
 
     @NotNull
