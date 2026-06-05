@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeWithCache;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
@@ -165,6 +166,10 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         if (fsContainer == null) {
             // Root - use workspace
             fsContainer = getModel().getModelWorkspace();
+            if (fsContainer == null) {
+                // Global workspace
+                fsContainer = DBWorkbench.getPlatform().getWorkspace();
+            }
         }
         if (fsContainer == null) {
             throw new DBException("No file system container found");

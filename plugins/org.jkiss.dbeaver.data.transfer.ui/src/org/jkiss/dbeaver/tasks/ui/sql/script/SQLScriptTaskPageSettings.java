@@ -502,7 +502,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                     selectedScripts.add(resource);
                 } else {
-                    DBNFileSystems fsNode = projectNode.getExtraNode(DBNFileSystems.class);
+                    DBNFileSystems fsNode = project.getNavigatorModel().getRoot().getExtraNode(DBNFileSystems.class);
                     if (fsNode != null) {
                         DBNPathBase pathNode = fsNode.findNodeByPath(monitor, filePath);
                         if (pathNode != null) {

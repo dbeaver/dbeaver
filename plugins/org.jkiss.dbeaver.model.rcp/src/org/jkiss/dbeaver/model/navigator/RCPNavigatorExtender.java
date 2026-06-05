@@ -30,7 +30,7 @@ public class RCPNavigatorExtender implements DBNModelExtender {
     @Nullable
     @Override
     public DBNNode createNode(@NotNull DBNNode parentNode) {
-        if (parentNode instanceof DBNProject) {
+        if (parentNode instanceof DBNRoot) {
             if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
                 return null;
             }
