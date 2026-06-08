@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
@@ -36,6 +36,7 @@ public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
     @NotNull
     private static Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
+            .margins(10, 10)
             .row(rb -> rb
                 .label(lb -> lb
                     .text("To improve user experience and product performance, "

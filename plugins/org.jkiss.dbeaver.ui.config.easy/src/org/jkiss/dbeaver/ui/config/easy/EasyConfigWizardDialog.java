@@ -27,7 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
@@ -55,7 +55,7 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     @NotNull
     @Override
     protected Point getInitialSize() {
-        return new Point(700, 500);
+        return new Point(550, 400);
     }
 
     @Override

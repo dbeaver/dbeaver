@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 
-abstract class EasyConfigWizardPage extends WizardPage {
+public abstract class EasyConfigWizardPage extends WizardPage {
     public EasyConfigWizardPage(@NotNull String title, @NotNull String description) {
         super(title);
         setTitle(title);

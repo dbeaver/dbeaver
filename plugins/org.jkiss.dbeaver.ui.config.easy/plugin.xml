@@ -2,4 +2,14 @@
 <?eclipse version="3.2"?>
 <plugin>
 
+   <extension-point id="org.jkiss.dbeaver.ui.easyConfig" name="%extension-point.org.jkiss.dbeaver.ui.easyConfig.name" schema="schema/org.jkiss.dbeaver.ui.easyConfig.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.ui.easyConfig">
+       <page id="welcome" order="1000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWelcomePage"/>
+       <page id="appearance" order="2000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigAppearancePage"/>
+       <page id="features" order="3000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigFeaturesPage"/>
+       <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigDataCollectionPage"/>
+       <page id="sampleDatabase" order="5000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigSampleDatabasePage"/>
+   </extension>
+
 </plugin>

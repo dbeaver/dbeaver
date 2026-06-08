@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
@@ -37,9 +37,10 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
     @NotNull
     private static Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
+            .margins(10, 10)
             .row(rb -> rb.label("Choose which theme you want to use:"))
             .indent(pb1 -> pb1
-                .row(rb -> rb.radioButton("Light", UIObservable.of(false)))
+                .row(rb -> rb.radioButton("Light", UIObservable.of(true)))
                 .row(rb -> rb.radioButton("Dark", UIObservable.of(false)))
                 .row(rb -> rb.radioButton("Classic", UIObservable.of(false))));
     }

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
@@ -35,6 +35,8 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildPanel() {
-        return pb -> pb.row(rb -> rb.label("Placeholder"));
+        return pb -> pb
+            .margins(10, 10)
+            .row(rb -> rb.label("Placeholder"));
     }
 }
