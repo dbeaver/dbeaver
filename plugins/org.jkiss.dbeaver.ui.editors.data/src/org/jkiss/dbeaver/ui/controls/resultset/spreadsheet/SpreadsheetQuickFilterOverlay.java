@@ -78,6 +78,36 @@ public class SpreadsheetQuickFilterOverlay {
     private static final String HISTORY_SETTINGS_SECTION_NAME
         = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheetQuickFilterHistory"; //$NON-NLS-1$
 
+    @NotNull
+    private final SpreadsheetPresentation spreadsheetPresentation;
+    @NotNull
+    private final KeyListener spreadsheetKeyListener;
+    @NotNull
+    private final ControlListener spreadsheetControlListener;
+    @NotNull
+    private final ISelectionChangedListener spreadsheetSelectionListener;
+    @NotNull
+    private final Composite overlayContainer;
+    @NotNull
+    private final HistoryTextWrapper searchBar;
+    @NotNull
+    private final ToolBar tbarSearchTools;
+    @NotNull
+    private final ToolItem chkWholeWord;
+    @NotNull
+    private final ToolItem chkCaseSensitive;
+    @NotNull
+    private final ToolItem chkRegex;
+    @NotNull
+    private final ToolBar tbarCloseButton;
+
+    @NotNull
+    private final ColorInfo colors;
+
+    @NotNull
+    private final ControlDecoration searchBarDecoration;
+
+    private boolean positionAtTop = true;
 
     private record LocalCommandInfo(
         int toolItemStyle,
@@ -171,37 +201,6 @@ public class SpreadsheetQuickFilterOverlay {
         Color errorTextForeground
     ) {
     }
-
-    @NotNull
-    private final SpreadsheetPresentation spreadsheetPresentation;
-    @NotNull
-    private final KeyListener spreadsheetKeyListener;
-    @NotNull
-    private final ControlListener spreadsheetControlListener;
-    @NotNull
-    private final ISelectionChangedListener spreadsheetSelectionListener;
-    @NotNull
-    private final Composite overlayContainer;
-    @NotNull
-    private final HistoryTextWrapper searchBar;
-    @NotNull
-    private final ToolBar tbarSearchTools;
-    @NotNull
-    private final ToolItem chkWholeWord;
-    @NotNull
-    private final ToolItem chkCaseSensitive;
-    @NotNull
-    private final ToolItem chkRegex;
-    @NotNull
-    private final ToolBar tbarCloseButton;
-
-    @NotNull
-    private final ColorInfo colors;
-
-    @NotNull
-    private final ControlDecoration searchBarDecoration;
-
-    private boolean positionAtTop = true;
 
     public SpreadsheetQuickFilterOverlay(@NotNull SpreadsheetPresentation presentation) {
         this.spreadsheetPresentation = presentation;

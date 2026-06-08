@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 public class SpreadsheetQuickFilter {
 
+    // Keep this as private fields for debugging purposes
     @NotNull
     private final String text;
     private final boolean caseSensitive;
