@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -125,7 +126,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             DBWorkbench.getPlatformUI()
                 .showWarningMessageBox(
                     ResultSetMessages.dialog_value_view_error_parsing_date_title,
-                    ResultSetMessages.dialog_value_view_error_parsing_date_message
+                    NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, e.getMessage())
                 );
         }
     }
