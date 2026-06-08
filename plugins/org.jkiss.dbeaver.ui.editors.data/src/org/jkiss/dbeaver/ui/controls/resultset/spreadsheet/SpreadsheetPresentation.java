@@ -2023,9 +2023,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 } else {
                     int[] selectedRecords = controller.getSelectedRecords();
                     List<Object> rows = new ArrayList<>(selectedRecords.length);
-                    for (int i = 0; i < selectedRecords.length; i++) {
-                        if (selectedRecords[i] < controller.getModel().getRowCount()) {
-                            rows.add(controller.getModel().getRow(selectedRecords[i]));
+                    for (int selectedRecord : selectedRecords) {
+                        if (selectedRecord < controller.getModel().getRowCount()) {
+                            rows.add(controller.getModel().getRow(selectedRecord));
                         }
                     }
                     return rows.toArray();
