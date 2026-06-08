@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,7 +215,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         };
     }
 
-    public void setTargetName(String targetName) {
+    public void setTargetName(@NotNull String targetName) {
         this.targetName = targetName;
     }
 
@@ -375,6 +375,6 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         if (container instanceof DBSSchema || container instanceof DBSCatalog) {
             return DBUtils.getObjectFullName(container, DBPEvaluationContext.DML) + "." + targetName;
         }
-        return targetName;
+        return getTargetName();
     }
 }
