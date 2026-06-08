@@ -1137,11 +1137,6 @@ public class DatabaseTransferUtils {
         targetForeignKey.setDeleteRule(migrationInfo.deleteRule);
         targetForeignKey.setUpdateRule(migrationInfo.updateRule);
 
-        List<DBSEntityAttributeRef> ownReferences = new ArrayList<>(migrationInfo.ownAttributes.size());
-        for (DBSEntityAttribute ownAttribute : migrationInfo.ownAttributes) {
-            ownReferences.add(new SimpleEntityAttributeRef(ownAttribute));
-        }
-        targetConstraint.setAttributeReferences((List) ownReferences);
         if (CommonUtils.isEmpty(targetForeignKey.getAttributeReferences(monitor))) {
             return null;
         }

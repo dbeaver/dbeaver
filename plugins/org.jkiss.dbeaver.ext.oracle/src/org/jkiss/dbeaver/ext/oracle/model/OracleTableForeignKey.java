@@ -146,7 +146,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     }
 
     @Override
-    public void setUpdateRule(@NotNull DBSForeignKeyModifyRule deleteRule) {
+    public void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {
         // Update rule is not supported by Oracle
     }
 

@@ -663,6 +663,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 var contextDefaults = session.getExecutionContext().getContextDefaults();
                 if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
                     oldCatalog = contextDefaults.getDefaultCatalog();
+                    oldSchema = contextDefaults.getDefaultSchema();
                     try {
                         contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
                     } catch (DBCException e) {
@@ -730,6 +731,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 var contextDefaults = session.getExecutionContext().getContextDefaults();
                 if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
                     oldCatalog = contextDefaults.getDefaultCatalog();
+                    oldSchema = contextDefaults.getDefaultSchema();
                     try {
                         contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
                     } catch (DBCException e) {
