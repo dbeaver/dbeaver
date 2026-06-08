@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(OracleTableColumn column, Map<String, Object> options) {
         return new ColumnModifier[] {OracleDataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
     }
@@ -93,8 +94,8 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     protected OracleTableColumn createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        Object container,
-        Object copyFrom,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
         OracleTableBase table = (OracleTableBase) container;

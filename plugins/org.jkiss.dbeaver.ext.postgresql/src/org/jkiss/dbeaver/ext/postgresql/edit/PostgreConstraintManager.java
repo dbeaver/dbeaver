@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableConstraintBase<?>, PostgreTableBase> implements DBEObjectRenamer<PostgreTableConstraintBase<?>> {
 
     @Override
-    public boolean canRenameObject(PostgreTableConstraintBase<?> object) {
+    public boolean canRenameObject(@NotNull PostgreTableConstraintBase<?> object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
@@ -61,15 +61,20 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     protected PostgreTableConstraintBase<?> createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        final Object container,
-        Object from,
+        @NotNull Object container,
+        @Nullable Object from,
         @NotNull Map<String, Object> options)
     {
         return new PostgreTableConstraint((PostgreTableBase) container, "NewConstraint", DBSEntityConstraintType.UNIQUE_KEY);
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, PostgreTableBase owner, DBECommandAbstract<PostgreTableConstraintBase<?>> command, Map<String, Object> options) {
+    public StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase owner,
+        @NotNull DBECommandAbstract<PostgreTableConstraintBase<?>> command,
+        @NotNull Map<String, Object> options
+    ) {
         PostgreTableConstraintBase<?> constr = command.getObject();
         if (constr.isPersisted()) {
             try {

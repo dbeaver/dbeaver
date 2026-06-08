@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
 import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -39,7 +41,7 @@ import org.jkiss.utils.CommonUtils;
 public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
     @Override
-    public boolean isEnabledFor(INavigatorModelView view, DBNNode node) {
+    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             return dbnDataSource.hasNetworkHandlers();
         }
@@ -47,12 +49,14 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     }
 
     @Override
-    public DBPImage getNodeActionIcon(INavigatorModelView view, DBNNode node) {
+    @Nullable
+    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         return UIIcon.BUTTON_TUNNEL;
     }
 
     @Override
-    public String getNodeActionToolTip(INavigatorModelView view, DBNNode node) {
+    @Nullable
+    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
         StringBuilder tip = new StringBuilder("Network handlers enabled:");
         for (DBWHandlerConfiguration handler : DBWUtils.getActualNetworkHandlers(((DBNDataSource) node).getDataSourceContainer())) {
             if (handler.isEnabled()) {
@@ -67,7 +71,7 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     }
 
     @Override
-    public void handleNodeAction(INavigatorModelView view, DBNNode node, Event event, boolean defaultAction) {
+    public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
         if (node instanceof DBNDatabaseNode) {
             DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
 

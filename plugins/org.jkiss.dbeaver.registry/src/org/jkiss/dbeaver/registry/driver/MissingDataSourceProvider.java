@@ -47,8 +47,11 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider<DBPDataS
 
     @NotNull
     @Override
-    public DBPPropertyDescriptor[] getConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver, @NotNull
-    DBPConnectionConfiguration connectionInfo) throws DBException {
+    public DBPPropertyDescriptor[] getConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException {
         return new DBPPropertyDescriptor[0];
     }
 
@@ -60,7 +63,10 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider<DBPDataS
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+    public DBPDataSource openDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         throw new DBException("Error: invalid datasource configuration:\n"
                 + "The specified driver '" + container.getDriver().getFullName() + "' could not be found.\n"
                 + "This error may occur if the configuration was created in a different edition of DBeaver.");

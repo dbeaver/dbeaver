@@ -146,7 +146,11 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
 
     @Nullable
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
+    public DBDValueHandler getValueHandler(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDFormatSettings preferences,
+        @NotNull DBSTypedObject typedObject
+    ) {
         if ("JSON".equals(typedObject.getTypeName())) {
             return JDBCContentValueHandler.INSTANCE;
         }
