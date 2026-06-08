@@ -321,6 +321,21 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parseDoubleCurlyVariables() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("{{" + p + "}}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("aBc", "PrE#%&@T", "a@c="), actualParamNames);
+    }
+
+    @Test
     public void parseVariablesInStrings() throws DBException {
         List<String> inputParamNames = List.of("aBc", "PrET", "ac");
         StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
@@ -336,10 +351,40 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parseDoubleCurlyVariablesInStrings() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
+        inputParamNames.stream().forEach(p -> joiner.add("'{{" + p + "}}'"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+    }
+
+    @Test
     public void parseVariablesInComment() throws DBException {
         List<String> inputParamNames = List.of("aBc", "PrET", "ac");
         StringJoiner joiner = new StringJoiner(", ", "-- ", " ");
         inputParamNames.stream().forEach(p -> joiner.add("${" + p + "}"));
+        String query = joiner.toString();
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        List<String> actualParamNames = new ArrayList<String>();
+        for (SQLQueryParameter sqlQueryParameter : params) {
+            actualParamNames.add(sqlQueryParameter.getName());
+        }
+        Assert.assertEquals(List.of("aBc", "PrET", "ac"), actualParamNames);
+    }
+
+    @Test
+    public void parseDoubleCurlyVariablesInComment() throws DBException {
+        List<String> inputParamNames = List.of("aBc", "PrET", "ac");
+        StringJoiner joiner = new StringJoiner(", ", "-- ", " ");
+        inputParamNames.stream().forEach(p -> joiner.add("{{" + p + "}}"));
         String query = joiner.toString();
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
         List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());

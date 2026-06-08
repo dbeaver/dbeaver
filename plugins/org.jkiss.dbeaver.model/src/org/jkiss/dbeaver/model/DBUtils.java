@@ -814,7 +814,13 @@ public final class DBUtils {
             return null;
         }
 
-        Object value = row.getValues()[rootBinding.getOrdinalPosition()];
+        Object[] values = row.getValues();
+        int attrIndex = rootBinding.getOrdinalPosition();
+        if (attrIndex >= values.length) {
+            // Shouldn't be here
+            return null;
+        }
+        Object value = values[attrIndex];
         int i = 1;
         while (value != null && i < valuePath.pathItems().size()) {
             value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
@@ -2764,6 +2770,15 @@ public final class DBUtils {
             items.add(token);
         }
         return items;
+    }
+
+    @Nullable
+    public static DBPDataSource getObjectDataSource(@NotNull Object object) {
+        return switch (object) {
+            case DBSObject o -> o.getDataSource();
+            case DBPContextProvider c -> c.getExecutionContext() == null ? null : c.getExecutionContext().getDataSource();
+            default -> null;
+        };
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

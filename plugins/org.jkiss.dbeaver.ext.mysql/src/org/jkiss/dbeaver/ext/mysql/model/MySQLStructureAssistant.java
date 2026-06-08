@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,11 +46,12 @@ import java.util.Locale;
 public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecutionContext> {
     private final MySQLDataSource dataSource;
 
-    public MySQLStructureAssistant(MySQLDataSource dataSource)
+    public MySQLStructureAssistant(@NotNull MySQLDataSource dataSource)
     {
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     protected JDBCDataSource getDataSource()
     {
@@ -59,8 +60,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
     @NotNull
     @Override
-    public DBSObjectType[] getSupportedObjectTypes()
-    {
+    public DBSObjectType[] getSupportedObjectTypes() {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_CONSTRAINT,
@@ -71,8 +71,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
     @NotNull
     @Override
-    public DBSObjectType[] getHyperlinkObjectTypes()
-    {
+    public DBSObjectType[] getHyperlinkObjectTypes() {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_PROCEDURE
@@ -81,8 +80,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
     @NotNull
     @Override
-    public DBSObjectType[] getAutoCompleteObjectTypes()
-    {
+    public DBSObjectType[] getAutoCompleteObjectTypes() {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_PROCEDURE,
@@ -90,10 +88,14 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
     }
 
     @Override
-    protected void findObjectsByMask(@NotNull MySQLExecutionContext executionContext, @NotNull JDBCSession session, @NotNull DBSObjectType objectType,
-                                     @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> references)
-                                        throws SQLException {
-        MySQLCatalog catalog = params.getParentObject() instanceof MySQLCatalog ? (MySQLCatalog) params.getParentObject() : null;
+    protected void findObjectsByMask(
+        @NotNull MySQLExecutionContext executionContext,
+        @NotNull JDBCSession session,
+        @NotNull DBSObjectType objectType,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) throws SQLException {
+        MySQLCatalog catalog = params.getParentObject() instanceof MySQLCatalog parentCat ? parentCat : null;
         if (catalog == null && !params.isGlobalSearch()) {
             catalog = executionContext.getContextDefaults().getDefaultCatalog();
         }
@@ -108,11 +110,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
-    private void findTablesByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, @NotNull ObjectsSearchParams params,
-                                  List<DBSObjectReference> objects) throws SQLException {
+    private void findTablesByMask(
+        @NotNull JDBCSession session,
+        @Nullable MySQLCatalog catalog,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> objects
+    ) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        MySQLQueryBuilder queryParams = new MySQLQueryBuilder(
             MySQLConstants.COL_TABLE_NAME,
             MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME,
             MySQLConstants.META_TABLE_TABLES
@@ -125,7 +131,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
         queryParams.setCaseSensitive(params.isCaseSensitive());
-        String sql = generateQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -135,8 +141,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     objects.add(new AbstractObjectReference<DBSObject>(tableName, dataSource.getCatalog(catalogName), null, MySQLTableBase.class, RelationalObjectType.TYPE_TABLE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             if (CommonUtils.isEmpty(tableName)) {
                                 throw new DBException("Table name not found in the metadata.");
                             }
@@ -156,11 +163,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, @NotNull ObjectsSearchParams params,
-                                      List<DBSObjectReference> objects) throws SQLException {
+    private void findProceduresByMask(
+        @NotNull JDBCSession session,
+        @Nullable MySQLCatalog catalog,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> objects
+    ) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        MySQLQueryBuilder queryParams = new MySQLQueryBuilder(
             MySQLConstants.COL_ROUTINE_NAME,
             MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME,
             MySQLConstants.META_TABLE_ROUTINES
@@ -176,7 +187,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         if (params.isSearchInDefinitions()) {
             queryParams.setDefinitionColumnName(MySQLConstants.COL_ROUTINE_DEFINITION);
         }
-        String sql = generateQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -186,8 +197,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
                     final String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
                     objects.add(new AbstractObjectReference<>(procName, dataSource.getCatalog(catalogName), null, MySQLProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (procCatalog == null) {
                                 throw new DBException("Procedure catalog '" + catalogName + "' not found");
@@ -204,11 +216,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, @NotNull ObjectsSearchParams params,
-                                       List<DBSObjectReference> objects) throws SQLException {
+    private void findConstraintsByMask(
+        @NotNull JDBCSession session,
+        @Nullable MySQLCatalog catalog,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> objects
+    ) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        MySQLQueryBuilder queryParams = new MySQLQueryBuilder(
             MySQLConstants.COL_CONSTRAINT_NAME,
             MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE,
             MySQLConstants.META_TABLE_TABLE_CONSTRAINTS
@@ -218,7 +234,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
         queryParams.setCaseSensitive(params.isCaseSensitive());
-        String sql = generateQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -232,8 +248,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
                     final boolean isFK = MySQLConstants.CONSTRAINT_FOREIGN_KEY.equals(constrType);
                     final boolean isCheck = MySQLConstants.CONSTRAINT_CHECK.equals(constrType);
                     objects.add(new AbstractObjectReference<>(constrName, dataSource.getCatalog(catalogName), null, isFK ? MySQLTableForeignKey.class : MySQLTableConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Constraint catalog '" + catalogName + "' not found");
@@ -263,11 +280,15 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, @NotNull ObjectsSearchParams params,
-                                        List<DBSObjectReference> objects) throws SQLException {
+    private void findTableColumnsByMask(
+        @NotNull JDBCSession session,
+        @Nullable MySQLCatalog catalog,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> objects
+    ) throws SQLException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        MySQLQueryBuilder queryParams = new MySQLQueryBuilder(
             MySQLConstants.COL_COLUMN_NAME,
             MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME,
             MySQLConstants.META_TABLE_COLUMNS
@@ -283,7 +304,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         if (params.isSearchInDefinitions()) {
             queryParams.setDefinitionColumnName(MySQLConstants.COL_COLUMN_GENERATION_EXPRESSION);
         }
-        String sql = generateQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load columns
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -309,8 +330,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
 
                         }
 
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Column catalog '" + catalogName + "' not found");
@@ -334,48 +356,13 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
     }
 
-    private static String generateQuery(@NotNull QueryParams params) {
-        StringBuilder sql = new StringBuilder("SELECT ").append(params.getSelect()).append(" FROM ").append(params.getFrom()).append(" WHERE ");
-        String commentColumnName = params.getCommentColumnName();
-        String definitionColumnName = params.getDefinitionColumnName();
-        boolean addParentheses = commentColumnName != null || definitionColumnName != null;
-        if (addParentheses) {
-            sql.append("(");
-        }
-        boolean caseSensitive = params.isCaseSensitive();
-        addNameWithLikeCondition(sql, params.getObjectNameColumn(), caseSensitive, false);
-        if (!CommonUtils.isEmpty(commentColumnName)) {
-            addNameWithLikeCondition(sql, commentColumnName, caseSensitive, true);
-        }
-        if (!CommonUtils.isEmpty(definitionColumnName)) {
-            addNameWithLikeCondition(sql, definitionColumnName, caseSensitive, true);
-        }
-        if (addParentheses) {
-            sql.append(") ");
-        }
-        if (!CommonUtils.isEmpty(params.getSchemaColumnName())) {
-            sql.append("AND ").append(params.getSchemaColumnName()).append(" = ? ");
-        }
-        sql.append("ORDER BY ").append(params.getObjectNameColumn()).append(" LIMIT ").append(params.getMaxResults());
-        return sql.toString();
-    }
-
-    private static void addNameWithLikeCondition(@NotNull StringBuilder sql, @NotNull String name, boolean caseSensitive, boolean addOR) {
-        if (addOR) {
-            sql.append(" OR ");
-        }
-        if (!caseSensitive) {
-            sql.append("UPPER(");
-        }
-        sql.append(name);
-        if (!caseSensitive) {
-            sql.append(")");
-        }
-        sql.append(" LIKE ?");
-    }
-
-    private static void fillParameters(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
-                                       @Nullable MySQLCatalog catalog, boolean hasCommentColumn, boolean hasDefinitionColumn) throws SQLException {
+    private static void fillParameters(
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull ObjectsSearchParams params,
+        @Nullable MySQLCatalog catalog,
+        boolean hasCommentColumn,
+        boolean hasDefinitionColumn
+    ) throws SQLException {
         String mask = params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase(Locale.ENGLISH);
         statement.setString(1, mask);
         int idx = 2;
@@ -389,93 +376,6 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant<MySQLExecuti
         }
         if (catalog != null) {
             statement.setString(idx, catalog.getName());
-        }
-    }
-
-    private static final class QueryParams {
-        @NotNull
-        private final String objectNameColumn;
-
-        @Nullable
-        private String commentColumnName;
-
-        @Nullable
-        private String schemaColumnName;
-
-        @NotNull
-        private final String select;
-
-        @NotNull
-        private final String from;
-
-        private int maxResults;
-
-        @Nullable
-        private String definitionColumnName;
-        private boolean isCaseSensitive;
-
-        private QueryParams(@NotNull String objectNameColumn, @NotNull String select, @NotNull String from) {
-            this.objectNameColumn = objectNameColumn;
-            this.select = select;
-            this.from = from;
-        }
-
-        @NotNull
-        private String getObjectNameColumn() {
-            return objectNameColumn;
-        }
-
-        @Nullable
-        private String getCommentColumnName() {
-            return commentColumnName;
-        }
-
-        private void setCommentColumnName(@Nullable String commentColumnName) {
-            this.commentColumnName = commentColumnName;
-        }
-
-        @Nullable
-        private String getSchemaColumnName() {
-            return schemaColumnName;
-        }
-
-        private void setSchemaColumnName(@Nullable String schemaColumnName) {
-            this.schemaColumnName = schemaColumnName;
-        }
-
-        @NotNull
-        public String getSelect() {
-            return select;
-        }
-
-        @NotNull
-        public String getFrom() {
-            return from;
-        }
-
-        @Nullable
-        private String getDefinitionColumnName() {
-            return definitionColumnName;
-        }
-
-        private void setDefinitionColumnName(@Nullable String definitionColumnName) {
-            this.definitionColumnName = definitionColumnName;
-        }
-
-        private int getMaxResults() {
-            return maxResults;
-        }
-
-        private void setMaxResults(int maxResults) {
-            this.maxResults = maxResults;
-        }
-
-        public boolean isCaseSensitive() {
-            return isCaseSensitive;
-        }
-
-        public void setCaseSensitive(boolean caseSensitive) {
-            isCaseSensitive = caseSensitive;
         }
     }
 

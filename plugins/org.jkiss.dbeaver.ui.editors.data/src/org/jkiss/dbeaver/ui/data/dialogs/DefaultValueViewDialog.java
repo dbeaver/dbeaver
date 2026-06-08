@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -46,8 +47,9 @@ public class DefaultValueViewDialog extends ValueViewDialog {
         super(valueController);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent)
+    protected Composite createDialogArea(@NotNull Composite parent)
     {
         Composite dialogGroup = super.createDialogArea(parent);
 

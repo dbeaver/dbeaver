@@ -54,8 +54,9 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GaussDBPackage object, Map<String, Object> options,
-        String newName) throws DBException {
+    public void renameObject(
+        @NotNull DBECommandContext commandContext, @NotNull GaussDBPackage object, @NotNull Map<String, Object> options,
+        @NotNull String newName) throws DBException {
         ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, options, newName);
         commandContext.addCommand(command, new RenameObjectReflector(), true);
     }
@@ -74,7 +75,7 @@ public class GaussDBPackageManager extends SQLObjectEditor<GaussDBPackage, Gauss
     protected GaussDBPackage createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {

@@ -57,11 +57,11 @@ public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, E
 	
 	@Override
 	protected ExasolTableIndex createDatabaseObject(
-		@NotNull DBRProgressMonitor monitor,
-		@NotNull DBECommandContext context,
-		@Nullable Object container,
-		@Nullable Object from,
-		@NotNull Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
 	) throws DBException {
 		return new ExasolTableIndex((ExasolTable) container, null,  DBSIndexType.OTHER, false );
 	}

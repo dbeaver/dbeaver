@@ -86,7 +86,7 @@ public class KingbaseProcedureManager extends SQLObjectEditor<KingbaseProcedure,
     protected KingbaseProcedure createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
