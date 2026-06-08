@@ -68,6 +68,17 @@ import java.util.stream.StreamSupport;
  */
 public class SpreadsheetQuickFilterOverlay {
 
+    @NotNull
+    private static final Map<KeyStroke, LocalCommandInfo> SHORTCUTS = new HashMap<>();
+    private static final double WORST_CASE_RATIO_EDITOR_TO_OVERLAY = 0.95;
+    private static final double BIG_WIDTH_RATIO_EDITOR_TO_OVERLAY = 0.7;
+    private static final String MINIMAL_WIDTH_TEXT = "THIS TEXT IS SHORT"; //$NON-NLS-1$
+    private static final String IDEAL_WIDTH_TEXT = "THIS TEXT HAS A REASONABLE LENGTH FOR SEARCHING"; //$NON-NLS-1$
+    private static final int HISTORY_SIZE = 15;
+    private static final String HISTORY_SETTINGS_SECTION_NAME
+        = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheetQuickFilterHistory"; //$NON-NLS-1$
+
+
     private record LocalCommandInfo(
         int toolItemStyle,
         @NotNull String imageKey,
@@ -160,16 +171,6 @@ public class SpreadsheetQuickFilterOverlay {
         Color errorTextForeground
     ) {
     }
-
-    @NotNull
-    private static final Map<KeyStroke, LocalCommandInfo> SHORTCUTS = new HashMap<>();
-    private static final double WORST_CASE_RATIO_EDITOR_TO_OVERLAY = 0.95;
-    private static final double BIG_WIDTH_RATIO_EDITOR_TO_OVERLAY = 0.7;
-    private static final String MINIMAL_WIDTH_TEXT = "THIS TEXT IS SHORT"; //$NON-NLS-1$
-    private static final String IDEAL_WIDTH_TEXT = "THIS TEXT HAS A REASONABLE LENGTH FOR SEARCHING"; //$NON-NLS-1$
-    private static final int HISTORY_SIZE = 15;
-    private static final String HISTORY_SETTINGS_SECTION_NAME
-        = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheetQuickFilterHistory"; //$NON-NLS-1$
 
     @NotNull
     private final SpreadsheetPresentation spreadsheetPresentation;
@@ -282,7 +283,6 @@ public class SpreadsheetQuickFilterOverlay {
         };
     }
 
-    @NotNull
     private void setupSearchboxContentAssist(@NotNull HistoryStore searchHistory) {
         TextContentAdapter contentAdapter = new TextContentAdapter();
         IContentProposalProvider regexProposer = new FindReplaceDocumentAdapterContentProposalProvider(true);
@@ -642,7 +642,7 @@ public class SpreadsheetQuickFilterOverlay {
          *             where this plugin class is found (i.e. typically the packages
          *             directory)
          */
-        private final static void declareRegistryImage(String key, String path) {
+        private static void declareRegistryImage(@NotNull String key, @NotNull String path) {
             if (fgImageRegistry.get(key) == null) {
                 ImageDescriptor desc = ImageDescriptor.getMissingImageDescriptor();
                 Bundle bundle = Platform.getBundle(TextEditorPlugin.PLUGIN_ID);
@@ -660,6 +660,7 @@ public class SpreadsheetQuickFilterOverlay {
          *
          * @return image registry
          */
+        @NotNull
         public static ImageRegistry getImageRegistry() {
             if (fgImageRegistry == null) {
                 initializeImageRegistry();
@@ -687,6 +688,7 @@ public class SpreadsheetQuickFilterOverlay {
          * @return the image registry
          * @see org.eclipse.jface.resource.ImageRegistry
          */
+        @NotNull
         public static ImageRegistry initializeImageRegistry() {
             fgImageRegistry = TextEditorPlugin.getDefault().getImageRegistry();
             declareImages();
@@ -699,7 +701,9 @@ public class SpreadsheetQuickFilterOverlay {
          * @param key the image's key
          * @return the image managed under the given key
          */
-        public static Image get(String key) {
+
+        @NotNull
+        public static Image get(@NotNull String key) {
             return getImageRegistry().get(key);
         }
 
@@ -709,7 +713,8 @@ public class SpreadsheetQuickFilterOverlay {
          * @param key the image's key
          * @return the image descriptor for the given key
          */
-        public static ImageDescriptor getDescriptor(String key) {
+        @NotNull
+        public static ImageDescriptor getDescriptor(@NotNull String key) {
             return getImageRegistry().getDescriptor(key);
         }
     }
