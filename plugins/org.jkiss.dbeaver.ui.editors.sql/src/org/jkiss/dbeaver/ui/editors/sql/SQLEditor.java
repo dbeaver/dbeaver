@@ -3936,6 +3936,11 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        EditorPartContextualProperty contextualPropInfo = event.getProperty() == null
+            ? null
+            : EditorPartContextualProperty.findInfo(event.getProperty());
+        boolean triggersDataSourceChanged = contextualPropInfo == null || contextualPropInfo.triggersDataSourceChangedEvent;
+
         UIUtils.asyncExec(() -> {
             if (topBarMan != null) {
                 topBarMan.update(true);
@@ -3943,7 +3948,11 @@ public class SQLEditor extends SQLEditorBase implements
             this.updateMultipleResultsPerTabToolItem();
         });
         this.setCompletionContext(new SQLEditorCompletionContext(this));
-        fireDataSourceChanged(event);
+
+        if (triggersDataSourceChanged) {
+            fireDataSourceChanged(event);
+        }
+
         super.preferenceChange(event);
     }
 

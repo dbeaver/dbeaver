@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1201,19 +1201,34 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase forTable)
-            throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OracleTableBase forTable
+        ) throws SQLException {
+            final OracleDataSource dataSource = owner.getDataSource();
+            final DBRProgressMonitor monitor = session.getProgressMonitor();
+            final String indexesView = OracleUtils.getAdminAllViewPrefix(monitor, dataSource, "INDEXES");
+            final String indColumnsView = OracleUtils.getAdminAllViewPrefix(monitor, dataSource, "IND_COLUMNS");
+            final String indExpressionsView = OracleUtils.getAdminAllViewPrefix(monitor, dataSource, "IND_EXPRESSIONS");
+
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(owner.getDataSource())).append(" " +
-                    "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
-                    "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "INDEXES") + " i\n" +
-                    "JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "IND_COLUMNS") + " ic " +
-                    "ON i.owner = ic.index_owner AND i.index_name = ic.index_name\n" +
-                    "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "IND_EXPRESSIONS") + " iex " +
-                    "ON iex.index_owner = i.owner AND iex.INDEX_NAME = i.INDEX_NAME AND iex.COLUMN_POSITION = ic.COLUMN_POSITION\n" +
-                    "WHERE ");
+            sql.append("SELECT ").append(OracleUtils.getSysCatalogHint(dataSource)).append("""
+                 \
+                i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,
+                i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,
+                ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION
+                """);
+            // Legacy (+) outer-join syntax is used for all versions because Oracle 8.x
+            // does not support ANSI JOIN.
+            sql.append("FROM ").append(indexesView).append(" i, ")
+                .append(indColumnsView).append(" ic, ")
+                .append(indExpressionsView).append(" iex\n")
+                .append("WHERE ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME\n")
+                .append("AND iex.INDEX_OWNER(+) = ic.INDEX_OWNER\n")
+                .append("AND iex.INDEX_NAME(+) = ic.INDEX_NAME\n")
+                .append("AND iex.COLUMN_POSITION(+) = ic.COLUMN_POSITION\n")
+                .append("AND ");
             if (forTable == null) {
                 sql.append("i.OWNER=?");
             } else {
