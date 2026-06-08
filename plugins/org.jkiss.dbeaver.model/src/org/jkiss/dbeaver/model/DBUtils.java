@@ -1334,8 +1334,12 @@ public final class DBUtils {
         return false;
     }
 
-    public static DBSEntityConstraint findEntityConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity, @NotNull Collection<? extends DBSEntityAttribute> attributes)
-        throws DBException {
+    @Nullable
+    public static DBSEntityConstraint findEntityConstraint(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity entity,
+        @NotNull Collection<? extends DBSEntityAttribute> attributes
+    ) throws DBException {
         // Check constraints
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
         if (!CommonUtils.isEmpty(constraints)) {
@@ -1358,7 +1362,11 @@ public final class DBUtils {
         return null;
     }
 
-    public static boolean referrerMatches(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer referrer, @NotNull Collection<? extends DBSEntityAttribute> attributes) throws DBException {
+    public static boolean referrerMatches(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer referrer,
+        @NotNull Collection<? extends DBSEntityAttribute> attributes
+    ) throws DBException {
         final List<? extends DBSEntityAttributeRef> refs = referrer.getAttributeReferences(monitor);
         if (refs != null && !refs.isEmpty() && attributes.size() == refs.size()) {
             Iterator<? extends DBSEntityAttribute> attrIterator = attributes.iterator();
@@ -1411,7 +1419,11 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull DBSEntityAttribute tableColumn) throws DBException {
+    public static DBSEntityAttributeRef getConstraintAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint,
+        @NotNull DBSEntityAttribute tableColumn
+    ) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -1424,7 +1436,11 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull String columnName) throws DBException {
+    public static DBSEntityAttributeRef getConstraintAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint,
+        @NotNull String columnName
+    ) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {

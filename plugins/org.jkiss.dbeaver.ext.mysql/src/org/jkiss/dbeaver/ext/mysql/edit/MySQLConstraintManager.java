@@ -141,7 +141,7 @@ public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConst
     }
 
     @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<MySQLTableConstraint> command) {
+    protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<MySQLTableConstraint> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append((command.getObject()).getCheckClause()).append(")");
         } else {

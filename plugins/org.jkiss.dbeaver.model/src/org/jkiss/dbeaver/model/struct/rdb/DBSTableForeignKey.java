@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 /**
  * DBSTableForeignKey
  */
-public interface DBSTableForeignKey extends DBSEntityReferrer, DBSEntityAssociation
-{
+public interface DBSTableForeignKey extends DBSEntityReferrer, DBSEntityAssociation {
     @NotNull
     DBSForeignKeyModifyRule getDeleteRule();
+
+    default void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule) {}
 
     @NotNull
     DBSForeignKeyModifyRule getUpdateRule();
 
+    default void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {}
 }

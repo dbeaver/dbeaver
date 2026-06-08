@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
         return refConstraint;
     }
 
-    public void setReferencedConstraint(DBSEntityConstraint refConstraint) {
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint refConstraint) {
         this.refConstraint = refConstraint;
         this.refTable = refConstraint == null ? null : (PostgreTableBase) refConstraint.getParentObject();
     }
@@ -161,7 +161,8 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
         return deleteRule;
     }
 
-    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+    @Override
+    public void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule) {
         this.deleteRule = deleteRule;
     }
 
@@ -172,7 +173,8 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
         return updateRule;
     }
 
-    public void setUpdateRule(DBSForeignKeyModifyRule updateRule) {
+    @Override
+    public void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {
         this.updateRule = updateRule;
     }
 

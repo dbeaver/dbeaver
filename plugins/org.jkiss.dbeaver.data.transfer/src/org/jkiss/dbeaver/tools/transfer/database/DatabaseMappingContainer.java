@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -59,6 +60,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private String targetName;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
+    private final List<DatabaseMappingConstraint> constraintMappings = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
     private Map<String, Object> rawChangedPropertiesMap; // For tasks with empty container
 
@@ -84,6 +86,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         for (DatabaseMappingAttribute attribute : container.attributeMappings) {
             this.attributeMappings.add(new DatabaseMappingAttribute(attribute, this));
         }
+        for (DatabaseMappingConstraint constraint : container.constraintMappings) {
+            this.constraintMappings.add(new DatabaseMappingConstraint(constraint, this));
+        }
     }
 
     public DatabaseConsumerSettings getSettings() {
@@ -96,8 +101,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void setTarget(DBSDataManipulator target) {
+        setTarget(target, true);
+    }
+
+    void setTarget(DBSDataManipulator target, boolean resetConstraintMappings) {
         this.target = target;
         this.targetName = null;
+        if (resetConstraintMappings) {
+            this.constraintMappings.clear();
+        }
     }
 
     @Override
@@ -116,6 +128,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         boolean updateAttributesNames
     ) throws DBException {
         this.mappingType = mappingType;
+        constraintMappings.clear();
         refreshAttributesMappingTypes(monitor, forceRefresh, updateAttributesNames);
     }
 
@@ -133,7 +146,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     void setMappingType(DatabaseMappingType mappingType) {
+        setMappingType(mappingType, true);
+    }
+
+    void setMappingType(DatabaseMappingType mappingType, boolean resetConstraintMappings) {
         this.mappingType = mappingType;
+        if (resetConstraintMappings) {
+            this.constraintMappings.clear();
+        }
     }
 
     public boolean isCompleted() {
@@ -219,16 +239,25 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
+    @Nullable
     DatabaseMappingAttribute getAttributeMapping(@NotNull DBDAttributeBinding sourceAttr) {
+        return getAttributeMapping((DBSAttributeBase) sourceAttr);
+    }
+
+    @Nullable
+    DatabaseMappingAttribute getAttributeMapping(@NotNull DBSAttributeBase sourceAttr) {
         return CommonUtils.findBestCaseAwareMatch(
             attributeMappings,
-            CommonUtils.notNull(sourceAttr.getLabel(), sourceAttr.getName()),
+            sourceAttr instanceof DBDAttributeBinding binding ?
+                CommonUtils.notNull(binding.getLabel(), binding.getName()) :
+                sourceAttr.getName(),
             attr -> attr.getSourceLabelOrName(attr.getSource(), false, false));
     }
 
     /**
      * Returns attribute mappings collection without a monitor
      */
+    @NotNull
     public Collection<DatabaseMappingAttribute> getAttributeMappings() {
         if (attributeMappings.isEmpty()) {
             try {
@@ -242,7 +271,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings;
     }
 
-    public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRProgressMonitor monitor) {
+    @NotNull
+    public Collection<DatabaseMappingAttribute> getAttributeMappings(@NotNull DBRProgressMonitor monitor) {
         if (attributeMappings.isEmpty()) {
             try {
                 readAttributes(monitor);
@@ -258,7 +288,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings;
     }
 
-    private void readAttributes(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    public Collection<DatabaseMappingConstraint> getConstraintMappings(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DatabaseMappingConstraint.refreshConstraintMappings(monitor, this, constraintMappings);
+        return constraintMappings;
+    }
+
+    private void readAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         for (DBSAttributeBase attr : DTUtils.getAttributes(monitor, source, this)) {
             addAttributeMapping(monitor, attr);
         }
@@ -270,7 +306,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         attributeMappings.add(mapping);
     }
 
-    public void saveSettings(Map<String, Object> settings) {
+
+    public void saveSettings(@NotNull Map<String, Object> settings) {
         if (!CommonUtils.isEmpty(targetName)) {
             settings.put("targetName", targetName);
         } else if (target != null) {
@@ -289,6 +326,15 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                     attrsSection.put(attrMapping.getSourceLabelOrName(sourceAttr, false, false), attrSettings);
                     attrMapping.saveSettings(attrSettings);
                 }
+            }
+        }
+        if (!constraintMappings.isEmpty()) {
+            Map<String, Object> constraintsSection = new LinkedHashMap<>();
+            settings.put("constraints", constraintsSection);
+            for (DatabaseMappingConstraint constraintMapping : constraintMappings) {
+                Map<String, Object> constraintSettings = new LinkedHashMap<>();
+                constraintsSection.put(constraintMapping.getSource().getName(), constraintSettings);
+                constraintMapping.saveSettings(constraintSettings);
             }
         }
         if (!CommonUtils.isEmpty(changedPropertiesMap)) {
@@ -345,6 +391,19 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                         }
                     }
                 }
+            }
+        }
+        Map<String, Object> constraintsSection = JSONUtils.getObject(settings, "constraints");
+        if (!constraintsSection.isEmpty()) {
+            try {
+                for (DatabaseMappingConstraint constraintMapping : getConstraintMappings(new VoidProgressMonitor())) {
+                    Map<String, Object> constraintSettings = JSONUtils.getObject(constraintsSection, constraintMapping.getSource().getName());
+                    if (!constraintSettings.isEmpty()) {
+                        constraintMapping.loadSettings(constraintSettings);
+                    }
+                }
+            } catch (DBException e) {
+                log.error(e);
             }
         }
         rawChangedPropertiesMap = JSONUtils.getObject(settings, "changedProperties");

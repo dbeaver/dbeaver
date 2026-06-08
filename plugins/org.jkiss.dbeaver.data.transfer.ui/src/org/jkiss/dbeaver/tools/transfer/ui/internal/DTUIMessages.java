@@ -41,6 +41,11 @@ public class DTUIMessages extends NLS {
     public static String database_consumer_wizard_description;
     public static String database_consumer_wizard_transfer_checkbox_label;
     public static String database_consumer_wizard_transfer_checkbox_tooltip;
+    public static String database_consumer_wizard_migrate_constraints_group_title;
+    public static String database_consumer_wizard_migrate_primary_keys_checkbox_label;
+    public static String database_consumer_wizard_migrate_primary_keys_checkbox_tooltip;
+    public static String database_consumer_wizard_migrate_foreign_keys_checkbox_label;
+    public static String database_consumer_wizard_migrate_foreign_keys_checkbox_tooltip;
     public static String database_consumer_wizard_truncate_checkbox_label;
     public static String database_consumer_wizard_truncate_checkbox_description;
     public static String database_consumer_wizard_disable_referential_integrity_label;

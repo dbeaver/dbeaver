@@ -695,7 +695,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
             if (containerMapping.hasNewTargetObject()) {
-                DatabaseTransferUtils.createTargetDynamicTable(session.getProgressMonitor(), session.getExecutionContext(), schema, containerMapping, containerMapping.getTarget() != null);
+                DatabaseTransferUtils.createTargetDynamicTable(
+                    session.getProgressMonitor(),
+                    session.getExecutionContext(),
+                    schema,
+                    containerMapping,
+                    containerMapping.getTarget() != null
+                );
             }
             return true;
         } else {
@@ -704,15 +710,58 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 session.getExecutionContext(),
                 schema,
                 containerMapping,
-                containerMapping.getChangedPropertiesMap());
-            try {
-                DatabaseTransferUtils.executeDDL(session, actions);
-            } catch (DBCException e) {
-                throw new DBCException(
-                    "Can't create or update target table:\n" +
-                        SQLUtils.generateScript(session.getDataSource(), actions, false), e);
-            }
+                containerMapping.getChangedPropertiesMap(),
+                settings);
+            executeDDLWithScript(session, actions, "Can't create or update target table:");
             return actions.length > 0;
+        }
+    }
+
+    private boolean createTargetForeignKeys(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!settings.isMigrateForeignKeys()) {
+            return false;
+        }
+        DBSObject dbObject = checkTargetContainer(monitor);
+        try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target foreign keys")) {
+            DBSCatalog oldCatalog = null;
+            DBSSchema oldSchema = null;
+            DBSCatalog catalog = dbObject instanceof DBSSchema ? DBUtils.getParentOfType(DBSCatalog.class, dbObject) : null;
+            if (catalog != null) {
+                var contextDefaults = session.getExecutionContext().getContextDefaults();
+                if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != catalog) {
+                    oldCatalog = contextDefaults.getDefaultCatalog();
+                    try {
+                        contextDefaults.setDefaultCatalog(monitor, catalog, (DBSSchema) dbObject);
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+            try {
+                DBEPersistAction[] actions = DatabaseTransferUtils.generateTargetForeignKeysDDL(
+                    monitor,
+                    session.getExecutionContext(),
+                    settings);
+                executeDDLWithScript(session, actions, "Can't create target foreign keys:");
+                return actions.length > 0;
+            } finally {
+                if (oldCatalog != null) {
+                    try {
+                        session.getExecutionContext().getContextDefaults().setDefaultCatalog(monitor, oldCatalog, oldSchema);
+                    } catch (DBCException e) {
+                        log.debug(e);
+                    }
+                }
+            }
+        }
+    }
+
+    private void executeDDLWithScript(
+        @NotNull DBCSession session, @NotNull DBEPersistAction[] actions, @NotNull String messagePrefix) throws DBCException {
+        try {
+            DatabaseTransferUtils.executeDDL(session, actions);
+        } catch (DBException e) {
+            throw new DBCException(messagePrefix + "\n" + SQLUtils.generateScript(session.getDataSource(), actions, false), e);
         }
     }
 
@@ -725,6 +774,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
         boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         if (last && error == null) {
+            try {
+                if (createTargetForeignKeys(monitor)) {
+                    DBSObjectContainer container = settings.getContainer();
+                    if (container != null) {
+                        DatabaseTransferUtils.refreshDatabaseModel(monitor, settings, containerMapping);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error creating target foreign keys", e);
+                if (!headlessMode) {
+                    DBWorkbench.getPlatformUI().showError(
+                        "Create target foreign keys",
+                        "Error creating target foreign keys",
+                        e);
+                }
+            }
             // Refresh navigator
             monitor.subTask("Refresh final database model");
             try {

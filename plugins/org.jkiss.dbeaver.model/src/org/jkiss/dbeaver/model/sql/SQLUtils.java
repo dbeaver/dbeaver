@@ -943,8 +943,11 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
-    {
+    public static String generateScript(
+        @Nullable DBPDataSource dataSource,
+        @Nullable DBEPersistAction[] persistActions,
+        boolean addComments
+    ) {
         final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
@@ -973,7 +976,9 @@ public final class SQLUtils {
                             if (!Character.isWhitespace(script.charAt(i))) {
                                 break;
                             }
-                            if (script.charAt(i) == '\n') lfCount++;
+                            if (script.charAt(i) == '\n') {
+                                lfCount++;
+                            }
                         }
                         if (lfCount < 2) {
                             // Add line feed if we do not have empty line before
@@ -1001,8 +1006,11 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateComments(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
-    {
+    public static String generateComments(
+        @Nullable DBPDataSource dataSource,
+        @Nullable DBEPersistAction[] persistActions,
+        boolean addComments
+    ) {
         final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
