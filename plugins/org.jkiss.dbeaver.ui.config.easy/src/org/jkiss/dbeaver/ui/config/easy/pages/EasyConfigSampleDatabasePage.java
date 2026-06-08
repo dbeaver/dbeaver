@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
 
 public class EasyConfigSampleDatabasePage extends EasyConfigWizardPage {
     public EasyConfigSampleDatabasePage() {
-        super("Sample database", "Create sample database");
+        super(EasyConfigMessages.sample_database_title, EasyConfigMessages.sample_database_description);
     }
 
     @Override

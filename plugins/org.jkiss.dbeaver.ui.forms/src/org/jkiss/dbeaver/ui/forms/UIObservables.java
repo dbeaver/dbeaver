@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.forms;
 
 import org.eclipse.core.databinding.observable.Diffs;
 import org.eclipse.core.databinding.observable.value.ComputedValue;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
@@ -86,5 +87,24 @@ public final class UIObservables {
     @NotNull
     public static <T> UIObservable<T> computed(@NotNull Supplier<T> supplier, @NotNull Class<T> type) {
         return new UIObservableImpl<>(ComputedValue.create(supplier), type);
+    }
+
+    @NotNull
+    public static UIObservable<String> bind(@NotNull UIObservable<String> observable, @Nullable Object binding) {
+        return observable.map(s -> NLS.bind(s, binding));
+    }
+
+    @NotNull
+    public static UIObservable<String> bind(
+        @NotNull UIObservable<String> observable,
+        @Nullable Object binding1,
+        @Nullable Object binding2
+    ) {
+        return observable.map(s -> NLS.bind(s, binding1, binding2));
+    }
+
+    @NotNull
+    public static UIObservable<String> bind(@NotNull UIObservable<String> observable, @Nullable Object... bindings) {
+        return observable.map(s -> NLS.bind(s, bindings));
     }
 }

@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
 
 public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
     public EasyConfigDataCollectionPage() {
-        super("Data collection", "Help us improve DBeaver by sending anonymous data");
+        super(EasyConfigMessages.data_collection_title, EasyConfigMessages.data_collection_description);
     }
 
     @Override

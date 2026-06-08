@@ -70,6 +70,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder controlLabel(@NotNull UIObservable<String> text) {
+        return label(text.map(t -> t + ":"));
+    }
+
+    @NotNull
     default UIRowBuilder controlLabel(@NotNull String text) {
         return label(text + ":");
     }

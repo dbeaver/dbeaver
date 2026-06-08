@@ -18,13 +18,15 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
 
 public class EasyConfigAppearancePage extends EasyConfigWizardPage {
     public EasyConfigAppearancePage() {
-        super("Appearance", "Configure the look and feel");
+        super(EasyConfigMessages.appearance_title, EasyConfigMessages.appearance_description);
     }
 
     @Override
@@ -34,12 +36,11 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildPanel() {
-        return pb -> pb.row(rb -> rb.label("Placeholder"));
+        return pb -> pb
+            .row(rb -> rb.label("Choose which theme you want to use:"))
+            .indent(pb1 -> pb1
+                .row(rb -> rb.radioButton("Light", UIObservable.of(false)))
+                .row(rb -> rb.radioButton("Dark", UIObservable.of(false)))
+                .row(rb -> rb.radioButton("Classic", UIObservable.of(false))));
     }
-
-    // @NotNull
-    // private static Consumer<UIPanelBuilder> buildThemeCard(@NotNull String title) {
-    //     return pb -> pb
-    //         .row(rb -> rb.radioButton(title, ))
-    // }
 }

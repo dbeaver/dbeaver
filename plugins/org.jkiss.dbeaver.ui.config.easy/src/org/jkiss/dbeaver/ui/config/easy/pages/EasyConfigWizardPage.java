@@ -20,6 +20,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
 
 abstract class EasyConfigWizardPage extends WizardPage {
     public EasyConfigWizardPage(@NotNull String title, @NotNull String description) {
@@ -27,5 +28,11 @@ abstract class EasyConfigWizardPage extends WizardPage {
         setTitle(title);
         setDescription(description);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO));
+    }
+
+    public EasyConfigWizardPage(@NotNull UIObservable<String> title, @NotNull UIObservable<String> description) {
+        this(title.get(), description.get());
+        title.addChangeListener((s, s2) -> setTitle(s2));
+        description.addChangeListener((s, s2) -> setDescription(s2));
     }
 }

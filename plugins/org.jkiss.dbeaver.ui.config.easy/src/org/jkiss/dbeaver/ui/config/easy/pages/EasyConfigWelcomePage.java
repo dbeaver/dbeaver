@@ -19,18 +19,17 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.function.Consumer;
 
 public class EasyConfigWelcomePage extends EasyConfigWizardPage {
+
     public EasyConfigWelcomePage() {
-        super("Welcome", "Configure DBeaver for your needs");
+        super(EasyConfigMessages.welcome_title, EasyConfigMessages.welcome_description);
     }
 
     @Override
@@ -41,22 +40,15 @@ public class EasyConfigWelcomePage extends EasyConfigWizardPage {
     @NotNull
     private static Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
-            .row(rb -> rb.label(lb -> lb
-                .text("Welcome to " + GeneralUtils.getProductTitle())
-                .font(UIObservable.of(BaseThemeSettings.instance.partTitleBoldFont, Font.class))))
-            .row(rb -> rb.label(lb -> lb
-                .text("Before continuing, take a moment to configure DBeaver for your needs: "
-                    + "change the appearance, toggle off features you might not need, and more.")
-                .wrap()
-                .align(UIAlignX.FILL, UIAlignY.FILL)
-                .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)))
-            .row(
-                "Language", rb -> rb
-                    .comboBox(
-                        PlatformLanguageRegistry.getInstance().getLanguages(),
-                        UIObservable.of(DBPPlatformDesktop.getInstance().getPlatformLanguage(), DBPPlatformLanguage.class),
-                        DBPPlatformLanguage::getLabel
-                    )
-            );
+            .row(rb -> rb
+                .label(lb -> lb
+                    .text(UIObservables.bind(EasyConfigMessages.welcome_body_title, GeneralUtils.getProductTitle()))
+                    .font(UIObservable.of(BaseThemeSettings.instance.partTitleBoldFont, Font.class))))
+            .row(rb -> rb
+                .label(lb -> lb
+                    .text(EasyConfigMessages.welcome_body_text)
+                    .wrap()
+                    .align(UIAlignX.FILL, UIAlignY.FILL)
+                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)));
     }
 }

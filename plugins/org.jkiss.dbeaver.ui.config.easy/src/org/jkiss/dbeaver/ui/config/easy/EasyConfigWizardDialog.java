@@ -16,14 +16,40 @@
  */
 package org.jkiss.dbeaver.ui.config.easy;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.ui.config.easy.internal.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
-public final class EasyConfigWizardDialog extends MultiPageWizardDialog {
+import java.util.Locale;
+import java.util.function.Consumer;
+
+public final class EasyConfigWizardDialog extends ActiveWizardDialog {
+    private final UIObservable<DBPPlatformLanguage> language =
+        UIObservable.of(DBPPlatformDesktop.getInstance().getPlatformLanguage(), DBPPlatformLanguage.class);
+
     public EasyConfigWizardDialog(@NotNull IWorkbenchWindow window) {
         super(window, new EasyConfigWizard());
+
+        // We're reusing the help system for language selection
+        setHelpAvailable(true);
+
+        language.addChangeListener((l1, l2) -> {
+            Locale.setDefault(Locale.of(l2.getCode()));
+            EasyConfigMessages.reload();
+            getShell().layout(true, true);
+        });
     }
 
     @NotNull
@@ -35,5 +61,23 @@ public final class EasyConfigWizardDialog extends MultiPageWizardDialog {
     @Override
     public void updateSize() {
         // don't update size - pages are adapted to the dialog size
+    }
+
+    @NotNull
+    @Override
+    protected Control createHelpControl(@NotNull Composite parent) {
+        ((GridLayout) parent.getLayout()).numColumns++;
+        Control control = UIPanelBuilder.build(parent, buildLanguagePanel(language));
+        control.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        return control;
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildLanguagePanel(@NotNull UIObservable<DBPPlatformLanguage> language) {
+        return pb -> pb.row(rb -> rb.comboBox(
+            PlatformLanguageRegistry.getInstance().getLanguages(),
+            language,
+            DBPPlatformLanguage::getLabel
+        ));
     }
 }
