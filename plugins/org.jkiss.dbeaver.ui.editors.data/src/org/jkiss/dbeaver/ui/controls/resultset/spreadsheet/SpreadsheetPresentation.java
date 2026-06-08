@@ -110,6 +110,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Spreadsheet spreadsheet;
 
     @Nullable
+    private SpreadsheetQuickFilter filterMask = null;
+    @NotNull
+    private SpreadsheetQuickFilterOverlay quickFilterOverlay;
+    @Nullable
     private DBDAttributeBinding curAttribute;
     private int columnOrder = SWT.DEFAULT;
 
@@ -152,6 +156,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
+    }
+
+    @NotNull
+    public SpreadsheetQuickFilterOverlay getQuickFilterOverlay() {
+        return this.quickFilterOverlay;
+    }
+
+    public void setFilterMask(@Nullable SpreadsheetQuickFilter filterMask) {
+        this.filterMask = filterMask;
     }
 
     @Override
@@ -227,6 +240,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         trackPresentationControl();
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
+
+        this.quickFilterOverlay = new SpreadsheetQuickFilterOverlay(this.spreadsheet.getPresentation());
     }
 
     @Override
@@ -2033,7 +2048,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
             } else {
                 // rows
                 if (!recordMode) {
-                    return model.getAllRows().toArray();
+                    List<ResultSetRow> rows = model.getAllRows();
+                    if (filterMask != null) {
+                        rows = rows.stream()
+                            .filter(row -> filterMask.match(row, o -> o == null ? "" : o.toString()))
+                            .toList();
+                    }
+                    return rows.toArray();
                 } else {
                     DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
                     if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {

@@ -1011,7 +1011,7 @@ public abstract class LightGrid extends Canvas {
         return headerHeight;
     }
 
-    private int getRowHeaderWidth() {
+    public int getRowHeaderWidth() {
         return rowHeaderWidth;
     }
 

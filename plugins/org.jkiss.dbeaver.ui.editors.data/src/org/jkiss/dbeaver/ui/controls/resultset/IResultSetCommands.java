@@ -54,6 +54,7 @@ public interface IResultSetCommands {
     String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
     String CMD_TOGGLE_CONFIRM_SAVE = "org.jkiss.dbeaver.core.resultset.toggleConfirmSave";
     String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
+    String CMD_OPEN_QUICK_FILTER = "org.jkiss.dbeaver.core.resultset.spreadsheet.openQuickFilter";
     String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
     String CMD_FILTER_MENU_DISTINCT = "org.jkiss.dbeaver.core.resultset.filterMenu.distinct";
     String CMD_FILTER_EDIT_SETTINGS = "org.jkiss.dbeaver.core.resultset.filterSettings";
