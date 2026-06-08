@@ -296,9 +296,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                         if (inputStream != null) {
                             monitor.subTask("Copy file");
                             Files.copy(inputStream, folder.resolve(node.getNodeDisplayName()), StandardCopyOption.REPLACE_EXISTING);
-                        } else {
-                            NodeContentWrapperComposite root = new NodeContentWrapperComposite(monitor, node);
-                            root.copyRecursivelyToFolder(folder);
                         }
                     } finally {
                         monitor.worked(1);
@@ -497,50 +494,5 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
         void accept(@NotNull Path file, @NotNull Path targetFile) throws IOException;
 
-    }
-
-    private static class NodeContentWrapperComposite {
-
-        private final DBNNode node;
-        private final Path nodeParentRelativePath;
-        private final NodeContentWrapperComposite[] children;
-
-        public NodeContentWrapperComposite(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node) throws DBException {
-            this(monitor, node, null);
-        }
-
-        public NodeContentWrapperComposite(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node, @Nullable Path parentPath)
-        throws DBException {
-            this.node = node;
-            nodeParentRelativePath = parentPath == null ? Path.of(node.getName()) : parentPath.resolve(node.getName());
-            DBNNode[] localChildren = node.getChildren(monitor);
-            if (localChildren != null) {
-                children = new NodeContentWrapperComposite[localChildren.length];
-                int i = 0;
-                for (DBNNode child : localChildren) {
-                    children[i++] = new NodeContentWrapperComposite(monitor, child, nodeParentRelativePath);
-                }
-            } else {
-                children = new NodeContentWrapperComposite[]{};
-            }
-        }
-
-
-        public void copyRecursivelyToFolder(@NotNull Path folder) throws IOException {
-            InputStream inputStream = node.getAdapter(InputStream.class);
-            if (inputStream != null) {
-                try (inputStream) {
-                    Path targetFile = folder.resolve(nodeParentRelativePath);
-                    Path parentDir = targetFile.getParent();
-                    if (parentDir != null) {
-                        Files.createDirectories(parentDir);
-                    }
-                    Files.copy(inputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
-                }
-            }
-            for (NodeContentWrapperComposite child : children) {
-                child.copyRecursivelyToFolder(folder);
-            }
-        }
     }
 }
