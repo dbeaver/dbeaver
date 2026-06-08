@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.jface.widgets.ButtonFactory;
-import org.eclipse.jface.widgets.CompositeFactory;
-import org.eclipse.jface.widgets.LabelFactory;
-import org.eclipse.jface.widgets.TextFactory;
+import org.eclipse.jface.widgets.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
+import org.jkiss.dbeaver.ui.controls.TitledComposite;
 
 /**
  * Manages creation of UI controls for forms.
@@ -40,23 +40,38 @@ final class UIControlFactory {
     }
 
     @NotNull
-    static Composite createTitledComposite(@NotNull Composite parent, @NotNull String text) {
-        // FIXME: Bug! Since titled composite is implemented as two nested composites
-        //        and the inner one is returned from the function to be populated,
-        //        all layout operations that are supposed to be applied to the outer
-        //        composite get applied to the inner one instead.
-        return UIUtils.createTitledComposite(parent, text, 1);
+    static TitledComposite createTitledComposite(@NotNull Composite parent, @NotNull String text) {
+        TitledComposite composite = new TitledComposite(parent, SWT.NONE);
+        composite.setText(text);
+        return composite;
     }
 
     @NotNull
-    static ExpandableComposite createExpandableComposite(@NotNull Composite parent) {
-        return UIUtils.createExpandableCompositeWithSeparator(parent, ExpandableComposite.CLIENT_INDENT, ExpandableComposite.TWISTIE);
+    static ExpandableComposite createExpandableComposite(@NotNull Composite parent, @NotNull String text) {
+        ExpandableCompositeEx composite = new ExpandableCompositeEx(
+            parent,
+            ExpandableComposite.CLIENT_INDENT | SWT.SEPARATOR,
+            ExpandableComposite.TWISTIE
+        );
+        composite.setText(text);
+        return composite;
     }
 
     @NotNull
-    static Label createLabel(@NotNull Composite parent, int style, @NotNull String text) {
+    static ScrolledComposite createScrolledComposite(@NotNull Composite parent, boolean horizontal, boolean vertical) {
+        int style = SWT.NONE;
+        if (horizontal) {
+            style |= SWT.H_SCROLL;
+        }
+        if (vertical) {
+            style |= SWT.V_SCROLL;
+        }
+        return UIUtils.createScrolledComposite(parent, style);
+    }
+
+    @NotNull
+    static Label createLabel(@NotNull Composite parent, int style) {
         return LabelFactory.newLabel(style)
-            .text(text)
             .create(parent);
     }
 
@@ -76,5 +91,11 @@ final class UIControlFactory {
     @NotNull
     static Combo createCombo(@NotNull Composite parent, int style) {
         return new Combo(parent, style);
+    }
+
+    @NotNull
+    static Link createLink(@NotNull Composite parent, int style) {
+        return LinkFactory.newLink(style)
+            .create(parent);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
+import org.jkiss.dbeaver.tools.transfer.ui.DataTransferFeatures;
+import org.jkiss.dbeaver.tools.transfer.ui.dialog.DataTransferConfigurationWizardDialog;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
@@ -221,6 +223,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return settings;
     }
 
+    @Nullable
     public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type) {
         return type.cast(getNodeSettings(page));
     }
@@ -251,7 +254,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    protected boolean isTaskConfigPage(IWizardPage page) {
+    protected boolean isTaskConfigPage(@NotNull IWizardPage page) {
         return page instanceof DataTransferPageNodeSettings || super.isTaskConfigPage(page);
     }
 
@@ -262,7 +265,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     @Nullable
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {
+    public IWizardPage getNextPage(@NotNull IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -292,7 +295,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     @Nullable
     @Override
-    public IWizardPage getPreviousPage(IWizardPage page) {
+    public IWizardPage getPreviousPage(@NotNull IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -307,7 +310,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         if (curIndex != -1) {
             for (int i = curIndex - 1; i > 0; i--) {
                 IWizardPage wizardPage = pages[i];
-                if (wizardPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) wizardPage).isPageApplicable()) {
+                if (wizardPage instanceof IWizardPageNavigable wpn && !wpn.isPageApplicable()) {
                     continue;
                 }
                 if (isPageValid(wizardPage)) {
@@ -320,7 +323,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    protected boolean isPageNeedsCompletion(IWizardPage page) {
+    protected boolean isPageNeedsCompletion(@NotNull IWizardPage page) {
         if (page instanceof DataTransferPageFinal) {
             return false;
         }
@@ -351,7 +354,17 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             IWizardPage[] pages = getPages();
             getContainer().showPage(pages[pages.length - 1]);
         }
-
+        {
+            // Track feature
+            Map<String, Object> params = new LinkedHashMap<>();
+            params.put(DataTransferFeatures.PARAM_TRANSFER_TYPE,
+                settings.isProducerProcessor() ? "import" : "export");
+            if (settings.getProcessor() != null) {
+                params.put(DataTransferFeatures.PARAM_TRANSFER_DATA_TYPE, settings.getProcessor().getName());
+            }
+            params.put(DataTransferFeatures.IS_TASK, isCurrentTaskSaved());
+            DataTransferFeatures.DATA_TRANSFER.use(params);
+        }
         try {
             DBTTask currentTask = getCurrentTask();
             if (currentTask == null) {
@@ -362,9 +375,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     DTMessages.data_transfer_wizard_job_name,
                     getSettings());
                 executor.executeTask();
+                if (executor.getError() instanceof DBException dbe) {
+                    throw dbe;
+                } else if (executor.getError() != null) {
+                    throw new DBException("Data transfer error", executor.getError());
+                }
             }
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(e.getMessage(), DTUIMessages.data_transfer_wizard_message_init_data_transfer, e);
+            DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
         }
 
@@ -432,7 +450,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
     }
 
-    protected boolean isPageValid(IWizardPage page) {
+    protected boolean isPageValid(@NotNull IWizardPage page) {
         return isTaskConfigPage(page) ||
             page instanceof DataTransferPagePipes ||
             page instanceof DataTransferPageFinal ||
@@ -484,12 +502,12 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Nullable
-    NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
+    NodePageSettings getNodeInfo(@NotNull IDataTransferNode<?> node) {
         return this.nodeSettings.get(node.getClass());
     }
 
     @Nullable
-    private IDataTransferSettings getNodeSettings(IWizardPage page) {
+    private IDataTransferSettings getNodeSettings(@NotNull IWizardPage page) {
         if (settings != null) {
             for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
                 if (page == nodePageSettings.settingsPage) {
@@ -697,7 +715,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             }
         };
 
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection, Map.of());
+        TaskConfigurationWizardDialog dialog = new DataTransferConfigurationWizardDialog(workbenchWindow, wizard, selection);
         dialog.open();
     }
 

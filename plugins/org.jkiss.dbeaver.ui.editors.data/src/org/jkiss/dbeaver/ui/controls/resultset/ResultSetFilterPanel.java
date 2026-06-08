@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,20 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.TextViewerUndoManager;
+import org.eclipse.jface.viewers.StyledCellLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -47,6 +53,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.qm.QMQueryFilter;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -61,6 +68,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllPinsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllSettingsAction;
@@ -71,10 +79,11 @@ import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHan
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorThemeSettings;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -120,7 +129,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private String activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
 
     private String prevQuery = null;
-    private final List<String> filtersHistory = new ArrayList<>();
+    private final List<QMQueryFilter> filtersHistory = new ArrayList<>();
     private Menu historyMenu;
     private boolean filterExpanded = false;
 
@@ -135,8 +144,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         gl.marginWidth = 3;
         this.setLayout(gl);
 
-        boolean isDark = UIStyles.isDarkTheme();
-        this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        this.shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
             this.filterComposite = new Composite(this, SWT.NONE);
@@ -517,7 +525,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return displayName;
     }
 
-    private void loadFiltersHistory(String query) {
+    private void loadFiltersHistory(@NotNull String query) {
         filtersHistory.clear();
         try {
             if (ResultSetViewer.DEFAULT_QUERY_TEXT.equals(query)) {
@@ -527,8 +535,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (context == null) {
                 return;
             }
-            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(context, query);
-            filtersHistory.addAll(history);
+            filtersHistory.addAll(viewer.getFilterManager().getQueryFilterHistory(context, query));
         } catch (Throwable e) {
             log.debug("Error reading history", e);
         }
@@ -567,15 +574,27 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         //viewer.getControl().setFocus();
     }
 
-    void addFiltersHistory(String whereCondition)
-    {
-        final boolean oldFilter = filtersHistory.remove(whereCondition);
-        filtersHistory.add(whereCondition);
-        if (!oldFilter) {
+    void addFiltersHistory(@NotNull String whereCondition) {
+        var oldFilter = filtersHistory.stream()
+            .filter(f -> f.text().equals(whereCondition))
+            .findFirst().orElse(null);
+        if (oldFilter != null) {
+            // Make it the first
+            filtersHistory.remove(oldFilter);
+            filtersHistory.addFirst(oldFilter);
+        } else {
+            var newFilter = new QMQueryFilter(
+                getActiveSourceQueryNormalized(false),
+                whereCondition,
+                null,
+                Instant.now(),
+                1
+            );
+            filtersHistory.addFirst(newFilter);
             try {
                 DBCExecutionContext context = viewer.getExecutionContext();
                 if (context != null) {
-                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(false), whereCondition);
+                    viewer.getFilterManager().saveQueryFilterValue(context, newFilter);
                 }
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
@@ -589,9 +608,45 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return filtersText;
     }
 
-    void setFilterValue(String whereCondition) {
-        if (whereCondition != null && !filtersText.getText().trim().equals(whereCondition.trim())) {
-            filtersText.setText(whereCondition);
+    void setFilterValue(@NotNull String whereCondition) {
+        if (whereCondition.isBlank()) {
+            setQueryFilter(null);
+            return;
+        }
+        for (QMQueryFilter filter : filtersHistory) {
+            if (filter.text().equals(whereCondition)) {
+                setQueryFilter(filter);
+                return;
+            }
+        }
+    }
+
+    private void setQueryFilter(@Nullable QMQueryFilter filter) {
+        if (filter == null) {
+            filtersText.setText("");
+            return;
+        } else if (filtersText.getText().trim().equals(filter.text().trim())) {
+            // Same filter is already applied
+            return;
+        }
+
+        filtersText.setText(filter.text());
+
+        var executionContext = viewer.getExecutionContext();
+        if (executionContext != null) {
+            try {
+                viewer.getFilterManager().useQueryFilter(executionContext, filter);
+                filtersHistory.remove(filter);
+                filtersHistory.add(new QMQueryFilter(
+                    filter.query(),
+                    filter.text(),
+                    filter.title(),
+                    Instant.now(),
+                    filter.useCount() + 1
+                ));
+            } catch (DBException e) {
+                log.error("Error updating last used filter mark", e);
+            }
         }
     }
 
@@ -897,8 +952,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 e.gc.setBackground(hoverBgColor);
                 e.gc.fillRectangle(e.x, e.y, e.width - 3, panelHeight);
                 e.gc.drawLine(
-                    e.x + e.width - 4, e.y,
-                    e.x + e.width - 4, e.y + e.height);
+                    e.x + e.width - 4, e.y + 2,
+                    e.x + e.width - 4, e.y + e.height - 4);
             } else {
                 e.gc.drawLine(
                     e.x + e.width - 4, e.y + 2,
@@ -913,7 +968,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (activeObjectImage != null) {
                 Image icon = DBeaverIcons.getImage(activeObjectImage);
                 Rectangle iconBounds = icon.getBounds();
-                e.gc.drawImage(icon, 2, 2);
+                e.gc.drawImage(icon, 2, (e.height - iconBounds.height) / 2);
                 textOffset += iconBounds.width + 2;
             }
             int textHeight = e.gc.getFontMetrics().getHeight();
@@ -962,26 +1017,73 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         private void showFilterHistoryPopup() {
-            if (popup != null) {
+            if (popup != null && !popup.isDisposed()) {
                 closeHistoryPopup();
                 return;
             }
-            popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+
+            popup = new Shell(getShell(), SWT.NO_TRIM);
             popup.setLayout(new FillLayout());
-            Table editControl = createFilterHistoryPanel(popup);
+
+            Composite composite = new Composite(popup, SWT.NONE);
+            GridLayoutFactory.fillDefaults().margins(2, 2).applyTo(composite);
+            new CompositeBorderPainter(composite);
+
+            String query = getActiveSourceQueryNormalized(false);
+            if (filtersHistory.isEmpty()) {
+                loadFiltersHistory(query);
+            }
+
+            Table editControl = createFilterHistoryPanel(composite, filtersHistory);
+
+            var context = viewer.getExecutionContext();
+            if (viewer.getFilterManager().isPersistent() && context != null && editControl.getItemCount() > 0) {
+                var manageButton = new Button(composite, SWT.PUSH);
+                manageButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                manageButton.setText("Manage Filters");
+                manageButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    closeHistoryPopup();
+
+                    var dialog = new ResultSetFilterDialog(
+                        getShell(),
+                        context,
+                        filtersHistory,
+                        viewer.getFilterManager(),
+                        query
+                    );
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        // Reload filters to reflect possible changes in the dialog
+                        loadFiltersHistory(query);
+
+                        var filter = dialog.getSelectedFilter();
+                        if (filter == null) {
+                            // Did the user delete the current filter?
+                            filter = filtersHistory.stream()
+                                .filter(f -> f.text().equals(filtersText.getText()))
+                                .findFirst().orElse(null);
+                        }
+                        setQueryFilter(filter);
+                        setCustomDataFilter();
+                    }
+                }));
+                UIUtils.asyncExec(() -> composite.setBackground(editControl.getBackground()));
+            }
 
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
             Rectangle displayRect = getMonitor().getClientArea();
-            final Point filterTextSize = filtersText.getSize();
-            int width = filterTextSize.x + historyPanel.getSize().x;
+
+            int x = parentRect.x;
+            int width = filtersText.getSize().x + historyPanel.getSize().x;
             if (filterExpandPanel != null) {
-                width += filterExpandPanel.getSize().x;
+                int w = filterExpandPanel.getSize().x;
+                x -= w;
+                width += w;
             }
             if (executePanel != null) {
                 width += executePanel.getSize().x;
             }
-            int height = Math.min(MAX_HISTORY_PANEL_HEIGHT, editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-            int x = parentRect.x;
+            int height = editControl.getItemCount() <= 0 ? editControl.getItemHeight() :
+                Math.min(MAX_HISTORY_PANEL_HEIGHT, popup.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             int y = parentRect.y + getSize().y;
             if (y + height > displayRect.y + displayRect.height) {
                 y = parentRect.y - height;
@@ -992,18 +1094,32 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (vsb != null) {
                 tableWidth -= vsb.getSize().x;
             }
-            editControl.getColumn(0).setWidth(tableWidth);
-            popup.setVisible(true);
-            editControl.setFocus();
+            int queryWidth = (int) (tableWidth * 0.7f) - 2;
+            int titleWidth = tableWidth - queryWidth - 2;
+            editControl.getColumn(0).setWidth(queryWidth);
+            editControl.getColumn(1).setWidth(titleWidth);
 
-            editControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
+            var onFocusLost = FocusListener.focusLostAdapter(e -> UIUtils.asyncExec(() -> {
+                if (popup == null || popup.isDisposed()) {
+                    return;
+                }
+                var focusControl = popup.getDisplay().getFocusControl();
+                if (focusControl != null && !UIUtils.isParent(popup, focusControl)) {
                     // Do not nullify it to avoid double-opening of popup
                     // when user click on button and popup is already visible
                     popup.dispose();
                 }
-            });
+            }));
+            Control[] compChildren = composite.getChildren();
+            for (Control child : compChildren) {
+                child.addFocusListener(onFocusLost);
+            }
+
+            popup.setVisible(true);
+            if (compChildren.length > 1) {
+                // Set focus to button
+                compChildren[1].setFocus();
+            }
         }
 
         private void closeHistoryPopup() {
@@ -1014,100 +1130,73 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         }
 
         @NotNull
-        private Table createFilterHistoryPanel(final Shell popup) {
-            final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
-            new TableColumn(historyTable, SWT.NONE);
+        private Table createFilterHistoryPanel(@NotNull Composite popup, @NotNull List<QMQueryFilter> filters) {
+            var historyViewer = new TableViewer(popup, SWT.FULL_SELECTION | SWT.SINGLE);
+            historyViewer.setContentProvider(new ListContentProvider());
 
-            if (filtersHistory.isEmpty()) {
-                loadFiltersHistory(getActiveSourceQueryNormalized(false));
-            }
+            var historyTable = historyViewer.getTable();
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+            historyTable.setLayoutData(gd);
 
-            if (filtersHistory.isEmpty()) {
-                // nothing
-                new TableItem(historyTable, SWT.NONE).setText("");
-            } else {
-                String curFilterValue = filtersText.getText();
-                for (int i = filtersHistory.size(); i > 0; i--) {
-                    String hi = filtersHistory.get(i - 1);
-                    if (!CommonUtils.equalObjects(hi, curFilterValue)) {
-                        new TableItem(historyTable, SWT.NONE).setText(hi);
-                    }
-                }
-                //historyTable.deselectAll();
-                if (historyTable.getItemCount() > 0) {
-                    historyTable.setSelection(0);
-                }
-            }
-
-            historyTable.addMouseTrackListener(new MouseTrackAdapter() {
+            var filterTextColumn = new TableViewerColumn(historyViewer, SWT.LEFT);
+            filterTextColumn.setLabelProvider(new StyledCellLabelProvider() {
                 @Override
-                public void mouseHover(MouseEvent e) {
-                    //hoverItem = historyTable.getItem(new Point(e.x, e.y));
-                }
-
-                @Override
-                public void mouseExit(MouseEvent e) {
-                    hoverItem = null;
+                public void update(@NotNull ViewerCell cell) {
+                    cell.setText(((QMQueryFilter) cell.getElement()).text());
+                    cell.setFont(BaseThemeSettings.instance.monospaceFont);
                 }
             });
-            historyTable.addKeyListener(new KeyAdapter() {
+
+            var filterTitleColumn = new TableViewerColumn(historyViewer, SWT.RIGHT);
+            filterTitleColumn.setLabelProvider(new StyledCellLabelProvider() {
                 @Override
-                public void keyPressed(KeyEvent e) {
-                    TableItem item = hoverItem;
-                    if (item == null) {
-                        final int selectionIndex = historyTable.getSelectionIndex();
-                        if (selectionIndex != -1) {
-                            item = historyTable.getItem(selectionIndex);
-                        }
+                public void update(@NotNull ViewerCell cell) {
+                    cell.setText(((QMQueryFilter) cell.getElement()).title());
+                    cell.setForeground(NavigatorThemeSettings.instance.hintColor);
+                }
+            });
+
+            var currentFilterText = filtersText.getText();
+            var entries = filters.stream()
+                .filter(f -> !f.text().equals(currentFilterText))
+                .toList();
+
+            historyViewer.setInput(entries);
+
+            historyTable.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+                TableItem item = hoverItem;
+                if (item == null) {
+                    final int selectionIndex = historyTable.getSelectionIndex();
+                    if (selectionIndex != -1) {
+                        item = historyTable.getItem(selectionIndex);
                     }
-                    if (item != null && !item.isDisposed()) {
-                        switch (e.keyCode) {
-                            case SWT.DEL:
-                                final String filterValue = item.getText();
-                                try {
-                                    DBCExecutionContext context = viewer.getExecutionContext();
-                                    if (context != null) {
-                                        viewer.getFilterManager().deleteQueryFilterValue(
-                                            context,
-                                            getActiveSourceQueryNormalized(true),
-                                            filterValue
-                                        );
-                                    }
-                                } catch (DBException e1) {
-                                    log.warn("Error deleting filter value [" + filterValue + "]", e1);
-                                }
-                                filtersHistory.remove(filterValue);
-                                item.dispose();
-                                hoverItem = null;
-                                break;
-                            case SWT.CR:
-                            case SWT.SPACE:
-                                final String newFilter = item.getText();
+                }
+                if (item != null && !item.isDisposed()) {
+                    switch (e.keyCode) {
+                        case SWT.CR, SWT.SPACE -> {
+                            final String newFilter = item.getText();
+                            closeHistoryPopup();
+                            setFilterValue(newFilter);
+                            setCustomDataFilter();
+                        }
+                        case SWT.ARROW_UP -> {
+                            if (historyTable.getSelectionIndex() <= 0) {
                                 closeHistoryPopup();
-                                setFilterValue(newFilter);
-                                setCustomDataFilter();
-                                break;
-                            case SWT.ARROW_UP:
-                                if (historyTable.getSelectionIndex() <= 0) {
-                                    closeHistoryPopup();
-                                }
-                                break;
+                            }
                         }
                     }
                 }
-            });
+            }));
+            historyTable.addMouseTrackListener(MouseTrackListener.mouseExitAdapter(e -> hoverItem = null));
             historyTable.addMouseMoveListener(e -> hoverItem = historyTable.getItem(new Point(e.x, e.y)));
-            historyTable.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    if (hoverItem != null) {
-                        final String newFilter = hoverItem.getText();
-                        closeHistoryPopup();
-                        setFilterValue(newFilter);
-                        setCustomDataFilter();
-                    }
+            historyTable.addMouseListener(MouseListener.mouseDownAdapter(e -> {
+                if (hoverItem != null) {
+                    final String newFilter = hoverItem.getText();
+                    closeHistoryPopup();
+                    setFilterValue(newFilter);
+                    setCustomDataFilter();
                 }
-            });
+            }));
 
             return historyTable;
         }
@@ -1160,7 +1249,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         GridData gd = (GridData) filtersText.getLayoutData();
         gd.heightHint = filtersText.getLineHeight() * (filterExpanded ? 5 : 1);
         filtersText.redraw();
-        this.getParent().layout(true);
+        this.getParent().getParent().layout(true);
     }
 
     private abstract class ToolItemPanel extends FilterPanel {

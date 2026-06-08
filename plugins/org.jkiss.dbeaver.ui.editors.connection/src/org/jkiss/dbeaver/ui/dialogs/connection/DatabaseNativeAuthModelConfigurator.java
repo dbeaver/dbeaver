@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
@@ -57,10 +58,15 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected DBPDataSourceContainer dataSource;
 
     protected final boolean canEditCredentialsPerPolicy;
+    protected boolean credentialsPromptMode;
 
     public DatabaseNativeAuthModelConfigurator() {
         canEditCredentialsPerPolicy = !ApplicationPolicyProvider.getInstance()
             .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
+    }
+
+    public void setCredentialsPromptMode(boolean credentialsPromptMode) {
+        this.credentialsPromptMode = credentialsPromptMode;
     }
 
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -83,15 +89,14 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
     }
 
-    protected void createUserNameControls(Composite authPanel, Runnable propertyChangeListener) {
-
+    protected void createUserNameControls(@NotNull Composite authPanel, @NotNull Runnable propertyChangeListener) {
         usernameText = new Text(authPanel, SWT.BORDER);
         usernameText.setLayoutData(makeAuthControlLayoutData(authPanel));
         usernameText.addModifyListener(e -> propertyChangeListener.run());
     }
 
     @NotNull
-    private GridData makeAuthControlLayoutData(Composite authPanel) {
+    protected GridData makeAuthControlLayoutData(@NotNull Composite authPanel) {
         int fontHeight = UIUtils.getFontHeight(authPanel);
 
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -113,12 +118,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         if (this.passwordText != null && !this.passwordText.isDisposed()) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             if (canEditCredentialsPerPolicy) {
-                this.passwordText.setEnabled(dataSource.isSavePassword());
+                this.passwordText.setEnabled(credentialsPromptMode || dataSource.isSavePassword() || isForceSaveCredentials());
                 if (this.savePasswordCheck != null) {
                     this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
                 }
                 if (showPasswordButton != null) {
-                    this.showPasswordButton.setEnabled(dataSource.isSavePassword() || isForceSaveCredentials());
+                    this.showPasswordButton.setEnabled(credentialsPromptMode || dataSource.isSavePassword() || isForceSaveCredentials());
                 }
             } else {
                 if (this.savePasswordCheck != null) {
@@ -146,7 +151,8 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
-        boolean resetPassword = !canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());
+        boolean resetPassword = !credentialsPromptMode &&
+            (!canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection()));
         if (dataSource.isSharedCredentials()) {
             resetPassword = false;
         }
@@ -159,7 +165,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
-        if (!canEditCredentialsPerPolicy) {
+        if (credentialsPromptMode && this.savePasswordCheck == null) {
+            dataSource.setSavePassword(false);
+        } else if (!canEditCredentialsPerPolicy) {
             dataSource.setSavePassword(dataSource.isSharedCredentials());
         } else if (this.savePasswordCheck != null) {
             dataSource.setSavePassword(this.savePasswordCheck.getSelection());
@@ -184,7 +192,8 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         return false;
     }
 
-    protected Text createPasswordText(Composite parent, String label) {
+    @NotNull
+    protected Text createPasswordText(@NotNull Composite parent, @Nullable String label) {
         if (label != null) {
             UIUtils.createControlLabel(parent, label);
         }
@@ -195,7 +204,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         return passwordText;
     }
 
-    protected void createPasswordControls(Composite parent, Runnable propertyChangeListener) {
+    protected void createPasswordControls(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
         passwordLabel = UIUtils.createLabel(parent, getPasswordFieldLabel());
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
@@ -210,7 +219,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         boolean supportsPasswordView = serviceSecurity != null;
 
         int colCount = 1;
-        if (supportsPasswordView) colCount++;
+        if (supportsPasswordView) {
+            colCount++;
+        }
         Composite panel = UIUtils.createComposite(passPlaceholder, colCount);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
@@ -224,9 +235,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 1
             );
             savePasswordCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                passwordText.setEnabled(savePasswordCheck.getSelection());
+                passwordText.setEnabled(credentialsPromptMode || savePasswordCheck.getSelection());
                 if (showPasswordButton != null) {
-                    showPasswordButton.setEnabled(savePasswordCheck.getSelection());
+                    showPasswordButton.setEnabled(credentialsPromptMode || savePasswordCheck.getSelection());
                 }
             }));
             savePasswordCheck.setEnabled(!isForceSaveCredentials());
@@ -242,11 +253,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
     }
 
+    @NotNull
     protected String getPasswordFieldLabel() {
         return UIConnectionMessages.dialog_connection_auth_label_password;
     }
 
-    private void showPasswordText(UIServiceSecurity serviceSecurity) {
+    private void showPasswordText(@NotNull UIServiceSecurity serviceSecurity) {
         boolean passHidden = (passwordText.getStyle() & SWT.PASSWORD) == SWT.PASSWORD;
         if (passHidden) {
             if (dataSource.getRegistry().getDataSource(dataSource.getId()) != null) {

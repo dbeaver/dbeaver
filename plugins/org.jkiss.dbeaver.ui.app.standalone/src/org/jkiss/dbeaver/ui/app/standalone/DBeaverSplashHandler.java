@@ -1,7 +1,7 @@
 
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,29 +20,18 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-/**
- * @since 3.3
- * 
- */
-public class DBeaverSplashHandler extends BasicSplashHandler {
-
-	public static final int TOTAL_LOADING_TASKS = 20;
-	private static DBeaverSplashHandler instance;
-
+public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
     private Font boldFont;
-
-    public DBeaverSplashHandler()
-    {
-        instance = this;
-    }
 
     @Override
     public void init(Shell splash) {
@@ -57,64 +46,61 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     }
     
     private void initVisualization() {
-        String progressRectString = null, messageRectString = null, foregroundColorString = null,
-            versionCoordString = null, versionInfoSizeString = null;
+        String progressRectString = null;
+        String messageRectString = null;
+        String foregroundColorString = null;
+        String versionCoordString = null;
+        String versionInfoSizeString = null;
+
         final IProduct product = Platform.getProduct();
         if (product != null) {
             progressRectString = product.getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
             messageRectString = product.getProperty(IProductConstants.STARTUP_MESSAGE_RECT);
+            foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
             versionCoordString = product.getProperty("versionInfoCoord");
             versionInfoSizeString = product.getProperty("versionInfoSize");
         }
 
         setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10)));
-        setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
+        setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275, 275, 280, 25)));
+        setForeground(StringConverter.asRGB(foregroundColorString, new RGB(255, 255, 255)));
+
         final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
         final int versionInfoSize = StringConverter.asInt(versionInfoSizeString, 22);
-        final RGB versionInfoRGB = new RGB(255,255,255);
-
-        int foregroundColorInteger = 0xFFFFFF;
-
-        setForeground(
-			new RGB(
-				(foregroundColorInteger & 0xFF0000) >> 16,
-                (foregroundColorInteger & 0xFF00) >> 8,
-                foregroundColorInteger & 0xFF));
 
         normalFont = getContent().getFont();
-        //boldFont = UIUtils.makeBoldFont(normalFont);
         FontData[] fontData = normalFont.getFontData();
         fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
         fontData[0].setHeight(versionInfoSize);
         boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
-        final Color versionColor = new Color(getContent().getDisplay(), versionInfoRGB);
-
         getContent().addPaintListener(e -> {
-            String productVersion = "";
-            if (product != null) {
-                productVersion = GeneralUtils.getPlainVersion();
+            var image = getSplash().getBackgroundImage();
+            if (image != null && !isImageFlipped()) {
+                // On macOS, since Sonoma, the splash is flipped. Eclipse features a fix for 14.x,
+                // but the bug is present in later versions as well. Interestingly, drawImage draws
+                // the image correctly; we just need to skip this for 14.x as it would flip it back.
+                // See https://github.com/eclipse-platform/eclipse.platform.ui/blob/d0eb817372ead45fff370ae91560344e88b793b6/bundles/org.eclipse.ui.workbench/eclipseui/org/eclipse/ui/internal/Workbench.java#L910-L925
+                e.gc.drawImage(image, 0, 0);
             }
-            //String osVersion = Platform.getOS() + " " + Platform.getOSArch();
-            if (boldFont != null) {
-                e.gc.setFont(boldFont);
-            }
-            e.gc.setForeground(versionColor);
-            e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
-            //e.gc.drawText(osVersion, 115, 200, true);
+            e.gc.setFont(boldFont);
+            e.gc.setForeground(getForeground());
+            e.gc.drawText(GeneralUtils.getPlainVersion(), versionCoord.x, versionCoord.y, true);
             e.gc.setFont(normalFont);
         });
     }
 
+    private static boolean isImageFlipped() {
+        // See org.eclipse.ui.internal.Workbench.getImage
+        return Util.isMac() && RuntimeUtils.getOSVersion().getMajor() == 14;
+    }
+
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
         if (boldFont != null) {
             boldFont.dispose();
             boldFont = null;
         }
-        instance = null;
     }
-
 }

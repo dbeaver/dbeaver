@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.controls;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -56,7 +57,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<? extends DBNNode> selectedNodes
     ) {
-        super(parentShell, "Select objects to include in completion scope", null);
+        super(parentShell, "Customize database objects accessible to AI", null);
         this.runnableContext = runnableContext;
         this.dataSourceContainer = container;
         this.executionContext = executionContext;
@@ -94,8 +95,9 @@ public class ScopeSelectorDialog extends BaseDialog {
         DBNDatabaseNode finalRootNode = rootNode;
         selectorPanel = new DatabaseObjectsSelectorPanel(
             dialogArea,
-            true,
-            this.runnableContext
+            this.runnableContext,
+            SWT.SINGLE | SWT.BORDER | SWT.CHECK,
+            true
         ) {
             @Override
             protected DBPProject getSelectedProject() {
@@ -129,7 +131,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
 
-        UIUtils.createInfoLabel(dialogArea, "Define database metadata to send to AI");
+        UIUtils.createInfoLabel(dialogArea, "Customize database metadata accessible to AI.");
 
         return dialogArea;
     }

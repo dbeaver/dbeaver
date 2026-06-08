@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -39,10 +40,11 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersister;
 
 public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProjectListener {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseNavigator";
+
+    private static final Log log = Log.getLog(DatabaseNavigatorView.class);
     private IMemento memento;
 
-    public DatabaseNavigatorView()
-    {
+    public DatabaseNavigatorView() {
         super();
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(this);
     }
@@ -73,8 +75,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    public void init(IViewSite site, IMemento memento) throws PartInitException
-    {
+    public void init(IViewSite site, IMemento memento) throws PartInitException {
         this.memento = memento;
         super.init(site, memento);
     }
@@ -85,64 +86,36 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    public DBNNode getRootNode()
-    {
-        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+    public DBNNode getRootNode() {
+        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(
+            DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(this);
         super.dispose();
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(@NotNull Composite parent) {
         super.createPartControl(parent);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_DATABASE_NAVIGATOR);
         UIExecutionQueue.queueExec(this::restoreState);
     }
 
     @Override
-    protected void createTreeColumns(DatabaseNavigatorTree tree) {
-/*
-        Tree treeControl = tree.getViewer().getTree();
-
-        final TreeViewerColumn nameColumn = new TreeViewerColumn(tree.getViewer(), SWT.LEFT);
-        nameColumn.setLabelProvider((CellLabelProvider) tree.getViewer().getLabelProvider());
-        final TreeViewerColumn statColumn = new TreeViewerColumn(tree.getViewer(), SWT.RIGHT);
-        statColumn.setLabelProvider(new CellLabelProvider() {
-            @Override
-            public void update(ViewerCell cell) {
-
-            }
-        });
-        treeControl.addListener(SWT.Resize, event -> {
-            int treeWidth = treeControl.getSize().x - treeControl.getVerticalBar().getSize().x - treeControl.getBorderWidth() * 2;
-            nameColumn.getColumn().setWidth(treeWidth * 80 / 100);
-            statColumn.getColumn().setWidth(treeWidth * 20 / 100);
-        });
-*/
-    }
-
-    @Override
-    public void handleProjectAdd(@NotNull DBPProject project) {
-        // Ignore
-    }
-
-    @Override
-    public void handleProjectRemove(@NotNull DBPProject project) {
-        // Ignore
-    }
-
-    @Override
-    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue)
-    {
+    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         UIExecutionQueue.queueExec(() -> {
-            getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
+            DBNNode rootNode;
+            try {
+                rootNode = getRootNode();
+            } catch (Exception e) {
+                log.error(e);
+                rootNode = new DBNEmptyNode();
+            }
+            getNavigatorTree().setInput(rootNode);
             getSite().getSelectionProvider().setSelection(new StructuredSelection());
         });
 

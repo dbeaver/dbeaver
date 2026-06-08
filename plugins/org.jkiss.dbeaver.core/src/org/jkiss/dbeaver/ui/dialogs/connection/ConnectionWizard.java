@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,6 +108,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     abstract DBPProject getSelectedProject();
 
+    @NotNull
     abstract DBNBrowseSettings getSelectedNavigatorSettings();
 
     public abstract ConnectionPageSettings getPageSettings();
@@ -236,7 +237,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
                 var oldUserPassword = activeDataSource.getActualConnectionConfiguration().getUserPassword();
                 var newUserPassword = targetDataSource.getActualConnectionConfiguration().getUserPassword();
-                if (newUserPassword != null && !newUserPassword.equals(oldUserPassword)) {
+                var oldSavePassword = activeDataSource.isSavePassword();
+                var newSavePassword = targetDataSource.isSavePassword();
+                if (!Objects.equals(newUserPassword, oldUserPassword) || oldSavePassword != newSavePassword) {
+                    activeDataSource.setSavePassword(newSavePassword);
                     DBUtils.fireObjectUpdate(activeDataSource, targetDataSource.getActualConnectionConfiguration());
                 }
 
@@ -253,11 +257,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
-                String msg = GeneralUtils.getExceptionMessage(ex);
+                Throwable targetException = ex.getTargetException();
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    msg,
-                    GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+                    GeneralUtils.getExceptionMessage(targetException),
+                    GeneralUtils.makeExceptionStatus(targetException)
+                );
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,

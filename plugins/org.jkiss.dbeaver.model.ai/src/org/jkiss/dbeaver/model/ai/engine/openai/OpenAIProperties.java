@@ -20,7 +20,6 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -39,7 +38,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
-    private static final String GPT_LEGACY_API = "gpt.api.legacy";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -64,9 +62,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName(GPT_LOG_QUERY)
     private Boolean loggingEnabled;
 
-    @SerializedName(GPT_LEGACY_API)
-    private boolean useLegacyApi;
-
     public OpenAIProperties() {
     }
 
@@ -75,7 +70,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 2, required = true)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
-            return OpenAIClient.OPENAI_ENDPOINT;
+            return OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         return baseUrl;
     }
@@ -89,16 +84,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
-    }
-
-    @Override
-    @Property(order = 7)
-    public boolean isLegacyApi() {
-        return useLegacyApi;
-    }
-
-    public void setLegacyApi(boolean useLegacyApi) {
-        this.useLegacyApi = useLegacyApi;
     }
 
     public void setToken(@Nullable String token) {
@@ -126,7 +111,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (temperature != null) {
+        if (temperature != null && Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
 
@@ -136,7 +121,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     public void setTemperature(double temperature) {
-        this.temperature = temperature;
+        this.temperature = AIUtils.normalizeTemperature(temperature);
     }
 
     @Override
@@ -148,7 +133,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
         return DBWorkbench.getPlatform()
             .getPreferenceStore()
-            .getBoolean(AIConstants.AI_LOG_QUERY);
+            .getBoolean(OpenAIConstants.AI_LOG_QUERY);
     }
 
     public void setLoggingEnabled(boolean loggingEnabled) {

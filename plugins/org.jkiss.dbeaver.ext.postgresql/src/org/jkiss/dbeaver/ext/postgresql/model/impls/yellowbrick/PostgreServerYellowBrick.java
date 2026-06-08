@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
@@ -39,13 +39,15 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
         return false;
     }
 
+    @NotNull
     @Override
     public String getServerTypeName() {
         return "YellowBrick";
     }
 
+    @Nullable
     @Override
-    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+    public String readTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableBase table) {
         // Extract main portion from server
         StringBuilder ddl = new StringBuilder();
 
@@ -59,6 +61,11 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsExplainPlanXML() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsFunctionDefRead() {
         return false;
     }
 

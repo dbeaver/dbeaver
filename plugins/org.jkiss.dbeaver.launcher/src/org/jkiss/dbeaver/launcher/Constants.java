@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ public class Constants {
     public static final String INTERNAL_OS_OS390 = "OS/390"; //$NON-NLS-1$
     public static final String INTERNAL_OS_ZOS = "z/OS"; //$NON-NLS-1$
 
-    public static final String ARCH_X86 = "x86";//$NON-NLS-1$
-    public static final String ARCH_X86_64 = "x86_64";//$NON-NLS-1$
+    public static final String ARCH_X86_64 = "x86_64"; //$NON-NLS-1$
 
     /**
      * Constant string (value "win32") indicating the platform is running on a
@@ -153,10 +152,12 @@ public class Constants {
     public static final String TEAM_WORKSPACE = "team-workspace";
     public static final String METADATA = ".metadata";
     public static final String DBEAVER_INSTANCE_PROPS = "dbeaver-instance.properties";
-    public static final String PROPERTY_PORT = "port";
 
     public static final String ARG_FORCE_CLI_MODE = "-cli-mode";
 
+    public static final String PRODUCT_DBEAVER_COMMUNITY_PREFIX = "org.jkiss.dbeaver";
+    public static final String PRODUCT_PROPRIETARY_DBEAVER_DESKTOP_PREFIX = "com.dbeaver";
+    public static final String PRODUCT_DBVR_PREFIX = "org.dbvr";
     public static final String PRODUCT_TEAM = "com.dbeaver.app.team";
     public static final String PRODUCT_CLOUDBEAVER   = "io.cloudbeaver";
 

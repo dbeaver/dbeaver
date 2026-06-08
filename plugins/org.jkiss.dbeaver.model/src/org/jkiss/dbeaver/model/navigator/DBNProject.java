@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.utils.CommonUtils;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -121,11 +120,6 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    public boolean allowsOpen() {
-        return true;
-    }
-
-    @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNProject.class) {
             return adapter.cast(this);
@@ -155,30 +149,32 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
-    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    protected DBNNode[] readChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (getModel().isGlobal() && !project.isOpen()) {
             project.ensureOpen();
         }
 
-        final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-
         try {
+            DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
+
             dataSourceRegistry.checkForErrors();
+
+            List<DBNNode> children = new ArrayList<>();
+
+            children.add(new DBNProjectDatabases(this, dataSourceRegistry));
+            addProjectNodes(monitor, children);
+
+            filterChildren(children);
+            return children.toArray(DBNNode[]::new);
         } catch (Throwable e) {
             project.dispose();
-            throw e;
+            if (e instanceof DBException) {
+                throw e;
+            } else {
+                throw new DBException("Internal error", e);
+            }
         }
-
-        final List<DBNNode> children = new ArrayList<>();
-
-        children.add(new DBNProjectDatabases(this, dataSourceRegistry));
-        addProjectNodes(monitor, children);
-
-        if (!CommonUtils.isEmpty(extraNodes)) {
-            children.addAll(extraNodes);
-        }
-        filterChildren(children);
-        return children.toArray(DBNNode[]::new);
     }
 
     protected void addProjectNodes(DBRProgressMonitor monitor, List<DBNNode> children) throws DBException {
@@ -195,7 +191,18 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return this;
     }
 
-    public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+    @Nullable
+    public DBNNode findNodeByRelativePath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        var model = getModel();
+        var projectPath = model.toProjectPath(project, path);
+        if (projectPath != null) {
+            return model.getNodeByPath(monitor, project, projectPath);
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBNNode findResource(@NotNull DBRProgressMonitor monitor, @NotNull Path path) throws DBException {
         Path relativePath = getProject().getAbsolutePath().relativize(path);
 
         DBNNode resNode = this;
@@ -217,24 +224,30 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return extraNodes;
     }
 
-    public <T> T getExtraNode(Class<T> nodeType) {
+    @Nullable
+    public <T> T getExtraNode(@NotNull Class<T> nodeType) {
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {
                     return nodeType.cast(node);
+                } else if (node instanceof DBNNodeExtension nodeExtension && nodeExtension.matchesType(nodeType)) {
+                    return nodeType.cast(nodeExtension.resolveRealNode());
                 }
             }
         }
+        log.error("Cannot determine model extender for type '" + nodeType + "'");
         return null;
     }
 
     @Override
-    public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
+    public void addExtraNode(@NotNull DBNNodeExtension node, boolean reflect) {
         if (extraNodes == null) {
             extraNodes = new ArrayList<>();
         }
         extraNodes.add(node);
-        extraNodes.sort(Comparator.comparing(DBNNode::getNodeDisplayName));
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            node.resolveRealNode();
+        }
         if (reflect) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
         }
@@ -245,6 +258,17 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         if (extraNodes != null && extraNodes.remove(node)) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
+    }
+
+    @NotNull
+    @Override
+    public DBNNode resolveTargetNode(@NotNull DBNNodeExtension sourceNode, @NotNull DBNNode targetNode) {
+        int index = extraNodes.indexOf(sourceNode);
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Source extension node '" + sourceNode + "' not found in '" + this + "'");
+        }
+        extraNodes.set(index, targetNode);
+        return targetNode;
     }
 
     @Override
@@ -293,6 +317,20 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBNNode[] childNodes = getRegularChildNodes(monitor);
+        if (!CommonUtils.isEmpty(extraNodes)) {
+            DBNNode[] result = new DBNNode[childNodes.length + extraNodes.size()];
+            System.arraycopy(childNodes, 0, result, 0, childNodes.length);
+            for (int i = 0; i < extraNodes.size(); i++) {
+                result[childNodes.length + i] = extraNodes.get(i);
+            }
+            return result;
+        }
+        return childNodes;
+    }
+
+    @NotNull
+    private DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children != null) {
             return children;
         }

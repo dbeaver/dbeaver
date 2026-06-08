@@ -231,7 +231,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
         }
 
         @Override
-        public void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             UIWidgets.fillDefaultTreeContextMenu(contributionManager, (Tree) getItemsViewer().getControl());
             contributionManager.add(new Action(ResultSetMessages.meta_data_panel_action_copy_column_text) {
                 @Override
@@ -308,7 +308,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
                 new ObjectsLoadVisualizer()
                 {
                     @Override
-                    public void completeLoading(Collection<DBDAttributeBinding> items) {
+                    public void completeLoading(@Nullable Collection<DBDAttributeBinding> items) {
                         super.completeLoading(items);
                         TreeViewer itemsViewer = (TreeViewer) attributeList.getItemsViewer();
                         if (!itemsViewer.getControl().isDisposed()) {

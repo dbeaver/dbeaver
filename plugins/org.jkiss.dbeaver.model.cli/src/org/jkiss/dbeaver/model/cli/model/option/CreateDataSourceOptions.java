@@ -17,15 +17,24 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.cli.CLIException;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import picocli.CommandLine;
 
-public class CreateDataSourceOptions {
+public class CreateDataSourceOptions implements DataSourceUpdater {
+    public static final String OPTION_DRIVER = "--driver";
     @NotNull
-    @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
+    @CommandLine.Option(names = {OPTION_DRIVER}, required = true, arity = "1", description = "Database driver")
     private String driver;
+
+    //nullable because arg group
+    @Nullable
     @CommandLine.ArgGroup(exclusive = false)
     private DataSourceOptions dataSourceOptions;
 
+    @Nullable
     public DataSourceOptions getDataSourceOptions() {
         return dataSourceOptions;
     }
@@ -33,5 +42,12 @@ public class CreateDataSourceOptions {
     @NotNull
     public String getDriver() {
         return driver;
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+        if (dataSourceOptions != null) {
+            dataSourceOptions.updateDataSource(dataSource);
+        }
     }
 }

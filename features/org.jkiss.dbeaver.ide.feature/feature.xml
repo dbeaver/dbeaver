@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.ide.feature"
         label="DBeaver Eclipse Plugin"
-        version="26.0.0.qualifier"
+        version="26.1.1.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.eclipse">
 
@@ -11,7 +11,6 @@
     </description>
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <includes id="org.jkiss.dbeaver.runtime.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>

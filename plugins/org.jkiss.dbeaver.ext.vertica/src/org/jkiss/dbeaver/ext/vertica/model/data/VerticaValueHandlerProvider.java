@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -27,7 +28,11 @@ import java.util.Locale;
 
 public class VerticaValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
-    public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject type) {
+    public DBDValueHandler getValueHandler(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDFormatSettings preferences,
+        @NotNull DBSTypedObject type
+    ) {
         String lowerTypeName = type.getTypeName().toLowerCase(Locale.ENGLISH);
         if ("uuid".equals(lowerTypeName)) {
             return JDBCUUIDValueHandler.INSTANCE;

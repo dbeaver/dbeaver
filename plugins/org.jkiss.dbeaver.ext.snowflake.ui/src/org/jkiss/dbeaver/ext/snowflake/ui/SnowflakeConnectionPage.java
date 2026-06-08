@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
@@ -108,7 +109,6 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
-            UIUtils.setDefaultTextControlWidthHint(portText);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
@@ -203,10 +203,18 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             dbText.setText(databaseName);
         }
         if (warehouseText != null) {
-            warehouseText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+            String warehouse = connectionInfo.getServerName();
+            if (CommonUtils.isEmpty(warehouse)) {
+                warehouse = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_WAREHOUSE);
+            }
+            warehouseText.setText(CommonUtils.notEmpty(warehouse));
         }
         if (schemaText != null) {
-            schemaText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA)));
+            String schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA);
+            if (CommonUtils.isEmpty(schema)) {
+                schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA2);
+            }
+            schemaText.setText(CommonUtils.notEmpty(schema));
         }
     }
 
@@ -217,7 +225,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
@@ -274,6 +282,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
         });
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
     {

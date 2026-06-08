@@ -10,7 +10,7 @@
         </application>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.applications" id="appstore" name="AppStore">
+    <extension point="org.eclipse.core.runtime.applications" id="msstore" name="MSStore">
         <application visible="true">
             <run class="org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication"/>
         </application>
@@ -19,7 +19,7 @@
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.ui.app.standalone.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="© 2025 DBeaver Corp"/>
+            <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
@@ -28,10 +28,11 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="170,55"/>
+            <property name="versionInfoCoord" value="154,53"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="startupMessageRect" value="60,273,340,21"/>
-            <property name="startupProgressRect" value="0,294,600,6"/>
+            <property name="startupMessageRect" value="60,270,270,21"/>
+            <property name="startupProgressRect" value="3,291,594,6"/>
+            <property name="startupForegroundColor" value="231,231,231"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -40,19 +41,19 @@
         </product>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.products" id="appstore">
-        <product application="org.jkiss.dbeaver.ui.app.standalone.appstore" description="%productSubTitle" name="DBeaver CE">
+    <extension point="org.eclipse.core.runtime.products" id="msstore">
+        <product application="org.jkiss.dbeaver.ui.app.standalone.msstore" description="%productSubTitle" name="DBeaver CE">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="© 2025 DBeaver Corp"/>
+            <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
-            <property name="versionInfoCoord" value="170,55"/>
+            <property name="versionInfoCoord" value="154,53"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="startupMessageRect" value="60,273,340,21"/>
-            <property name="startupProgressRect" value="0,294,600,6"/>
+            <property name="startupMessageRect" value="60,270,270,21"/>
+            <property name="startupProgressRect" value="3,291,594,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -245,6 +246,12 @@
                         <visibleWhen checkEnabled="true"/>
                     </command>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.spaces">
+                        <visibleWhen checkEnabled="true"/>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.leading.spaces">
+                        <visibleWhen checkEnabled="true"/>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.trim.trailing.spaces">
                         <visibleWhen checkEnabled="true"/>
                     </command>
                 </menu>
@@ -461,7 +468,7 @@
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler class="org.jkiss.dbeaver.ui.app.standalone.DBeaverSplashHandler" id="org.jkiss.dbeaver.ui.splash.interactive"/>
         <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.product" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
-        <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.appstore" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
+        <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.msstore" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
     </extension>
 
     <extension point="org.eclipse.ui.helpSupport">

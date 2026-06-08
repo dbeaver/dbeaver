@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -43,8 +45,12 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
 
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        CubridTable table = (CubridTable) container;
-        boolean isShard = table.getDataSource().isShard();
+        boolean isShard = false;
+        if (container instanceof CubridUser owner) {
+            isShard = owner.getDataSource().isShard();
+        } else if (container instanceof CubridTable table) {
+            isShard = table.getDataSource().isShard();
+        }
         return !isShard && container instanceof GenericTableBase;
     }
 
@@ -52,26 +58,25 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
     protected CubridTrigger createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        Object container,
-        Object copyFrom,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        return new CubridTrigger((GenericTableBase) container, BASE_TRIGGER_NAME, monitor);
+    	CubridTable table = (CubridTable) container;
+        return new CubridTrigger(table.getSchema(), table, BASE_TRIGGER_NAME, monitor);
     }
 
     public void createTrigger(CubridTrigger trigger, StringBuilder sb) {
         sb.append("\n").append(trigger.getActionTime()).append(" ");
-        if (trigger.getEvent().equals("COMMIT") || trigger.getEvent().equals("ROLLBACK")) {
-            sb.append(trigger.getEvent());
-        } else {
-            sb.append(trigger.getEvent());
+        sb.append(trigger.getEvent());
+        if (!trigger.getEvent().equals("COMMIT") && !trigger.getEvent().equals("ROLLBACK")) {
             sb.append(" ON ").append(trigger.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL));
             if (trigger.getEvent().contains("UPDATE") && trigger.getTargetColumn() != null) {
                 sb.append("(" + DBUtils.getQuotedIdentifier(trigger.getDataSource(), trigger.getTargetColumn()) + ")");
             }
-            if (trigger.getCondition() != null) {
-                sb.append("\nIF ").append(trigger.getCondition());
-            }
+        }
+        if (trigger.getCondition() != null) {
+            sb.append("\nIF ").append(trigger.getCondition());
         }
         sb.append("\nEXECUTE ");
         if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE TRANSACTION")) {
@@ -170,12 +175,12 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
         processObjectRename(commandContext, object, options, newName);
     }
 
-    public boolean canEditObject(CubridTrigger object) {
+    public boolean canEditObject(@NotNull CubridTrigger object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canDeleteObject(CubridTrigger object) {
+    public boolean canDeleteObject(@NotNull CubridTrigger object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

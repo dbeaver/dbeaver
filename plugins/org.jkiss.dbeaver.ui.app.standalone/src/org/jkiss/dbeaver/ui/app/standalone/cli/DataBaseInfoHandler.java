@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.AbstractRootCommandLineParameterHandler;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import picocli.CommandLine;
 
@@ -38,13 +39,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 @CommandLine.Command(name = "database-driver-list", aliases = {"-database-driver-list", "-databaseList"},
     description = "Show list of supported database drivers in json format.")
-public class DataBaseInfoHandler extends AbstractRootCommandLineParameterHandler {
+public class DataBaseInfoHandler extends CLIAbstractSubcommand {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
     private static final String PRODUCT_ID_LABEL = "id"; //$NON-NLS-1$
     private static final String PRODUCT_NAME_LABEL = "name"; //$NON-NLS-1$
@@ -81,7 +82,7 @@ public class DataBaseInfoHandler extends AbstractRootCommandLineParameterHandler
     }
 
     private void publishDataBaseInfo(@NotNull Path path) {
-        List<DriverDescriptor> drivers = getSupportedDBInstances();
+        List<DBPDriver> drivers = getSupportedDBInstances();
         if (drivers.isEmpty()) {
             return;
         }
@@ -96,7 +97,7 @@ public class DataBaseInfoHandler extends AbstractRootCommandLineParameterHandler
                 JSONUtils.field(jsonWriter, PRODUCT_DESCRIPTION_LABEL, Platform.getProduct().getDescription());
                 jsonWriter.name(DATABASES_LABEL);
                 jsonWriter.beginArray();
-                for (DriverDescriptor driver : drivers) {
+                for (DBPDriver driver : drivers) {
                     jsonWriter.beginObject();
                     JSONUtils.field(jsonWriter, DB_NAME_LABEL, driver.getName());
                     JSONUtils.serializeObjectList(jsonWriter, DB_CATEGORY_LABEL, driver.getCategories());
@@ -120,20 +121,18 @@ public class DataBaseInfoHandler extends AbstractRootCommandLineParameterHandler
         }
     }
 
-    private List<DriverDescriptor> getSupportedDBInstances() {
-        List<DriverDescriptor> supportedDataBases = new ArrayList<>();
+    private List<DBPDriver> getSupportedDBInstances() {
+        List<DBPDriver> supportedDataBases = new ArrayList<>();
         DataSourceProviderRegistry dataSourceRegistry = DataSourceProviderRegistry.getInstance();
         List<DataSourceProviderDescriptor> dataSourceProviders = dataSourceRegistry.getDataSourceProviders();
         for (DataSourceProviderDescriptor providerDescriptor : dataSourceProviders) {
-            for (DriverDescriptor driverDescriptor : providerDescriptor.getEnabledDrivers()) {
-                supportedDataBases.add(driverDescriptor);
-            }
+            supportedDataBases.addAll(providerDescriptor.getEnabledDrivers());
         }
-        Collections.sort(supportedDataBases, (DriverDescriptor o1, DriverDescriptor o2) -> o1.getName().compareTo(o2.getName()));
+        supportedDataBases.sort(Comparator.comparing(DBPNamedObject::getName));
         return supportedDataBases;
     }
 
-    private boolean isRequireToDownload(DriverDescriptor driver) {
+    private boolean isRequireToDownload(DBPDriver driver) {
         return driver.getDriverLibraries()
             .stream()
             .map(DBPDriverLibrary::getLocalFile)
@@ -142,7 +141,7 @@ public class DataBaseInfoHandler extends AbstractRootCommandLineParameterHandler
             .findAny().isEmpty();
     }
 
-    private boolean isExtendedInPro(DriverDescriptor driver) {
+    private boolean isExtendedInPro(DBPDriver driver) {
         return !driver.getDriverReplacementsInfo().isEmpty();
     }
 }

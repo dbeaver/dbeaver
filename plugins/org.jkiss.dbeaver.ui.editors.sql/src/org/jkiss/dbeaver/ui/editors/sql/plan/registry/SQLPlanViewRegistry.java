@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,11 @@ public class SQLPlanViewRegistry {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sql.plan.view"; //NON-NLS-1 //$NON-NLS-1$
 
     private static final String TAG_VIEW = "view"; //NON-NLS-1
+    private static final String TAG_ACTION = "action"; //NON-NLS-1
 
     private static SQLPlanViewRegistry instance;
 
+    @NotNull
     public synchronized static SQLPlanViewRegistry getInstance() {
         if (instance == null) {
             instance = new SQLPlanViewRegistry(Platform.getExtensionRegistry());
@@ -45,16 +47,17 @@ public class SQLPlanViewRegistry {
         return instance;
     }
 
-    private List<SQLPlanViewDescriptor> planViewDescriptors = new ArrayList<>();
+    private final List<SQLPlanViewDescriptor> planViewDescriptors = new ArrayList<>();
+    private final List<SQLPlanActionDescriptor> actionDescriptors = new ArrayList<>();
 
-    private SQLPlanViewRegistry(IExtensionRegistry registry)
-    {
+    private SQLPlanViewRegistry(@NotNull IExtensionRegistry registry) {
         // Load target converters
         IConfigurationElement[] panelElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : panelElements) {
             if (TAG_VIEW.equals(ext.getName())) {
-                SQLPlanViewDescriptor descriptor = new SQLPlanViewDescriptor(ext);
-                planViewDescriptors.add(descriptor);
+                planViewDescriptors.add(new SQLPlanViewDescriptor(ext));
+            } else if (TAG_ACTION.equals(ext.getName())) {
+                actionDescriptors.add(new SQLPlanActionDescriptor(ext));
             }
         }
     }
@@ -67,7 +70,7 @@ public class SQLPlanViewRegistry {
     }
 
     @Nullable
-    public SQLPlanViewDescriptor getPlanViewDescriptor(String id) {
+    public SQLPlanViewDescriptor getPlanViewDescriptor(@NotNull String id) {
         for (SQLPlanViewDescriptor converter : planViewDescriptors) {
             if (converter.getId().equals(id)) {
                 return converter;
@@ -76,4 +79,8 @@ public class SQLPlanViewRegistry {
         return null;
     }
 
+    @NotNull
+    public List<SQLPlanActionDescriptor> getActionDescriptors() {
+        return actionDescriptors;
+    }
 }

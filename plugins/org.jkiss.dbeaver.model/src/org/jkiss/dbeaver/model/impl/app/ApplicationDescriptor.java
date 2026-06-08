@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.app;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -30,7 +31,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private final String id;
     private final String productFamily;
     private final String licenseProductId;
-    private final String name;
+    private String name;
     private final String description;
     private final String parentId;
     private final String[] umbrellaProductIds;
@@ -61,35 +62,47 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         this.implClass = new ObjectType(config, "class");
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLicenseProductId() {
         return licenseProductId;
     }
 
+    @NotNull
     public String getProductFamily() {
         return productFamily;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    // Never call it directly
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Nullable
     public String getDescription() {
         return description;
     }
 
+    @Nullable
     public ApplicationDescriptor getParent() {
         return parent;
     }
 
-    void setParent(ApplicationDescriptor parent) {
+    void setParent(@NotNull ApplicationDescriptor parent) {
         this.parent = parent;
         this.parent.finalApplication = false;
     }
 
+    @Nullable
     public String[] getUmbrellaProductIds() {
         return umbrellaProductIds;
     }
@@ -118,6 +131,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         return finalApplication;
     }
 
+    @Nullable
     String getParentId() {
         return parentId;
     }

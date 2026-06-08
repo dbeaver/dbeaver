@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_show_selected_row_count;
     public static String controls_resultset_viewer_action_show_selected_column_count;
     public static String controls_resultset_viewer_action_show_selected_cell_count;
+    public static String controls_resultset_viewer_action_show_filter_panel;
     public static String controls_resultset_viewer_action_open_value_editor_column_readonly;
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
@@ -157,6 +158,18 @@ public class ResultSetMessages extends NLS {
     public static String actions_name_color_by;
     public static String actions_name_color_reset_by;
     public static String actions_name_row_colors;
+    public static String actions_name_group_row_striping;
+    public static String dialog_group_row_striping_title;
+    public static String dialog_group_row_striping_enable;
+    public static String dialog_group_row_striping_columns_label;
+    public static String dialog_group_row_striping_add;
+    public static String dialog_group_row_striping_remove;
+    public static String dialog_group_row_striping_up;
+    public static String dialog_group_row_striping_down;
+    public static String dialog_group_row_striping_sort_by_group;
+    public static String dialog_group_row_striping_sort_by_group_tip;
+    public static String dialog_group_row_striping_color_first;
+    public static String dialog_group_row_striping_color_second;
     public static String actions_name_structurize_complex_types;
     public static String actions_spreadsheet_copy_special;
 
@@ -248,6 +261,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_paste_as_title;
     public static String dialog_paste_as_insert_multiple_rows_text;
     public static String dialog_paste_as_insert_multiple_rows_tip;
+    public static String dialog_paste_as_insert_new_rows_text;
+    public static String dialog_paste_as_insert_new_rows_tip;
     public static String dialog_paste_as_ignore_quotes_text;
     public static String dialog_paste_as_ignore_quotes_tip;
     public static String dialog_paste_as_insert_nulls_text;
@@ -426,7 +441,6 @@ public class ResultSetMessages extends NLS {
 
     public static String error_part_button_go_to_error;
 
-    public static String grouping_panel_show_percent_of_total_tip;
     public static String grouping_panel_sorting_action_unsorted;
     public static String grouping_panel_sorting_action_descending;
     public static String grouping_panel_sorting_action_ascending;
@@ -435,7 +449,7 @@ public class ResultSetMessages extends NLS {
     public static String grouping_panel_error_change_duplicate_presentation_message;
     public static String grouping_panel_error_change_grouping_settings_message;
     public static String grouping_panel_error_change_grouping_query_message;
-    public static String grouping_panel_error_show_percent_of_total_message;
+    public static String grouping_panel_error_extension_point_action_message;
     public static String grouping_panel_function_panel_title;
     public static String grouping_panel_function_panel_custom_label;
     public static String grouping_panel_column_panel_title;

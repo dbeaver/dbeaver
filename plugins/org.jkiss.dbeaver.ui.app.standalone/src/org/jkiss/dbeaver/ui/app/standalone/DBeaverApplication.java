@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
@@ -112,7 +111,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String DEFAULT_PROJECT_NAME = "General";
 
     private final Path FILE_WITH_WORKSPACES;
-    private final Path WORKSPACE_DIR_CURRENT;
+    private final Path defaultWorkspacePath;
 
     static boolean WORKSPACE_MIGRATED = false;
 
@@ -152,7 +151,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
-        WORKSPACE_DIR_CURRENT = Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
+        defaultWorkspacePath = Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
         FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
@@ -179,6 +178,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     @Override
     public Object start(IApplicationContext context) {
         instance = this;
+        // hide standard Eclipse exit message if exit code is not OK (otherwise it may be confusing)
+        System.setProperty(ECLIPSE_EXIT_DATA, "");
 
         var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
@@ -209,7 +210,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
         }
 
@@ -217,6 +218,25 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         // Register core components
         initializeApplicationServices();
+
+        final Runtime runtime = Runtime.getRuntime();
+
+        // Debug logger
+        initDebugWriter();
+
+        try {
+            DBWorkbench.addInitializeHook((platform) -> {
+                try {
+                    initializeApplication();
+                } catch (Exception e) {
+                    showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
+                    throw e;
+                }
+            });
+        } catch (DBException e) {
+            log.error("Error initializing application", e);
+            return IApplication.EXIT_OK;
+        }
 
         // Custom parameters
         try {
@@ -230,11 +250,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                             System.out.println(res);
                         }
                     }
-                    return IApplication.EXIT_OK;
+                    return cliProcessResult.getExitCode();
                 }
             } catch (Exception e) {
                 log.error("Error processing command line parameters", e);
-                return IApplication.EXIT_OK;
+                return CLIConstants.EXIT_CODE_ERROR;
             }
         } finally {
             headlessMode = false;
@@ -245,19 +265,23 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
-        final Runtime runtime = Runtime.getRuntime();
-
-        initializeConfiguration();
-
-        // Debug logger
-        initDebugWriter();
-
         log.debug(GeneralUtils.getProductName() + " " + GeneralUtils.getProductVersion() + " is starting"); //$NON-NLS-1$
         log.debug("OS: " + System.getProperty(StandardConstants.ENV_OS_NAME) + " " + System.getProperty(StandardConstants.ENV_OS_VERSION) + " (" + System.getProperty(StandardConstants.ENV_OS_ARCH) + ")");
         log.debug("Java version: " + System.getProperty(StandardConstants.ENV_JAVA_VERSION) + " by " + System.getProperty(StandardConstants.ENV_JAVA_VENDOR) + " (" + System.getProperty(StandardConstants.ENV_JAVA_ARCH) + "bit)");
         log.debug("Install path: '" + SystemVariablesResolver.getInstallPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
+
+        try {
+            DBWorkbench.getPlatform();
+        } catch (Throwable e) {
+            if (e instanceof DBRuntimeException re) {
+                e = re.getCause();
+            }
+            log.debug(e);
+            showMessageBox("Error initializing platform", CommonUtils.getAllExceptionMessages(e), SWT.ICON_ERROR);
+            return IApplication.EXIT_OK;
+        }
 
         // Write version info
         writeWorkspaceInfo();
@@ -272,24 +296,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
 
-        DBWorkbench.getPlatform();
-
-        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
+        if (!isWorkspaceSwitchingAllowed() && !defaultWorkspacePath.equals(defaultHomePath)) {
             log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
                 + GeneralUtils.getProductName() + ".");
             return IApplication.EXIT_OK;
         }
 
+        log.debug("\tPatch workbench configuration");
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
-        // Init application
-        // Error leads to app shutdown
-        try {
-            initializeApplication();
-        } catch (DBException e) {
-            showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
-            log.error(e);
-            return IApplication.EXIT_OK;
-        }
 
         // Run instance server
         try {
@@ -360,7 +374,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         try {
-            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+            DBeaverCommandLine.getInstance().preprocessCommandLine(args);
         } catch (DBException e) {
             log.error("Error preprocessing command line", e);
         }
@@ -374,7 +388,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             isReadOnlyField.set(instanceLoc, true);
         } catch (Throwable e) {
             // ignore
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 
@@ -389,7 +403,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!CommonUtils.isEmpty(lastWorkspace)) {
             try {
                 Path lwPath = Path.of(lastWorkspace);
-                if (!WORKSPACE_DIR_CURRENT.equals(lwPath)) {
+                if (!defaultWorkspacePath.equals(lwPath)) {
                     final URL selectedWorkspaceURL = lwPath.toUri().toURL();
                     instanceLoc.set(selectedWorkspaceURL, true);
                     return true;
@@ -411,7 +425,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @NotNull
     public Path getDefaultWorkingFolder() {
-        return WORKSPACE_DIR_CURRENT;
+        return defaultWorkspacePath;
     }
 
     @NotNull
@@ -426,26 +440,26 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     public Path getDefaultInstanceLocation() {
-        Path defaultHomePath = WORKSPACE_DIR_CURRENT;
+        Path defaultHomePath = defaultWorkspacePath;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
             try {
                 defaultHomePath = RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL());
             } catch (IOException e) {
                 System.err.println("Unable to resolve workspace location " + instanceLoc);
-                e.printStackTrace();
+                e.printStackTrace(System.err);
             }
         }
         return defaultHomePath;
     }
 
-    private void updateSplashHandler() {
+    public Shell updateSplashHandler() {
         if (ArrayUtils.contains(Platform.getApplicationArgs(), "-nosplash")) {
-            return;
+            return null;
         }
         try {
             // look and see if there's a splash shell we can parent off of
-            Shell shell = WorkbenchPlugin.getSplashShell(display);
+            Shell shell = WorkbenchPlugin.getSplashShell(getDisplay());
             if (shell != null) {
                 // should set the icon and message for this shell to be the
                 // same as the chooser dialog - this will be the guy that lives in
@@ -453,15 +467,20 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 // with no message.
                 shell.setText(ChooseWorkspaceDialog.getWindowTitle());
                 shell.setImages(Window.getDefaultImages());
+                return shell;
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);
             System.err.println("Error updating splash shell");
         }
-
+        return null;
     }
 
-    protected void initializeConfiguration() {
+    /**
+     * May be overrided in implementors
+     */
+    protected void initializeApplication() throws DBException {
+        // Configure network
         ModelPreferences.IPType stack = ModelPreferences.IPType.getPreferredStack();
         if (stack != ModelPreferences.IPType.AUTO) {
             System.setProperty("java.net.preferIPv4Stack", String.valueOf(stack == ModelPreferences.IPType.IPV4));
@@ -474,14 +493,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (debugNetworkConnections) {
             System.setProperty("javax.net.debug", "all");
         }
-    }
 
-    /**
-     * May be overrided in implementors
-     */
-    protected void initializeApplication() throws DBException {
-        activateProxyService();
-
+        // Policy
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
             try {
                 WindowsDefenderConfigurator.savePreference(
@@ -493,18 +506,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
-    private static void activateProxyService() {
-        try {
-            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
-        } catch (Throwable e) {
-            log.debug("Proxy service not found");
-        }
-    }
-
-
     private Display getDisplay() {
         if (display == null) {
-            log.debug("Create display");
+            log.debug("\tCreate display");
             // Set display name at the very beginning (#609)
             // This doesn't initialize display - just sets default title
             Display.setAppName(GeneralUtils.getProductName());
@@ -531,7 +535,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
-        Path defaultHomePath = WORKSPACE_DIR_CURRENT;
+        Path defaultHomePath = defaultWorkspacePath;
         try {
             if (!Files.exists(defaultHomePath) || isEmptyFolder(defaultHomePath)) {
                 if (!tryMigrateFromPreviousVersion(defaultHomePath)) {
@@ -666,7 +670,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
             log.debug("DBeaver shutdown completed"); //$NON-NLS-1$
 
-            stopDebugWriter();
+            //stopDebugWriter();
         }
     }
 

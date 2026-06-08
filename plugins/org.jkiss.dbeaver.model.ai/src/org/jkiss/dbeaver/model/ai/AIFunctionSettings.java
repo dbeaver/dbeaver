@@ -16,12 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI function settings.
@@ -29,12 +27,138 @@ import java.util.Set;
  * initialized categories tracking.
  */
 public final class AIFunctionSettings {
+    @SerializedName("enabled")
     private boolean functionsEnabled = true;
-    private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
-    private final Set<String> enabledFunctions = new LinkedHashSet<>();
-    private final Set<String> initializedDefaultCategories = new LinkedHashSet<>();
+    @SerializedName("mcpEncrypted")
+    private boolean mcpConfigEncrypted = false;
+    private final Map<String, ToolboxSettings> functions = new LinkedHashMap<>();
 
-    AIFunctionSettings() {
+    /**
+     * Keeps information about function which were explicitly enabled or disabled for the particular toolbox.
+     * User can modify enabled/disable functions set.
+     */
+    public static class ToolboxSettings {
+        @SerializedName("enabled")
+        private boolean enabled = true;
+        @SerializedName("ef")
+        private Set<String> enabledFunctions;
+        @SerializedName("df")
+        private Set<String> disabledFunctions;
+        @SerializedName("aaf")
+        private Set<String> alwaysAllowedFunctions;
+        @SerializedName("qf")
+        private Set<String> askFunctions;
+
+        public ToolboxSettings() {
+            this.enabledFunctions = new LinkedHashSet<>();
+            this.disabledFunctions = new LinkedHashSet<>();
+            this.alwaysAllowedFunctions = new LinkedHashSet<>();
+            this.askFunctions = new LinkedHashSet<>();
+        }
+
+        public ToolboxSettings(@NotNull ToolboxSettings src) {
+            this.enabled = src.enabled;
+            this.enabledFunctions = new LinkedHashSet<>(src.getEnabledFunctions());
+            this.disabledFunctions = new LinkedHashSet<>(src.getDisabledFunctions());
+            this.alwaysAllowedFunctions = new LinkedHashSet<>(src.getAlwaysAllowedFunctions());
+            this.askFunctions = new LinkedHashSet<>(src.getAskFunctions());
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        @NotNull
+        public Set<String> getEnabledFunctions() {
+            return enabledFunctions;
+        }
+
+        public void setEnabledFunctions(@NotNull Collection<String> enabledFunctions) {
+            this.enabledFunctions = new LinkedHashSet<>(enabledFunctions);
+        }
+
+        @NotNull
+        public Set<String> getDisabledFunctions() {
+            return disabledFunctions;
+        }
+
+        public void setDisabledFunctions(@NotNull Collection<String> disabledFunctions) {
+            this.disabledFunctions = new LinkedHashSet<>(disabledFunctions);
+        }
+
+        public boolean isFunctionEnabled(@NotNull AIFunctionDescriptor function) {
+            if (function.isEnabledByDefault()) {
+                return !disabledFunctions.contains(function.getId());
+            } else {
+                return enabledFunctions.contains(function.getId());
+            }
+        }
+
+        public void setFunctionEnabled(@NotNull AIFunctionDescriptor function, boolean enabled) {
+            if (function.isEnabledByDefault()) {
+                if (enabled) {
+                    disabledFunctions.remove(function.getId());
+                } else {
+                    disabledFunctions.add(function.getId());
+                }
+            } else {
+                if (enabled) {
+                    enabledFunctions.add(function.getId());
+                } else {
+                    enabledFunctions.remove(function.getId());
+                }
+            }
+        }
+
+        @NotNull
+        public Set<String> getAlwaysAllowedFunctions() {
+            return alwaysAllowedFunctions;
+        }
+
+        public void setAlwaysAllowedFunctions(@NotNull Collection<String> alwaysAllowedFunctions) {
+            this.alwaysAllowedFunctions = new LinkedHashSet<>(alwaysAllowedFunctions);
+        }
+
+        @NotNull
+        public Set<String> getAskFunctions() {
+            return askFunctions;
+        }
+
+        public void setAskFunctions(@NotNull Collection<String> askFunctions) {
+            this.askFunctions = new LinkedHashSet<>(askFunctions);
+        }
+
+        @NotNull
+        public AIFunctionAllowMode getFunctionAllowMode(@NotNull AIFunctionDescriptor function) {
+            String functionId = function.getId();
+            if (alwaysAllowedFunctions.contains(functionId)) {
+                return AIFunctionAllowMode.ALWAYS_ALLOW;
+            }
+            if (askFunctions.contains(functionId)) {
+                return AIFunctionAllowMode.ASK;
+            }
+            return function.getDefaultAllowMode();
+        }
+
+        public void setFunctionAllowMode(
+            @NotNull AIFunctionDescriptor function,
+            @NotNull AIFunctionAllowMode allowMode
+        ) {
+            String functionId = function.getId();
+            alwaysAllowedFunctions.remove(functionId);
+            askFunctions.remove(functionId);
+
+            if (allowMode != function.getDefaultAllowMode()) {
+                switch (allowMode) {
+                    case ALWAYS_ALLOW -> getAlwaysAllowedFunctions().add(functionId);
+                    case ASK -> getAskFunctions().add(functionId);
+                }
+            }
+        }
     }
 
     public boolean isFunctionsEnabled() {
@@ -45,72 +169,21 @@ public final class AIFunctionSettings {
         this.functionsEnabled = functionsEnabled;
     }
 
-    @NotNull
-    public Set<String> getEnabledFunctions() {
-        return Set.copyOf(enabledFunctions);
+    public boolean isMcpConfigEncrypted() {
+        return mcpConfigEncrypted;
     }
 
-    public void setEnabledFunctions(@Nullable Set<String> functions) {
-        this.enabledFunctions.clear();
-        if (functions != null) {
-            this.enabledFunctions.addAll(functions);
-        }
-    }
-
-    public boolean isFunctionEnabled(@NotNull String functionId) {
-        return enabledFunctions.contains(functionId);
-    }
-
-    public void enableFunction(@NotNull String functionId) {
-        enabledFunctions.add(functionId);
-    }
-
-    public void disableFunction(@NotNull String functionId) {
-        enabledFunctions.remove(functionId);
+    public void setMcpConfigEncrypted(boolean mcpConfigEncrypted) {
+        this.mcpConfigEncrypted = mcpConfigEncrypted;
     }
 
     @NotNull
-    public Set<String> getEnabledFunctionCategories() {
-        return new HashSet<>(enabledFunctionCategories);
+    public ToolboxSettings getToolboxSettings(@NotNull AIToolbox toolbox) {
+        return functions.computeIfAbsent(toolbox.getToolboxId(), s -> new ToolboxSettings());
     }
 
-    public void setEnabledFunctionCategories(@Nullable Set<String> categories) {
-        this.enabledFunctionCategories.clear();
-        if (categories != null) {
-            this.enabledFunctionCategories.addAll(categories);
-        }
+    public void removeToolboxSettings(@NotNull String toolboxId) {
+        functions.remove(toolboxId);
     }
 
-    public boolean isFunctionCategoryEnabled(@NotNull String category) {
-        return enabledFunctionCategories.contains(category);
-    }
-
-    public void enableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.add(category);
-    }
-
-    public void disableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.remove(category);
-    }
-
-    @NotNull
-    public Set<String> getInitializedDefaultCategories() {
-        return new HashSet<>(initializedDefaultCategories);
-    }
-
-    public void setInitializedDefaultCategories(@Nullable Set<String> categories) {
-        this.initializedDefaultCategories.clear();
-        if (categories != null) {
-            this.initializedDefaultCategories.addAll(categories);
-        }
-    }
-
-    public void markCategoryAsInitialized(@NotNull String categoryId) {
-        this.initializedDefaultCategories.add(categoryId);
-    }
-
-    public boolean isCategoryInitialized(@NotNull String categoryId) {
-        return initializedDefaultCategories.contains(categoryId);
-    }
 }
-

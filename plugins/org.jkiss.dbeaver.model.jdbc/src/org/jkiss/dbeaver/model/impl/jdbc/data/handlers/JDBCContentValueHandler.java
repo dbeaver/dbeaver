@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -67,9 +68,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
 
     @Override
     protected DBDContent fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
         int index)
         throws DBCException, SQLException
     {
@@ -110,11 +111,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
 
     @Override
     protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value
+        @Nullable Object value
     ) throws DBCException, SQLException {
         if (DBUtils.isNullValue(value)) {
             statement.setNull(paramIndex, paramType.getTypeID(), paramType.getTypeName());
@@ -133,7 +134,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
     }
 
     @Override
-    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException
     {
         if (object == null) {
             // Create wrapper using column type

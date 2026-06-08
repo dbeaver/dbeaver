@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,6 +131,8 @@ public class UIIcon {
     public static final DBIcon LOAD = new DBIcon("load", "file/load.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RESET = new DBIcon("reset", "file/reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon COMPARE = new DBIcon("compare", "file/compare.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon MOVE = new DBIcon("sql_move", "sql/sql_move.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon COPY = new DBIcon("sql_copy", "sql/sql_copy.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ACCEPT = new DBIcon("accept", "sql/accept.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon REJECT = new DBIcon("reject", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon REVERT = new DBIcon("revert", "sql/revert.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -144,6 +146,7 @@ public class UIIcon {
     public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PRINT = new DBIcon("print", "misc/print.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BROWSER = new DBIcon("browser", "misc/browser.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon EXPAND = new DBIcon("expand", "expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon EDIT = new DBIcon("edit", "edit.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ERASE = new DBIcon("erase", "erase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ADD = new DBIcon("add", "add.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -256,6 +259,10 @@ public class UIIcon {
     public static final DBIcon OPEN = new DBIcon("file/open.png"); //$NON-NLS-1$
     public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
     public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
+
+    public static final DBIcon SIMPLE_MODE = new DBIcon("misc/simple_mode.svg");
+    public static final DBIcon CUSTOM_MODE = new DBIcon("misc/custom_mode.svg");
+    public static final DBIcon ADVANCED_MODE = new DBIcon("misc/advanced_mode.svg");
 
     static  {
         DBIcon.loadIcons(UIIcon.class);

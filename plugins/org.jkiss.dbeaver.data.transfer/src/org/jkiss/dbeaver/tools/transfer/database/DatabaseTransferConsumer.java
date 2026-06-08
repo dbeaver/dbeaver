@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -802,15 +802,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
+    @Nullable
     public DBSDataContainer getSourceObject() {
         return containerMapping == null ? null : containerMapping.getSource();
     }
 
+    @Nullable
     public DBSDataManipulator getTargetObject() {
         return containerMapping == null ? localTargetObject : containerMapping.getTarget();
     }
 
-    public void setTargetObject(DBSDataManipulator targetObject) {
+    public void setTargetObject(@Nullable DBSDataManipulator targetObject) {
         this.localTargetObject = targetObject;
     }
 
@@ -954,11 +956,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private class PreviewBatch implements DBSDataManipulator.ExecuteBatch {
-
+        @NotNull
         @Override
-        public void add(@NotNull Object[] attributeValues) throws DBCException {
+        public DBSDataManipulator.ExecuteBatch add(@NotNull Object[] attributeValues) {
             previewRows.add(attributeValues);
+            return this;
         }
+
         @NotNull
         @Override
         public DBCStatistics execute(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBCException {
@@ -1020,5 +1024,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public void setContainerMapping(@Nullable DatabaseMappingContainer containerMapping) {
         this.containerMapping = containerMapping;
+    }
+
+    @Override
+    public String toString() {
+        return containerMapping.getTargetFullName();
     }
 }

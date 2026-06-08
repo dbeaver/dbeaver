@@ -20,47 +20,61 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
-public class AIFunctionResult<T> {
-    public enum FunctionType {
-        INFORMATION,
-        ACTION
-    }
+public class AIFunctionResult {
 
-
-    private final AIFunctionResult.FunctionType type;
-    private final T value;
+    @NotNull
+    private final AIFunctionType type;
+    @NotNull
+    private final Object value;
     @Nullable
-    private final DBRRunnableWithReturn<?> callback;
+    private final Throwable exception;
+    @Nullable
+    private final transient DBRRunnableWithReturn<?> callback;
 
     public AIFunctionResult(
-        @NotNull AIFunctionResult.FunctionType type,
-        @NotNull T value
+        @NotNull AIFunctionType type,
+        @NotNull Object value
     ) {
         this(type, value, null);
     }
 
     public AIFunctionResult(
-        @NotNull AIFunctionResult.FunctionType type,
-        @NotNull T value,
+        @NotNull AIFunctionType type,
+        @NotNull Object value,
         @Nullable DBRRunnableWithReturn<?> callback
+    ) {
+        this(type, value, callback, null);
+    }
+
+    public AIFunctionResult(
+        @NotNull AIFunctionType type,
+        @NotNull Object value,
+        @Nullable DBRRunnableWithReturn<?> callback,
+        @Nullable Throwable exception
     ) {
         this.type = type;
         this.value = value;
         this.callback = callback;
+        this.exception = exception;
     }
 
     @NotNull
-    public AIFunctionResult.FunctionType getType() {
+    public AIFunctionType getType() {
         return type;
     }
 
     @NotNull
-    public T getValue() {
+    public Object getValue() {
         return value;
     }
 
     @Nullable
     public DBRRunnableWithReturn<?> getCallback() {
         return callback;
+    }
+
+    @Nullable
+    public Throwable getException() {
+        return exception;
     }
 }

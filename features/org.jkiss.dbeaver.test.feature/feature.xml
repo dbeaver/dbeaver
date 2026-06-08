@@ -2,12 +2,11 @@
 <feature
         id="org.jkiss.dbeaver.test.feature"
         label="DBeaver test plugins"
-        version="26.0.0.qualifier"
+        version="26.1.1.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.headless.application">
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <url>
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
@@ -22,6 +21,7 @@
     <plugin id="org.jkiss.dbeaver.ext.greenplum.test" version = "0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.altibase.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.clickhouse.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.firebird.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.generic.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.ai.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.navigator.test" version="0.0.0"/>

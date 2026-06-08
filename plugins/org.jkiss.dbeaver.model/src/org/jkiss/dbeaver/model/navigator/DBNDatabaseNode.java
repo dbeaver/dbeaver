@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @NotNull
     @Override
     public String getNodeDisplayName() {
-        return getPlainNodeName(false, true);
+        return CommonUtils.notNull(getPlainNodeName(false, true), "");
     }
 
     /**
@@ -106,6 +106,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
      * @param useSimpleName do not append any qualifiers to the name. Usually sued for functions like rename
      * @param showDefaults  return some default value if actual name is empty. otherwise returns null
      */
+    @Nullable
     public String getPlainNodeName(boolean useSimpleName, boolean showDefaults) {
         DBSObject object = getObject();
         if (object == null) {
@@ -122,7 +123,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             {
                 objectName = object.getParentObject().getName() + "." + object.getName();
             } else {
-                if (object instanceof DBSEntity && object.getDataSource().getContainer().getNavigatorSettings().isMergeEntities()) {
+                DBPDataSource dataSource = object.getDataSource();
+                if (object instanceof DBSEntity && dataSource != null &&
+                    dataSource.getContainer().getNavigatorSettings().isMergeEntities()
+                ) {
                     objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
                 } else {
                     objectName = object.getName();
@@ -135,7 +139,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (showDefaults && CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {
-                objectName = object.getClass().getName() + "@" + object.hashCode(); //$NON-NLS-1$
+                if (!object.isPersisted()) {
+                    objectName = ""; //$NON-NLS-1$
+                } else {
+                    objectName = "...?"; //$NON-NLS-1$
+                }
             }
         }
         return objectName;
@@ -756,6 +764,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                     // Wrong type
                     continue;
                 }
+                if (isNonPersistedChild(oldChild)) {
+                    // Preserve newly-created (non-persisted) child across refresh.
+                    // Its underlying DBSObject isn't visible to the database query yet,
+                    // so the matching loop above can't find it. Disposing it would close
+                    // the in-progress entity editor and lose the user's work (#40920).
+                    toList.add(oldChild);
+                    continue;
+                }
                 boolean found = false;
                 for (Object childItem : itemList) {
                     if (childItem instanceof DBSObject && equalObjects(oldChild.getObject(), (DBSObject) childItem)) {
@@ -770,6 +786,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
         return true;
+    }
+
+    // Preserve in-progress (non-persisted) children across a parent-node refresh: the
+    // database query can't see them yet, but the user's open editor depends on them.
+    private static boolean isNonPersistedChild(@NotNull DBNDatabaseNode child) {
+        DBSObject object = child.getObject();
+        return object != null && !object.isPersisted();
     }
 
     @Nullable
@@ -807,17 +830,20 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
-            Object valueObject = getValueObject();
-            DBSObject parentObject = null;
-            if (valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)) {
-                parentObject = dbsObject;
-            }
-            return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
+            return dataSource.getObjectFilter(childrenClass, getFilterObject(), firstMatch);
         }
         return null;
     }
 
-    public boolean setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter, boolean saveConfiguration) {
+    @Nullable
+    public DBSObject getFilterObject() {
+        Object valueObject = getValueObject();
+        return valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)
+            ? dbsObject : null;
+    }
+
+
+    public boolean setNodeFilter(DBXTreeItem meta, @Nullable DBSObjectFilter filter, boolean saveConfiguration) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
@@ -931,11 +957,19 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     @NotNull
     public abstract DBXTreeNode getMeta();
 
+    @Nullable
     public DBXTreeItem getItemsMeta() {
         List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        for (DBXTreeNode cn : metaChildren) {
-            if (cn instanceof DBXTreeItem treeItem) {
-                return treeItem;
+        if (!metaChildren.isEmpty()) {
+            for (DBXTreeNode cn : metaChildren) {
+                if (cn instanceof DBXTreeItem treeItem) {
+                    return treeItem;
+                }
+            }
+            // No direct tree item children
+            if (metaChildren.getFirst() instanceof DBXTreeFolder folder) {
+                List<DBXTreeNode> children = folder.getChildren(this);
+                return !children.isEmpty() && children.getFirst() instanceof DBXTreeItem treeItem ? treeItem : null;
             }
         }
         return null;

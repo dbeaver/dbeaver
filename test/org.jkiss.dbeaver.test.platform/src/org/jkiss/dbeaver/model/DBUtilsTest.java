@@ -283,4 +283,19 @@ public class DBUtilsTest extends DBeaverUnitTest {
         Assert.assertNotEquals(dbsObject, mockEntity);
     }
 
+    @Test
+    public void testGetSimpleQualifiedNameForEntityMetadata() {
+        // Typical PostgreSQL: schema + table, no catalog
+        Assert.assertEquals("public.authors", DBUtils.getSimpleQualifiedName(null, "public", "authors"));
+
+        // Full catalog.schema.table (e.g. SQL Server)
+        Assert.assertEquals("mydb.dbo.orders", DBUtils.getSimpleQualifiedName("mydb", "dbo", "orders"));
+
+        // Table only, no catalog or schema (e.g. SQLite)
+        Assert.assertEquals("users", DBUtils.getSimpleQualifiedName(null, null, "users"));
+
+        // All nulls should produce empty string
+        Assert.assertEquals("", DBUtils.getSimpleQualifiedName(null, null, null));
+    }
+
 }

@@ -759,6 +759,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return false;
     }
 
+    @Override
+    public String getTextDataType() {
+        return getClobDataType();
+    }
+
     @NotNull
     @Override
     public String getTimestampDataType() {
@@ -775,6 +780,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @Override
     public String getClobDataType() {
         return OracleConstants.TYPE_CLOB;
+    }
+
+    @Override
+    public String getNClobDataType() {
+        return OracleConstants.TYPE_NCLOB;
     }
 
     @NotNull
@@ -838,5 +848,11 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return EnumSet.of(
             ProjectionAliasVisibilityScope.ORDER_BY
         );
+    }
+
+    @NotNull
+    @Override
+    public String toSortableTextColumn(@NotNull String columnName) {
+        return "DBMS_LOB.SUBSTR(" + columnName + ", 1000, 1)";
     }
 }

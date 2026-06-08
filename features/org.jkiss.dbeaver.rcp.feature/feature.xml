@@ -2,13 +2,12 @@
 <feature
         id="org.jkiss.dbeaver.rcp.feature"
         label="DBeaver RCP"
-        version="3.0.53.qualifier"
+        version="3.0.60.qualifier"
         provider-name="DBeaver Corp">
 
     <description>Universal Database Manager RCP</description>
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <includes id="org.eclipse.rcp" version="0.0.0"/>
 

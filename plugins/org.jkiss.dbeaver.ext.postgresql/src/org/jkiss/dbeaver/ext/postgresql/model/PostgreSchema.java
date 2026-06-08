@@ -109,10 +109,16 @@ public class PostgreSchema implements
     @NotNull
     @Override
     public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return List.of(
-            this.database.getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME),
-            this.database.getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME)
-        );
+        PostgreSchema pgCatalogSchema = this.database.getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME);
+        PostgreSchema publicSchema = this.database.getSchema(monitor, PostgreConstants.PUBLIC_SCHEMA_NAME);
+        List<DBSObjectContainer> result = new ArrayList<>();
+        if (publicSchema != null) {
+            result.add(publicSchema);
+        }
+        if (pgCatalogSchema != null) {
+            result.add(pgCatalogSchema);
+        }
+        return result;
     }
 
     @NotNull

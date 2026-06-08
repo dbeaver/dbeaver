@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Various utilities for working with {@link UIObservable}.
@@ -75,5 +76,15 @@ public final class UIObservables {
             }
         };
         return new UIObservableImpl<>(computed, Boolean.class);
+    }
+
+    @NotNull
+    public static UIObservable<Boolean> predicate(@NotNull Supplier<Boolean> supplier) {
+        return computed(supplier, Boolean.class);
+    }
+
+    @NotNull
+    public static <T> UIObservable<T> computed(@NotNull Supplier<T> supplier, @NotNull Class<T> type) {
+        return new UIObservableImpl<>(ComputedValue.create(supplier), type);
     }
 }

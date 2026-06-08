@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Windows Store extension
+Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.msstore;singleton:=true
+Bundle-ActivationPolicy: lazy
+Bundle-Version: 1.0.106.qualifier
+Bundle-Release-Date: 20260622
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Export-Package: org.jkiss.dbeaver.msstore
+Require-Bundle: org.jkiss.dbeaver.model
+Automatic-Module-Name: org.jkiss.dbeaver.ui.app.msstore
+

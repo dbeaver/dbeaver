@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,29 +31,14 @@ import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DesktopNavigatorModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
-import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
-import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * DesktopPlatform
@@ -63,7 +48,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
 
-    private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
 
     private static final Log log = Log.getLog(DesktopPlatform.class);
@@ -72,10 +56,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     private static volatile boolean isClosing = false;
 
-    private Path tempFolder;
     private DBPWorkspaceDesktop workspace;
-    private QMRegistryImpl queryManager;
-    private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
     private volatile boolean workbenchStarted;
 
@@ -101,7 +82,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         instance = this;
     }
 
-    protected void initialize() {
+    protected void initialize() throws DBException {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
 
@@ -111,6 +92,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         this.certificateStorage = new DefaultCertificateStorage(
+            this,
             RuntimeUtils.getPluginStateLocation(DBeaverActivator.getInstance())
                 .resolve(DBConstants.CERTIFICATE_STORAGE_FOLDER));
 
@@ -122,11 +104,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 
-        QMUtils.initApplication(this);
-        this.queryManager = new QMRegistryImpl();
-
-        this.qmLogWriter = new QMLogFileWriter();
-        this.queryManager.registerMetaListener(qmLogWriter);
+        QMUtils.initPlatform(true);
 
         super.initialize();
 
@@ -160,15 +138,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             workspace = null;
         }
 
-        if (this.qmLogWriter != null) {
-            this.queryManager.unregisterMetaListener(qmLogWriter);
-            this.qmLogWriter.dispose();
-            this.qmLogWriter = null;
-        }
-        if (this.queryManager != null) {
-            this.queryManager.dispose();
-            //queryManager = null;
-        }
+        QMUtils.disposePlatform();
         DataSourceProviderRegistry.dispose();
 
         if (isStandalone() && workspace != null && !application.isExclusiveMode()) {
@@ -177,14 +147,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
             } catch (DBException ex) {
                 log.error("Can not save workspace", ex); //$NON-NLS-1$
             }
-        }
-
-        // Remove temp folder
-        if (tempFolder != null) {
-            if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can not delete temp folder '" + tempFolder + "'");
-            }
-            tempFolder = null;
         }
 
         DesktopPlatform.instance = null;
@@ -213,11 +175,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @Override
     public DBPApplicationDesktop getApplication() {
         return (DBPApplicationDesktop) BaseApplicationImpl.getInstance();
-    }
-
-    @NotNull
-    public QMRegistry getQueryManager() {
-        return queryManager;
     }
 
     @NotNull
@@ -253,64 +210,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     public void setWorkbenchStarted(boolean started) {
         this.workbenchStarted = started;
-    }
-
-    @NotNull
-    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
-        if (tempFolder == null) {
-            // Make temp folder
-            try {
-                String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
-                if (!CommonUtils.isEmpty(tempFolderPath)) {
-                    tempFolderPath = GeneralUtils.replaceVariables(tempFolderPath, new SystemVariablesResolver());
-
-                    File dbTempFolder = new File(tempFolderPath);
-                    if (!dbTempFolder.mkdirs()) {
-                        throw new IOException("Can't create temp directory '" + dbTempFolder.getAbsolutePath() + "'");
-                    }
-                } else {
-                    tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                }
-                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
-                Path tmpFolder = Paths.get(tempFolderPath);
-                if (!Files.exists(tmpFolder)) {
-                    log.debug("Create global temp folder '" + tmpFolder + "'");
-                    Files.createDirectories(tmpFolder);
-                }
-                tempFolder = Files.createTempDirectory(tmpFolder, TEMP_PROJECT_NAME);
-            } catch (IOException e) {
-                final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = Path.of(sysTempFolder).resolve(TEMP_PROJECT_NAME);
-                    if (!Files.exists(tempFolder)) {
-                        try {
-                            Files.createDirectories(tempFolder);
-                        } catch (IOException ex) {
-                            final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
-                            if (!CommonUtils.isEmpty(sysUserFolder)) {
-                                tempFolder = Path.of(sysUserFolder).resolve(TEMP_PROJECT_NAME);
-                                if (!Files.exists(tempFolder)) {
-                                    try {
-                                        Files.createDirectories(tempFolder);
-                                    } catch (IOException exc) {
-                                        tempFolder = Path.of(TEMP_PROJECT_NAME);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Path localTemp = name == null ? tempFolder : tempFolder.resolve(name);
-        if (!Files.exists(localTemp)) {
-            try {
-                Files.createDirectories(localTemp);
-            } catch (IOException e) {
-                log.error("Can't create temp directory " + localTemp, e);
-            }
-        }
-        return localTemp;
     }
 
     @Override
