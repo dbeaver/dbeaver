@@ -468,7 +468,7 @@ public final class SQLUtils {
                 sql.append(" NOT");
             }
             sql.append(" LIKE ?");
-            if (dialect instanceof SQLDialectRelational &&
+            if (dialect instanceof SQLDialectRelational dialectRelational &&
                 ((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null) {
                 sql.append(((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
             }
