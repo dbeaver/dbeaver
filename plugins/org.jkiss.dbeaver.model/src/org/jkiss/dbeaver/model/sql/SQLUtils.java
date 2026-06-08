@@ -469,7 +469,7 @@ public final class SQLUtils {
             }
             sql.append(" LIKE ?");
             if (dialect instanceof SQLDialectRelational dialectRelational &&
-                ((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null) {
+                dialectRelational.getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null) {
                 sql.append(((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
             }
         } else {
