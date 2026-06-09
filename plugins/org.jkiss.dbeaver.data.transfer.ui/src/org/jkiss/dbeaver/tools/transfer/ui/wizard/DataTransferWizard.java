@@ -223,6 +223,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return settings;
     }
 
+    @Nullable
     public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type) {
         return type.cast(getNodeSettings(page));
     }
@@ -253,7 +254,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    protected boolean isTaskConfigPage(IWizardPage page) {
+    protected boolean isTaskConfigPage(@NotNull IWizardPage page) {
         return page instanceof DataTransferPageNodeSettings || super.isTaskConfigPage(page);
     }
 
@@ -264,7 +265,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     @Nullable
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {
+    public IWizardPage getNextPage(@NotNull IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -294,7 +295,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     @Nullable
     @Override
-    public IWizardPage getPreviousPage(IWizardPage page) {
+    public IWizardPage getPreviousPage(@NotNull IWizardPage page) {
         IWizardPage[] pages = getPages();
         int curIndex = -1;
         for (int i = 0; i < pages.length; i++) {
@@ -309,7 +310,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         if (curIndex != -1) {
             for (int i = curIndex - 1; i > 0; i--) {
                 IWizardPage wizardPage = pages[i];
-                if (wizardPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) wizardPage).isPageApplicable()) {
+                if (wizardPage instanceof IWizardPageNavigable wpn && !wpn.isPageApplicable()) {
                     continue;
                 }
                 if (isPageValid(wizardPage)) {
@@ -322,7 +323,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    protected boolean isPageNeedsCompletion(IWizardPage page) {
+    protected boolean isPageNeedsCompletion(@NotNull IWizardPage page) {
         if (page instanceof DataTransferPageFinal) {
             return false;
         }
@@ -449,7 +450,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
     }
 
-    protected boolean isPageValid(IWizardPage page) {
+    protected boolean isPageValid(@NotNull IWizardPage page) {
         return isTaskConfigPage(page) ||
             page instanceof DataTransferPagePipes ||
             page instanceof DataTransferPageFinal ||
@@ -501,12 +502,12 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Nullable
-    NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
+    NodePageSettings getNodeInfo(@NotNull IDataTransferNode<?> node) {
         return this.nodeSettings.get(node.getClass());
     }
 
     @Nullable
-    private IDataTransferSettings getNodeSettings(IWizardPage page) {
+    private IDataTransferSettings getNodeSettings(@NotNull IWizardPage page) {
         if (settings != null) {
             for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
                 if (page == nodePageSettings.settingsPage) {
