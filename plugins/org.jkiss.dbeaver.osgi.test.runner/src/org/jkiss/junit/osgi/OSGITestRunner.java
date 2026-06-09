@@ -72,11 +72,11 @@ import java.util.stream.Collectors;
  */
 public class OSGITestRunner extends BlockJUnit4ClassRunner {
 
-    private static OSGITestRunner instance;
-
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final boolean DEBUG_BUNDLE_LAUNCH = false;
+    // junit-vintage leaks from the IDEA classpath; hidden so the platform launcher doesn't fail under OSGi
+    private static final String VINTAGE_ENGINE_PACKAGE = "org.junit.vintage";
     private final Class<?> testClass;
     private Framework framework;
     private Path productPath;
@@ -97,7 +97,6 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         @NotNull Class<?> testClass
     ) throws Exception {
         super(testClass);
-        instance = this;
         this.testClass = testClass;
         if (isRunFromIDEA()) {
             //use UTF-8 for run
@@ -135,7 +134,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected void collectInitializationErrors(@NotNull List<Throwable> errors) {
-        // skip junit4 method validation — we drive a proxy runner, this avoids "No runnable methods" for junit6 tests
+        // skip junit4 method validation - avoids "No runnable methods" for junit6 tests
     }
 
     @NotNull
@@ -168,7 +167,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override
-    public void filter(Filter filter) throws NoTestsRemainException {
+    public void filter(@NotNull Filter filter) throws NoTestsRemainException {
         super.filter(filter);
         try {
             if (isRunFromIDEA()) {
@@ -184,7 +183,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override
-    public void run(RunNotifier notifier) {
+    public void run(@NotNull RunNotifier notifier) {
         if (isRunFromIDEA()) {
             runInsideOSGI(notifier);
         } else {
@@ -208,6 +207,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         }
     }
 
+    @NotNull
     private static Path findWorkspaceDir() {
         Path workPath = Paths.get("").toAbsolutePath();
         Path currentPath = workPath.toAbsolutePath();
@@ -229,31 +229,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                 ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
                 try {
                     ClassLoader proxyClassLoader = runnerProxy.getClass().getClassLoader();
-                    // the IDEA classpath leaks junit-vintage-engine; under OSGi the platform launcher
-                    // discovers it via ServiceLoader and throws ServiceConfigurationError. wrap the proxy
-                    // classloader to hide vintage from both class loading and getResources() lookups,
-                    // then run the proxy with it as the thread context classloader
-                    ClassLoader wrappedClassLoader = new ClassLoader(proxyClassLoader) {
-                        @Override
-                        @NotNull
-                        protected Class<?> loadClass(@NotNull String name, boolean resolve) throws ClassNotFoundException {
-                            if (name.startsWith("org.junit.vintage")) {
-                                throw new ClassNotFoundException(name);
-                            }
-                            return super.loadClass(name, resolve);
-                        }
-
-                        @Override
-                        @NotNull
-                        public Enumeration<URL> getResources(@NotNull String name) throws java.io.IOException {
-                            if (name.contains("org.junit.platform.engine.TestEngine") || name.contains("org.junit.vintage")) {
-                                List<URL> urls = Collections.list(super.getResources(name));
-                                urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
-                                return Collections.enumeration(urls);
-                            }
-                            return super.getResources(name);
-                        }
-                    };
+                    ClassLoader wrappedClassLoader = wrapClassLoaderHidingVintage(proxyClassLoader);
                     Thread.currentThread().setContextClassLoader(wrappedClassLoader);
                     runMethod.invoke(runnerProxy, notifier);
                 } finally {
@@ -316,7 +292,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             }
         }
 
-        // start the app only after the workbench wait — else it races Felix SCR services not yet created
+        // start the app only after the workbench wait - else it races Felix SCR services not yet created
         if (launcher != null) {
             log.info("Starting headless application...");
             Thread appThread = new Thread(() -> launcher.start(appRegistryName, args));
@@ -372,6 +348,33 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         return testBundle.adapt(BundleWiring.class).getClassLoader();
     }
 
+    @NotNull
+    private static ClassLoader wrapClassLoaderHidingVintage(@NotNull ClassLoader parent) {
+        // hide junit-vintage from both class loading and getResources() so the platform launcher
+        // doesn't pick up the vintage engine leaked from the IDEA classpath and fail under OSGi
+        return new ClassLoader(parent) {
+            @Override
+            @NotNull
+            protected Class<?> loadClass(@NotNull String name, boolean resolve) throws ClassNotFoundException {
+                if (name.startsWith(VINTAGE_ENGINE_PACKAGE)) {
+                    throw new ClassNotFoundException(name);
+                }
+                return super.loadClass(name, resolve);
+            }
+
+            @Override
+            @NotNull
+            public Enumeration<URL> getResources(@NotNull String name) throws java.io.IOException {
+                if (name.contains("org.junit.platform.engine.TestEngine") || name.contains(VINTAGE_ENGINE_PACKAGE)) {
+                    List<URL> urls = Collections.list(super.getResources(name));
+                    urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
+                    return Collections.enumeration(urls);
+                }
+                return super.getResources(name);
+            }
+        };
+    }
+
     private void runInsideOSGI(@NotNull RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
@@ -382,31 +385,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                 ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
                 try {
                     ClassLoader proxyClassLoader = runnerProxy.getClass().getClassLoader();
-                    // the IDEA classpath leaks junit-vintage-engine; under OSGi the platform launcher
-                    // discovers it via ServiceLoader and throws ServiceConfigurationError. wrap the proxy
-                    // classloader to hide vintage from both class loading and getResources() lookups,
-                    // then run the proxy with it as the thread context classloader
-                    ClassLoader wrappedClassLoader = new ClassLoader(proxyClassLoader) {
-                        @Override
-                        @NotNull
-                        protected Class<?> loadClass(@NotNull String name, boolean resolve) throws ClassNotFoundException {
-                            if (name.startsWith("org.junit.vintage")) {
-                                throw new ClassNotFoundException(name);
-                            }
-                            return super.loadClass(name, resolve);
-                        }
-
-                        @Override
-                        @NotNull
-                        public Enumeration<URL> getResources(@NotNull String name) throws java.io.IOException {
-                            if (name.contains("org.junit.platform.engine.TestEngine") || name.contains("org.junit.vintage")) {
-                                List<URL> urls = Collections.list(super.getResources(name));
-                                urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
-                                return Collections.enumeration(urls);
-                            }
-                            return super.getResources(name);
-                        }
-                    };
+                    ClassLoader wrappedClassLoader = wrapClassLoaderHidingVintage(proxyClassLoader);
                     Thread.currentThread().setContextClassLoader(wrappedClassLoader);
                     runMethod.invoke(runnerProxy, proxyNotifier);
                 } finally {
@@ -492,7 +471,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
 
     @NotNull
     private Object createProxyNotifier(
-        RunNotifier notifier
+        @NotNull RunNotifier notifier
     ) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
         Object newOsgiNotifier = testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance();
 
@@ -509,6 +488,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         return newOsgiNotifier;
     }
 
+    @NotNull
     private Framework initializeFramework() {
         Map<String, String> config = new HashMap<>();
         config.put("org.osgi.framework.storage", "osgi-cache");
@@ -531,14 +511,17 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         return frameworkFactory.newFramework(config);
     }
 
-    private Bundle loadAndStartBundles(BundleContext context) throws Exception {
+    @Nullable
+    private Bundle loadAndStartBundles(@NotNull BundleContext context) throws Exception {
         // Specify the directory where the bundles are located
         File bundleDir = productPath.resolve("config.ini").toFile();
         Properties props = new Properties();
         Set<String> installed = Arrays.stream(framework.getBundleContext().getBundles())
             .map(Bundle::getLocation)
             .collect(Collectors.toSet());
-        props.load(new FileInputStream(bundleDir));
+        try (FileInputStream bundleStream = new FileInputStream(bundleDir)) {
+            props.load(bundleStream);
+        }
         PriorityQueue<Pair<Bundle, Integer>> bundlesByStartLevel = new PriorityQueue<>((v1, v2) -> {
             Integer firstStart = v1.getSecond();
             Integer secondStart = v2.getSecond();
@@ -558,9 +541,9 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                 continue;
             }
             Matcher matcher = startLevel.matcher(bundleFile);
-            int startLevel = 0;
+            int bundleStartLevel = 0;
             if (matcher.find()) {
-                startLevel = Integer.parseInt(matcher.group(1));
+                bundleStartLevel = Integer.parseInt(matcher.group(1));
             }
             if (bundleFile.lastIndexOf('@') >= 0) {
                 bundleFile = bundleFile.substring(0, bundleFile.lastIndexOf('@'));
@@ -570,8 +553,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             }
             try {
                 Bundle bundle = context.installBundle(bundleFile);
-                if (startLevel != 0 || bundle.getSymbolicName().equals(testBundleName)) {
-                    bundlesByStartLevel.add(new Pair<>(bundle, startLevel));
+                if (bundleStartLevel != 0 || bundle.getSymbolicName().equals(testBundleName)) {
+                    bundlesByStartLevel.add(new Pair<>(bundle, bundleStartLevel));
                 }
             } catch (BundleException e) {
                 log.error("Error initializing bundle message", e);
