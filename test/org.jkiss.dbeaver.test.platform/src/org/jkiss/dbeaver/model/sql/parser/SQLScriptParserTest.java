@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,16 +36,14 @@ import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.util.SQLEditorTestUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 public class SQLScriptParserTest extends DBeaverUnitTest {
 
@@ -66,7 +64,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     @Mock
     private DBPDriver driver;
 
-    @Before
+    @BeforeEach
     public void init() {
         DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
@@ -553,7 +551,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         SQLScriptElement element = SQLScriptParser.parseQuery(
             context, 0, modifiedQuery.length(), positions[0], false, false
         );
-        assertEquals("@set col5 = '5'", element.getText());
+        Assertions.assertEquals("@set col5 = '5'", element.getText());
     }
 
     @Test
@@ -576,7 +574,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         SQLScriptElement element = SQLScriptParser.parseQuery(
             context, 0, modifiedQuery.length(), positions[0], false, false
         );
-        assertEquals("@set col1 = '1'", element.getText());
+        Assertions.assertEquals("@set col1 = '1'", element.getText());
     }
 
     @Test
@@ -597,7 +595,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             SQLScriptElement element = SQLScriptParser.parseQuery(
                 context, 0, modifiedQuery.length(), pos, false, false
             );
-            assertEquals(expected, element.getText());
+            Assertions.assertEquals(expected, element.getText());
         }
     }
 
@@ -620,8 +618,8 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), qstring);
             TPRuleBasedScanner scanner = context.getScanner();
             scanner.setRange(context.getDocument(), 0, qstring.length());
-            assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
-            assertEquals(qstring.length() - 1, scanner.getTokenLength());
+            Assertions.assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            Assertions.assertEquals(qstring.length() - 1, scanner.getTokenLength());
             scanner.nextToken();
         }
         final List<String> badQstrings = List.of(
@@ -638,8 +636,8 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), badQstring);
             TPRuleBasedScanner scanner = context.getScanner();
             scanner.setRange(context.getDocument(), 0, badQstring.length());
-            assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
-            assertNotEquals(badQstring.length() - 1, scanner.getTokenLength());
+            Assertions.assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            Assertions.assertNotEquals(badQstring.length() - 1, scanner.getTokenLength());
         }
     }
 
@@ -653,13 +651,12 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), query);
         TPRuleBasedScanner scanner = context.getScanner();
         scanner.setRange(context.getDocument(), 14, query.length());
-        assertEquals(SQLTokenType.T_OTHER, scanner.nextToken().getData());
-        assertEquals(1, scanner.getTokenLength());
+        Assertions.assertEquals(SQLTokenType.T_OTHER, scanner.nextToken().getData());
+        Assertions.assertEquals(1, scanner.getTokenLength());
 
-        assertEquals(SQLTokenType.T_DELIMITER, scanner.nextToken().getData());
-        assertEquals(1, scanner.getTokenLength());
+        Assertions.assertEquals(SQLTokenType.T_DELIMITER, scanner.nextToken().getData());
+        Assertions.assertEquals(1, scanner.getTokenLength());
     }
-
 
     @Test
     public void parseBeginTransaction() throws DBException {
@@ -695,7 +692,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
                     element = SQLScriptParser.parseQuery(
                         context, 0, modifiedQuery.length(), pos, false, false
                     );
-                    assertEquals("begin transaction", element.getText());
+                    Assertions.assertEquals("begin transaction", element.getText());
                 }
             }
         }
@@ -725,11 +722,10 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             context = createParserContext(setDialect(dialect), modifiedQuery);
             for (int pos : positions) {
                 element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), pos, false, false);
-                assertEquals(modifiedQuery, element.getText());
+                Assertions.assertEquals(modifiedQuery, element.getText());
             }
         }
     }
-
 
     /**
      * Issue 34815
@@ -767,13 +763,13 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
                 element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), pos, false, false);
 
                 if (pos < modifiedQuery.indexOf("show search_path")) {
-                    assertEquals(
+                    Assertions.assertEquals(
                         """
                             select *
                             from film_actor""", element.getText()
                     );
                 } else {
-                    assertEquals("show search_path", element.getText());
+                    Assertions.assertEquals("show search_path", element.getText());
                 }
             }
         }
@@ -795,10 +791,10 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
 
         SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), modifiedQuery);
         SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), positions[0], false, false);
-        assertEquals("select 10 ", element.getText());
+        Assertions.assertEquals("select 10 ", element.getText());
 
         element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), positions[1], false, false);
-        assertEquals("-- Comments\nselect 10 ", element.getText());
+        Assertions.assertEquals("-- Comments\nselect 10 ", element.getText());
     }
 
     /**
@@ -823,7 +819,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
                 element = SQLScriptParser.parseQuery(
                     context, 0, modifiedQuery.length(), pos, false, false
                 );
-                assertEquals(
+                Assertions.assertEquals(
                     """
                         UPDATE orders
                         SET is_deleted = true""", element.getText()
@@ -846,14 +842,13 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             """;
         SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), query);
         SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 8, false, false);
-        assertEquals(
+        Assertions.assertEquals(
             """
                 SELECT *
                 FROM foo
                 WHERE 1=1""", element.getText()
         );
     }
-
 
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected)
@@ -875,7 +870,6 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         assertParse(dialectName, source, expectedParts.toArray(String[]::new));
     }
 
-
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
@@ -886,9 +880,9 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             false,
             false
         );
-        assertEquals(expected.length, elements.size());
+        Assertions.assertEquals(expected.length, elements.size());
         for (int index = 0; index < expected.length; index++) {
-            assertEquals(expected[index], elements.get(index).getText());
+            Assertions.assertEquals(expected[index], elements.get(index).getText());
         }
     }
 
@@ -914,6 +908,5 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         return dialect;
     }
-
 
 }

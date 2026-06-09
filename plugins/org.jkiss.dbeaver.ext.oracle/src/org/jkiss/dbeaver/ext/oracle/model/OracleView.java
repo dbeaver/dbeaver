@@ -193,10 +193,6 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.VIEW);
     }
 
-    public String getViewText() {
-        return viewText;
-    }
-
     public void setViewText(String viewText) {
         this.viewText = viewText;
     }

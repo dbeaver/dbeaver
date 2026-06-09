@@ -144,6 +144,13 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE) {
+            if (value == DBDZeroDateValue.INSTANCE) {
+                return "'" + ZERO_DATE_STRING + "'";
+            } else if (value == DBDZeroTimestampValue.INSTANCE) {
+                return "'" + ZERO_TIMESTAMP_STRING + "'";
+            }
+        }
         return super.getValueDisplayString(column, value, format);
     }
 
