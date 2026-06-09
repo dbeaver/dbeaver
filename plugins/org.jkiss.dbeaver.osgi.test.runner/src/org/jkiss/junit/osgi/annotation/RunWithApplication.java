@@ -61,7 +61,7 @@ public @interface RunWithApplication {
 
     /**
      * Wait for the {@code DBPApplicationWorkbench} service before starting the app.
-     * Set {@code false} for headless CLI apps (DBVR, etc.) that never register it — avoids delay.
+     * Set {@code false} for headless CLI apps (DBVR, etc.) that never register it - avoids delay.
      */
     boolean waitForWorkbench() default true;
 
