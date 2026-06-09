@@ -32,7 +32,7 @@ import java.util.Map;
 public class RestTest extends DBeaverUnitTest {
     @Test
     public void restClientServerTest() {
-        final RestServer<Controller> server = RestServer
+        final RestServer server = RestServer
             .builder(Controller.class, new ControllerImpl())
             .setFilter(address -> address.getAddress().isLoopbackAddress())
             .create();

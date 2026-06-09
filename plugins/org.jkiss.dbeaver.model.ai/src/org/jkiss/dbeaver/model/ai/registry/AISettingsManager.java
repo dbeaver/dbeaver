@@ -316,6 +316,10 @@ public class AISettingsManager {
             String type = obj.get("type").getAsString(); //NON-NLS-1
             DBACredentialsProviderDescriptor authProviderByID = AICredentialsProviderRegistry.getInstance()
                 .getCredentialsProviderByID(type);
+            if (authProviderByID == null) {
+                log.error("Auth provider '" + type + "' not found");
+                return null;
+            }
             Class<?> providerClass = authProviderByID.getProviderClass();
             return context.deserialize(obj.getAsJsonObject("data"), providerClass); //NON-NLS-1
         }

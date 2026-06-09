@@ -44,7 +44,7 @@ public class GreenplumTableManager extends PostgreTableManager {
     @Override
     protected GreenplumTable createDatabaseObject(@NotNull DBRProgressMonitor monitor,
                                                   @NotNull DBECommandContext context,
-                                                  @Nullable Object container,
+                                                  @NotNull Object container,
                                                   @Nullable Object copyFrom, @NotNull Map<String, Object> options) {
         GreenplumTable greenplumTable = new GreenplumTable((PostgreSchema) container);
         setNewObjectName(monitor, (PostgreSchema) container, greenplumTable);

@@ -24,6 +24,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAEdition;
 import org.jkiss.dbeaver.ext.hana.ui.internal.HANAMessages;
@@ -196,7 +198,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         connectionInfo.setProviderProperty(PROV_PROP_EDITION, edition.name());
         if (created) {
@@ -220,6 +222,7 @@ public class HANAConnectionPage extends ConnectionPageWithAuth implements IDialo
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] { new DriverPropertiesDialogPage(this) };

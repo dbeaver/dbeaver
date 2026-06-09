@@ -46,7 +46,7 @@ import java.util.Map;
 public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTableBase> implements DBEObjectRenamer<PostgreIndex> {
 
     @Override
-    public boolean canRenameObject(PostgreIndex object) {
+    public boolean canRenameObject(@NotNull PostgreIndex object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
@@ -69,7 +69,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     protected PostgreIndex createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {

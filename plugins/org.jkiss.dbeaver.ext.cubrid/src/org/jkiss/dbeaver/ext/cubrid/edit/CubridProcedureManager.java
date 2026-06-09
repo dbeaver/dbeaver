@@ -46,7 +46,7 @@ public class CubridProcedureManager extends GenericProcedureManager {
     }
 
     @Override
-    public boolean canEditObject(GenericProcedure object) {
+    public boolean canEditObject(@NotNull GenericProcedure object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
@@ -59,7 +59,7 @@ public class CubridProcedureManager extends GenericProcedureManager {
     protected GenericProcedure createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable final Object container,
+        @NotNull final Object container,
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {

@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.*;
 
@@ -32,6 +34,7 @@ import java.util.*;
  * Keeps global parameters and configuration of all AI engines
  */
 public class AISettings implements DBPAdaptable {
+    protected static final Log log = Log.getLog(AISettings.class);
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
@@ -41,6 +44,12 @@ public class AISettings implements DBPAdaptable {
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
+        try {
+            aiDisabled = DBWorkbench.isDistributed() && !AISettingsManager.isConfigExists();
+        } catch (DBException e) {
+            log.error("Error checking AI configuration", e);
+            aiDisabled = true;
+        }
     }
 
     @NotNull
@@ -91,11 +100,12 @@ public class AISettings implements DBPAdaptable {
         this.aiDisabled = aiDisabled;
     }
 
+    @Nullable
     public String activeEngine() {
         return activeEngine;
     }
 
-    public void setActiveEngine(String activeEngine) {
+    public void setActiveEngine(@NotNull String activeEngine) {
         AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
         if (engineDescriptor != null) {
             // Replacement?
@@ -104,7 +114,7 @@ public class AISettings implements DBPAdaptable {
         this.activeEngine = activeEngine;
     }
 
-    public boolean hasConfiguration(String engineId) {
+    public boolean hasConfiguration(@NotNull String engineId) {
         return engineConfigurations.containsKey(engineId);
     }
 
@@ -120,18 +130,17 @@ public class AISettings implements DBPAdaptable {
             aiEngineSettings = engineDescriptor.createPropertiesInstance();
         }
 
-        if (aiEngineSettings != null) {
-            if (!AISettingsManager.saveSecretsAsPlainText()) {
-                if (!resolvedSecrets.contains(engineId)) {
-                    aiEngineSettings.resolveSecrets();
-                    resolvedSecrets.add(engineId);
-                }
+        if (!AISettingsManager.saveSecretsAsPlainText()) {
+            if (!resolvedSecrets.contains(engineId)) {
+                aiEngineSettings.resolveSecrets();
+                resolvedSecrets.add(engineId);
             }
         }
 
         return (T) aiEngineSettings;
     }
 
+    @NotNull
     public Map<String, AIEngineProperties> getEngineConfigurations() {
         return engineConfigurations;
     }

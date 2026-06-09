@@ -98,11 +98,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true) != null;
-        if (!isMultiUser() && isLoaded) {
-            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
-            addDataSourceListener(modelChangeListener);
-        }
     }
 
     // Multi-user registry:
@@ -513,14 +508,18 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Override
     public void removeNetworkProfile(@NotNull DBWNetworkProfile profile) {
-        try {
-            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-            secretController.setPrivateSecretValue(
-                profile.getSecretKeyId(),
-                null);
-            secretController.flushChanges();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+        if (getProject().isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+                secretController.setPrivateSecretValue(
+                    profile.getSecretKeyId(),
+                    null
+                );
+                secretController.flushChanges();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI()
+                    .showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+            }
         }
         networkProfiles.remove(profile);
     }
@@ -679,7 +678,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Override
     public void flushConfig() {
-        if (project.isInMemory()) {
+        if (project.isInMemory() || DBWorkbench.isDistributed()) {
+            // Do not save in-memory projects.
+
+            // Do not save all project datasources in TE
+            // We save them only thru persistDataSourceX methods
             return;
         }
         // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
@@ -814,6 +817,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
         }
         return result;
+    }
+
+    @Override
+    public void initializeDataSources() {
+        boolean isLoaded = loadDataSources(true) != null;
+        if (!isMultiUser() && isLoaded) {
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+            addDataSourceListener(modelChangeListener);
+        }
     }
 
     private DataSourceParseResults loadDataSources(boolean refresh) {

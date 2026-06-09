@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
 
@@ -63,9 +65,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button searchInSequences;
     private Button showDateAsDate;
     private Combo optimizerVersionText;
+    private ClientHomesSelector oraHomeSelector;
 
-    public OracleConnectionExtraPage()
-    {
+    public OracleConnectionExtraPage() {
         setTitle(OracleUIMessages.dialog_connection_oracle_properties);
         setDescription(OracleUIMessages.dialog_connection_oracle_properties_description);
     }
@@ -77,8 +79,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 10;
@@ -92,9 +93,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 cfgGroup,
                 OracleUIMessages.dialog_controlgroup_session_settings,
                 2,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
                 SWT.DEFAULT,
-                2
+                1
             );
 
             languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_language, SWT.DROP_DOWN);
@@ -124,13 +125,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 cfgGroup,
                 OracleUIMessages.dialog_controlgroup_performance,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
 
-            Composite optimizerPlaceholder = UIUtils.createPlaceholder(performanceGroup, 3);
+            Composite optimizerPlaceholder = UIUtils.createComposite(performanceGroup, 3);
             optimizerPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             optimizerVersionText = UIUtils.createLabelCombo(optimizerPlaceholder, "Optimizer version", SWT.DROP_DOWN);
             optimizerVersionText.setToolTipText("Oracle optimizer versions.\n"
@@ -194,7 +195,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 cfgGroup,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             showDateAsDate = UIUtils.createCheckbox(
@@ -287,7 +288,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
     {
         Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
