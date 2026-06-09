@@ -14,37 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.data.value;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreDateTimeValueHandler;
 
-import java.time.ZoneOffset;
+import java.sql.Timestamp;
+import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.Set;
 
-public class PostgreEndOfDay implements TemporalAccessor {
+public class DBDEndOfDayValue implements TemporalAccessor {
 
-    private static final PostgreEndOfDay INSTANCE = new PostgreEndOfDay();
+    private static final DBDEndOfDayValue INSTANCE = new DBDEndOfDayValue();
 
-    public static PostgreEndOfDay withoutOffset() {
+    public static final Timestamp TIMESTAMP = Timestamp.valueOf(
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(Duration.ofHours(24).toMillis()), ZoneId.of(ZoneOffset.UTC.getId()))
+    );
+
+    @NotNull
+    public static DBDEndOfDayValue withoutOffset() {
         return INSTANCE;
     }
 
-    public static PostgreEndOfDay withOffset(@NotNull ZoneOffset offset) {
-        return new PostgreOffsetEndOfDay(offset);
+    @NotNull
+    public static DBDEndOfDayValue withOffset(@NotNull ZoneOffset offset) {
+        return new DBDOffsetEndOfDayValue(offset);
     }
 
     private static final Set<TemporalField> fields = Set.of(
         ChronoField.HOUR_OF_DAY,
-        ChronoField.MINUTE_OF_DAY,
+        ChronoField.MINUTE_OF_HOUR,
         ChronoField.SECOND_OF_MINUTE,
-        ChronoField.MILLI_OF_SECOND
+        ChronoField.MILLI_OF_SECOND,
+        ChronoField.NANO_OF_SECOND
     );
 
-    protected PostgreEndOfDay() {
+    protected DBDEndOfDayValue() {
     }
 
     @Override
@@ -54,6 +62,16 @@ public class PostgreEndOfDay implements TemporalAccessor {
 
     @Override
     public long getLong(@NotNull TemporalField field) {
-        return ChronoField.HOUR_OF_DAY.equals(field) ? 24 : 0;
+        if (field.isSupportedBy(this)) {
+            return ChronoField.HOUR_OF_DAY.equals(field) ? 24 : 0;
+        } else {
+            throw new UnsupportedTemporalTypeException("Unsupported field: " + field);
+        }
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return "24:00:00";
     }
 }
