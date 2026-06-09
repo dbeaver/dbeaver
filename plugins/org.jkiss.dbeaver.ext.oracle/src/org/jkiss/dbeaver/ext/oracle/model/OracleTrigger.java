@@ -78,7 +78,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
     private OracleObjectStatus status;
     private String description;
     private ActionType actionType;
-    private String sourceDeclaration;
+    protected String sourceDeclaration;
 
     public OracleTrigger(PARENT parent, String name)
     {

@@ -46,7 +46,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     @Override
     public DBSObjectCache<? extends DBSObject, OraclePackage> getObjectsCache(OraclePackage object)
     {
-        return object.getSchema().packageCache;
+        return object.getSchema().getPackageCache();
     }
 
     @Override

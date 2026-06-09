@@ -76,7 +76,7 @@ public class OracleViewManager extends SQLTableManager<OracleView, OracleSchema>
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleView> getObjectsCache(OracleView object) {
-        return (DBSObjectCache) object.getSchema().tableCache;
+        return (DBSObjectCache) object.getSchema().getTableCache();
     }
 
     @NotNull

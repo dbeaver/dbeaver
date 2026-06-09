@@ -43,7 +43,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     public DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
     {
-        return object.getSchema().proceduresCache;
+        return object.getSchema().getProceduresCache();
     }
 
     @Override

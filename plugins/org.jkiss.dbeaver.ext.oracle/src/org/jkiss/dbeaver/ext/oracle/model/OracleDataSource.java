@@ -93,10 +93,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     final ProfileCache profileCache = new ProfileCache();
     final RoleCache roleCache = new RoleCache();
 
-    private OracleOutputReader outputReader;
-    private OracleSchema publicSchema;
-    private boolean isAdmin;
-    private boolean isAdminVisible;
+    protected OracleOutputReader outputReader;
+    protected OracleSchema publicSchema;
+    protected boolean isAdmin;
+    protected boolean isAdminVisible;
     private String planTableName;
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
@@ -464,7 +464,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Association
     public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
-        return tablespaceCache.getAllObjects(monitor, this);
+        return getTablespaceCache().getAllObjects(monitor, this);
     }
 
     public TablespaceCache getTablespaceCache() {
@@ -565,7 +565,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             }
         }
         // Cache data types
-        dataTypeCache.setCaseSensitive(false);
+        getDataTypeCache().setCaseSensitive(false);
         {
             List<OracleDataType> dtList = new ArrayList<>();
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
@@ -575,7 +575,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     dtList.add(dataType);
                 }
             }
-            this.dataTypeCache.setCache(dtList);
+            getDataTypeCache().setCache(dtList);
         }
     }
 
@@ -586,7 +586,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
         this.schemaCache.clearCache();
         //this.dataTypeCache.clearCache();
-        this.tablespaceCache.clearCache();
+        this.getTablespaceCache().clearCache();
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.roleCache.clearCache();
@@ -691,13 +691,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
-        return dataTypeCache.getCachedObjects();
+        return getDataTypeCache().getCachedObjects();
     }
 
     @Nullable
     @Override
     public OracleDataType getLocalDataType(String typeName) {
-        return dataTypeCache.getCachedObject(typeName);
+        return getDataTypeCache().getCachedObject(typeName);
     }
 
     public DataTypeCache getDataTypeCache() {
@@ -910,7 +910,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
                     while (dbResult.next()) {
                         String tsName = dbResult.getString(1);
-                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, OracleDataSource.this, tsName);
+                        OracleTablespace tablespace = getTablespaceCache().getObject(monitor, OracleDataSource.this, tsName);
                         if (tablespace != null) {
                             tablespace.fetchSizes(dbResult);
                         }
@@ -924,7 +924,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    private class OracleOutputReader implements DBCServerOutputReader {
+    public class OracleOutputReader implements DBCServerOutputReader {
         @Override
         public boolean isServerOutputEnabled() {
             return getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT);
@@ -973,8 +973,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
-        SchemaCache() {
+    public static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
+        protected SchemaCache() {
             setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
         }
 
@@ -1041,7 +1041,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
+    public static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
@@ -1056,7 +1056,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
+    public static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
