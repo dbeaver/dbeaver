@@ -29,7 +29,7 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
 {
     private final AbstractTableConstraint<OracleTableBase, OracleTableConstraintColumn> constraint;
     private final OracleTableColumn tableColumn;
-    private final int ordinalPosition;
+    protected final int ordinalPosition;
 
     public OracleTableConstraintColumn(AbstractTableConstraint<OracleTableBase, OracleTableConstraintColumn> constraint, OracleTableColumn tableColumn, int ordinalPosition)
     {

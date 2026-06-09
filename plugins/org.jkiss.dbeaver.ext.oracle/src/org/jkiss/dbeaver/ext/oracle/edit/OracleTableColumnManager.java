@@ -77,7 +77,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object) {
-        return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
+        return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
     @NotNull

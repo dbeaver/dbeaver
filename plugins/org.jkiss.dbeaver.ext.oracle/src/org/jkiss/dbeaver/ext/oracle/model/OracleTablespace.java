@@ -392,13 +392,13 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
     }
 
-    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<OracleDataSource> referrer, @Nullable Object propertyId) throws DBException
+    public static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<OracleDataSource> referrer, @Nullable Object propertyId) throws DBException
     {
         final OracleDataSource dataSource = referrer.getDataSource();
         if (!dataSource.isAdmin()) {
             return referrer.getLazyReference(propertyId);
         } else {
-            return OracleUtils.resolveLazyReference(monitor, dataSource, dataSource.tablespaceCache, referrer, propertyId);
+            return OracleUtils.resolveLazyReference(monitor, dataSource, dataSource.getTablespaceCache(), referrer, propertyId);
         }
     }
 
@@ -409,7 +409,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
             return
                 object.getLazyReference(propertyId) instanceof OracleTablespace ||
                 object.getLazyReference(propertyId) == null ||
-                object.getDataSource().tablespaceCache.isFullyCached() ||
+                object.getDataSource().getTablespaceCache().isFullyCached() ||
                 !object.getDataSource().isAdmin();
         }
     }

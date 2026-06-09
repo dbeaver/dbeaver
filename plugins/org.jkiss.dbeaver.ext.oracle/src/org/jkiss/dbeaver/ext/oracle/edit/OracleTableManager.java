@@ -54,7 +54,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object) {
-        return (DBSObjectCache) object.getSchema().tableCache;
+        return (DBSObjectCache) object.getSchema().getTableCache();
     }
 
     @Override
