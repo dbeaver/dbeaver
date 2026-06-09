@@ -24,8 +24,8 @@ import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.app.TestHarnessConstants;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
@@ -134,10 +134,11 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override
-    protected void collectInitializationErrors(List<Throwable> errors) {
+    protected void collectInitializationErrors(@NotNull List<Throwable> errors) {
         // skip junit4 method validation — we drive a proxy runner, this avoids "No runnable methods" for junit6 tests
     }
 
+    @NotNull
     @Override
     public Description getDescription() {
         if (runnerProxy != null) {
@@ -195,6 +196,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         return FrameworkUtil.getBundle(this.getClass()) == null;
     }
 
+    @NotNull
     private Path findProduct() {
         if (testClass.getAnnotation(RunWithProduct.class) != null) {
             RunWithProduct annotation = testClass.getAnnotation(RunWithProduct.class);
@@ -219,17 +221,22 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         throw new IllegalStateException("dbeaver-workspace/products directory not found");
     }
 
-    private void launchInExistingOSGI(RunNotifier notifier) {
+    private void launchInExistingOSGI(@NotNull RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Method runMethod = Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run")).findFirst().orElseThrow();
+                Method runMethod = Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run"))
+                    .findFirst().orElseThrow();
                 ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
                 try {
                     ClassLoader proxyClassLoader = runnerProxy.getClass().getClassLoader();
-                    // block the vintage engine from IDEA classpath — it triggers ServiceConfigurationError under OSGi
+                    // the IDEA classpath leaks junit-vintage-engine; under OSGi the platform launcher
+                    // discovers it via ServiceLoader and throws ServiceConfigurationError. wrap the proxy
+                    // classloader to hide vintage from both class loading and getResources() lookups,
+                    // then run the proxy with it as the thread context classloader
                     ClassLoader wrappedClassLoader = new ClassLoader(proxyClassLoader) {
                         @Override
-                        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                        @NotNull
+                        protected Class<?> loadClass(@NotNull String name, boolean resolve) throws ClassNotFoundException {
                             if (name.startsWith("org.junit.vintage")) {
                                 throw new ClassNotFoundException(name);
                             }
@@ -237,7 +244,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                         }
 
                         @Override
-                        public Enumeration<URL> getResources(String name) throws java.io.IOException {
+                        @NotNull
+                        public Enumeration<URL> getResources(@NotNull String name) throws java.io.IOException {
                             if (name.contains("org.junit.platform.engine.TestEngine") || name.contains("org.junit.vintage")) {
                                 List<URL> urls = Collections.list(super.getResources(name));
                                 urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
@@ -295,7 +303,11 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             long workbenchWaitDeadline = System.currentTimeMillis() + 10000;
             while (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") == null
                     && System.currentTimeMillis() < workbenchWaitDeadline) {
-                try { Thread.sleep(100); } catch (InterruptedException e) { break; }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
             if (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") != null) {
                 log.info("DBPApplicationWorkbench service is registered.");
@@ -352,12 +364,15 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         }
     }
 
+    @Nullable
     public ClassLoader getTestBundleClassLoader() {
-        if (testBundle == null) return null;
+        if (testBundle == null) {
+            return null;
+        }
         return testBundle.adapt(BundleWiring.class).getClassLoader();
     }
 
-    private void runInsideOSGI(RunNotifier notifier) {
+    private void runInsideOSGI(@NotNull RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 waitUntilReady();
@@ -367,10 +382,14 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                 ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
                 try {
                     ClassLoader proxyClassLoader = runnerProxy.getClass().getClassLoader();
-                    // block the vintage engine from IDEA classpath — it triggers ServiceConfigurationError under OSGi
+                    // the IDEA classpath leaks junit-vintage-engine; under OSGi the platform launcher
+                    // discovers it via ServiceLoader and throws ServiceConfigurationError. wrap the proxy
+                    // classloader to hide vintage from both class loading and getResources() lookups,
+                    // then run the proxy with it as the thread context classloader
                     ClassLoader wrappedClassLoader = new ClassLoader(proxyClassLoader) {
                         @Override
-                        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+                        @NotNull
+                        protected Class<?> loadClass(@NotNull String name, boolean resolve) throws ClassNotFoundException {
                             if (name.startsWith("org.junit.vintage")) {
                                 throw new ClassNotFoundException(name);
                             }
@@ -378,7 +397,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
                         }
 
                         @Override
-                        public Enumeration<URL> getResources(String name) throws java.io.IOException {
+                        @NotNull
+                        public Enumeration<URL> getResources(@NotNull String name) throws java.io.IOException {
                             if (name.contains("org.junit.platform.engine.TestEngine") || name.contains("org.junit.vintage")) {
                                 List<URL> urls = Collections.list(super.getResources(name));
                                 urls.removeIf(url -> url.toString().contains("junit-vintage-engine"));
@@ -452,7 +472,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         // start the junit/registry bundles so everything is ready before proxy creation
         for (org.osgi.framework.Bundle bundle : framework.getBundleContext().getBundles()) {
             String bsn = bundle.getSymbolicName();
-            if (bsn.equals("org.eclipse.equinox.registry") || bsn.startsWith("junit-") || bsn.startsWith("org.junit.") || bsn.equals("org.opentest4j")) {
+            if (bsn.equals("org.eclipse.equinox.registry") || bsn.startsWith("junit-")
+                || bsn.startsWith("org.junit.") || bsn.equals("org.opentest4j")) {
                 try {
                     if (bundle.getHeaders().get("Fragment-Host") == null) {
                         bundle.start(org.osgi.framework.Bundle.START_TRANSIENT);

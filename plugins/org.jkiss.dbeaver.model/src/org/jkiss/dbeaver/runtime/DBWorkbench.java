@@ -45,12 +45,10 @@ public class DBWorkbench {
     @NotNull
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
-            if (AbstractApplication.getInstanceOrNull() == null) {
-                try {
-                    AbstractApplication.getInstance();
-                } catch (Exception e) {
-                    log.debug("Error checking application instance", e);
-                }
+            try {
+                AbstractApplication.getInstance();
+            } catch (Exception e) {
+                log.debug("Error checking application instance", e);
             }
             BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
             applicationWorkbench = workbenchRef.service();

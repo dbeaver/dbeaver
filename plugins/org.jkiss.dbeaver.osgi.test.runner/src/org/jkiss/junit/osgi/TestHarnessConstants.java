@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.app;
+package org.jkiss.junit.osgi;
 
 public final class TestHarnessConstants {
 
     // OSGi BundleContext published by the test runner once the framework is up
     public static final String PROP_OSGI_CONTEXT = "dbeaver.osgi.context";
-
-    // application instance published for cross-classloader access
-    public static final String PROP_APP_INSTANCE = "dbeaver.app.instance";
 
     private TestHarnessConstants() {
     }

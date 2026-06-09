@@ -19,6 +19,8 @@ package org.jkiss.junit.osgi.launcher;
 import org.eclipse.osgi.internal.framework.BundleContextImpl;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.service.runnable.ParameterizedRunnable;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
@@ -49,7 +51,8 @@ public class TestLauncher implements ApplicationLauncher {
      * @param args the arguments
      * @return the result of evaluating the application in the given context
      */
-    public Object start(String appID, String[] args) {
+    @Nullable
+    public Object start(@NotNull String appID, @Nullable String[] args) {
         try {
             ((BundleContextImpl) context).getContainer().getConfiguration().setConfiguration("eclipse.application", appID);
             if (args != null && args.length != 0) {

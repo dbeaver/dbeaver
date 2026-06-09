@@ -43,7 +43,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
 
     public static final Integer EXIT_ERROR_UNSPECIFIED = 1;
 
-    private static volatile DBPApplication INSTANCE;
+    private static DBPApplication INSTANCE;
 
     private String applicationRunId;
     private final long applicationStartTime = System.currentTimeMillis();
@@ -53,7 +53,6 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             log.error("Multiple application instances created: " + INSTANCE.getClass().getName() + ", " + this.getClass().getName());
         }
         INSTANCE = this;
-        TestApplicationHolder.register(this);
     }
 
     public static DBPApplication getInstance() {
@@ -68,15 +67,6 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
                 throw new IllegalStateException("No DBeaver application found");
             }
             INSTANCE = instance;
-        }
-        return INSTANCE;
-    }
-
-    @Nullable
-    public static DBPApplication getInstanceOrNull() {
-        if (INSTANCE == null) {
-            // under the OSGi test harness INSTANCE lives in another classloader
-            INSTANCE = TestApplicationHolder.get();
         }
         return INSTANCE;
     }
