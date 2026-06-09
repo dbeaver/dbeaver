@@ -499,10 +499,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             return new DBPEditorContribution[0];
         }
         List<EditorContributionDescriptor> ecCopy = new ArrayList<>();
+        boolean hasExactDataSourceContribution = false;
         for (EditorContributionDescriptor editor : ec) {
             if (editor.supportsDataSource(dataSource)) {
                 ecCopy.add(editor);
+                if (editor.supportsExactDataSource(dataSource)) {
+                    hasExactDataSourceContribution = true;
+                }
             }
+        }
+        if (hasExactDataSourceContribution) {
+            ecCopy.removeIf(editor -> editor.supportsInheritedDataSource(dataSource));
         }
         return ecCopy.toArray(new DBPEditorContribution[0]);
     }
