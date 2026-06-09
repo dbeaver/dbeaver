@@ -121,7 +121,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         }));
     }
 
-    private void createNodesTable(Composite composite) {
+    private void createNodesTable(@NotNull Composite composite) {
         Composite panel = UIUtils.createComposite(composite, 1);
 
         boolean dataImport = isDataImport();
@@ -138,8 +138,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         table.setLayoutData(gd);
         table.setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
-            if (inputElement instanceof Collection) {
-                return ((Collection<?>) inputElement).toArray();
+            if (inputElement instanceof Collection<?> collection) {
+                return collection.toArray();
             }
             return new Object[0];
         });
@@ -190,14 +190,12 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         table.addSelectionListener(new SelectionListener() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 setSelectedSettings(true);
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
                 if (isPageComplete()) {
                     getWizard().getContainer().nextPressed();
@@ -219,11 +217,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             settings.selectConsumer(null, null, true);
         } else {
             if (settings.isConsumerOptional()) {
-                if (forceUpdate || settings.getConsumer() == null) {
+                if (forceUpdate || settings.getConsumer() == null || !haveConsumerFromSettings()) {
                     settings.selectConsumer(target.node, target.processor, true);
                 }
             } else if (settings.isProducerOptional()) {
-                if (forceUpdate || settings.getProducer() == null) {
+                if (forceUpdate || settings.getProducer() == null || !haveConsumerFromSettings()) {
                     settings.selectProducer(target.node, target.processor, true);
                 }
             } else {
@@ -240,6 +238,20 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                 && DatabaseTransferConsumer.class.isAssignableFrom(target.node.getNodeClass());
             setConfigureColumnsButtonVisible(!targetIsDatabase);
         }
+    }
+
+    private boolean haveConsumerFromSettings() {
+        var currentConsumer = getWizard().getSettings().getConsumer();
+        if (nodesTable.getInput() instanceof Collection<?> collection && currentConsumer != null) {
+            for (Object item : collection) {
+                if (item instanceof TransferTarget target) {
+                    if (target.node != null && target.node.getId().equals(currentConsumer.getId())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void createInputsTable(Composite composite) {
