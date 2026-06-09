@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,9 +92,13 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     }
 
     @Override
-    protected void findObjectsByMask(@NotNull ExasolExecutionContext executionContext, @NotNull JDBCSession session,
-                                     @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
-                                     @NotNull List<DBSObjectReference> references) throws DBException, SQLException {
+    protected void findObjectsByMask(
+        @NotNull ExasolExecutionContext executionContext,
+        @NotNull JDBCSession session,
+        @NotNull DBSObjectType objectType,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) throws DBException, SQLException {
         String objectNameMask = params.getMask();
         DBSObject parentObject = params.getParentObject();
         log.debug("Search Mask:" + objectNameMask + " Object Type:" + objectType.getTypeName());
@@ -119,8 +123,12 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
     }
 
-    private void findTableColumnsByMask(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
-                                        @NotNull List<DBSObjectReference> references) throws SQLException, DBException {
+    private void findTableColumnsByMask(
+        @NotNull JDBCSession session,
+        @Nullable ExasolSchema schema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         //don't use parameter marks because of performance
@@ -152,8 +160,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     references.add(
                             new AbstractObjectReference<DBSObject>(columnName, tableSchema, null, ExasolTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                                @NotNull
                                 @Override
-                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                                     if (tableSchema == null) {
                                         throw new DBException("Table schema '" + schemaName + "' not found");
                                     }
@@ -177,8 +186,12 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
     }
 
-    private void findProceduresByMask(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
-                                      @NotNull List<DBSObjectReference> references) throws SQLException, DBException {
+    private void findProceduresByMask(
+        @NotNull JDBCSession session,
+        @Nullable ExasolSchema schema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) throws SQLException, DBException {
 //      /*snapshot execution*/
 //      SELECT
 //          SCRIPT_SCHEMA,
@@ -228,8 +241,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                     references.add(
                             new AbstractObjectReference<>(scriptName, tableSchema,null, ExasolScript.class, RelationalObjectType.TYPE_PROCEDURE) {
+                                @NotNull
                                 @Override
-                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                                     if (tableSchema == null) {
                                         throw new DBException("Table schema '" + schemaName + "' not found");
                                     }
@@ -246,8 +260,13 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
     }
 
-    private void findConstraintsByMask(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
-                                       @NotNull List<DBSObjectReference> references, String constType) throws SQLException, DBException {
+    private void findConstraintsByMask(
+        @NotNull JDBCSession session,
+        @Nullable ExasolSchema schema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references,
+        String constType
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         //don't use parameter marks because of performance
         String sql = "";
@@ -280,8 +299,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
 
                     references.add(new AbstractObjectReference<DBSObject>(constName, dataSource.getSchema(monitor, schemaName), null, classType, RelationalObjectType.TYPE_CONSTRAINT) {
 
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                             if (tableSchema == null)
                             {
@@ -311,8 +331,12 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
     }
 
-    private void findTableObjectByName(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
-                                       @NotNull Collection<? super DBSObjectReference> references) throws SQLException, DBException {
+    private void findTableObjectByName(
+        @NotNull JDBCSession session,
+        @Nullable ExasolSchema schema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull Collection<? super DBSObjectReference> references
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         //don't use parameter marks because of performance
 
@@ -345,8 +369,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
                     ExasolSchema exasolSchema = dataSource.getSchema(monitor, schemaName);
                     references.add(
                             new AbstractObjectReference<DBSObject>(tableName, exasolSchema, null, ExasolTable.class, RelationalObjectType.TYPE_TABLE) {
+                                @NotNull
                                 @Override
-                                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                                     ExasolSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                                     if (tableSchema == null)
                                     {
@@ -365,8 +390,12 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
     }
 
-    private void findViews(@NotNull JDBCSession session, @Nullable ExasolSchema schema, @NotNull ObjectsSearchParams params,
-                           @NotNull Collection<? super DBSObjectReference> references) throws DBException, SQLException {
+    private void findViews(
+        @NotNull JDBCSession session,
+        @Nullable ExasolSchema schema,
+        @NotNull ObjectsSearchParams params,
+        @NotNull Collection<? super DBSObjectReference> references
+    ) throws DBException, SQLException {
 //      /*snapshot execution*/
 //      SELECT
 //          VIEW_SCHEMA,
@@ -445,7 +474,11 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         }
     }
 
-    private static boolean isFetchCompleted(@NotNull DBRProgressMonitor monitor, @NotNull Collection<?> objects, int limit) {
+    private static boolean isFetchCompleted(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<?> objects,
+        int limit
+    ) {
         return monitor.isCanceled() || objects.size() >= limit;
     }
 
@@ -462,6 +495,7 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         return "SYS." + dataSource.getTablePrefix(ExasolSysTablePrefix.ALL) + "_" + suffix;
     }
 
+    @NotNull
     @Override
     protected JDBCDataSource getDataSource() {
         return this.dataSource;
@@ -486,8 +520,9 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
             super(name, container, null, ExasolView.class, RelationalObjectType.TYPE_VIEW);
         }
 
+        @NotNull
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
             ExasolSchema schema = getContainer();
             String viewName = getName();
             DBSObject view = schema.getViewCache().getObject(monitor, schema, viewName);

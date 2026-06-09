@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.model.data.json;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
@@ -33,7 +33,7 @@ public class JSONUtilsTest extends DBeaverUnitTest {
 	private Map<String, Object> map3;
 	private List<Map<String, Object>> list;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		map = new HashMap<>();
 		map.put("Location", "London");
@@ -66,35 +66,35 @@ public class JSONUtilsTest extends DBeaverUnitTest {
 
 	@Test
 	public void parseDateTest() {
-		Assert.assertEquals(null, JSONUtils.parseDate(null));
-		Assert.assertEquals(new Date(((Number) 22).longValue()), JSONUtils.parseDate(((Number) 22)));
-		Assert.assertEquals(new Date(((Number) Long.MAX_VALUE).longValue()), JSONUtils.parseDate(Long.MAX_VALUE));
+		Assertions.assertEquals(null, JSONUtils.parseDate(null));
+		Assertions.assertEquals(new Date(((Number) 22).longValue()), JSONUtils.parseDate(((Number) 22)));
+		Assertions.assertEquals(new Date(((Number) Long.MAX_VALUE).longValue()), JSONUtils.parseDate(Long.MAX_VALUE));
 
-		Exception exception = Assert.assertThrows(IllegalArgumentException.class, () -> {
+		Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			JSONUtils.parseDate(((Number) 99.88));
 		});
 		String expectedMessage = "Cannot parse date from value '99.88'";
 		String actualMessage = exception.getMessage();
-		Assert.assertTrue(actualMessage.contains(expectedMessage));
+		Assertions.assertTrue(actualMessage.contains(expectedMessage));
 	}
 
 	@Test
 	public void getStringTest() {
-		Assert.assertEquals("London", JSONUtils.getString(map, "Location"));
-		Assert.assertEquals(null, JSONUtils.getString(map, "Time"));
+		Assertions.assertEquals("London", JSONUtils.getString(map, "Location"));
+		Assertions.assertEquals(null, JSONUtils.getString(map, "Time"));
 	}
 
 	@Test
 	public void getObjectTest() {
-		Assert.assertEquals(nestedMap1, JSONUtils.getObject(map2, "Location"));
-		Assert.assertEquals(nestedMap2, JSONUtils.getObject(map2, "Product"));
-		Assert.assertEquals(new LinkedHashMap<>(), JSONUtils.getObject(map2, "Time"));
+		Assertions.assertEquals(nestedMap1, JSONUtils.getObject(map2, "Location"));
+		Assertions.assertEquals(nestedMap2, JSONUtils.getObject(map2, "Product"));
+		Assertions.assertEquals(new LinkedHashMap<>(), JSONUtils.getObject(map2, "Time"));
 	}
 
 	@Test
 	public void getObjectListTest() {
-		Assert.assertEquals(list, JSONUtils.getObjectList(map3, "Location"));
-		Assert.assertEquals(Collections.emptyList(), JSONUtils.getObjectList(map3, "Time"));
+		Assertions.assertEquals(list, JSONUtils.getObjectList(map3, "Location"));
+		Assertions.assertEquals(Collections.emptyList(), JSONUtils.getObjectList(map3, "Time"));
 	}
 
 }

@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -60,9 +61,12 @@ class ProjectsPanel implements DBPProjectListener {
 
         Composite projectGroup = UIUtils.createComposite(parent, 3);
         projectGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        new Label(projectGroup, SWT.NONE).setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
+        Label label = new Label(projectGroup, SWT.NONE);
+        label.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
+        label.setToolTipText(CoreMessages.project_selector_tooltip);
 
         projectCombo = new Combo(projectGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | SWT.FLAT);
+        projectCombo.setToolTipText(CoreMessages.project_selector_tooltip);
         projectCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         refillCombo();
