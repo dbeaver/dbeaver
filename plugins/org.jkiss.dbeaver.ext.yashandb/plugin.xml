@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+	<extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="yashandb" parent="oracle" class="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSQLDialect"
+                 label="YashanDB" description="YashanDB SQL dialect." icon="icons/yashandb_icon.png">
+            <property name="insertMethods" value="yashandbInsertIgnore"/>
+        </dialect>
+    </extension>
+
+ 	<extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.yashandb.YashanDBDataSourceProvider"
+                description="YashanDB connector"
+                id="yashandb"
+                label="YashanDB"
+                parent="oracle"
+                icon="icons/yashandb_icon.png"
+                dialect="yashandb">
+
+            <treeInjection path="oracle/schema"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema"/>
+            <treeInjection path="oracle/schema/table"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTable"/>
+            <treeInjection path="oracle/schema/table/column"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableColumn"/>
+            <treeInjection path="oracle/schema/table/trigger"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableTrigger"/>
+            <treeInjection path="oracle/schema/type"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType"/>
+            <treeInjection path="oracle/schema/package"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBPackage"/>
+            <treeInjection path="oracle/schema/tabletrigger"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableTrigger"/>
+            <treeInjection path="oracle/schema/schedulerJob"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchedulerJob"/>
+            <treeInjection path="oracle/schema/view"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBView"/>
+            <treeInjection path="oracle/schema/procedure"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone"/>
+            <treeInjection path="oracle/schema/function"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone"/>
+            <treeInjection path="oracle/tablespace"
+                           changeFolderType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTablespace"/>
+			            
+            <drivers managable="true">
+                <driver
+                        id="yashandb"
+                        label="YashanDB"
+                        icon="icons/yashandb_icon.png"
+                        iconBig="icons/yashandb_big.png"
+                        class="com.yashandb.jdbc.Driver"
+                        sampleURL="jdbc:yasdb://{host}:{port}/{database}"
+                        useURL="false"
+                        defaultPort="1688"
+                        defaultDataBase="SYS"
+                        defaultUser="SYS"
+                        webURL="https://doc.yashandb.com/yashandb/23.4/zh/All-Manuals/Development-Guide/JDBC-Driver/00JDBC-Driver.html"
+                        description="%driver.yashandb.description"
+                        categories="sql">
+                    <file type="jar" path="maven:/com.yashandb:yashandb-jdbc:[LATEST]" bundle="!drivers.yashandb"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <file type="jar" path="drivers/yashandb" bundle="drivers.yashandb"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBTableManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTable"/>
+        <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBTableColumnManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableColumn"/>
+     	<manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBSchemaManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBDataTypeManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType"/>
+    	<manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBPackageManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBPackage"/>
+        <manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBProcedureManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone"/>    
+		<manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBTableTriggerManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableTrigger"/>
+		<manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBViewManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBView"/>
+		<manager class="org.jkiss.dbeaver.ext.yashandb.edit.YashanDBMaterializedViewManager"
+                 objectType="org.jkiss.dbeaver.ext.yashandb.model.YashanDBMaterializedView"/>                 
+    </extension>
+</plugin>

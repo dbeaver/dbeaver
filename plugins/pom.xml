@@ -84,6 +84,7 @@
         <module>org.jkiss.dbeaver.ext.denodo</module>
         <module>org.jkiss.dbeaver.ext.altibase</module>
         <module>org.jkiss.dbeaver.ext.gaussdb</module>
+        <module>org.jkiss.dbeaver.ext.yashandb</module>
         
         <module>org.jkiss.dbeaver.tasks.native</module>
 
@@ -142,6 +143,7 @@
                 <module>org.jkiss.dbeaver.ext.vertica.ui</module>
                 <module>org.jkiss.dbeaver.ext.tidb.ui</module>
                 <module>org.jkiss.dbeaver.ext.altibase.ui</module>
+                <module>org.jkiss.dbeaver.ext.yashandb.ui</module>
 
                 <module>org.jkiss.dbeaver.ext.wmi</module>
 
