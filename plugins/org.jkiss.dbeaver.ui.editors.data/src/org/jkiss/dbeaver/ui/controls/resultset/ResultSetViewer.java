@@ -4561,7 +4561,6 @@ public class ResultSetViewer extends Viewer
     boolean acquireDataReadLock() {
         synchronized (dataPumpJobQueue) {
             if (dataPumpRunning.get()) {
-                log.debug("Internal error: multiple data reads started (" + dataPumpJobQueue + ")");
                 return false;
             }
             dataPumpRunning.set(true);
