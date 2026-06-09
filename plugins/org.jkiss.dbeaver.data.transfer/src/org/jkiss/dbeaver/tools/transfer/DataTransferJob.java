@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -108,14 +109,17 @@ public class DataTransferJob extends AbstractJob {
                     parentMonitor.worked(1);
                 }
                 jobMonitor.worked(1);
+            } catch (OperationCanceledException e) {
+                return Status.CANCEL_STATUS;
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
                 IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
+            } finally {
+                monitor.done();
+                elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
-        monitor.done();
-        elapsedTime = System.currentTimeMillis() - startTime;
         return Status.OK_STATUS;
     }
 
@@ -127,7 +131,7 @@ public class DataTransferJob extends AbstractJob {
         if (producer == null) {
             throw new DBException("Null producer");
         }
-        IDataTransferConsumer<?,?> consumer = transferPipe.getConsumer();
+        IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
         if (consumer == null) {
             throw new DBException("Null consumer");
         }
@@ -146,6 +150,10 @@ public class DataTransferJob extends AbstractJob {
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
             producer.transferData(monitor, consumer, processor, nodeSettings, task);
 
+            if (isTransferCanceled(monitor)) {
+                throw new OperationCanceledException("Data transfer was canceled");
+            }
+
             totalStatistics.accumulate(producer.getStatistics());
             totalStatistics.accumulate(consumer.getStatistics());
 
@@ -158,7 +166,10 @@ public class DataTransferJob extends AbstractJob {
         } finally {
             monitor.done();
         }
+    }
 
+    private boolean isTransferCanceled(@NotNull DBRProgressMonitor monitor) {
+        return monitor.isCanceled() || isCanceled() || (parentMonitor != null && parentMonitor.isCanceled());
     }
 
 }

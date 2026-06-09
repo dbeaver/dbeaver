@@ -321,6 +321,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
+        if (isTransferCanceled(session)) {
+            return;
+        }
+
         final Object document;
 
         if (session.getDataSource().getInfo().isDynamicMetadata()) {
@@ -401,7 +405,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     private void insertBatch(boolean force) throws DBCException {
-        if (isPreview) {
+        if (isPreview || targetSession.getProgressMonitor().isCanceled()) {
             return;
         }
         boolean ignoreDuplicateRowsErrors = settings.isIgnoreDuplicateRows();
@@ -501,11 +505,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) throws DBCException {
+        boolean canceled = isTransferCanceled(session);
         try {
-            if (rowsExported > 0) {
+            if (!canceled && rowsExported > 0) {
                 insertBatch(true);
             }
-            if (bulkLoadManager != null) {
+            if (!canceled && bulkLoadManager != null) {
                 bulkLoadManager.finishBulkLoad(targetSession);
             } else if (executeBatch != null) {
                 executeBatch.close();
@@ -513,7 +518,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         } finally {
             DBSDataManipulator targetObject = getTargetObject();
-            if (!isPreview && targetObject instanceof DBSDataManipulatorExt) {
+            if (!canceled && !isPreview && targetObject instanceof DBSDataManipulatorExt) {
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
                     targetSession,
                     DBSManipulationType.INSERT,
@@ -521,6 +526,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     new AbstractExecutionSource(getSourceObject(), targetContext, this));
             }
         }
+    }
+
+    private boolean isTransferCanceled(@NotNull DBCSession session) {
+        return session.getProgressMonitor().isCanceled() ||
+            (targetSession != null && targetSession.getProgressMonitor().isCanceled());
     }
 
     @Override
