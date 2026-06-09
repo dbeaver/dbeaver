@@ -296,6 +296,8 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                         if (inputStream != null) {
                             monitor.subTask("Copy file");
                             Files.copy(inputStream, folder.resolve(node.getNodeDisplayName()), StandardCopyOption.REPLACE_EXISTING);
+                        } else {
+                            log.debug("No input stream found for node uri: %s copying will be skipped".formatted(node.getNodeUri()));
                         }
                     } finally {
                         monitor.worked(1);
