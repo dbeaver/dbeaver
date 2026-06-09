@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+            id="org.jkiss.dbeaver.ext.yashandb.dataSourceWizardView"
+            dataSource="yashandb"
+            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+            label="%dialog.connection.header"
+            class="org.jkiss.dbeaver.ext.yashandb.ui.views.YashanDBConnectionPage"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.yashandb/icons/yashandb_icon.png">
+        </view>
+        <view
+			id="org.jkiss.dbeaver.ext.yashandb.dataSourceEditorView"
+			class="org.jkiss.dbeaver.ext.yashandb.ui.views.YashanDBConnectionPage"
+			icon="platform:/plugin/org.jkiss.dbeaver.ext.yashandb/icons/yashandb_icon.png"
+			dataSource="yashandb"
+			label="%dialog.connection.header"
+			targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+    
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="%editor.session_manager.name"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg"
+            class="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBSessionEditor"
+            id="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.yashandb.ui.editors.YashanDBSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg">
+            <supports dataSource="yashandb"/>
+        </editorContribution>
+    </extension>
+   
+   	<extension point="org.jkiss.dbeaver.databaseEditor">
+	  	<configurator class="org.jkiss.dbeaver.ext.yashandb.ui.config.YashanDBSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.yashandb.ui.config.YashanDBDataTypeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataType"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.yashandb.ui.config.YashanDBPackageConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.yashandb.model.YashanDBPackage"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.yashandb.ui.config.YashanDBProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.yashandb.ui.config.YashanDBTableTriggerConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableTrigger"/>
+        </configurator>
+   	</extension>
+</plugin>
