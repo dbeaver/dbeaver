@@ -19,14 +19,13 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-
-import static org.junit.Assert.assertArrayEquals;
 
 public class SQLSemanticUtilsTest extends DBeaverUnitTest {
 
@@ -77,6 +76,6 @@ public class SQLSemanticUtilsTest extends DBeaverUnitTest {
     }
 
     private static <T> void assertCollectionsEqual(@NotNull Collection<T> a, @NotNull Collection<T> b) {
-        assertArrayEquals(a.toArray(), b.toArray());
+        Assertions.assertArrayEquals(a.toArray(), b.toArray());
     }
 }
