@@ -18,51 +18,16 @@ package org.jkiss.dbeaver.model.fs.efs;
 
 import org.eclipse.core.filesystem.IFileStore;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.nio.NIOFileStore;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.FileStore;
-import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.attribute.FileStoreAttributeView;
 
-public class NIOEFSFileStore extends FileStore {
+public class NIOEFSFileStore extends NIOFileStore {
 
     private final IFileStore efsFileStore;
 
     public NIOEFSFileStore(@NotNull IFileStore efsFileStore) {
         this.efsFileStore = efsFileStore;
-    }
-
-    @Override
-    public long getUsableSpace() throws IOException {
-        throw new UnsupportedEncodingException();
-    }
-
-    @Override
-    public long getUnallocatedSpace() throws IOException {
-        throw new UnsupportedEncodingException();
-    }
-
-    @Override
-    public boolean supportsFileAttributeView(Class<? extends FileAttributeView> type) {
-        return false;
-    }
-
-    @Override
-    public boolean supportsFileAttributeView(String name) {
-        return false;
-    }
-
-    @Override
-    @Nullable
-    public <V extends FileStoreAttributeView> V getFileStoreAttributeView(Class<V> type) {
-        return null;
-    }
-
-    @Override
-    public Object getAttribute(String attribute) throws IOException {
-        throw new UnsupportedOperationException("Does not support the given attribute: " + attribute);
     }
 
     @Override

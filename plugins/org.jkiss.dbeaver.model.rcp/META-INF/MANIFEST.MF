@@ -17,6 +17,7 @@ Export-Package: org.jkiss.dbeaver.model.app,
  org.jkiss.dbeaver.utils
 Require-Bundle: org.eclipse.core.expressions,
  org.eclipse.core.filesystem,
+ org.jkiss.dbeaver.model.nio,
  org.eclipse.core.resources;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry
