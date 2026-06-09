@@ -21,6 +21,8 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DatabaseURL;
@@ -41,11 +43,13 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
     private static final Log log = Log.getLog(ConfigImportWizard.class);
@@ -214,7 +218,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
     protected void adaptConnectionUrl(ImportConnectionInfo connectionInfo) throws DBException
     {
-        
+
         //connectionInfo.getDriver()
         String url = connectionInfo.getUrl();
         if (url == null) {
@@ -233,40 +237,144 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             connectionInfo.setUrl(url);
             return;
         }
-        
+
         try {
             parseUrlAsDriverSampleUrl(connectionInfo);
-            return;
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            /*
+             * URL is not null and does not agree with sampleURL from driver.
+             * Still we proceed to import because it can be any other valid url format for the driver.
+             */
+            log.info("Import url as is it for url:" + url);
         }
-        
-        /*
-         * Here parsing was not successful.
-         * URL is not null and not agree with sampleURL from drive. 
-         * Still we proceed to import cause can be any other valid url format for the driver.
-         */
-        log.info("Import url as is it for url:" + url);
-        
+
+        // Extract URL query parameters as provider properties. Non-standard datasource pages
+        // (e.g. Snowflake warehouse/schema/role) keep their parameters in the query string and
+        // are lost otherwise because the sample URL pattern does not capture them.
+        extractUrlQueryParams(connectionInfo);
     }
 
     /**
-     * Try to parse url by driver sample url. 
+     * Try to parse url by driver sample url.
      * NOTE sampleURL is not the only possible way to define a valid url.
      *
      */
     private void parseUrlAsDriverSampleUrl(ImportConnectionInfo connectionInfo) {
         String url = connectionInfo.getUrl();
-        
+
         String sampleURL = connectionInfo.getDriverInfo().getSampleURL();
         if (connectionInfo.getDriver() != null) {
             sampleURL = connectionInfo.getDriver().getSampleURL();
         }
-        Matcher matcher = DatabaseURL.getPattern(sampleURL).matcher(url);
-        if (matcher.matches()) {
-            connectionInfo.setHost(matcher.group("host"));
-            connectionInfo.setPort(matcher.group("port"));
-            connectionInfo.setDatabase(matcher.group("database"));
+        boolean matched = tryMatchSampleUrl(connectionInfo, url, sampleURL);
+        parseStandardJdbcUrl(connectionInfo, url);
+        if (!matched) {
+            log.debug("Sample URL pattern did not match '" + url + "', used generic JDBC URL parsing");
+        }
+    }
+
+    private boolean tryMatchSampleUrl(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url, @NotNull String sampleURL) {
+        Pattern pattern = DatabaseURL.getPattern(sampleURL);
+        Matcher matcher = pattern.matcher(url);
+        if (!matcher.matches()) {
+            int queryStart = url.indexOf('?');
+            if (queryStart <= 0) {
+                return false;
+            }
+            matcher = pattern.matcher(url.substring(0, queryStart));
+            if (!matcher.matches()) {
+                return false;
+            }
+        }
+        String host = safeGroup(matcher, "host");
+        if (!CommonUtils.isEmpty(host)) {
+            connectionInfo.setHost(host);
+        }
+        String port = safeGroup(matcher, "port");
+        if (!CommonUtils.isEmpty(port)) {
+            connectionInfo.setPort(port);
+        }
+        String database = safeGroup(matcher, "database");
+        if (!CommonUtils.isEmpty(database)) {
+            connectionInfo.setDatabase(database);
+        }
+        return true;
+    }
+
+    /**
+     * Fallback parse for any standard-shape JDBC URL (jdbc:scheme://host[:port][/path][?query]).
+     * Only fills fields that were not set by the sample URL pattern match.
+     */
+    private void parseStandardJdbcUrl(@NotNull ImportConnectionInfo connectionInfo, @NotNull String url) {
+        String jdbcPrefix = "jdbc:";
+        if (!url.startsWith(jdbcPrefix)) {
+            return;
+        }
+        try {
+            URI uri = URI.create(url.substring(jdbcPrefix.length()));
+            String host = uri.getHost();
+            if (!CommonUtils.isEmpty(host) && CommonUtils.isEmpty(connectionInfo.getHost())) {
+                connectionInfo.setHost(host);
+            }
+            int port = uri.getPort();
+            if (port > 0 && CommonUtils.isEmpty(connectionInfo.getPort())) {
+                connectionInfo.setPort(String.valueOf(port));
+            }
+            String path = uri.getPath();
+            if (!CommonUtils.isEmpty(path) && path.length() > 1 && CommonUtils.isEmpty(connectionInfo.getDatabase())) {
+                connectionInfo.setDatabase(path.substring(1));
+            }
+        } catch (Exception e) {
+            log.debug("Could not parse connection URL as standard JDBC URL: " + e.getMessage());
+        }
+    }
+
+    @Nullable
+    private static String safeGroup(@NotNull Matcher matcher, @NotNull String groupName) {
+        try {
+            return matcher.group(groupName);
+        } catch (IllegalArgumentException e) {
+            // Named group not present in the sample URL pattern.
+            return null;
+        }
+    }
+
+    /**
+     * Extract query string key=value pairs from the connection URL and store them as
+     * provider properties on the connection info. This makes non-standard driver
+     * parameters (e.g. Snowflake warehouse/schema/role) available when the connection is
+     * later used to rebuild the URL or shown in the driver's connection page.
+     */
+    protected void extractUrlQueryParams(@NotNull ImportConnectionInfo connectionInfo) {
+        String url = connectionInfo.getUrl();
+        if (CommonUtils.isEmpty(url)) {
+            return;
+        }
+        int queryStart = url.indexOf('?');
+        if (queryStart < 0 || queryStart == url.length() - 1) {
+            return;
+        }
+        String query = url.substring(queryStart + 1);
+        for (String param : query.split("&")) {
+            int eqIdx = param.indexOf('=');
+            if (eqIdx <= 0) {
+                continue;
+            }
+            String key = param.substring(0, eqIdx).trim();
+            String value = param.substring(eqIdx + 1).trim();
+            if (key.isEmpty()) {
+                continue;
+            }
+            if ("db".equalsIgnoreCase(key) || "database".equalsIgnoreCase(key)) {
+                if (CommonUtils.isEmpty(connectionInfo.getDatabase())) {
+                    connectionInfo.setDatabase(value);
+                }
+                continue;
+            }
+            if (!connectionInfo.getProviderProperties().containsKey(key)) {
+                connectionInfo.setProviderProperty(key, value);
+            }
         }
     }
 }

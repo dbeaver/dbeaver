@@ -52,7 +52,7 @@ public class MonitoredHttpClient implements AutoCloseable {
             @NotNull Consumer<Throwable> errorHandler,
             @NotNull HttpResponse<Stream<String>> response,
             @NotNull AtomicBoolean suppressCompletion,
-            @Nullable Runnable backupOption,
+            @Nullable Consumer<String> backupOption,
             int statusCode
         );
     }
@@ -132,7 +132,7 @@ public class MonitoredHttpClient implements AutoCloseable {
         @NotNull Consumer<String> eventHandler,
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull Runnable completionHandler,
-        @Nullable Runnable backupOption
+        @Nullable Consumer<String> backupOption
     ) {
         AtomicBoolean suppressCompletion = new AtomicBoolean(false);
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Before;
@@ -33,13 +28,10 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
 
@@ -71,13 +63,28 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void textRowWithSingleQuoteShouldBeEscaped() throws DBException, IOException {
+        // given
+        String textRowWithSingleQuote = "'";
+        String expectedRow = "&#39;";
+
+        // when
+        writeRow(textRowWithSingleQuote);
+
+        // then
+        assertOutputMatches(expectedRow);
+    }
+
+    @Test
     public void textRowWithAllSpecialSymbolsShouldBeReplaced() throws DBException, IOException {
         // given
         String textRowWithSpecialXmlChars = """
-        <>&"abc'""";
-        String expectedRow = "&lt;&gt;&amp;&quot;abc'";
+            <>&"'abc'""";
+        String expectedRow = "&lt;&gt;&amp;&quot;&#39;abc&#39;";
+
         // when
         writeRow(textRowWithSpecialXmlChars);
+
         // then
         assertOutputMatches(expectedRow);
     }
@@ -86,18 +93,28 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     public void textRowWithQuotesShouldBeReplaced() throws DBException, IOException {
         // given
         String textRowWithSpecialXmlChars = """
-        {"delivery":"express"}""";
-        String expectedRow = "{&quot;delivery&quot;:&quot;express&quot;}";
+            {"delivery":"express","type":"'vip'"}""";
+
+        String expectedRow =
+            "{&quot;delivery&quot;:&quot;express&quot;,&quot;type&quot;:&quot;&#39;vip&#39;&quot;}";
+
         // when
         writeRow(textRowWithSpecialXmlChars);
+
         // then
         assertOutputMatches(expectedRow);
     }
 
+
     @Before
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
-        IStreamDataExporterSite mockSite = getIStreamDataExporterSiteMock();
+        IStreamDataExporterSite mockSite = ExporterTestsUtils.getIStreamDataExporterSiteMock(
+            tableName,
+            columnName,
+            stringWriter,
+            outputEncoding
+        );
 
         exporter = new DataExporterDbUnit();
         exporter.init(mockSite);
@@ -124,102 +141,5 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
                 <%s %s="%s"/>
             </dataset>
             """.formatted(outputEncoding, tableName.toUpperCase(), columnName.toUpperCase(), row);
-    }
-
-    @NotNull
-    private IStreamDataExporterSite getIStreamDataExporterSiteMock() {
-        DBPNamedObject mockSource = mock(DBPNamedObject.class);
-        when(mockSource.getName()).thenReturn(tableName);
-
-        DBDValueHandler valueHandler = getDbdValueHandlerMock();
-
-        DBDAttributeBinding mockBinding = mock(DBDAttributeBinding.class);
-        when(mockBinding.getName()).thenReturn(columnName);
-        when(mockBinding.getValueHandler()).thenReturn(mock(DBDValueHandler.class));
-        when(mockBinding.getValueHandler()).thenReturn(valueHandler);
-
-
-        PrintWriter pw = new PrintWriter(stringWriter);
-
-        IStreamDataExporterSite mockSite = mock(IStreamDataExporterSite.class);
-        when(mockSite.getOutputEncoding()).thenReturn(outputEncoding);
-        when(mockSite.getWriter()).thenReturn(pw);
-        when(mockSite.getAttributes()).thenReturn(new DBDAttributeBinding[]{mockBinding});
-        when(mockSite.getSource()).thenReturn(mockSource);
-        return mockSite;
-    }
-
-    @NotNull
-    private DBDValueHandler getDbdValueHandlerMock() {
-        return new DBDValueHandler() {
-            @NotNull
-            @Override
-            public Class<?> getValueObjectType(@NotNull DBSTypedObject attribute) {
-                return String.class;
-            }
-
-            @Nullable
-            @Override
-            public String getValueContentType(@NotNull DBSTypedObject attribute) {
-                return null;
-            }
-
-            @Nullable
-            @Override
-            public Object fetchValueObject(
-                @NotNull DBCSession session,
-                @NotNull DBCResultSet resultSet,
-                @NotNull DBSTypedObject type,
-                int index
-            ) throws DBCException {
-                return null;
-            }
-
-            @Override
-            public void bindValueObject(
-                @NotNull DBCSession session,
-                @NotNull DBCStatement statement,
-                @NotNull DBSTypedObject type,
-                int index,
-                @Nullable Object value
-            ) throws DBCException {
-
-            }
-
-            @Nullable
-            @Override
-            public Object getValueFromObject(
-                @NotNull DBCSession session,
-                @NotNull DBSTypedObject type,
-                @Nullable Object object,
-                boolean copy,
-                boolean validateValue
-            ) throws DBCException {
-                return object;
-            }
-
-            @Nullable
-            @Override
-            public Object createNewValueObject(@NotNull DBCSession session, @NotNull DBSTypedObject type) throws DBCException {
-                return null;
-            }
-
-            @Override
-            public void releaseValueObject(@Nullable Object value) {
-
-            }
-
-            @NotNull
-            @Override
-            public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
-                return new DBCLogicalOperator[0];
-            }
-
-            @NotNull
-            @Override
-            public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
-                return value == null ? "" : value.toString();
-            }
-        };
     }
 }
