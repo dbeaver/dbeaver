@@ -55,7 +55,7 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     @NotNull
     @Override
     protected Point getInitialSize() {
-        return new Point(550, 400);
+        return new Point(600, 450);
     }
 
     @Override

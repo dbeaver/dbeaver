@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.forms.UIAlignX;
+import org.jkiss.dbeaver.ui.forms.UIGrowX;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
@@ -37,6 +40,39 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
     private static Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .row(rb -> rb.label("Placeholder"));
+            .accept(buildFeaturesPanel())
+            .accept(buildTipsPanel());
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildFeaturesPanel() {
+        return pb -> pb
+            .row(rb -> rb
+                .label(lb -> lb
+                    .text("DBeaver comes with a lot of features that suit different workflows, "
+                        + "and here you can configure them for your needs:")
+                    .wrap()
+                    .align(UIAlignX.FILL)
+                    .grow(UIGrowX.ALWAYS)))
+            .indent(pb1 -> pb1
+                .row(rb -> rb.checkBox("AI integration", UIObservable.of(true)))
+                .row(rb -> rb.checkBox("Cloud integration (AWS, Azure, Google Cloud)", UIObservable.of(true)))
+                .row(rb -> rb.checkBox("Database dashboards", UIObservable.of(true)))
+                .row(rb -> rb.checkBox("Git version control", UIObservable.of(true)))
+                .row(rb -> rb.checkBox("Tableau integration", UIObservable.of(true)))
+                .row(rb -> rb.checkBox("Procedure debugger", UIObservable.of(true))));
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildTipsPanel() {
+        return pb -> pb
+            .row(rb -> rb.label(lb -> lb
+                .text("You can also enable tips that will appear daily to help you get "
+                    + "familiar with the application and learn some useful features.")
+                .wrap()
+                .align(UIAlignX.FILL)
+                .grow(UIGrowX.ALWAYS)))
+            .indent(pb1 -> pb1
+                .row(rb -> rb.checkBox("Turn on \"Tip of the day\"", UIObservable.of(true, Boolean.class))));
     }
 }

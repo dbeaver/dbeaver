@@ -35,4 +35,13 @@ public abstract class EasyConfigWizardPage extends WizardPage {
         title.addChangeListener((s, s2) -> setTitle(s2));
         description.addChangeListener((s, s2) -> setDescription(s2));
     }
+
+    /**
+     * Determines whether this page should be shown in the current context.
+     *
+     * @return {@code true} if the page is applicable and should be shown, {@code false} otherwise
+     */
+    public boolean isPageApplicable() {
+        return true;
+    }
 }

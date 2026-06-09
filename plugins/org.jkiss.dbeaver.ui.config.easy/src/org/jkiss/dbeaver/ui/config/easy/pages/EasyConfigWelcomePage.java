@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
-import org.jkiss.dbeaver.ui.forms.*;
+import org.jkiss.dbeaver.ui.forms.UIAlignX;
+import org.jkiss.dbeaver.ui.forms.UIGrowX;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
 
@@ -42,7 +44,7 @@ public class EasyConfigWelcomePage extends EasyConfigWizardPage {
                 .label(lb -> lb
                     .text(EasyConfigMessages.welcome_body_text)
                     .wrap()
-                    .align(UIAlignX.FILL, UIAlignY.FILL)
-                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)));
+                    .align(UIAlignX.FILL)
+                    .grow(UIGrowX.ALWAYS)));
     }
 }

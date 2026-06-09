@@ -9,7 +9,6 @@
        <page id="appearance" order="2000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigAppearancePage"/>
        <page id="features" order="3000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigFeaturesPage"/>
        <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigDataCollectionPage"/>
-       <page id="sampleDatabase" order="5000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigSampleDatabasePage"/>
    </extension>
 
 </plugin>

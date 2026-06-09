@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.ui.forms.*;
 import java.util.function.Consumer;
 
 public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
+    private final UIObservable<Boolean> sendUsageStatistics = UIObservable.of(true, Boolean.class);
+
     public EasyConfigDataCollectionPage() {
         super(EasyConfigMessages.data_collection_title, EasyConfigMessages.data_collection_description);
     }
@@ -34,26 +36,16 @@ public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildPanel() {
+    private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb
-                .label(lb -> lb
-                    .text("To improve user experience and product performance, "
-                        + "DBeaver can collect some anonymous statistical data about feature usage and product configuration."
-                        + "\n\n"
-                        + "This data doesn't include any personal or sensitive information, such as database connection "
-                        + "configuration, executed queries, or database information. The data sent complies with the "
-                        + "DBeaver Corporation Privacy Policy."
-                        + "\n\n"
-                        + "DBeaver sends statistics before shutting down or during startup. Information we collect includes:"
-                        + "\n - Brief information about your OS and locale"
-                        + "\n - List of UI actions you do to better understand users' workflow"
-                        + "\n - Databases you use to improve support for popular ones")
-                    .wrap()
-                    .align(UIAlignX.FILL, UIAlignY.FILL)
-                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)))
+                .weblink(
+                    EasyConfigMessages.data_collection_agreement_text,
+                    lb -> lb
+                        .align(UIAlignX.FILL, UIAlignY.FILL)
+                        .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)))
             .row(rb -> rb
-                .checkBox("Send anonymous usage statistics", UIObservable.of(true, Boolean.class)));
+                .checkBox(EasyConfigMessages.data_collection_send_usage_statistics, sendUsageStatistics));
     }
 }

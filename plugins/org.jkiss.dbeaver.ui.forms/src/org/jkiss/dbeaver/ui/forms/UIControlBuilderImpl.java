@@ -356,12 +356,12 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             }
         }
 
-        private final String text;
+        private final UIObservable<String> text;
         private final Consumer<SelectionEvent> onSelect;
         private final Kind kind;
         private UIObservable<Boolean> selected;
 
-        ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
+        ButtonBuilderImpl(@Nullable UIObservable<String> text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
             this.text = text;
             this.onSelect = onSelect;
             this.kind = kind;
@@ -377,7 +377,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            Button button = UIControlFactory.createButton(parent, kind.toSWT(), text);
+            Button button = UIControlFactory.createButton(parent, kind.toSWT());
             if (onSelect != null) {
                 button.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
             }
@@ -397,6 +397,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @Override
         protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
+            if (text != null) {
+                context.bindValue(WidgetProperties.text().observe(control), delegate(text));
+            }
             if (selected != null) {
                 context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
             }

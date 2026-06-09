@@ -37,9 +37,8 @@ public final class EasyConfigMessages {
 
     public static final UIObservable<String> data_collection_title = UIObservables.computed(() -> Raw.easy_config_data_collection_title, String.class);
     public static final UIObservable<String> data_collection_description = UIObservables.computed(() -> Raw.easy_config_data_collection_description, String.class);
-
-    public static final UIObservable<String> sample_database_title = UIObservables.computed(() -> Raw.easy_config_sample_database_title, String.class);
-    public static final UIObservable<String> sample_database_description = UIObservables.computed(() -> Raw.easy_config_sample_database_description, String.class);
+    public static final UIObservable<String> data_collection_agreement_text = UIObservables.computed(() -> Raw.easy_config_data_collection_agreement_text, String.class);
+    public static final UIObservable<String> data_collection_send_usage_statistics = UIObservables.computed(() -> Raw.easy_config_data_collection_send_usage_statistics, String.class);
     // @formatter:on
 
     private EasyConfigMessages() {
@@ -65,9 +64,8 @@ public final class EasyConfigMessages {
 
         public static String easy_config_data_collection_title;
         public static String easy_config_data_collection_description;
-
-        public static String easy_config_sample_database_title;
-        public static String easy_config_sample_database_description;
+        public static String easy_config_data_collection_agreement_text;
+        public static String easy_config_data_collection_send_usage_statistics;
 
         static {
             ReloadableNLS.initializeMessages(EasyConfigMessages.class.getName(), Raw.class);

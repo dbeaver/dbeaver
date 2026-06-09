@@ -18,39 +18,53 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
-import org.jkiss.dbeaver.ui.forms.*;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.config.sample.SampleDatabaseUtil;
+import org.jkiss.dbeaver.ui.forms.UIAlignX;
+import org.jkiss.dbeaver.ui.forms.UIGrowX;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
 
 public class EasyConfigSampleDatabasePage extends EasyConfigWizardPage {
+    private final UIObservable<Boolean> createSampleDatabase = UIObservable.of(true);
+
     public EasyConfigSampleDatabasePage() {
-        super(EasyConfigMessages.sample_database_title, EasyConfigMessages.sample_database_description);
+        super(
+            UIObservable.of("Sample Database"),
+            UIObservable.of("You can set up a sample database to explore DBeaver features without connecting to your own databases.")
+        );
     }
 
     @Override
     public void createControl(@NotNull Composite parent) {
-        setControl(UIPanelBuilder.build(parent, buildPanel()));
+        setControl(UIPanelBuilder.build(parent, buildPanel(createSampleDatabase)));
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return !isSampleDatabaseExists();
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildPanel() {
+    private static Consumer<UIPanelBuilder> buildPanel(@NotNull UIObservable<Boolean> createSampleDatabase) {
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb.label(lb -> lb
                 .text("DBeaver comes with a handy sample database powered by SQLite that you can use "
                     + "to explore the features and capabilities of the application.")
                 .wrap()
-                .align(UIAlignX.FILL, UIAlignY.FILL)
+                .align(UIAlignX.FILL)
                 .grow(UIGrowX.ALWAYS)))
-            .row(rb -> rb.checkBox("Create sample database", UIObservable.of(true, Boolean.class)))
-            .row(UIRowBuilder::spacer)
-            .row(rb -> rb.label(lb -> lb
-                .text("You can also enable tips that will appear every time you start DBeaver to help you get "
-                    + "familiar with the application and learn some useful features.")
-                .wrap()
-                .align(UIAlignX.FILL, UIAlignY.FILL)
-                .grow(UIGrowX.ALWAYS)))
-            .row(rb -> rb.checkBox("Show tips", UIObservable.of(true, Boolean.class)));
+            .row(rb -> rb.checkBox("Create sample database", createSampleDatabase));
+    }
+
+    private static boolean isSampleDatabaseExists() {
+        var project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (project == null) {
+            return true;
+        }
+        return SampleDatabaseUtil.isSampleDatabaseExists(project.getDataSourceRegistry());
     }
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.config.easy;
 import org.eclipse.jface.wizard.Wizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWizardPage;
 import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageDescriptor;
 import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageRegistry;
 
@@ -31,11 +32,16 @@ public final class EasyConfigWizard extends Wizard {
 
     @Override
     public void addPages() {
-        for (EasyConfigPageDescriptor page : EasyConfigPageRegistry.getInstance().getPages()) {
+        for (EasyConfigPageDescriptor descriptor : EasyConfigPageRegistry.getInstance().getPages()) {
+            EasyConfigWizardPage page;
             try {
-                addPage(page.createPage());
+                page = descriptor.createPage();
             } catch (DBException e) {
-                log.error("Error creating easy config page " + page.getId(), e);
+                log.error("Error creating easy config page " + descriptor.getId(), e);
+                continue;
+            }
+            if (page.isPageApplicable()) {
+                addPage(page);
             }
         }
     }
