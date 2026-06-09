@@ -1429,6 +1429,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         true);
                     dialog.open();
                 }
+            } else if (!isComplexValuesExpansionEnabled() && (value instanceof DBDComposite || value instanceof Collection<?>)) {
+                //this.openValueEditor(false);
+                this.controller.activatePanel(ValueViewerPanel.PANEL_ID, true, true);
             } else {
                 spreadsheet.getCellRenderer().executeHintAction(cell.row, cell.col, cellInfo, x, y, state);
             }
@@ -1851,7 +1854,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
         if ((attr.getDataKind() == DBPDataKind.STRUCT || attr.getDataKind() == DBPDataKind.ARRAY) && controller.isRecordMode()) {
-            return true;
+            return this.isComplexValuesExpansionEnabled();
         }
 
         if (attr instanceof DBDAttributeBinding binding) {
@@ -2053,7 +2056,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 };
             } else if (controller.isRecordMode()) {
                 if (item.getElement() instanceof DBDComplexValue) {
-                    return true;
+                    return isComplexValuesExpansionEnabled();
                 }
             }
             return false;
@@ -2349,6 +2352,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementExpandable(@NotNull IGridItem item) {
+            System.out.println(item.getElement());
             if (item instanceof IGridRow row) {
                 return hasExpandableElements(row);
             }
@@ -2359,7 +2363,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             for (int i = 0; i < spreadsheet.getColumnCount(); i++) {
                 Object cellValue = getCellValue(spreadsheet.getColumn(i), row, false);
                 if (cellValue instanceof DBDComplexValue) {
-                    return true;
+                    return isComplexValuesExpansionEnabled();
                 }
             }
             return false;
@@ -2412,7 +2416,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                     } else if (
                         (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
-                        (cellValue instanceof DBDComposite && controller.isRecordMode())
+                        (cellValue instanceof DBDComposite)
                     ) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
@@ -2459,7 +2463,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 // Collections
                 if (info.image == null && cellValue instanceof DBDComplexValue cv && !cv.isNull() &&
-                    (!(cellValue instanceof Collection<?> col && col.isEmpty()))
+                    (!(cellValue instanceof Collection<?> col && col.isEmpty())) &&
+                    isComplexValuesExpansionEnabled()
                 ) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     boolean cellExpanded = spreadsheet.isCellExpanded(cell);
@@ -3136,6 +3141,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return value instanceof DBDCollection collection
             && !collection.isNull()
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
+    }
+
+    private boolean isComplexValuesExpansionEnabled() {
+        return this.controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
     }
 
     private class GridLabelProvider implements IGridLabelProvider {
