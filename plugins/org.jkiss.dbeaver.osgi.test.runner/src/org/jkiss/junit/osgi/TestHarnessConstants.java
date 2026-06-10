@@ -14,31 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.lightgrid;
+package org.jkiss.junit.osgi;
 
-import org.eclipse.swt.widgets.Display;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+public final class TestHarnessConstants {
 
-/**
- * Abstract grid renderer
- */
-abstract class AbstractRenderer {
-    static final boolean isTransparent = !RuntimeUtils.isMacOS();
+    // OSGi BundleContext published by the test runner once the framework is up
+    public static final String PROP_OSGI_CONTEXT = "dbeaver.osgi.context";
 
-    protected final LightGrid grid;
-
-    protected AbstractRenderer(@NotNull LightGrid grid) {
-        this.grid = grid;
+    private TestHarnessConstants() {
     }
 
-    /**
-     * Sets the display for the renderer.
-     * 
-     * @return Returns the display.
-     */
-    public Display getDisplay()
-    {
-        return grid.getDisplay();
-    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
  */
 package org.jkiss.utils;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
@@ -28,94 +26,91 @@ import java.lang.reflect.WildcardType;
 
 public class BeanUtilsTest {
 
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
-
     @Test
     public void testIsGetterName() {
-        Assert.assertFalse(BeanUtils.isGetterName(""));
-        Assert.assertFalse(BeanUtils.isGetterName("foo"));
+        Assertions.assertFalse(BeanUtils.isGetterName(""));
+        Assertions.assertFalse(BeanUtils.isGetterName("foo"));
 
-        Assert.assertTrue(BeanUtils.isGetterName("is"));
-        Assert.assertTrue(BeanUtils.isGetterName("get"));
-        Assert.assertTrue(BeanUtils.isGetterName("has"));
+        Assertions.assertTrue(BeanUtils.isGetterName("is"));
+        Assertions.assertTrue(BeanUtils.isGetterName("get"));
+        Assertions.assertTrue(BeanUtils.isGetterName("has"));
     }
 
     @Test
     public void testGetPropertyNameFromGetter() {
-        Assert.assertNull(BeanUtils.getPropertyNameFromGetter("foobar"));
+        Assertions.assertNull(BeanUtils.getPropertyNameFromGetter("foobar"));
 
-        Assert.assertEquals("bar",
+        Assertions.assertEquals("bar",
                 BeanUtils.getPropertyNameFromGetter("isbar"));
-        Assert.assertEquals("bar",
+        Assertions.assertEquals("bar",
                 BeanUtils.getPropertyNameFromGetter("getbar"));
-        Assert.assertEquals("bar",
+        Assertions.assertEquals("bar",
                 BeanUtils.getPropertyNameFromGetter("hasbar"));
     }
 
     @Test
     public void testGetSetterName() {
-        Assert.assertNull(BeanUtils.getSetterName("foobar"));
+        Assertions.assertNull(BeanUtils.getSetterName("foobar"));
 
-        Assert.assertEquals("setbar", BeanUtils.getSetterName("isbar"));
-        Assert.assertEquals("setbar", BeanUtils.getSetterName("getbar"));
-        Assert.assertEquals("setbar", BeanUtils.getSetterName("hasbar"));
+        Assertions.assertEquals("setbar", BeanUtils.getSetterName("isbar"));
+        Assertions.assertEquals("setbar", BeanUtils.getSetterName("getbar"));
+        Assertions.assertEquals("setbar", BeanUtils.getSetterName("hasbar"));
     }
 
     @Test
     public void testGetSetMethod() {
-        Assert.assertNull(BeanUtils.getSetMethod(String.class, "size"));
-        Assert.assertNull(BeanUtils.getSetMethod(String.class, "length"));
-        Assert.assertNull(
+        Assertions.assertNull(BeanUtils.getSetMethod(String.class, "size"));
+        Assertions.assertNull(BeanUtils.getSetMethod(String.class, "length"));
+        Assertions.assertNull(
                 BeanUtils.getSetMethod(String.class, "length", true));
-        Assert.assertNull(
+        Assertions.assertNull(
                 BeanUtils.getSetMethod(String.class, "length", false));
     }
 
     @Test
     public void testGetGetMethod() {
-        Assert.assertNull(BeanUtils.getGetMethod(String.class, "size"));
-        Assert.assertNull(BeanUtils.getGetMethod(String.class, "length"));
-        Assert.assertNull(
+        Assertions.assertNull(BeanUtils.getGetMethod(String.class, "size"));
+        Assertions.assertNull(BeanUtils.getGetMethod(String.class, "length"));
+        Assertions.assertNull(
                 BeanUtils.getGetMethod(String.class, "length", true));
-        Assert.assertNull(
+        Assertions.assertNull(
                 BeanUtils.getGetMethod(String.class, "length", false));
     }
 
     @Test
     public void testPropertyNameToMethodName() {
-        Assert.assertEquals("Length",
+        Assertions.assertEquals("Length",
                 BeanUtils.propertyNameToMethodName("length"));
-        Assert.assertEquals("Length",
+        Assertions.assertEquals("Length",
                 BeanUtils.propertyNameToMethodName("Length"));
-        Assert.assertEquals("LENGTH",
+        Assertions.assertEquals("LENGTH",
                 BeanUtils.propertyNameToMethodName("lENGTH"));
-        Assert.assertEquals("LENGTH",
+        Assertions.assertEquals("LENGTH",
                 BeanUtils.propertyNameToMethodName("LENGTH"));
     }
 
     @Test
     public void testMethodNameToPropertyName() {
-        Assert.assertNull(BeanUtils.methodNameToPropertyName(""));
+        Assertions.assertNull(BeanUtils.methodNameToPropertyName(""));
 
-        Assert.assertEquals("g", BeanUtils.methodNameToPropertyName("G"));
-        Assert.assertEquals("get", BeanUtils.methodNameToPropertyName("Get"));
-        Assert.assertEquals("empty",
+        Assertions.assertEquals("g", BeanUtils.methodNameToPropertyName("G"));
+        Assertions.assertEquals("get", BeanUtils.methodNameToPropertyName("Get"));
+        Assertions.assertEquals("empty",
                 BeanUtils.methodNameToPropertyName("isEmpty"));
-        Assert.assertEquals("length",
+        Assertions.assertEquals("length",
                 BeanUtils.methodNameToPropertyName("getlength"));
-        Assert.assertEquals("length",
+        Assertions.assertEquals("length",
                 BeanUtils.methodNameToPropertyName("setlength"));
     }
 
     @Test
     public void testIsArrayType() {
-        Assert.assertFalse(BeanUtils.isArrayType(String.class));
+        Assertions.assertFalse(BeanUtils.isArrayType(String.class));
     }
 
     @Test
     public void testIsCollectionType() {
-        Assert.assertFalse(BeanUtils.isCollectionType(String.class));
+        Assertions.assertFalse(BeanUtils.isCollectionType(String.class));
     }
 
     @Test
@@ -137,10 +132,10 @@ public class BeanUtilsTest {
             }
         };
 
-        Assert.assertEquals(String.class,
+        Assertions.assertEquals(String.class,
                 BeanUtils.getCollectionType(parameterizedType));
 
-        Assert.assertNull(BeanUtils.getCollectionType(null));
+        Assertions.assertNull(BeanUtils.getCollectionType(null));
     }
 
     @Test
@@ -174,7 +169,7 @@ public class BeanUtilsTest {
             }
         };
 
-        Assert.assertEquals(String.class,
+        Assertions.assertEquals(String.class,
                 BeanUtils.getCollectionType(parameterizedType));
     }
 
@@ -209,71 +204,70 @@ public class BeanUtilsTest {
             }
         };
 
-        Assert.assertEquals(String.class,
+        Assertions.assertEquals(String.class,
                 BeanUtils.getCollectionType(parameterizedType));
     }
 
     @Test
     public void testReadObjectProperty()
             throws InvocationTargetException, IllegalAccessException {
-        Assert.assertNull(BeanUtils.readObjectProperty(null, ".length"));
-        Assert.assertNull(BeanUtils.readObjectProperty(String.class, "bar"));
-        Assert.assertNull(BeanUtils.readObjectProperty(String.class, ".length"));
+        Assertions.assertNull(BeanUtils.readObjectProperty(null, ".length"));
+        Assertions.assertNull(BeanUtils.readObjectProperty(String.class, "bar"));
+        Assertions.assertNull(BeanUtils.readObjectProperty(String.class, ".length"));
 
-        Assert.assertEquals(String.class,
+        Assertions.assertEquals(String.class,
                 BeanUtils.readObjectProperty(String.class, "."));
     }
 
     @Test
     public void testIsBooleanType() {
-        Assert.assertTrue(BeanUtils.isBooleanType(Boolean.TYPE));
-        Assert.assertTrue(BeanUtils.isBooleanType(Boolean.class));
+        Assertions.assertTrue(BeanUtils.isBooleanType(Boolean.TYPE));
+        Assertions.assertTrue(BeanUtils.isBooleanType(Boolean.class));
 
-        Assert.assertFalse(BeanUtils.isBooleanType(String.class));
-        Assert.assertFalse(BeanUtils.isBooleanType(null));
+        Assertions.assertFalse(BeanUtils.isBooleanType(String.class));
+        Assertions.assertFalse(BeanUtils.isBooleanType(null));
     }
 
     @Test
     public void testGetDefaultPrimitiveValue() {
-        Assert.assertEquals(0L,
+        Assertions.assertEquals(0L,
                 BeanUtils.getDefaultPrimitiveValue(Long.TYPE));
-        Assert.assertEquals(0,
+        Assertions.assertEquals(0,
                 BeanUtils.getDefaultPrimitiveValue(Integer.TYPE));
-        Assert.assertEquals(0.0f,
+        Assertions.assertEquals(0.0f,
                 BeanUtils.getDefaultPrimitiveValue(Float.TYPE));
-        Assert.assertEquals(0.0,
+        Assertions.assertEquals(0.0,
                 BeanUtils.getDefaultPrimitiveValue(Double.TYPE));
-        Assert.assertEquals((short) 0,
+        Assertions.assertEquals((short) 0,
                 BeanUtils.getDefaultPrimitiveValue(Short.TYPE));
-        Assert.assertEquals((byte) 0,
+        Assertions.assertEquals((byte) 0,
                 BeanUtils.getDefaultPrimitiveValue(Byte.TYPE));
-        Assert.assertEquals((char) 0,
+        Assertions.assertEquals((char) 0,
                 BeanUtils.getDefaultPrimitiveValue(Character.TYPE));
-        Assert.assertEquals(false,
+        Assertions.assertEquals(false,
                 BeanUtils.getDefaultPrimitiveValue(Boolean.TYPE));
 
-        thrown.expect(IllegalArgumentException.class);
-        BeanUtils.getDefaultPrimitiveValue(String.class);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> BeanUtils.getDefaultPrimitiveValue(String.class));
     }
 
     @Test
     public void testIsNumericType() {
-        Assert.assertTrue(BeanUtils.isNumericType(Long.TYPE));
-        Assert.assertTrue(BeanUtils.isNumericType(Byte.TYPE));
-        Assert.assertTrue(BeanUtils.isNumericType(Short.TYPE));
-        Assert.assertTrue(BeanUtils.isNumericType(Float.TYPE));
-        Assert.assertTrue(BeanUtils.isNumericType(Double.TYPE));
-        Assert.assertTrue(BeanUtils.isNumericType(Short.class));
-        Assert.assertTrue(BeanUtils.isNumericType(Integer.TYPE));
+        Assertions.assertTrue(BeanUtils.isNumericType(Long.TYPE));
+        Assertions.assertTrue(BeanUtils.isNumericType(Byte.TYPE));
+        Assertions.assertTrue(BeanUtils.isNumericType(Short.TYPE));
+        Assertions.assertTrue(BeanUtils.isNumericType(Float.TYPE));
+        Assertions.assertTrue(BeanUtils.isNumericType(Double.TYPE));
+        Assertions.assertTrue(BeanUtils.isNumericType(Short.class));
+        Assertions.assertTrue(BeanUtils.isNumericType(Integer.TYPE));
 
-        Assert.assertFalse(BeanUtils.isNumericType(String.class));
+        Assertions.assertFalse(BeanUtils.isNumericType(String.class));
     }
 
     @Test
     public void testInvokeObjectMethod() throws Throwable {
-        Assert.assertEquals("0", BeanUtils.invokeObjectMethod("String",
+        Assertions.assertEquals("0", BeanUtils.invokeObjectMethod("String",
                 "valueOf", new Class<?>[]{int.class}, new Object[]{0}));
-        Assert.assertEquals(6,
+        Assertions.assertEquals(6,
                 BeanUtils.invokeObjectMethod("String", "length"));
     }
 
@@ -303,28 +297,28 @@ public class BeanUtilsTest {
 
         final DummyChild child = new DummyChild();
 
-        Assert.assertEquals(123, BeanUtils.invokeObjectDeclaredMethod(
+        Assertions.assertEquals(123, BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueA",
             new Class[0],
             new Object[0]
         ));
 
-        Assert.assertEquals(456, BeanUtils.invokeObjectDeclaredMethod(
+        Assertions.assertEquals(456, BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueB",
             new Class[0],
             new Object[0]
         ));
 
-        Assert.assertEquals(0, BeanUtils.invokeObjectDeclaredMethod(
+        Assertions.assertEquals(0, BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueC",
             new Class[0],
             new Object[0]
         ));
 
-        Assert.assertThrows(NoSuchMethodException.class, () -> BeanUtils.invokeObjectDeclaredMethod(
+        Assertions.assertThrows(NoSuchMethodException.class, () -> BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueD",
             new Class[0],
@@ -334,7 +328,7 @@ public class BeanUtilsTest {
 
     @Test
     public void testInvokeStaticMethod() throws Throwable {
-        Assert.assertEquals("0", BeanUtils.invokeStaticMethod(String.class,
+        Assertions.assertEquals("0", BeanUtils.invokeStaticMethod(String.class,
                 "valueOf", new Class<?>[]{int.class}, new Object[]{0}));
     }
 }

@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,19 +27,19 @@ public class GroupRowStripingUtilsTest {
 
     @Test
     public void sameGroupKeyHandlesNullElements() {
-        Assert.assertTrue(GroupRowStripingUtils.sameGroupKey(new Object[]{null}, new Object[]{null}));
-        Assert.assertFalse(GroupRowStripingUtils.sameGroupKey(new Object[]{null}, new Object[]{"x"}));
+        Assertions.assertTrue(GroupRowStripingUtils.sameGroupKey(new Object[]{null}, new Object[]{null}));
+        Assertions.assertFalse(GroupRowStripingUtils.sameGroupKey(new Object[]{null}, new Object[]{"x"}));
     }
 
     @Test
     public void sameGroupKeySameReference() {
         Object[] k = new Object[]{1, 2};
-        Assert.assertTrue(GroupRowStripingUtils.sameGroupKey(k, k));
+        Assertions.assertTrue(GroupRowStripingUtils.sameGroupKey(k, k));
     }
 
     @Test
     public void computeStripeIndicesEmptyReturnsEmpty() {
-        Assert.assertArrayEquals(new int[0], GroupRowStripingUtils.computeStripeIndices(Collections.emptyList()));
+        Assertions.assertArrayEquals(new int[0], GroupRowStripingUtils.computeStripeIndices(Collections.emptyList()));
     }
 
     @Test
@@ -50,7 +50,7 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"B"},
             new Object[]{"B"}
         );
-        Assert.assertArrayEquals(new int[]{0, 0, 1, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
+        Assertions.assertArrayEquals(new int[]{0, 0, 1, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
     }
 
     @Test
@@ -61,7 +61,7 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"A"},
             new Object[]{"B"}
         );
-        Assert.assertArrayEquals(new int[]{0, 1, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
+        Assertions.assertArrayEquals(new int[]{0, 1, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"C1", 2},
             new Object[]{"C1", 3}
         );
-        Assert.assertArrayEquals(new int[]{0, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
+        Assertions.assertArrayEquals(new int[]{0, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"Y"}
         );
         int[] s1 = GroupRowStripingUtils.computeStripeIndices(first);
-        Assert.assertArrayEquals(new int[]{0, 1}, s1);
+        Assertions.assertArrayEquals(new int[]{0, 1}, s1);
 
         List<Object[]> second = Arrays.asList(
             new Object[]{"X"},
@@ -90,7 +90,7 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"Z"}
         );
         int[] s2 = GroupRowStripingUtils.computeStripeIndices(second);
-        Assert.assertArrayEquals(new int[]{0, 1, 1, 0}, s2);
+        Assertions.assertArrayEquals(new int[]{0, 1, 1, 0}, s2);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"B"},
             new Object[]{"C"}
         );
-        Assert.assertArrayEquals(new int[]{0, 1, 0}, GroupRowStripingUtils.computeStripeIndices(keys));
+        Assertions.assertArrayEquals(new int[]{0, 1, 0}, GroupRowStripingUtils.computeStripeIndices(keys));
     }
 
     @Test
@@ -111,6 +111,6 @@ public class GroupRowStripingUtilsTest {
             new Object[]{"C"},
             new Object[]{"A"}
         );
-        Assert.assertArrayEquals(new int[]{0, 1, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
+        Assertions.assertArrayEquals(new int[]{0, 1, 0, 1}, GroupRowStripingUtils.computeStripeIndices(keys));
     }
 }
