@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.sql.SQLException;
-import java.util.List;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
@@ -36,6 +34,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
+import java.sql.SQLException;
+import java.util.List;
+
 public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecutionContext> {
 
     private final CubridDataSource dataSource;
@@ -44,6 +45,7 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public JDBCDataSource getDataSource() {
         return dataSource;
@@ -51,11 +53,11 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
 
     @Override
     protected void findObjectsByMask(
-        JDBCExecutionContext executionContext,
-        JDBCSession session,
-        DBSObjectType objectType,
-        ObjectsSearchParams params,
-        List<DBSObjectReference> references
+        @NotNull JDBCExecutionContext executionContext,
+        @NotNull JDBCSession session,
+        @NotNull DBSObjectType objectType,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
     ) throws DBException, SQLException {
 
         GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ? (GenericSchema) params.getParentObject() : null;
@@ -97,8 +99,9 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
             super(name, container, comment, CubridTable.class, RelationalObjectType.TYPE_TABLE);
         }
 
+        @NotNull
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
             DBSObject table = getContainer().getTableCache().getObject(monitor, getContainer(), getName());
             if (table == null) {
                 throw new DBException(String.format("Table '%s' not found in schema '%s'", getName(), getContainer().getName()));
