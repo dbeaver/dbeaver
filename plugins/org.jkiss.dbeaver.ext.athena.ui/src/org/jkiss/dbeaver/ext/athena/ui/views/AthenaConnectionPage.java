@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialogBase;
 import org.jkiss.utils.CommonUtils;
@@ -151,7 +152,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                 }
 
                                 @Override
-                                protected ViewerFilter createViewerFilter() {
+                                protected ViewerFilter createViewerFilter(DatabaseNavigatorTree navigatorTree) {
                                     return new ViewerFilter() {
                                         @Override
                                         public boolean select(Viewer viewer, Object parentElement, Object element) {
