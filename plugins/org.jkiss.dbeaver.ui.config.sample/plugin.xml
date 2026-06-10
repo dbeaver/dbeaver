@@ -24,8 +24,4 @@
         <handler class="org.jkiss.dbeaver.ui.config.sample.SampleDatabaseHandler" commandId="org.jkiss.dbeaver.ext.sample.database.commands.create"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ui.easyConfig">
-        <page id="sampleDatabase" order="5000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigSampleDatabasePage"/>
-    </extension>
-
 </plugin>

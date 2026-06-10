@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.config.easy.pages;
 
+import org.eclipse.e4.ui.css.swt.theme.ITheme;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
+import org.jkiss.dbeaver.ui.forms.UIObservables;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 
 import java.util.function.Consumer;
@@ -39,9 +43,13 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb.label("Choose which theme you want to use:"))
-            .indent(pb1 -> pb1
-                .row(rb -> rb.radioButton("Light", UIObservable.of(true)))
-                .row(rb -> rb.radioButton("Dark", UIObservable.of(false)))
-                .row(rb -> rb.radioButton("Classic", UIObservable.of(false))));
+            .indent(pb1 -> {
+                var engine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+                var selection = UIObservable.of(engine.getActiveTheme(), ITheme.class);
+
+                for (ITheme theme : engine.getThemes()) {
+                    pb1.row(rb -> rb.radioButton(theme.getLabel(), UIObservables.equals(selection, theme)));
+                }
+            });
     }
 }

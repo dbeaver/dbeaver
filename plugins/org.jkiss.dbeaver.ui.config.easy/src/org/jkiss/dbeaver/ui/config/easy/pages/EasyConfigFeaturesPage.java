@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
-import org.jkiss.dbeaver.ui.forms.UIAlignX;
-import org.jkiss.dbeaver.ui.forms.UIGrowX;
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
 
@@ -40,8 +37,7 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
     private static Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .accept(buildFeaturesPanel())
-            .accept(buildTipsPanel());
+            .accept(buildFeaturesPanel());
     }
 
     @NotNull
@@ -54,25 +50,15 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
                     .wrap()
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)))
-            .indent(pb1 -> pb1
-                .row(rb -> rb.checkBox("AI integration", UIObservable.of(true)))
-                .row(rb -> rb.checkBox("Cloud integration (AWS, Azure, Google Cloud)", UIObservable.of(true)))
-                .row(rb -> rb.checkBox("Database dashboards", UIObservable.of(true)))
-                .row(rb -> rb.checkBox("Git version control", UIObservable.of(true)))
-                .row(rb -> rb.checkBox("Tableau integration", UIObservable.of(true)))
-                .row(rb -> rb.checkBox("Procedure debugger", UIObservable.of(true))));
-    }
-
-    @NotNull
-    private static Consumer<UIPanelBuilder> buildTipsPanel() {
-        return pb -> pb
-            .row(rb -> rb.label(lb -> lb
-                .text("You can also enable tips that will appear daily to help you get "
-                    + "familiar with the application and learn some useful features.")
-                .wrap()
-                .align(UIAlignX.FILL)
-                .grow(UIGrowX.ALWAYS)))
-            .indent(pb1 -> pb1
-                .row(rb -> rb.checkBox("Turn on \"Tip of the day\"", UIObservable.of(true, Boolean.class))));
+            .row(rb -> rb.scrolledPanel(false, true, pb1 -> pb1
+                .align(UIAlignX.FILL, UIAlignY.FILL)
+                .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
+                .indent(pb2 -> pb2
+                    .row(rb1 -> rb1.checkBox("AI integration", UIObservable.of(true)))
+                    .row(rb1 -> rb1.checkBox("Cloud integration (AWS, Azure, Google Cloud)", UIObservable.of(true)))
+                    .row(rb1 -> rb1.checkBox("Database dashboards", UIObservable.of(true)))
+                    .row(rb1 -> rb1.checkBox("Git version control", UIObservable.of(true)))
+                    .row(rb1 -> rb1.checkBox("Tableau integration", UIObservable.of(true)))
+                    .row(rb1 -> rb1.checkBox("Procedure debugger", UIObservable.of(true))))));
     }
 }

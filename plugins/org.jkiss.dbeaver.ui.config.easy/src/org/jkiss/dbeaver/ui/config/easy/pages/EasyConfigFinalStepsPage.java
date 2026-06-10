@@ -19,36 +19,49 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.config.sample.SampleDatabaseUtil;
-import org.jkiss.dbeaver.ui.forms.UIAlignX;
-import org.jkiss.dbeaver.ui.forms.UIGrowX;
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
 
-public class EasyConfigSampleDatabasePage extends EasyConfigWizardPage {
-    private final UIObservable<Boolean> createSampleDatabase = UIObservable.of(true);
-
-    public EasyConfigSampleDatabasePage() {
-        super(
-            UIObservable.of("Sample Database"),
-            UIObservable.of("You can set up a sample database to explore DBeaver features without connecting to your own databases.")
-        );
+public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
+    public EasyConfigFinalStepsPage() {
+        super(EasyConfigMessages.final_steps_title, EasyConfigMessages.final_steps_description);
     }
 
     @Override
     public void createControl(@NotNull Composite parent) {
-        setControl(UIPanelBuilder.build(parent, buildPanel(createSampleDatabase)));
-    }
-
-    @Override
-    public boolean isPageApplicable() {
-        return !isSampleDatabaseExists();
+        setControl(UIPanelBuilder.build(parent, buildPanel()));
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildPanel(@NotNull UIObservable<Boolean> createSampleDatabase) {
+    private Consumer<UIPanelBuilder> buildPanel() {
+        return pb -> pb
+            .margins(10, 10)
+            .accept(buildSampleDatabasePanel(UIObservable.of(true)))
+            .accept(buildTipsPanel(UIObservable.of(true)));
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildTipsPanel(@NotNull UIObservable<Boolean> showTips) {
+        return pb -> pb
+            .row(rb -> rb.label(lb -> lb
+                .text("You can enable tips that will appear daily to help you get "
+                    + "familiar with the application and learn some useful features.")
+                .wrap()
+                .align(UIAlignX.FILL)
+                .grow(UIGrowX.ALWAYS)))
+            .indent(pb1 -> pb1
+                .row(rb -> rb.checkBox("Turn on \"Tip of the day\"", showTips)));
+    }
+
+    @NotNull
+    private static Consumer<UIPanelBuilder> buildSampleDatabasePanel(@NotNull UIObservable<Boolean> createSampleDatabase) {
+        if (isSampleDatabaseExists()) {
+            // Don't show the option to create a sample database if it already exists in the workspace
+            return UIRowBuilder.identityConsumer();
+        }
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb.label(lb -> lb
@@ -57,7 +70,9 @@ public class EasyConfigSampleDatabasePage extends EasyConfigWizardPage {
                 .wrap()
                 .align(UIAlignX.FILL)
                 .grow(UIGrowX.ALWAYS)))
-            .row(rb -> rb.checkBox("Create sample database", createSampleDatabase));
+            .indent(pb1 -> pb1
+                .row(rb -> rb.checkBox("Create sample database", createSampleDatabase)))
+            .row(UIRowBuilder::horizontalSpacer);
     }
 
     private static boolean isSampleDatabaseExists() {

@@ -39,6 +39,9 @@ public final class EasyConfigMessages {
     public static final UIObservable<String> data_collection_description = UIObservables.computed(() -> Raw.easy_config_data_collection_description, String.class);
     public static final UIObservable<String> data_collection_agreement_text = UIObservables.computed(() -> Raw.easy_config_data_collection_agreement_text, String.class);
     public static final UIObservable<String> data_collection_send_usage_statistics = UIObservables.computed(() -> Raw.easy_config_data_collection_send_usage_statistics, String.class);
+
+    public static final UIObservable<String> final_steps_title = UIObservables.computed(() -> Raw.easy_config_final_steps_title, String.class);
+    public static final UIObservable<String> final_steps_description = UIObservables.computed(() -> Raw.easy_config_final_steps_description, String.class);
     // @formatter:on
 
     private EasyConfigMessages() {
@@ -66,6 +69,9 @@ public final class EasyConfigMessages {
         public static String easy_config_data_collection_description;
         public static String easy_config_data_collection_agreement_text;
         public static String easy_config_data_collection_send_usage_statistics;
+
+        public static String easy_config_final_steps_title;
+        public static String easy_config_final_steps_description;
 
         static {
             ReloadableNLS.initializeMessages(EasyConfigMessages.class.getName(), Raw.class);

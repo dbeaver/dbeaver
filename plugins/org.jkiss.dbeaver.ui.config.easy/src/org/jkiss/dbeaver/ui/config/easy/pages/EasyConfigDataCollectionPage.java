@@ -40,11 +40,13 @@ public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb
-                .weblink(
-                    EasyConfigMessages.data_collection_agreement_text,
-                    lb -> lb
-                        .align(UIAlignX.FILL, UIAlignY.FILL)
-                        .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)))
+                .scrolledPanel(false, true, pb1 -> pb1
+                    .align(UIAlignX.FILL, UIAlignY.FILL)
+                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
+                    .row(rb1 -> rb1
+                        .weblink(EasyConfigMessages.data_collection_agreement_text, lb -> lb
+                            .align(UIAlignX.FILL, UIAlignY.FILL)
+                            .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)))))
             .row(rb -> rb
                 .checkBox(EasyConfigMessages.data_collection_send_usage_statistics, sendUsageStatistics));
     }

@@ -7,7 +7,9 @@ Bundle-Release-Date: 20260622
 Require-Bundle: org.eclipse.core.resources,
  org.jkiss.dbeaver.ui;visibility:=reexport,
  org.jkiss.dbeaver.ui.forms;visibility:=reexport,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.ui.config.sample,
+ org.jkiss.dbeaver.registry,
+ org.eclipse.e4.ui.css.swt.theme
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
