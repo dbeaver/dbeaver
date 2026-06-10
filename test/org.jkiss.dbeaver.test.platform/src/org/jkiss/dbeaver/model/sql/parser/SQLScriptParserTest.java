@@ -548,8 +548,8 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         // scriptMode=true matches editor behaviour (Execute SQL Script).
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
             context, 0, context.getDocument().getLength(), true, false, false);
-        String text = elements.get(0).getText();
-        assertEquals(
+        String text = elements.getFirst().getText();
+        Assertions.assertEquals(
             "CREATE OR REPLACE view VM_TEST as(\n" +
             "\tSELECT C,Q\n" +
             "\tFROM (\n" +
