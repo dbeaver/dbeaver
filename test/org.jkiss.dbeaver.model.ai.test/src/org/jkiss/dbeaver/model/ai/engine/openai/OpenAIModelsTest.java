@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
 
 import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
 
 public class OpenAIModelsTest extends DBeaverUnitTest {
 
@@ -30,7 +30,7 @@ public class OpenAIModelsTest extends DBeaverUnitTest {
         //when
         var result = getEffectiveModelName(null);
         //then
-        assertEquals(DEFAULT_MODEL, result);
+        Assertions.assertEquals(DEFAULT_MODEL, result);
     }
 
     @Test
@@ -41,19 +41,18 @@ public class OpenAIModelsTest extends DBeaverUnitTest {
         //when
         var result = getEffectiveModelName(inputModelName);
         //then
-        assertEquals(expectedModelName, result);
+        Assertions.assertEquals(expectedModelName, result);
     }
 
     @Test
     public void effectiveModelNameUnknownUppercaseShouldReturnKnownModelUppercase() {
         //given
         var inputModelName = "some-UNKNOWN-MODEL";
-        assumeFalse(KNOWN_MODELS.containsKey(inputModelName.toLowerCase()));
+        Assumptions.assumeFalse(KNOWN_MODELS.containsKey(inputModelName.toLowerCase()));
         //when
         var result = getEffectiveModelName(inputModelName);
         //then
-        assertEquals(inputModelName, result);
+        Assertions.assertEquals(inputModelName, result);
     }
-
 
 }

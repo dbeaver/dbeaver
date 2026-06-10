@@ -21,16 +21,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.stream.IntStream;
-
-import static org.junit.Assert.assertEquals;
 
 public class DataExporterXMLTest {
     private String outputEncoding = "UTF-8";
@@ -105,7 +104,7 @@ public class DataExporterXMLTest {
         assertOutputMatches(expectedRow);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
 
@@ -133,7 +132,7 @@ public class DataExporterXMLTest {
         var expectedOutput = constructExpectedOutput(expectedRow).lines().toList();
 
         IntStream.range(0, actualOutput.size())
-            .forEach(i -> assertEquals(expectedOutput.get(i), actualOutput.get(i)));
+            .forEach(i -> Assertions.assertEquals(expectedOutput.get(i), actualOutput.get(i)));
     }
 
     private String constructExpectedOutput(@NotNull String row) {

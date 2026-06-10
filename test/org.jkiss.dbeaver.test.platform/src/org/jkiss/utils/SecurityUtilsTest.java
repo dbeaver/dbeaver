@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package org.jkiss.utils;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 //@RunWith(PowerMockRunner.class)
 public class SecurityUtilsTest extends DBeaverUnitTest {
@@ -46,14 +47,14 @@ public class SecurityUtilsTest extends DBeaverUnitTest {
     final Random random = PowerMockito.mock(Random.class);
     PowerMockito.when(random.nextLong()).thenReturn(0L);
 
-    Assert.assertEquals("826ACF9F-7283-7548-3C25-044D0AC2477B", SecurityUtils.generateGUID(true));
-    Assert.assertEquals("214F4B5E-FA60-A781-43E1-E58F9EF1808C", SecurityUtils.generateGUID(false));
+    Assertions.assertEquals("826ACF9F-7283-7548-3C25-044D0AC2477B", SecurityUtils.generateGUID(true));
+    Assertions.assertEquals("214F4B5E-FA60-A781-43E1-E58F9EF1808C", SecurityUtils.generateGUID(false));
 
     PowerMockito.when(inetAddress.getLocalHost()).thenThrow(new UnknownHostException());
     PowerMockito.mockStatic(MessageDigest.class);
     PowerMockito.when(MessageDigest.getInstance(anyString())).thenThrow(new NoSuchAlgorithmException());
     PowerMockito.doAnswer((i) -> { return null; }).when(random).nextBytes(any(byte[].class));
-    Assert.assertEquals("E4983893-E6DF-7079-B59B-6888EBD6ADC1", SecurityUtils.generateGUID(true));
+    Assertions.assertEquals("E4983893-E6DF-7079-B59B-6888EBD6ADC1", SecurityUtils.generateGUID(true));
   }
 
 
@@ -66,23 +67,23 @@ public class SecurityUtilsTest extends DBeaverUnitTest {
     PowerMockito.when(System.currentTimeMillis()).thenReturn(100L);
 
     PowerMockito.when(random.nextInt(anyInt())).thenReturn(1);
-    Assert.assertEquals("2sdukq4l", SecurityUtils.generateUniqueId());
+    Assertions.assertEquals("2sdukq4l", SecurityUtils.generateUniqueId());
 
     PowerMockito.when(random.nextInt(anyInt())).thenReturn(-1);
-    Assert.assertEquals("2sk6q0t3", SecurityUtils.generateUniqueId());
+    Assertions.assertEquals("2sk6q0t3", SecurityUtils.generateUniqueId());
   }
 
   @PrepareForTest(SecurityUtils.class)
   @Test
   public void testMakeDigest() throws Exception {
-    Assert.assertEquals("6AtQFwmJUPxYqtg8jBSXjg==", SecurityUtils.makeDigest("abc", "def"));
-    Assert.assertEquals("kAFQmDzST7DWlj99KOF/cg==", SecurityUtils.makeDigest("abc", null));
-    Assert.assertEquals("kAFQmDzST7DWlj99KOF/cg==", SecurityUtils.makeDigest("abc"));
+    Assertions.assertEquals("6AtQFwmJUPxYqtg8jBSXjg==", SecurityUtils.makeDigest("abc", "def"));
+    Assertions.assertEquals("kAFQmDzST7DWlj99KOF/cg==", SecurityUtils.makeDigest("abc", null));
+    Assertions.assertEquals("kAFQmDzST7DWlj99KOF/cg==", SecurityUtils.makeDigest("abc"));
 
     PowerMockito.mockStatic(MessageDigest.class);
     PowerMockito.when(MessageDigest.getInstance(anyString())).thenThrow(new NoSuchAlgorithmException());
-    Assert.assertEquals("*", SecurityUtils.makeDigest("abc", "def"));
-    Assert.assertEquals("*", SecurityUtils.makeDigest("abc"));
+    Assertions.assertEquals("*", SecurityUtils.makeDigest("abc", "def"));
+    Assertions.assertEquals("*", SecurityUtils.makeDigest("abc"));
   }
 
   @PrepareForTest(SecurityUtils.class)
@@ -91,7 +92,7 @@ public class SecurityUtilsTest extends DBeaverUnitTest {
     final SecureRandom random = PowerMockito.mock(SecureRandom.class);
     PowerMockito.whenNew(SecureRandom.class).withNoArguments().thenReturn(random);
     PowerMockito.when(random.nextLong()).thenReturn(0L);
-    Assert.assertEquals(0L, SecurityUtils.generateRandomLong());
+    Assertions.assertEquals(0L, SecurityUtils.generateRandomLong());
   }
 
   @PrepareForTest(SecurityUtils.class) 
@@ -100,7 +101,7 @@ public class SecurityUtilsTest extends DBeaverUnitTest {
     final SecureRandom random = PowerMockito.mock(SecureRandom.class);
     PowerMockito.whenNew(SecureRandom.class).withNoArguments().thenReturn(random);
     PowerMockito.doAnswer((i) -> { return null; }).when(random).nextBytes(any(byte[].class));
-    Assert.assertArrayEquals(new byte[]{(byte)0, (byte)0, (byte)0}, SecurityUtils.generateRandomBytes(3));
+    Assertions.assertArrayEquals(new byte[]{(byte)0, (byte)0, (byte)0}, SecurityUtils.generateRandomBytes(3));
   }
 
   @PrepareForTest(SecurityUtils.class) 
@@ -109,7 +110,7 @@ public class SecurityUtilsTest extends DBeaverUnitTest {
     final SecureRandom random = PowerMockito.mock(SecureRandom.class);
     PowerMockito.whenNew(SecureRandom.class).withNoArguments().thenReturn(random);
     PowerMockito.when(random.nextInt(anyInt())).thenReturn(0, 1, 2, 3, 4, 5, 6, 7);
-    Assert.assertEquals("ABCDEFGH", SecurityUtils.generatePassword());
+    Assertions.assertEquals("ABCDEFGH", SecurityUtils.generatePassword());
   }
 
   @PrepareForTest(SecurityUtils.class) 
@@ -117,7 +118,7 @@ public class SecurityUtilsTest extends DBeaverUnitTest {
   public void testGetRandom() throws Exception {
     final Random random = PowerMockito.mock(Random.class);
     PowerMockito.whenNew(Random.class).withParameterTypes(long.class).withArguments(anyLong()).thenReturn(random);
-    Assert.assertEquals(new Random(0L), SecurityUtils.getRandom());
+    Assertions.assertEquals(new Random(0L), SecurityUtils.getRandom());
   }
 */
 }

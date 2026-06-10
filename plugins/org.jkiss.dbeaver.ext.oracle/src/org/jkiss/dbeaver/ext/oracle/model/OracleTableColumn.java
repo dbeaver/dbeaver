@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -93,6 +94,9 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         setScale(scale);
         setPrecision(JDBCUtils.safeGetInteger(dbResult, "DATA_PRECISION"));
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
+        if (JDBCUtils.safeGetBoolean(dbResult, "COMMENTS_LOADED")) {
+            this.comment = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, "COMMENTS"));
+        }
     }
 
     @NotNull
