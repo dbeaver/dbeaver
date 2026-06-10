@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -37,10 +38,7 @@ import java.sql.Types;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
+import java.time.*;
 import java.util.Date;
 
 /**
@@ -177,10 +175,21 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (format == DBDDisplayFormat.NATIVE) {
+            // // Looks like it should have been like this, but this is not for hotfix, because touches everything
+            // value = switch (column.getTypeID()) {
+            //     case Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> getTimestampValue(value);
+            //     case Types.TIME, Types.TIME_WITH_TIMEZONE -> getTimeValue(value);
+            //     case Types.DATE -> getDateValue(value);
+            //     default -> value;
+            // };
             if (value instanceof LocalDate localDate) {
                 value = getDateValue(localDate);
             } else if (value instanceof LocalDateTime localDateTime) {
                 value = getTimestampValue(localDateTime);
+            } else if (value instanceof LocalTime localTime) {
+                value = getTimeValue(localTime);
+            } else if (value instanceof OffsetTime offsetTime) {
+                value = getTimeValue(offsetTime);
             }
             if (value instanceof Date) {
                 Format nativeFormat = getNativeValueFormat(column);
@@ -236,6 +245,10 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return java.sql.Time.valueOf(localDateTime.toLocalTime());
         } else if (value instanceof LocalTime localTime) {
             return java.sql.Time.valueOf(localTime);
+        } else if (value instanceof OffsetTime offsetTime) {
+            return java.sql.Time.valueOf(offsetTime.toLocalTime());
+        } else if (value instanceof DBDEndOfDayValue) {
+            return java.sql.Time.valueOf(LocalTime.MAX);
         } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
             return new java.sql.Time(0);
         }  else if (value != null) {
@@ -276,6 +289,12 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             return Timestamp.valueOf(localDateTime);
         } else if (value instanceof OffsetDateTime offsetDateTime) {
             return Timestamp.valueOf((offsetDateTime.toLocalDateTime()));
+        } else if (value instanceof LocalTime localTime) {
+            return Timestamp.valueOf(localTime.atDate(LocalDate.EPOCH));
+        } else if (value instanceof OffsetTime offsetTime) {
+            return Timestamp.valueOf(offsetTime.toLocalTime().atDate(LocalDate.EPOCH));
+        } else if (value instanceof DBDEndOfDayValue) {
+            return DBDEndOfDayValue.TIMESTAMP;
         } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
             return new Timestamp(0);
         } else if (value != null) {

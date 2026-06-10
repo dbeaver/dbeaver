@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,23 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SnowflakeSQLDialectTest extends DBeaverUnitTest {
     @Test
     public void quoteStatusStringTest() {
         SQLDialect dialect = new SnowflakeSQLDialect();
 
-        assertFalse(dialect.mustBeQuoted("_unquotedIdentifier", false));
-        assertFalse(dialect.mustBeQuoted("unquotedIdentifier", false));
-        assertFalse(dialect.mustBeQuoted("unquoted_identifier", false));
-        assertFalse(dialect.mustBeQuoted("unquoted$identifier", false));
-        assertFalse(dialect.mustBeQuoted("Unquoted_Identifier", false));
-        assertFalse(dialect.mustBeQuoted("unqu0ted1dentifier", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("_unquotedIdentifier", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("unquotedIdentifier", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("unquoted_identifier", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("unquoted$identifier", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("Unquoted_Identifier", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("unqu0ted1dentifier", false));
 
-        assertTrue(dialect.mustBeQuoted("Бразилски_џијуџицу", false));
-        assertTrue(dialect.mustBeQuoted("", false));
-        assertFalse(dialect.mustBeQuoted("noquotesneededforsure", true));
+        Assertions.assertTrue(dialect.mustBeQuoted("Бразилски_џијуџицу", false));
+        Assertions.assertTrue(dialect.mustBeQuoted("", false));
+        Assertions.assertFalse(dialect.mustBeQuoted("noquotesneededforsure", true));
     }
 }
