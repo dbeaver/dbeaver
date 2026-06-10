@@ -18,10 +18,8 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AIMarkdownTest extends DBeaverUnitTest {
 
@@ -30,7 +28,7 @@ public class AIMarkdownTest extends DBeaverUnitTest {
         String md = """
             """;
         MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(md, true);
-        assertEquals(messageChunks.length, 0);
+        Assertions.assertEquals(messageChunks.length, 0);
     }
 
     @Test
@@ -43,8 +41,8 @@ public class AIMarkdownTest extends DBeaverUnitTest {
             And trailing footer
             """;
         MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(md, true);
-        assertEquals(messageChunks.length, 3);
-        assertEquals("```\nselect 1\n```", messageChunks[1].toRawString());
+        Assertions.assertEquals(messageChunks.length, 3);
+        Assertions.assertEquals("```\nselect 1\n```", messageChunks[1].toRawString());
     }
 
     @Test
@@ -74,14 +72,13 @@ public class AIMarkdownTest extends DBeaverUnitTest {
               and some footer
             """;
         MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(md, true);
-        assertEquals(messageChunks.length, 11);
-        assertTrue(messageChunks[1] instanceof MessageChunk.Code code && "select 1".equals(code.text()));
-        assertTrue(messageChunks[3] instanceof MessageChunk.Code code && "select 2".equals(code.text()));
-        assertTrue(messageChunks[5] instanceof MessageChunk.Code code && "    select 3;".equals(code.text()));
-        assertTrue(messageChunks[7] instanceof MessageChunk.Code code && " select 4;".equals(code.text()));
-        assertEquals(messageChunks[8].toRawString(), "Query 5:");
-        assertTrue(messageChunks[9] instanceof MessageChunk.Code code && "select 5\n union all\nselect 6".equals(code.text()));
+        Assertions.assertEquals(messageChunks.length, 11);
+        Assertions.assertTrue(messageChunks[1] instanceof MessageChunk.Code code && "select 1".equals(code.text()));
+        Assertions.assertTrue(messageChunks[3] instanceof MessageChunk.Code code && "select 2".equals(code.text()));
+        Assertions.assertTrue(messageChunks[5] instanceof MessageChunk.Code code && "    select 3;".equals(code.text()));
+        Assertions.assertTrue(messageChunks[7] instanceof MessageChunk.Code code && " select 4;".equals(code.text()));
+        Assertions.assertEquals(messageChunks[8].toRawString(), "Query 5:");
+        Assertions.assertTrue(messageChunks[9] instanceof MessageChunk.Code code && "select 5\n union all\nselect 6".equals(code.text()));
     }
-
 
 }
