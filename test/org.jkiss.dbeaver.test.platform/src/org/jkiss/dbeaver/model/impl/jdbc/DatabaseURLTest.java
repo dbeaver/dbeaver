@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.regex.Matcher;
 
@@ -88,17 +88,17 @@ public class DatabaseURLTest extends DBeaverUnitTest {
 
     private void assertMatches(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
         final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
-        Assert.assertTrue(sampleUrl, matcher.matches());
+        Assertions.assertTrue(matcher.matches(), sampleUrl);
         for (String[] property : properties) {
-            Assert.assertEquals(sampleUrl, property[1], matcher.group(property[0]));
+            Assertions.assertEquals(property[1], matcher.group(property[0]), sampleUrl);
         }
     }
 
     private void assertFind(@NotNull String sampleUrl, @NotNull String targetUrl, @NotNull String[][] properties) {
         final Matcher matcher = DatabaseURL.getPattern(sampleUrl).matcher(targetUrl);
-        Assert.assertTrue(sampleUrl, matcher.find());
+        Assertions.assertTrue(matcher.find(), sampleUrl);
         for (String[] property : properties) {
-            Assert.assertEquals(sampleUrl, property[1], matcher.group(property[0]));
+            Assertions.assertEquals(property[1], matcher.group(property[0]), sampleUrl);
         }
     }
 }
