@@ -16,72 +16,177 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.nio.NIOFileSystemProvider;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileAttributeView;
-import java.nio.file.spi.FileSystemProvider;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class NIOEFSFileSystemProvider extends FileSystemProvider {
+public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
+
+
+    private final IFileStore efsFileStore;
+
+    @Nullable
+    private NIOEFSFileSystem fileSystem;
+
+    public NIOEFSFileSystemProvider(@NotNull IFileStore efsFileStore) {
+        this.efsFileStore = efsFileStore;
+    }
 
     @Override
     public String getScheme() {
-        return "";
+        return "efs";
     }
 
     @Override
     public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
-        return null;
+        validateUri(uri);
+        fileSystem = new NIOEFSFileSystem(uri);
+        return fileSystem;
     }
 
     @Override
+    @Nullable
     public FileSystem getFileSystem(URI uri) {
+        return fileSystem;
+    }
+
+    @Override
+    @NotNull
+    public Path getPath(@NotNull URI uri) {
+        validateUri(uri);
         return null;
     }
 
     @Override
-    public Path getPath(URI uri) {
-        return null;
+    public SeekableByteChannel newByteChannel(
+        @NotNull Path path, Set<? extends OpenOption> options,
+        FileAttribute<?>... attrs
+    ) throws IOException {
+        if (Files.isDirectory(path)) {
+            throw new IllegalArgumentException("Cannot open channel for a folder");
+        }
+        var store = getStore(path);
+        if (store.fetchInfo().exists()) {
+            try (InputStream out = store.openInputStream(EFS.NONE, null)) {
+                return new NIOEFSByteArrayChannel(out.readAllBytes(), options, store);
+            } catch (CoreException e) {
+                throw new IOException(e);
+            }
+        } else {
+            return new NIOEFSByteArrayChannel(new byte[0], options, store);
+        }
     }
 
     @Override
-    public SeekableByteChannel newByteChannel(Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-        return null;
+    public DirectoryStream<Path> newDirectoryStream(@NotNull Path dir, @Nullable DirectoryStream.Filter<? super Path> filter)
+    throws IOException {
+        IFileStore store = getStore(dir);
+        IFileStore[] children;
+        try {
+            children = store.childStores(EFS.NONE, null); // [web:35]
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
+
+        List<Path> paths = new ArrayList<>(children.length);
+        for (IFileStore child : children) {
+            URI childUri = child.toURI();
+            Path childPath = getPath(childUri);
+            if (filter == null || filter.accept(childPath)) {
+                paths.add(childPath);
+            }
+        }
+
+        return new DirectoryStream<Path>() {
+            @Override
+            public Iterator<Path> iterator() {
+                return paths.iterator();
+            }
+
+            @Override
+            public void close() {
+                // nothing to close
+            }
+        };
     }
 
     @Override
-    public DirectoryStream<Path> newDirectoryStream(Path dir, DirectoryStream.Filter<? super Path> filter) throws IOException {
-        return null;
+    public void createDirectory(@NotNull Path dir, @Nullable FileAttribute<?>... ignored) throws IOException {
+        IFileStore store = getStore(dir);
+        try {
+            store.mkdir(EFS.NONE, null);
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
-    public void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-
+    public void delete(@NotNull Path path) throws IOException {
+        IFileStore store = getStore(path);
+        try {
+            store.delete(EFS.NONE, null);
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
-    public void delete(Path path) throws IOException {
-
-    }
-
-    @Override
-    public void copy(Path source, Path target, CopyOption... options) throws IOException {
-
+    public void copy(@NotNull Path source, @NotNull Path target, CopyOption... options) throws IOException {
+        int efsOptions = EFS.NONE;
+        for (CopyOption opt : options) {
+            if (opt == StandardCopyOption.REPLACE_EXISTING) {
+                efsOptions |= EFS.OVERWRITE;
+            } else {
+                throw new UnsupportedOperationException(
+                    "Only supported option is StandardCopyOption.REPLACE_EXISTING, but found: " + Arrays.toString(options));
+            }
+        }
+        IFileStore src = getStore(source);
+        IFileStore dst = getStore(target);
+        try {
+            src.copy(dst, efsOptions, null);
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     public void move(Path source, Path target, CopyOption... options) throws IOException {
-
+        int efsOptions = EFS.NONE;
+        for (CopyOption opt : options) {
+            if (opt == StandardCopyOption.REPLACE_EXISTING) {
+                efsOptions |= EFS.OVERWRITE;
+            } else {
+                throw new UnsupportedOperationException(
+                    "Only supported option is StandardCopyOption.REPLACE_EXISTING, but found: " + Arrays.toString(options));
+            }
+        }
+        IFileStore src = getStore(source);
+        IFileStore dst = getStore(target);
+        try {
+            src.move(dst, efsOptions, null);
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
-    public boolean isSameFile(Path path, Path path2) throws IOException {
-        return false;
+    public boolean isSameFile(@NotNull Path path, @NotNull Path path2) throws IOException {
+        return path.toUri().equals(path2.toUri());
     }
 
     @Override
@@ -96,26 +201,44 @@ public class NIOEFSFileSystemProvider extends FileSystemProvider {
 
     @Override
     public void checkAccess(Path path, AccessMode... modes) throws IOException {
-
+        // todo implement
     }
 
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
+        // todo implement
         return null;
     }
 
     @Override
     public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-        return null;
+        if (!type.equals(BasicFileAttributes.class)) {
+            throw new UnsupportedOperationException("Only BasicFileAttributes supported");
+        }
+
+        IFileStore store = getStore(path);
+        try {
+            IFileInfo info = store.fetchInfo(EFS.NONE, null);
+            // todo implement
+            throw new IOException("Not supported");
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
     }
 
-    @Override
-    public Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-        return Map.of();
+    @NotNull
+    private IFileStore getStore(@NotNull Path path) throws IOException {
+        URI uri = path.toUri();
+        validateUri(uri);
+        return getStore(uri);
     }
 
-    @Override
-    public void setAttribute(Path path, String attribute, Object value, LinkOption... options) throws IOException {
-
+    @NotNull
+    private IFileStore getStore(@NotNull URI uri) throws IOException {
+        try {
+            return EFS.getStore(uri);
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
     }
 }
