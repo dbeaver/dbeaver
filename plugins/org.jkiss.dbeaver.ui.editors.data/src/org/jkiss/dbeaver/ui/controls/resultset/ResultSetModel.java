@@ -877,7 +877,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }, "Release values", 5000);
     }
 
-    @Nullable
+    @NotNull
     public DBDDataFilter getDataFilter() {
         return dataFilter;
     }
