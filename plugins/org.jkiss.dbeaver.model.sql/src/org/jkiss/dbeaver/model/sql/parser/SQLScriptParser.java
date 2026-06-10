@@ -133,6 +133,7 @@ public class SQLScriptParser {
         int lastTokenLineFeeds = 0;
         SQLTokenType prevNotEmptyTokenType = SQLTokenType.T_UNKNOWN;
         String firstKeyword = null, lastKeyword = null;
+        boolean endClosedCaseBlock = false;
         for (; ; ) {
             TPToken token = ruleScanner.nextToken();
             int tokenOffset = ruleScanner.getTokenOffset();
@@ -228,12 +229,19 @@ public class SQLScriptParser {
                         }
                     }
                     curBlock = new ScriptBlockInfo(curBlock, false);
+                    curBlock.beginToken = document.get(tokenOffset, tokenLength);
                     hasBlocks = true;
                 } else if (tokenType == SQLTokenType.T_BLOCK_END) {
                     if (curBlock != null) {
                         if (curBlock.togglePattern != null) {
                             log.trace("SQLScriptParser: blocks structure recognition inconsistency - trying to leave toggled block on non-togging token");
                         } else {
+                            // CASE...END is an expression, not a control block. Don't let
+                            // its END be treated as a statement-block terminator that
+                            // forces appending the trailing delimiter (issue 40779).
+                            if (SQLConstants.KEYWORD_CASE.equalsIgnoreCase(curBlock.beginToken)) {
+                                endClosedCaseBlock = true;
+                            }
                             curBlock = curBlock.parent;
                         }
                     }
@@ -255,8 +263,15 @@ public class SQLScriptParser {
 
                 if (tokenLength > 0 && !token.isWhitespace()) {
                     switch (tokenType) {
-                        case T_BLOCK_BEGIN:
                         case T_BLOCK_END:
+                            if (endClosedCaseBlock) {
+                                // Skip lastKeyword overwrite — END here closed a CASE
+                                // expression, not a real block, so it must not influence
+                                // the block-end-based delimiter retention logic.
+                                break;
+                            }
+                            // fall through
+                        case T_BLOCK_BEGIN:
                         case T_BLOCK_TOGGLE:
                         case T_BLOCK_HEADER:
                         case T_KEYWORD:
@@ -268,6 +283,7 @@ public class SQLScriptParser {
                             break;
                     }
                 }
+                endClosedCaseBlock = false;
 
                 if (isPredicateEvaluationEnabled && !token.isEOF() && newTokenCaptured) {
                     newTokenCaptured = false;
@@ -1119,6 +1135,7 @@ public class SQLScriptParser {
         final String togglePattern;
         boolean isHeader; // block started by DECLARE, FUNCTION, etc
         boolean isPredicateHeaderBlock;
+        String beginToken;
 
         ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader) {
             this.parent = parent;
