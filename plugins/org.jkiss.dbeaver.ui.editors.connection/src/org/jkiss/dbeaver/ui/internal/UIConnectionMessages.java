@@ -84,6 +84,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_auth_label_password;
     public static String dialog_connection_auth_label_username;
     public static String dialog_connection_auth_label_show_password;
+    public static String dialog_connection_auth_shell_command_label;
+    public static String dialog_connection_auth_shell_command_hint;
 
     public static String dialog_connection_network_socket_label_host;
     public static String dialog_connection_network_socket_label_port;

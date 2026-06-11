@@ -8,6 +8,7 @@
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.ShellCommandAuthModelConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.dataSourceConfigurator">
