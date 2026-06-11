@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.config.easy;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -27,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
@@ -70,6 +72,16 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
         Control control = UIPanelBuilder.build(parent, buildLanguagePanel(language));
         control.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         return control;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        super.createButtonsForButtonBar(parent);
+
+        var cancelButton = getButton(IDialogConstants.CANCEL_ID);
+        if (cancelButton != null) {
+            UIUtils.setControlVisible(cancelButton, false);
+        }
     }
 
     @NotNull

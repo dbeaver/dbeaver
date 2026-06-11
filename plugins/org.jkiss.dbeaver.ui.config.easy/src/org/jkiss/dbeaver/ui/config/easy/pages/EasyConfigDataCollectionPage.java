@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
@@ -35,19 +37,56 @@ public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
         setControl(UIPanelBuilder.build(parent, buildPanel()));
     }
 
+    @Override
+    public boolean isPageApplicable() {
+        // org.jkiss.dbeaver.ui.statistics.UIStatisticsActivator.isSkipDataShareConfirmation
+        return super.isPageApplicable();
+    }
+
+    @Override
+    public void loadSettings() {
+        super.loadSettings();
+    }
+
+    @Override
+    public void applySettings() {
+        super.applySettings();
+    }
+
     @NotNull
     private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .row(rb -> rb
-                .scrolledPanel(false, true, pb1 -> pb1
-                    .align(UIAlignX.FILL, UIAlignY.FILL)
-                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
-                    .row(rb1 -> rb1
-                        .weblink(EasyConfigMessages.data_collection_agreement_text, lb -> lb
+            .row(buildAgreementPanel())
+            .row(buildSendUsageCheckbox());
+    }
+
+    @NotNull
+    private static Consumer<UIRowBuilder> buildAgreementPanel() {
+        return rb -> rb
+            .scrolledPanel(false, true, pb1 -> pb1
+                .align(UIAlignX.FILL, UIAlignY.FILL)
+                .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
+                .row(rb1 -> rb1
+                    .weblink(
+                        EasyConfigMessages.data_collection_agreement_text, lb -> lb
                             .align(UIAlignX.FILL, UIAlignY.FILL)
-                            .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)))))
-            .row(rb -> rb
-                .checkBox(EasyConfigMessages.data_collection_send_usage_statistics, sendUsageStatistics));
+                            .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
+                    )));
+    }
+
+    @NotNull
+    private Consumer<UIRowBuilder> buildSendUsageCheckbox() {
+        boolean collectionRequired = DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired();
+        return rb -> {
+            rb.checkBox(EasyConfigMessages.data_collection_send_usage_statistics, bb -> bb
+                .selected(sendUsageStatistics)
+                .enabled(UIObservable.of(!collectionRequired)));
+            if (collectionRequired) {
+                rb.label(lb -> lb
+                    .image(DBIcon.SMALL_INFO)
+                    .tooltip("You cannot opt-out from data sharing in this version of DBeaver."));
+            }
+        };
     }
 }

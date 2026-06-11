@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.config.easy;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWizardPage;
 import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageDescriptor;
-import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageRegistry;
+import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigRegistry;
 
 public final class EasyConfigWizard extends Wizard {
     private static final Log log = Log.getLog(EasyConfigWizard.class);
@@ -32,7 +33,7 @@ public final class EasyConfigWizard extends Wizard {
 
     @Override
     public void addPages() {
-        for (EasyConfigPageDescriptor descriptor : EasyConfigPageRegistry.getInstance().getPages()) {
+        for (EasyConfigPageDescriptor descriptor : EasyConfigRegistry.getInstance().getPages()) {
             EasyConfigWizardPage page;
             try {
                 page = descriptor.createPage();
@@ -42,12 +43,22 @@ public final class EasyConfigWizard extends Wizard {
             }
             if (page.isPageApplicable()) {
                 addPage(page);
+                page.loadSettings();
             }
         }
     }
 
     @Override
     public boolean performFinish() {
-        return false;
+        applySettings();
+        return true;
+    }
+
+    private void applySettings() {
+        for (IWizardPage page : getPages()) {
+            if (page instanceof EasyConfigWizardPage page1) {
+                page1.applySettings();
+            }
+        }
     }
 }

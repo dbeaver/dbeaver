@@ -44,4 +44,12 @@ public abstract class EasyConfigWizardPage extends WizardPage {
     public boolean isPageApplicable() {
         return true;
     }
+
+    public void loadSettings() {
+        // do nothing by default
+    }
+
+    public void applySettings() {
+        // do nothing by default
+    }
 }

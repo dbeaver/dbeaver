@@ -18,12 +18,21 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
+import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigFeatureDescriptor;
+import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigRegistry;
 import org.jkiss.dbeaver.ui.forms.*;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
+    private final Map<EasyConfigFeatureDescriptor, UIObservable<Boolean>> features = new HashMap<>();
+
     public EasyConfigFeaturesPage() {
         super(EasyConfigMessages.features_title, EasyConfigMessages.features_description);
     }
@@ -33,15 +42,33 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
         setControl(UIPanelBuilder.build(parent, buildPanel()));
     }
 
+    @Override
+    public void loadSettings() {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        for (EasyConfigFeatureDescriptor descriptor : EasyConfigRegistry.getInstance().getFeatures()) {
+            var value = CommonUtils.toBoolean(store.getString(descriptor.getPreferenceKey()), descriptor.isEnabled());
+            features.put(descriptor, UIObservable.of(value));
+        }
+    }
+
+    @Override
+    public void applySettings() {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        for (Map.Entry<EasyConfigFeatureDescriptor, UIObservable<Boolean>> entry : features.entrySet()) {
+            store.setValue(entry.getKey().getPreferenceKey(), String.valueOf(entry.getValue().get()));
+        }
+        PrefUtils.savePreferenceStore(store);
+    }
+
     @NotNull
-    private static Consumer<UIPanelBuilder> buildPanel() {
+    private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
             .accept(buildFeaturesPanel());
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildFeaturesPanel() {
+    private Consumer<UIPanelBuilder> buildFeaturesPanel() {
         return pb -> pb
             .row(rb -> rb
                 .label(lb -> lb
@@ -50,15 +77,15 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
                     .wrap()
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)))
-            .row(rb -> rb.scrolledPanel(false, true, pb1 -> pb1
-                .align(UIAlignX.FILL, UIAlignY.FILL)
-                .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
-                .indent(pb2 -> pb2
-                    .row(rb1 -> rb1.checkBox("AI integration", UIObservable.of(true)))
-                    .row(rb1 -> rb1.checkBox("Cloud integration (AWS, Azure, Google Cloud)", UIObservable.of(true)))
-                    .row(rb1 -> rb1.checkBox("Database dashboards", UIObservable.of(true)))
-                    .row(rb1 -> rb1.checkBox("Git version control", UIObservable.of(true)))
-                    .row(rb1 -> rb1.checkBox("Tableau integration", UIObservable.of(true)))
-                    .row(rb1 -> rb1.checkBox("Procedure debugger", UIObservable.of(true))))));
+            .row(rb -> rb.scrolledPanel(
+                false, true, pb1 -> pb1
+                    .align(UIAlignX.FILL, UIAlignY.FILL)
+                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
+                    .indent(pb2 -> {
+                        for (EasyConfigFeatureDescriptor descriptor : EasyConfigRegistry.getInstance().getFeatures()) {
+                            pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
+                        }
+                    })
+            ));
     }
 }

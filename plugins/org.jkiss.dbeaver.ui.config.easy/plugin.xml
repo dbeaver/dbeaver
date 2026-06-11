@@ -10,6 +10,13 @@
        <page id="features" order="3000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigFeaturesPage"/>
        <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigDataCollectionPage"/>
        <page id="finalSteps" order="5000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigFinalStepsPage"/>
+
+       <feature id="ai" label="AI integration" preferenceKey="easyConfig.features.ai" enabled="true"/>
+       <feature id="cloud" label="Cloud integration (AWS, Azure, Google Cloud)" preferenceKey="easyConfig.features.cloud" enabled="true"/>
+       <feature id="dashboards" label="Database dashboards" preferenceKey="easyConfig.features.dashboards" enabled="true"/>
+       <feature id="git" label="Git version control" preferenceKey="easyConfig.features.git" enabled="true"/>
+       <feature id="tableau" label="Tableau integration" preferenceKey="easyConfig.features.tableau" enabled="true"/>
+       <feature id="debugger" label="Procedure debugger" preferenceKey="easyConfig.features.debugger" enabled="true"/>
    </extension>
 
 </plugin>
