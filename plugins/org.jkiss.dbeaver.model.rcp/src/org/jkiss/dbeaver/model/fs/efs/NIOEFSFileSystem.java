@@ -16,40 +16,27 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
-import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.filesystem.IFileSystem;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.nio.NIOFileSystem;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
+import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class NIOEFSFileSystem extends NIOFileSystem {
 
+    private final IFileStore rootFileStore;
+
     private final NIOEFSFileSystemProvider systemProvider;
 
-    private final IFileStore efsFileStore;
-
-
-    public NIOEFSFileSystem(@NotNull URI uri, @NotNull NIOEFSFileSystemProvider systemProvider) throws IOException {
-        try {
-            this.efsFileStore = EFS.getStore(uri);
-            this.systemProvider = systemProvider;
-        } catch (CoreException e) {
-            throw new IOException(e);
-        }
-    }
-
-    public NIOEFSFileSystem(@NotNull IFileStore efsFileStore) {
-        this.efsFileStore = efsFileStore;
-        this.systemProvider = new NIOEFSFileSystemProvider();
+    public NIOEFSFileSystem(@NotNull NIOEFSFileSystemProvider provider, @NotNull IFileStore rootFileStore) {
+        this.systemProvider = provider;
+        this.rootFileStore = rootFileStore;
     }
 
     @Override
@@ -69,34 +56,34 @@ public class NIOEFSFileSystem extends NIOFileSystem {
 
     @Override
     public boolean isReadOnly() {
-        IFileSystem fileSystem = efsFileStore.getFileSystem();
-        return !fileSystem.canDelete() && !fileSystem.canWrite();
+        return !rootFileStore.getFileSystem().canDelete() && !rootFileStore.getFileSystem().canWrite();
     }
 
     @Override
     public Iterable<Path> getRootDirectories() {
-        // todo implement
-        throw new RuntimeException("Not implemented");
+        return List.of(new NIOEFSPath(this));
     }
 
     @Override
     public Iterable<FileStore> getFileStores() {
-        return List.of(new NIOEFSFileStore(efsFileStore));
+        return List.of(new NIOEFSFileStore(this));
     }
 
     @Override
-    public NIOEFSPath getPath(@NotNull String first, @Nullable String... more) {
-
-        return null;
+    public NIOEFSPath getPath(@NotNull String first, @NotNull String... more) {
+        StringJoiner joiner = new StringJoiner(getSeparator());
+        joiner.add(first);
+        Arrays.stream(more).forEach(joiner::add);
+        return new NIOEFSPath(joiner.toString(), this);
     }
 
     @NotNull
-    public URI getUri() {
-        return efsFileStore.toURI();
+    public IFileStore createStore(@NotNull String[] pathParts) {
+        IFileStore store = rootFileStore;
+        for (String part : pathParts) {
+            store = store.getChild(part);
+        }
+        return store;
     }
 
-    @NotNull
-    public IFileStore getEfsFileStore() {
-        return efsFileStore;
-    }
 }

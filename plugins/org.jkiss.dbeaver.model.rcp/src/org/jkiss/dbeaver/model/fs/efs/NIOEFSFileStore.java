@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
-import org.eclipse.core.filesystem.IFileStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.nio.NIOFileStore;
 
@@ -24,27 +23,27 @@ import java.io.IOException;
 
 public class NIOEFSFileStore extends NIOFileStore {
 
-    private final IFileStore efsFileStore;
+    private final NIOEFSFileSystem fileSystem;
 
-    public NIOEFSFileStore(@NotNull IFileStore efsFileStore) {
-        this.efsFileStore = efsFileStore;
+    public NIOEFSFileStore(@NotNull NIOEFSFileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     @Override
     @NotNull
     public String name() {
-        return efsFileStore.getName();
+        return fileSystem.toString();
     }
 
     @Override
     @NotNull
     public String type() {
-        return efsFileStore.getFileSystem().getScheme();
+        return fileSystem.provider().getScheme();
     }
 
     @Override
     public boolean isReadOnly() {
-        return false;
+        return fileSystem.isReadOnly();
     }
 
     @Override

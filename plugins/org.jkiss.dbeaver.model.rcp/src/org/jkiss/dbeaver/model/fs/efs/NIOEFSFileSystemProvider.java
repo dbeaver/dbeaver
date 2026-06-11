@@ -37,37 +37,52 @@ import java.util.*;
 public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
 
 
-    @Nullable
-    private NIOEFSFileSystem fileSystem;
+    private final Map<String, NIOEFSFileSystem> fileSystemMap = new HashMap<>();
 
     @Override
     public String getScheme() {
-        return fileSystem != null ? fileSystem.getUri().getScheme() : "efs";
+        return "efs";
     }
 
     @Override
     @NotNull
     public NIOEFSFileSystem newFileSystem(@NotNull URI uri, @Nullable Map<String, ?> ignored) throws IOException {
-        return new NIOEFSFileSystem(uri, this);
+        try {
+            fileSystemMap.put(uri.getQuery(), new NIOEFSFileSystem(this, EFS.getStore(new URI(uri.getQuery()))));
+            return getFileSystem(uri);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     @NotNull
     public NIOEFSFileSystem getFileSystem(@NotNull URI uri) {
-        try {
-            if (fileSystem == null || !fileSystem.getUri().equals(uri)) {
-                fileSystem = newFileSystem(uri, Map.of());
-            }
+        NIOEFSFileSystem fileSystem = fileSystemMap.get(uri.getQuery());
+        if (fileSystem != null) {
             return fileSystem;
-        } catch (IOException e) {
-            throw new FileSystemNotFoundException("File system not found: " + e.getMessage());
+        } else {
+            throw new FileSystemNotFoundException("Filesystem for: " + uri + "not yet created. Use newFileSystem() instead");
+        }
+    }
+
+    @NotNull
+    public NIOEFSFileSystem getOrCreateFileSystem(@NotNull URI uri) {
+        try {
+            return getFileSystem(uri);
+        } catch (Exception e) {
+            try {
+                return newFileSystem(uri, Map.of());
+            } catch (IOException ex) {
+                throw new FileSystemNotFoundException("Failed to create new file system for: " + uri + " reason:" + e.getMessage());
+            }
         }
     }
 
     @Override
     @NotNull
     public NIOEFSPath getPath(@NotNull URI uri) {
-        return NIOEFSPath.of(uri);
+        return getOrCreateFileSystem(uri).getPath(uri.getPath());
     }
 
     @Override
@@ -79,7 +94,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
             throw new IllegalArgumentException("Cannot open channel for a folder");
         }
         var store = getStore(path);
-        if (store.fetchInfo().exists()) {
+        if (Files.exists(path)) {
             try (InputStream out = store.openInputStream(EFS.NONE, null)) {
                 return new NIOEFSByteArrayChannel(out.readAllBytes(), options, store);
             } catch (CoreException e) {
@@ -96,7 +111,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         IFileStore store = getStore(dir);
         IFileStore[] children;
         try {
-            children = store.childStores(EFS.NONE, null); // [web:35]
+            children = store.childStores(EFS.NONE, null);
         } catch (CoreException e) {
             throw new IOException(e);
         }

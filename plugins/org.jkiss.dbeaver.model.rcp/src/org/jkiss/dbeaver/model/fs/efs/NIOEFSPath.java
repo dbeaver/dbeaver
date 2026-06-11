@@ -16,27 +16,31 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
-import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.nio.NIOPath;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.StringJoiner;
 
 public class NIOEFSPath extends NIOPath {
 
-    private final IFileStore efsFileStore;
+    private final String[] pathParts;
 
-    private NIOEFSPath(@NotNull String path, @NotNull NIOEFSFileSystem fileSystem) {
+    protected NIOEFSPath(@NotNull NIOEFSFileSystem fileSystem) {
+        this(null, fileSystem);
+    }
+
+    protected NIOEFSPath(@Nullable String path, @NotNull NIOEFSFileSystem fileSystem) {
         super(path, fileSystem);
-        efsFileStore = fileSystem.getEfsFileStore();
+        pathParts = super.pathParts();
     }
 
     @Override
@@ -48,7 +52,7 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @NotNull
     public NIOEFSPath getRoot() {
-        return of(NIOEFSUtils.getRootStore(efsFileStore));
+        return new NIOEFSPath(getFileSystem());
     }
 
     @Override
@@ -58,36 +62,45 @@ public class NIOEFSPath extends NIOPath {
         if (ArrayUtils.isEmpty(parts)) {
             return this;
         }
-        return getFileSystem().getPath(efsFileStore.getName());
+        return new NIOEFSPath(parts[pathParts.length - 1], getFileSystem());
     }
 
     @Override
     @Nullable
     public NIOEFSPath getParent() {
-        IFileStore parent = efsFileStore.getParent();
-        return parent == null ? null : of(efsFileStore.getParent());
+        return pathParts.length > 1 ? subpath(0, pathParts.length - 2) : null;
     }
 
     @Override
     @NotNull
     public NIOEFSPath getName(int index) {
-        String[] parts = pathParts();
-        if (index < 0 || index > parts.length) {
+        if (index < 0 || index >= pathParts.length) {
             throw new IllegalArgumentException("Invalid index value: " + index);
         }
-        // todo think about null pointer here in case if root reached
-        IFileStore foundParent = efsFileStore;
-        for (int i = parts.length - 1; i != index; i--) {
-            foundParent = efsFileStore.getParent();
+        return new NIOEFSPath(pathParts[0], getFileSystem());
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath subpath(int beginIndex, int endIndex) {
+        int length = pathParts.length;
+        if (beginIndex < 0 || endIndex > length || beginIndex > endIndex) {
+            throw new IllegalArgumentException(
+                "Invalid subpath range: [" + beginIndex + ", " + endIndex + ") for length " + length
+            );
         }
-        return of(foundParent);
+        StringJoiner joiner = new StringJoiner(getFileSystem().getSeparator());
+        for (int i = beginIndex; i < endIndex; i++) {
+            joiner.add(pathParts[i]);
+        }
+        return new NIOEFSPath(joiner.toString(), getFileSystem());
     }
 
     @Override
     @NotNull
     public NIOEFSPath relativize(@NotNull Path other) {
         URI relativeUri = toUri().resolve(other.toUri());
-        return NIOEFSPath.of(relativeUri);
+        return new NIOEFSPath(relativeUri.getPath(), getFileSystem());
     }
 
     @Override
@@ -98,14 +111,30 @@ public class NIOEFSPath extends NIOPath {
 
     @Override
     @NotNull
-    public NIOEFSPath resolve(@NotNull Path other) {
-        return relativize(other);
+    public Path resolve(@NotNull Path other) {
+        if (other.isAbsolute()) {
+            return other;
+        } else if (other.getNameCount() == 0) {
+            return this;
+        }
+        String replacedSeparators = other.normalize().toString()
+            .replace(other.getFileSystem().getSeparator(), getFileSystem().getSeparator());
+        return resolve(replacedSeparators);
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath resolve(@Nullable String other) {
+        if (CommonUtils.isEmpty(other)) {
+            return this;
+        }
+        return new NIOEFSPath(resolveString(other), getFileSystem());
     }
 
     @Override
     @NotNull
     public URI toUri() {
-        return efsFileStore.toURI();
+        return createStore().toURI();
     }
 
     @Override
@@ -114,46 +143,40 @@ public class NIOEFSPath extends NIOPath {
     }
 
     @Override
-    // url based so always absolute
-    public boolean isAbsolute() {
-        return true;
+    @NotNull
+    public NIOEFSPath toAbsolutePath() {
+        if (isAbsolute()) {
+            return this;
+        } else {
+            return getRoot().resolve(path);
+        }
     }
 
     @Override
     @NotNull
-    public NIOEFSPath toAbsolutePath() {
-        return this;
-    }
-
-    @Override
     public NIOEFSPath toRealPath(@NotNull LinkOption... options) throws IOException {
         return toAbsolutePath();
     }
 
+    @Override
     @NotNull
-    public IFileStore getEfsFileStore() {
-        return efsFileStore;
+    protected String[] pathParts() {
+        return pathParts;
     }
 
     @NotNull
     public IFileInfo getFileInfo() {
-        return efsFileStore.fetchInfo();
+        return createStore().fetchInfo();
     }
 
     @NotNull
-    public static NIOEFSPath of(@NotNull URI uri) {
-        try {
-            IFileStore store = EFS.getStore(uri);
-            return new NIOEFSPath(uri.getPath(), new NIOEFSFileSystem(store));
-        } catch (CoreException e) {
-            // todo remove
-            throw new RuntimeException(e + "Moked for now");
-        }
+    private IFileStore createStore() {
+        return getFileSystem().createStore(toAbsolutePath().pathParts);
     }
 
     @NotNull
-    public static NIOEFSPath of(@NotNull IFileStore efsFileStore) {
-        URI uri = efsFileStore.toURI();
-        return new NIOEFSPath(uri.getPath(), new NIOEFSFileSystem(efsFileStore));
+    @Override
+    public String toString() {
+        return CommonUtils.notEmpty(path);
     }
 }

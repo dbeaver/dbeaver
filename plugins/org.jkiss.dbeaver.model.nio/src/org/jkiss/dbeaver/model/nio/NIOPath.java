@@ -61,28 +61,6 @@ public abstract class NIOPath implements Path {
     }
 
     @Override
-    @NotNull
-    public Path subpath(int beginIndex, int endIndex) {
-        String[] parts = pathParts();
-        int length = parts.length;
-
-        if (beginIndex < 0 || endIndex > length || beginIndex >= endIndex) {
-            throw new IllegalArgumentException(
-                "Invalid subpath range: [" + beginIndex + ", " + endIndex + ") for length " + length
-            );
-        }
-        StringBuilder sb = new StringBuilder();
-        FileSystem fileSystem = getFileSystem();
-        for (int i = beginIndex; i < endIndex; i++) {
-            if (!sb.isEmpty()) {
-                sb.append(fileSystem.getSeparator());
-            }
-            sb.append(parts[i]);
-        }
-        return fileSystem.getPath(sb.toString());
-    }
-
-    @Override
     public int compareTo(@NotNull Path other) {
         return toString().compareTo(other.toString());
     }
