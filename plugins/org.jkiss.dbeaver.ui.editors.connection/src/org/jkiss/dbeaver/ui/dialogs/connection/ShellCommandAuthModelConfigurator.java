@@ -60,16 +60,7 @@ public class ShellCommandAuthModelConfigurator extends DatabaseNativeAuthModelCo
         gd.widthHint = UIUtils.getFontHeight(authPanel) * 30;
         commandText.setLayoutData(gd);
         commandText.addModifyListener(e -> propertyChangeListener.run());
-
-        // Text.setMessage() does not render on SWT.MULTI on any platform, so paint a hint manually.
-        final String hintText = UIConnectionMessages.dialog_connection_auth_shell_command_hint;
-        commandText.addPaintListener(e -> {
-            if (commandText.getCharCount() > 0) {
-                return;
-            }
-            e.gc.setForeground(commandText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND));
-            e.gc.drawText(hintText, 3, 0, true);
-        });
+        UIUtils.installMultiLineTextHint(commandText, UIConnectionMessages.dialog_connection_auth_shell_command_hint);
 
         UIUtils.createControlLabel(authPanel, UIConnectionMessages.dialog_connection_auth_shell_command_workdir_label);
         workingDirectory = new TextWithOpenFolder(authPanel, null);

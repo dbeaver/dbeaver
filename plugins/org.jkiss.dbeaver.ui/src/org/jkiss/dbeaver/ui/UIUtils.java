@@ -2422,6 +2422,58 @@ public class UIUtils {
         gc.drawRoundRectangle(centerX - 3, centerY - 3, size.x + 5, size.y + 5, 5, 5);
     }
 
+    /**
+     * Word-wraps {@code text} so that no line exceeds {@code maxWidth} pixels when measured with
+     * {@code gc}. Existing newlines are preserved; words longer than the line are left intact.
+     * Returns the text unchanged when {@code maxWidth} is not positive.
+     */
+    @NotNull
+    public static String wrapText(@NotNull GC gc, @NotNull String text, int maxWidth) {
+        if (maxWidth <= 0) {
+            return text;
+        }
+        StringBuilder result = new StringBuilder();
+        for (String line : text.split("\n", -1)) {
+            if (result.length() > 0) {
+                result.append('\n');
+            }
+            StringBuilder current = new StringBuilder();
+            for (String word : line.split(" ")) {
+                if (current.length() == 0) {
+                    current.append(word);
+                } else if (gc.textExtent(current + " " + word).x <= maxWidth) {
+                    current.append(' ').append(word);
+                } else {
+                    result.append(current).append('\n');
+                    current.setLength(0);
+                    current.append(word);
+                }
+            }
+            result.append(current);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Installs a placeholder hint on a multi-line {@link Text} control. Unlike {@link Text#setMessage},
+     * which is not rendered for {@link SWT#MULTI} fields on any platform, this paints the hint manually
+     * while the control is empty and word-wraps it to the control's current width.
+     */
+    public static void installMultiLineTextHint(@NotNull Text text, @NotNull String hintText) {
+        final int hintMargin = 3;
+        // Repaint so stale hint pixels are cleared once text is entered (and re-painted when emptied).
+        text.addModifyListener(e -> text.redraw());
+        text.addPaintListener(e -> {
+            if (text.getCharCount() > 0) {
+                return;
+            }
+            e.gc.setForeground(text.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND));
+            int wrapWidth = text.getClientArea().width - hintMargin * 2;
+            String wrapped = wrapText(e.gc, hintText, wrapWidth);
+            e.gc.drawText(wrapped, hintMargin, 0, SWT.DRAW_TRANSPARENT | SWT.DRAW_DELIMITER);
+        });
+    }
+
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {
         if (!RuntimeUtils.isMacOS()) {
             return;
