@@ -38,7 +38,7 @@ import java.util.Properties;
 public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabaseShellCommandCredentials>
     extends AuthModelDatabaseNative<CREDENTIALS> {
 
-    public static final String ID = "native_shell_command";
+    public static final String ID = "shell_command";
 
     private static final int COMMAND_TIMEOUT_MS = 60_000;
 
