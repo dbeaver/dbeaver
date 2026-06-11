@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * AI function call info
@@ -32,6 +33,8 @@ public class AIFunctionCall {
 
     private static final Log log = Log.getLog(AIFunctionCall.class);
 
+    @NotNull
+    private final UUID id;
     @NotNull
     private String functionName;
     @Nullable
@@ -49,15 +52,17 @@ public class AIFunctionCall {
     private Map<String, String> messageMetadata;
 
     public AIFunctionCall() {
+        id = UUID.randomUUID();
         functionName = "";
         arguments = Map.of();
     }
 
     public AIFunctionCall(
         @NotNull String functionName,
-        @NotNull Map<String, Object> arguments,
+        @Nullable Map<String, Object> arguments,
         @Nullable Map<String, String> messageMetadata
     ) {
+        this.id = UUID.randomUUID();
         this.functionName = functionName;
         this.arguments = arguments;
         this.messageMetadata = messageMetadata;
@@ -65,6 +70,11 @@ public class AIFunctionCall {
 
     public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
         this(functionName, arguments, null);
+    }
+
+    @NotNull
+    public UUID getId() {
+        return id;
     }
 
     @NotNull
@@ -119,7 +129,7 @@ public class AIFunctionCall {
         return function;
     }
 
-     public void setFunction(@NotNull AIFunctionDescriptor function) {
+    public void setFunction(@NotNull AIFunctionDescriptor function) {
         this.function = function;
     }
 

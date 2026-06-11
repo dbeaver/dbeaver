@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -426,8 +425,9 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             super(objectName, db2View, null, DB2View.class, objectType);
         }
 
+        @NotNull
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
+        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException
         {
 
             DB2ObjectType db2ObjectType = (DB2ObjectType) getObjectType();

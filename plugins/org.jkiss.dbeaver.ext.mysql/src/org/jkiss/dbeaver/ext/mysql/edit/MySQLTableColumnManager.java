@@ -116,6 +116,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    @NotNull
     protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column, Map<String, Object> options)
     {
         return new ColumnModifier[] {MySQLDataTypeModifier, CharsetModifier, CollationModifier, DefaultModifier, ExtraInfoModifier, NullNotNullModifier};
@@ -241,17 +242,17 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     // Reorder
 
     @Override
-    public int getMinimumOrdinalPosition(MySQLTableColumn object) {
+    public int getMinimumOrdinalPosition(@NotNull MySQLTableColumn object) {
         return 1;
     }
 
     @Override
-    public int getMaximumOrdinalPosition(MySQLTableColumn object) {
+    public int getMaximumOrdinalPosition(@NotNull MySQLTableColumn object) {
         return object.getTable().getCachedAttributes().size();
     }
 
     @Override
-    public void setObjectOrdinalPosition(DBECommandContext commandContext, MySQLTableColumn object, List<MySQLTableColumn> siblingObjects, int newPosition) throws DBException {
+    public void setObjectOrdinalPosition(@NotNull DBECommandContext commandContext, @NotNull MySQLTableColumn object, @NotNull List<MySQLTableColumn> siblingObjects, int newPosition) throws DBException {
         processObjectReorder(commandContext, object, siblingObjects, newPosition);
     }
 }

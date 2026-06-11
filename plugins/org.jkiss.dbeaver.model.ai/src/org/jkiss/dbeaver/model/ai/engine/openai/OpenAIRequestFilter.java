@@ -21,10 +21,10 @@ import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
 
-public class OpenAIRequestFilter implements OpenAIClient.HttpRequestFilter {
+public class OpenAIRequestFilter implements OpenAiClientBase.HttpRequestFilter {
     private final String token;
 
-    public OpenAIRequestFilter(String token) {
+    public OpenAIRequestFilter(@NotNull String token) {
         this.token = token;
     }
 
