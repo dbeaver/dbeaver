@@ -27,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.fs.efs.NIOEFSPath;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -476,7 +477,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             }
             if (adapter == Path.class) {
                 IPath location = resource.getLocation();
-                return location == null ? null : adapter.cast(location.toPath());
+                return location == null ? adapter.cast(createPathForResource()) : adapter.cast(location.toPath());
             } else if (adapter == InputStream.class && resource instanceof IFile file) {
                 try {
                     return adapter.cast(file.getContents());
@@ -486,6 +487,15 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             }
         }
         return super.getAdapter(adapter);
+    }
+
+    private Path createPathForResource() {
+        try {
+            var store = EFS.getStore(resource.getLocationURI());
+            return NIOEFSPath.of(store);
+        } catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @NotNull

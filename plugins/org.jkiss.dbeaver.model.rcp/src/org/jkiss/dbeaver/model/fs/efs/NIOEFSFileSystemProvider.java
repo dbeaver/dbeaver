@@ -37,38 +37,37 @@ import java.util.*;
 public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
 
 
-    private final IFileStore efsFileStore;
-
     @Nullable
     private NIOEFSFileSystem fileSystem;
 
-    public NIOEFSFileSystemProvider(@NotNull IFileStore efsFileStore) {
-        this.efsFileStore = efsFileStore;
-    }
-
     @Override
     public String getScheme() {
-        return "efs";
-    }
-
-    @Override
-    public FileSystem newFileSystem(URI uri, Map<String, ?> env) throws IOException {
-        validateUri(uri);
-        fileSystem = new NIOEFSFileSystem(uri);
-        return fileSystem;
-    }
-
-    @Override
-    @Nullable
-    public FileSystem getFileSystem(URI uri) {
-        return fileSystem;
+        return fileSystem != null ? fileSystem.getUri().getScheme() : "efs";
     }
 
     @Override
     @NotNull
-    public Path getPath(@NotNull URI uri) {
-        validateUri(uri);
-        return null;
+    public NIOEFSFileSystem newFileSystem(@NotNull URI uri, @Nullable Map<String, ?> ignored) throws IOException {
+        return new NIOEFSFileSystem(uri, this);
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSFileSystem getFileSystem(@NotNull URI uri) {
+        try {
+            if (fileSystem == null || !fileSystem.getUri().equals(uri)) {
+                fileSystem = newFileSystem(uri, Map.of());
+            }
+            return fileSystem;
+        } catch (IOException e) {
+            throw new FileSystemNotFoundException("File system not found: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath getPath(@NotNull URI uri) {
+        return NIOEFSPath.of(uri);
     }
 
     @Override
@@ -204,6 +203,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         // todo implement
     }
 
+
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
         // todo implement
@@ -211,25 +211,25 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     }
 
     @Override
-    public <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-        if (!type.equals(BasicFileAttributes.class)) {
+    @NotNull
+    public <A extends BasicFileAttributes> A readAttributes(@NotNull Path path, Class<A> type, LinkOption... options) throws IOException {
+        if (!type.isAssignableFrom(BasicFileAttributes.class)) {
             throw new UnsupportedOperationException("Only BasicFileAttributes supported");
         }
-
         IFileStore store = getStore(path);
-        try {
-            IFileInfo info = store.fetchInfo(EFS.NONE, null);
-            // todo implement
-            throw new IOException("Not supported");
-        } catch (CoreException e) {
-            throw new IOException(e);
-        }
+        IFileInfo info = store.fetchInfo();
+        return type.cast(new NIOEFSBasicFileAttribute(info));
+    }
+
+
+    @Override
+    public boolean exists(@NotNull Path path, @NotNull LinkOption... options) {
+        return path instanceof NIOEFSPath nioefsPath ? nioefsPath.getFileInfo().exists() : super.exists(path, options);
     }
 
     @NotNull
     private IFileStore getStore(@NotNull Path path) throws IOException {
         URI uri = path.toUri();
-        validateUri(uri);
         return getStore(uri);
     }
 

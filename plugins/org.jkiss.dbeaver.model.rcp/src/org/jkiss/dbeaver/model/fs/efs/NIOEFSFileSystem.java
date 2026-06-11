@@ -16,16 +16,45 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.nio.file.spi.FileSystemProvider;
-import java.util.Set;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.filesystem.IFileSystem;
+import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.nio.NIOFileSystem;
 
-public class NIOEFSFileSystem extends FileSystem {
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.FileStore;
+import java.nio.file.Path;
+import java.nio.file.spi.FileSystemProvider;
+import java.util.List;
+
+public class NIOEFSFileSystem extends NIOFileSystem {
+
+    private final NIOEFSFileSystemProvider systemProvider;
+
+    private final IFileStore efsFileStore;
+
+
+    public NIOEFSFileSystem(@NotNull URI uri, @NotNull NIOEFSFileSystemProvider systemProvider) throws IOException {
+        try {
+            this.efsFileStore = EFS.getStore(uri);
+            this.systemProvider = systemProvider;
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public NIOEFSFileSystem(@NotNull IFileStore efsFileStore) {
+        this.efsFileStore = efsFileStore;
+        this.systemProvider = new NIOEFSFileSystemProvider();
+    }
+
     @Override
     public FileSystemProvider provider() {
-        return null;
+        return systemProvider;
     }
 
     @Override
@@ -35,51 +64,39 @@ public class NIOEFSFileSystem extends FileSystem {
 
     @Override
     public boolean isOpen() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isReadOnly() {
-        return false;
-    }
-
-    @Override
-    public String getSeparator() {
-        return "";
+        IFileSystem fileSystem = efsFileStore.getFileSystem();
+        return !fileSystem.canDelete() && !fileSystem.canWrite();
     }
 
     @Override
     public Iterable<Path> getRootDirectories() {
-        return null;
+        // todo implement
+        throw new RuntimeException("Not implemented");
     }
 
     @Override
     public Iterable<FileStore> getFileStores() {
-        return null;
+        return List.of(new NIOEFSFileStore(efsFileStore));
     }
 
     @Override
-    public Set<String> supportedFileAttributeViews() {
-        return Set.of();
-    }
+    public NIOEFSPath getPath(@NotNull String first, @Nullable String... more) {
 
-    @Override
-    public Path getPath(String first, String... more) {
         return null;
     }
 
-    @Override
-    public PathMatcher getPathMatcher(String syntaxAndPattern) {
-        return null;
+    @NotNull
+    public URI getUri() {
+        return efsFileStore.toURI();
     }
 
-    @Override
-    public UserPrincipalLookupService getUserPrincipalLookupService() {
-        return null;
-    }
-
-    @Override
-    public WatchService newWatchService() throws IOException {
-        return null;
+    @NotNull
+    public IFileStore getEfsFileStore() {
+        return efsFileStore;
     }
 }

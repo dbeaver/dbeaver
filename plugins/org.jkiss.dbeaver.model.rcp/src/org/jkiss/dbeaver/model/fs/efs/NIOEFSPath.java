@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.fs.efs;
 
 import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
@@ -127,6 +128,16 @@ public class NIOEFSPath extends NIOPath {
     @Override
     public NIOEFSPath toRealPath(@NotNull LinkOption... options) throws IOException {
         return toAbsolutePath();
+    }
+
+    @NotNull
+    public IFileStore getEfsFileStore() {
+        return efsFileStore;
+    }
+
+    @NotNull
+    public IFileInfo getFileInfo() {
+        return efsFileStore.fetchInfo();
     }
 
     @NotNull
