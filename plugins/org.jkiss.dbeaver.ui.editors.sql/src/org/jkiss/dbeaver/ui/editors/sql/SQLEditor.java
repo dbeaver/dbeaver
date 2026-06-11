@@ -2028,7 +2028,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    public SQLEditorPresentationPanel showPresentationPanel(String panelID) {
+    @Nullable
+    public SQLEditorPresentationPanel showPresentationPanel(@NotNull String panelID) {
         for (IContributionItem contributionItem : topBarMan.getItems()) {
             if (contributionItem instanceof ActionContributionItem) {
                 IAction action = ((ActionContributionItem) contributionItem).getAction();
