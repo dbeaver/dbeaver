@@ -59,7 +59,7 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull HttpResponse<Stream<String>> response,
         @NotNull AtomicBoolean suppressCompletion,
-        @Nullable Runnable backupOption,
+        @Nullable Consumer<String> backupOption,
         int statusCode
     ) {
         if (statusCode != 200) {

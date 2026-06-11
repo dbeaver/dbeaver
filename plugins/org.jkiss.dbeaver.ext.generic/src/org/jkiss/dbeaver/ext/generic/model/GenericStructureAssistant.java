@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -50,6 +51,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     protected GenericDataSource getDataSource() {
         return dataSource;
@@ -82,8 +84,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
 
     @Override
     protected void findObjectsByMask(
-        @NotNull GenericExecutionContext executionContext, @NotNull JDBCSession session,
-        @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
+        @NotNull GenericExecutionContext executionContext,
+        @NotNull JDBCSession session,
+        @NotNull DBSObjectType objectType,
+        @NotNull ObjectsSearchParams params,
         @NotNull List<DBSObjectReference> references
     ) throws DBException, SQLException {
         DBSObject parentObject = params.getParentObject();
@@ -109,14 +113,13 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     }
 
     private void findTablesByMask(
-        JDBCSession session,
-        GenericCatalog catalog,
-        GenericSchema schema,
-        String tableNameMask,
+        @NotNull JDBCSession session,
+        @Nullable GenericCatalog catalog,
+        @Nullable GenericSchema schema,
+        @NotNull String tableNameMask,
         int maxResults,
-        List<DBSObjectReference> objects
-    )
-    throws SQLException, DBException {
+        @NotNull List<DBSObjectReference> objects
+    ) throws SQLException, DBException {
         final GenericMetaObject tableObject = getDataSource().getMetaObject(GenericConstants.OBJECT_TABLE);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         try (
@@ -182,11 +185,11 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
 
     private void findProceduresByMask(
         @NotNull JDBCSession session,
-        GenericCatalog catalog,
-        GenericSchema schema,
-        String procNameMask,
+        @Nullable GenericCatalog catalog,
+        @Nullable GenericSchema schema,
+        @NotNull String procNameMask,
         int maxResults,
-        List<DBSObjectReference> objects
+        @NotNull List<DBSObjectReference> objects
     ) throws SQLException, DBException {
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -227,12 +230,13 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
+    @Nullable
     private GenericStructContainer findContainer(
-        DBRProgressMonitor monitor,
-        GenericCatalog parentCatalog,
-        GenericSchema parentSchema,
-        String catalogName,
-        String schemaName
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable GenericCatalog parentCatalog,
+        @Nullable GenericSchema parentSchema,
+        @Nullable String catalogName,
+        @Nullable String schemaName
     ) throws DBException {
         GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog
             : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
@@ -255,6 +259,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
             super(name, container, description, objectClass, type);
         }
 
+        @NotNull
         @Override
         public GenericStructContainer getContainer() {
             return (GenericStructContainer) super.getContainer();
@@ -267,8 +272,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
             super(container, tableName, description, GenericTable.class, RelationalObjectType.TYPE_TABLE);
         }
 
+        @NotNull
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
             GenericTableBase table = getContainer().getTable(monitor, getName());
             if (table == null) {
                 throw new DBException(
@@ -284,8 +290,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
             super(container, schemaName, description, GenericTable.class, RelationalObjectType.TYPE_SCHEMA);
         }
 
+        @NotNull
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
             GenericSchema schema = getContainer().getCatalog().getSchema(monitor, getName());
             if (schema == null) {
                 throw new DBException(
@@ -306,8 +313,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
             this.uniqueName = uniqueName;
         }
 
+        @NotNull
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
             GenericProcedure procedure = null;
             if (getContainer() instanceof GenericSchema) {
                 // Try to use catalog name as package name (Oracle)
