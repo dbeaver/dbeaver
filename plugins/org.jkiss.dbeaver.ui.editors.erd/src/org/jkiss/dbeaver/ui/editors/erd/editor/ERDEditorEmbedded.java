@@ -87,7 +87,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
     public ERDEditorEmbedded() {
     }
 
-    @NotNull
+    @Nullable
     @Override
     public IDatabaseEditorInput getEditorInput() {
         return (IDatabaseEditorInput) super.getEditorInput();
@@ -146,7 +146,11 @@ public class ERDEditorEmbedded extends ERDEditorPart
 
     @Nullable
     private DBSObject getRootObject() {
-        DBSObject object = getEditorInput().getDatabaseObject();
+        IDatabaseEditorInput input = getEditorInput();
+        if (input == null) {
+            return null;
+        }
+        DBSObject object = input.getDatabaseObject();
         if (object == null) {
             return null;
         }
@@ -199,7 +203,11 @@ public class ERDEditorEmbedded extends ERDEditorPart
     @Nullable
     @Override
     public DBPProject getDiagramProject() {
-        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
+        IDatabaseEditorInput input = getEditorInput();
+        if (input == null) {
+            return null;
+        }
+        DBNDatabaseNode node = input.getNavigatorNode();
         if (node == null) {
             return null;
         }
@@ -209,7 +217,11 @@ public class ERDEditorEmbedded extends ERDEditorPart
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return getEditorInput().getExecutionContext();
+        IDatabaseEditorInput input = getEditorInput();
+        if (input == null) {
+            return null;
+        }
+        return input.getExecutionContext();
     }
 
     @Nullable
