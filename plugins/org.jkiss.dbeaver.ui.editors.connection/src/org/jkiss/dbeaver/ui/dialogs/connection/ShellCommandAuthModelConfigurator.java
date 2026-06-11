@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -63,11 +62,8 @@ public class ShellCommandAuthModelConfigurator extends DatabaseNativeAuthModelCo
             if (commandText.getCharCount() > 0) {
                 return;
             }
-            Color hintColor = commandText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND);
-            Color savedFg = e.gc.getForeground();
-            e.gc.setForeground(hintColor);
+            e.gc.setForeground(commandText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND));
             e.gc.drawText(hintText, 3, 0, true);
-            e.gc.setForeground(savedFg);
         });
     }
 
