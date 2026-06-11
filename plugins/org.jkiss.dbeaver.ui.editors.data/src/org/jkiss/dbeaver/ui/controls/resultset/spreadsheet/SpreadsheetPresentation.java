@@ -2023,9 +2023,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 } else {
                     int[] selectedRecords = controller.getSelectedRecords();
                     List<Object> rows = new ArrayList<>(selectedRecords.length);
-                    for (int i = 0; i < selectedRecords.length; i++) {
-                        if (selectedRecords[i] < controller.getModel().getRowCount()) {
-                            rows.add(controller.getModel().getRow(selectedRecords[i]));
+                    for (int selectedRecord : selectedRecords) {
+                        if (selectedRecord < controller.getModel().getRowCount()) {
+                            rows.add(controller.getModel().getRow(selectedRecord));
                         }
                     }
                     return rows.toArray();
@@ -2907,7 +2907,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
-
+            if (controller.isRecordMode()) {
+                hintOptions |= DBDValueHintProvider.OPTION_RECORD_MODE;
+            }
             List<IGridHint> gridHints = null;
             for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getCellHints(

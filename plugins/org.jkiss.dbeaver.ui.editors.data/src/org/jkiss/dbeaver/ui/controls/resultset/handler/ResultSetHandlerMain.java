@@ -88,8 +88,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -122,10 +122,10 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
         }
 
-        if (activePart instanceof IResultSetProvider) {
-            return ((IResultSetProvider) activePart).getResultSetController();
-        } else if (activePart instanceof MultiPageAbstractEditor) {
-            return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
+        if (activePart instanceof IResultSetProvider rsp) {
+            return rsp.getResultSetController();
+        } else if (activePart instanceof MultiPageAbstractEditor mpae) {
+            return getActiveResultSet(mpae.getActiveEditor());
         } else if (activePart != null) {
             return activePart.getAdapter(IResultSetController.class);
         } else {
@@ -218,6 +218,19 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     placement = RowPlacement.BEFORE_SELECTION;
                 }
 
+                rsv.addNewRow(placement, copy, true);
+                rsv.getActivePresentation().getControl().setFocus();
+                break;
+            }
+            case IResultSetCommands.CMD_ROW_ADD_BEFORE:
+            case IResultSetCommands.CMD_ROW_COPY_BEFORE: {
+                boolean copy = actionId.equals(IResultSetCommands.CMD_ROW_COPY_BEFORE);
+                final RowPlacement placement;
+                if (rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER)) {
+                    placement = RowPlacement.BEFORE_SELECTION;
+                } else {
+                    placement = RowPlacement.AFTER_SELECTION;
+                }
                 rsv.addNewRow(placement, copy, true);
                 rsv.getActivePresentation().getControl().setFocus();
                 break;

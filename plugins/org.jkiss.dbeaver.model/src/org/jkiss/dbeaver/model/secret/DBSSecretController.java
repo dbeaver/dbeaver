@@ -93,9 +93,17 @@ public interface DBSSecretController {
         return getSessionSecretController(project.getWorkspaceSession());
     }
 
+    /**
+     * Global secret controller should be used ONLY in a desktop application (will throw an exception for headless apps).
+     */
     @NotNull
     static DBSSecretController getGlobalSecretController() throws DBException {
         return getSessionSecretController(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
+    }
+
+    @Nullable
+    static DBSSecretController getGlobalSecretControllerOrNull() throws DBException {
+        return getSessionSecretControllerOrNull(DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession());
     }
 
     @NotNull

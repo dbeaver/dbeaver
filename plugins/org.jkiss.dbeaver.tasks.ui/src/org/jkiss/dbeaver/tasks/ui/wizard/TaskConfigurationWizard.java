@@ -60,7 +60,6 @@ import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@SuppressWarnings("rawtypes")
 public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> extends BaseWizard implements IWorkbenchWizard {
 
     private static final Log log = Log.getLog(TaskConfigurationWizard.class);
@@ -155,7 +154,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
+    public void init(@NotNull IWorkbench workbench, @Nullable IStructuredSelection currentSelection) {
         updateWizardTitle();
         setNeedsProgressMonitor(true);
         this.currentSelection = currentSelection;
@@ -168,7 +167,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         addTaskConfigPages();
     }
 
-    protected boolean isTaskConfigPage(IWizardPage page) {
+    protected boolean isTaskConfigPage(@NotNull IWizardPage page) {
         return page instanceof TaskConfigurationWizardPageTask || page instanceof TaskConfigurationWizardPageSettings;
     }
 
@@ -195,7 +194,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     @Override
-    public IWizardPage getNextPage(IWizardPage page) {
+    public IWizardPage getNextPage(@NotNull IWizardPage page) {
         IWizardPage nextPage = super.getNextPage(page);
         if (nextPage instanceof TaskConfigurationWizardPageSettings &&
             page instanceof TaskConfigurationWizardPageTask &&
@@ -208,7 +207,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     @Override
-    public IWizardPage getPreviousPage(IWizardPage page) {
+    public IWizardPage getPreviousPage(@NotNull IWizardPage page) {
         IWizardPage prevPage = super.getPreviousPage(page);
         if (prevPage instanceof TaskConfigurationWizardPageSettings &&
             !TaskUIRegistry.getInstance().supportsConfiguratorPage(getContainer().getTaskPage().getSelectedTaskType()))
@@ -230,21 +229,14 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             }
         }
         TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
-        if (taskPage != null && !taskPage.isPageComplete()) {
-            return false;
-        }
-
-        return true;
+        return taskPage == null || taskPage.isPageComplete();
     }
 
-    protected boolean isPageNeedsCompletion(IWizardPage page) {
+    protected boolean isPageNeedsCompletion(@NotNull IWizardPage page) {
         if (page instanceof TaskConfigurationWizardPageTask) {
             return false;
         }
-        if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageApplicable()) {
-            return false;
-        }
-        return true;
+        return !(page instanceof IWizardPageNavigable pageNavigable) || pageNavigable.isPageApplicable();
     }
 
     @Override
@@ -285,7 +277,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return true;
     }
 
-    protected boolean isPageValid(IWizardPage page) {
+    protected boolean isPageValid(@NotNull IWizardPage page) {
         return true;
     }
 
