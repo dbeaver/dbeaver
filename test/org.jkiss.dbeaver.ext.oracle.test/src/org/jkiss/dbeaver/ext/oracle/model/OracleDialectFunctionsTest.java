@@ -83,7 +83,7 @@ public class OracleDialectFunctionsTest extends DBeaverUnitTest {
 
     @Test
     public void doesNotRegisterGlobalVariablesAsKeywordsWithoutDriverInitialization() {
-        Assert.assertNull(dialect.getKeywordType("SYSDATE"));
-        Assert.assertNull(dialect.getKeywordType("SYSTIMESTAMP"));
+        Assertions.assertNull(dialect.getKeywordType("SYSDATE"));
+        Assertions.assertNull(dialect.getKeywordType("SYSTIMESTAMP"));
     }
 }
