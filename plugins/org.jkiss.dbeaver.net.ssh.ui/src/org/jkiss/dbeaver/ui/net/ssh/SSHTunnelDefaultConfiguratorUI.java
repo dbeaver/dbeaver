@@ -188,6 +188,12 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostsViewer.getTable().setHeaderVisible(true);
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
+            hostsViewer.addDoubleClickListener(e -> {
+                final ConfigurationWrapper selected = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                if (selected != null) {
+                    credentialsPanel.focusHostField();
+                }
+            });
             hostsViewer.addSelectionChangedListener(e -> {
                 if (switchingConfiguration) {
                     return;
@@ -251,6 +257,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             }, null);
             controller.createColumns(true);
 
+            UIUtils.createInfoLabel(client, SSHUIMessages.model_ssh_configurator_label_jump_server_edit_hint);
         }
 
         {
@@ -408,6 +415,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
                 wrapper.configuration = credentialsPanel.saveSettings();
                 hostsViewer.refresh(wrapper);
+                hostsViewer.getTable().redraw();
             }
         }
     }
@@ -835,6 +843,13 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
             updateAuthMethodVisibility();
             lastConfiguration = wrapper;
+        }
+
+        public void focusHostField() {
+            if (hostNameText != null && !hostNameText.isDisposed()) {
+                hostNameText.setFocus();
+                hostNameText.selectAll();
+            }
         }
 
         @NotNull

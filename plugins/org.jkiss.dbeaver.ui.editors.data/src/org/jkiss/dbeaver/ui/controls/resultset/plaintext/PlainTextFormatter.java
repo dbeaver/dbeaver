@@ -255,25 +255,40 @@ public class PlainTextFormatter {
         return fixCellStringBuffer.toString();
     }
 
-    public void printRecord(StringBuilder grid, ResultSetModel model, ResultSetRow currentRow) {
+    public void printRecord(
+        @NotNull StringBuilder grid,
+        @NotNull ResultSetModel model,
+        @NotNull List<ResultSetRow> rows
+    ) {
         String indent = extraSpaces ? " " : "";
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
-        String[] values = new String[attrs.size()];
+        int valueColumnCount = Math.max(1, rows.size());
+        String[][] values = new String[attrs.size()][rows.size()];
+        String[] valueHeaders = new String[valueColumnCount];
+        int[] valueWidths = new int[valueColumnCount];
+        for (int i = 0; i < valueColumnCount; i++) {
+            valueHeaders[i] = rows.isEmpty() ? "Value" : "Row #" + (rows.get(i).getVisualNumber() + 1);
+            valueWidths[i] = valueHeaders[i].length();
+        }
 
-        // Calculate column widths
+        // Cache formatted values while calculating column widths.
         int nameWidth = 4;
-        int valueWidth = 5;
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
             nameWidth = Math.max(nameWidth, getAttributeName(attr).length());
-            if (currentRow != null) {
-                String displayString = this.getCellString(model, attr, currentRow, displayFormat);
-                values[i] = displayString;
-                valueWidth = Math.max(valueWidth, values[i].length());
+            for (int k = 0; k < rows.size(); k++) {
+                String displayString = this.getCellString(model, attr, rows.get(k), displayFormat);
+                values[i][k] = displayString;
+                valueWidths[k] = Math.max(valueWidths[k], values[i][k].length());
             }
         }
         final int extraSpacesNum = extraSpaces ? 2 : 0;
-        final int[] colWidths = {nameWidth + extraSpacesNum, valueWidth + extraSpacesNum};
+        // The first column contains attribute names; the remaining columns contain record values.
+        colWidths = new int[valueColumnCount + 1];
+        colWidths[0] = nameWidth + extraSpacesNum;
+        for (int i = 0; i < valueColumnCount; i++) {
+            colWidths[i + 1] = valueWidths[i] + extraSpacesNum;
+        }
 
         if (delimTop) {
             // Print divider before header
@@ -285,7 +300,10 @@ public class PlainTextFormatter {
             grid.append("|");
         }
         grid.append(indent).append("Name").append(" ".repeat(nameWidth - 4));
-        grid.append(indent).append("|").append(indent).append("Value").append(" ".repeat(valueWidth - 5));
+        for (int i = 0; i < valueColumnCount; i++) {
+            grid.append(indent).append("|").append(indent).append(valueHeaders[i])
+                .append(" ".repeat(valueWidths[i] - valueHeaders[i].length()));
+        }
         grid.append(indent);
         if (delimTrailing) {
             grid.append("|");
@@ -295,24 +313,25 @@ public class PlainTextFormatter {
         // Print divider between header and data
         printSeparator(grid, colWidths);
 
-        if (currentRow != null) {
-            // Values
-            for (int i = 0; i < attrs.size(); i++) {
-                DBDAttributeBinding attr = attrs.get(i);
-                String name = getAttributeName(attr);
-                if (delimLeading) {
-                    grid.append("|");
-                }
-                grid.append(indent).append(name).append(indent).append(" ".repeat(Math.max(0, nameWidth - name.length())));
+        // Values
+        for (int i = 0; i < attrs.size(); i++) {
+            DBDAttributeBinding attr = attrs.get(i);
+            String name = getAttributeName(attr);
+            if (delimLeading) {
                 grid.append("|");
-                grid.append(indent).append(values[i]).append(" ".repeat(Math.max(0, valueWidth - values[i].length())));
-                grid.append(indent);
-
-                if (delimTrailing) {
-                    grid.append("|");
-                }
-                grid.append("\n");
             }
+            grid.append(indent).append(name).append(indent).append(" ".repeat(Math.max(0, nameWidth - name.length())));
+            for (int k = 0; k < valueColumnCount; k++) {
+                grid.append("|");
+                String value = k < rows.size() ? values[i][k] : "";
+                grid.append(indent).append(value).append(" ".repeat(Math.max(0, valueWidths[k] - value.length())));
+                grid.append(indent);
+            }
+
+            if (delimTrailing) {
+                grid.append("|");
+            }
+            grid.append("\n");
         }
         if (delimBottom) {
             // Print divider after record

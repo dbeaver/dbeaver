@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.config;
-
-import java.lang.reflect.Field;
-import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -36,9 +33,13 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.ConstraintNameGenerator;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+
 public class CubridTableUniqueKeyConfigurator implements DBEObjectConfigurator<CubridUniqueKey> {
     private static final Log log = Log.getLog(CubridTableUniqueKeyConfigurator.class);
 
+    @NotNull
     @Override
     public CubridUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull CubridUniqueKey primaryKey, @NotNull Map<String, Object> options) {
         return new UITask<CubridUniqueKey>() {

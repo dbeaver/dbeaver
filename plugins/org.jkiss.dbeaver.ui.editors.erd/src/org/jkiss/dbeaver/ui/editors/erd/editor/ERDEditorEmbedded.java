@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,19 +79,18 @@ public class ERDEditorEmbedded extends ERDEditorPart
     private static final String GROUP_SAVE = "save";
 
     private Composite parent;
-    
+
 
     /**
      * No-arg constructor
      */
-    public ERDEditorEmbedded()
-    {
+    public ERDEditorEmbedded() {
     }
 
+    @NotNull
     @Override
-    public IDatabaseEditorInput getEditorInput()
-    {
-        return (IDatabaseEditorInput)super.getEditorInput();
+    public IDatabaseEditorInput getEditorInput() {
+        return (IDatabaseEditorInput) super.getEditorInput();
     }
 
     @Override
@@ -100,14 +99,13 @@ public class ERDEditorEmbedded extends ERDEditorPart
     }
 
     @Override
-    public boolean isReadOnly()
-    {
+    public boolean isReadOnly() {
         DBPProject project = this.getDiagramProject();
         return project != null && !project.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     @Override
-    protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
+    protected void fillDefaultEditorContributions(@NotNull IContributionManager toolBarManager) {
         DatabaseEditorUtils.contributeStandardEditorActions(getSite(), toolBarManager);
         toolBarManager.add(new Separator(GROUP_SAVE));
         toolBarManager.add(ActionUtils.makeActionContribution(new DiagramTogglePersistAction(this), true));
@@ -117,8 +115,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
     }
 
     @Override
-    public void activatePart()
-    {
+    public void activatePart() {
         if (progressControl == null) {
             super.createPartControl(parent);
             parent.layout();
@@ -130,28 +127,25 @@ public class ERDEditorEmbedded extends ERDEditorPart
     }
 
     @Override
-    public void deactivatePart()
-    {
+    public void deactivatePart() {
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         // Do not create controls here - do it on part activation
         this.parent = parent;
         //super.createEditorControl(parent);
     }
 
     @Override
-    public void setFocus()
-    {
+    public void setFocus() {
         if (progressControl != null) {
             super.setFocus();
         }
     }
 
-    private DBSObject getRootObject()
-    {
+    @Nullable
+    private DBSObject getRootObject() {
         DBSObject object = getEditorInput().getDatabaseObject();
         if (object == null) {
             return null;
@@ -163,8 +157,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
     }
 
     @Override
-    protected synchronized void loadDiagram(final boolean refreshMetadata)
-    {
+    protected synchronized void loadDiagram(final boolean refreshMetadata) {
         final DBSObject object = getRootObject();
         if (object == null) {
             return;
@@ -185,17 +178,15 @@ public class ERDEditorEmbedded extends ERDEditorPart
                     } catch (DBException e) {
                         String msg = NLS.bind(ERDUIMessages.erd_error_of_loading_diagram_label, e.getMessage());
                         log.error(msg, e);
-                        UIUtils.showMessageBox(null,
-                            ERDUIMessages.erd_error_of_loading_diagram_title,
-                            msg, SWT.ICON_ERROR);
+                        UIUtils.showMessageBox(null, ERDUIMessages.erd_error_of_loading_diagram_title, msg, SWT.ICON_ERROR);
                     } finally {
                         monitor.done();
                         getDiagram().disableDiagramMonitor();
                     }
                     return null;
                 }
-            },
-            progressControl.createLoadVisualizer());
+            }, progressControl.createLoadVisualizer()
+        );
         diagramLoadingJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
@@ -208,9 +199,6 @@ public class ERDEditorEmbedded extends ERDEditorPart
     @Nullable
     @Override
     public DBPProject getDiagramProject() {
-        if (getEditorInput() == null) {
-            return null;
-        }
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
         if (node == null) {
             return null;
@@ -220,13 +208,13 @@ public class ERDEditorEmbedded extends ERDEditorPart
 
     @Nullable
     @Override
-    public DBCExecutionContext getExecutionContext()
-    {
+    public DBCExecutionContext getExecutionContext() {
         return getEditorInput().getExecutionContext();
     }
 
-    private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor) throws DBException {
-        if (monitor.isCanceled()) {
+    @Nullable
+    private EntityDiagram loadFromDatabase(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled() || getExecutionContext() == null) {
             return null;
         }
         monitor.beginTask("Load database entities", 1);
@@ -248,8 +236,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
             log.error("Database object must be entity container to render ERD diagram");
             return null;
         }
-        EntityDiagram oldDiagram = getDiagram();
-        EntityDiagram diagram = oldDiagram;
+        EntityDiagram diagram = getDiagram();
         //diagram.setMonitorForDiagram(monitor);
         monitor.subTask("Clear diagram");
         diagram.clear();
@@ -260,17 +247,17 @@ public class ERDEditorEmbedded extends ERDEditorPart
 
             // Fill from database even if we loaded from state (something could change since last view)
             diagram.fillEntities(
+                monitor, ERDUtils.collectDatabaseTables(
                     monitor,
-                    ERDUtils.collectDatabaseTables(
-                            monitor,
-                            dbObject,
-                            diagram,
-                            ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
-                            ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)),
-                    dbObject);
+                    dbObject,
+                    diagram,
+                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS),
+                    ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS)
+                ), dbObject
+            );
 
-            if (dbObject instanceof DBSObjectContainer) {
-                diagram.setRootObjectContainer((DBSObjectContainer) dbObject);
+            if (dbObject instanceof DBSObjectContainer objectContainer) {
+                diagram.setRootObjectContainer(objectContainer);
             }
 
             boolean hasPersistedState = false;
@@ -291,7 +278,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
             } catch (Exception e) {
                 log.error("Error loading ER diagram from saved state", e);
             }
-           
+
             diagram.setLayoutManualAllowed(true);
             diagram.setNeedsAutoLayout(!hasPersistedState);
         }
@@ -299,7 +286,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor) {
+    public void doSave(@NotNull IProgressMonitor monitor) {
         try {
             // Save in virtual model as entity property.
             DBVObject vObject = this.getVirtualObject();
@@ -309,7 +296,13 @@ public class ERDEditorEmbedded extends ERDEditorPart
             Map<String, Object> diagramStateMap = new LinkedHashMap<>();
             vObject.setProperty(PROP_DIAGRAM_STATE, diagramStateMap);
 
-            String diagramState = DiagramLoader.serializeDiagram(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, true);
+            String diagramState = DiagramLoader.serializeDiagram(
+                RuntimeUtils.makeMonitor(monitor),
+                getDiagramPart(),
+                getDiagram(),
+                false,
+                true
+            );
             diagramStateMap.put(PROPS_DIAGRAM_SERIALIZED, diagramState);
 
             vObject.persistConfiguration();
@@ -349,8 +342,8 @@ public class ERDEditorEmbedded extends ERDEditorPart
     @Nullable
     private DBVObject getVirtualObject() {
         DBSObject rootObject = getRootObject();
-        if (rootObject instanceof DBSEntity) {
-            return DBVUtils.getVirtualEntity((DBSEntity) rootObject, true);
+        if (rootObject instanceof DBSEntity rootEntity) {
+            return DBVUtils.getVirtualEntity(rootEntity, true);
         } else {
             return DBVUtils.getVirtualObject(rootObject, true);
         }

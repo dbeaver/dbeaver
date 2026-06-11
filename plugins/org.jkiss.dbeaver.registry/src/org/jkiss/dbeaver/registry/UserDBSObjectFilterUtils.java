@@ -109,7 +109,7 @@ public final class UserDBSObjectFilterUtils {
             .stream()
             .filter(FilterSerializer.FilterConfiguration::typeNamePresent)
             .peek(f -> f.filter().setUserFilter(true))
-            .forEach(fc -> dataSourceDescriptor.updateObjectFilter(
+            .forEach(fc -> dataSourceDescriptor.setObjectFilter(
                 fc.typeName(),
                 fc.objectID(),
                 fc.filter()

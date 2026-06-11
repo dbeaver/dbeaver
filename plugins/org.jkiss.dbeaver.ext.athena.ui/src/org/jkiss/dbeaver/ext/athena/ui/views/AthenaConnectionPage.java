@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialogBase;
 import org.jkiss.utils.CommonUtils;
@@ -150,7 +152,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                                 }
 
                                 @Override
-                                protected ViewerFilter createViewerFilter() {
+                                protected ViewerFilter createViewerFilter(DatabaseNavigatorTree navigatorTree) {
                                     return new ViewerFilter() {
                                         @Override
                                         public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -253,7 +255,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (awsRegionCombo != null) {
             connectionInfo.setServerName(awsRegionCombo.getText().trim());
@@ -268,6 +270,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[]{
