@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,11 @@ public abstract class NIOPath implements Path {
         return NIOUtils.resolve(getFileSystem().getSeparator(), path, otherPath);
     }
 
+    @Override
+    public int getNameCount() {
+        return pathParts().length;
+    }
+
     protected String[] pathParts() {
         return CommonUtils.isEmpty(path) ? new String[0] : Arrays.stream(path.split(getFileSystem().getSeparator()))
             .filter(CommonUtils::isNotEmpty)
@@ -56,8 +61,25 @@ public abstract class NIOPath implements Path {
     }
 
     @Override
-    public Path relativize(@NotNull Path other) {
-        throw new UnsupportedOperationException();
+    @NotNull
+    public Path subpath(int beginIndex, int endIndex) {
+        String[] parts = pathParts();
+        int length = parts.length;
+
+        if (beginIndex < 0 || endIndex > length || beginIndex >= endIndex) {
+            throw new IllegalArgumentException(
+                "Invalid subpath range: [" + beginIndex + ", " + endIndex + ") for length " + length
+            );
+        }
+        StringBuilder sb = new StringBuilder();
+        FileSystem fileSystem = getFileSystem();
+        for (int i = beginIndex; i < endIndex; i++) {
+            if (!sb.isEmpty()) {
+                sb.append(fileSystem.getSeparator());
+            }
+            sb.append(parts[i]);
+        }
+        return fileSystem.getPath(sb.toString());
     }
 
     @Override

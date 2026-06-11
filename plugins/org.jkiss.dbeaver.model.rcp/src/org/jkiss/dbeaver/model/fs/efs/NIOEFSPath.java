@@ -16,114 +16,133 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.nio.NIOPath;
+import org.jkiss.utils.ArrayUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.*;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 
-public class NIOEFSPath implements Path {
+public class NIOEFSPath extends NIOPath {
 
-    private final IResource resource;
+    private final IFileStore efsFileStore;
 
-    public NIOEFSPath(@NotNull IResource resource) {
-        this.resource = resource;
+    private NIOEFSPath(@NotNull String path, @NotNull NIOEFSFileSystem fileSystem) {
+        super(path, fileSystem);
+        efsFileStore = fileSystem.getEfsFileStore();
     }
 
     @Override
-    public FileSystem getFileSystem() {
-        return null;
+    @NotNull
+    public NIOEFSFileSystem getFileSystem() {
+        return (NIOEFSFileSystem) fileSystem;
     }
 
     @Override
-    public boolean isAbsolute() {
-        return false;
+    @NotNull
+    public NIOEFSPath getRoot() {
+        return of(NIOEFSUtils.getRootStore(efsFileStore));
     }
 
     @Override
-    public Path getRoot() {
-        return null;
-    }
-
-    @Override
-    public Path getFileName() {
-        return null;
-    }
-
-    @Override
-    public Path getParent() {
-        return null;
-    }
-
-    @Override
-    public int getNameCount() {
-        return 0;
-    }
-
-    @Override
-    public Path getName(int index) {
-        return null;
-    }
-
-    @Override
-    public Path subpath(int beginIndex, int endIndex) {
-        return null;
-    }
-
-    @Override
-    public boolean startsWith(Path other) {
-        return false;
-    }
-
-    @Override
-    public boolean endsWith(Path other) {
-        return false;
-    }
-
-    @Override
-    public Path normalize() {
-        return null;
-    }
-
-    @Override
-    public Path resolve(Path other) {
-        return null;
-    }
-
-    @Override
-    public Path relativize(Path other) {
-        return null;
+    @NotNull
+    public NIOEFSPath getFileName() {
+        var parts = pathParts();
+        if (ArrayUtils.isEmpty(parts)) {
+            return this;
+        }
+        return getFileSystem().getPath(efsFileStore.getName());
     }
 
     @Override
     @Nullable
+    public NIOEFSPath getParent() {
+        IFileStore parent = efsFileStore.getParent();
+        return parent == null ? null : of(efsFileStore.getParent());
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath getName(int index) {
+        String[] parts = pathParts();
+        if (index < 0 || index > parts.length) {
+            throw new IllegalArgumentException("Invalid index value: " + index);
+        }
+        // todo think about null pointer here in case if root reached
+        IFileStore foundParent = efsFileStore;
+        for (int i = parts.length - 1; i != index; i--) {
+            foundParent = efsFileStore.getParent();
+        }
+        return of(foundParent);
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath relativize(@NotNull Path other) {
+        URI relativeUri = toUri().resolve(other.toUri());
+        return NIOEFSPath.of(relativeUri);
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath normalize() {
+        return this;
+    }
+
+    @Override
+    @NotNull
+    public NIOEFSPath resolve(@NotNull Path other) {
+        return relativize(other);
+    }
+
+    @Override
+    @NotNull
     public URI toUri() {
-        return resource.getLocationURI();
+        return efsFileStore.toURI();
     }
 
     @Override
-    public Path toAbsolutePath() {
-        return null;
+    public int compareTo(@NotNull Path other) {
+        return toUri().compareTo(other.toUri());
     }
 
     @Override
-    public Path toRealPath(@NotNull LinkOption... options) throws IOException {
-        return null;
+    // url based so always absolute
+    public boolean isAbsolute() {
+        return true;
     }
 
     @Override
-    public WatchKey register(
-        WatchService watcher,
-        @NotNull WatchEvent.Kind<?>[] events,
-        WatchEvent.Modifier... modifiers
-    ) throws IOException {
-        throw new IOException("Unsupported operation exception");
+    @NotNull
+    public NIOEFSPath toAbsolutePath() {
+        return this;
     }
 
     @Override
-    public int compareTo(Path other) {
-        return 0;
+    public NIOEFSPath toRealPath(@NotNull LinkOption... options) throws IOException {
+        return toAbsolutePath();
+    }
+
+    @NotNull
+    public static NIOEFSPath of(@NotNull URI uri) {
+        try {
+            IFileStore store = EFS.getStore(uri);
+            return new NIOEFSPath(uri.getPath(), new NIOEFSFileSystem(store));
+        } catch (CoreException e) {
+            // todo remove
+            throw new RuntimeException(e + "Moked for now");
+        }
+    }
+
+    @NotNull
+    public static NIOEFSPath of(@NotNull IFileStore efsFileStore) {
+        URI uri = efsFileStore.toURI();
+        return new NIOEFSPath(uri.getPath(), new NIOEFSFileSystem(efsFileStore));
     }
 }
