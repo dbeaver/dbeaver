@@ -30,8 +30,14 @@ import org.jkiss.utils.CommonUtils;
 public class AuthModelDatabaseShellCommandCredentials extends AuthModelDatabaseNativeCredentials {
 
     public static final String PROP_COMMAND = "passwordCommand";
+    public static final String PROP_WORKING_DIR = "passwordCommandWorkingDir";
+    public static final String PROP_TIMEOUT = "passwordCommandTimeoutMs";
+
+    public static final int DEFAULT_TIMEOUT_MS = 60_000;
 
     private String command;
+    private String workingDirectory;
+    private int commandTimeoutMs = DEFAULT_TIMEOUT_MS;
 
     @Nullable
     @Property(order = 10)
@@ -41,6 +47,25 @@ public class AuthModelDatabaseShellCommandCredentials extends AuthModelDatabaseN
 
     public void setCommand(@Nullable String command) {
         this.command = command;
+    }
+
+    @Nullable
+    @Property(order = 11)
+    public String getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    public void setWorkingDirectory(@Nullable String workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
+
+    @Property(order = 12)
+    public int getCommandTimeoutMs() {
+        return commandTimeoutMs;
+    }
+
+    public void setCommandTimeoutMs(int commandTimeoutMs) {
+        this.commandTimeoutMs = commandTimeoutMs > 0 ? commandTimeoutMs : DEFAULT_TIMEOUT_MS;
     }
 
     @Override

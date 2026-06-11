@@ -20,13 +20,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommandCredentials;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -40,6 +43,8 @@ import org.jkiss.utils.CommonUtils;
 public class ShellCommandAuthModelConfigurator extends DatabaseNativeAuthModelConfigurator {
 
     private Text commandText;
+    private TextWithOpenFolder workingDirectory;
+    private Spinner timeoutSpinner;
 
     @Override
     public void createControl(@NotNull Composite authPanel, @Nullable DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -65,14 +70,36 @@ public class ShellCommandAuthModelConfigurator extends DatabaseNativeAuthModelCo
             e.gc.setForeground(commandText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND));
             e.gc.drawText(hintText, 3, 0, true);
         });
+
+        UIUtils.createControlLabel(authPanel, UIConnectionMessages.dialog_connection_auth_shell_command_workdir_label);
+        workingDirectory = new TextWithOpenFolder(authPanel, null);
+        workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        workingDirectory.getTextControl().addModifyListener(e -> propertyChangeListener.run());
+
+        timeoutSpinner = UIUtils.createLabelSpinner(authPanel,
+            UIConnectionMessages.dialog_connection_auth_shell_command_timeout_label,
+            AuthModelDatabaseShellCommandCredentials.DEFAULT_TIMEOUT_MS, 1000, 3_600_000);
+        timeoutSpinner.setIncrement(1000);
+        timeoutSpinner.setPageIncrement(10000);
+        timeoutSpinner.addModifyListener(e -> propertyChangeListener.run());
     }
 
     @Override
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
         if (commandText != null && !commandText.isDisposed()) {
             commandText.setText(CommonUtils.notEmpty(
-                dataSource.getConnectionConfiguration().getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_COMMAND)));
+                configuration.getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_COMMAND)));
+        }
+        if (workingDirectory != null && !workingDirectory.getTextControl().isDisposed()) {
+            workingDirectory.setText(CommonUtils.notEmpty(
+                configuration.getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_WORKING_DIR)));
+        }
+        if (timeoutSpinner != null && !timeoutSpinner.isDisposed()) {
+            timeoutSpinner.setSelection(CommonUtils.toInt(
+                configuration.getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_TIMEOUT),
+                AuthModelDatabaseShellCommandCredentials.DEFAULT_TIMEOUT_MS));
         }
     }
 
@@ -84,6 +111,17 @@ public class ShellCommandAuthModelConfigurator extends DatabaseNativeAuthModelCo
             dataSource.getConnectionConfiguration().setAuthProperty(
                 AuthModelDatabaseShellCommandCredentials.PROP_COMMAND,
                 CommonUtils.isEmptyTrimmed(cmd) ? null : cmd);
+        }
+        if (workingDirectory != null) {
+            String dir = workingDirectory.getText();
+            dataSource.getConnectionConfiguration().setAuthProperty(
+                AuthModelDatabaseShellCommandCredentials.PROP_WORKING_DIR,
+                CommonUtils.isEmptyTrimmed(dir) ? null : dir);
+        }
+        if (timeoutSpinner != null) {
+            dataSource.getConnectionConfiguration().setAuthProperty(
+                AuthModelDatabaseShellCommandCredentials.PROP_TIMEOUT,
+                String.valueOf(timeoutSpinner.getSelection()));
         }
         // No password is stored; force save-password semantics so the connect flow runs the
         // command instead of prompting.

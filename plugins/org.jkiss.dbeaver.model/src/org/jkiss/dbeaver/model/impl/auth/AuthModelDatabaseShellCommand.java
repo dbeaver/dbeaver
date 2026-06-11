@@ -40,8 +40,6 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
 
     public static final String ID = "shell_command";
 
-    private static final int COMMAND_TIMEOUT_MS = 60_000;
-
     @NotNull
     @Override
     public CREDENTIALS createCredentials() {
@@ -53,6 +51,10 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
     public CREDENTIALS loadCredentials(@NotNull DBPDataSourceContainer dataSource, @NotNull DBPConnectionConfiguration configuration) {
         CREDENTIALS credentials = super.loadCredentials(dataSource, configuration);
         credentials.setCommand(configuration.getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_COMMAND));
+        credentials.setWorkingDirectory(configuration.getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_WORKING_DIR));
+        credentials.setCommandTimeoutMs(CommonUtils.toInt(
+            configuration.getAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_TIMEOUT),
+            AuthModelDatabaseShellCommandCredentials.DEFAULT_TIMEOUT_MS));
         return credentials;
     }
 
@@ -63,6 +65,9 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
         @NotNull CREDENTIALS credentials
     ) {
         configuration.setAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_COMMAND, credentials.getCommand());
+        configuration.setAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_WORKING_DIR, credentials.getWorkingDirectory());
+        configuration.setAuthProperty(AuthModelDatabaseShellCommandCredentials.PROP_TIMEOUT,
+            String.valueOf(credentials.getCommandTimeoutMs()));
         // Password is produced at runtime, never persisted
         credentials.setUserPassword(null);
         super.saveCredentials(dataSource, configuration, credentials);
@@ -102,10 +107,11 @@ public class AuthModelDatabaseShellCommand<CREDENTIALS extends AuthModelDatabase
         DBRShellCommand command = new DBRShellCommand(commandLine);
         command.setEnabled(true);
         command.setWaitProcessFinish(true);
+        command.setWorkingDirectory(credentials.getWorkingDirectory());
         DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, container.getVariablesResolver(true));
         try {
             processDescriptor.execute();
-            int exitCode = processDescriptor.waitFor(COMMAND_TIMEOUT_MS);
+            int exitCode = processDescriptor.waitFor(credentials.getCommandTimeoutMs());
             String output = CommonUtils.notEmpty(processDescriptor.dumpOutput());
             if (exitCode != 0) {
                 String errors = CommonUtils.notEmpty(processDescriptor.dumpErrors()).trim();
