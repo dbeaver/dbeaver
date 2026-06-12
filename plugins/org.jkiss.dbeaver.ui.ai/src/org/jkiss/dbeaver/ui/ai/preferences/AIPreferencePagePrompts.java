@@ -209,7 +209,7 @@ public final class AIPreferencePagePrompts extends AbstractPrefPage implements I
             var descriptor = (AIPromptGeneratorDescriptor) element;
             String description = descriptor.getDescription();
             if (description != null) {
-                description = StringUtils.wrap(description, 60);
+                description = StringUtils.wrap(description, StringUtils.TOOLTIP_WRAP_LENGTH);
             }
             return description;
         }
