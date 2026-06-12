@@ -8,7 +8,6 @@
        <page id="welcome" order="1000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWelcomePage"/>
        <page id="appearance" order="2000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigAppearancePage"/>
        <page id="features" order="3000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigFeaturesPage"/>
-       <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigDataCollectionPage"/>
        <page id="finalSteps" order="5000" class="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigFinalStepsPage"/>
 
        <feature id="ai" label="AI integration" preferenceKey="easyConfig.features.ai" enabled="true"/>
