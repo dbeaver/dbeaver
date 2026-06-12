@@ -209,10 +209,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName)
-    {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         dataSource.setName(newName);
-        dataSource.persistConfiguration();
+        dataSource.getRegistry().updateDataSource(dataSource, false);
         dataSource.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource, null));
     }
 
