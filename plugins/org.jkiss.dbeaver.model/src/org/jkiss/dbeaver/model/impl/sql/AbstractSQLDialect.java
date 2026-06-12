@@ -566,7 +566,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public String unEscapeString(String string) {
+    public String unEscapeString(@Nullable String string) {
         return CommonUtils.notEmpty(string).replace("''", "'");
     }
 

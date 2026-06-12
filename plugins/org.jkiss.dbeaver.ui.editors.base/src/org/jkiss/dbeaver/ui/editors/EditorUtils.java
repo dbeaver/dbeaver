@@ -129,7 +129,7 @@ public class EditorUtils {
     }
 
     @Nullable
-    public static IFile getFileFromInput(IEditorInput editorInput) {
+    public static IFile getFileFromInput(@Nullable IEditorInput editorInput) {
         if (editorInput == null) {
             return null;
         } else if (editorInput instanceof IFileEditorInput fei) {
