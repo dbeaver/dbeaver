@@ -456,14 +456,14 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     }
 
     private void walkFileTree(@NotNull Path resource, @NotNull Path targetDir, @NotNull FileAction action) throws IOException {
-        Path parentResource = Objects.requireNonNullElse(resource.getParent(), resource);
+        Path parentResource = resource.getParent();
         Files.walkFileTree(
             resource, new SimpleFileVisitor<>() {
 
                 @NotNull
                 @Override
                 public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                    Path targetFile = targetDir.resolve(parentResource.relativize(file));
+                    Path targetFile = targetDir.resolve(relativizeAgainstParent(file));
                     action.accept(file, targetFile);
                     return FileVisitResult.CONTINUE;
                 }
@@ -471,9 +471,14 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 @NotNull
                 @Override
                 public FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attrs) throws IOException {
-                    Path targetDirPath = targetDir.resolve(parentResource.relativize(dir));
+                    Path targetDirPath = targetDir.resolve(relativizeAgainstParent(dir));
                     Files.createDirectories(targetDirPath);
                     return FileVisitResult.CONTINUE;
+                }
+
+                @NotNull
+                private Path relativizeAgainstParent(@NotNull Path toRelativize) {
+                    return parentResource == null ? toRelativize : parentResource.relativize(toRelativize);
                 }
             }
         );

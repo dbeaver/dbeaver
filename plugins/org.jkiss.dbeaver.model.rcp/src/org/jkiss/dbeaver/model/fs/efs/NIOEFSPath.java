@@ -80,14 +80,14 @@ public class NIOEFSPath extends NIOPath {
         if (index < 0 || index >= pathParts.length) {
             throw new IllegalArgumentException("Invalid index value: " + index);
         }
-        return subpath(index, index);
+        return subpath(index, index + 1);
     }
 
     @Override
     @NotNull
     public NIOEFSPath subpath(int beginIndex, int endIndex) {
         int length = pathParts.length;
-        if (beginIndex < 0 || endIndex > length || beginIndex > endIndex) {
+        if (beginIndex < 0 || endIndex > length || beginIndex >= endIndex) {
             throw new IllegalArgumentException(
                 "Invalid subpath range: [" + beginIndex + ", " + endIndex + ") for length " + length
             );
@@ -98,7 +98,7 @@ public class NIOEFSPath extends NIOPath {
             pathResolver.add(pathParts[i]);
             uriPartRemover.add(pathParts[i]);
         }
-        String uriShortedPath = directURI.getPath().replaceAll(uriPartRemover.toString() + ".*", "");
+        String uriShortedPath = directURI.getPath().replaceAll(uriPartRemover + ".*", "");
 
         return new NIOEFSPath(NIOEFSUtils.createCopyWithPath(directURI, uriShortedPath), pathResolver.toString(), getFileSystem());
     }
@@ -106,7 +106,7 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @NotNull
     public NIOEFSPath relativize(@NotNull Path other) {
-        URI relativeUri = toUri().resolve(other.toUri());
+        URI relativeUri = toUri().relativize(other.toUri());
         return new NIOEFSPath(relativeUri, relativeUri.getPath(), getFileSystem());
     }
 
