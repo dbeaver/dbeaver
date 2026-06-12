@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,6 @@ package org.jkiss.dbeaver.ext.doris.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
@@ -34,14 +30,8 @@ public class DorisDialect extends GenericSQLDialect {
     }
 
     @Override
-    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super.initDriverSettings(session, dataSource, metaData);
-        setSupportsUnquotedMixedCase(true);
-    }
-
-    @Override
-    public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
-        this.setSupportsUnquotedMixedCase(true);
+    public boolean supportsUnquotedMixedCase() {
+        return true;
     }
 
     @Override

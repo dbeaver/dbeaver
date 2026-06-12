@@ -9,14 +9,14 @@
                 parent="generic"
                 dialect="doris"
                 label="Apache Doris"
-                icon="icons/doris_icon.png">
+                icon="icons/doris_icon.svg">
 
             <drivers managable="true">
                 <driver
                         id="doris"
                         label="Apache Doris"
-                        icon="icons/doris_icon.png"
-                        iconBig="icons/doris_icon_big.png"
+                        icon="icons/doris_icon.svg"
+                        iconBig="icons/doris_icon_big.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9030"
@@ -49,7 +49,7 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="doris" parent="generic" class="org.jkiss.dbeaver.ext.doris.model.DorisDialect"
-                 label="Apache Doris" description="Apache Doris SQL dialect" icon="icons/doris_icon.png">
+                 label="Apache Doris" description="Apache Doris SQL dialect" icon="icons/doris_icon.svg">
             <keywords value="CATALOG,CATALOGS,SWITCH,MATERIALIZED,REFRESH,ASYNC,DEFERRED,IMMEDIATE,BUCKETS,DISTRIBUTED,PROPERTIES,BROKER,ROUTINE,LOAD,STREAM,PAUSE,RESUME,STOP,SUBMIT,TASK,PIPE,PIPES,REPOSITORY,SNAPSHOT,RESTORE,ADMIN"/>
             <functions value="ARRAY_AGG,ARRAY_CONTAINS,ARRAY_SIZE,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,NDV,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT,CURRENT_CATALOG"/>
             <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT,QUANTILE_STATE"/>
