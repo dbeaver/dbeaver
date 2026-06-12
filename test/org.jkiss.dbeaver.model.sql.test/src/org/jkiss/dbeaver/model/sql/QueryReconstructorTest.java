@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -492,7 +492,7 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
 
                     String reconstructedText = r.reconstructFromOriginalFragments(t.newTextWithoutComments);
                     for (String comment : t.commentsToAssert()) {
-                        Assert.assertTrue(reconstructedText.contains(comment));
+                        Assertions.assertTrue(reconstructedText.contains(comment));
                         commentAssertsChecked++;
                     }
                 }
@@ -503,7 +503,7 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
 
                     String reconstructedText = r.reconstructFromOriginalFragments(t.newTextWithoutComments);
                     for (String comment : t.commentsToAssert()) {
-                        Assert.assertTrue(reconstructedText.contains(comment));
+                        Assertions.assertTrue(reconstructedText.contains(comment));
                         commentAssertsChecked++;
                     }
                 }
@@ -523,7 +523,7 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
                     String rawReconstructedText = r.reconstructFromOriginalFragments(t.newTextWithoutComments);
                     String cleanReconstructedText = rawReconstructedText.replaceAll("\\s+", " ");
                     for (String comment : t.commentsToAssert()) {
-                        Assert.assertTrue(cleanReconstructedText.contains(comment));
+                        Assertions.assertTrue(cleanReconstructedText.contains(comment));
                         commentAssertsChecked++;
                     }
                     String sanitizedReconstructedText = SQLSemanticProcessor.parseQuery(
@@ -556,10 +556,10 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
     }
 
     private void assertContains(@NotNull String original, @NotNull String substring) {
-        Assert.assertTrue(getPattern(substring).matcher(original).find());
+        Assertions.assertTrue(getPattern(substring).matcher(original).find());
     }
 
     private void assertNotContains(@NotNull String original, @NotNull String substring) {
-        Assert.assertFalse(getPattern(substring).matcher(original).find());
+        Assertions.assertFalse(getPattern(substring).matcher(original).find());
     }
 }

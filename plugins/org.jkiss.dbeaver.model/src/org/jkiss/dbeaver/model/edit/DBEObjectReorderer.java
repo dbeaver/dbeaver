@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -28,19 +29,22 @@ import java.util.List;
  */
 public interface DBEObjectReorderer<OBJECT_TYPE extends DBSObject> extends DBEObjectManager<OBJECT_TYPE> {
 
-    int getMinimumOrdinalPosition(OBJECT_TYPE object);
+    int getMinimumOrdinalPosition(@NotNull OBJECT_TYPE object);
 
-    int getMaximumOrdinalPosition(OBJECT_TYPE object);
+    int getMaximumOrdinalPosition(@NotNull OBJECT_TYPE object);
 
     /**
      * Changes object ordinal position
      *
      * @param commandContext command context. Implementation should add new command to it.
      * @param object object
-     * @param siblingObjects
      *@param newPosition new position  @throws DBException on any error
      */
-    void setObjectOrdinalPosition(DBECommandContext commandContext, OBJECT_TYPE object, List<OBJECT_TYPE> siblingObjects, int newPosition)
-        throws DBException;
+    void setObjectOrdinalPosition(
+        @NotNull DBECommandContext commandContext,
+        @NotNull OBJECT_TYPE object,
+        @NotNull List<OBJECT_TYPE> siblingObjects,
+        int newPosition
+    ) throws DBException;
 
 }

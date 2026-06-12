@@ -374,7 +374,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         try {
-            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+            DBeaverCommandLine.getInstance().preprocessCommandLine(args);
         } catch (DBException e) {
             log.error("Error preprocessing command line", e);
         }

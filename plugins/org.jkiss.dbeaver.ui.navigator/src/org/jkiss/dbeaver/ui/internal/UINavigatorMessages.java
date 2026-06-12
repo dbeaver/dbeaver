@@ -100,6 +100,9 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_rename_database_object_exception_message;
     public static String actions_navigator_configure_filters;
     public static String actions_navigator_reset_search;
+    public static String navigator_node_action_connection_view_simple_tooltip;
+    public static String navigator_node_action_connection_view_advanced_tooltip;
+    public static String navigator_node_action_connection_view_custom_tooltip;
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;
