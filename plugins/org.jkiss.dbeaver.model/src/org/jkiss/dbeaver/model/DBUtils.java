@@ -642,15 +642,7 @@ public final class DBUtils {
             return dataSourceContainer;
         }
         if (!dataSourceContainer.isConnected()) {
-            boolean cancelled = false;
-            if (dataSourceContainer.isSharedCredentials()) {
-                UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
-                if (serviceConnections != null) {
-                    cancelled = !serviceConnections.resolveSharedCredentials(dataSourceContainer, null);
-                }
-            }
-
-            if (cancelled) {
+            if (resolveSharedCredentials(dataSourceContainer)) {
                 return null;
             }
             try {
@@ -728,6 +720,24 @@ public final class DBUtils {
             }
         }
         return null;
+    }
+
+    /**
+     *
+     * @return false if the connection was canceled
+     */
+    public static boolean resolveSharedCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) {
+        boolean resolved = true;
+        if (dataSourceContainer.isSharedCredentials()) {
+            UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
+            if (serviceConnections != null) {
+                resolved = serviceConnections.resolveSharedCredentials(dataSourceContainer, null);
+            }
+        }
+
+        return resolved;
     }
 
     @Nullable
