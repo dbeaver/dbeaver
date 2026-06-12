@@ -160,7 +160,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return false;
     }
 
-    @NotNull
+    @Nullable
     @Override
     protected DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
         String profileName = sourceProfile == null ? "" : sourceProfile.getProfileName();

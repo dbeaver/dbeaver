@@ -64,7 +64,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     @NotNull
     protected abstract List<DBWNetworkProfile> getDefaultNetworkProfiles();
     protected abstract void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles);
-    @NotNull
+    @Nullable
     protected abstract DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile);
     protected abstract boolean deleteProfile(@NotNull DBWNetworkProfile profile);
 
@@ -224,6 +224,9 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     private void createAndShowProfile(@Nullable DBWNetworkProfile sourceProfile) {
         DBWNetworkProfile newProfile = createNewProfile(sourceProfile);
+        if (newProfile == null) {
+            return;
+        }
 
         if (sourceProfile != null) {
             newProfile.setProperties(new LinkedHashMap<>(sourceProfile.getProperties()));
