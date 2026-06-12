@@ -195,7 +195,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
             break;
         }
 
-        DBWNetworkProfile newProfile = new DBWNetworkProfile(projectMeta);
+        DBWNetworkProfile newProfile = projectMeta == null ? new DBWNetworkProfile() : new DBWNetworkProfile(projectMeta);
         newProfile.setProfileName(profileName);
 
         profilesRegistry.addOrUpdateProfile(newProfile);

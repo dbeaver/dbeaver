@@ -46,9 +46,10 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     private transient DBSSecretSubject secretSubject;
 
     public DBWNetworkProfile() {
+        // Global profile
     }
 
-    public DBWNetworkProfile(@Nullable DBPProject project) {
+    public DBWNetworkProfile(@NotNull DBPProject project) {
         super(project);
     }
 
