@@ -128,7 +128,8 @@ public class AIAssistantImpl implements AIAssistant {
                             );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
-                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue, null));
+                            AIMessage fcMessage = AIMessage.functionCall(functionCall, result);
+                            newMessages.add(fcMessage);
                             AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
@@ -158,18 +159,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @Override
     public boolean isFunctionSupported() {
-        AIToolboxManager toolboxManager = this.getToolboxManager();
-        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
-        if (!functionSettings.isFunctionsEnabled()) {
-            return false;
-        }
-        try {
-            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-            return engineDescriptor.isSupportsFunctions();
-        } catch (DBException e) {
-            log.debug(e);
-            return false;
-        }
+        return false;
     }
 
     @NotNull
@@ -247,7 +237,19 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return function.getToolbox().callFunction(context, function, arguments);
+        AIFunctionResult result;
+        try {
+            result = function.getToolbox().callFunction(context, function, arguments);
+        } catch (DBException e) {
+            result = new AIFunctionResult(
+                function.getType(),
+                "Error calling function '" + function.getId() + "': " + e.getMessage(),
+                null,
+                e
+            );
+        }
+
+        return result;
     }
 
     protected void checkAiEnablement() throws DBException {

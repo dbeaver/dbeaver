@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.config;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -29,11 +27,16 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.ConstraintNameGenerator;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditAttributePage;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+
 public class CubridTableColumnConfigurator implements DBEObjectConfigurator<CubridTableColumn>{
     private static final Log log = Log.getLog(CubridTableColumnConfigurator.class);
 
+    @NotNull
     @Override
-    public CubridTableColumn configureObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, CubridTableColumn column, Map<String, Object> options) {
+    public CubridTableColumn configureObject(@NotNull DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, @NotNull
+    CubridTableColumn column, @NotNull Map<String, Object> options) {
         return new UITask<CubridTableColumn>() {
             @Override
             protected CubridTableColumn runTask() {

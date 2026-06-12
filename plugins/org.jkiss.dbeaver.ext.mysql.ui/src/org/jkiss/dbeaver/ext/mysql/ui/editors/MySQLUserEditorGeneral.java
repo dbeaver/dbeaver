@@ -266,7 +266,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
 
         @Override
-        public void onCommandChange(DBECommand<?> command) {
+        public void onCommandChange(@NotNull DBECommand<?> command) {
             if (command instanceof MySQLUserManager.CommandRenameUser mysqlCommand) {
                 setUsernameAndHost(mysqlCommand.getNewUserName(), mysqlCommand.getNewHost());
             }

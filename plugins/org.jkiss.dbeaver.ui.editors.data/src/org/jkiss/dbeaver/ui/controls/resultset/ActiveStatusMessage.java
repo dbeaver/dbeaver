@@ -153,9 +153,11 @@ abstract class ActiveStatusMessage extends Composite {
         public void completeLoading(@Nullable String message) {
             completed = true;
             if (!messageText.isDisposed() && !CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
-                actionItem.setImage(actionImage);
                 setMessage(message);
                 getParent().layout(true, true);
+            }
+            if (!actionItem.isDisposed()) {
+                actionItem.setImage(actionImage);
             }
             loadService = null;
         }

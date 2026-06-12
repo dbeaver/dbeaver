@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
+import org.jkiss.dbeaver.model.cli.help.CLIGlobalOption;
 import org.jkiss.dbeaver.model.cli.model.option.EclipseOptions;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptions;
 import picocli.CommandLine;
@@ -53,6 +54,7 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     )
     private boolean version;
 
+    @CLIGlobalOption
     @CommandLine.Option(names = {DEBUG_LOGS_OPTION},
         description = "Enable debug logging",
         scope = CommandLine.ScopeType.INHERIT

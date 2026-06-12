@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -343,19 +342,19 @@ public class CustomFormEditor {
                 HoverControlSupport.install(editor, (parent1, editor1) -> {
                     ToolBar toolBar = new ToolBar(parent1, SWT.FLAT);
                     ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
-                    toolItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
-                    toolItem.setToolTipText("Edit...");
+                    toolItem.setImage(DBeaverIcons.getImage(UIIcon.EXPAND));
+                    toolItem.setToolTipText("Show as multi-line...");
                     toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         if (readOnly) {
                             EditTextDialog.showText(
                                 editor.getShell(),
-                                UIMessages.edit_text_dialog_title_edit_value,
+                                property.getDisplayName(),
                                 editor.getText()
                             );
                         } else {
                             String newValue = EditTextDialog.editText(
                                 editor.getShell(),
-                                UIMessages.edit_text_dialog_title_edit_value,
+                                property.getDisplayName(),
                                 editor.getText()
                             );
                             if (newValue != null) {

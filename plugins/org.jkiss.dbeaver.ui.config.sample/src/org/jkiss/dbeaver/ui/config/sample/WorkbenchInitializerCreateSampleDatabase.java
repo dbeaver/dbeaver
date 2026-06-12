@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -90,16 +90,16 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
     }
 
     static void createSampleDatabase(DBPDataSourceRegistry dsRegistry) {
-        DataSourceDescriptor dataSource = (DataSourceDescriptor)dsRegistry.getDataSource(SAMPLE_DB1_ID);
+        DBPDataSourceContainer dataSource = dsRegistry.getDataSource(SAMPLE_DB1_ID);
         if (dataSource != null) {
             return;
         }
-        DataSourceProviderDescriptor genericDSProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
+        DBPDataSourceProviderDescriptor genericDSProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
         if (genericDSProvider == null) {
             log.error("Can't find generic data source provider");
             return;
         }
-        DriverDescriptor sqliteDriver = genericDSProvider.getDriver("sqlite_jdbc");
+        DBPDriver sqliteDriver = genericDSProvider.getDriver("sqlite_jdbc");
         if (sqliteDriver == null) {
             log.error("Can't find SQLite driver is generic provider");
             return;

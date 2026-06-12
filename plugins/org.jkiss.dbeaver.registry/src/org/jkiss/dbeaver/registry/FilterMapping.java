@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class FilterMapping {
     public final String typeName;
-    DBSObjectFilter defaultFilter;
+    DBSObjectFilter globalFilter;
     Map<String, DBSObjectFilter> customFilters = new HashMap<>();
 
     FilterMapping(String typeName) {
@@ -42,7 +42,7 @@ public class FilterMapping {
     // Copy constructor
     FilterMapping(FilterMapping mapping) {
         this.typeName = mapping.typeName;
-        this.defaultFilter = mapping.defaultFilter == null ? null : new DBSObjectFilter(mapping.defaultFilter);
+        this.globalFilter = mapping.globalFilter == null ? null : new DBSObjectFilter(mapping.globalFilter);
         for (Map.Entry<String, DBSObjectFilter> entry : mapping.customFilters.entrySet()) {
             this.customFilters.put(entry.getKey(), new DBSObjectFilter(entry.getValue()));
         }
@@ -51,7 +51,7 @@ public class FilterMapping {
     @Nullable
     DBSObjectFilter getFilter(@Nullable DBSObject parentObject, boolean firstMatch) {
         if (parentObject == null) {
-            return defaultFilter;
+            return globalFilter;
         }
         if (!customFilters.isEmpty()) {
             String objectID = getFilterContainerUniqueID(parentObject);
@@ -61,7 +61,7 @@ public class FilterMapping {
             }
         }
 
-        return firstMatch ? null : defaultFilter;
+        return firstMatch ? null : globalFilter;
     }
 
     @Override
@@ -70,17 +70,15 @@ public class FilterMapping {
             return false;
         }
         FilterMapping source = (FilterMapping) obj;
-        return
-                CommonUtils.equalObjects(typeName, source.typeName) &&
-                        CommonUtils.equalObjects(defaultFilter, source.defaultFilter) &&
-                        CommonUtils.equalObjects(customFilters, source.customFilters);
+        return CommonUtils.equalObjects(typeName, source.typeName)
+            && CommonUtils.equalObjects(globalFilter, source.globalFilter)
+            && CommonUtils.equalObjects(customFilters, source.customFilters);
     }
 
     @Override
     public int hashCode() {
-        return
-            CommonUtils.hashCode(typeName) +
-            CommonUtils.hashCode(defaultFilter) +
+        return CommonUtils.hashCode(typeName) +
+            CommonUtils.hashCode(globalFilter) +
             CommonUtils.hashCode(customFilters);
     }
 

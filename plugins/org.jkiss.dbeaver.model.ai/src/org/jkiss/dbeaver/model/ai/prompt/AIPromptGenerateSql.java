@@ -30,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 public class AIPromptGenerateSql extends AIPromptAbstract {
 
     public static final String SQL_GENERATOR_ID = "sql";
+    private boolean sqlQueriesOnly = false;
 
     @NotNull
     @Override
@@ -39,14 +40,14 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
 
     public static void addSqlGenerateInstructions(
         @NotNull DBSLogicalDataSourceSupplier dsSupplier,
-        @NotNull AIPromptAbstract builder
+        @NotNull AIPromptGenerateSql builder
     ) {
         DBSLogicalDataSource dataSource = dsSupplier.get();
         builder.addInstructions(AIPromptUtils.createGeneralRulesInstructions());
         if (dataSource != null) {
             builder
                 .addContexts(AIPromptUtils.describeDataSourceInfo(dataSource))
-                .addInstructions(AIPromptUtils.createGenerateQueryInstructions(dataSource));
+                .addInstructions(AIPromptUtils.createGenerateQueryInstructions(dataSource, !builder.isSqlQueriesOnly()));
         }
         builder.addOutputFormats(AIPromptUtils.SQL_OUTPUT_FORMATS);
 
@@ -69,8 +70,22 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         builder.addInstructions(joinHint);
     }
 
+    public boolean isSqlQueriesOnly() {
+        return sqlQueriesOnly;
+    }
+
+    public void setSqlQueriesOnly(boolean sqlQueriesOnly) {
+        this.sqlQueriesOnly = sqlQueriesOnly;
+    }
+
     @Override
     protected void initializePrompt(@Nullable AIDatabaseContext context) {
+        if (sqlQueriesOnly) {
+            addInstructions(
+                "Your main goal is to return at least one SQL query",
+                "You shouldn't return any comments or descriptions, only SQL code blocks."
+            );
+        }
         addSqlGenerateInstructions(() -> context == null ? null : context.getDataSource(), this);
     }
 }

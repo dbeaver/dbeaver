@@ -802,15 +802,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
+    @Nullable
     public DBSDataContainer getSourceObject() {
         return containerMapping == null ? null : containerMapping.getSource();
     }
 
+    @Nullable
     public DBSDataManipulator getTargetObject() {
         return containerMapping == null ? localTargetObject : containerMapping.getTarget();
     }
 
-    public void setTargetObject(DBSDataManipulator targetObject) {
+    public void setTargetObject(@Nullable DBSDataManipulator targetObject) {
         this.localTargetObject = targetObject;
     }
 
@@ -1022,5 +1024,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public void setContainerMapping(@Nullable DatabaseMappingContainer containerMapping) {
         this.containerMapping = containerMapping;
+    }
+
+    @Override
+    public String toString() {
+        return containerMapping.getTargetFullName();
     }
 }
