@@ -21,6 +21,7 @@ import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIObservables;
@@ -36,6 +37,11 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
     @Override
     public void createControl(@NotNull Composite parent) {
         setControl(UIPanelBuilder.build(parent, buildPanel()));
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return DBWorkbench.getPlatform().getApplication().isStandalone();
     }
 
     @NotNull
