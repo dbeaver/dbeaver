@@ -143,7 +143,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         @NotNull DBSTypedObject type,
         @NotNull DBDValueHandler handler,
         @Nullable Object value,
-        DBDDisplayFormat format) {
+        @NotNull DBDDisplayFormat format) {
         if (DBUtils.isNullValue(value)) {
             return "";
         }
