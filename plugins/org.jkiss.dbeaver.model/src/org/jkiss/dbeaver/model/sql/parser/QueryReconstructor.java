@@ -62,6 +62,10 @@ public class QueryReconstructor {
             : null;
     }
 
+    public boolean hasRecoverableComments() {
+        return this.originalQueryCommentsInfo != null;
+    }
+
     @NotNull
     public String reconstructFromOriginalFragments(@NotNull String newSqlText) throws Exception {
         SQLUtils.CommentEntry[] comments = this.commentsCollectionResult.comments();
