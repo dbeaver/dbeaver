@@ -106,7 +106,7 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @NotNull
     public NIOEFSPath relativize(@NotNull Path other) {
-        URI relativeUri = toUri().relativize(other.toUri());
+        URI relativeUri = toUri().resolve(other.toUri());
         return new NIOEFSPath(relativeUri, relativeUri.getPath(), getFileSystem());
     }
 
