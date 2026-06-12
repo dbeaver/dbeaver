@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.ui.forms.*;
 import java.util.function.Consumer;
 
 public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
+    private final UIObservable<Boolean> createSampleDatabase = UIObservable.of(true);
+    private final UIObservable<Boolean> showTips = UIObservable.of(true);
+
     public EasyConfigFinalStepsPage() {
         super(EasyConfigMessages.final_steps_title, EasyConfigMessages.final_steps_description);
     }
@@ -39,12 +42,20 @@ public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
     private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .accept(buildSampleDatabasePanel(UIObservable.of(true)))
-            .accept(buildTipsPanel(UIObservable.of(true)));
+            .accept(buildSampleDatabasePanel(createSampleDatabase))
+            .accept(buildTipsPanel(showTips))
+            .row(rb -> rb.label(lb -> lb
+                .text("You're all set! Click Finish to start using DBeaver.")
+                .wrap()
+                .align(UIAlignX.FILL)
+                .grow(UIGrowX.ALWAYS)));
     }
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildTipsPanel(@NotNull UIObservable<Boolean> showTips) {
+        if (!canShowTipsOption()) {
+            return UIRowBuilder.identityConsumer();
+        }
         return pb -> pb
             .row(rb -> rb.label(lb -> lb
                 .text("You can enable tips that will appear daily to help you get "
@@ -58,8 +69,7 @@ public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildSampleDatabasePanel(@NotNull UIObservable<Boolean> createSampleDatabase) {
-        if (isSampleDatabaseExists()) {
-            // Don't show the option to create a sample database if it already exists in the workspace
+        if (!canShowSampleDatabaseOption()) {
             return UIRowBuilder.identityConsumer();
         }
         return pb -> pb
@@ -75,11 +85,19 @@ public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
             .row(UIRowBuilder::horizontalSpacer);
     }
 
-    private static boolean isSampleDatabaseExists() {
+    private static boolean canShowTipsOption() {
+        // FIXME we don't have access to tip of the day stuff because it's located in the standalone app
+        //   bundle for some reason. We also can't just put this page there, as this page also
+        //   features the sample database option, which can appear in the non-standalone app as well.
+        return false;
+    }
+
+    private static boolean canShowSampleDatabaseOption() {
         var project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (project == null) {
-            return true;
+            return false;
         }
-        return SampleDatabaseUtil.isSampleDatabaseExists(project.getDataSourceRegistry());
+        // Don't show the option to create a sample database if it already exists in the workspace
+        return !SampleDatabaseUtil.isSampleDatabaseExists(project.getDataSourceRegistry());
     }
 }
