@@ -473,7 +473,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 }
             }
         }
-        Path localTemp = name == null ? tempFolder : tempFolder.resolve(name);
+        Path localTemp = tempFolder.resolve(name);
         if (!Files.exists(localTemp)) {
             try {
                 Files.createDirectories(localTemp);
@@ -495,7 +495,11 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 if (!CommonUtils.isEmpty(npConfig)) {
                     Map<String, Object> json = JSONUtils.GSON.fromJson(npConfig, JSONUtils.MAP_TYPE_TOKEN);
                     return DataSourceParser.parseProfiles(
-                        new DataSourceParser.ContextParameters(null, new DataSourceConfigurationManagerBuffer(), Map.of()),
+                        new DataSourceParser.ContextParameters(
+                            null,
+                            DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                            Map.of()
+                        ),
                         json);
                 }
             } catch (DBException e) {
@@ -510,7 +514,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 List<DBWNetworkProfile> profiles = getProfiles();
                 DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
                     null,
-                    null,
+                    DBWorkbench.isDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
                     new LinkedHashMap<>()
                 );
                 StringWriter strWriter = new StringWriter();

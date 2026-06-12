@@ -70,13 +70,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         super.saveSettings(profile);
 
         try {
-            if (projectMeta != null) {
-                if (projectMeta.isUseSecretStorage()) {
-                    DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
-                    profile.persistSecrets(secretController);
-                }
-            } else {
-                profile.persistSecrets(DBSSecretController.getGlobalSecretController());
+            if (projectMeta != null && projectMeta.isUseSecretStorage()) {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
+                profile.persistSecrets(secretController);
             }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Save error", "Cannot save network profile credentials", e);
