@@ -106,8 +106,12 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @NotNull
     public NIOEFSPath relativize(@NotNull Path other) {
-        URI relativeUri = toUri().resolve(other.toUri());
-        return new NIOEFSPath(relativeUri, relativeUri.getPath(), getFileSystem());
+        if (other instanceof NIOEFSPath nioefsPath && nioefsPath.getFileSystem().rootURI().equals(getFileSystem().rootURI())) {
+            URI relativeUri = directURI.resolve(nioefsPath.directURI);
+            return new NIOEFSPath(relativeUri, directURI.relativize(nioefsPath.directURI).getPath(), getFileSystem());
+        } else {
+            throw new IllegalArgumentException("Can only relativize paths with the same underlying file systems");
+        }
     }
 
     @Override

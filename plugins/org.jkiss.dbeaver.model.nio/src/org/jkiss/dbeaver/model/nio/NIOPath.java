@@ -41,8 +41,8 @@ public abstract class NIOPath implements Path {
 
     @Override
     public boolean isAbsolute() {
-        return CommonUtils.isEmpty(path)  // root project path
-            || path.charAt(0) == '/';
+        return path == null // empty is just empty path
+            || (!CommonUtils.isEmpty(path) && path.charAt(0) == '/');
     }
 
     protected String resolveString(String otherPath) {
