@@ -22,6 +22,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.nio.NIOFileSystemProvider;
 
 import java.io.IOException;
@@ -36,8 +37,9 @@ import java.util.*;
 
 public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
 
+    private static final Log log = Log.getLog(NIOEFSFileSystemProvider.class);
 
-    private final Map<String, NIOEFSFileSystem> fileSystemMap = new HashMap<>();
+    private final Map<URI, NIOEFSFileSystem> fileSystemMap = new HashMap<>();
 
     @Override
     public String getScheme() {
@@ -48,7 +50,8 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     @NotNull
     public NIOEFSFileSystem newFileSystem(@NotNull URI uri, @Nullable Map<String, ?> ignored) throws IOException {
         try {
-            fileSystemMap.put(uri.getQuery(), new NIOEFSFileSystem(this, EFS.getStore(new URI(uri.getQuery()))));
+            URI rootStoreUri = getRootSoreUri(uri);
+            fileSystemMap.put(rootStoreUri, new NIOEFSFileSystem(this, EFS.getStore(rootStoreUri)));
             return getFileSystem(uri);
         } catch (Exception e) {
             throw new IOException(e);
@@ -58,12 +61,15 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     @Override
     @NotNull
     public NIOEFSFileSystem getFileSystem(@NotNull URI uri) {
-        NIOEFSFileSystem fileSystem = fileSystemMap.get(uri.getQuery());
+        NIOEFSFileSystem fileSystem = fileSystemMap.get(getRootSoreUri(uri));
         if (fileSystem != null) {
             return fileSystem;
-        } else {
-            throw new FileSystemNotFoundException("Filesystem for: " + uri + "not yet created. Use newFileSystem() instead");
         }
+        throw new FileSystemNotFoundException("Filesystem for: " + uri + "not yet created. Use newFileSystem() instead");
+    }
+
+    private URI getRootSoreUri(@NotNull URI uri) {
+        return NIOEFSUtils.createCopyWithPath(uri, "/");
     }
 
     @NotNull
@@ -83,6 +89,12 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     @NotNull
     public NIOEFSPath getPath(@NotNull URI uri) {
         return getOrCreateFileSystem(uri).getPath(uri.getPath());
+    }
+
+    @NotNull
+    public NIOEFSPath getRelativePath(@NotNull URI uri, @NotNull String pathName) {
+        NIOEFSFileSystem fileSystem = getOrCreateFileSystem(uri);
+        return new NIOEFSPath(uri, pathName, fileSystem);
     }
 
     @Override

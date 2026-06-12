@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -309,7 +310,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     continue;
                 }
 
-                if (resource.getParent().equals(folder)) {
+                if (CommonUtils.equalObjects(resource.getParent(), folder)) {
                     // Already in this container
                     continue;
                 }

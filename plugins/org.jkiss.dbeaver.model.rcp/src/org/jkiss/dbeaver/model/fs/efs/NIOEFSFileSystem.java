@@ -16,27 +16,39 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.nio.NIOFileSystem;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.FileStore;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 public class NIOEFSFileSystem extends NIOFileSystem {
+
+    private static final Log log = Log.getLog(NIOEFSFileSystem.class);
+
 
     private final IFileStore rootFileStore;
 
     private final NIOEFSFileSystemProvider systemProvider;
 
-    public NIOEFSFileSystem(@NotNull NIOEFSFileSystemProvider provider, @NotNull IFileStore rootFileStore) {
+    private final Set<String> rootChildren;
+
+    public NIOEFSFileSystem(@NotNull NIOEFSFileSystemProvider provider, @NotNull IFileStore rootFileStore) throws CoreException {
         this.systemProvider = provider;
         this.rootFileStore = rootFileStore;
+        this.rootChildren = Arrays.stream(rootFileStore.childNames(EFS.NONE, null)).collect(Collectors.toSet());
     }
 
     @Override
@@ -71,10 +83,25 @@ public class NIOEFSFileSystem extends NIOFileSystem {
 
     @Override
     public NIOEFSPath getPath(@NotNull String first, @NotNull String... more) {
-        StringJoiner joiner = new StringJoiner(getSeparator());
-        joiner.add(first);
-        Arrays.stream(more).forEach(joiner::add);
-        return new NIOEFSPath(joiner.toString(), this);
+        StringBuilder pathJoiner = new StringBuilder();
+        StringJoiner uriCreator = new StringJoiner("/");
+        if (rootChildren.contains(first)) {
+            pathJoiner.append(getSeparator());
+        }
+        pathJoiner.append(first);
+        uriCreator.add(first);
+        Arrays.stream(more).forEach(p -> {
+            pathJoiner.append(getSeparator()).append(p);
+            uriCreator.add(p);
+        });
+        return new NIOEFSPath(
+            NIOEFSUtils.createCopyWithPath(
+                rootURI(),
+                uriCreator.toString()
+            ),
+            pathJoiner.toString(),
+            this
+        );
     }
 
     @NotNull
@@ -84,6 +111,11 @@ public class NIOEFSFileSystem extends NIOFileSystem {
             store = store.getChild(part);
         }
         return store;
+    }
+
+    @NotNull
+    public URI rootURI() {
+        return rootFileStore.toURI();
     }
 
 }

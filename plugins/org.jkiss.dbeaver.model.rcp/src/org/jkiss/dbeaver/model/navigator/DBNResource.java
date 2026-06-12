@@ -481,7 +481,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 return location != null
                     ? adapter.cast(location.toPath())
                     : resource.getLocationURI() != null
-                        ? adapter.cast(createPath(resource.getLocationURI()))
+                        ? adapter.cast(createPath(resource.getLocationURI(), resource.getName()))
                         : null;
             } else if (adapter == InputStream.class && resource instanceof IFile file) {
                 try {
@@ -495,8 +495,8 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @NotNull
-    private NIOEFSPath createPath(@NotNull URI locationUri) {
-        return new NIOEFSFileSystemProvider().getPath(locationUri);
+    private NIOEFSPath createPath(@NotNull URI locationUri, @NotNull String pathName) {
+        return new NIOEFSFileSystemProvider().getRelativePath(locationUri, pathName);
     }
 
     @NotNull

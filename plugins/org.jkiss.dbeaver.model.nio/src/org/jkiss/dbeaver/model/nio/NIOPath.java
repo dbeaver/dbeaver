@@ -54,10 +54,21 @@ public abstract class NIOPath implements Path {
         return pathParts().length;
     }
 
+    @NotNull
     protected String[] pathParts() {
-        return CommonUtils.isEmpty(path) ? new String[0] : Arrays.stream(path.split(getFileSystem().getSeparator()))
+        return getParts(path);
+    }
+
+    @NotNull
+    protected String[] getParts(@Nullable String pathRepresentation) {
+        return CommonUtils.isEmpty(pathRepresentation) ? new String[0] : Arrays.stream(path.split(getFileSystem().getSeparator()))
             .filter(CommonUtils::isNotEmpty)
             .toArray(String[]::new);
+    }
+
+    @NotNull
+    protected String toPathRepresentation(@NotNull String... parts) {
+        return String.join(getFileSystem().getSeparator(), parts);
     }
 
     @Override
