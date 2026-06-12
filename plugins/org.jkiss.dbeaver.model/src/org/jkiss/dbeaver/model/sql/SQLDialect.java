@@ -385,11 +385,13 @@ public interface SQLDialect {
 
     String getUnquotedIdentifier(String identifier, boolean unescapeQuotesInsideIdentifier);
 
-    boolean isQuotedString(String string);
+    boolean isQuotedString(@NotNull String string);
 
-    String getQuotedString(String string);
+    @NotNull
+    String getQuotedString(@NotNull String string);
 
-    String getUnquotedString(String string);
+    @NotNull
+    String getUnquotedString(@NotNull String string);
 
     /**
      * Escapes string to make usable inside of SQL queries.
@@ -398,10 +400,10 @@ public interface SQLDialect {
      * @return escaped string
      */
     @NotNull
-    String escapeString(String string);
+    String escapeString(@NotNull String string);
 
     @NotNull
-    String unEscapeString(String string);
+    String unEscapeString(@Nullable String string);
 
     /**
      * Encode value to string format (to use it in scripts, e.g. in INSERT/UPDATE statements)
