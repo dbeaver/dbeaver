@@ -119,8 +119,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -129,7 +129,7 @@ import java.util.regex.PatternSyntaxException;
  * an editor </i> in chapter <i>Introduction to .gef </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
-        implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
+    implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
     private static final Log searcherLog = Log.getLog(Searcher.class);
 
     @Nullable
@@ -150,7 +150,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * the list of action ids that are to EditPart actions
      */
-    private List<String> editPartActionIDs = new ArrayList<>();
+    private final List<String> editPartActionIDs = new ArrayList<>();
 
     /**
      * the overview outline page
@@ -178,7 +178,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private ERDDecorator decorator;
     private ZoomComboContributionItem zoomCombo;
     private NavigatorViewerAdapter navigatorViewerAdapter;
-    private ERDHighlightingManager highlightingManager = new ERDHighlightingManager();
+    private final ERDHighlightingManager highlightingManager = new ERDHighlightingManager();
 
     private String exportMruFilename = null;
     private ERDConnectionRouterDescriptor routerStyle;
@@ -187,10 +187,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * No-arg constructor
      */
-    protected ERDEditorPart()
-    {
+    protected ERDEditorPart() {
     }
 
+    @NotNull
     public ERDContentProvider getContentProvider() {
         if (contentProvider == null) {
             contentProvider = createContentProvider();
@@ -198,6 +198,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return contentProvider;
     }
 
+    @NotNull
     public ERDDecorator getDecorator() {
         if (decorator == null) {
             decorator = createDecorator();
@@ -210,10 +211,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return highlightingManager;
     }
 
-    /////////////////////////////////////////
+    /// //////////////////////////////////////
     // INavigatorModelView implementation
     // We need it to support a set of standard commands like copy/paste/rename/etc
-
     @Nullable
     @Override
     public DBNNode getRootNode() {
@@ -233,14 +233,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return navigatorViewerAdapter;
     }
 
+    @NotNull
     protected ERDContentProvider createContentProvider() {
         return new ERDContentProviderDecorated();
     }
 
+    @NotNull
     protected ERDDecorator createDecorator() {
         return new ERDDecoratorDefault();
     }
 
+    @NotNull
     @Override
     protected ERDGraphicalViewer getGraphicalViewer() {
         return (ERDGraphicalViewer) super.getGraphicalViewer();
@@ -250,8 +253,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * Initializes the editor.
      */
     @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException
-    {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         rootPart = new ScalableFreeformRootEditPart();
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
@@ -272,8 +274,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         Composite contentContainer = parent;
         if (hasProgressControl()) {
             progressControl = new ProgressControl(parent, SWT.SHEET);
@@ -289,11 +290,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         super.createPartControl(contentContainer);
 
-        if (hasProgressControl()) {
+        if (hasProgressControl() && progressControl != null) {
             progressControl.createProgressPanel();
         }
     }
 
+    @Nullable
     public DBECommandContext getCommandContext() {
         IEditorInput editorInput = this.getEditorInput();
         if (editorInput instanceof IDatabaseEditorInput) {
@@ -314,8 +316,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * <code>CommandStack </code> changes.
      */
     @Override
-    public void commandStackChanged(EventObject event)
-    {
+    public void commandStackChanged(EventObject event) {
         // Reevaluate properties
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_UNDO);
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
@@ -327,8 +328,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         ERDUIActivator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
 
         if (diagramLoadingJob != null) {
@@ -376,14 +376,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @Override
-    public abstract void doSave(IProgressMonitor monitor);
+    public abstract void doSave(@NotNull IProgressMonitor monitor);
 
     /**
      * Save as not allowed
      */
     @Override
-    public void doSaveAs()
-    {
+    public void doSaveAs() {
         saveDiagramAs();
     }
 
@@ -391,8 +390,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * Save as not allowed
      */
     @Override
-    public boolean isSaveAsAllowed()
-    {
+    public boolean isSaveAsAllowed() {
         return true;
     }
 
@@ -402,8 +400,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @see org.eclipse.ui.part.EditorPart#isDirty
      */
     @Override
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         return !isReadOnly() && isDirty;
     }
 
@@ -430,8 +427,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the <code>CommandStack</code>
      */
     @Override
-    public CommandStack getCommandStack()
-    {
+    public CommandStack getCommandStack() {
         return getEditDomain().getCommandStack();
     }
 
@@ -440,13 +436,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @return an instance of <code>Schema</code>
      */
-    public EntityDiagram getDiagram()
-    {
+    public EntityDiagram getDiagram() {
         return getDiagramPart().getDiagram();
     }
 
-    public DiagramPart getDiagramPart()
-    {
+    public DiagramPart getDiagramPart() {
         return rootPart == null ? null : (DiagramPart) rootPart.getContents();
     }
 
@@ -454,8 +448,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @see org.eclipse.ui.part.EditorPart#setInput(org.eclipse.ui.IEditorInput)
      */
     @Override
-    protected void setInput(IEditorInput input)
-    {
+    protected void setInput(IEditorInput input) {
         super.setInput(input);
     }
 
@@ -466,13 +459,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the palette provider
      */
     @Override
-    protected PaletteViewerProvider createPaletteViewerProvider()
-    {
+    protected PaletteViewerProvider createPaletteViewerProvider() {
         return new ERDPaletteViewerProvider(editDomain);
     }
 
-    public GraphicalViewer getViewer()
-    {
+    public GraphicalViewer getViewer() {
         return super.getGraphicalViewer();
     }
 
@@ -483,8 +474,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @param parent the parent composite
      */
     @Override
-    protected void createGraphicalViewer(Composite parent)
-    {
+    protected void createGraphicalViewer(Composite parent) {
         GraphicalViewer viewer = createViewer(parent);
 
         // hook the viewer into the EditDomain
@@ -502,7 +492,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // Set context menu
         IWorkbenchPartSite site = getSite();
         if (site instanceof IEditorSite) {
-            ((IEditorSite)site).registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
+            ((IEditorSite) site).registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
         } else {
             site.registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer);
         }
@@ -513,8 +503,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return new ERDEditorContextMenuProvider(this, true);
     }
 
-    private GraphicalViewer createViewer(Composite parent)
-    {
+    private GraphicalViewer createViewer(Composite parent) {
         StatusLineValidationMessageHandler validationMessageHandler = new StatusLineValidationMessageHandler(getEditorSite());
         GraphicalViewer viewer = new ERDGraphicalViewer(this, validationMessageHandler);
         viewer.createControl(parent);
@@ -532,18 +521,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return viewer;
     }
 
-    protected void installKeyHandler(GraphicalViewer viewer) {
+    protected void installKeyHandler(@NotNull GraphicalViewer viewer) {
         viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
     }
 
-    protected void registerDropTargetListeners(GraphicalViewer viewer) {
+    protected void registerDropTargetListeners(@NotNull GraphicalViewer viewer) {
         viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
         viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
     }
 
     @Override
-    protected void configureGraphicalViewer()
-    {
+    protected void configureGraphicalViewer() {
         super.configureGraphicalViewer();
         this.getGraphicalViewer().getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
 
@@ -559,9 +547,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED));
         graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDUIConstants.PREF_GRID_ENABLED));
-        graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
-            store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
-            store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)));
+        graphicalViewer.setProperty(
+            SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
+                store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
+                store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)
+            )
+        );
 
         // initialize actions
         createActions();
@@ -576,7 +567,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         zoomManager.setZoomLevelContributions(zoomLevels);
 
         zoomManager.setZoomLevels(
-            new double[]{.1, .1, .2, .3, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5, 3, 4}
+            new double[] {.1, .1, .2, .3, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5, 3, 4}
         );
 
         IAction zoomIn = new ZoomInAction(zoomManager);
@@ -588,7 +579,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
         graphicalViewer.addSelectionChangedListener(event -> {
             String status;
-            IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
             if (selection.isEmpty()) {
                 status = "";
             } else if (selection.size() == 1) {
@@ -613,8 +604,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param dirty the new dirty state to set
      */
-    public void setDirty(boolean dirty)
-    {
+    public void setDirty(boolean dirty) {
         if (isDirty != dirty) {
             isDirty = dirty;
             firePropertyChange(IEditorPart.PROP_DIRTY);
@@ -627,8 +617,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param action the action to add.
      */
-    protected void addAction(IAction action)
-    {
+    protected void addAction(IAction action) {
         getActionRegistry().registerAction(action);
         UIUtils.registerKeyBinding(getSite(), action);
     }
@@ -639,8 +628,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @param actionIds the list of ids of actions to update
      */
     @Override
-    protected void updateActions(List actionIds)
-    {
+    protected void updateActions(List actionIds) {
         for (Object actionId : actionIds) {
             IAction action = getActionRegistry().getAction(actionId);
             if (null != action && action instanceof UpdateAction) {
@@ -655,9 +643,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @return the overview
      */
-    protected ERDOutlinePage getOverviewOutlinePage()
-    {
-        if ((null == outlinePage || outlinePage.getControl().isDisposed()) && null != getGraphicalViewer()) {
+    protected ERDOutlinePage getOverviewOutlinePage() {
+        if (null == outlinePage || outlinePage.getControl().isDisposed()) {
+            getGraphicalViewer();
             RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
             if (rootEditPart instanceof ScalableFreeformRootEditPart) {
                 outlinePage = new ERDOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
@@ -672,8 +660,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @return the undoable <code>PropertySheetPage</code>
      */
-    protected PropertySheetPage getPropertySheetPage()
-    {
+    protected PropertySheetPage getPropertySheetPage() {
         if (null == undoablePropertySheetPage) {
             undoablePropertySheetPage = new PropertySheetPage();
             undoablePropertySheetPage.setRootEntry(new UndoablePropertySheetEntry(getCommandStack()));
@@ -685,9 +672,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * @return the preferences for the Palette Flyout
      */
+    @NotNull
     @Override
-    protected ERDPalettePreferences getPalettePreferences()
-    {
+    protected ERDPalettePreferences getPalettePreferences() {
         return new ERDPalettePreferences();
     }
 
@@ -695,16 +682,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the PaletteRoot to be used with the PaletteViewer
      */
     @Override
-    protected PaletteRoot getPaletteRoot()
-    {
+    protected PaletteRoot getPaletteRoot() {
         if (paletteRoot == null) {
             paletteRoot = createPaletteRoot();
         }
         return paletteRoot;
     }
 
-    public PaletteRoot createPaletteRoot()
-    {
+    public PaletteRoot createPaletteRoot() {
         // create root
         PaletteRoot paletteRoot = new PaletteRoot();
         paletteRoot.setLabel("Entity Diagram");
@@ -721,7 +706,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             0,
             this.getSite().getPage(),
             this.getPaletteViewerProvider(),
-            this.getPalettePreferences());
+            this.getPalettePreferences()
+        );
         paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
         return paletteComposite;
     }
@@ -731,11 +717,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     /**
-     * The method designed to refresh diagram with metadata request  
+     * The method designed to refresh diagram with metadata request
      *
-     * @param rearrange - re-arrange layout
-     * @param reload - load diagram
-     * @param refreshMetadata - reload metadata  
+     * @param rearrange       - re-arrange layout
+     * @param reload          - load diagram
+     * @param refreshMetadata - reload metadata
      */
     public void refreshDiagram(boolean rearrange, boolean reload, boolean refreshMetadata) {
         DiagramPart diagramPart = getDiagramPart();
@@ -751,24 +737,22 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     /**
-     * The method designed to refresh diagram without metadata request  
+     * The method designed to refresh diagram without metadata request
      *
      * @param rearrange - re-arrange layout
-     * @param reload - load diagram 
+     * @param reload    - load diagram
      */
     public void refreshDiagram(boolean rearrange, boolean reload) {
         refreshDiagram(rearrange, reload, false);
     }
 
     @Override
-    public RefreshResult refreshPart(Object source, boolean force)
-    {
+    public RefreshResult refreshPart(Object source, boolean force) {
         refreshDiagram(force, force);
         return RefreshResult.REFRESHED;
     }
 
-    public void saveDiagramAs()
-    {
+    public void saveDiagramAs() {
         List<ERDExportFormatRegistry.FormatDescriptor> allFormats = ERDExportFormatRegistry.getInstance().getFormats();
         String[] extensions = new String[allFormats.size()];
         String[] filterNames = new String[allFormats.size()];
@@ -793,16 +777,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
         if (CommonUtils.isEmpty(proposedFileName)) {
             LinkedList<String> parts = new LinkedList<>();
-            EntityDiagram diagram = this.getDiagram(); 
+            EntityDiagram diagram = this.getDiagram();
             DBSObject obj = diagram.getRootObjectContainer();
-            if (obj == null && diagram.getEntities().size() > 0) {
-                obj = diagram.getEntities().get(0).getObject();
+            if (obj == null && !diagram.getEntities().isEmpty()) {
+                obj = diagram.getEntities().getFirst().getObject();
             }
             while (obj != null && !(obj instanceof DBPDataSourceContainer)) {
                 parts.addFirst(obj.getName());
                 obj = obj.getParentObject();
             }
-            
+
             if (parts.isEmpty()) {
                 parts.add("unnammed");
             }
@@ -811,7 +795,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFileName(proposedFileName);
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
-        if (filePath == null || filePath.trim().length() == 0) {
+        if (filePath == null || filePath.trim().isEmpty()) {
             return;
         }
 
@@ -852,7 +836,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             final int openFileDecision = ConfirmationDialog.confirmAction(
                 getGraphicalControl().getShell(),
                 ERDUIConstants.CONFIRM_OPEN_EXPORTED_FILE,
-                ConfirmationDialog.QUESTION);
+                ConfirmationDialog.QUESTION
+            );
 
             if (openFileDecision == IDialogConstants.YES_ID) {
                 ShellUtils.launchProgram(outFile.getAbsolutePath());
@@ -862,8 +847,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    public void fillAttributeVisibilityMenu(IMenuManager menu)
-    {
+    public void fillAttributeVisibilityMenu(@NotNull IMenuManager menu) {
         MenuManager asMenu = new MenuManager(ERDUIMessages.menu_view_style);
         for (ERDViewStyle style : ERDViewStyle.values()) {
             if (decorator.supportsAttributeStyle(style)) {
@@ -915,7 +899,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param menu - root node
      */
-    public void fillNotationsMenu(IMenuManager menu) {
+    public void fillNotationsMenu(@NotNull IMenuManager menu) {
         MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_notation_style);
         for (ERDNotationDescriptor ntType : ERDNotationRegistry.getInstance().getNotations()) {
             ntMenu.add(new ChangeERDNotationStyleAction(ntType));
@@ -928,7 +912,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param menu - root node
      */
-    public void fillRoutersMenu(IMenuManager menu) {
+    public void fillRoutersMenu(@NotNull IMenuManager menu) {
         MenuManager ntMenu = new MenuManager(ERDUIMessages.menu_router_style);
         for (ERDConnectionRouterDescriptor ntType : ERDConnectionRouterRegistry.getInstance().getDescriptors()) {
             ntMenu.add(new ChangeERDRouterStyleAction(ntType));
@@ -936,7 +920,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         menu.add(ntMenu);
     }
 
-    public void fillPartContextMenu(IMenuManager menu, IStructuredSelection selection) {
+    public void fillPartContextMenu(@NotNull IMenuManager menu, @NotNull IStructuredSelection selection) {
         if (selection.isEmpty()) {
             return;
         }
@@ -967,8 +951,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 */
     }
 
-    public void printDiagram()
-    {
+    public void printDiagram() {
         GraphicalViewer viewer = getGraphicalViewer();
 
         PrintDialog dialog = new PrintDialog(viewer.getControl().getShell(), SWT.NULL);
@@ -997,35 +980,33 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     @Override
-    public boolean isSearchPossible()
-    {
+    public boolean isSearchPossible() {
         return true;
     }
 
     @Override
-    public boolean isSearchEnabled()
-    {
+    public boolean isSearchEnabled() {
         return progressControl != null && progressControl.isSearchEnabled();
     }
 
     @Override
-    public boolean performSearch(SearchType searchType)
-    {
+    public boolean performSearch(@NotNull SearchType searchType) {
         return progressControl != null && progressControl.performSearch(searchType);
     }
 
+    @Nullable
     public String getErrorMessage() {
         return errorMessage;
     }
 
-    public void setErrorMessage(String errorMessage) {
+    public void setErrorMessage(@Nullable String errorMessage) {
         this.errorMessage = errorMessage;
     }
 
-    protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
+    protected void fillDefaultEditorContributions(@NotNull IContributionManager toolBarManager) {
         ZoomManager zoomManager = rootPart.getZoomManager();
 
-        String[] zoomStrings = new String[]{
+        String[] zoomStrings = new String[] {
             ZoomManager.FIT_ALL,
             ZoomManager.FIT_HEIGHT,
             ZoomManager.FIT_WIDTH
@@ -1035,38 +1016,33 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         zoomCombo = new ZoomComboContributionItem(
             new IPartService() {
                 @Override
-                public void addPartListener(IPartListener listener)
-                {
+                public void addPartListener(IPartListener listener) {
                 }
 
                 @Override
-                public void addPartListener(IPartListener2 listener)
-                {
+                public void addPartListener(IPartListener2 listener) {
                 }
 
                 @Override
-                public IWorkbenchPart getActivePart()
-                {
+                public IWorkbenchPart getActivePart() {
                     return ERDEditorPart.this;
                 }
 
                 @Override
-                public IWorkbenchPartReference getActivePartReference()
-                {
+                public IWorkbenchPartReference getActivePartReference() {
                     return null;
                 }
 
                 @Override
-                public void removePartListener(IPartListener listener)
-                {
+                public void removePartListener(IPartListener listener) {
                 }
 
                 @Override
-                public void removePartListener(IPartListener2 listener)
-                {
+                public void removePartListener(IPartListener2 listener) {
                 }
             },
-            zoomStrings);
+            zoomStrings
+        );
         zoomCombo.setZoomManager(zoomManager);
 
         toolBarManager.add(zoomCombo);
@@ -1099,14 +1075,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 getSite(),
                 IWorkbenchCommandConstants.FILE_PRINT,
                 ERDUIMessages.erd_editor_control_action_print_diagram,
-                UIIcon.PRINT));
+                UIIcon.PRINT
+            ));
 
             toolBarManager.add(ActionUtils.makeCommandContribution(getSite(), ERDUIConstants.CMD_SAVE_AS));
         }
         fillConfigurationContribution(toolBarManager);
     }
-    
-    protected void fillConfigurationContribution(IContributionManager toolBarManager) {
+
+    protected void fillConfigurationContribution(@NotNull IContributionManager toolBarManager) {
         toolBarManager.add(new Separator("configuration"));
         Action configAction = new Action(ERDUIMessages.erd_editor_control_action_configuration) {
             @Override
@@ -1114,7 +1091,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 UIUtils.showPreferencesFor(
                     getSite().getShell(),
                     ERDEditorPart.this,
-                    ERDPreferencePage.PAGE_ID);
+                    ERDPreferencePage.PAGE_ID
+                );
                 getDiagram().setAttributeStyles(ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()));
             }
         };
@@ -1144,27 +1122,28 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private class ChangeAttributePresentationAction extends Action {
         private final ERDViewStyle style;
+
         public ChangeAttributePresentationAction(ERDViewStyle style) {
             super(style.getActionTitle(), AS_CHECK_BOX);
             this.style = style;
         }
+
         @Override
-        public boolean isChecked()
-        {
+        public boolean isChecked() {
             return ArrayUtils.contains(
                 ERDViewStyle.getDefaultStyles(ERDUIActivator.getDefault().getPreferences()),
-                style);
+                style
+            );
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             getDiagram().setAttributeStyle(style, !isChecked());
             refreshEntityAndAttributes();
             refreshDiagram(true, true);
         }
     }
-    
+
     private class ChangeERDNotationStyleAction extends Action {
         private final ERDNotationDescriptor notation;
 
@@ -1215,20 +1194,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         private final boolean defStyle;
         private final ERDAttributeVisibility visibility;
 
-        private ChangeAttributeVisibilityAction(boolean defStyle, ERDAttributeVisibility visibility)
-        {
+        private ChangeAttributeVisibilityAction(boolean defStyle, ERDAttributeVisibility visibility) {
             super(visibility.getTitle() + "", IAction.AS_CHECK_BOX);
             this.defStyle = defStyle;
             this.visibility = visibility;
         }
 
         @Override
-        public boolean isChecked()
-        {
+        public boolean isChecked() {
             if (defStyle) {
                 return visibility == getDiagram().getAttributeVisibility();
             } else {
-                for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
+                for (Object object : ((IStructuredSelection) getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
                         ERDAttributeVisibility entityAV = ((EntityPart) object).getEntity().getAttributeVisibility();
                         if (entityAV == null) {
@@ -1248,8 +1225,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             EntityDiagram diagram = getDiagram();
             if (defStyle) {
                 diagram.setAttributeVisibility(visibility);
@@ -1258,7 +1234,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
                 refreshEntityAndAttributes();
             } else {
-                for (Object object : ((IStructuredSelection)getGraphicalViewer().getSelection()).toArray()) {
+                for (Object object : ((IStructuredSelection) getGraphicalViewer().getSelection()).toArray()) {
                     if (object instanceof EntityPart) {
                         ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
                         UIUtils.asyncExec(() -> {
@@ -1275,8 +1251,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private class ConfigPropertyListener implements IPropertyChangeListener {
         @Override
-        public void propertyChange(PropertyChangeEvent event)
-        {
+        public void propertyChange(PropertyChangeEvent event) {
             GraphicalViewer graphicalViewer = getGraphicalViewer();
             if (graphicalViewer == null) {
                 return;
@@ -1285,14 +1260,21 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 Boolean enabled = Boolean.valueOf(event.getNewValue().toString());
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
-            } else if (ERDUIConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDUIConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
+            } else if (ERDUIConstants.PREF_GRID_WIDTH.equals(event.getProperty())
+                || ERDUIConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
                 final DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-                graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
-                    store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
-                    store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)));
+                graphicalViewer.setProperty(
+                    SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
+                        store.getInt(ERDUIConstants.PREF_GRID_WIDTH),
+                        store.getInt(ERDUIConstants.PREF_GRID_HEIGHT)
+                    )
+                );
             } else if (ERDConstants.PREF_ATTR_VISIBILITY.equals(event.getProperty())) {
                 EntityDiagram diagram = getDiagram();
-                ERDAttributeVisibility attrVisibility = CommonUtils.valueOf(ERDAttributeVisibility.class, CommonUtils.toString(event.getNewValue()));
+                ERDAttributeVisibility attrVisibility = CommonUtils.valueOf(
+                    ERDAttributeVisibility.class,
+                    CommonUtils.toString(event.getNewValue())
+                );
                 diagram.setAttributeVisibility(attrVisibility);
                 refreshEntityAndAttributes();
             } else if (ERDConstants.PREF_ATTR_STYLES.equals(event.getProperty())) {
@@ -1332,15 +1314,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private final Searcher searcher;
 
-        private ProgressControl(Composite parent, int style)
-        {
+        private ProgressControl(Composite parent, int style) {
             super(parent, style);
             searcher = new Searcher();
         }
 
         @Override
-        protected boolean cancelProgress()
-        {
+        protected boolean cancelProgress() {
             if (diagramLoadingJob != null) {
                 diagramLoadingJob.cancel();
                 return true;
@@ -1348,8 +1328,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             return false;
         }
 
-        public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
-        {
+        @NotNull
+        public ProgressVisualizer<EntityDiagram> createLoadVisualizer() {
             Control graphicalControl = getGraphicalControl();
             if (graphicalControl != null) {
                 graphicalControl.setBackground(ERDThemeSettings.instance.diagramBackground);
@@ -1368,7 +1348,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             // Add dynamic toolbar contributions
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
-                menuService.populateContributionManager(extToolBar , "toolbar:ERDEditorToolbar");
+                menuService.populateContributionManager(extToolBar, "toolbar:ERDEditorToolbar");
             }
             if (!extToolBar.isEmpty()) {
                 boolean hasSave = contributionManager.find("save") != null;
@@ -1385,21 +1365,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         @Nullable
         @Override
-        protected ISearchExecutor getSearchRunner()
-        {
+        protected ISearchExecutor getSearchRunner() {
             return searcher;
         }
 
         public class LoadVisualizer extends ProgressVisualizer<EntityDiagram> {
             @Override
-            public void visualizeLoading()
-            {
+            public void visualizeLoading() {
                 super.visualizeLoading();
             }
 
             @Override
-            public void completeLoading(@Nullable EntityDiagram entityDiagram)
-            {
+            public void completeLoading(@Nullable EntityDiagram entityDiagram) {
                 super.completeLoading(entityDiagram);
                 if (entityDiagram != null) {
                     List<String> errorMessages = entityDiagram.getErrorMessages();
@@ -1408,12 +1385,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         for (String error : errorMessages) {
                             messageStatuses.add(new Status(Status.ERROR, ERDUIActivator.PLUGIN_ID, error));
                         }
-                        MultiStatus status = new MultiStatus(ERDUIActivator.PLUGIN_ID, 0, messageStatuses.toArray(new IStatus[0]), null, null);
+                        MultiStatus status = new MultiStatus(
+                            ERDUIActivator.PLUGIN_ID,
+                            0,
+                            messageStatuses.toArray(new IStatus[0]),
+                            null,
+                            null
+                        );
 
                         DBWorkbench.getPlatformUI().showError(
-                                "Diagram loading errors",
+                            "Diagram loading errors",
                             "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
-                            status);
+                            status
+                        );
                     }
                     setInfo(entityDiagram.getEntityCount() + " objects");
                 } else {
@@ -1426,12 +1410,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     /**
      * The method process entity relation diagram for element visualization
-     * 
-     * @param monitor - DBRProgressMonitor
+     *
+     * @param monitor       - DBRProgressMonitor
      * @param entityDiagram - EntityDiagram
      * @return - EntityDiagram
      */
-    public EntityDiagram visuallize(DBRProgressMonitor monitor, EntityDiagram entityDiagram) {
+    @Nullable
+    public EntityDiagram visuallize(@NotNull DBRProgressMonitor monitor, @Nullable EntityDiagram entityDiagram) {
         if (monitor.isCanceled()) {
             return entityDiagram;
         }
@@ -1486,7 +1471,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return entityDiagram;
     }
 
-    protected boolean restoreVisualSettings(DiagramPart oldDiagram, EntityDiagram newDiagram) {
+    protected boolean restoreVisualSettings(@NotNull DiagramPart oldDiagram, @NotNull EntityDiagram newDiagram) {
         boolean hasChanges = false;
         // Collect visual settings from old diagram and apply them to the new one
         for (ERDEntity newEntity : newDiagram.getEntities()) {
@@ -1533,7 +1518,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         private Object currentItem = null;
         @Nullable
         private List<ERDHighlightingHandle> highlightings = new LinkedList<>();
-        
+
         @Override
         public boolean performSearch(@NotNull String searchString, int options) {
             if (this.results != null && this.searchString != null && this.searchString.equals(searchString)) {
@@ -1569,7 +1554,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     if (node instanceof EntityPart) {
                         List<?> children = ((EntityPart) node).getChildren();
                         if (!CommonUtils.isEmpty(children)) {
-                            for (Object child: children) {
+                            for (Object child : children) {
                                 if (child instanceof DBPNamedObject && child instanceof EditPart) {
                                     nodes.add((DBPNamedObject) child);
                                 }
@@ -1600,7 +1585,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return resultsFound;
             }
         }
-        
+
         private void jumpToNext(boolean isFindNext) {
             if (resultsIterator == null || isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious()) {
                 resultsIterator = results.listIterator(isFindNext ? 0 : results.size());
@@ -1610,9 +1595,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private boolean findNextResult(boolean isFindNext) {
             if (resultsFound && results != null) {
-                if (isPrevStepWasFwd != null && isPrevStepWasFwd.booleanValue() != isFindNext) { 
+                if (isPrevStepWasFwd != null && isPrevStepWasFwd.booleanValue() != isFindNext) {
                     // direction change gets current item again as if it's a new loop initialization 
-                    jumpToNext(isFindNext); 
+                    jumpToNext(isFindNext);
                 }
                 isPrevStepWasFwd = isFindNext;
                 jumpToNext(isFindNext);
@@ -1678,8 +1663,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     DBWorkbench.getPlatformUI().showError(
                         "VQB Diagram loading errors",
                         "Error(s) occurred during diagram loading."
-                        + " If these errors are recoverable then fix errors and then refresh/reopen diagram",
-                        status);
+                            + " If these errors are recoverable then fix errors and then refresh/reopen diagram",
+                        status
+                    );
                 }
             }
         }

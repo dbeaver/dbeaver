@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,17 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
-
 
     @Test
     public void noDropStatementShouldReturnNoneTypeDrop() {
         // given
         var query = new SQLQuery(null, "SELECT * FROM table WHERE id = ?");
         // then
-        assertFalse(query.isDropDangerous());
+        Assertions.assertFalse(query.isDropDangerous());
     }
 
     @Test
@@ -39,7 +35,7 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         // given
         var query = new SQLQuery(null, "UPDATE table SET a = 1 WHERE id = 1");
         // then
-        assertFalse(query.isDeleteUpdateDangerous());
+        Assertions.assertFalse(query.isDeleteUpdateDangerous());
     }
 
     @Test
@@ -47,7 +43,7 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         // given
         var query = new SQLQuery(null, "DELETE FROM table SET a = 1 WHERE id = 1");
         // then
-        assertFalse(query.isDeleteUpdateDangerous());
+        Assertions.assertFalse(query.isDeleteUpdateDangerous());
     }
 
     @Test
@@ -55,7 +51,7 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         // given
         var query = new SQLQuery(null, "UPDATE table SET a = 1");
         // then
-        assertTrue(query.isDeleteUpdateDangerous());
+        Assertions.assertTrue(query.isDeleteUpdateDangerous());
     }
 
     @Test
@@ -63,7 +59,7 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         // given
         var query = new SQLQuery(null, "DELETE FROM table");
         // then
-        assertTrue(query.isDeleteUpdateDangerous());
+        Assertions.assertTrue(query.isDeleteUpdateDangerous());
     }
 
     @Test
@@ -71,7 +67,7 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         // given
         var query = new SQLQuery(null, "DROP table users");
         // then
-        assertTrue(query.isDropDangerous());
+        Assertions.assertTrue(query.isDropDangerous());
     }
 
     @Test
@@ -79,7 +75,7 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
         // given
         var query = new SQLQuery(null, "DROP schema users");
         // then
-        assertTrue(query.isDropDangerous());
+        Assertions.assertTrue(query.isDropDangerous());
     }
 
 }
