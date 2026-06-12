@@ -645,7 +645,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        updateDataSource(dataSource, true);
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
         if (!(dataSource instanceof DataSourceDescriptor descriptor)) {
             return;
         }
@@ -655,7 +661,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             if (!descriptor.isDetached()) {
                 persistDataSourceUpdate(dataSource);
             }
-            descriptor.persistSecretIfNeeded(true, false);
+            descriptor.persistSecretIfNeeded(forcePersistSecrets, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
