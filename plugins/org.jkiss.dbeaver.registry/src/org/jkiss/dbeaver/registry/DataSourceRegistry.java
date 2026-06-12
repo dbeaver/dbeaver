@@ -508,14 +508,18 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @Override
     public void removeNetworkProfile(@NotNull DBWNetworkProfile profile) {
-        try {
-            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-            secretController.setPrivateSecretValue(
-                profile.getSecretKeyId(),
-                null);
-            secretController.flushChanges();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+        if (getProject().isUseSecretStorage()) {
+            try {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
+                secretController.setPrivateSecretValue(
+                    profile.getSecretKeyId(),
+                    null
+                );
+                secretController.flushChanges();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI()
+                    .showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
+            }
         }
         networkProfiles.remove(profile);
     }
@@ -641,7 +645,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        updateDataSource(dataSource, true);
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
         if (!(dataSource instanceof DataSourceDescriptor descriptor)) {
             return;
         }
@@ -651,7 +661,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             if (!descriptor.isDetached()) {
                 persistDataSourceUpdate(dataSource);
             }
-            descriptor.persistSecretIfNeeded(true, false);
+            descriptor.persistSecretIfNeeded(forcePersistSecrets, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.data.value;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 
@@ -22,12 +22,17 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalField;
 
-public class PostgreOffsetEndOfDay extends PostgreEndOfDay {
+public class DBDOffsetEndOfDayValue extends DBDEndOfDayValue {
 
     private final ZoneOffset offset;
 
-    public PostgreOffsetEndOfDay(@NotNull ZoneOffset offset) {
+    public DBDOffsetEndOfDayValue(@NotNull ZoneOffset offset) {
         this.offset = offset;
+    }
+
+    @NotNull
+    public ZoneOffset getOffset() {
+        return this.offset;
     }
 
     @Override
@@ -42,5 +47,11 @@ public class PostgreOffsetEndOfDay extends PostgreEndOfDay {
         } else {
             return super.getLong(field);
         }
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return "24:00:00" + offset;
     }
 }

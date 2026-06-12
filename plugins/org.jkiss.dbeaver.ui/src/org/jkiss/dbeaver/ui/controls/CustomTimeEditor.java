@@ -24,7 +24,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.data.DBDEndOfDayValue;
+import org.jkiss.dbeaver.model.data.DBDZeroDateValue;
+import org.jkiss.dbeaver.model.data.DBDZeroTimestampValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
@@ -36,9 +40,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.JDBCType;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -46,6 +48,9 @@ import java.util.Date;
  * CustomTimeEditor
  */
 public class CustomTimeEditor {
+
+    private static final Log log = Log.getLog(CustomTimeEditor.class);
+
     private final int style;
     private final boolean isPanel;
     private DateTime dateEditor;
@@ -399,12 +404,26 @@ public class CustomTimeEditor {
             return null;
         } else if (value instanceof Date) {
             return (Date) value;
-        } else if (value instanceof Instant) {
-            return Date.from((Instant) value);
-        } else if (value instanceof LocalDateTime) {
-            return Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
+        } else if (value instanceof LocalDate localDate) {
+            return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        } else if (value instanceof Instant instant) {
+            return Date.from(instant);
+        } else if (value instanceof OffsetTime localTime) {
+            return Date.from(localTime.atDate(LocalDate.now()).toInstant());
+        } else if (value instanceof LocalTime localTime) {
+            return Date.from(localTime.atDate(LocalDate.now()).atZone(ZoneId.systemDefault()).toInstant());
+        } else if (value instanceof OffsetDateTime offsetDateTime) {
+            return Date.from(offsetDateTime.toInstant());
+        } else if (value instanceof LocalDateTime localDateTime) {
+            return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        } else if (value instanceof DBDEndOfDayValue) {
+            throw new DBCException("Database-specific end-of-day value cannot be represented with calendar.");
+        } else if (value == DBDZeroTimestampValue.INSTANCE || value == DBDZeroDateValue.INSTANCE) {
+            throw new DBCException("Database-specific zero-date value cannot be represented with calendar.");
         } else {
-            throw new DBCException(value.toString());
+            log.debug("Cannot adapt date and/or time value of the unexpected type " + value.getClass().getName());
+            throw new DBCException("Value of the unsupported type, which cannot be represented with calendar."
+                + "Please report the issue on GitHub https://github.com/dbeaver/dbeaver/issues");
         }
     }
 }
