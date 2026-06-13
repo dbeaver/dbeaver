@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.ext.tibero" name="Tibero" description="Tibero Commands"/>
+        <command id="org.jkiss.dbeaver.ext.tibero.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.tibero"/>
+        <command id="org.jkiss.dbeaver.ext.tibero.code.package.navigate" name="Go to source code" description="Navigate to Tibero package source code" categoryId="org.jkiss.dbeaver.ext.tibero"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.tibero.code.compile" class="org.jkiss.dbeaver.ext.tibero.ui.actions.CompileHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                                <instanceof value="org.jkiss.dbeaver.ext.tibero.model.source.TiberoSourceObject"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.tibero.model.source.TiberoSourceObject"/>
+                        </adapt>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.tibero.code.package.navigate" class="org.jkiss.dbeaver.ext.tibero.ui.actions.PackageNavigateHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedurePackaged"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions_end">
+            <command commandId="org.jkiss.dbeaver.ext.tibero.code.compile">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.tibero.code.package.navigate">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+            id="org.jkiss.dbeaver.ext.tibero.dataSourceWizardView"
+            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+            dataSource="tibero"
+            label="Tibero connection settings"
+            class="org.jkiss.dbeaver.ext.tibero.ui.views.TiberoConnectionPage"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.tibero/icons/tibero_icon.png">
+        </view>
+        <view
+            id="org.jkiss.dbeaver.ext.tibero.dataSourceEditorView"
+            targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+            dataSource="tibero"
+            label="Tibero connection settings"
+            class="org.jkiss.dbeaver.ext.tibero.ui.views.TiberoConnectionPage"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.tibero/icons/tibero_icon.png">
+        </view>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+            id="source.declaration"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoPackageSourceDeclarationEditor"
+            label="%editor.package.declaration.name"
+            description="%editor.package.declaration.description"
+            icon="#sql_text"
+            position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoPackage"/>
+        </editor>
+        <editor
+            id="source.definition"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoPackageSourceDefinitionEditor"
+            label="%editor.package.body.name"
+            description="%editor.package.body.description"
+            icon="#sql_text"
+            position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoPackage"/>
+        </editor>
+        <editor
+            id="source.declaration.read-only"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoObjectDeclarationViewer"
+            label="%editor.index.ddl.name"
+            description="%editor.index.ddl.description"
+            icon="#sql_text"
+            position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoTableIndex"/>
+        </editor>
+        <editor
+            id="source.table.ddl"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoObjectDeclarationViewer"
+            label="%editor.table.ddl.name"
+            description="%editor.table.ddl.description"
+            icon="#sql_text"
+            position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoTable"/>
+        </editor>
+        <editor
+            id="tibero.view.source"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoObjectDeclarationViewer"
+            main="false"
+            label="%editor.view.definition.name"
+            description="%editor.view.definition.description"
+            position="additions_end"
+            icon="#sql_text"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoView"/>
+        </editor>
+        <editor
+            id="tibero.sequence.source"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoObjectDeclarationViewer"
+            main="false"
+            label="%editor.sequence.definition.name"
+            description="%editor.sequence.definition.description"
+            position="additions_end"
+            icon="#sql_text"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoSequence"/>
+        </editor>
+        <editor
+            id="tibero.procedure.source"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoProcedureSourceEditor"
+            label="%editor.procedure.source.name"
+            description="%editor.procedure.source.description"
+            position="additions_middle"
+            icon="#sql_text"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedure"/>
+        </editor>
+        <editor
+            id="tibero.trigger.source"
+            class="org.jkiss.dbeaver.ext.tibero.ui.editors.TiberoProcedureSourceEditor"
+            label="%editor.trigger.source.name"
+            description="%editor.trigger.source.description"
+            position="additions_middle"
+            icon="#sql_text"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+            type="folder"
+            embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoTableTrigger"/>
+            <objectType name="org.jkiss.dbeaver.ext.tibero.model.TiberoSchemaTrigger"/>
+        </editor>
+    </extension>
+
+</plugin>

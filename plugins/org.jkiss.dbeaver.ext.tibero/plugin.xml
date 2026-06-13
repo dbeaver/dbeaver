@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.tibero.TiberoDataSourceProvider"
+            description="Tibero connector"
+            id="tibero"
+            label="Tibero"
+            icon="icons/tibero_icon.png"
+            dialect="tibero">
+            <tree
+                icon="icons/tibero_icon.png"
+                label="%tree.tibero.node.name"
+                path="tibero">
+                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="%tree.schemas.node.tip">
+                    <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                        <icon if="object.system" icon="#schema_system"/>
+                        <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.table_columns.node.tip">
+                                    <items label="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="%tree.constraints.node.tip">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableForeignKey" label="%tree.references.node.name" icon="#references" description="%tree.references.node.tip" virtual="true">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#foreign-key" virtual="true">
+                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.table_indexes.node.tip">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.table_triggers.node.tip">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                        <items label="%tree.trigger_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoView" label="%tree.views.node.name" icon="#folder_view" description="%tree.views.node.tip">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableColumn" label="%tree.columns.node.name" icon="#columns" description="%tree.view_columns.node.tip">
+                                    <items label="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.view_triggers.node.tip">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                        <items label="%tree.trigger_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="true"/>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoSequence" label="%tree.sequences.node.name" icon="#sequences" description="%tree.sequences.node.tip">
+                    <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoPackage" label="%tree.packages.node.name" icon="#packages" description="%tree.packages.node.tip">
+                    <items label="%tree.package.node.name" itemLabel="%tree.package.node.name" path="package" property="packages" icon="#package">
+                        <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                            <handler action="open" command="org.jkiss.dbeaver.ext.tibero.code.package.navigate"/>
+                            <items label="%tree.parameters.node.name" itemLabel="%tree.parameter.node.name" path="parameter" property="parameters" navigable="false" inline="true"/>
+                        </items>
+                        <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                            <handler action="open" command="org.jkiss.dbeaver.ext.tibero.code.package.navigate"/>
+                            <items label="%tree.parameters.node.name" itemLabel="%tree.parameter.node.name" path="parameter" property="parameters" navigable="false" inline="true"/>
+                        </items>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedure" label="%tree.procedures.node.name" icon="#procedures" description="%tree.procedures.node.tip">
+                    <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                        <items label="%tree.parameters.node.name" itemLabel="%tree.parameter.node.name" path="parameter" property="parameters" navigable="false" inline="true"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedure" label="%tree.functions.node.name" icon="#functions" description="%tree.functions.node.tip">
+                            <items label="%tree.function.node.name" itemLabel="%tree.function.node.name" path="function" property="functions" icon="#function">
+                                <items label="%tree.parameters.node.name" itemLabel="%tree.parameter.node.name" path="parameter" property="parameters" navigable="false" inline="true"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="%tree.schema_indexes.node.tip" virtual="true">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
+                                <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoSchemaTrigger" label="%tree.triggers.node.name" icon="#triggers" description="%tree.schema_triggers.node.tip">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.tibero.model.TiberoTableTrigger" label="%tree.table.triggers.node.name" icon="#triggers" description="%tree.table_triggers.virtual.node.tip" virtual="true">
+                            <items label="%tree.trigger.node.name" path="tabletrigger" property="tableTriggers" icon="#trigger" virtual="true">
+                                <items label="%tree.trigger_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="true" virtual="true"/>
+                            </items>
+                        </folder>
+                    </items>
+                </folder>
+            </tree>
+
+            <drivers managable="true">
+                <driver
+                    id="tibero"
+                    label="Tibero"
+                    class="com.tmax.tibero.jdbc.TbDriver"
+                    sampleURL="jdbc:tibero:thin:@{host}:{port}:{database}"
+                    useURL="false"
+                    defaultPort="8629"
+                    defaultDatabase="tibero"
+                    defaultUser="sys"
+                    icon="icons/tibero_icon.png"
+                    iconBig="icons/tibero_icon_big.png"
+                    logoImage="icons/tibero_icon_big.png"
+                    webURL="https://technet.tmax.co.kr/"
+                    propertiesURL="https://technet.tmax.co.kr/"
+                    description="Tibero JDBC driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    categories="sql">
+                    <fileSource
+                        name="Tmax Tibero JDBC Driver"
+                        url="https://technet.tmax.co.kr/"
+                        instructions="Download the Tibero JDBC driver from Tmax and add the JDBC jar file in Driver Manager.">
+                        <file
+                            name="tibero*.jar"
+                            description="Tibero JDBC driver jar containing com.tmax.tibero.jdbc.TbDriver"/>
+                    </fileSource>
+
+                    <parameter name="ping-sql" value="SELECT 1 FROM DUAL"/>
+                    <parameter name="dual-table" value="DUAL"/>
+                </driver>
+                <providerProperties drivers="tibero">
+                    <propertyGroup label="Tibero">
+                        <property id="tibero.show-only-one-schema" label="Show only connected user schema" type="boolean" description="Show only the schema that belongs to the connected user in Database Navigator." defaultValue="false"/>
+                        <property id="tibero.hide-empty-schemas" label="Hide empty schemas" type="boolean" description="Hide schemas that own no objects." defaultValue="false"/>
+                        <property id="tibero.read-column-comments" label="Read column comments" type="boolean" description="Read column comments from Tibero catalog views while loading table columns." defaultValue="false"/>
+                        <property id="tibero.show-schema-table-description" label="Show table descriptions" type="boolean" description="Show table/view comments as navigator object descriptions in schema-level folders." defaultValue="true"/>
+                        <property id="tibero.compile-after-save" label="Compile package after save" type="boolean" description="Compile Tibero package specification/body after saving source in package editor." defaultValue="true"/>
+                        <property id="tibero.recompile-body-on-spec-save" label="Recompile package body when spec saved" type="boolean" description="When the package specification is saved, also issue ALTER PACKAGE ... COMPILE BODY so the body returns to VALID state (PL/SQL auto-invalidates the body on spec change)." defaultValue="true"/>
+                        <property id="tibero.show-schema-index-table-description" label="Show table name description for schema indexes" type="boolean" description="Show the owning table name as navigator object description for indexes in the schema-level Indexes folder." defaultValue="true"/>
+                        <property id="tibero.show-schema-trigger-table-description" label="Show table name description for schema triggers" type="boolean" description="Show the owning table name as navigator object description for triggers in the schema-level Table Triggers folder." defaultValue="true"/>
+                    </propertyGroup>
+                </providerProperties>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect
+            id="tibero"
+            class="org.jkiss.dbeaver.ext.tibero.model.TiberoSQLDialect"
+            label="Tibero"
+            description="Tibero SQL dialect."
+            icon="icons/tibero_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager
+            class="org.jkiss.dbeaver.ext.tibero.edit.TiberoPackageManager"
+            objectType="org.jkiss.dbeaver.ext.tibero.model.TiberoPackage"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.tibero.edit.TiberoProcedureManager"
+            objectType="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedure"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.tibero.edit.TiberoTableTriggerManager"
+            objectType="org.jkiss.dbeaver.ext.tibero.model.TiberoTableTrigger"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.tibero.edit.TiberoSchemaTriggerManager"
+            objectType="org.jkiss.dbeaver.ext.tibero.model.TiberoSchemaTrigger"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNNode" class="org.jkiss.dbeaver.ext.tibero.model.TiberoObjectAdapter">
+            <adapter type="org.jkiss.dbeaver.ext.tibero.model.source.TiberoSourceObject"/>
+            <adapter type="org.jkiss.dbeaver.ext.tibero.model.TiberoProcedurePackaged"/>
+        </factory>
+    </extension>
+
+</plugin>
