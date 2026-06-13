@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTriggerColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class TiberoTriggerColumn extends AbstractTriggerColumn {
 
@@ -31,7 +30,6 @@ public class TiberoTriggerColumn extends AbstractTriggerColumn {
     private final boolean columnList;
 
     public TiberoTriggerColumn(
-        @NotNull DBRProgressMonitor monitor,
         @NotNull TiberoTrigger<?> trigger,
         @NotNull TiberoTableColumn tableColumn,
         @NotNull org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet dbResult

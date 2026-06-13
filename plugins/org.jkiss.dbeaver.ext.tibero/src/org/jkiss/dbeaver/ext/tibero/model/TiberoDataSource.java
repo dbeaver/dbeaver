@@ -826,7 +826,7 @@ public class TiberoDataSource extends JDBCDataSource {
                 return null;
             }
             return new TiberoTriggerColumn[] {
-                new TiberoTriggerColumn(session.getProgressMonitor(), forObject, tableColumn, resultSet)
+                new TiberoTriggerColumn(forObject, tableColumn, resultSet)
             };
         }
 
