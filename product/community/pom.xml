@@ -44,6 +44,36 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--
+                Fixes dbeaver/dbeaver#41310. The Equinox macOS launcher reads the Info.plist Eclipse array
+                before Java starts; when it is absent, it can SIGSEGV while logging to /dev/console.
+                Keep this plugin after materialize-products so the generated app gets an empty array with no extra args.
+            -->
+            <plugin>
+                <groupId>name.abuchen</groupId>
+                <artifactId>fix-info-plist-maven-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>fix-macos-info-plist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>fix-info-plist</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <productId>org.jkiss.dbeaver.core.product</productId>
+                    <projectVersion>${qualifiedVersion}</projectVersion>
+                    <appName>DBeaver.app</appName>
+                    <properties>
+                        <property>
+                            <name>Eclipse</name>
+                            <value><![CDATA[<array/>]]></value>
+                        </property>
+                    </properties>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
