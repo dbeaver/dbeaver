@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -128,8 +127,8 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
                     new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
-                            DBNFileSystems fsRootNode = projectNode.getExtraNode(DBNFileSystems.class);
+                            DBNFileSystems fsRootNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot()
+                                .getExtraNode(DBNFileSystems.class);
                             if (fsRootNode == null) {
                                 DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
                                 return;

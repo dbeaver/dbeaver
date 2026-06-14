@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.event.DBFEvent;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
@@ -44,10 +43,10 @@ public class DBFFileSystemManager implements DBFEventListener {
     private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
     @NotNull
-    private final DBPProject project;
+    private final DBFFileSystemContainer fsContainer;
 
-    public DBFFileSystemManager(@NotNull DBPProject project) {
-        this.project = project;
+    public DBFFileSystemManager(@NotNull DBFFileSystemContainer fsContainer) {
+        this.fsContainer = fsContainer;
         DBFEventManager.getInstance().addListener(this);
     }
 
@@ -65,7 +64,7 @@ public class DBFFileSystemManager implements DBFEventListener {
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
-            for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, project)) {
+            for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, fsContainer)) {
                 fsList.put(dbfFileSystem.getId(), dbfFileSystem);
             }
         }

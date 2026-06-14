@@ -22,7 +22,6 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolderRenderer;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.Field;
 
@@ -50,8 +48,6 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
-    private static final FieldReflection<CTabFolderRenderer, Integer> curveWidth;
-    private static final FieldReflection<CTabFolderRenderer, Integer> curveIndent;
 
     static {
         tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
@@ -60,8 +56,6 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
         hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
-        curveWidth = FieldReflection.of(CTabFolderRenderer.class, "curveWidth");
-        curveIndent = FieldReflection.of(CTabFolderRenderer.class, "curveIndent");
     }
 
     public DBeaverCTabFolderRenderer(@NotNull CTabFolder parent) {
@@ -126,30 +120,12 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Override
     protected Rectangle computeTrim(int part, int state, int x, int y, int width, int height) {
-        try {
-            return super.computeTrim(part, state, x, y, width, height);
-        } finally {
-            resetCurves();
-        }
+        return super.computeTrim(part, state, x, y, width, height);
     }
 
     @Override
     protected Point computeSize(int part, int state, GC gc, int wHint, int hHint) {
-        try {
-            return super.computeSize(part, state, gc, wHint, hHint);
-        } finally {
-            resetCurves();
-        }
-    }
-
-    private void resetCurves() {
-        if (RuntimeUtils.isLinux()) {
-            // Tab rendering is broken on Linux when a different renderer other than org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering is used:
-            // https://github.com/eclipse-platform/eclipse.platform.swt/blob/1a1f0c22b89d8c99ff9ad58c2bbcf82147852e5a/bundles/org.eclipse.swt/Eclipse%20SWT%20Custom%20Widgets/common/org/eclipse/swt/custom/CTabFolderRenderer.java#L1795-L1796
-            // The issue can be fixed by resetting these fields:
-            curveWidth.set(this, 0);
-            curveIndent.set(this, 0);
-        }
+        return super.computeSize(part, state, gc, wHint, hHint);
     }
 
     @Nullable
