@@ -14,5 +14,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.databinding.property,
  org.eclipse.jface.databinding,
  org.jkiss.dbeaver.ui
-Export-Package: org.jkiss.dbeaver.ui.forms
+Export-Package: org.jkiss.dbeaver.ui.forms,
+ org.jkiss.dbeaver.ui.forms.util
 Automatic-Module-Name: org.jkiss.dbeaver.ui.forms

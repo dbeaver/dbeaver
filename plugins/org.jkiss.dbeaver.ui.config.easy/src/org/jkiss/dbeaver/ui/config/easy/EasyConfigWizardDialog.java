@@ -27,12 +27,15 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.util.UIReloadableNLS;
 
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -47,9 +50,9 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
         // We're reusing the help system for language selection
         setHelpAvailable(true);
 
-        language.addChangeListener((l1, l2) -> {
-            Locale.setDefault(Locale.of(l2.getCode()));
-            EasyConfigMessages.reload();
+        language.addChangeListener((ignored, language) -> {
+            setLanguage(language);
+            UIReloadableNLS.reloadMessages();
             getShell().layout(true, true);
         });
     }
@@ -82,6 +85,18 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
         if (cancelButton != null) {
             UIUtils.setControlVisible(cancelButton, false);
         }
+
+        bindButtonText(IDialogConstants.BACK_ID, EasyConfigMessages.wizard_buttons_back);
+        bindButtonText(IDialogConstants.NEXT_ID, EasyConfigMessages.wizard_buttons_next);
+        bindButtonText(IDialogConstants.FINISH_ID, EasyConfigMessages.wizard_buttons_finish);
+    }
+
+    private void bindButtonText(int id, @NotNull UIObservable<String> text) {
+        var backButton = getButton(id);
+        if (backButton != null) {
+            text.addChangeListener((s, s2) -> backButton.setText(s2));
+            backButton.setText(text.get());
+        }
     }
 
     @NotNull
@@ -91,5 +106,12 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
             language,
             DBPPlatformLanguage::getLabel
         ));
+    }
+
+    private static void setLanguage(@NotNull DBPPlatformLanguage language) {
+        if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
+            languageManager.setPlatformLanguage(language);
+        }
+        Locale.setDefault(Locale.of(language.getCode()));
     }
 }

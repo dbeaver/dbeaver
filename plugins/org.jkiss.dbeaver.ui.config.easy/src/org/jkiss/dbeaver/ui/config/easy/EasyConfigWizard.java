@@ -41,7 +41,7 @@ public final class EasyConfigWizard extends Wizard {
                 log.error("Error creating easy config page " + descriptor.getId(), e);
                 continue;
             }
-            if (page.isPageApplicable()) {
+            if (page.isPageApplicable() || true) {
                 addPage(page);
                 page.loadSettings();
             }

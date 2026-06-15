@@ -55,4 +55,10 @@ record UIObservableImpl<T>(@NotNull IObservableValue<T> delegate, @NotNull Class
         //  validating anything.
         delegate.addValueChangeListener(event -> listener.accept(event.diff.getOldValue(), event.diff.getNewValue()));
     }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return String.format("UIObservableImpl[value=%s, type=%s]", get(), type.getName());
+    }
 }

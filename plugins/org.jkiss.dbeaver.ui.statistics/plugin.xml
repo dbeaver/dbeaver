@@ -20,7 +20,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.easyConfig">
-        <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.statistics.easyConfig.pages.EasyConfigDataCollectionPage"/>
+        <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.statistics.easyConfig.EasyConfigDataCollectionPage"/>
     </extension>
 
 </plugin>

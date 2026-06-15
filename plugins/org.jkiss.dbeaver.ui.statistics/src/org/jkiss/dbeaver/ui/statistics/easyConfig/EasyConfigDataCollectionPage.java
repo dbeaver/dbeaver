@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.statistics.easyConfig.pages;
+package org.jkiss.dbeaver.ui.statistics.easyConfig;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
 import org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWizardPage;
 import org.jkiss.dbeaver.ui.forms.*;
 import org.jkiss.dbeaver.ui.statistics.UIStatisticsActivator;

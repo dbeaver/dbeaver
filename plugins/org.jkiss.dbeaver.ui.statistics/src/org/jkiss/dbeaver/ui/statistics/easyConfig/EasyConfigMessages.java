@@ -14,28 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.config.easy.nls;
+package org.jkiss.dbeaver.ui.statistics.easyConfig;
 
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.util.UIReloadableNLS;
 
 public final class EasyConfigMessages extends UIReloadableNLS {
-    public static UIObservable<String> welcome_title;
-    public static UIObservable<String> welcome_description;
-    public static UIObservable<String> welcome_body_text;
-
-    public static UIObservable<String> appearance_title;
-    public static UIObservable<String> appearance_description;
-
-    public static UIObservable<String> features_title;
-    public static UIObservable<String> features_description;
-
-    public static UIObservable<String> final_steps_title;
-    public static UIObservable<String> final_steps_description;
-
-    public static UIObservable<String> wizard_buttons_back;
-    public static UIObservable<String> wizard_buttons_next;
-    public static UIObservable<String> wizard_buttons_finish;
+    public static UIObservable<String> data_collection_title;
+    public static UIObservable<String> data_collection_description;
+    public static UIObservable<String> data_collection_agreement_text;
+    public static UIObservable<String> data_collection_send_usage_statistics;
 
     static {
         UIReloadableNLS.initializeMessages(EasyConfigMessages.class.getName(), EasyConfigMessages.class);
