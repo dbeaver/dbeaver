@@ -494,7 +494,7 @@ public class FindReplaceOverlay {
         }
         this.storeOverlaySettings();
 
-        this. findReplaceLogic.activate(SearchOptions.GLOBAL);
+        this.findReplaceLogic.activate(SearchOptions.GLOBAL);
         this.unbindListeners();
 
         UIUtils.asyncExec(() -> this.containerControl.setVisible(false));
@@ -888,6 +888,11 @@ public class FindReplaceOverlay {
         if (CommonUtils.isNotEmpty(text)) { // don't try to find <empty string>; it works but selection behaves really weird, so don't
             this.findReplaceLogic.setFindString(text);
             this.evaluateStatusAfterFind();
+        } else {
+            if (this.findReplaceLogic.getTarget() instanceof IFindReplaceTargetExtension e) {
+                e.endSession();
+                e.beginSession();
+            }
         }
     }
 
