@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.forms.util.UIReloadableNLS;
 
 import java.util.Locale;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class EasyConfigWizardDialog extends ActiveWizardDialog {
@@ -92,10 +93,12 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     }
 
     private void bindButtonText(int id, @NotNull UIObservable<String> text) {
-        var backButton = getButton(id);
-        if (backButton != null) {
-            text.addChangeListener((s, s2) -> backButton.setText(s2));
-            backButton.setText(text.get());
+        var button = getButton(id);
+        if (button != null) {
+            BiConsumer<String, String> listener = (s, s2) -> button.setText(s2);
+            button.setText(text.get());
+            button.addDisposeListener(e -> text.removeChangeListener(listener));
+            text.addChangeListener(listener);
         }
     }
 
