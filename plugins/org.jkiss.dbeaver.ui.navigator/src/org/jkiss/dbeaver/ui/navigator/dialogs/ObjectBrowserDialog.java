@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
@@ -95,11 +96,11 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     }
 
     @Override
-    protected ViewerFilter createViewerFilter() {
+    protected ViewerFilter createViewerFilter(DatabaseNavigatorTree navigatorTree) {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (isShowConnected()) {
+                if (navigatorTree.isFilterShowConnected()) {
                     if (element instanceof DBNDataSource) {
                         return ((DBNDataSource) element).getDataSource() != null;
                     }

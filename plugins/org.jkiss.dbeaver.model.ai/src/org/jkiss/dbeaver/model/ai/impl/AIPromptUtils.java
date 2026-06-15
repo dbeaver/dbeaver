@@ -51,6 +51,7 @@ public class AIPromptUtils {
             .sum();
     }
 
+    @NotNull
     public static String[] describeDataSourceInfo(@Nullable DBSLogicalDataSource dataSource) {
         List<String> lines = new ArrayList<>();
 
@@ -92,10 +93,18 @@ public class AIPromptUtils {
         return lines.toArray(String[]::new);
     }
 
+    @NotNull
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
+        return createGenerateQueryInstructions(dataSource, true);
+    }
+
+    @NotNull
+    public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource, boolean isInAIChat) {
         List<String> instructions = new ArrayList<>();
         instructions.add("By default generate SQL queries according to user requests. Also answer to general database related questions.");
-        instructions.add("If user wants to see table data then show it in markdown table format by default.");
+        if (isInAIChat) {
+            instructions.add("If user wants to see table data then show it in markdown table format by default.");
+        }
         instructions.add("Stick strictly to SQL dialect syntax.");
         instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
@@ -113,6 +122,7 @@ public class AIPromptUtils {
         return instructions.toArray(new String[0]);
     }
 
+    @NotNull
     public static String[] createGeneralRulesInstructions() {
         List<String> instructions = new ArrayList<>();
         instructions.add("You are the DBeaver AI assistant.");
@@ -129,7 +139,7 @@ public class AIPromptUtils {
     }
 
     @Nullable
-    private static String identifiersQuoteRule(SQLDialect dialect) {
+    private static String identifiersQuoteRule(@NotNull SQLDialect dialect) {
         String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
         if (identifierQuoteStrings == null || identifierQuoteStrings.length == 0) {
             return null;
@@ -138,7 +148,8 @@ public class AIPromptUtils {
         return "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers if needed.";
     }
 
-    private static String stringsQuoteRule(SQLDialect dialect) {
+    @Nullable
+    private static String stringsQuoteRule(@NotNull SQLDialect dialect) {
         String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
         if (stringQuoteStrings.length == 0) {
             return null;

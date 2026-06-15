@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.erd;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -45,35 +46,33 @@ public class DiagramObjectCollector {
     private boolean showViews;
     private boolean showPartitions;
 
-    public DiagramObjectCollector(ERDDiagram diagram)
-    {
+    public DiagramObjectCollector(@NotNull ERDDiagram diagram) {
         this.diagram = diagram;
-    }
-
-    public static Collection<DBSEntity> collectTables(
-        DBRProgressMonitor monitor,
-        Collection<? extends DBSObject> roots,
-        DiagramCollectSettings settings,
-        boolean forceShowViews)
-        throws DBException
-    {
-        Set<DBSEntity> tables = new LinkedHashSet<>();
-        collectTables(monitor, roots, tables, settings, forceShowViews);
-        return tables;
     }
 
     public void setShowViews(boolean showViews) {
         this.showViews = showViews;
     }
 
+    @NotNull
+    public static Collection<DBSEntity> collectTables(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<? extends DBSObject> roots,
+        @NotNull DiagramCollectSettings settings,
+        boolean forceShowViews
+    ) throws DBException {
+        Set<DBSEntity> tables = new LinkedHashSet<>();
+        collectTables(monitor, roots, tables, settings, forceShowViews);
+        return tables;
+    }
+
     private static void collectTables(
-        DBRProgressMonitor monitor,
-        Collection<? extends DBSObject> roots,
-        Set<DBSEntity> tables,
-        DiagramCollectSettings settings,
-        boolean forceShowViews)
-        throws DBException
-    {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<? extends DBSObject> roots,
+        @NotNull Set<DBSEntity> tables,
+        @NotNull DiagramCollectSettings settings,
+        boolean forceShowViews
+    ) throws DBException {
         boolean showPartitions = settings.isShowPartitions();
         boolean showViews = settings.isShowViews();
 
@@ -82,32 +81,32 @@ public class DiagramObjectCollector {
                 break;
             }
             root = DBUtils.getPublicObject(root);
-            if (root instanceof DBSAlias) {
-                root = ((DBSAlias) root).getTargetObject(monitor);
+            if (root instanceof DBSAlias rootAlias) {
+                root = rootAlias.getTargetObject(monitor);
             }
 
-            if (root instanceof DBSFolder) {
-                collectTables(monitor, ((DBSFolder) root).getChildrenObjects(monitor), tables, settings, false);
-            } else if (root instanceof DBSEntity) {
-                if ((root instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView((DBSEntity) root) && !(showViews || forceShowViews))) {
+            if (root instanceof DBSFolder rootFolder) {
+                collectTables(monitor, rootFolder.getChildrenObjects(monitor), tables, settings, false);
+            } else if (root instanceof DBSEntity rootEntity) {
+                if ((root instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView(rootEntity) && !(showViews
+                    || forceShowViews))) {
                     continue;
                 }
-                tables.add((DBSEntity) root);
+                tables.add(rootEntity);
             }
-            if (root instanceof DBSObjectContainer) {
-                collectTables(monitor, (DBSObjectContainer) root, tables, showViews, showPartitions);
+            if (root instanceof DBSObjectContainer rootObjectContainer) {
+                collectTables(monitor, rootObjectContainer, tables, showViews, showPartitions);
             }
         }
     }
 
     private static void collectTables(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        Set<DBSEntity> tables,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull Set<DBSEntity> tables,
         boolean showViews,
-        boolean showPartitions)
-        throws DBException
-    {
+        boolean showPartitions
+    ) throws DBException {
         if (monitor.isCanceled()) {
             return;
         }
@@ -123,30 +122,28 @@ public class DiagramObjectCollector {
                 if (objectFilter != null && !objectFilter.matches(entity.getName())) {
                     continue;
                 }
-                if (entity instanceof DBSEntity) {
-                    DBSEntity entity1 = (DBSEntity) entity;
-                    if ((entity instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView(entity1) && !showViews)) {
+                if (entity instanceof DBSEntity dbsEntity) {
+                    if ((entity instanceof DBSTablePartition && !showPartitions) || (DBUtils.isView(dbsEntity) && !showViews)) {
                         continue;
                     }
 
-                    if (ERDUtils.skipSystemEntity(entity1)) {
+                    if (ERDUtils.skipSystemEntity(dbsEntity)) {
                         continue;
                     }
 
-                    tables.add(entity1);
-                } else if (entity instanceof DBSObjectContainer) {
-                    collectTables(monitor, (DBSObjectContainer) entity, tables, showViews, showPartitions);
+                    tables.add(dbsEntity);
+                } else if (entity instanceof DBSObjectContainer objectContainer) {
+                    collectTables(monitor, objectContainer, tables, showViews, showPartitions);
                 }
             }
         }
     }
 
     public void generateDiagramObjects(
-        DBRProgressMonitor monitor,
-        Collection<? extends DBSObject> roots,
-        DiagramCollectSettings settings)
-        throws DBException
-    {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Collection<? extends DBSObject> roots,
+        @NotNull DiagramCollectSettings settings
+    ) throws DBException {
         Collection<DBSEntity> tables = collectTables(monitor, roots, settings, showViews);
         for (DBSEntity table : tables) {
             if (DBUtils.isHiddenObject(table)) {
@@ -162,8 +159,7 @@ public class DiagramObjectCollector {
         }
     }
 
-    private void addDiagramEntity(DBRProgressMonitor monitor, DBSEntity table)
-    {
+    private void addDiagramEntity(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table) {
         if (diagram.containsTable(table) && !diagram.getContentProvider().allowEntityDuplicates()) {
             // Avoid duplicates
             return;
@@ -174,7 +170,7 @@ public class DiagramObjectCollector {
         }
     }
 
-    private boolean aliasExist(String alias) {
+    private boolean aliasExist(@Nullable String alias) {
         for (ERDEntity entity : erdEntities) {
             if (CommonUtils.equalObjects(entity.getAlias(), alias)) {
                 return true;
@@ -183,8 +179,8 @@ public class DiagramObjectCollector {
         return false;
     }
 
-    public List<ERDEntity> getDiagramEntities()
-    {
+    @NotNull
+    public List<ERDEntity> getDiagramEntities() {
         return erdEntities;
     }
 
@@ -192,7 +188,7 @@ public class DiagramObjectCollector {
     public static List<ERDEntity> generateEntityList(
         @NotNull DBRProgressMonitor monitor,
         @NotNull ERDDiagram diagram,
-        @NotNull DBPProject diagramProject,
+        @Nullable DBPProject diagramProject,
         @NotNull Collection<DBPNamedObject> objects,
         @NotNull DiagramCollectSettings settings,
         boolean forceShowViews,
@@ -203,10 +199,10 @@ public class DiagramObjectCollector {
             if (!(object instanceof DBSObject)) {
                 continue;
             }
-            if (object instanceof DBPDataSourceContainer && !((DBPDataSourceContainer) object).isConnected()) {
+            if (object instanceof DBPDataSourceContainer container && !container.isConnected()) {
                 monitor.subTask("Connect to '" + object.getName() + "'");
                 try {
-                    ((DBPDataSourceContainer) object).connect(monitor, true, true);
+                    container.connect(monitor, true, true);
                 } catch (DBException e) {
                     log.debug(e);
                     diagram.addErrorMessage("Can't connect to '" + object.getName() + "': " + e.getMessage());
@@ -229,7 +225,7 @@ public class DiagramObjectCollector {
                 }
                 diagram.addErrorMessage(
                     "Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project.getName()
-                        + "' (current project is '" + diagramProject.getName() + "')");
+                        + (diagramProject != null ? "' (current project is '" + diagramProject.getName() + "')" : ""));
                 roots.removeAll(values);
             }
         }
@@ -243,8 +239,11 @@ public class DiagramObjectCollector {
         collector.setShowViews(forceShowViews);
 
         try {
-            DBExecUtils.tryExecuteRecover(monitor, roots.getFirst().getDataSource(), monitor1 ->
-                collector.generateDiagramObjects(monitor1, roots, settings));
+            DBExecUtils.tryExecuteRecover(
+                monitor,
+                roots.getFirst().getDataSource(),
+                monitor1 -> collector.generateDiagramObjects(monitor1, roots, settings)
+            );
         } catch (Exception e) {
             log.error(e);
         }
