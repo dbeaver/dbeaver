@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,13 +139,6 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 DBIcon.OVER_FOLDER);
         }
 */
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return makeLocalFolderItemPath(folder);
     }
 
     @Nullable
@@ -303,13 +296,8 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @NotNull
-    public static String makeLocalFolderItemPath(DBPDataSourceFolder folder) {
-        return makeLocalFolderItemPath(folder.getDataSourceRegistry().getProject().getId(), folder.getFolderPath());
-    }
-
-    @NotNull
     public static String makeLocalFolderItemPath(@NotNull String projectId, @NotNull String folderPath) {
-        return NodePathType.folder.getPrefix() + projectId + "/" + folderPath;
+        return DBNNode.NODE_URI_PREFIX + projectId + "/" + DBNProjectDatabases.NODE_TYPE_DATASOURCES + "/" + folderPath;
     }
 
     @NotNull

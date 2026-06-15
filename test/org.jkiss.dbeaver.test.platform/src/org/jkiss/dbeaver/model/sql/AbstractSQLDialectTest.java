@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AbstractSQLDialectTest extends DBeaverUnitTest {
 
@@ -27,17 +27,17 @@ public class AbstractSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void getQuotedStringPlainValueTest() {
-        Assert.assertEquals("'hello'", dialect.getQuotedString("hello"));
+        Assertions.assertEquals("'hello'", dialect.getQuotedString("hello"));
     }
 
     @Test
     public void getQuotedStringEmbeddedQuotesTest() {
-        Assert.assertEquals("'it''s'", dialect.getQuotedString("it's"));
+        Assertions.assertEquals("'it''s'", dialect.getQuotedString("it's"));
     }
 
     @Test
     public void getQuotedStringMultipleQuotedFragmentsTest() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "'''03'',''04'',''05'',''10'',''11'''",
             dialect.getQuotedString("'03','04','05','10','11'")
         );
@@ -45,7 +45,7 @@ public class AbstractSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void getQuotedStringValueLooksLikeQuotedLiteralTest() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "'''kkk''''pp'''",
             dialect.getQuotedString("'kkk''pp'")
         );
@@ -53,13 +53,13 @@ public class AbstractSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void getQuotedStringConsecutiveQuotesTest() {
-        Assert.assertEquals("'kkk''''''pp'", dialect.getQuotedString("kkk'''pp"));
-        Assert.assertEquals("'kkk''''pp'", dialect.getQuotedString("kkk''pp"));
+        Assertions.assertEquals("'kkk''''''pp'", dialect.getQuotedString("kkk'''pp"));
+        Assertions.assertEquals("'kkk''''pp'", dialect.getQuotedString("kkk''pp"));
     }
 
     @Test
     public void getQuotedStringNestedQuotedLiteralLookingValueTest() {
-        Assert.assertEquals(
+        Assertions.assertEquals(
             "'''kkk''''''''pp'''",
             dialect.getQuotedString("'kkk''''pp'")
         );
