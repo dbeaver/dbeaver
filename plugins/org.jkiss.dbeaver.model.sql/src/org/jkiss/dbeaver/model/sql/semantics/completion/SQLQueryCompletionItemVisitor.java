@@ -35,6 +35,9 @@ public interface SQLQueryCompletionItemVisitor<R> {
     R visitColumnName(@NotNull SQLColumnNameCompletionItem columnName);
 
     @Nullable
+    R visitGlobalPseudoColumn(@NotNull SQLGlobalPseudoColumnCompletionItem pseudoColumn);
+
+    @Nullable
     R visitTableName(@NotNull SQLTableNameCompletionItem tableName);
 
     @Nullable
