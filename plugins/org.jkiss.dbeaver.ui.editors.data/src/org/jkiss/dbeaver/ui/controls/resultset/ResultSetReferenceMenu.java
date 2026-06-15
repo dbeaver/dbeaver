@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.EmptyAction;
@@ -44,7 +46,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -71,67 +72,11 @@ public class ResultSetReferenceMenu
 
         DBRRunnableWithProgress refCollector = monitor -> {
             try {
-                monitor.beginTask("Read references", 1);
-                Collection<? extends DBSEntityAssociation> refs = DBVUtils.getAllReferences(monitor, singleSource);
-                {
-                    monitor.beginTask("Check references", refs.size());
-                    for (DBSEntityAssociation ref : refs) {
-                        if (monitor.isCanceled()) {
-                            return;
-                        }
-                        monitor.subTask("Check references " + ref.getName());
-                        boolean allMatch = true;
-                        DBSEntityConstraint ownConstraint = ref.getReferencedConstraint();
-                        if (ownConstraint instanceof DBSEntityReferrer) {
-                            List<? extends DBSEntityAttributeRef> attributeReferences = ((DBSEntityReferrer) ownConstraint).getAttributeReferences(monitor);
-                            if (attributeReferences != null) {
-                                for (DBSEntityAttributeRef ownAttrRef : attributeReferences) {
-                                    if (viewer.getModel().getAttributeBinding(ownAttrRef.getAttribute()) == null) {
-                                        // Attribute is not in the list - skip this association
-                                        allMatch = false;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                allMatch = false;
-                            }
-                        }
-                        if (allMatch) {
-                            references.add(ref);
-                        }
-                        monitor.worked(1);
-                    }
-                }
-                monitor.done();
+                references.addAll(DBStructUtils.readReferences(monitor, singleSource, attr -> viewer.getModel().getAttributeBinding(attr)));
                 if (monitor.isCanceled()) {
                     return;
                 }
-                monitor.beginTask("Read associations", 1);
-                Collection<? extends DBSEntityAssociation> fks = singleSource.getAssociations(monitor);
-                if (fks != null) {
-                    monitor.beginTask("Check associations", fks.size());
-                    for (DBSEntityAssociation fk : fks) {
-                        if (monitor.isCanceled()) {
-                            return;
-                        }
-                        monitor.subTask("Check association " + fk.getName());
-                        boolean allMatch = true;
-                        if (fk instanceof DBSEntityReferrer && fk.getReferencedConstraint() != null) {
-                            for (DBSEntityAttributeRef ownAttr : ((DBSEntityReferrer) fk).getAttributeReferences(monitor)) {
-                                if (viewer.getModel().getAttributeBinding(ownAttr.getAttribute()) == null) {
-                                    // Attribute is not in the list - skip this association
-                                    allMatch = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (allMatch) {
-                            associations.add(fk);
-                        }
-                        monitor.worked(1);
-                    }
-                }
-                monitor.done();
+                associations.addAll(DBStructUtils.readAssociations(monitor, singleSource, attr -> viewer.getModel().getAttributeBinding(attr)));
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }

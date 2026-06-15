@@ -90,7 +90,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     public void dispose() {
     }
 
-    protected void applyThemeSettings(ITheme currentTheme) {
+    protected void applyThemeSettings(@NotNull ITheme currentTheme) {
 
     }
 
@@ -286,6 +286,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         selectionChangedListenerList.remove(listener);
     }
 
+    @NotNull
     @Override
     public ISelection getSelection() {
         return EMPTY_SELECTION;

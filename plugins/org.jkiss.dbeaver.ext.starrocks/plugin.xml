@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.starrocks.StarRocksDataSourceProvider"
+                description="StarRocks Database"
+                id="starrocks"
+                parent="generic"
+                dialect="starrocks"
+                label="StarRocks"
+                icon="icons/starrocks_icon.svg">
+
+            <treeInjection path="generic/catalog/schema" after="view">
+                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksMaterializedView" label="Materialized Views" icon="#folder_view" description="Materialized views in database" visibleIf="object.catalog.isInternal()">
+                    <items label="Materialized View" path="materializedView" property="materializedViews" icon="#view">
+                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Materialized view columns">
+                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
+                        </folder>
+                    </items>
+                </folder>
+            </treeInjection>
+
+            <drivers managable="true">
+                <driver
+                        id="starrocks"
+                        label="StarRocks"
+                        icon="icons/starrocks_icon.svg"
+                        iconBig="icons/starrocks_icon_big.svg"
+                        class="com.starrocks.cj.jdbc.Driver"
+                        sampleURL="jdbc:starrocks://{host}[:{port}]/[{database}]"
+                        defaultPort="9030"
+                        defaultUser="root"
+                        webURL="https://docs.starrocks.io/"
+                        description="StarRocks JDBC driver"
+                        categories="sql">
+                    <replace provider="mysql" driver="starRocks"/>
+                    <file type="jar" path="maven:/com.starrocks:starrocks-connector-j:RELEASE[1.1.1]"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <parameter name="supports-partitions" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-triggers" value="false"/>
+                    <parameter name="supports-events" value="false"/>
+                    <parameter name="supports-users" value="false"/>
+                    <parameter name="supports-charsets" value="false"/>
+                    <parameter name="supports-collations" value="false"/>
+                    <parameter name="supportsClients" value="false"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="starrocks" parent="generic" class="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDialect"
+                 label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.svg">
+            <keywords value="CATALOG,CATALOGS,MATERIALIZED,REFRESH,ASYNC,DEFERRED,IMMEDIATE,BUCKETS,DISTRIBUTED,PROPERTIES,BROKER,ROUTINE,LOAD,STREAM,PAUSE,RESUME,STOP,SUBMIT,TASK,PIPE,PIPES,REPOSITORY,SNAPSHOT,RESTORE,ADMIN"/>
+            <functions value="ARRAY_AGG,ARRAY_CONCAT,ARRAY_CONTAINS,ARRAY_LENGTH,ARRAY_POSITION,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT"/>
+            <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT"/>
+        </dialect>
+    </extension>
+</plugin>

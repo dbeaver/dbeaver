@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValue;
 
 /**
@@ -35,6 +36,7 @@ public class OracleObjectValue implements DBDValue{
         return value;
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return value;

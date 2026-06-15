@@ -631,6 +631,24 @@ public final class DBUtils {
         @NotNull DBPProject project,
         @NotNull String objectId
     ) throws DBException {
+        return findObjectById(monitor, project, objectId, false);
+    }
+
+    /**
+     * Find object by unique ID.
+     * Note: this function searches only inside DBSObjectContainer objects.
+     * Usually it works only for entities and entity containers (schemas, catalogs).
+     *
+     * @param tryRefreshContainers if {@code true}, then if object is not found in container,
+     *                             it will try to refresh container and search again.
+     */
+    @Nullable
+    public static DBSObject findObjectById(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPProject project,
+        @NotNull String objectId,
+        boolean tryRefreshContainers
+    ) throws DBException {
         String[] names = objectId.split("/");
         DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
         if (dataSourceContainer == null) {
@@ -658,6 +676,11 @@ public final class DBUtils {
             for (int i = 1; i < names.length - 1; i++) {
                 String name = names[i];
                 DBSObject child = sc.getChild(monitor, name);
+                if (child == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
+                    // Try refreshing, maybe object was not cached
+                    ro.refreshObject(monitor);
+                    child = sc.getChild(monitor, name);
+                }
                 if (child == null) {
                     log.debug("Can't find child container " + name + " in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                     return null;
@@ -677,6 +700,11 @@ public final class DBUtils {
         String objectName = names[names.length - 1];
         if (sc != null) {
             DBSObject object = sc.getChild(monitor, objectName);
+            if (object == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
+                // Try refreshing, maybe object was not cached
+                ro.refreshObject(monitor);
+                object = sc.getChild(monitor, objectName);
+            }
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                 throw new DBException("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
@@ -814,7 +842,13 @@ public final class DBUtils {
             return null;
         }
 
-        Object value = row.getValues()[rootBinding.getOrdinalPosition()];
+        Object[] values = row.getValues();
+        int attrIndex = rootBinding.getOrdinalPosition();
+        if (attrIndex >= values.length) {
+            // Shouldn't be here
+            return null;
+        }
+        Object value = values[attrIndex];
         int i = 1;
         while (value != null && i < valuePath.pathItems().size()) {
             value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
@@ -2764,6 +2798,15 @@ public final class DBUtils {
             items.add(token);
         }
         return items;
+    }
+
+    @Nullable
+    public static DBPDataSource getObjectDataSource(@NotNull Object object) {
+        return switch (object) {
+            case DBSObject o -> o.getDataSource();
+            case DBPContextProvider c -> c.getExecutionContext() == null ? null : c.getExecutionContext().getDataSource();
+            default -> null;
+        };
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,6 +153,18 @@ public class DashboardConfiguration implements DBDashboard {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public DashboardItemViewSettings updateDashBoardItemConfiguration(@NotNull DashboardItemConfiguration newItem, int index) {
+        try {
+            DashboardItemViewSettings itemViewConfiguration = new DashboardItemViewSettings(this, newItem, index);
+            items.set(index, itemViewConfiguration);
+            return itemViewConfiguration;
+        } catch (DBException e) {
+            log.error(e);
+            return null;
+        }
     }
 
     public DashboardItemViewSettings readDashboardItemConfiguration(DashboardItemConfiguration item) {

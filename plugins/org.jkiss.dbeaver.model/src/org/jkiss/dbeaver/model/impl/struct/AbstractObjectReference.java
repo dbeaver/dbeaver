@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,12 +37,24 @@ public abstract class AbstractObjectReference<CONTAINER extends DBSObject> imple
     private final DBSObjectType type;
     private final String extraInfo;
 
-    protected AbstractObjectReference(String name, CONTAINER container, String description, Class<?> objectClass, DBSObjectType type) {
+    protected AbstractObjectReference(
+        String name,
+        CONTAINER container,
+        String description,
+        Class<?> objectClass,
+        DBSObjectType type
+    ) {
         this(name, container, description, objectClass, type, null);
     }
 
-    protected AbstractObjectReference(String name, CONTAINER container, String description,
-                                      Class<?> objectClass, DBSObjectType type, String extraInfo) {
+    protected AbstractObjectReference(
+        String name,
+        CONTAINER container,
+        String description,
+        Class<?> objectClass,
+        DBSObjectType type,
+        String extraInfo
+    ) {
         this.name = name;
         this.container = container;
         this.description = description;
@@ -57,31 +70,33 @@ public abstract class AbstractObjectReference<CONTAINER extends DBSObject> imple
         return name;
     }
 
+    @NotNull
     public CONTAINER getContainer() {
         return container;
     }
 
+    @NotNull
     @Override
     public Class<?> getObjectClass() {
         return objectClass;
     }
 
+    @Nullable
     @Override
     public String getObjectDescription()
     {
         return description;
     }
 
+    @NotNull
     @Override
-    public DBSObjectType getObjectType()
-    {
+    public DBSObjectType getObjectType() {
         return type;
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (extraInfo != null) {
             return extraInfo;
         }

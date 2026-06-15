@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -24,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -50,12 +52,13 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     private boolean dirty;
     private IValueController valueController;
 
-    public DateTimeStandaloneEditor(IValueController valueController) {
+    public DateTimeStandaloneEditor(@NotNull IValueController valueController) {
         super(valueController);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         valueController = getValueController();
         Object value = valueController.getValue();
         Composite dialogGroup = super.createDialogArea(parent);
@@ -99,7 +102,11 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     @Override
     public Object extractEditorValue() throws DBException {
-        try (DBCSession session = getValueController().getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
+        try (DBCSession session = getValueController().getExecutionContext().openSession(
+            new VoidProgressMonitor(),
+            DBCExecutionPurpose.UTIL,
+            "Make datetime value from editor"
+        )) {
             if (!isCalendarMode()) {
                 final String strValue = timeEditor.getValueAsString();
                 return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false, true);
@@ -119,7 +126,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             DBWorkbench.getPlatformUI()
                 .showWarningMessageBox(
                     ResultSetMessages.dialog_value_view_error_parsing_date_title,
-                    ResultSetMessages.dialog_value_view_error_parsing_date_message
+                    NLS.bind(ResultSetMessages.dialog_value_view_error_parsing_date_message, e.getMessage())
                 );
         }
     }
