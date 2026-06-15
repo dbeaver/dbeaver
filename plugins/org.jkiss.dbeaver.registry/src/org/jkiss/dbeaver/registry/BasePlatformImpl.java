@@ -530,7 +530,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 jsonWriter.flush();
                 String cfg = strWriter.toString();
                 DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(CONFIG_FILE_NAME, cfg);
-            } catch (IOException | DBException e) {
+                if (!DBWorkbench.isDistributed()) {
+                    for (DBWNetworkProfile profile : profiles) {
+                        profile.persistSecrets(DBSSecretController.getGlobalSecretController());
+                    }
+                }
+             } catch (IOException | DBException e) {
                 log.error("Error loading global network profiles", e);
             }
         }
