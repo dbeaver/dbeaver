@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,18 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemContainer;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeWithCache;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
@@ -44,7 +49,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
 
     private DBNFileSystem[] children;
 
-    public DBNFileSystems(DBNProject parentNode) {
+    public DBNFileSystems(DBNNode parentNode) {
         super(parentNode);
     }
 
@@ -57,13 +62,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     @NotNull
     @Override
     public String getNodeType() {
-        return NodePathType.dbvfs.name();
+        return DBFUtils.DBVFS_NODE_TYPE;
     }
 
     @NotNull
     @Override
     public String getNodeId() {
-        return NodePathType.dbvfs.name();
+        return DBFUtils.DBVFS_NODE_TYPE;
     }
 
     @NotNull
@@ -82,7 +87,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     @NotNull
     @Override
     public String getName() {
-        return NodePathType.dbvfs.name();
+        return DBFUtils.DBVFS_NODE_TYPE;
     }
 
     @Nullable
@@ -157,11 +162,16 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     ) throws DBException {
         monitor.beginTask("Read available file systems", 1);
         List<DBNFileSystem> result = new ArrayList<>();
-        var project = getOwnerProject();
-        if (project == null) {
-            return new DBNFileSystem[0];
+        DBFFileSystemContainer fsContainer = getOwnerProjectOrNull();
+        if (fsContainer == null) {
+            // Root - use workspace
+            fsContainer = getModel().getModelWorkspace();
+            if (fsContainer == null) {
+                // Global workspace
+                fsContainer = DBWorkbench.getPlatform().getWorkspace();
+            }
         }
-        DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
+        DBFFileSystemManager fileSystemManager = fsContainer.getFileSystemManager();
 
         for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems(monitor)) {
             DBNFileSystem newChild = null;
@@ -272,18 +282,6 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return NodePathType.ext.getPrefix() + ((DBNProject) getParentNode()).getProject().getId() + "/" + getName();
-    }
-
-    @Override
-    public boolean supportsRename() {
-        return false;
-    }
-
     @Override
     public boolean isHidden() {
         return true;
@@ -292,7 +290,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     @NotNull
     @Override
     public String toString() {
-        return "FileSystems(" + getOwnerProject().getName()  +")";
+        return "FileSystems(" + getParentNode()  +")";
     }
 
     @Override

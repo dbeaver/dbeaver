@@ -57,7 +57,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * General non-ui utility methods
@@ -76,7 +75,8 @@ public class GeneralUtils {
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
     public static final String DEFAULT_TIME_PATTERN = "HHmmss";
-    public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
+    public static final char[] RESOURCE_NAME_FORBIDDEN_SYMBOLS = { '/', '\\', ':', '"', '\'', '<', '>', '|', '?', '*' };
+    //public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS = "/\\:\"'<>|?*";
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -960,6 +960,8 @@ public class GeneralUtils {
 
     /**
      * Validates the resource name unconditionally.
+     * Throws an error if resource name starts or ends with a dot or
+     * contains any of RESOURCE_NAME_FORBIDDEN_SYMBOLS characters.
      *
      * @param name resource name to validate
      * @throws DBException if resource name is invalid
@@ -971,13 +973,13 @@ public class GeneralUtils {
         if (name.endsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't end with dot");
         }
-
-        String forbiddenSymbols = name.replaceAll(RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX, "");
-        if (CommonUtils.isNotEmpty(forbiddenSymbols)) {
-            String forbiddenExplain = forbiddenSymbols.chars()
-                .mapToObj(c -> Character.toString((char) c))
-                .collect(Collectors.joining(" "));
-            throw new DBException("Resource name '" + name + "' contains illegal characters:  " + forbiddenExplain);
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            for (char fc : RESOURCE_NAME_FORBIDDEN_SYMBOLS) {
+                if (c == fc) {
+                    throw new DBException("Resource name '" + name + "' contains illegal character [" + c + "]");
+                }
+            }
         }
     }
 
