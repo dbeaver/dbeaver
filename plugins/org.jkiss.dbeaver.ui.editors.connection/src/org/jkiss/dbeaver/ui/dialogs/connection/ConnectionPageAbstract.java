@@ -68,7 +68,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected IDataSourceConnectionEditorSite site;
     // Driver name
-    protected Text driverText;
+    protected Label driverText;
     protected Text passwordText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
@@ -224,11 +224,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             gd.horizontalSpan = 5;
             driverInfoComp.setLayoutData(gd);
 
-            Label driverLabel = new Label(driverInfoComp, SWT.NONE);
-            driverLabel.setText(UIConnectionMessages.dialog_connection_driver);
+            Label driverLabel = UIUtils.createControlLabel(driverInfoComp, UIConnectionMessages.dialog_connection_driver);
             driverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            driverText = new Text(driverInfoComp, SWT.READ_ONLY);
+            driverText = new Label(driverInfoComp, SWT.NONE);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             //gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 2;
@@ -373,15 +372,17 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         addControlToGroup(GROUP_CONNECTION_MODE, modeGroup);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent) {
-        createDriverSubstitutionControls(parent, 1, true);
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent) {
+        return createDriverSubstitutionControls(parent, 1, true);
     }
 
-    protected void createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+    @NotNull
+    protected Control createDriverSubstitutionControls(@NotNull Composite parent, int hSpan, boolean grab) {
+        final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
         final DBPDriverSubstitutionDescriptor[] driverSubstitutions = DataSourceProviderRegistry.getInstance().getAllDriverSubstitutions();
 
         if (driverSubstitutions.length > 0) {
-            final Composite substitutionGroup = UIUtils.createComposite(parent, 2);
             GridDataFactory.fillDefaults()
                 .grab(grab, false)
                 .span(hSpan, 1)
@@ -411,6 +412,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 driverSubstitutionCombo.add(descriptor.getName());
             }
         }
+
+        return substitutionGroup;
     }
 
     protected boolean isHideNonApplicableControls() {

@@ -26,6 +26,9 @@
         <provider class="org.jkiss.dbeaver.ui.css.ConElementProvider">
             <widget class="org.jkiss.dbeaver.ui.ConComposite"/>
         </provider>
+        <provider class="org.eclipse.ui.internal.forms.css.dom.FormsElementProvider">
+            <widget class="org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx"/>
+        </provider>
     </extension>
     <extension point="org.eclipse.e4.ui.css.core.propertyHandler">
         <!-- Any control handler. Sets background if parent control is ConComposite or has CSS style. -->

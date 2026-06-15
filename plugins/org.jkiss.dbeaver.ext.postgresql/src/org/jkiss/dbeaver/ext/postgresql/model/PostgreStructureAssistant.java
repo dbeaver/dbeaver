@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,11 +50,12 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
 
     private final PostgreDataSource dataSource;
 
-    public PostgreStructureAssistant(PostgreDataSource dataSource)
+    public PostgreStructureAssistant(@NotNull PostgreDataSource dataSource)
     {
         this.dataSource = dataSource;
     }
 
+    @NotNull
     protected JDBCDataSource getDataSource()
     {
         return dataSource;
@@ -63,8 +63,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
 
     @NotNull
     @Override
-    public DBSObjectType[] getSupportedObjectTypes()
-    {
+    public DBSObjectType[] getSupportedObjectTypes() {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_CONSTRAINT,
@@ -76,8 +75,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
 
     @NotNull
     @Override
-    public DBSObjectType[] getHyperlinkObjectTypes()
-    {
+    public DBSObjectType[] getHyperlinkObjectTypes() {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_PROCEDURE
@@ -86,8 +84,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
 
     @NotNull
     @Override
-    public DBSObjectType[] getAutoCompleteObjectTypes()
-    {
+    public DBSObjectType[] getAutoCompleteObjectTypes() {
         return new DBSObjectType[] {
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_PROCEDURE,
@@ -97,20 +94,23 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
     @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
-        //TODO: currently, we do not search for data types, although it's absolutely possible.
         return new DBSObjectType[]{
             RelationalObjectType.TYPE_SCHEMA,
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_CONSTRAINT,
             RelationalObjectType.TYPE_PROCEDURE,
             RelationalObjectType.TYPE_TABLE_COLUMN,
+            RelationalObjectType.TYPE_DATA_TYPE,
         };
     }
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull PostgreExecutionContext executionContext,
-                                                      @NotNull ObjectsSearchParams params) throws DBException {
+    public List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreExecutionContext executionContext,
+        @NotNull ObjectsSearchParams params
+    ) throws DBException {
         DBSObject parentObject = params.getParentObject();
         PostgreSchema ownerSchema = parentObject instanceof PostgreSchema ? (PostgreSchema) parentObject : null;
         PostgreDataSource dataSource = executionContext.getDataSource();
@@ -164,6 +164,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                     findTableColumnsByMask(session, database, nsList, params, references);
                 } else if (type == RelationalObjectType.TYPE_SCHEMA) {
                     findSchemaByMask(session, database, params, references);
+                } else if (type == RelationalObjectType.TYPE_DATA_TYPE) {
+                    findDataTypesByMask(session, database, nsList, params, references);
                 }
                 if (references.size() >= params.getMaxResults()) {
                     break;
@@ -175,16 +177,70 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         return references;
     }
 
+    private static void findDataTypesByMask(
+        @NotNull JDBCSession session,
+        @NotNull PostgreDatabase database,
+        @NotNull List<PostgreSchema> schemas,
+        @NotNull ObjectsSearchParams params,
+        @NotNull Collection<? super DBSObjectReference> objects
+    ) throws SQLException, DBException {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+
+        PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
+            "t.oid, t.typname, t.typnamespace",
+            "pg_catalog.pg_type t",
+            "t.typname",
+            schemas,
+            "t.typnamespace",
+            "t.typname"
+        );
+        // Exclude implicit array types (named _typename) and pseudo-types
+        queryParams.setWhereClause("t.typname NOT LIKE '\\_%' AND t.typtype <> 'p'");
+        queryParams.setCaseSensitive(params.isCaseSensitive());
+        if (params.isSearchInComments()) {
+            queryParams.setDescriptionClause("obj_description(t.oid, 'pg_type')");
+        }
+        queryParams.setMaxResults(params.getMaxResults() - objects.size());
+        String sql = queryParams.build();
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            fillParams(dbStat, params, schemas, false);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (!monitor.isCanceled() && dbResult.next()) {
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+                    final long typeOid = JDBCUtils.safeGetLong(dbResult, "oid");
+                    final String typeName = JDBCUtils.safeGetString(dbResult, "typname");
+                    final PostgreSchema typeSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+                    if (typeSchema == null) {
+                        log.debug("Data type's schema '" + schemaId + "' not found");
+                        continue;
+                    }
+                    objects.add(new AbstractObjectReference<>(typeName, typeSchema, null, PostgreDataType.class, RelationalObjectType.TYPE_DATA_TYPE) {
+                        @NotNull
+                        @Override
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+                            PostgreDataType dataType = database.getDataType(monitor, typeOid);
+                            if (dataType == null) {
+                                throw new DBException("Data type '" + typeName + "' not found in schema '" + typeSchema.getName() + "'");
+                            }
+                            return dataType;
+                        }
+                    });
+                }
+            }
+        }
+    }
+
     private void findSchemaByMask(
-        JDBCSession session,
-        PostgreDatabase database,
-        ObjectsSearchParams params,
-        List<DBSObjectReference> references
+        @NotNull JDBCSession session,
+        @NotNull PostgreDatabase database,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
     ) throws SQLException, DBException {
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
-        QueryParams queryParams = buildQueryParamsForSchemaSearch(params, references);
-        String sql = buildFindQuery(queryParams);
+        PostgreQueryBuilder queryParams = buildQueryParamsForSchemaSearch(params, references);
+        String sql = queryParams.build();
 
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             dbStat.setString(1, params.getMask());
@@ -200,8 +256,9 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                     references.add(new AbstractObjectReference<>(schemaName, database, null,
                         PostgreSchema.class,
                         RelationalObjectType.TYPE_SCHEMA) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             return schema;
                         }
                     });
@@ -212,8 +269,11 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
     }
 
     @NotNull
-    private QueryParams buildQueryParamsForSchemaSearch(ObjectsSearchParams params, List<DBSObjectReference> references) {
-        QueryParams queryParams = new QueryParams(
+    private PostgreQueryBuilder buildQueryParamsForSchemaSearch(
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) {
+        PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
             "n.oid AS oid, n.nspname AS schema_name",
             "pg_namespace n",
             "n.nspname",
@@ -227,12 +287,16 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         return queryParams;
     }
 
-    private static void findTablesByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull final List<PostgreSchema> schemas,
-                                         @NotNull ObjectsSearchParams params, @NotNull Collection<? super DBSObjectReference> objects)
-                                            throws SQLException, DBException {
+    private static void findTablesByMask(
+        @NotNull JDBCSession session,
+        @NotNull PostgreDatabase database,
+        @NotNull List<PostgreSchema> schemas,
+        @NotNull ObjectsSearchParams params,
+        @NotNull Collection<? super DBSObjectReference> objects
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
             "pc.oid,pc.relname,pc.relnamespace,pc.relkind",
             "pg_catalog.pg_class pc",
             "pc.relname",
@@ -249,7 +313,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             queryParams.setDefinitionClause("pc.relkind = 'v' AND pg_get_viewdef(pc.\"oid\")");
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
-        String sql = buildFindQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -269,8 +333,9 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                         tableType == PostgreClass.RelKind.r ? PostgreTable.class :
                             (tableType == PostgreClass.RelKind.v ? PostgreView.class : PostgreMaterializedView.class),
                         RelationalObjectType.TYPE_TABLE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             PostgreTableBase table = tableSchema.getTable(monitor, tableId);
                             if (table == null) {
                                 throw new DBException("Table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
@@ -283,14 +348,18 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
     }
 
-    private static void findProceduresByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database,
-                                             @NotNull final List<PostgreSchema> schemas, @NotNull ObjectsSearchParams params,
-                                             @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
+    private static void findProceduresByMask(
+        @NotNull JDBCSession session,
+        @NotNull PostgreDatabase database,
+        @NotNull List<PostgreSchema> schemas,
+        @NotNull ObjectsSearchParams params,
+        @NotNull Collection<? super DBSObjectReference> objects
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         PostgreServerExtension serverType = database.getDataSource().getServerType();
         String proceduresOidColumn = serverType.getProceduresOidColumn();
-        QueryParams queryParams = new QueryParams(
+        PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
             "pp." + proceduresOidColumn + " as poid, pp.*",
             "pg_catalog." + serverType.getProceduresSystemTable() + " pp",
             "pp.proname",
@@ -307,7 +376,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             queryParams.setDefinitionClause("pp.prokind <> 'm' AND pp.prokind <> 'a' AND pg_get_functiondef(pp.\"" + proceduresOidColumn + "\")");
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
-        String sql = buildFindQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
@@ -326,8 +395,9 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
 
                     objects.add(new AbstractObjectReference<>(procName, procSchema, null, PostgreProcedure.class, RelationalObjectType.TYPE_PROCEDURE,
                         DBUtils.getQuotedIdentifier(procSchema) + "." + proc.getOverloadedName()) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             PostgreProcedure procedure = procSchema.getProcedure(monitor, procId);
                             if (procedure == null) {
                                 throw new DBException("Procedure '" + procName + "' not found in schema '" + procSchema.getName() + "'");
@@ -340,12 +410,16 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
     }
 
-    private static void findConstraintsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull final List<PostgreSchema> schemas,
-                                              @NotNull ObjectsSearchParams params, @NotNull Collection<? super DBSObjectReference> objects)
-                                                throws SQLException, DBException {
+    private static void findConstraintsByMask(
+        @NotNull JDBCSession session,
+        @NotNull PostgreDatabase database,
+        @NotNull List<PostgreSchema> schemas,
+        @NotNull ObjectsSearchParams params,
+        @NotNull Collection<? super DBSObjectReference> objects
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
             "pc.oid, pc.conname, pc.connamespace",
             "pg_catalog.pg_constraint pc",
             "pc.conname",
@@ -361,25 +435,26 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             queryParams.setDefinitionClause("pg_get_constraintdef(pc.\"oid\")");
         }
         queryParams.setMaxResults(params.getMaxResults() - objects.size());
-        String sql = buildFindQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, params, schemas, params.isSearchInDefinitions());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
-                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
-                    final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
-                    final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
-                    final PostgreSchema constrSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+                    long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
+                    long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
+                    String constrName = JDBCUtils.safeGetString(dbResult, "conname");
+                    PostgreSchema constrSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (constrSchema == null) {
                         log.debug("Constraint's schema '" + schemaId + "' not found");
                         continue;
                     }
                     objects.add(new AbstractObjectReference<>(constrName, constrSchema, null, PostgreTableConstraintBase.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            final PostgreTableConstraintBase constraint = PostgreUtils.getObjectById(monitor, constrSchema.getConstraintCache(), constrSchema, constrId);
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+                            PostgreTableConstraintBase constraint = PostgreUtils.getObjectById(monitor, constrSchema.getConstraintCache(), constrSchema, constrId);
                             if (constraint == null) {
                                 throw new DBException("Constraint '" + constrName + "' not found in schema '" + constrSchema.getName() + "'");
                             }
@@ -391,12 +466,16 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
     }
 
-    private static void findTableColumnsByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull List<PostgreSchema> schemas,
-                                               @NotNull ObjectsSearchParams objectsSearchParams,
-                                               @NotNull Collection<? super DBSObjectReference> objects) throws SQLException, DBException {
+    private static void findTableColumnsByMask(
+        @NotNull JDBCSession session,
+        @NotNull PostgreDatabase database,
+        @NotNull List<PostgreSchema> schemas,
+        @NotNull ObjectsSearchParams objectsSearchParams,
+        @NotNull Collection<? super DBSObjectReference> objects
+    ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        QueryParams queryParams = new QueryParams(
+        PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
             "x.attname,x.attrelid,x.atttypid,c.relnamespace",
             "pg_catalog.pg_attribute x, pg_catalog.pg_class c",
             "x.attname",
@@ -411,24 +490,31 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         queryParams.setMaxResults(objectsSearchParams.getMaxResults() - objects.size());
         queryParams.setCaseSensitive(objectsSearchParams.isCaseSensitive());
 
-        String sql = buildFindQuery(queryParams);
+        String sql = queryParams.build();
 
         // Load constraints
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             fillParams(dbStat, objectsSearchParams, schemas, false);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
-                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
-                    final long tableId = JDBCUtils.safeGetLong(dbResult, "attrelid");
-                    final String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
-                    final PostgreSchema constrSchema = database.getSchema(session.getProgressMonitor(), schemaId);
+                    long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                    long tableId = JDBCUtils.safeGetLong(dbResult, "attrelid");
+                    String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
+                    PostgreSchema constrSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (constrSchema == null) {
                         log.debug("Attribute's schema '" + schemaId + "' not found");
                         continue;
                     }
-                    objects.add(new AbstractObjectReference<>(attributeName, constrSchema, null, PostgreTableBase.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                    objects.add(new AbstractObjectReference<>(
+                        attributeName,
+                        constrSchema,
+                        null,
+                        PostgreTableBase.class,
+                        RelationalObjectType.TYPE_TABLE_COLUMN
+                    ) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             final PostgreTableBase table = PostgreUtils.getObjectById(monitor, constrSchema.getTableCache(), constrSchema, tableId);
                             if (table == null) {
                                 throw new DBException("Table '" + tableId + "' not found in schema '" + constrSchema.getName() + "'");
@@ -441,37 +527,12 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
     }
 
-    private static String buildFindQuery(@NotNull QueryParams queryParams) {
-        StringBuilder sql = new StringBuilder("SELECT ").append(queryParams.getColumnsToSelect());
-        sql.append(" FROM ").append(queryParams.getFromClause()).append(" WHERE ");
-        if (queryParams.getWhereClause() != null) {
-            sql.append(queryParams.getWhereClause()).append(" AND ");
-        }
-        boolean addParentheses = queryParams.getDefinitionClause() != null || queryParams.getDescriptionClause() != null;
-        if (addParentheses) {
-            sql.append("(");
-        }
-        String likeClause = queryParams.isCaseSensitive() ? " LIKE ?" : " ILIKE ?";
-        sql.append(queryParams.getName()).append(likeClause).append(" ");
-        if (queryParams.getDescriptionClause() != null) {
-            sql.append("OR ").append(queryParams.getDescriptionClause()).append(likeClause);
-        }
-        if (queryParams.getDefinitionClause() != null) {
-            sql.append(" OR (").append(queryParams.getDefinitionClause()).append(likeClause).append(")");
-        }
-        if (addParentheses) {
-            sql.append(")");
-        }
-        if (!queryParams.getSchemas().isEmpty()) {
-            sql.append("AND ").append(queryParams.getNamespace()).append(" IN (");
-            sql.append(SQLUtils.generateParamList(queryParams.getSchemas().size())).append(") ");
-        }
-        sql.append("ORDER BY ").append(queryParams.getOrderBy()).append(" LIMIT ").append(queryParams.getMaxResults());
-        return sql.toString();
-    }
-
-    private static void fillParams(@NotNull JDBCPreparedStatement statement, @NotNull ObjectsSearchParams params,
-                                   @Nullable List<? extends PostgreSchema> schema, boolean fillSearchInDefinitions) throws SQLException {
+    private static void fillParams(
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull ObjectsSearchParams params,
+        @Nullable List<? extends PostgreSchema> schema,
+        boolean fillSearchInDefinitions
+    ) throws SQLException {
         statement.setString(1, params.getMask());
         int idx = 2;
         if (params.isSearchInComments()) {
@@ -486,123 +547,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             PostgreUtils.setArrayParameter(statement, idx, schema);
         }
     }
-
-    private static final class QueryParams {
-        @NotNull
-        private final String columnsToSelect;
-
-        @NotNull
-        private final String fromClause;
-
-        @Nullable
-        private String whereClause;
-
-        @NotNull
-        private final String name;
-
-        private boolean caseSensitive;
-
-        @Nullable
-        private String descriptionClause;
-
-        @NotNull
-        private final Collection<? extends PostgreSchema> schemas;
-
-        @NotNull
-        private final String namespace;
-
-        @NotNull
-        private final String orderBy;
-
-        private int maxResults;
-
-        @Nullable
-        private String definitionClause;
-
-        private QueryParams(@NotNull String columnsToSelect, @NotNull String fromClause, @NotNull String name,
-                            @NotNull Collection<? extends PostgreSchema> schemas, @NotNull String namespace, @NotNull String orderBy) {
-            this.columnsToSelect = columnsToSelect;
-            this.fromClause = fromClause;
-            this.name = name;
-            this.schemas = schemas;
-            this.namespace = namespace;
-            this.orderBy = orderBy;
-        }
-
-        @NotNull
-        private String getColumnsToSelect() {
-            return columnsToSelect;
-        }
-
-        @NotNull
-        private String getFromClause() {
-            return fromClause;
-        }
-
-        @Nullable
-        private String getWhereClause() {
-            return whereClause;
-        }
-
-        private void setWhereClause(@Nullable String whereClause) {
-            this.whereClause = whereClause;
-        }
-
-        @NotNull
-        private String getName() {
-            return name;
-        }
-
-        private boolean isCaseSensitive() {
-            return caseSensitive;
-        }
-
-        private void setCaseSensitive(boolean caseSensitive) {
-            this.caseSensitive = caseSensitive;
-        }
-
-        @Nullable
-        private String getDescriptionClause() {
-            return descriptionClause;
-        }
-
-        private void setDescriptionClause(@Nullable String descriptionClause) {
-            this.descriptionClause = descriptionClause;
-        }
-
-        @NotNull
-        private Collection<PostgreSchema> getSchemas() {
-            return Collections.unmodifiableCollection(schemas);
-        }
-
-        @NotNull
-        private String getNamespace() {
-            return namespace;
-        }
-
-        @NotNull
-        private String getOrderBy() {
-            return orderBy;
-        }
-
-        private int getMaxResults() {
-            return maxResults;
-        }
-
-        private void setMaxResults(int maxResults) {
-            this.maxResults = maxResults;
-        }
-
-        @Nullable
-        private String getDefinitionClause() {
-            return definitionClause;
-        }
-
-        private void setDefinitionClause(@Nullable String definitionClause) {
-            this.definitionClause = definitionClause;
-        }
-    }
-
+    
     @Override
     public boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
         return objectType == RelationalObjectType.TYPE_TABLE
@@ -613,6 +558,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
 
     @Override
     public boolean supportsSearchInDefinitionsFor(@NotNull DBSObjectType objectType) {
-        return objectType == RelationalObjectType.TYPE_CONSTRAINT || objectType == RelationalObjectType.TYPE_PROCEDURE;
+        return objectType == RelationalObjectType.TYPE_CONSTRAINT ||
+            objectType == RelationalObjectType.TYPE_PROCEDURE;
     }
 }

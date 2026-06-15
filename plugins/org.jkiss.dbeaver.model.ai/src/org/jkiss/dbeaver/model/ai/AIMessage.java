@@ -94,15 +94,25 @@ public class AIMessage {
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
-        String strResult = CommonUtils.toString(result.getValue());
-        this.content = functionCall.getFunctionName() + " was completed.\n" +
-            (CommonUtils.isEmpty(strResult) ? "Empty result" : strResult);
+        String resultValue = CommonUtils.toString(result.getValue());
+        StringBuilder strResult = new StringBuilder();
+        if (result.getException() != null) {
+            strResult.append(resultValue);
+        } else {
+            strResult.append(functionCall.getFunctionName()).append(" was completed.\n");
+            if (resultValue.isEmpty()) {
+                strResult.append("Empty result");
+            } else {
+                strResult.append(resultValue);
+            }
+        }
+        this.content = strResult.toString();
         this.time = time;
         this.functionCall = functionCall;
         this.functionResult = result;
         this.confirmation = null;
-        this.displayMessage = strResult;
-        this.error = null;
+        this.displayMessage = resultValue;
+        this.error = result.getException();
     }
 
     // Function call confirmation

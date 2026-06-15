@@ -25,6 +25,7 @@ public class ResultSetMessages extends NLS {
     public static String confirm_modifying_query_title;
 
     public static String controls_resultset_filter_button_reset;
+    public static String controls_resultset_filter_saved_filter_reset_message;
     public static String controls_resultset_filter_column_name;
     public static String controls_resultset_filter_column_visible;
     public static String controls_resultset_filter_column_pinned;
@@ -66,6 +67,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_show_selected_row_count;
     public static String controls_resultset_viewer_action_show_selected_column_count;
     public static String controls_resultset_viewer_action_show_selected_cell_count;
+    public static String controls_resultset_viewer_action_show_filter_panel;
     public static String controls_resultset_viewer_action_open_value_editor_column_readonly;
     public static String controls_resultset_viewer_action_edit;
     public static String controls_resultset_viewer_action_order_filter;
@@ -260,6 +262,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_paste_as_title;
     public static String dialog_paste_as_insert_multiple_rows_text;
     public static String dialog_paste_as_insert_multiple_rows_tip;
+    public static String dialog_paste_as_insert_new_rows_text;
+    public static String dialog_paste_as_insert_new_rows_tip;
     public static String dialog_paste_as_ignore_quotes_text;
     public static String dialog_paste_as_ignore_quotes_tip;
     public static String dialog_paste_as_insert_nulls_text;

@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -141,12 +142,6 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     }
 
     @Override
-    protected void createBottomLeftArea(Composite pane) {
-        // Task management controls
-        getWizard().createTaskActions(pane, 1);
-    }
-
-    @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent) {
         if (getWizard().isNewTaskEditor() || getNavPagesCount() > 1) {
             createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
@@ -156,6 +151,12 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             createButton(parent, SAVE_BUTTON_ID, TaskUIMessages.task_configuration_wizard_dialog_button_save, false).setEnabled(false);
         }
         super.createButtonsForButtonBar(parent);
+    }
+
+    @Override
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
+        getWizard().createTaskActions(parent);
     }
 
     private int getNavPagesCount() {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.sqlite.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -188,7 +189,7 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         }
 
         @Override
-        public boolean aggregateCommand(DBECommand<?> command)
+        public boolean aggregateCommand(@NotNull DBECommand<?> command)
         {
             if (command instanceof DBECommandDeleteObject && command.getObject() instanceof DBSObject object && DBUtils.isParentOf(object, getObject())) {
                 return true;
@@ -196,7 +197,7 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
             return super.aggregateCommand(command);
         }
 
-        @NotNull
+        @Nullable
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
@@ -208,12 +209,12 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     public static class TableRecreateReflector implements DBECommandReflector<GenericTableBase, TableRecreateCommand> {
 
         @Override
-        public void redoCommand(TableRecreateCommand command) {
+        public void redoCommand(@NotNull TableRecreateCommand command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
 
         @Override
-        public void undoCommand(TableRecreateCommand command) {
+        public void undoCommand(@NotNull TableRecreateCommand command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
     }

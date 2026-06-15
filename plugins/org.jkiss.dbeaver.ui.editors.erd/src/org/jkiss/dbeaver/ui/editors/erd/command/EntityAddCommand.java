@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -53,23 +54,22 @@ public class EntityAddCommand extends Command {
     private static final Log log = Log.getLog(EntityAddCommand.class);
 
     protected DiagramPart diagramPart;
-	protected List<ERDEntity> entities;
+    protected List<ERDEntity> entities;
     protected Point location;
 
-    public EntityAddCommand(DiagramPart diagram, List<ERDEntity> entities, Point location)
-    {
+    public EntityAddCommand(@NotNull DiagramPart diagram, @NotNull List<ERDEntity> entities, @NotNull Point location) {
         this.diagramPart = diagram;
         this.entities = entities;
         this.location = location;
     }
 
+    @NotNull
     public DiagramPart getDiagram() {
         return diagramPart;
     }
 
     @Override
-    public void execute()
-	{
+    public void execute() {
         VoidProgressMonitor monitor = new VoidProgressMonitor();
 
         Point curLocation = location == null ? null : new Point(location);
@@ -79,48 +79,55 @@ public class EntityAddCommand extends Command {
                 if (entity.getDataSource() != null) {
                     DBCExecutionContext defaultContext = DBUtils.getDefaultContext(entity.getDataSource(), false);
                     DBSObject selectedObject = defaultContext != null ? DBUtils.getSelectedObject(defaultContext) : null;
-                    DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(selectedObject != null ? selectedObject.getParentObject() : entity.getDataSource().getContainer());
+                    DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(
+                        selectedObject != null && selectedObject.getParentObject() != null ? selectedObject.getParentObject()
+                            : entity.getDataSource().getContainer());
                     if (dsNode != null) {
                         DBNNode tableNode = DBWorkbench.getPlatformUI().selectObject(
                             UIUtils.getActiveWorkbenchShell(),
                             ERDUIMessages.erd_entity_add_command_select_table_dialog,
                             dsNode,
                             null,
-                            new Class[]{DBSObjectContainer.class, DBSTable.class},
-                            new Class[]{DBSTable.class},
-                            null);
+                            new Class[] {DBSObjectContainer.class, DBSTable.class},
+                            new Class[] {DBSTable.class},
+                            null
+                        );
                         if (tableNode instanceof DBNDatabaseNode && ((DBNDatabaseNode) tableNode).getObject() instanceof DBSEntity) {
                             entity = ERDUtils.makeEntityFromObject(
                                 monitor,
                                 diagramPart.getDiagram(),
                                 Collections.emptyList(),
-                                (DBSEntity)((DBNDatabaseNode) tableNode).getObject(),
-                                null);
+                                (DBSEntity) ((DBNDatabaseNode) tableNode).getObject(),
+                                null
+                            );
                             // This actually only loads unresolved relations.
                             // This happens only with entities added on diagram during editing
                             try {
-                                entity.addModelRelations(monitor, diagramPart.getDiagram(), false, false);
+                                if (entity != null) {
+                                    entity.addModelRelations(monitor, diagramPart.getDiagram(), false, false);
+                                }
                             } catch (DBException e) {
                                 String msg = NLS.bind(ERDUIMessages.erd_error_of_loading_diagram_label, e.getMessage());
                                 log.error(msg, e);
-                                UIUtils.showMessageBox(null,
-                                        ERDUIMessages.erd_error_of_loading_diagram_title,
-                                        msg, SWT.ICON_ERROR);
+                                UIUtils.showMessageBox(
+                                    null,
+                                    ERDUIMessages.erd_error_of_loading_diagram_title,
+                                    msg, SWT.ICON_ERROR
+                                );
                             }
                         }
                     }
                 }
             }
-            if (entity.getObject() == null) {
+            if (entity == null || entity.getObject() == null) {
                 continue;
             }
-		    diagramPart.getDiagram().addEntity(entity, true);
+            diagramPart.getDiagram().addEntity(entity, true);
 
             if (curLocation != null) {
                 // Put new entities in specified location
                 for (Object diagramChild : diagramPart.getChildren()) {
-                    if (diagramChild instanceof EntityPart) {
-                        EntityPart entityPart = (EntityPart) diagramChild;
+                    if (diagramChild instanceof EntityPart entityPart) {
                         if (entityPart.getEntity() == entity) {
                             final Rectangle newBounds = new Rectangle();
                             final Dimension size = entityPart.getFigure().getPreferredSize();
@@ -139,18 +146,17 @@ public class EntityAddCommand extends Command {
 
             handleEntityChange(entity, false);
         }
-	}
+    }
 
     @Override
-    public void undo()
-    {
+    public void undo() {
         for (ERDEntity entity : entities) {
             diagramPart.getDiagram().removeEntity(entity, true);
             handleEntityChange(entity, true);
         }
     }
 
-    protected void handleEntityChange(ERDEntity entity, boolean remove) {
+    protected void handleEntityChange(@NotNull ERDEntity entity, boolean remove) {
         // Nothing special
     }
 
