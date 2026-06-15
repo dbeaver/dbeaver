@@ -86,13 +86,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private DBACredentialsProvider authCredentialsProvider;
     protected Throwable lastError;
 
-    public DataSourceRegistry(DBPProject project) {
+    public DataSourceRegistry(@NotNull DBPProject project) {
         this(project, new DataSourceConfigurationManagerNIO(project), DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     public DataSourceRegistry(
         @NotNull DBPProject project,
-        DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DBPPreferenceStore preferenceStore
     ) {
         this.project = project;
@@ -645,7 +645,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        updateDataSource(dataSource, true);
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
         if (!(dataSource instanceof DataSourceDescriptor descriptor)) {
             return;
         }
@@ -655,7 +661,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             if (!descriptor.isDetached()) {
                 persistDataSourceUpdate(dataSource);
             }
-            descriptor.persistSecretIfNeeded(true, false);
+            descriptor.persistSecretIfNeeded(forcePersistSecrets, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
