@@ -1430,7 +1430,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     dialog.open();
                 }
             } else if (!isComplexValuesExpansionEnabled() && (value instanceof DBDComposite || value instanceof Collection<?>)) {
-                //this.openValueEditor(false);
                 this.controller.activatePanel(ValueViewerPanel.PANEL_ID, true, true);
             } else {
                 spreadsheet.getCellRenderer().executeHintAction(cell.row, cell.col, cellInfo, x, y, state);
@@ -2352,7 +2351,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @Override
         public boolean isElementExpandable(@NotNull IGridItem item) {
-            System.out.println(item.getElement());
             if (item instanceof IGridRow row) {
                 return hasExpandableElements(row);
             }
