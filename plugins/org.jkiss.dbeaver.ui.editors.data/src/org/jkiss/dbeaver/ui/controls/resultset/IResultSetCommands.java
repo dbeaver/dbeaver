@@ -58,6 +58,7 @@ public interface IResultSetCommands {
     String CMD_FILTER_MENU_DISTINCT = "org.jkiss.dbeaver.core.resultset.filterMenu.distinct";
     String CMD_FILTER_EDIT_SETTINGS = "org.jkiss.dbeaver.core.resultset.filterSettings";
     String CMD_FILTER_SAVE_SETTING = "org.jkiss.dbeaver.core.resultset.filterSave";
+    String CMD_FILTER_RESET_SETTING = "org.jkiss.dbeaver.core.resultset.filterReset";
     String CMD_FILTER_CLEAR_SETTING = "org.jkiss.dbeaver.core.resultset.filterClear";
     String CMD_REFERENCES_MENU = "org.jkiss.dbeaver.core.resultset.referencesMenu";
     String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -407,7 +407,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 producer.dataSourceContainer = DBUtils.findDataSourceByObjectId(project, id);
                                 if (producer.dataSourceContainer != null && !serializeContext.isDataSourceFailed(producer.dataSourceContainer)) {
                                     try {
-                                        producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                        producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id, true);
                                     } catch (DBException e) {
                                         serializeContext.addError(e);
                                         serializeContext.addDataSourceFail(producer.dataSourceContainer);

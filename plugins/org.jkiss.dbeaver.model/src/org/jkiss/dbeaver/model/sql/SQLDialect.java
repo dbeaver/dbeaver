@@ -568,4 +568,12 @@ public interface SQLDialect {
         return columnName;
     }
 
+    /**
+     * Indicates whether the database dialect supports ordering
+     * by column position/index (e.g. {@code ORDER BY 1}).
+     */
+    default boolean supportsColumnIndexOrdering() {
+        return true;
+    }
+
 }

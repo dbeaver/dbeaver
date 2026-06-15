@@ -37,6 +37,7 @@ import java.util.*;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
+    public static final String NODE_TYPE_DATASOURCES = "datasources";
     private DBPDataSourceRegistry dataSourceRegistry;
     private final List<DBNDataSource> dataSources = new ArrayList<>();
     private volatile DBNNode[] children;
@@ -79,13 +80,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @NotNull
     @Override
     public String getNodeType() {
-        return "datasources";
+        return NODE_TYPE_DATASOURCES;
     }
 
     @NotNull
     @Override
     public String getNodeId() {
-        return "datasources";
+        return NODE_TYPE_DATASOURCES;
     }
 
     public DBPDataSourceRegistry getDataSourceRegistry()
@@ -130,9 +131,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Nullable
     @Override
-    public String getNodeDescription()
-    {
-        return getParentNode().getProject().getName() + ModelMessages.model_navigator__connections;
+    public String getNodeDescription() {
+        DBNProject dbnProject = getParentNode();
+        return dbnProject == null ? null : dbnProject.getProject().getName() + ModelMessages.model_navigator__connections;
     }
 
     @NotNull
@@ -244,13 +245,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public boolean allowsOpen() {
         return true;
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getNodeDisplayName();
     }
 
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)
