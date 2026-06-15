@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.io.BOMInputStream;
 import org.jkiss.utils.io.ByteOrderMark;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.*;
 
@@ -31,17 +31,17 @@ public class BOMInputStreamTest extends DBeaverUnitTest {
     public void testUtf8WithoutBom() throws IOException {
         final BOMInputStream is = input(ByteOrderMark.UTF_8, 0xF0, 0x9F, 0x94, 0xA5);
         final BufferedReader rd = reader(ByteOrderMark.UTF_8, is);
-        Assert.assertFalse(is.hasBOM());
-        Assert.assertEquals("\uD83D\uDD25", rd.readLine());
+        Assertions.assertFalse(is.hasBOM());
+        Assertions.assertEquals("\uD83D\uDD25", rd.readLine());
     }
 
     @Test
     public void testUtf8WithBom() throws IOException {
         final BOMInputStream is = input(ByteOrderMark.UTF_8, 0xEF, 0xBB, 0xBF, 0xF0, 0x9F, 0x94, 0xA5);
         final BufferedReader rd = reader(ByteOrderMark.UTF_8, is);
-        Assert.assertTrue(is.hasBOM());
-        Assert.assertEquals(ByteOrderMark.UTF_8, is.getBOM());
-        Assert.assertEquals("\uD83D\uDD25", rd.readLine());
+        Assertions.assertTrue(is.hasBOM());
+        Assertions.assertEquals(ByteOrderMark.UTF_8, is.getBOM());
+        Assertions.assertEquals("\uD83D\uDD25", rd.readLine());
     }
 
     @NotNull

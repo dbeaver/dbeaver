@@ -272,7 +272,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             metaChildren = getFolderMeta(object.getClass());
         }
         if (metaChildren != null) {
-            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object, false);
+            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object);
             synchronized (this) {
                 childNodes = ArrayUtils.add(DBNDatabaseNode.class, childNodes, newChild);
             }
@@ -381,7 +381,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     private void refreshNodeContent(final DBRProgressMonitor monitor, DBSObject newObject, Object source, boolean reflect)
-        throws DBException {
+    throws DBException {
         if (isDisposed()) {
             return;
         }
@@ -610,12 +610,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return
             (DBSObjectContainer.class.isAssignableFrom(nodeChildClass) &&
                 !DBSPackage.class.isAssignableFrom(nodeChildClass)) ||
-            (DBSEntity.class.isAssignableFrom(nodeChildClass) &&
-                !DBSDataType.class.isAssignableFrom(nodeChildClass) &&
-                !DBSSequence.class.isAssignableFrom(nodeChildClass) &&
-                !DBSPackage.class.isAssignableFrom(nodeChildClass)) ||
-            DBSEntityAttribute.class.isAssignableFrom(nodeChildClass) ||
-            DBSInstance.class.isAssignableFrom(nodeChildClass);
+                (DBSEntity.class.isAssignableFrom(nodeChildClass) &&
+                    !DBSDataType.class.isAssignableFrom(nodeChildClass) &&
+                    !DBSSequence.class.isAssignableFrom(nodeChildClass) &&
+                    !DBSPackage.class.isAssignableFrom(nodeChildClass)) ||
+                DBSEntityAttribute.class.isAssignableFrom(nodeChildClass) ||
+                DBSInstance.class.isAssignableFrom(nodeChildClass);
     }
 
     /**
@@ -639,7 +639,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         boolean hideFolders,
         boolean mergeEntities,
         boolean reflect)
-        throws DBException {
+    throws DBException {
         if (this.isDisposed())
         {
             // Property reading can take really long time so this node can be disposed at this moment -
@@ -752,7 +752,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             if (!added) {
                 // Simply add new item
-                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object, true);
+                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object);
                 toList.add(treeItem);
             }
         }
@@ -762,6 +762,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             for (DBNDatabaseNode oldChild : oldList) {
                 if (oldChild.getMeta() != meta) {
                     // Wrong type
+                    continue;
+                }
+                if (isNonPersistedChild(oldChild)) {
+                    // Preserve newly-created (non-persisted) child across refresh.
+                    // Its underlying DBSObject isn't visible to the database query yet,
+                    // so the matching loop above can't find it. Disposing it would close
+                    // the in-progress entity editor and lose the user's work (#40920).
+                    toList.add(oldChild);
                     continue;
                 }
                 boolean found = false;
@@ -778,6 +786,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
         }
         return true;
+    }
+
+    // Preserve in-progress (non-persisted) children across a parent-node refresh: the
+    // database query can't see them yet, but the user's open editor depends on them.
+    private static boolean isNonPersistedChild(@NotNull DBNDatabaseNode child) {
+        DBSObject object = child.getObject();
+        return object != null && !object.isPersisted();
     }
 
     @Nullable
@@ -865,44 +880,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return nodeId;
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        StringBuilder pathName = new StringBuilder(100);
-
-        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
-            if (node instanceof DBNDataSource) {
-                if (!pathName.isEmpty()) {
-                    pathName.insert(0, '/');
-                }
-                pathName.insert(0, node.getNodeItemPath());
-            } else if (node instanceof DBNDatabaseFolder dbFolder) {
-                if (!pathName.isEmpty()) {
-                    pathName.insert(0, '/');
-                }
-                DBXTreeFolder folderMeta = dbFolder.getMeta();
-                String type = folderMeta.getIdOrType();
-                if (CommonUtils.isEmpty(type)) {
-                    type = node.getName();
-                }
-                pathName.insert(0, type);
-            }
-            if (!(node instanceof DBNDatabaseItem) && !(node instanceof DBNDatabaseObject)) {
-                // skip folders
-                continue;
-            }
-
-            if (!pathName.isEmpty()) {
-                pathName.insert(0, '/');
-            }
-            pathName.insert(0, DBNUtils.encodeNodePath(node.getNodeDisplayName()));
-        }
-        return pathName.toString();
-    }
-
     private void reloadChildren(DBRProgressMonitor monitor, Object source, boolean reflect)
-        throws DBException {
+    throws DBException {
         DBNDatabaseNode[] oldChildren;
         synchronized (this) {
             if (childNodes == null) {

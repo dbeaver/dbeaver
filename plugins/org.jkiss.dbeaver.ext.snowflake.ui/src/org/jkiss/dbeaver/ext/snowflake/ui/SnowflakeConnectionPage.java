@@ -203,10 +203,18 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             dbText.setText(databaseName);
         }
         if (warehouseText != null) {
-            warehouseText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+            String warehouse = connectionInfo.getServerName();
+            if (CommonUtils.isEmpty(warehouse)) {
+                warehouse = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_WAREHOUSE);
+            }
+            warehouseText.setText(CommonUtils.notEmpty(warehouse));
         }
         if (schemaText != null) {
-            schemaText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA)));
+            String schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA);
+            if (CommonUtils.isEmpty(schema)) {
+                schema = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA2);
+            }
+            schemaText.setText(CommonUtils.notEmpty(schema));
         }
     }
 

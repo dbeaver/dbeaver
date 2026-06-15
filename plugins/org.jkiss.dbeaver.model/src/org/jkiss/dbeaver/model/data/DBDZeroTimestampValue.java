@@ -14,37 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.data.value;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreDateTimeValueHandler;
 
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.Set;
 
-public class PostgreEndOfDay implements TemporalAccessor {
+public class DBDZeroTimestampValue implements TemporalAccessor {
 
-    private static final PostgreEndOfDay INSTANCE = new PostgreEndOfDay();
-
-    public static PostgreEndOfDay withoutOffset() {
-        return INSTANCE;
-    }
-
-    public static PostgreEndOfDay withOffset(@NotNull ZoneOffset offset) {
-        return new PostgreOffsetEndOfDay(offset);
-    }
+    public static final DBDZeroTimestampValue INSTANCE = new DBDZeroTimestampValue();
 
     private static final Set<TemporalField> fields = Set.of(
+        ChronoField.YEAR_OF_ERA,
+        ChronoField.YEAR,
+        ChronoField.MONTH_OF_YEAR,
+        ChronoField.DAY_OF_MONTH,
         ChronoField.HOUR_OF_DAY,
-        ChronoField.MINUTE_OF_DAY,
+        ChronoField.MINUTE_OF_HOUR,
         ChronoField.SECOND_OF_MINUTE,
-        ChronoField.MILLI_OF_SECOND
+        ChronoField.MILLI_OF_SECOND,
+        ChronoField.NANO_OF_SECOND
     );
 
-    protected PostgreEndOfDay() {
+    private DBDZeroTimestampValue() {
     }
 
     @Override
@@ -54,6 +50,16 @@ public class PostgreEndOfDay implements TemporalAccessor {
 
     @Override
     public long getLong(@NotNull TemporalField field) {
-        return ChronoField.HOUR_OF_DAY.equals(field) ? 24 : 0;
+        if (field.isSupportedBy(this)) {
+            return 0;
+        } else {
+            throw new UnsupportedTemporalTypeException("Unsupported field: " + field);
+        }
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return "0000-00-00 00:00:00";
     }
 }

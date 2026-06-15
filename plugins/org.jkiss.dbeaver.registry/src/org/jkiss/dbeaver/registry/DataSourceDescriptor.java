@@ -533,7 +533,9 @@ public class DataSourceDescriptor
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
         this.selectedSharedCredentials = null;
-        if (sharedCredentials) {
+        // we need to reset username and password for connection that are not connected to database
+        // in some cases, when connection is established, username is needed (e.g. retrieving current user info in Cubrid)
+        if (sharedCredentials && !isConnected()) {
             // For shared credentials reset cache also
             connectionInfo.setUserName(null);
             connectionInfo.setUserPassword(null);
@@ -782,8 +784,8 @@ public class DataSourceDescriptor
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        if (dataSource instanceof DBPRefreshableObject) {
-            dataSource = (DBPDataSource) ((DBPRefreshableObject) dataSource).refreshObject(monitor);
+        if (dataSource instanceof DBPRefreshableObject refreshableObject) {
+            dataSource = (DBPDataSource) refreshableObject.refreshObject(monitor);
         } else {
             this.reconnect(monitor, false);
         }
@@ -1336,7 +1338,7 @@ public class DataSourceDescriptor
 
     }
 
-    private void resolveSecretsIfNeeded() throws DBException {
+    protected void resolveSecretsIfNeeded() throws DBException {
         if (secretsResolved || !getProject().isUseSecretStorage()) {
             return;
         }
@@ -1466,7 +1468,6 @@ public class DataSourceDescriptor
         connecting = true;
         releaseDataSourceUsers(monitor);
         try {
-            closeConnectionDetached();
             monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAvailableInstances().size());
 
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
@@ -1500,6 +1501,7 @@ public class DataSourceDescriptor
             if (dataSource != null) {
                 dataSource.shutdown(monitor);
             }
+            closeConnectionDetached();
             monitor.worked(1);
 
             // Close tunnelHandler
