@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -40,14 +40,15 @@ public class CSVImporterTest  extends DBeaverUnitTest {
 
     private static final Path DUMMY_FILE = Path.of("dummy");
     private final DataImporterCSV importer = new DataImporterCSV();
-    private final StreamEntityMapping mapping = new StreamEntityMapping(DUMMY_FILE);
+    private StreamEntityMapping mapping;
     private final Map<String, Object> properties = new HashMap<>();
 
     @Mock
     private IStreamDataImporterSite site;
 
-    @Before
+    @BeforeEach
     public void init() throws DBException {
+        mapping = new StreamEntityMapping(DUMMY_FILE);
         importer.init(site);
         Mockito.when(site.getProcessorProperties()).thenReturn(properties);
     }
@@ -55,67 +56,67 @@ public class CSVImporterTest  extends DBeaverUnitTest {
     @Test
     public void generateColumnNames() throws DBException, IOException {
         List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("a,b,c,d", false);
-        Assert.assertEquals(4, columnsInfo.size());
-        Assert.assertEquals("Column1", columnsInfo.get(0).getName());
-        Assert.assertEquals("Column2", columnsInfo.get(1).getName());
-        Assert.assertEquals("Column3", columnsInfo.get(2).getName());
-        Assert.assertEquals("Column4", columnsInfo.get(3).getName());
+        Assertions.assertEquals(4, columnsInfo.size());
+        Assertions.assertEquals("Column1", columnsInfo.get(0).getName());
+        Assertions.assertEquals("Column2", columnsInfo.get(1).getName());
+        Assertions.assertEquals("Column3", columnsInfo.get(2).getName());
+        Assertions.assertEquals("Column4", columnsInfo.get(3).getName());
     }
 
     @Test
     public void readColumnNames() throws DBException, IOException {
         List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("a,b,c,d", true);
-        Assert.assertEquals(4, columnsInfo.size());
-        Assert.assertEquals("a", columnsInfo.get(0).getName());
-        Assert.assertEquals("b", columnsInfo.get(1).getName());
-        Assert.assertEquals("c", columnsInfo.get(2).getName());
-        Assert.assertEquals("d", columnsInfo.get(3).getName());
+        Assertions.assertEquals(4, columnsInfo.size());
+        Assertions.assertEquals("a", columnsInfo.get(0).getName());
+        Assertions.assertEquals("b", columnsInfo.get(1).getName());
+        Assertions.assertEquals("c", columnsInfo.get(2).getName());
+        Assertions.assertEquals("d", columnsInfo.get(3).getName());
     }
 
     @Test
     public void guessColumnTypes() throws DBException, IOException {
         List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("1,2.0,abc,false", false);
-        Assert.assertEquals(4, columnsInfo.size());
-        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
-        Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
-        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
-        Assert.assertEquals("REAL", columnsInfo.get(1).getTypeName());
-        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(2).getDataKind());
-        Assert.assertEquals(DBPDataKind.BOOLEAN, columnsInfo.get(3).getDataKind());
+        Assertions.assertEquals(4, columnsInfo.size());
+        Assertions.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assertions.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+        Assertions.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
+        Assertions.assertEquals("REAL", columnsInfo.get(1).getTypeName());
+        Assertions.assertEquals(DBPDataKind.STRING, columnsInfo.get(2).getDataKind());
+        Assertions.assertEquals(DBPDataKind.BOOLEAN, columnsInfo.get(3).getDataKind());
     }
   
     @Test
     public void guessColumnTypesWithLongData() throws DBException, IOException {
     	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("2147483648,-9223372036854775808,1", false);
-    	Assert.assertEquals(3,  columnsInfo.size());
-    	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
-    	Assert.assertEquals("BIGINT", columnsInfo.get(0).getTypeName());
-    	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
-    	Assert.assertEquals("BIGINT", columnsInfo.get(1).getTypeName());
-        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
-        Assert.assertEquals("INTEGER", columnsInfo.get(2).getTypeName());
+    	Assertions.assertEquals(3,  columnsInfo.size());
+    	Assertions.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+    	Assertions.assertEquals("BIGINT", columnsInfo.get(0).getTypeName());
+    	Assertions.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
+    	Assertions.assertEquals("BIGINT", columnsInfo.get(1).getTypeName());
+        Assertions.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
+        Assertions.assertEquals("INTEGER", columnsInfo.get(2).getTypeName());
     }
     
     @Test
     public void returnsEmptyListWithEmptyFile() throws DBException, IOException {
     	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("", false);
-    	Assert.assertEquals(0,  columnsInfo.size());
+    	Assertions.assertEquals(0,  columnsInfo.size());
     }
     
 
     @Test
     public void guessColumnTypesOverSamples() throws DBException, IOException {
         List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("1\n\n2\n3\ntest", false);
-        Assert.assertEquals(1, columnsInfo.size());
-        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(0).getDataKind());
+        Assertions.assertEquals(1, columnsInfo.size());
+        Assertions.assertEquals(DBPDataKind.STRING, columnsInfo.get(0).getDataKind());
     }
 
     @Test
     public void guessColumnTypesDefault() throws DBException, IOException {
         List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo(",", false);
-        Assert.assertEquals(2, columnsInfo.size());
-        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(0).getDataKind());
-        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(1).getDataKind());
+        Assertions.assertEquals(2, columnsInfo.size());
+        Assertions.assertEquals(DBPDataKind.STRING, columnsInfo.get(0).getDataKind());
+        Assertions.assertEquals(DBPDataKind.STRING, columnsInfo.get(1).getDataKind());
     }
 
     private List<StreamDataImporterColumnInfo> readColumnsInfo(String data, boolean isHeaderPresent) throws DBException, IOException {

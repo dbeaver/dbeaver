@@ -1496,6 +1496,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (viewer.getDataContainer() instanceof DBSEntity) {
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(), IResultSetCommands.CMD_FILTER_SAVE_SETTING));
+                menuManager.add(ActionUtils.makeCommandContribution(
+                    viewer.getSite(), IResultSetCommands.CMD_FILTER_RESET_SETTING));
             }
 
             if (showHistoryItems) {
