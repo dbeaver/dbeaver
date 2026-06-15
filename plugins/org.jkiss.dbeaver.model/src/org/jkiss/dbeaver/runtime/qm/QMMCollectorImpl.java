@@ -216,15 +216,20 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
+    private boolean shouldActivityBePropagated(@Nullable QMMConnectionInfo info) {
+        return info != null && info.isCaptureActivities();
+    }
+
     @Override
-    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
+    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional, boolean captureActivities) {
         synchronized (connectionMap) {
             final long contextId = context.getContextId();
             QMMConnectionInfo connection = connectionMap.get(contextId);
             if (connection == null) {
                 connection = new QMMConnectionInfo(
                     context,
-                    transactional
+                    transactional,
+                    captureActivities
                 );
                 connectionMap.put(contextId, connection);
             } else {
@@ -236,7 +241,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             // Remove from closed sessions (in case of re-opened connection)
             closedConnections.remove(contextId);
             // Notify
-            tryFireMetaEvent(connection, QMEventAction.BEGIN, connection.getOpenTime(), context);
+            if (this.shouldActivityBePropagated(connection)) {
+                tryFireMetaEvent(connection, QMEventAction.BEGIN, connection.getOpenTime(), context);
+            }
         }
     }
 
@@ -245,7 +252,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo connectionInfo = getConnectionInfo(context);
         if (connectionInfo != null) {
             connectionInfo.setTransactional(transactional);
-            tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
+            if (this.shouldActivityBePropagated(connectionInfo)) {
+                tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
+            }
         }
     }
 
@@ -254,7 +263,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(context);
         if (session != null) {
             session.close();
-            tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+            if (this.shouldActivityBePropagated(session)) {
+                tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+            }
         }
         closedConnections.add(context.getContextId());
     }
@@ -264,10 +275,12 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
-            if (oldTxn != null) {
-                tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
+            if (this.shouldActivityBePropagated(sessionInfo)) {
+                if (oldTxn != null) {
+                    tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
+                }
+                tryFireMetaEvent(sessionInfo, QMEventAction.UPDATE, System.currentTimeMillis(), context);
             }
-            tryFireMetaEvent(sessionInfo, QMEventAction.UPDATE, System.currentTimeMillis(), context);
         }
     }
 
@@ -276,7 +289,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
-            if (oldTxn != null) {
+            if (this.shouldActivityBePropagated(sessionInfo) && oldTxn != null) {
                 tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
             }
         }
@@ -287,7 +300,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
-            if (oldTxn != null) {
+            if (this.shouldActivityBePropagated(sessionInfo) && oldTxn != null) {
                 tryFireMetaEvent(oldTxn, QMEventAction.END, sessionInfo.getCloseTime(), context);
             }
         }
@@ -299,7 +312,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(executionContext);
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
-            tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), executionContext);
+            if (this.shouldActivityBePropagated(session)) {
+                tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), executionContext);
+            }
         } else {
             log.warn("QM session for '" + executionContext + "' is missing in cache. "
                 + "Cannot handle statement '" + statement + "' open.");
@@ -313,7 +328,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             QMMStatementInfo stat = session.closeStatement(statement, rows);
             if (stat == null) {
                 log.warn("Can't properly handle statement close");
-            } else {
+            } else if (this.shouldActivityBePropagated(session)) {
                 tryFireMetaEvent(stat, QMEventAction.END, stat.getCloseTime(), statement.getSession().getExecutionContext());
             }
         }
@@ -324,7 +339,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
-            if (exec != null) {
+            if (this.shouldActivityBePropagated(session) && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.BEGIN, exec.getOpenTime(), statement.getSession().getExecutionContext());
             }
         }
@@ -335,7 +350,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
-            if (exec != null) {
+            if (this.shouldActivityBePropagated(session) && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.END, exec.getCloseTime(), statement.getSession().getExecutionContext());
             }
         }
@@ -346,7 +361,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
-            if (exec != null) {
+            if (this.shouldActivityBePropagated(session) && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }
@@ -357,7 +372,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
-            if (exec != null) {
+            if (this.shouldActivityBePropagated(session) && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }
@@ -373,7 +388,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
         if (executionContext != null) {
             QMMStatementExecuteInfo execution = executionContext.execution(resultSet.getSourceStatement(), error);
-            if (execution != null) {
+            if (this.shouldActivityBePropagated(executionContext) && execution != null) {
                 tryFireMetaEvent(execution, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }

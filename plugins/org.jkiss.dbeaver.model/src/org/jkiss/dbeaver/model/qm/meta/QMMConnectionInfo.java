@@ -34,6 +34,8 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     @Include
     private final String containerId;
 
+    private final boolean captureActivities;
+
     private String containerName;
     private final String driverId;
     private String connectionUserName;
@@ -49,13 +51,15 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     private transient volatile QMMTransactionInfo transaction;
     //private Throwable stack;
 
-    public QMMConnectionInfo(DBCExecutionContext context, boolean transactional) {
+    public QMMConnectionInfo(DBCExecutionContext context, boolean transactional, boolean captureActivities) {
         super(QMMetaObjectType.CONNECTION_INFO);
         this.containerId = context.getDataSource().getContainer().getId();
         this.driverId = context.getDataSource().getContainer().getDriver().getFullId();
 
         this.projectInfo = new QMMProjectInfo(context.getDataSource().getContainer().getProject());
         initFromContext(context, transactional);
+
+        this.captureActivities = captureActivities;
     }
 
     private QMMConnectionInfo(Builder builder) {
@@ -72,6 +76,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         statementStack = builder.statementStack;
         executionStack = builder.executionStack;
         transaction = builder.transaction;
+        this.captureActivities = true;
     }
 
     private void initFromContext(DBCExecutionContext context, boolean transactional) {
@@ -109,6 +114,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
+        this.captureActivities = true;
     }
 
     @Override
@@ -405,6 +411,10 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     @Override
     public String getConnectionUrl() {
         return connectionUrl;
+    }
+
+    public boolean isCaptureActivities() {
+        return this.captureActivities;
     }
 
     @Override

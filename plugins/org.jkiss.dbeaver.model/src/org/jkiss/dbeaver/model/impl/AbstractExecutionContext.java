@@ -64,7 +64,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource,
     }
 
     protected void onOpenContext() {
-        QMUtils.getDefaultHandler().handleContextOpen(this, false);
+        QMUtils.getDefaultHandler().handleContextOpen(this, false, true);
     }
 
     public static synchronized long generateContextId() {
@@ -146,12 +146,9 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource,
         return false;
     }
 
-    protected void onCloseContext() {
+    protected void closeContext()
+    {
         QMUtils.getDefaultHandler().handleContextClose(this);
-    }
-
-    protected void closeContext() {
-        this.onCloseContext();
 
         log.debug("Execution context closed (" + dataSource.getName() + ", " + this.id +  ")");
     }

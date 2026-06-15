@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -35,12 +36,7 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
 
     @Override
     protected void onOpenContext() {
-        // don't log it
-    }
-
-    @Override
-    protected void onCloseContext() {
-        // don't log it
+        QMUtils.getDefaultHandler().handleContextOpen(this, false, false);
     }
 
     @Override

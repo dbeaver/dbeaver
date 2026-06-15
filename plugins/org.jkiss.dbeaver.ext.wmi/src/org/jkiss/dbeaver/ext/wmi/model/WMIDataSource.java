@@ -54,7 +54,7 @@ public class WMIDataSource extends AbstractDataSource implements DBSInstance, DB
         this.dialect = new WMIDialect();
         this.id = AbstractExecutionContext.generateContextId();
 
-        QMUtils.getDefaultHandler().handleContextOpen(this, false);
+        QMUtils.getDefaultHandler().handleContextOpen(this, false, true);
     }
 
     @NotNull
