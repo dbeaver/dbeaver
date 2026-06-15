@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
+package org.jkiss.dbeaver.ui.controls.findandreplace;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-public class SpreadsheetQuickFilter {
+public class SearchQuickFilterInfo {
 
     // Keep this as private fields for debugging purposes
     @NotNull
@@ -38,7 +35,7 @@ public class SpreadsheetQuickFilter {
     @NotNull
     private final Predicate<String> predicate;
 
-    public SpreadsheetQuickFilter(@NotNull String text, boolean caseSensitive, boolean useRegex, boolean wholeWord) {
+    public SearchQuickFilterInfo(@NotNull String text, boolean caseSensitive, boolean useRegex, boolean wholeWord) {
         this.text = text;
         this.caseSensitive = caseSensitive;
         this.useRegex = useRegex;
@@ -60,17 +57,37 @@ public class SpreadsheetQuickFilter {
             }
         }
         this.pattern = Pattern.compile(regex, patternFlags);
-        this.predicate = s -> this.pattern.matcher(s).find();
+        this.predicate = this::stringMatch;
     }
 
-    public boolean match(@NotNull ResultSetRow row, @NotNull Function<Object, String> valueFormatter) {
-        for (Object value : row.getValues()) {
-            String valueString = valueFormatter.apply(value);
-            if (CommonUtils.isNotEmpty(valueString) && this.predicate.test(valueString)) {
-                return true;
-            }
-        }
+    public boolean isCaseSensitive() {
+        return this.caseSensitive;
+    }
 
-        return false;
+    public boolean isUseRegex() {
+        return this.useRegex;
+    }
+
+    public boolean isWholeWord() {
+        return this.wholeWord;
+    }
+
+    @NotNull
+    public String getText() {
+        return this.text;
+    }
+
+    @NotNull
+    public Pattern getPattern() {
+        return this.pattern;
+    }
+
+    @NotNull
+    public Predicate<String> getPredicate() {
+        return this.predicate;
+    }
+
+    public boolean stringMatch(@NotNull String string) {
+        return this.pattern.matcher(string).find();
     }
 }

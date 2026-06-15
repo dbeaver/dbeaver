@@ -120,6 +120,7 @@ public class UIIcon {
     public static final DBIcon FILTER_OBJECTS = new DBIcon("misc/filter_objects.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CONNECTED = new DBIcon("misc/filter_connected.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_ALL = new DBIcon("misc/filter_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FIND_REPLACE = new DBIcon("misc/find_replace.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon EVENT = new DBIcon("event", "misc/event.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon HOME = new DBIcon("home", "misc/home.svg"); //$NON-NLS-1$ //$NON-NLS-2$

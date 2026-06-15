@@ -153,6 +153,10 @@ public interface IResultSetPresentation {
 
     void printResultSet();
 
+    default boolean openFindReplaceOverlay() {
+        return false;
+    }
+
     /**
      * Retrieves font identifier to increase or decrease its size as the user zooms in/out on the presentation.
      *

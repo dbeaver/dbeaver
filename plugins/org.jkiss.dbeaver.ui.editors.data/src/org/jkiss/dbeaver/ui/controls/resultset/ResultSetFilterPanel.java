@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllTransformer
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -328,6 +329,24 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 historyForwardButton.setEnabled(false);
                 historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
             }
+
+            UIUtils.createToolBarSeparator(filterToolbar, SWT.NONE);
+
+            ToolItem openFindReplaceButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+            openFindReplaceButton.setImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE));
+            openFindReplaceButton.setToolTipText(ActionUtils.findCommandDescription(
+                IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, viewer.getSite(), false
+            ));
+            openFindReplaceButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (!this.viewer.getActivePresentation().openFindReplaceOverlay()) {
+                    ResultSetPresentationDescriptor pd = this.viewer.getAvailablePresentations().stream()
+                        .filter(p -> p.getId().equals(SpreadsheetPresentation.PRESENTATION_ID))
+                        .findFirst().orElse(null);
+                    this.viewer.switchPresentation(pd);
+                    // open overlay after the presentation init events for the focus to correctly go to the search-box
+                    UIUtils.asyncExec(() -> this.viewer.getActivePresentation().openFindReplaceOverlay());
+                }
+            }));
         }
 
         this.addControlListener(new ControlListener() {

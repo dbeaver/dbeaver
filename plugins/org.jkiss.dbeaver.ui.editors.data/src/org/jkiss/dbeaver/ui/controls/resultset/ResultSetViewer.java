@@ -3788,7 +3788,7 @@ public class ResultSetViewer extends Viewer
         @Nullable DBDAttributeBinding attribute,
         @Nullable ResultSetRow row
     ) {
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_OPEN_QUICK_FILTER));
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE));
         if (attribute != null && supportsDataFilter()) {
             {
                 filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_MENU_DISTINCT));
