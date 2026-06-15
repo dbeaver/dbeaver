@@ -14,40 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 /**
- * Represents a parameter definition for an AI function/tool call
+ * Resolved navigation target for a result set reference.
  */
-public interface AIFunctionParameter {
+public class DBDReferenceNavigation {
 
     @NotNull
-    String getName();
-
+    private final DBSEntity targetEntity;
     @NotNull
-    String getType();
+    private final DBDDataFilter targetFilter;
 
-    @Nullable
-    String getDescription();
-
-    boolean isRequired();
-
-    @Nullable
-    String getDefaultValue();
-
-    @Nullable
-    String[] getValidValues();
-
-    @Nullable
-    default AIFunctionParameterTransformer getTransformer() {
-        return null;
+    public DBDReferenceNavigation(
+        @NotNull DBSEntity targetEntity,
+        @NotNull DBDDataFilter targetFilter
+    ) {
+        this.targetEntity = targetEntity;
+        this.targetFilter = targetFilter;
     }
 
-    @Nullable
-    default String getTransformerSuffix() {
-        return null;
+    @NotNull
+    public DBSEntity getTargetEntity() {
+        return targetEntity;
+    }
+
+    @NotNull
+    public DBDDataFilter getTargetFilter() {
+        return targetFilter;
     }
 }
