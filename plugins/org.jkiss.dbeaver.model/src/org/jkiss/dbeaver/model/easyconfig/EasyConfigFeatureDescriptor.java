@@ -14,26 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.config.easy.spi;
+package org.jkiss.dbeaver.model.easyconfig;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public final class EasyConfigFeatureDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
-    private final String preferenceKey;
-    private final boolean enabled;
+    private final boolean enabledByDefault;
 
     EasyConfigFeatureDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.preferenceKey = config.getAttribute(RegistryConstants.ATTR_PREFERENCE_KEY);
-        this.enabled = Boolean.parseBoolean(config.getAttribute(RegistryConstants.ATTR_ENABLED));
+        this.id = config.getAttribute("id");
+        this.label = config.getAttribute("label");
+        this.enabledByDefault = Boolean.parseBoolean(config.getAttribute("enabledByDefault"));
     }
 
     @NotNull
@@ -46,12 +43,7 @@ public final class EasyConfigFeatureDescriptor extends AbstractDescriptor {
         return label;
     }
 
-    @NotNull
-    public String getPreferenceKey() {
-        return preferenceKey;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
+    public boolean isEnabledByDefault() {
+        return enabledByDefault;
     }
 }

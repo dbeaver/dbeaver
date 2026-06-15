@@ -8,6 +8,7 @@
     <extension-point id="org.jkiss.dbeaver.dataHintProvider" name="Data editor hint provider" schema="schema/org.jkiss.dbeaver.dataHintProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.easyConfig" name="%extension-point.org.jkiss.dbeaver.easyConfig.name" schema="schema/org.jkiss.dbeaver.easyConfig.exsd"/>
     <extension-point id="org.jkiss.dbeaver.serialize" name="%extension-point.org.jkiss.dbeaver.serialize.name" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
     <extension-point id="org.jkiss.dbeaver.navigator" name="%extension-point.org.jkiss.dbeaver.navigator.name" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
     <extension-point id="org.jkiss.dbeaver.settings" name="DBeaver Settings" schema="schema/org.jkiss.dbeaver.settings.exsd"/>
@@ -221,6 +222,20 @@
             namespace="org.jkiss.dbeaver.core.global"
             properties="standalone,distributed,bundleInstalled,hasPreference,hasEnvVariable"
             type="java.lang.Object"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.model.impl.easyconfig.EasyConfigPropertyTester"
+            id="org.jkiss.dbeaver.easyConfig"
+            namespace="org.jkiss.dbeaver.easyConfig"
+            properties="isFeatureEnabled"
+            type="java.lang.Object"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.easyConfig">
+        <feature id="cloud" label="Cloud integration (AWS, Azure, Google Cloud)" enabledByDefault="true"/>
+        <feature id="dashboards" label="Database dashboards" enabledByDefault="true"/>
+        <feature id="git" label="Git version control" enabledByDefault="false"/>
+        <feature id="tableau" label="Tableau integration" enabledByDefault="false"/>
+        <feature id="debugger" label="Procedure debugger" enabledByDefault="false"/>
     </extension>
 
 </plugin>

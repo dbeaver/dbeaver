@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWizardPage;
 import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageDescriptor;
-import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigRegistry;
+import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageRegistry;
 
 public final class EasyConfigWizard extends Wizard {
     private static final Log log = Log.getLog(EasyConfigWizard.class);
@@ -33,7 +33,7 @@ public final class EasyConfigWizard extends Wizard {
 
     @Override
     public void addPages() {
-        for (EasyConfigPageDescriptor descriptor : EasyConfigRegistry.getInstance().getPages()) {
+        for (EasyConfigPageDescriptor descriptor : EasyConfigPageRegistry.getInstance().getPages()) {
             EasyConfigWizardPage page;
             try {
                 page = descriptor.createPage();

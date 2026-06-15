@@ -84,12 +84,9 @@
     <extension point="org.eclipse.core.expressions.definitions">
         <!-- Enabled by the user -->
         <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.user">
-            <and>
-                <not>
-                    <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
-                </not>
-                <test property="org.jkiss.dbeaver.core.global.hasPreference" value="easyConfig.features.ai"/>
-            </and>
+            <not>
+                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
+            </not>
         </definition>
     </extension>
 

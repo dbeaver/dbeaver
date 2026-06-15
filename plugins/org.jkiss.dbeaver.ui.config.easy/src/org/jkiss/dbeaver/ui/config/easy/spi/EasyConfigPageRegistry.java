@@ -25,39 +25,33 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class EasyConfigRegistry {
+public final class EasyConfigPageRegistry {
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.easyConfig";
 
-    private static EasyConfigRegistry instance;
+    private static EasyConfigPageRegistry instance;
 
     private final List<EasyConfigPageDescriptor> pages;
-    private final List<EasyConfigFeatureDescriptor> features;
 
-    private EasyConfigRegistry(@NotNull IExtensionRegistry registry) {
+    private EasyConfigPageRegistry(@NotNull IExtensionRegistry registry) {
         var pages = new ArrayList<EasyConfigPageDescriptor>();
-        var features = new ArrayList<EasyConfigFeatureDescriptor>();
 
         for (IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_ID)) {
-            switch (element.getName()) {
-                case "page" -> pages.add(new EasyConfigPageDescriptor(element));
-                case "feature" -> features.add(new EasyConfigFeatureDescriptor(element));
-                default -> throw new IllegalStateException("Unknown element " + element.getName());
+            if ("page".equals(element.getName())) {
+                pages.add(new EasyConfigPageDescriptor(element));
+            } else {
+                throw new IllegalStateException("Unknown element " + element.getName());
             }
         }
 
         this.pages = pages.stream()
             .sorted(Comparator.comparingInt(EasyConfigPageDescriptor::getOrder))
             .toList();
-
-        this.features = features.stream()
-            .sorted(Comparator.comparing(EasyConfigFeatureDescriptor::getLabel))
-            .toList();
     }
 
     @NotNull
-    public static synchronized EasyConfigRegistry getInstance() {
+    public static synchronized EasyConfigPageRegistry getInstance() {
         if (instance == null) {
-            instance = new EasyConfigRegistry(Platform.getExtensionRegistry());
+            instance = new EasyConfigPageRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
@@ -65,10 +59,5 @@ public final class EasyConfigRegistry {
     @NotNull
     public List<EasyConfigPageDescriptor> getPages() {
         return pages;
-    }
-
-    @NotNull
-    public List<EasyConfigFeatureDescriptor> getFeatures() {
-        return features;
     }
 }

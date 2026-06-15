@@ -18,13 +18,10 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.easyconfig.EasyConfigFeatureDescriptor;
+import org.jkiss.dbeaver.model.easyconfig.EasyConfigFeatureRegistry;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
-import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigFeatureDescriptor;
-import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigRegistry;
 import org.jkiss.dbeaver.ui.forms.*;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,20 +41,18 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
 
     @Override
     public void loadSettings() {
-        var store = DBWorkbench.getPlatform().getPreferenceStore();
-        for (EasyConfigFeatureDescriptor descriptor : EasyConfigRegistry.getInstance().getFeatures()) {
-            var value = CommonUtils.toBoolean(store.getString(descriptor.getPreferenceKey()), descriptor.isEnabled());
-            features.put(descriptor, UIObservable.of(value));
+        var registry = EasyConfigFeatureRegistry.getInstance();
+        for (EasyConfigFeatureDescriptor descriptor : registry.getFeatures()) {
+            features.put(descriptor, UIObservable.of(registry.isFeatureEnabled(descriptor)));
         }
     }
 
     @Override
     public void applySettings() {
-        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        var registry = EasyConfigFeatureRegistry.getInstance();
         for (Map.Entry<EasyConfigFeatureDescriptor, UIObservable<Boolean>> entry : features.entrySet()) {
-            store.setValue(entry.getKey().getPreferenceKey(), String.valueOf(entry.getValue().get()));
+            registry.setFeatureEnabled(entry.getKey(), entry.getValue().get());
         }
-        PrefUtils.savePreferenceStore(store);
     }
 
     @NotNull
@@ -82,7 +77,7 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
                     .align(UIAlignX.FILL, UIAlignY.FILL)
                     .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                     .indent(pb2 -> {
-                        for (EasyConfigFeatureDescriptor descriptor : EasyConfigRegistry.getInstance().getFeatures()) {
+                        for (EasyConfigFeatureDescriptor descriptor : EasyConfigFeatureRegistry.getInstance().getFeatures()) {
                             pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
                         }
                     })
