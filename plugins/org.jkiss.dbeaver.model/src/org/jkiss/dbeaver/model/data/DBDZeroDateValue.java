@@ -14,33 +14,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.data.value;
+package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalField;
+import java.time.temporal.UnsupportedTemporalTypeException;
+import java.util.Set;
 
-public class PostgreOffsetEndOfDay extends PostgreEndOfDay {
+public class DBDZeroDateValue implements TemporalAccessor {
 
-    private final ZoneOffset offset;
+    public static final DBDZeroDateValue INSTANCE = new DBDZeroDateValue();
 
-    public PostgreOffsetEndOfDay(@NotNull ZoneOffset offset) {
-        this.offset = offset;
-    }
+    static final Set<TemporalField> fields = Set.of(
+        ChronoField.YEAR_OF_ERA,
+        ChronoField.YEAR,
+        ChronoField.MONTH_OF_YEAR,
+        ChronoField.DAY_OF_MONTH
+    );
 
     @Override
     public boolean isSupported(@NotNull TemporalField field) {
-        return super.isSupported(field) || ChronoField.OFFSET_SECONDS.equals(field);
+        return fields.contains(field);
     }
 
     @Override
     public long getLong(@NotNull TemporalField field) {
-        if (ChronoField.OFFSET_SECONDS.equals(field)) {
-            return this.offset.getTotalSeconds();
+        if (field.isSupportedBy(this)) {
+            return 0;
         } else {
-            return super.getLong(field);
+            throw new UnsupportedTemporalTypeException("Unsupported field: " + field);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "0000-00-00";
     }
 }

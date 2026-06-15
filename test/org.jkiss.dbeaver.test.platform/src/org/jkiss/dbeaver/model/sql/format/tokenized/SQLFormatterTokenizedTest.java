@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,11 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-
-import static org.junit.Assert.assertEquals;
 
 public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
@@ -49,7 +48,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         return formatter.format(sql, configuration);
     }
 
-    @Before
+    @BeforeEach
     public void init() throws Exception {
         Mockito.when(configuration.getSyntaxManager()).thenReturn(syntaxManager);
         String[] delimiters = new String[]{";"};
@@ -77,7 +76,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
 
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -90,7 +89,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String format = format(inputString);
 
         //then
-        assertEquals(expectedString, format);
+        Assertions.assertEquals(expectedString, format);
     }
 
     @Test
@@ -103,7 +102,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -116,7 +115,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -129,7 +128,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -145,9 +144,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
-
 
     @Test
     public void shouldAddIndentForName() {
@@ -162,7 +160,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -177,7 +175,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -198,7 +196,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -216,7 +214,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -233,7 +231,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -264,7 +262,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -287,9 +285,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
-
 
     private String getExpectedStringWithLineBreakBeforeBraces() {
         StringBuilder sb = new StringBuilder();
@@ -303,7 +300,6 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
                 .append("FROM").append(lineBreak).append("\tdual");
         return sb.toString();
     }
-
 
     private String getExpectedString() {
         StringBuilder sb = new StringBuilder();
@@ -370,10 +366,10 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
             "\t*" + lineBreak + //$NON-NLS-1$
             SQLConstants.KEYWORD_FROM + lineBreak +
             "\tAlbum a;"; //$NON-NLS-1$
-        assertEquals(
-            "SQLFormatterTokenized does not properly format query with SELECT* (no space between keyword and asterisk)",
+        Assertions.assertEquals(
             expected,
-            format(sql)
+            format(sql),
+            "SQLFormatterTokenized does not properly format query with SELECT* (no space between keyword and asterisk)"
         );
 
         sql = "SELECT* FROM Album a UNION ALL SELECT* FROM Album a;"; //$NON-NLS-1$
@@ -386,10 +382,10 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
             "\t*" + lineBreak + //$NON-NLS-1$
             SQLConstants.KEYWORD_FROM + lineBreak +
             "\tAlbum a;";
-        assertEquals(
-            "SQLFormatterTokenized does not properly format query with multiple SELECT* (no space between keyword and asterisk)",
+        Assertions.assertEquals(
             expected,
-            format(sql)
+            format(sql),
+            "SQLFormatterTokenized does not properly format query with multiple SELECT* (no space between keyword and asterisk)"
         );
     }
 
@@ -405,7 +401,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
             "\t'z' AS z" + lineBreak + //$NON-NLS-1$
             SQLConstants.KEYWORD_FROM + lineBreak + //$NON-NLS-1$
             "\tdual;"; //$NON-NLS-1$
-        assertEquals("SQLFormatterTokenized does not properly format query with a comment between SELECT and FROM", expected, format(sql));
+        Assertions.assertEquals(expected, format(sql), "SQLFormatterTokenized does not properly format query with a comment between SELECT and FROM");
 
         sql = "SELECT 'x' AS X FROM dual" + lineBreak + //$NON-NLS-1$
             "--comment" + lineBreak + //$NON-NLS-1$
@@ -417,7 +413,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
             "\t--comment" + lineBreak + //$NON-NLS-1$
             SQLConstants.KEYWORD_WHERE + lineBreak + //$NON-NLS-1$
             "\t1 = 1;"; //$NON-NLS-1$
-        assertEquals("SQLFormatterTokenized does not properly format query with a comment between FROM and WHERE", expected, format(sql));
+        Assertions.assertEquals(expected, format(sql), "SQLFormatterTokenized does not properly format query with a comment between FROM and WHERE");
 
         sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--comment" + lineBreak + "a, b FROM a ;";
         expected = SQLConstants.KEYWORD_SELECT + lineBreak +
@@ -426,17 +422,17 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
             "\tb" + lineBreak +
             SQLConstants.KEYWORD_FROM + lineBreak +
             "\ta ;";
-        assertEquals(
-            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] without indent before the name",
+        Assertions.assertEquals(
             expected,
-            format(sql)
+            format(sql),
+            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] without indent before the name"
         );
 
         sql = SQLConstants.KEYWORD_SELECT + lineBreak + "\t--comment" + lineBreak + "\t\ta, b FROM a ;";
-        assertEquals(
-            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] with 2 indents before the name",
+        Assertions.assertEquals(
             expected,
-            format(sql)
+            format(sql),
+            "SQLFormatterTokenized does not properly format query with a comment right before [NAME] with 2 indents before the name"
         );
     }
 
@@ -460,7 +456,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expectedString, formattedString);
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test
@@ -483,7 +479,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expString, formattedString);
+        Assertions.assertEquals(expString, formattedString);
     }
 
     @Test
@@ -505,7 +501,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expString, formattedString);
+        Assertions.assertEquals(expString, formattedString);
     }
 
     @Test
@@ -524,7 +520,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expString, formattedString);
+        Assertions.assertEquals(expString, formattedString);
     }
 
     @Test
@@ -550,7 +546,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(expString, formattedString);
+        Assertions.assertEquals(expString, formattedString);
     }
 
     @Test
@@ -562,6 +558,6 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        assertEquals(inputString, formattedString);
+        Assertions.assertEquals(inputString, formattedString);
     }
 }
