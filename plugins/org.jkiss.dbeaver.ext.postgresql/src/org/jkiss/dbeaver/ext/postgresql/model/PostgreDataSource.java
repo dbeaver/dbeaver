@@ -573,11 +573,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
         } catch (DBCException e) {
-            final Throwable cause = CommonUtils.getRootCause(e);
-            final StackTraceElement element = cause.getStackTrace()[0];
-
             final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
-            if ("sun.security.util.DerValue".equals(element.getClassName()) && handler != null) { //$NON-NLS-1$
+            if (handler != null && isSSLKeyReadError(e)) {
                 try {
                     final Path dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
                     if (SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst)) {
@@ -611,6 +608,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
 
         return pgConnection;
+    }
+
+    private static boolean isSSLKeyReadError(@NotNull Throwable error) {
+        StackTraceElement[] rootStack = CommonUtils.getRootCause(error).getStackTrace();
+        if (rootStack.length > 0 && "sun.security.util.DerValue".equals(rootStack[0].getClassName())) {
+            return true;
+        }
+        return CommonUtils.getAllExceptionMessages(error).contains("Could not read SSL key");
     }
 
     @Override
