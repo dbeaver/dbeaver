@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,21 +22,21 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.databend.model.DatabendDataSource;
 import org.jkiss.dbeaver.ext.databend.model.DatabendMetaModel;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPInformationProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 
-public class DatabendDataSourceProvider extends GenericDataSourceProvider implements DBPInformationProvider {
+public class DatabendDataSourceProvider extends GenericDataSourceProvider<DatabendDataSource> implements DBPInformationProvider {
 
     public DatabendDataSourceProvider() {
+        super(DatabendDataSource.class);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public DatabendDataSource openDataSource(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBPDataSourceContainer container)
             throws DBException {

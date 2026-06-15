@@ -42,8 +42,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
-    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.LabelBuilderImpl,
-    UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
+    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.ControlBuilderImpl,
+    UIControlBuilderImpl.LabelBuilderImpl, UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
@@ -318,15 +318,29 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class ButtonBuilderImpl extends UIControlBuilderImpl<ButtonBuilder, Button> implements ButtonBuilder {
+        enum Kind {
+            BUTTON,
+            CHECK,
+            RADIO;
+
+            int toSWT() {
+                return switch (this) {
+                    case BUTTON -> SWT.NONE;
+                    case CHECK -> SWT.CHECK;
+                    case RADIO -> SWT.RADIO;
+                };
+            }
+        }
+
         private final String text;
         private final Consumer<SelectionEvent> onSelect;
-        private final int style;
+        private final Kind kind;
         private UIObservable<Boolean> selected;
 
-        ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, int style) {
+        ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
             this.text = text;
             this.onSelect = onSelect;
-            this.style = style;
+            this.kind = kind;
         }
 
         @NotNull
@@ -339,17 +353,21 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            Button button = UIControlFactory.createButton(parent, style, text);
+            Button button = UIControlFactory.createButton(parent, kind.toSWT(), text);
             if (onSelect != null) {
                 button.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
             }
             return button;
         }
 
-        @NotNull
+        @Nullable
         @Override
         protected Point preferredSize(@NotNull Button control) {
-            return new Point(UIUtils.getDialogButtonWidth(control), SWT.DEFAULT);
+            if (kind == Kind.BUTTON) {
+                return new Point(UIUtils.getDialogButtonWidth(control), SWT.DEFAULT);
+            } else {
+                return null;
+            }
         }
 
         @Override
@@ -408,6 +426,20 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
                 UpdateValueStrategy.create(IConverter.create(items::get)),
                 UpdateValueStrategy.create(IConverter.create(items::indexOf))
             );
+        }
+    }
+
+    static final class ControlBuilderImpl extends UIControlBuilderImpl<ControlBuilder, Control> implements ControlBuilder {
+        private final Function<Composite, Control> factory;
+
+        ControlBuilderImpl(@NotNull Function<Composite, Control> factory) {
+            this.factory = factory;
+        }
+
+        @NotNull
+        @Override
+        protected Control create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            return factory.apply(parent);
         }
     }
 }

@@ -296,11 +296,10 @@ public class FontPreferenceOverrides {
             // see ColorsAndFontsPreferencePage.createContents(..)
             Control[] prefsPageParts = parent.getChildren(); // page content container and defaults&apply buttons container 
             Composite prefsPageContent = (Composite)prefsPageParts[Math.max(prefsPageParts.length - 1, 0)];
-            Composite advancedCompositeSash = (Composite)prefsPageContent.getChildren()[0];
-            Composite mainColumn = (Composite)advancedCompositeSash.getChildren()[0];
-            FilteredTree tree = (FilteredTree)mainColumn.getChildren()[1];
-            
-            tree.getViewer().setContentProvider(new FilteredThemeContentProvider(prefIdsToHide));
+            FilteredTree tree = UIUtils.getChildOfTypeDeep(prefsPageContent, FilteredTree.class);
+            if (tree != null) {
+                tree.getViewer().setContentProvider(new FilteredThemeContentProvider(prefIdsToHide));
+            }
         }
 
         @Override

@@ -302,6 +302,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
+        log.debug("\tPatch workbench configuration");
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
 
         // Run instance server
@@ -373,7 +374,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         try {
-            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+            DBeaverCommandLine.getInstance().preprocessCommandLine(args);
         } catch (DBException e) {
             log.error("Error preprocessing command line", e);
         }
@@ -452,13 +453,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return defaultHomePath;
     }
 
-    private void updateSplashHandler() {
+    public Shell updateSplashHandler() {
         if (ArrayUtils.contains(Platform.getApplicationArgs(), "-nosplash")) {
-            return;
+            return null;
         }
         try {
             // look and see if there's a splash shell we can parent off of
-            Shell shell = WorkbenchPlugin.getSplashShell(display);
+            Shell shell = WorkbenchPlugin.getSplashShell(getDisplay());
             if (shell != null) {
                 // should set the icon and message for this shell to be the
                 // same as the chooser dialog - this will be the guy that lives in
@@ -466,12 +467,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 // with no message.
                 shell.setText(ChooseWorkspaceDialog.getWindowTitle());
                 shell.setImages(Window.getDefaultImages());
+                return shell;
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);
             System.err.println("Error updating splash shell");
         }
-
+        return null;
     }
 
     /**
@@ -506,7 +508,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private Display getDisplay() {
         if (display == null) {
-            log.debug("Create display");
+            log.debug("\tCreate display");
             // Set display name at the very beginning (#609)
             // This doesn't initialize display - just sets default title
             Display.setAppName(GeneralUtils.getProductName());

@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -222,6 +223,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                         ensureOpen();
                         if (dataSourceRegistry == null) {
                             dataSourceRegistry = createDataSourceRegistry();
+                            dataSourceRegistry.initializeDataSources();
                         }
                     }
                 }
@@ -232,6 +234,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
                 registryOpener.run();
             } else {
                 RuntimeUtils.runTask(monitor -> registryOpener.run(), "Load registry", 0);
+            }
+            if (dataSourceRegistry == null) {
+                throw new DBRuntimeException("Internal error - datasource registry is null after init");
             }
         }
         return dataSourceRegistry;

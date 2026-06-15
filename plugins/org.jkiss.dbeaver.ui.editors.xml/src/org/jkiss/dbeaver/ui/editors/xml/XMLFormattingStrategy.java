@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,11 @@ package org.jkiss.dbeaver.ui.editors.xml;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 import org.xml.sax.InputSource;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
@@ -29,8 +32,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.StringReader;
-import java.io.StringWriter;
 
 /**
  * The formatting strategy that transforms SQL keywords to upper case
@@ -63,6 +64,10 @@ public class XMLFormattingStrategy extends ContextBasedFormattingStrategy {
             SAXParserFactory spf = SAXParserFactory.newInstance();
             spf.setNamespaceAware(true);
             spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            spf.setFeature(XMLUtils.FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+            spf.setFeature(XMLUtils.FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
+            spf.setFeature(XMLUtils.FEATURE_DISALLOW_DOCTYPE_DECL, true);
+
             Source src = new SAXSource(spf.newSAXParser().getXMLReader(), new InputSource(new StringReader(content)));
 
             StreamResult result = new StreamResult(new StringWriter());

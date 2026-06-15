@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
@@ -64,7 +64,7 @@ public class OAIMessageFactory {
         message.name = functionCall.getFunctionName();
 
         Map<String, Object> argumentsMap = functionCall.getArguments();
-        message.arguments = argumentsMap == null ? "{}" : JSONUtils.GSON.toJson(argumentsMap);
+        message.arguments = JSONUtils.GSON.toJson(argumentsMap);
 
         Map<String, String> additionalProperties = functionCall.getMessageMetadata();
         if (additionalProperties != null) {

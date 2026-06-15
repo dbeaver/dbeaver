@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.data.storage;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -47,6 +48,7 @@ public class BytesContentStorage implements DBDContentStorage, DBDContentCached 
         this.encoding = charset.name();
     }
 
+    @NotNull
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -54,6 +56,7 @@ public class BytesContentStorage implements DBDContentStorage, DBDContentCached 
         return new ByteArrayInputStream(data);
     }
 
+    @NotNull
     @Override
     public Reader getContentReader()
         throws IOException
@@ -69,14 +72,16 @@ public class BytesContentStorage implements DBDContentStorage, DBDContentCached 
         return data.length;
     }
 
+    @NotNull
     @Override
     public String getCharset()
     {
         return encoding;
     }
 
+    @NotNull
     @Override
-    public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
+    public DBDContentStorage cloneStorage(@NotNull DBRProgressMonitor monitor)
         throws IOException
     {
         return new BytesContentStorage(data, encoding);
@@ -106,6 +111,7 @@ public class BytesContentStorage implements DBDContentStorage, DBDContentCached 
         return new BytesContentStorage(result, encoding);
     }
 
+    @NotNull
     @Override
     public Object getCachedValue() {
         return data;

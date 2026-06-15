@@ -74,18 +74,14 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
-        return new AIEngineRequestFactory(
-            new AIDatabaseSnapshotService(),
-            new DummyTokenCounter()
-        );
+        return new AIEngineRequestFactory(new DummyTokenCounter());
     }
 
     @NotNull
     @Override
     public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         checkAiEnablement();
@@ -94,13 +90,11 @@ public class AIAssistantImpl implements AIAssistant {
         try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
-                context,
-                systemGenerator,
+                functionContext,
                 messages,
                 engine,
                 engineDescriptor
             );
-            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
 
@@ -134,7 +128,8 @@ public class AIAssistantImpl implements AIAssistant {
                             );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
-                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue, null));
+                            AIMessage fcMessage = AIMessage.functionCall(functionCall, result);
+                            newMessages.add(fcMessage);
                             AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
@@ -162,6 +157,11 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
+    @Override
+    public boolean isFunctionSupported() {
+        return false;
+    }
+
     @NotNull
     @Override
     public AIToolboxManager getToolboxManager() {
@@ -174,8 +174,7 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     public AIEngineRequest buildAiEngineRequest(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
@@ -185,8 +184,7 @@ public class AIAssistantImpl implements AIAssistant {
             this,
             engine,
             engineDescriptor,
-            systemGenerator,
-            context,
+            functionContext,
             messages
         );
     }
@@ -225,9 +223,6 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         Map<String, Object> arguments = functionCall.getArguments();
-        if (arguments == null) {
-            arguments = Map.of();
-        }
         log.debug("Call AI function " + function.getId() + "(" +
             arguments.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())
@@ -242,7 +237,19 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return function.getToolbox().callFunction(context, function, arguments);
+        AIFunctionResult result;
+        try {
+            result = function.getToolbox().callFunction(context, function, arguments);
+        } catch (DBException e) {
+            result = new AIFunctionResult(
+                function.getType(),
+                "Error calling function '" + function.getId() + "': " + e.getMessage(),
+                null,
+                e
+            );
+        }
+
+        return result;
     }
 
     protected void checkAiEnablement() throws DBException {

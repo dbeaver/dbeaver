@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Contributors:
- *    Frederick Arand - initial implementation
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
-import org.jkiss.dbeaver.ext.hana.model.HANADataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -47,8 +44,8 @@ public class HANAHalfVectorValueHandler extends HANAVectorValueHandler {
     public static final HANAHalfVectorValueHandler INSTANCE = new HANAHalfVectorValueHandler();
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object,
-            boolean copy, boolean validateValue) throws DBCException {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object,
+                                     boolean copy, boolean validateValue) throws DBCException {
         if (object != null && object instanceof Array array
                 && type.getTypeName().equals(HANAConstants.DATA_TYPE_NAME_HALF_VECTOR)) {
             try {

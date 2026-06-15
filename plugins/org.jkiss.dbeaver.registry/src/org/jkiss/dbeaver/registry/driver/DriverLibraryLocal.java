@@ -80,10 +80,9 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
-
 
     @Nullable
     @Override
@@ -94,7 +93,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             Path resolvedCache;
             List<DriverFileInfo> driverFileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
             if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
-                DriverFileInfo driverFileInfo = driverFileInfos.get(0);
+                DriverFileInfo driverFileInfo = driverFileInfos.getFirst();
                 resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile().toString());
             } else {
                 // need to correct driver initialization, otherwise, if at least one file was copied,
@@ -152,6 +151,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         return platformFile;
     }
 
+    @NotNull
     private Path resolveCacheDir() {
         if (isUseOriginalJar()) {
             return DriverDescriptor.getProvidedDriversStorageFolder();

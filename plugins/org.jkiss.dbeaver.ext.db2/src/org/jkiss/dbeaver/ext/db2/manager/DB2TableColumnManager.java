@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,8 +85,13 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // ------
 
     @Override
-    protected DB2TableColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container,
-                                                  Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
+    protected DB2TableColumn createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         DB2TableColumn column = new DB2TableColumn((DB2TableBase) container);
         column.setName(getNewColumnName(monitor, context, (DB2TableBase) container));
         return column;

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
@@ -174,12 +175,15 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull DBPProject project,
         @NotNull String filePath
     ) throws DBException, IOException {
-        DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
-        if (projectNode != null) {
-            DBNNode fileNode = projectNode.findNodeByRelativePath(monitor, filePath);
-            if (fileNode instanceof DBNStreamData sd) {
-                try (Reader reader = new InputStreamReader(sd.openInputStream())) {
-                    return IOUtils.readToString(reader);
+        DBNModel navigatorModel = project.getNavigatorModel();
+        if (navigatorModel != null) {
+            DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
+            if (projectNode != null) {
+                DBNNode fileNode = projectNode.findNodeByRelativePath(monitor, filePath);
+                if (fileNode instanceof DBNStreamData sd) {
+                    try (Reader reader = new InputStreamReader(sd.openInputStream())) {
+                        return IOUtils.readToString(reader);
+                    }
                 }
             }
         }

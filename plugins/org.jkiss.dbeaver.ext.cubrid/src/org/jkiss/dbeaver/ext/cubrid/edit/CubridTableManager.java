@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -51,7 +50,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     @Override
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
-        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        CubridDataSource dataSource = user.getDataSource();
         boolean isDBAGroup = dataSource.isDBAGroup();
         boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
         boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
@@ -67,9 +66,9 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     @Nullable
     @Override
     public Collection<? extends DBSObject> getChildObjects(
-        DBRProgressMonitor monitor,
-        GenericTableBase object,
-        Class<? extends DBSObject> childType
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase object,
+        @NotNull Class<? extends DBSObject> childType
     ) throws DBException {
         if (childType == CubridTableColumn.class) {
             return object.getAttributes(monitor);
@@ -79,9 +78,8 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     public void appendPartition(DBRProgressMonitor monitor, StringBuilder query, CubridTable table) throws DBException {
         List<CubridPartition> partitions = table.getPartitions(monitor);
-        String type = partitions.getFirst().getTableType().toUpperCase();
+        String type = partitions.getFirst().getTableType();
         String key = partitions.getFirst().getExpression();
-        CubridTableColumn column = (CubridTableColumn) table.getAttribute(monitor, key);
 
         query.append(String.format("PARTITION BY %s (%s)", type, key));
         if ("HASH".equals(type)) {
@@ -98,13 +96,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
                 if ("MAXVALUE".equalsIgnoreCase(value)) {
                     query.append("MAXVALUE");
                 } else {
-                    query.append("(").append(DBPDataKind.NUMERIC == column.getDataKind() ?
-                        value : SQLUtils.quoteString(partition, value)).append(")");
+                    query.append("(").append(value).append(")");
                 }
             } else { //LIST
                 query.append(" VALUES IN ");
-                query.append("(").append(DBPDataKind.NUMERIC == column.getDataKind() ?
-                    value : "'" + value.replaceAll(",\\s*", "', '") + "'").append(")");
+                query.append("(").append(value).append(")");
             }
             if (!CommonUtils.isEmpty(partition.getDescription())) {
                 query.append(" COMMENT ").append(SQLUtils.quoteString(partition, partition.getDescription()));
@@ -235,17 +231,17 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
-    public boolean canRenameObject(GenericTableBase object) {
+    public boolean canRenameObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canEditObject(GenericTableBase object) {
+    public boolean canEditObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableBase object) {
+    public boolean canDeleteObject(@NotNull GenericTableBase object) {
         return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

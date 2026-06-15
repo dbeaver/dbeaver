@@ -429,6 +429,19 @@ public class DesktopUI extends ConsoleUserInterface {
         }.execute();
     }
 
+    @Override
+    public boolean promptAuthModelCredentials(
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) {
+        return new UITask<Boolean>() {
+            @Override
+            public Boolean runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
+                return AuthModelCredentialsDialog.openDialog(shell, dataSourceContainer);
+            }
+        }.execute();
+    }
+
     @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible) {
@@ -478,6 +491,17 @@ public class DesktopUI extends ConsoleUserInterface {
                 } else {
                     return null;
                 }
+            }
+        }.execute();
+    }
+
+    @Override
+    public String promptText(String title, String prompt, String defValue) {
+        return new UITask<String>() {
+            @Override
+            public String runTask() {
+                final Shell shell = UIUtils.getActiveWorkbenchShell();                
+                return EditTextDialog.editText(shell, title, defValue, prompt);
             }
         }.execute();
     }

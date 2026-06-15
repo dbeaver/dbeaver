@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,20 +74,21 @@ public class Spreadsheet extends LightGrid implements Listener {
     private final IGridContentProvider contentProvider;
     @NotNull
     private final IGridLabelProvider labelProvider;
-    @Nullable
+    @NotNull
     private final IGridController gridController;
 
     private boolean accessibilityEnabled;
-    private Clipboard clipboard;
+    private final Clipboard clipboard;
 
     public Spreadsheet(
-        @NotNull final Composite parent,
+        @NotNull Composite parent,
         final int style,
-        @NotNull final IWorkbenchPartSite site,
-        @NotNull final SpreadsheetPresentation presentation,
-        @NotNull final IGridContentProvider contentProvider,
-        @NotNull final IGridLabelProvider labelProvider,
-        @Nullable final IGridController gridController) {
+        @NotNull IWorkbenchPartSite site,
+        @NotNull SpreadsheetPresentation presentation,
+        @NotNull IGridContentProvider contentProvider,
+        @NotNull IGridLabelProvider labelProvider,
+        @NotNull IGridController gridController
+    ) {
         super(parent, style);
         GridLayout layout = new GridLayout(1, true);
         layout.numColumns = 1;
@@ -128,13 +129,11 @@ public class Spreadsheet extends LightGrid implements Listener {
         hookContextMenu();
         hookAccessibility();
 
-       {
-            super.addDisposeListener(e -> {
-                if (clipboard != null && !clipboard.isDisposed()) {
-                    clipboard.dispose();
-                }
-            });
-        }
+        super.addDisposeListener(e -> {
+            if (!clipboard.isDisposed()) {
+                clipboard.dispose();
+            }
+        });
     }
 
     @NotNull
@@ -278,10 +277,10 @@ public class Spreadsheet extends LightGrid implements Listener {
                             // We used to forward key even to control but it worked poorly.
                             // So let's just insert first letter (it will remove old value which must be selected for inline controls)
                             String strValue = String.valueOf(event.character);
-                            if (editorControl instanceof Text) {
-                                ((Text) editorControl).insert(strValue);
-                            } else if (editorControl instanceof StyledText) {
-                                ((StyledText) editorControl).insert(strValue);
+                            if (editorControl instanceof Text text) {
+                                text.insert(strValue);
+                            } else if (editorControl instanceof StyledText styledText) {
+                                styledText.insert(strValue);
                             }
 /*
                             // Set editor value
@@ -332,7 +331,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                                 IResultSetValueReflector.class);
                             if (valueReflector != null) {
                                 ResultSetCellLocation currentCellLocation = presentation.getCurrentCellLocation();
-                                if (currentCellLocation.getAttribute() != null && currentCellLocation.getRow() != null) {
+                                if (currentCellLocation != null) {
                                     Object cellValue = presentation.getController().getModel().getCellValue(currentCellLocation);
                                     ResultSetCopySettings copySettings = new ResultSetCopySettings();
                                     Map<Transfer, Object> selFormats = presentation.copySelection(copySettings);
@@ -456,9 +455,9 @@ public class Spreadsheet extends LightGrid implements Listener {
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
-        if (site instanceof IEditorSite) {
+        if (site instanceof IEditorSite editorSite) {
             // Exclude editor input contributions from context menu
-            ((IEditorSite) site).registerContextMenu("spreadsheet_menu", menuMgr, presentation, false);
+            editorSite.registerContextMenu("spreadsheet_menu", menuMgr, presentation, false);
         } else {
             site.registerContextMenu(menuMgr, presentation);
         }
@@ -509,6 +508,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         return labelProvider;
     }
 
+    @NotNull
     @Override
     public IGridController getGridController() {
         return gridController;

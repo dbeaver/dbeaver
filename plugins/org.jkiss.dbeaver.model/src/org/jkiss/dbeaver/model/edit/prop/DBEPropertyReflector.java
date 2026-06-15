@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
@@ -24,6 +26,6 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBEPropertyReflector<OBJECT_TYPE extends DBPObject> extends DBEPropertyHandler<OBJECT_TYPE> {
 
-    void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue);
+    void reflectValueChange(@NotNull OBJECT_TYPE object, @Nullable Object oldValue, @Nullable Object newValue);
 
 }
