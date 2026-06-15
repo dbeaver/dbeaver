@@ -84,7 +84,7 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull Properties connectProps
     ) throws DBException {
-        collectConnectionProperties(dataSource.getContainer(), credentials, configuration, connectProps);
+        collectConnectionProperties(dataSource.getContainer(), credentials, configuration, connectProps, true);
         return credentials;
     }
 
@@ -93,7 +93,8 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @NotNull CREDENTIALS credentials,
         @NotNull DBPConnectionConfiguration configuration,
-        @NotNull Properties connectProps
+        @NotNull Properties connectProps,
+        boolean collectSecuredProps
     ) {
         String userName = credentials.getUserName();
         String userPassword = credentials.getUserPassword();
@@ -103,7 +104,7 @@ public class AuthModelDatabaseNative<CREDENTIALS extends AuthModelDatabaseNative
                 connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, userName);
             }
         }
-        if (isUserPasswordNeeded(dataSourceContainer)) {
+        if (isUserPasswordNeeded(dataSourceContainer) && collectSecuredProps) {
             if (!CommonUtils.isEmpty(userPassword) || (dataSourceContainer.getDriver().isAllowsEmptyPassword()
                 && !CommonUtils.isEmpty(userName))) {
                 connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, userPassword);

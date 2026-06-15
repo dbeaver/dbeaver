@@ -112,11 +112,13 @@ public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
      * Collects connection properties based on credentials and configuration.
      * Doesn't have interactive logic (like resolving credentials from user input or external service).
      * Just collects properties based on provided credentials and configuration.
+     * Does not collect secured properties (e.g. password) when collectSecuredProps is set to false.
      */
     void collectConnectionProperties(
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @NotNull CREDENTIALS credentials,
         @NotNull DBPConnectionConfiguration configuration,
-        @NotNull Properties properties
+        @NotNull Properties properties,
+        boolean collectSecuredProps
     ) throws DBException;
 }
