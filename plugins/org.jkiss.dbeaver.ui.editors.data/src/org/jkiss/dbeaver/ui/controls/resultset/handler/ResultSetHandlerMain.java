@@ -70,6 +70,7 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -414,10 +415,14 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE: {
+                FindReplaceOverlay findReplaceOverlay;
                 if (event.getTrigger() instanceof Event ev && ev.widget instanceof Spreadsheet s) {
-                    s.getPresentation().openFindReplaceOverlay();
+                    findReplaceOverlay = s.getPresentation().getFindReplaceOverlay();
                 } else {
-                    rsv.getActivePresentation().openFindReplaceOverlay();
+                    findReplaceOverlay = rsv.getActivePresentation().getFindReplaceOverlay();
+                }
+                if (findReplaceOverlay != null) {
+                    findReplaceOverlay.open();
                 }
                 break;
             }

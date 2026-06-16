@@ -58,9 +58,8 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.FrameworkUtil;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
@@ -119,11 +118,25 @@ public class FindReplaceOverlay {
     private static final String IDEAL_WIDTH_TEXT = "THIS TEXT HAS A REASONABLE LENGTH FOR SEARCHING"; //$NON-NLS-1$
     private static final int HISTORY_SIZE = 15;
 
+
+    public interface EventListener {
+        default void opened(@NotNull FindReplaceOverlay overlay) {
+        }
+        default void closed(@NotNull FindReplaceOverlay overlay) {
+        }
+        default void disposed(@NotNull FindReplaceOverlay overlay) {
+        }
+    }
+
+    @NotNull
+    private final List<EventListener> eventListeners = Collections.synchronizedList(new ArrayList<>());
+
     @Nullable
     private final ISelectionProvider selectionProvider;
     private final IWorkbenchPart targetPart;
 
     private FindReplaceLogic findReplaceLogic;
+    private boolean isOpened = false;
     private boolean replaceBarOpen;
 
     private final Composite targetControl;
@@ -352,6 +365,9 @@ public class FindReplaceOverlay {
 
     private HistoryStore searchHistory;
 
+    @Nullable
+    private Consumer<Boolean> extraContentVisibilitySetter = null;
+
     public FindReplaceOverlay(
         @NotNull IWorkbenchPart part,
         @NotNull Composite targetControl,
@@ -359,13 +375,24 @@ public class FindReplaceOverlay {
         @Nullable ISelectionProvider selectionProvider,
         @Nullable Consumer<SearchQuickFilterInfo> findAllAction
     ) {
+        this(part, targetControl, target, selectionProvider, findAllAction, null);
+    }
+
+    public FindReplaceOverlay(
+        @NotNull IWorkbenchPart part,
+        @NotNull Composite targetControl,
+        @NotNull IFindReplaceTarget target,
+        @Nullable ISelectionProvider selectionProvider,
+        @Nullable Consumer<SearchQuickFilterInfo> findAllAction,
+        @Nullable Consumer<Composite> extraContentCtor
+    ) {
         this.targetPart = part;
         this.targetControl = targetControl;
         this.selectionProvider = selectionProvider;
         this.findAllAction = findAllAction;
 
         this.createFindReplaceLogic(target);
-        this.createContainerAndSearchControls(targetControl);
+        this.createContainerAndSearchControls(targetControl, extraContentCtor);
         this.containerControl.setVisible(false);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this.containerControl, IAbstractTextEditorHelpContextIds.FIND_REPLACE_OVERLAY);
     }
@@ -419,12 +446,16 @@ public class FindReplaceOverlay {
             () -> {
                 if (this.findAllAction != null) {
                     this.findAllActionApplied = true;
-                    this.findAllAction.accept(new SearchQuickFilterInfo(
-                        this.searchBar.getText(),
-                        this.caseSensitiveSearchButton.getSelection(),
-                        this.regexSearchButton.getSelection(),
-                        this.wholeWordSearchButton.getSelection()
-                    ));
+                    if (CommonUtils.isEmpty(this.searchBar.getText())) {
+                        this.findAllAction.accept(null);
+                    } else {
+                        this.findAllAction.accept(new SearchQuickFilterInfo(
+                            this.searchBar.getText(),
+                            this.caseSensitiveSearchButton.getSelection(),
+                            this.regexSearchButton.getSelection(),
+                            this.wholeWordSearchButton.getSelection()
+                        ));
+                    }
                 } else {
                     this.findReplaceLogic.performSelectAll();
                 }
@@ -483,6 +514,20 @@ public class FindReplaceOverlay {
         return dialogSettings;
     }
 
+    public void addEventListener(@NotNull EventListener listener) {
+        this.eventListeners.add(listener);
+    }
+
+    public void removeEventListener(@NotNull EventListener listener) {
+        this.eventListeners.remove(listener);
+    }
+
+    public void raizeEvent(@NotNull Consumer<EventListener> operation) {
+        for (EventListener listener : this.eventListeners.toArray(EventListener[]::new)) {
+            operation.accept(listener);
+        }
+    }
+
     public void close() {
         if (this.containerControl.isDisposed() || !this.containerControl.isVisible()) {
             return;
@@ -510,6 +555,9 @@ public class FindReplaceOverlay {
         if (this.findReplaceLogic.getTarget() instanceof IFindReplaceTargetExtension e) {
             e.endSession();
         }
+
+        this.isOpened = false;
+        this.raizeEvent(l -> l.closed(this));
     }
 
     public void open() {
@@ -533,6 +581,13 @@ public class FindReplaceOverlay {
         if (target instanceof IFindReplaceTargetExtension e) {
             e.beginSession();
         }
+
+        this.isOpened = true;
+        this.raizeEvent(l -> l.opened(this));
+    }
+
+    public boolean isOpened() {
+        return this.isOpened;
     }
 
     private void storeOverlaySettings() {
@@ -581,12 +636,12 @@ public class FindReplaceOverlay {
         }
     }
 
-    private void createContainerAndSearchControls(@NotNull Composite parent) {
+    private void createContainerAndSearchControls(@NotNull Composite parent, @Nullable Consumer<Composite> extraContentCtor) {
         if (this.insertedInTargetParent()) {
             parent = parent.getParent();
         }
         this.retrieveColors();
-        this.createMainContainer(parent);
+        this.createMainContainer(parent, extraContentCtor);
         this.initializeSearchShortcutHandlers();
 
         this.containerControl.layout();
@@ -658,7 +713,7 @@ public class FindReplaceOverlay {
         }
     }
 
-    private void createMainContainer(@NotNull final Composite parent) {
+    private void createMainContainer(@NotNull final Composite parent, @Nullable Consumer<Composite> extraContentCtor) {
         Color borderColor = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
         this.containerControl = new FixedColorComposite(parent, SWT.NONE, borderColor);
         GridDataFactory.fillDefaults().exclude(true).applyTo(this.containerControl);
@@ -669,6 +724,41 @@ public class FindReplaceOverlay {
 
         createReplaceToggle();
         createContentsContainer();
+
+        if (extraContentCtor != null) {
+            Composite placeholder = new FixedColorComposite(
+                this.realContainerControl,
+                SWT.NONE,
+                this.overlayBackgroundColor
+            );
+            GridData placeholderLayoutData = GridDataFactory.fillDefaults().hint(0, 0).create();
+            placeholder.setLayoutData(placeholderLayoutData);
+
+            Composite extraContentContainer = new FixedColorComposite(this.realContainerControl, SWT.NONE, this.overlayBackgroundColor);
+            GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).spacing(0, 2).applyTo(extraContentContainer);
+            GridData extraContentLayoutData = GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).create();
+            extraContentContainer.setLayoutData(extraContentLayoutData);
+            extraContentCtor.accept(extraContentContainer);
+
+            this.extraContentVisibilitySetter = b -> {
+                placeholderLayoutData.exclude = !b;
+                extraContentLayoutData.exclude = !b;
+                placeholder.setVisible(b);
+                extraContentContainer.setVisible(b);
+                for (Control c = extraContentContainer; c != null && c != parent; c = c.getParent()) {
+                    this.containerControl.layout(true);
+                }
+                this.updatePlacementAndVisibility(true);
+            };
+        }
+
+        this.containerControl.addDisposeListener(e -> {
+            this.raizeEvent(l -> {
+                this.isOpened = false;
+                l.disposed(this);
+            });
+            this.eventListeners.clear();
+        });
     }
 
     private void createReplaceToggle() {
@@ -1286,4 +1376,9 @@ public class FindReplaceOverlay {
         }
     }
 
+    public void setExtrasVisibility(boolean value) {
+        if (this.extraContentVisibilitySetter != null) {
+            this.extraContentVisibilitySetter.accept(value);
+        }
+    }
 }

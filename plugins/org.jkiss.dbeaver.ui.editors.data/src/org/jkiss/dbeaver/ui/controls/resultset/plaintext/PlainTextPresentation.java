@@ -152,10 +152,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
     }
 
+    @NotNull
     @Override
-    public boolean openFindReplaceOverlay() {
-        this.findReplaceOverlay.open();
-        return true;
+    public FindReplaceOverlay getFindReplaceOverlay() {
+        return this.findReplaceOverlay;
     }
 
     @Override

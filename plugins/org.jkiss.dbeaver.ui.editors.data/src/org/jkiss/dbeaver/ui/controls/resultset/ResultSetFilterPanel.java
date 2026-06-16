@@ -70,6 +70,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllPinsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllSettingsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllTransformersAction;
@@ -101,6 +102,23 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
+    private final FindReplaceOverlay.EventListener findReplaceOverlayListener = new FindReplaceOverlay.EventListener() {
+        @Override
+        public void opened(@NotNull FindReplaceOverlay overlay) {
+            setFindReplaceButtonSelection(overlay);
+        }
+
+        @Override
+        public void closed(@NotNull FindReplaceOverlay overlay) {
+            setFindReplaceButtonSelection(overlay);
+        }
+
+        @Override
+        public void disposed(@NotNull FindReplaceOverlay overlay) {
+            setFindReplaceButtonSelection(overlay);
+        }
+    };
+
     @NotNull
     private final ResultSetViewer viewer;
 
@@ -122,6 +140,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private ToolItem filtersClearButton;
     private ToolItem historyBackButton;
     private ToolItem historyForwardButton;
+    private ToolItem openFindReplaceButton;
 
     private final Composite filterComposite;
 
@@ -332,19 +351,34 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             UIUtils.createToolBarSeparator(filterToolbar, SWT.NONE);
 
-            ToolItem openFindReplaceButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-            openFindReplaceButton.setImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE));
-            openFindReplaceButton.setToolTipText(ActionUtils.findCommandDescription(
+            this.openFindReplaceButton = new ToolItem(filterToolbar, SWT.CHECK | SWT.NO_FOCUS);
+            this.openFindReplaceButton.setImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE));
+            this.openFindReplaceButton.setToolTipText(ActionUtils.findCommandDescription(
                 IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, viewer.getSite(), false
             ));
-            openFindReplaceButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                if (!this.viewer.getActivePresentation().openFindReplaceOverlay()) {
-                    ResultSetPresentationDescriptor pd = this.viewer.getAvailablePresentations().stream()
-                        .filter(p -> p.getId().equals(SpreadsheetPresentation.PRESENTATION_ID))
-                        .findFirst().orElse(null);
-                    this.viewer.switchPresentation(pd);
-                    // open overlay after the presentation init events for the focus to correctly go to the search-box
-                    UIUtils.asyncExec(() -> this.viewer.getActivePresentation().openFindReplaceOverlay());
+            this.openFindReplaceButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                FindReplaceOverlay currentOverlay = this.viewer.getActivePresentation().getFindReplaceOverlay();
+                if (this.openFindReplaceButton.getSelection()) {
+                    if (currentOverlay != null) {
+                        UIUtils.asyncExec(currentOverlay::open);
+                    } else {
+                        ResultSetPresentationDescriptor pd = this.viewer.getAvailablePresentations().stream()
+                            .filter(p -> p.getId().equals(SpreadsheetPresentation.PRESENTATION_ID))
+                            .findFirst().orElse(null);
+                        this.viewer.switchPresentation(pd);
+
+                        // open overlay after the presentation init events for the focus to correctly go to the search-box
+                        UIUtils.asyncExec(() -> {
+                            FindReplaceOverlay spreadsheetOverlay = this.viewer.getActivePresentation().getFindReplaceOverlay();
+                            if (spreadsheetOverlay != null) {
+                                spreadsheetOverlay.open();
+                            }
+                        });
+                    }
+                } else {
+                    if (currentOverlay != null) {
+                        UIUtils.asyncExec(currentOverlay::close);
+                    }
                 }
             }));
         }
@@ -370,6 +404,25 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
+    }
+
+    void resultsetPresentationChanged(@NotNull IResultSetPresentation activePresentation) {
+        FindReplaceOverlay findReplaceOverlay = activePresentation.getFindReplaceOverlay();
+        if (findReplaceOverlay != null) {
+            findReplaceOverlay.addEventListener(this.findReplaceOverlayListener);
+            this.setFindReplaceButtonSelection(findReplaceOverlay);
+        }
+    }
+
+    private void setFindReplaceButtonSelection(@NotNull FindReplaceOverlay overlay) {
+        if (!openFindReplaceButton.isDisposed()) {
+            boolean isOpened = overlay.isOpened();
+            if (openFindReplaceButton.getSelection() != isOpened) {
+                openFindReplaceButton.setSelection(isOpened);
+            }
+        } else {
+            overlay.removeEventListener(this.findReplaceOverlayListener);
+        }
     }
 
     private boolean isImeComposing() {

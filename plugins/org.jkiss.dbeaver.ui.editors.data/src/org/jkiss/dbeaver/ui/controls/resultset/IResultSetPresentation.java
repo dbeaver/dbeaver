@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 
 import java.util.Map;
 
@@ -153,8 +154,9 @@ public interface IResultSetPresentation {
 
     void printResultSet();
 
-    default boolean openFindReplaceOverlay() {
-        return false;
+    @Nullable
+    default FindReplaceOverlay getFindReplaceOverlay() {
+        return null;
     }
 
     /**
