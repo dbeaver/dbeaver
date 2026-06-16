@@ -45,7 +45,7 @@ public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
             .accept(buildSampleDatabasePanel(createSampleDatabase))
             .accept(buildTipsPanel(showTips))
             .row(rb -> rb.label(lb -> lb
-                .text("You're all set! Click Finish to start using DBeaver.")
+                .text(EasyConfigMessages.final_steps_header)
                 .wrap()
                 .align(UIAlignX.FILL)
                 .grow(UIGrowX.ALWAYS)));

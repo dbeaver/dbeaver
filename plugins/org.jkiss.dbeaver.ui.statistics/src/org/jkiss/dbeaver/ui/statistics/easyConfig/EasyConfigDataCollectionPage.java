@@ -85,7 +85,7 @@ public class EasyConfigDataCollectionPage extends EasyConfigWizardPage {
             if (collectionRequired) {
                 rb.label(lb -> lb
                     .image(DBIcon.SMALL_INFO)
-                    .tooltip("You cannot opt-out from data sharing in this version of DBeaver."));
+                    .tooltip(EasyConfigMessages.data_collection_cannot_opt_out_notice));
             }
         };
     }

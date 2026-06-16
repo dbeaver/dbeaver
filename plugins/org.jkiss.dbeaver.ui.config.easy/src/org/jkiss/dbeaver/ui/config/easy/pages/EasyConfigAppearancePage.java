@@ -63,7 +63,7 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
     private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .row(rb -> rb.label("Choose which theme you want to use:"))
+            .row(rb -> rb.label(EasyConfigMessages.appearance_theme_header))
             .indent(pb1 -> {
                 for (ITheme theme : themeEngine.getThemes()) {
                     pb1.row(rb -> rb.radioButton(theme.getLabel(), UIObservables.equals(currentTheme, theme)));
@@ -76,8 +76,7 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
                     .image(DBIcon.SMALL_INFO)
                     .align(UIAlignY.TOP))
                 .label(lb -> lb
-                    .text("Some elements of the user interface won't be updated until you restart the "
-                        + "application. You'll be prompted to restart when you finish the wizard.")
+                    .text(EasyConfigMessages.appearance_theme_hint)
                     .wrap()
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)));

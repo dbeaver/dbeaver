@@ -33,16 +33,36 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
     UIControlBuilder.LinkBuilder, UIControlBuilder.TextBuilder, UIControlBuilderImpl, UIPanelBuilder {
 
     @NotNull
-    B visible(@NotNull UIObservable<Boolean> binding);
+    B visible(@NotNull UIObservable<Boolean> value);
 
     @NotNull
-    B enabled(@NotNull UIObservable<Boolean> binding);
+    default B visible(boolean value) {
+        return visible(UIObservable.of(value));
+    }
+
+    @NotNull
+    B enabled(@NotNull UIObservable<Boolean> value);
+
+    @NotNull
+    default B enabled(boolean value) {
+        return enabled(UIObservable.of(value));
+    }
 
     @NotNull
     B font(@NotNull UIObservable<Font> value);
 
     @NotNull
-    B tooltip(@NotNull String value);
+    default B font(@NotNull Font value) {
+        return font(UIObservable.of(value, Font.class));
+    }
+
+    @NotNull
+    B tooltip(@NotNull UIObservable<String> value);
+
+    @NotNull
+    default B tooltip(@NotNull String value) {
+        return tooltip(UIObservable.of(value));
+    }
 
     /**
      * The control becomes resizable and occupies all available

@@ -48,7 +48,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
     private UIObservable<Font> font;
-    private String tooltip;
+    private UIObservable<String> tooltip;
 
     UIAlignX alignX = UIAlignX.LEFT;
     UIAlignY alignY = UIAlignY.CENTER;
@@ -59,15 +59,15 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     @NotNull
     @Override
-    public B visible(@NotNull UIObservable<Boolean> binding) {
-        visible = binding;
+    public B visible(@NotNull UIObservable<Boolean> value) {
+        visible = value;
         return builder();
     }
 
     @NotNull
     @Override
-    public B enabled(@NotNull UIObservable<Boolean> binding) {
-        enabled = binding;
+    public B enabled(@NotNull UIObservable<Boolean> value) {
+        enabled = value;
         return builder();
     }
 
@@ -80,7 +80,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     @NotNull
     @Override
-    public B tooltip(@NotNull String value) {
+    public B tooltip(@NotNull UIObservable<String> value) {
         tooltip = value;
         return builder();
     }
@@ -183,7 +183,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             context.bindValue(WidgetProperties.font().observe(control), delegate(font));
         }
         if (tooltip != null) {
-            control.setToolTipText(tooltip);
+            context.bindValue(WidgetProperties.tooltipText().observe(control), delegate(tooltip));
         }
     }
 

@@ -26,6 +26,8 @@ public final class EasyConfigMessages extends UIReloadableNLS {
 
     public static UIObservable<String> appearance_title;
     public static UIObservable<String> appearance_description;
+    public static UIObservable<String> appearance_theme_header;
+    public static UIObservable<String> appearance_theme_hint;
 
     public static UIObservable<String> features_title;
     public static UIObservable<String> features_description;
@@ -33,6 +35,7 @@ public final class EasyConfigMessages extends UIReloadableNLS {
 
     public static UIObservable<String> final_steps_title;
     public static UIObservable<String> final_steps_description;
+    public static UIObservable<String> final_steps_header;
 
     public static UIObservable<String> wizard_buttons_back;
     public static UIObservable<String> wizard_buttons_next;

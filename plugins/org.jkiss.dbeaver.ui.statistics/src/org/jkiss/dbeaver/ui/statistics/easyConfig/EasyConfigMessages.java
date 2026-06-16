@@ -24,6 +24,7 @@ public final class EasyConfigMessages extends UIReloadableNLS {
     public static UIObservable<String> data_collection_description;
     public static UIObservable<String> data_collection_agreement_text;
     public static UIObservable<String> data_collection_send_usage_statistics;
+    public static UIObservable<String> data_collection_cannot_opt_out_notice;
 
     static {
         UIReloadableNLS.initializeMessages(EasyConfigMessages.class.getName(), EasyConfigMessages.class);
