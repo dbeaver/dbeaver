@@ -26,7 +26,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -82,6 +82,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private final Set<String> savedTypeNames = new HashSet<>();
     private List<DBNNode> sourceNodes = new ArrayList<>();
     private final DBPProject currentProject;
+    private boolean showConnected;
 
     public SearchMetadataPage() {
         super("Database objects search");
@@ -91,6 +92,8 @@ public class SearchMetadataPage extends AbstractSearchPage {
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
+
+        showConnected = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SHOW_CONNECTED);
 
         initializeDialogUnits(parent);
 
@@ -125,20 +128,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             DBPPlatform platform = DBWorkbench.getPlatform();
             final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(currentProject);
             DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
-            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE) {
-                @NotNull
-                @Override
-                protected ShowConnectedToggleWhenApplicable showConnectedToggleWhenApplicable() {
-                    return ShowConnectedToggleWhenApplicable.SHOW;
-                }
-
-                @Override
-                public void setFilterShowConnected(boolean filterShowConnected) {
-                    super.setFilterShowConnected(filterShowConnected);
-                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SHOW_CONNECTED, filterShowConnected);
-                }
-            };
-            dataSourceTree.setFilterShowConnected(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SHOW_CONNECTED));
+            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             dataSourceTree.setLayoutData(gd);
@@ -152,7 +142,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     if (element instanceof TreeNodeSpecial) {
                         return true;
                     }
-                    if (dataSourceTree.isFilterShowConnected()) {
+                    if (showConnected) {
                         if (element instanceof DBNDataSource ds && ds.getDataSource() == null ||
                             element instanceof DBNLocalFolder lf && !lf.hasConnected()) {
                             return false;
@@ -210,6 +200,18 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     if (node instanceof TreeNodeSpecial) {
                         ((TreeNodeSpecial) node).handleDefaultAction(dataSourceTree);
                     }
+                }
+            });
+
+            final Button showConnectedCheck = new Button(sourceGroup, SWT.CHECK);
+            showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+            showConnectedCheck.setSelection(showConnected);
+            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showConnected = showConnectedCheck.getSelection();
+                    treeViewer.refresh();
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SHOW_CONNECTED, showConnected);
                 }
             });
         }
