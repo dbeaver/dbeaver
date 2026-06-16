@@ -226,7 +226,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 fromClause: FROM tableReference (Comma fromClauseTerm)*;
 fromClauseTerm:  LATERAL? tableReference;
 nonjoinedTableReference: (functionCallExpression|(tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification? tableReferenceHints??;
-tableReference: (nonjoinedTableReference|joinedTable)|anyUnexpected??;
+tableReference: (nonjoinedTableReference|joinedTable) anyUnexpected??;
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: { validCorrelationNameFollows() }? (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
