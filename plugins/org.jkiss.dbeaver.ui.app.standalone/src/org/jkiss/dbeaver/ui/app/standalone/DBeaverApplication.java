@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
+import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
@@ -73,6 +74,7 @@ import org.osgi.framework.Version;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -109,6 +111,16 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
     private static final String DEFAULT_PROJECT_NAME = "General";
+
+    /**
+     * Specified in {@code dbeaver.ini} as a JVM parameter during packaging. Possible values are:
+     * <ul>
+     *     <li>{@code zip}, {@code exe}, {@code msstore} on Windows;</li>
+     *     <li>{@code deb}, {@code rpm} on Linux;</li>
+     *     <li>{@code dmg} on macOS.</li>
+     * </ul>
+     */
+    public static final String PROP_DISTRIBUTION_TYPE = "dbeaver.distribution.type";
 
     private final Path FILE_WITH_WORKSPACES;
     private final Path defaultWorkspacePath;
@@ -302,6 +314,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
+        log.debug("\tPatch workbench configuration");
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
 
         // Run instance server
@@ -373,7 +386,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
         try {
-            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+            DBeaverCommandLine.getInstance().preprocessCommandLine(args);
         } catch (DBException e) {
             log.error("Error preprocessing command line", e);
         }
@@ -507,7 +520,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     private Display getDisplay() {
         if (display == null) {
-            log.debug("Create display");
+            log.debug("\tCreate display");
             // Set display name at the very beginning (#609)
             // This doesn't initialize display - just sets default title
             Display.setAppName(GeneralUtils.getProductName());
@@ -787,6 +800,30 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             newVersion,
             showSkip);
         dialog.open();
+    }
+
+    /**
+     * Computes a download URL for the latest version of this installation.
+     *
+     * @param version version descriptor with base download URL
+     * @return URL to download latest version or {@code null} if it can't be computed for current platform
+     */
+    @Nullable
+    public URI getLatestVersionDownloadUrl(@NotNull VersionDescriptor version) {
+        var app = ApplicationRegistry.getInstance().getApplication();
+        var url = URI.create(version.getDownloadURL());
+
+        if (RuntimeUtils.isWindows()) {
+            if ("zip".equals(System.getProperty(PROP_DISTRIBUTION_TYPE))) {
+                return url.resolve(app.getId() + "-latest-win32.win32." + Platform.getOSArch() + ".zip");
+            } else {
+                return url.resolve(app.getId() + "-latest-" + Platform.getOSArch() + "-setup.exe");
+            }
+        } else if (RuntimeUtils.isMacOS()) {
+            return url.resolve(app.getId() + "-latest-macos-" + Platform.getOSArch() + ".dmg");
+        } else {
+            return null;
+        }
     }
 
     public void setResetUserPreferencesOnRestart(boolean resetUserPreferencesOnRestart) {

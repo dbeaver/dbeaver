@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,19 +79,20 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         return contents != null ? contents.size() : 0;
     }
 
+    @Nullable
     @Override
     public Object getItem(int index) {
         return contents.get(index);
     }
 
     @Override
-    public void setItem(int index, Object value) {
+    public void setItem(int index, @Nullable Object value) {
         contents.set(index, (EntryComposite) value);
         modified = true;
     }
 
     @Override
-    public void setContents(Object[] contents) {
+    public void setContents(@NotNull Object[] contents) {
         this.contents.clear();
         this.modified = true;
 
@@ -100,6 +101,7 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         }
     }
 
+    @Nullable
     @Override
     public Object getRawValue() {
         return contents;
@@ -205,6 +207,7 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
             this.value = value;
         }
 
+        @NotNull
         @Override
         public DBSDataType getDataType() {
             return entryType;
@@ -236,6 +239,7 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
             }
         }
 
+        @Nullable
         @Override
         public Object getRawValue() {
             return value;

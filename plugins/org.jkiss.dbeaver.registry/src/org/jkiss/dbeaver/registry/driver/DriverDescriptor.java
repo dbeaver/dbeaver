@@ -289,9 +289,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
+        if (CommonUtils.isEmpty(name)) {
+            // Driver with no name is just a stub from old deprecated and replaced driver
+            categories = List.of();
+            origDescription = null;
+            origClassName = null;
+            origDefaultHost = origDefaultPort = origDefaultDatabase = origDefaultServer = origDefaultUser = null;;
+            origSampleURL = null;;
+            return;
+        }
         this.category = config.getAttribute(RegistryConstants.ATTR_CATEGORY);
         this.categories = Arrays.asList(CommonUtils.split(config.getAttribute(RegistryConstants.ATTR_CATEGORIES), ","));
-        this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.origDefaultHost = this.driverDefaultHost = config.getAttribute(RegistryConstants.ATTR_DEFAULT_HOST);

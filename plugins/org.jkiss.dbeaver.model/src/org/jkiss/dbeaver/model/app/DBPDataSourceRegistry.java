@@ -106,6 +106,10 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException;
 
+    default void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
+        updateDataSource(dataSource);
+    }
+
     @NotNull
     List<? extends DBPDataSourceFolder> getAllFolders();
 
@@ -200,6 +204,10 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
+
+    // Can be called only once
+    // FIXME: move it in another abstraction
+    void initializeDataSources();
 
     void dispose();
 }

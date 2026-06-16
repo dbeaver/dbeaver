@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -284,8 +285,8 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @NotNull
     @Override
-    public String unEscapeString(String string) {
-        return string.replace("''", "'").replace("``", "`").replace("\\\\", "\\");
+    public String unEscapeString(@Nullable String string) {
+        return CommonUtils.notEmpty(string).replace("''", "'").replace("``", "`").replace("\\\\", "\\");
     }
 
     @NotNull

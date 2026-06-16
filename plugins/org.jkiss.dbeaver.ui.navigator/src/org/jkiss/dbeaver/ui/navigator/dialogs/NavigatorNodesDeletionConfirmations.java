@@ -143,11 +143,6 @@ public final class NavigatorNodesDeletionConfirmations {
         Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
         objectsTable.setHeaderVisible(true);
         objectsTable.setLinesVisible(true);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        int fontHeight = UIUtils.getFontHeight(objectsTable);
-        gd.widthHint = fontHeight * 7;
-        //gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
-        objectsTable.setLayoutData(gd);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_name);
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, "Type");
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
@@ -169,6 +164,12 @@ public final class NavigatorNodesDeletionConfirmations {
                 item.setText(2, CommonUtils.toString(node.getNodeDescription()));
             }
         }
+
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = UIUtils.getFontHeight(objectsTable) * 7;
+        gd.heightHint = objectsTable.getHeaderHeight() + objectsTable.getItemHeight() * Math.min(10, objectsTable.getItemCount());
+        objectsTable.setLayoutData(gd);
+
         UIUtils.asyncExec(() -> UIUtils.packColumns(objectsTable, true));
     }
 

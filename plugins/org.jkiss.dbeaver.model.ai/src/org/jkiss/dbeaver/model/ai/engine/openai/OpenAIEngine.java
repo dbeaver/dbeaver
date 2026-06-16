@@ -19,28 +19,30 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
-    protected final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+    protected DisposableLazyValue<OpenAIClientResponses, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected OpenAIClient initialize() throws DBException {
+        protected OpenAIClientResponses initialize() throws DBException {
             return createClient();
         }
 
         @Override
-        protected void onDispose(@NotNull OpenAIClient disposedValue) {
+        protected void onDispose(@NotNull OpenAIClientResponses disposedValue) {
             disposedValue.close();
         }
     };
@@ -82,7 +84,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
         OAIMessage message = messages.getFirst();
         if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
-            AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
+            AIFunctionCall fc = OpenAiUtils.createFunctionCall(message);
             return new AIEngineResponse(fc, usage);
         } else {
             List<String> choices = messages.stream()
@@ -99,7 +101,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
         oaiRequest.stream = true;
         openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest, listener);
     }
@@ -124,79 +126,22 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
 
         return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
     }
 
     @NotNull
-    private OAIResponsesRequest createOpenAiRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
-        List<AIMessage> messages = request.getMessages();
-        oaiRequest.input = fromMessages(messages);
-        oaiRequest.temperature = temperature();
-        oaiRequest.store = false;
-        oaiRequest.model = model();
-
-        if (!CommonUtils.isEmpty(request.getFunctions())) {
-            List<OAITool> tools = new ArrayList<>();
-            for (AIFunctionDescriptor fd : request.getFunctions()) {
-                OAITool tool = new OAITool();
-                tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getFullId();
-                tool.description = fd.getAiDescription();
-                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
-                List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionParameter param : fd.getParameters()) {
-                    OAIToolParameter tp = new OAIToolParameter();
-                    tp.type = param.getType();
-                    tp.description = param.getDescription();
-                    tp.enumItems = param.getValidValues();
-                    requiredFields.add(param.getName());
-                    tool.parameters.properties.put(param.getName(), tp);
-                }
-                tool.parameters.required = requiredFields.toArray(new String[0]);
-                tools.add(tool);
-            }
-            oaiRequest.tools = tools;
-        }
-
-        return oaiRequest;
-    }
-
-    @NotNull
-    private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        List<OAIMessage> result = new ArrayList<>(messages.size());
-        for (AIMessage message : messages) {
-            if (message.getFunctionCall() != null) {
-                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
-                if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
-                    result.add(functionCallMessage);
-                    // OpenAI Responses API requires matching function_call_output for each function_call.
-                    // Keep orphan function calls in history as regular assistant messages.
-                    result.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
-                }
-            } else {
-                result.add(OAIMessageFactory.fromAIMessage(message));
-            }
-        }
-        return result;
-    }
-
-    @NotNull
-    protected OpenAIClient createClient() throws DBException {
+    protected OpenAIClientResponses createClient() throws DBException {
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");
         }
         String baseUrl = properties.getBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
-            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+            baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        if (properties.isLegacyApi()) {
-            return OpenAIClientLegacy.createClient(baseUrl, token);
-        }
-        return OpenAIClient.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token);
     }
 
     @Nullable
