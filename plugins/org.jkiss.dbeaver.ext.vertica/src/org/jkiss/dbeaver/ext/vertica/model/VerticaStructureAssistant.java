@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     protected JDBCDataSource getDataSource() {
         return dataSource;
@@ -160,8 +161,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     }
                     final VerticaObjectType objectType = VerticaObjectType.valueOf(tableType);
                     result.add(new AbstractObjectReference<>(objectName, schema, description, objectType.getClass(), objectType) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             DBSObject object = objectType.findObject(monitor, schema, objectName);
                             if (object == null) {
                                 throw new DBException(tableType + " '" + objectName + "' not found in schema '" + schema.getName() + "'");
@@ -211,8 +213,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                         continue; // filtered
                     }
                     result.add(new AbstractObjectReference<>(objectName, schema, description, VerticaSequence.class, VerticaObjectType.SEQUENCE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericSequence object = getContainer().getSequence(monitor, objectName);
                             if (object == null) {
                                 throw new DBException("Can't find object '" + getName() + "' in '"
@@ -264,8 +267,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                         continue; // filtered
                     }
                     result.add(new AbstractObjectReference<>(objectName, schema, description, isFK ? GenericTableForeignKey.class : VerticaConstraint.class, RelationalObjectType.TYPE_CONSTRAINT) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase tableBase = getContainer().getTable(monitor, tableName);
                             if (tableBase == null) {
                                 throw new DBException("Can't find constraint table '" + tableName + "' in '"
@@ -321,8 +325,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                         continue; // filtered
                     }
                     result.add(new AbstractObjectReference<>(objectName, schema, description, VerticaProjection.class, VerticaObjectType.PROJECTION) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             VerticaProjection object = getContainer().getProjection(monitor, objectName);
                             if (object == null) {
                                 throw new DBException("Can't find object '" + objectName + "' in '"
@@ -363,8 +368,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                     final String objectName = dbResult.getString(1);
                     final String description = searchInComments ? dbResult.getString(2) : "";
                     result.add(new AbstractObjectReference<>(objectName, dataSource, description, VerticaNode.class, VerticaObjectType.NODE) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             VerticaNode object = getContainer().getClusterNode(monitor, objectName);
                             if (object == null) {
                                 throw new DBException("Can't find object '" + objectName + "' in '"
@@ -401,8 +407,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                         continue; // filtered
 
                     result.add(new AbstractObjectReference<GenericObjectContainer>(columnName, schema, null, GenericTableColumn.class, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = getContainer().getTable(monitor, tableName);
                             if (object == null) {
                                 throw new DBException("Can't find column table '" + tableName + "' in '"
@@ -444,8 +451,9 @@ public class VerticaStructureAssistant extends JDBCStructureAssistant<JDBCExecut
                         continue; // filtered
 
                     result.add(new AbstractObjectReference<GenericObjectContainer>(columnName, schema, null, GenericTableColumn.class, RelationalObjectType.TYPE_VIEW_COLUMN) {
+                        @NotNull
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                        public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {
                             GenericTableBase object = getContainer().getTable(monitor, tableName);
                             if (object == null) {
                                 throw new DBException("Can't find column view '" + tableName + "' in '"

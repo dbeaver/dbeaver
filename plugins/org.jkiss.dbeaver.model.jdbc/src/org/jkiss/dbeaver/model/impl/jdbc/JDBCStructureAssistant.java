@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import java.util.List;
 public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContext> implements DBSStructureAssistant<CONTEXT> {
     protected static final Log log = Log.getLog(JDBCStructureAssistant.class);
 
+    @NotNull
     protected abstract JDBCDataSource getDataSource();
 
     @NotNull
@@ -69,8 +70,11 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
 
     @NotNull
     @Override
-    public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
-                                                      @NotNull ObjectsSearchParams params) throws DBException {
+    public List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CONTEXT executionContext,
+        @NotNull ObjectsSearchParams params
+    ) throws DBException {
         List<DBSObjectReference> references = new ArrayList<>();
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : params.getObjectTypes()) {
@@ -87,6 +91,11 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
         return references;
     }
 
-    protected abstract void findObjectsByMask(@NotNull CONTEXT executionContext, @NotNull JDBCSession session, @NotNull DBSObjectType objectType,
-                                  @NotNull ObjectsSearchParams params, @NotNull List<DBSObjectReference> references) throws DBException, SQLException;
+    protected abstract void findObjectsByMask(
+        @NotNull CONTEXT executionContext,
+        @NotNull JDBCSession session,
+        @NotNull DBSObjectType objectType,
+        @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) throws DBException, SQLException;
 }

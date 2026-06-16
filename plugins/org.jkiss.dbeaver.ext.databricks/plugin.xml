@@ -40,7 +40,7 @@
                     <replace provider="databricks" driver="databricks"/>
                     <replace provider="databricks" driver="databricks-native"/>
 
-                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:1.0.9-oss" bundle="!drivers.databricks_native"/>
+                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:3.4.1" bundle="!drivers.databricks_native"/>
                     <file type="jar" path="drivers/databricks_native" bundle="drivers.databricks_native"/>
 
                     <parameter name="supports-indexes" value="false"/>

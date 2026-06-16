@@ -25,6 +25,7 @@ public class ResultSetMessages extends NLS {
     public static String confirm_modifying_query_title;
 
     public static String controls_resultset_filter_button_reset;
+    public static String controls_resultset_filter_saved_filter_reset_message;
     public static String controls_resultset_filter_column_name;
     public static String controls_resultset_filter_column_visible;
     public static String controls_resultset_filter_column_pinned;
