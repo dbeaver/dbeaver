@@ -6,12 +6,8 @@ Bundle-Version: 1.0.42.qualifier
 Bundle-Release-Date: 20260622
 Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.lsm,
- org.junit,
- org.mockito.mockito-core,
  org.apache.felix.scr,
- org.jkiss.dbeaver.test.platform,
- net.bytebuddy.byte-buddy,
- net.bytebuddy.byte-buddy-agent
+ org.jkiss.dbeaver.test.platform
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp

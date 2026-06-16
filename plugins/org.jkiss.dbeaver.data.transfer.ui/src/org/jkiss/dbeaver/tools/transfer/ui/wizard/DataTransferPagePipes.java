@@ -28,10 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -115,10 +112,15 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         setControl(composite);
 
-        getShell().addControlListener(ControlListener.controlResizedAdapter(controlEvent -> {
-            UIUtils.packColumns(inputsTable.getTable(), true);
-            UIUtils.packColumns(nodesTable.getTable(), true);
-        }));
+        getShell().addControlListener(ControlListener.controlResizedAdapter(e -> packTablesColumns()));
+    }
+
+    private void packTablesColumns() {
+        //Point btnSize = columnsButtonPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        UIUtils.packColumns(inputsTable.getTable(), true);
+        //TableColumn column = inputsTable.getTable().getColumn(0);
+        //column.setWidth(column.getWidth() - btnSize.x);
+        UIUtils.packColumns(nodesTable.getTable(), true);
     }
 
     private void createNodesTable(Composite composite) {
@@ -317,9 +319,9 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
         UIUtils.createPushButton(
             buttonsPanel,
-            DTMessages.data_transfer_wizard_settings_group_preview_columns + " ...",
             null,
-            null,
+            DTMessages.data_transfer_wizard_settings_group_preview_columns,
+            DBIcon.TREE_COLUMNS,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                 final List<StreamMappingContainer> mappings = new ArrayList<>();
 
@@ -362,8 +364,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     }
 
     private void setConfigureColumnsButtonVisible(boolean visible) {
-        UIUtils.setControlVisible(columnsButtonPanel, visible);
-        columnsButtonPanel.getParent().layout(true);
+        UIUtils.enableWithChildren(columnsButtonPanel, visible);
     }
 
     private boolean isDataImport() {
@@ -461,8 +462,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             setSelectedSettings(false);
         }
 
-        UIUtils.packColumns(inputsTable.getTable(), true);
-        UIUtils.packColumns(nodesTable.getTable(), true);
+        packTablesColumns();
 
         updatePageCompletion();
     }
