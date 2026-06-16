@@ -21,6 +21,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
@@ -33,33 +39,32 @@ public class NavigatorHandlerConnectionFilter extends AbstractHandler implements
         DatabaseNavigatorTree navigatorTree = NavigatorUtils.getNavigatorTree(event);
         if (navigatorTree != null) {
             navigatorTree.setFilterShowConnected(!navigatorTree.isFilterShowConnected());
+            navigatorTree.getViewer().getControl().setRedraw(false);
+            try {
+                navigatorTree.getViewer().refresh();
+            } finally {
+                navigatorTree.getViewer().getControl().setRedraw(true);
+            }
         }
-        // No need to fire global command refresh,
-        // because DatabaseNavigatorTree::setFilterShowConnected(..) already updated local tool item state,
-        // and we don't need to trigger global command state refresh, because this command doesn't have global state.
+        ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_CONNECTED);
         return null;
     }
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
+        DatabaseNavigatorTree navigatorTree = NavigatorUtils.getNavigatorTree(element.getServiceLocator());
+        if (navigatorTree != null) {
+            DBIcon actionIcon = navigatorTree.isFilterShowConnected()
+                ? UIIcon.FILTER_CONNECTED
+                : UIIcon.FILTER_ALL;
+            element.setIcon(DBeaverIcons.getImageDescriptor(actionIcon));
+            String actionName = navigatorTree.isFilterShowConnected()
+                ? UINavigatorMessages.navigator_handler_connections_filter_show_connected_text
+                : UINavigatorMessages.navigator_handler_connections_filter_show_all_text;
+            element.setText(actionName);
+            element.setTooltip(actionName);
+        }
 
-        //
-        // DO NOT update element's state here, because command's associated flag state is unique for each navigator tree instance,
-        //        while IElementUpdater intended for all the command contributions to reflect ony one shared state!
-        //        element.getServiceLocator() doesn't help, because a few tree instances might belong to one service context,
-        //        like dialog and/or tool windows for example.
-        //
-        // Associated tool item state should always be updated explicitly only for the containing tree instance!
-        //     see DatabaseNavigatorTree::setFilterShowConnected(..)
-        //         DatabaseNavigatorTree.CustomFilteredTree::updateFilterConnectedConnectionsToolItem(..)
-        //
-        // BUT the workbench still wants to update commands' state on its own sometimes (at least after the contribution initialization),
-        //     which resets explicit adjustments, so aggregate all these update notifications with job and apply desired state contextfully
-        //
-        // TODO consider certain infrastructure for such contextful toggle commands because we have others like this
-        //     (see multi/single-tabbed resultsets for example)
-
-        DatabaseNavigatorTree.updateFilterCommandsState();
     }
 
 }
