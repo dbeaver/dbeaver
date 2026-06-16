@@ -46,7 +46,7 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
     private TaskTypeDescriptor taskType;
     private DatabaseNavigatorTree dataSourceTree;
     private List<DBSObject> selectedObjects = new ArrayList<>();
-    private static boolean showConnected = false;
+    private static boolean showConnected;
 
     SQLToolTaskObjectSelectorDialog(Shell parentShell, DBNProject projectNode, TaskTypeDescriptor taskType) {
         super(parentShell, TasksSQLUIMessages.sql_tool_task_object_selector_dialog_title, null);
@@ -75,14 +75,14 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
                 if (element instanceof DBNLocalFolder) {
                     for (DBNDataSource ds : ((DBNLocalFolder) element).getNestedDataSources()) {
                         if (taskType.isDriverApplicable(ds.getDataSourceContainer().getDriver()) &&
-                            (!dataSourceTree.isFilterShowConnected() || ds.getDataSourceContainer().isConnected())) {
+                            (!showConnected || ds.getDataSourceContainer().isConnected())) {
                             return true;
                         }
                     }
                     return false;
                 }
                 if (element instanceof DBNDataSource) {
-                    if (dataSourceTree.isFilterShowConnected() && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
+                    if (showConnected && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
                         return false;
                     }
                     return taskType.isDriverApplicable(((DBNDataSource) element).getDataSourceContainer().getDriver());
@@ -108,22 +108,24 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
             projectNode.getDatabases(),
             SWT.SINGLE | SWT.BORDER | SWT.CHECK,
             false,
-            dsFilter
-        ) {
-            @Override
-            public void setFilterShowConnected(boolean filterShowConnected) {
-                showConnected = filterShowConnected;
-                super.setFilterShowConnected(filterShowConnected);
-            }
-        };
-        dataSourceTree.setAutoExpandOnShowConnected(true);
-        dataSourceTree.setFilterShowConnected(showConnected);
+            dsFilter);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 400;
         dataSourceTree.setLayoutData(gd);
         dataSourceTree.getViewer().addSelectionChangedListener(event -> {
             updateSelectedObjects();
+        });
+
+        final Button showConnectedCheck = new Button(dialogArea, SWT.CHECK);
+        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+        showConnectedCheck.setSelection(showConnected);
+        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showConnected = showConnectedCheck.getSelection();
+                dataSourceTree.getViewer().refresh();
+            }
         });
 
         return dialogArea;

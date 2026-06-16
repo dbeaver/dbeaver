@@ -19,7 +19,7 @@ package org.jkiss.junit.osgi.extension;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.junit.osgi.OSGITestRunner;
+import org.jkiss.junit.osgi.OSGIFrameworkHandler;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.junit.jupiter.api.extension.*;
@@ -41,13 +41,13 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     private static final String MARKER_APP_LOADER_NAME = "app";
 
     // one OSGi container per product+application, so different products get isolated runtimes
-    private static final ConcurrentHashMap<String, OSGITestRunner> runners = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, OSGIFrameworkHandler> runners = new ConcurrentHashMap<>();
 
     // per-key locks for double-checked locking on runner creation
     private static final ConcurrentHashMap<String, Object> runnerLocks = new ConcurrentHashMap<>();
 
     // runner active for the test class on this thread; set in beforeAll, cleared in afterAll
-    private static final ThreadLocal<OSGITestRunner> currentRunner = new ThreadLocal<>();
+    private static final ThreadLocal<OSGIFrameworkHandler> currentRunner = new ThreadLocal<>();
 
     // context classloader active before the switch to the OSGi bundle classloader, restored in afterAll
     private static final ThreadLocal<ClassLoader> savedClassLoader = new ThreadLocal<>();
@@ -77,7 +77,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         if (key == null) {
             return;
         }
-        OSGITestRunner runner = getOrCreateRunner(key, testClass);
+        OSGIFrameworkHandler runner = getOrCreateRunner(key, testClass);
         if (runner != null) {
             currentRunner.set(runner);
             ClassLoader testBundleClassLoader = runner.getTestBundleClassLoader();
@@ -89,8 +89,8 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     }
 
     @Nullable
-    private OSGITestRunner getOrCreateRunner(@NotNull String key, @NotNull Class<?> testClass) {
-        OSGITestRunner runner = runners.get(key);
+    private OSGIFrameworkHandler getOrCreateRunner(@NotNull String key, @NotNull Class<?> testClass) {
+        OSGIFrameworkHandler runner = runners.get(key);
         if (runner != null) {
             return runner;
         }
@@ -99,7 +99,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
             runner = runners.get(key);
             if (runner == null && isLauncherClassLoader()) {
                 try {
-                    runner = new OSGITestRunner(testClass);
+                    runner = new OSGIFrameworkHandler(testClass);
                     runner.waitUntilReady();
                     runners.put(key, runner);
                 } catch (Exception e) {
@@ -131,7 +131,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     }
 
     private boolean isRunningFromIdea() {
-        OSGITestRunner runner = currentRunner.get();
+        OSGIFrameworkHandler runner = currentRunner.get();
         return runner != null && runner.getTestBundleClassLoader() != null;
     }
 
@@ -181,7 +181,7 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
     ) throws Throwable {
         invocation.skip();
 
-        OSGITestRunner runner = currentRunner.get();
+        OSGIFrameworkHandler runner = currentRunner.get();
         ClassLoader osgiLoader = runner.getTestBundleClassLoader();
         Method ideaMethod = invocationContext.getExecutable();
 
