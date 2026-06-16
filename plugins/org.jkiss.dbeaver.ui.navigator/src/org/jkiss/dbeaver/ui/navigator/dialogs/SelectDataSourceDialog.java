@@ -58,6 +58,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     private DBPDataSourceContainer dataSource = null;
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
+    private boolean showConnected;
     private boolean showAllProjects;
     private DBNProjectDatabases projectNode;
     private DBNNode rootNode;
@@ -78,6 +79,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     @Override
     protected Composite createDialogArea(Composite parent)
     {
+        showConnected = getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
         showAllProjects = getDialogBoundsSettings().getBoolean(PARAM_SHOW_ALL_PROJECTS);
 
         Composite group = super.createDialogArea(parent);
@@ -139,20 +141,14 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                         // Expand only current DS folder
                         DBNLocalFolder folderNode = projectNode.getFolderNode(dsFolder);
                         if (folderNode != null) {
-                            this.expandFolders(folderNode);
+                            expandFolders(this, folderNode);
                         }
                     } else {
                         // Do not expand anything
                     }
                     return;
                 }
-                this.expandFolders(treeRootNode);
-            }
-
-            @Override
-            public void setFilterShowConnected(boolean filterShowConnected) {
-                super.setFilterShowConnected(filterShowConnected);
-                getDialogBoundsSettings().put(PARAM_SHOW_CONNECTED, filterShowConnected);
+                expandFolders(this, treeRootNode);
             }
         };
         gd = new GridData(GridData.FILL_BOTH);
@@ -160,14 +156,31 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         gd.minimumHeight = 100;
         gd.minimumWidth = 100;
         dataSourceTree.setLayoutData(gd);
-        dataSourceTree.setAutoExpandOnShowConnected(true);
-        dataSourceTree.setFilterShowConnected(getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED));
 
         final TreeViewer treeViewer = dataSourceTree.getViewer();
 
         final Text descriptionText = new Text(group, SWT.READ_ONLY);
         descriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        final Button showConnectedCheck = new Button(group, SWT.CHECK);
+        showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+        showConnectedCheck.setSelection(showConnected);
+        showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showConnected = showConnectedCheck.getSelection();
+                treeViewer.getControl().setRedraw(false);
+                try {
+                    treeViewer.refresh();
+                    if (showConnected) {
+                        expandFolders(dataSourceTree, getTreeRootNode());
+                    }
+                } finally {
+                    treeViewer.getControl().setRedraw(true);
+                }
+                getDialogBoundsSettings().put(PARAM_SHOW_CONNECTED, showConnected);
+            }
+        });
         final Button showAllProjectsCheck = new Button(group, SWT.CHECK);
         showAllProjectsCheck.setLayoutData(GridDataFactory.swtDefaults().exclude(project == null).create());
         showAllProjectsCheck.setText(UINavigatorMessages.label_show_all_projects);
@@ -180,7 +193,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 try {
                     dataSourceTree.reloadTree(getTreeRootNode());
                     if (showAllProjects) {
-                        dataSourceTree.expandFolders(getTreeRootNode());
+                        expandFolders(dataSourceTree, getTreeRootNode());
                     }
                 } finally {
                     treeViewer.getControl().setRedraw(true);
@@ -195,13 +208,13 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 treeViewer.setSelection(new StructuredSelection(dsNode), true);
             }
         }
-        group.setTabList(new Control[] { dataSourceTree, showAllProjectsCheck} );
+        group.setTabList(new Control[] { dataSourceTree, showConnectedCheck, showAllProjectsCheck} );
 
         treeViewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
-                if (dataSourceTree.isFilterShowConnected()) {
+                if (showConnected) {
                     if (element instanceof DBNDataSource) {
                         return ((DBNDataSource) element).getDataSource() != null;
                     }
@@ -244,8 +257,8 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 getShell().layout(true);
             }
             dataSourceTree.getFilterControl().setFocus();
-            if (dataSourceTree.isFilterShowConnected()) {
-                dataSourceTree.expandFolders(getTreeRootNode());
+            if (showConnected) {
+                expandFolders(dataSourceTree, getTreeRootNode());
             }
         });
 
@@ -253,9 +266,31 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             treeViewer.getControl(),
             dataSourceTree.getFilterControl(),
             descriptionText,
+            showConnectedCheck,
             showAllProjectsCheck);
 
         return group;
+    }
+
+    private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
+        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
+            if (node instanceof DBNProject p && !p.getProject().isOpen()) {
+                // Don't try to expand unloaded projects - let the user do it
+                return;
+            }
+            dataSourceTree.getViewer().expandToLevel(node, 1);
+            DBNNode[] childNodes;
+            try {
+                childNodes = node.getChildren(new VoidProgressMonitor());
+            } catch (DBException e) {
+                return;
+            }
+            if (childNodes != null) {
+                for (DBNNode childNode : childNodes) {
+                    expandFolders(dataSourceTree, childNode);
+                }
+            }
+        }
     }
 
     private DBNNode getTreeRootNode() {
