@@ -290,4 +290,9 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     default UIRowBuilder horizontalSpacer() {
         return label(lb -> lb.align(UIAlignX.FILL).grow(UIGrowX.ALWAYS));
     }
+
+    @NotNull
+    default UIRowBuilder verticalSpacer() {
+        return label(lb -> lb.align(UIAlignY.FILL).grow(UIGrowY.ALWAYS));
+    }
 }

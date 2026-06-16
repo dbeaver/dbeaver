@@ -18,14 +18,19 @@ package org.jkiss.dbeaver.ui.config.easy;
 
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.internal.Workbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWizardPage;
 import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageDescriptor;
 import org.jkiss.dbeaver.ui.config.easy.spi.EasyConfigPageRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public final class EasyConfigWizard extends Wizard {
     private static final Log log = Log.getLog(EasyConfigWizard.class);
+
+    private boolean restartRequired = false;
 
     public EasyConfigWizard() {
         setWindowTitle("Easy Config");
@@ -51,7 +56,32 @@ public final class EasyConfigWizard extends Wizard {
     @Override
     public boolean performFinish() {
         applySettings();
+
+        if (restartRequired) {
+            if (UIUtils.confirmAction(
+                getShell(),
+                "Restart " + GeneralUtils.getProductName(),
+                "You need to restart " + GeneralUtils.getProductName() + " to apply some of the changes.\nDo you want to restart now?"
+            )) {
+                UIUtils.asyncExec(() -> Workbench.getInstance().restart());
+            }
+        }
+
         return true;
+    }
+
+    @Override
+    public boolean performCancel() {
+        // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
+        return false;
+    }
+
+    /**
+     * Marks the wizard for restart, indicating that the changes made
+     * in the wizard require a restart of the application to take effect.
+     */
+    public void markForRestart() {
+        restartRequired = true;
     }
 
     private void applySettings() {

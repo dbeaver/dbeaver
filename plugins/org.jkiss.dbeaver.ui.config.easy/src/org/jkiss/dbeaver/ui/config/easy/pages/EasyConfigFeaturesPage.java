@@ -67,8 +67,7 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
         return pb -> pb
             .row(rb -> rb
                 .label(lb -> lb
-                    .text("DBeaver comes with a lot of features that suit different workflows, "
-                        + "and here you can configure them for your needs:")
+                    .text(EasyConfigMessages.features_list_header)
                     .wrap()
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)))

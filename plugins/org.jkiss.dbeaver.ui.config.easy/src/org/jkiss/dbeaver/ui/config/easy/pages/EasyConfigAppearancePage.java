@@ -21,17 +21,26 @@ import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.UIObservables;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.*;
 
 import java.util.function.Consumer;
 
 public class EasyConfigAppearancePage extends EasyConfigWizardPage {
+    private final IThemeEngine themeEngine;
+    private final UIObservable<ITheme> currentTheme;
+
     public EasyConfigAppearancePage() {
         super(EasyConfigMessages.appearance_title, EasyConfigMessages.appearance_description);
+
+        themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+        currentTheme = UIObservable.of(themeEngine.getActiveTheme(), ITheme.class);
+        currentTheme.addChangeListener((ignored, theme) -> {
+            themeEngine.setTheme(theme, false);
+            getWizard().markForRestart();
+        });
     }
 
     @Override
@@ -44,18 +53,33 @@ public class EasyConfigAppearancePage extends EasyConfigWizardPage {
         return DBWorkbench.getPlatform().getApplication().isStandalone();
     }
 
+    @Override
+    public void applySettings() {
+        // The only difference from the change listener is that we persist the theme here
+        themeEngine.setTheme(currentTheme.get(), true);
+    }
+
     @NotNull
-    private static Consumer<UIPanelBuilder> buildPanel() {
+    private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
             .row(rb -> rb.label("Choose which theme you want to use:"))
             .indent(pb1 -> {
-                var engine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
-                var selection = UIObservable.of(engine.getActiveTheme(), ITheme.class);
-
-                for (ITheme theme : engine.getThemes()) {
-                    pb1.row(rb -> rb.radioButton(theme.getLabel(), UIObservables.equals(selection, theme)));
+                for (ITheme theme : themeEngine.getThemes()) {
+                    pb1.row(rb -> rb.radioButton(theme.getLabel(), UIObservables.equals(currentTheme, theme)));
                 }
-            });
+            })
+            .row(UIRowBuilder::verticalSpacer)
+            .row(rb -> rb
+                // TODO introduce a dedicated icon+label control
+                .label(lb -> lb
+                    .image(DBIcon.SMALL_INFO)
+                    .align(UIAlignY.TOP))
+                .label(lb -> lb
+                    .text("Some elements of the user interface won't be updated until you restart the "
+                        + "application. You'll be prompted to restart when you finish the wizard.")
+                    .wrap()
+                    .align(UIAlignX.FILL)
+                    .grow(UIGrowX.ALWAYS)));
     }
 }

@@ -20,20 +20,45 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.config.easy.EasyConfigWizard;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 
+import java.util.function.BiConsumer;
+
 public abstract class EasyConfigWizardPage extends WizardPage {
-    public EasyConfigWizardPage(@NotNull String title, @NotNull String description) {
-        super(title);
-        setTitle(title);
-        setDescription(description);
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO));
-    }
+    private final UIObservable<String> title;
+    private final UIObservable<String> description;
+
+    private final BiConsumer<String, String> titleChangeListener = (s, s2) -> setTitle(s2);
+    private final BiConsumer<String, String> descriptionChangeListener = (s, s2) -> setDescription(s2);
 
     public EasyConfigWizardPage(@NotNull UIObservable<String> title, @NotNull UIObservable<String> description) {
-        this(title.get(), description.get());
-        title.addChangeListener((s, s2) -> setTitle(s2));
-        description.addChangeListener((s, s2) -> setDescription(s2));
+        super(title.get());
+        setTitle(title.get());
+        setDescription(description.get());
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO));
+
+        this.title = title;
+        this.description = description;
+
+        title.addChangeListener(titleChangeListener);
+        description.addChangeListener(descriptionChangeListener);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        // This is required because bindings may come from a message bundle where they live forever,
+        // so listeners must be removed manually to avoid memory leaks.
+        title.removeChangeListener(titleChangeListener);
+        description.removeChangeListener(descriptionChangeListener);
+    }
+
+    @NotNull
+    @Override
+    public EasyConfigWizard getWizard() {
+        return (EasyConfigWizard) super.getWizard();
     }
 
     /**

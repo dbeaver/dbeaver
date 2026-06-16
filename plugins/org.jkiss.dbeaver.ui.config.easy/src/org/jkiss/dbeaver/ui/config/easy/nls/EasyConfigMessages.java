@@ -29,6 +29,7 @@ public final class EasyConfigMessages extends UIReloadableNLS {
 
     public static UIObservable<String> features_title;
     public static UIObservable<String> features_description;
+    public static UIObservable<String> features_list_header;
 
     public static UIObservable<String> final_steps_title;
     public static UIObservable<String> final_steps_description;
