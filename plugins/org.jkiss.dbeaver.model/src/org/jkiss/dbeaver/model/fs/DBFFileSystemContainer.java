@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,17 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry.updater;
+package org.jkiss.dbeaver.model.fs;
 
-import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.w3c.dom.Element;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPObject;
 
 /**
- * Update distribution descriptor
+ * Virtual file system container
  */
-public class DistributionDescriptor {
+public interface DBFFileSystemContainer extends DBPObject {
 
-    private OSDescriptor os;
-    private String type;
+    @NotNull
+    DBFFileSystemManager getFileSystemManager();
 
-    public DistributionDescriptor(Element element)
-    {
-
-    }
 }

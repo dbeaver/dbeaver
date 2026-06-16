@@ -57,6 +57,8 @@ public class OpenAiUtils {
         return new AIFunctionCall(message.name, arguments, metadata);
     }
 
+
+
     @NotNull
     public static OAIResponsesRequest createOpenAiRequest(
         @NotNull AIEngineRequest request,
@@ -121,14 +123,23 @@ public class OpenAiUtils {
         @NotNull Consumer<Throwable> errorHandler,
         @NotNull HttpResponse<Stream<String>> response,
         @NotNull AtomicBoolean suppressCompletion,
-        @Nullable Runnable backupOption,
+        @Nullable Consumer<String> backupOption,
         int statusCode
     ) {
         if (statusCode != 200) {
             String responseBody = response.body().collect(Collectors.joining());
-            if (backupOption != null && statusCode == 400 && responseBody.contains("is not supported via Responses API")) {
+            if (backupOption != null && statusCode == 400) {
+                String reason;
+                if (responseBody.contains("is not supported via Responses API")) {
+                    reason = OpenAIConstants.LEGACY_FALLBACK;
+                } else if (responseBody.contains("Unsupported parameter: 'temperature'")) {
+                    reason = OpenAIConstants.TEMPERATURE_NOT_SUPPORTED;
+                } else {
+                    errorHandler.accept(mapper.map(statusCode, responseBody));
+                    return true;
+                }
                 suppressCompletion.set(true);
-                backupOption.run();
+                backupOption.accept(reason);
             } else {
                 errorHandler.accept(mapper.map(statusCode, responseBody));
             }

@@ -16,14 +16,14 @@
  */
 package org.jkiss.junit.osgi.annotation;
 
-import org.jkiss.junit.osgi.OSGITestRunner;
+import org.jkiss.junit.osgi.OSGIFrameworkHandler;
 
 import java.lang.annotation.*;
 
 /**
- * Run with product used for @{@link OSGITestRunner}
+ * Run with product used for @{@link OSGIFrameworkHandler}
  * Annotation to provide an application parameters for OSGI tests
- * See {@link org.jkiss.junit.osgi.OSGITestRunner}
+ * See {@link OSGIFrameworkHandler}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -57,6 +57,12 @@ public @interface RunWithApplication {
 
     Property[] properties() default {};
 
-    String [] vmArgs() default {};
+    String[] vmArgs() default {};
+
+    /**
+     * Wait for the {@code DBPApplicationWorkbench} service before starting the app.
+     * Set {@code false} for headless CLI apps (DBVR, etc.) that never register it - avoids delay.
+     */
+    boolean waitForWorkbench() default true;
 
 }

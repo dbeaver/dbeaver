@@ -639,24 +639,6 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
-    public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
-        Group group = new Group(parent, SWT.NONE);
-        group.setText(label);
-
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(layoutStyle);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            group.setLayoutData(gd);
-        }
-
-        GridLayout gl = new GridLayout(columns, false);
-        group.setLayout(gl);
-
-        return group;
-    }
-
     @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
@@ -2408,6 +2390,25 @@ public class UIUtils {
         for (Control child : parent.getChildren()) {
             if (childType.isInstance(child)) {
                 return childType.cast(child);
+            } else if (child instanceof Composite c) {
+                T subChild = getChildOfType(c, childType);
+                if (subChild != null) {
+                    return subChild;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static <T extends Control> T getChildOfTypeDeep(@NotNull Composite parent, @NotNull Class<T> childType) {
+        for (Control child : parent.getChildren()) {
+            if (childType.isInstance(child)) {
+                return childType.cast(child);
+            } else if (child instanceof Composite c) {
+                T subChild = getChildOfType(c, childType);
+                if (subChild != null) {
+                    return subChild;
+                }
             }
         }
         return null;

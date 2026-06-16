@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit.osgi.annotation;
+package org.jkiss.junit.osgi;
 
-import org.junit.runner.Runner;
+public final class TestHarnessConstants {
 
-import java.lang.annotation.*;
+    // OSGi BundleContext published by the test runner once the framework is up
+    public static final String PROP_OSGI_CONTEXT = "dbeaver.osgi.context";
 
-/**
- * See {@link org.jkiss.junit.osgi.OSGITestRunner}
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
-public @interface RunnerProxy {
-    /**
-     * Proxy runner class
-     */
-    Class<? extends Runner> value();
+    private TestHarnessConstants() {
+    }
+
 }

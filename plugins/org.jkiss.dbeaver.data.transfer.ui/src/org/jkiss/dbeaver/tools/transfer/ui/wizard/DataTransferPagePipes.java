@@ -24,13 +24,11 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -43,6 +41,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -73,6 +72,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
+    private Control columnsButtonPanel;
 
     private static class TransferTarget {
         DataTransferNodeDescriptor node;
@@ -112,10 +112,15 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         setControl(composite);
 
-        getShell().addControlListener(ControlListener.controlResizedAdapter(controlEvent -> {
-            UIUtils.packColumns(inputsTable.getTable(), true);
-            UIUtils.packColumns(nodesTable.getTable(), true);
-        }));
+        getShell().addControlListener(ControlListener.controlResizedAdapter(e -> packTablesColumns()));
+    }
+
+    private void packTablesColumns() {
+        //Point btnSize = columnsButtonPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        UIUtils.packColumns(inputsTable.getTable(), true);
+        //TableColumn column = inputsTable.getTable().getColumn(0);
+        //column.setWidth(column.getWidth() - btnSize.x);
+        UIUtils.packColumns(nodesTable.getTable(), true);
     }
 
     private void createNodesTable(Composite composite) {
@@ -131,7 +136,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         Table table = nodesTable.getTable();
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 25 * (UIUtils.getFontHeight(table));
+        gd.heightHint = 15 * table.getItemHeight();
         table.setLayoutData(gd);
         table.setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
@@ -229,6 +234,14 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         }
         updatePageCompletion();
         getWizard().getContainer().updateNavigationTree();
+
+        if (!isDataImport()) {
+            boolean targetIsDatabase = target != null
+                && target.node != null
+                && target.node.getNodeClass() != null
+                && DatabaseTransferConsumer.class.isAssignableFrom(target.node.getNodeClass());
+            setConfigureColumnsButtonVisible(!targetIsDatabase);
+        }
     }
 
     private void createInputsTable(Composite composite) {
@@ -295,58 +308,67 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         };
         ColumnViewerToolTipSupport.enableFor(inputsTable);
         inputsTable.setLabelProvider(labelProvider);
-
         if (!dataImport) {
-            Composite buttonsPanel = UIUtils.createComposite(inputTable, 1);
-            buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createPushButton(
-                buttonsPanel,
-                DTMessages.data_transfer_wizard_settings_group_preview_columns + " ...",
-                null,
-                null,
-                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                    final List<StreamMappingContainer> mappings = new ArrayList<>();
-
-                    StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
-                    if (streamConsumerSettings == null) {
-                        DBWorkbench.getPlatformUI().showError(
-                            DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                            "Current configuration do not support stream settings"
-                        );
-                        return;
-                    }
-                    try {
-                        UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, streamConsumerSettings, mappings));
-                    } catch (InvocationTargetException e) {
-                        DBWorkbench.getPlatformUI().showError(
-                            DTMessages.stream_transfer_consumer_title_configuration_load_failed,
-                            DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
-                            e
-                        );
-                        return;
-                    }
-
-                    new ConfigureColumnsDialog(getShell(), mappings, streamConsumerSettings).open();
-                })
-            );
-            if (false) {
-                // TODO: move extraction settings to dialog a bit later
-                UIUtils.createPushButton(
-                    buttonsPanel,
-                    DTUIMessages.database_producer_page_extract_settings_name_and_title,
-                    null,
-                    null,
-                    SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                        ConfigureDataExtractionDialog dialog = new ConfigureDataExtractionDialog(getShell(), getWizard());
-                        dialog.open();
-                    })
-                );
-            }
+            columnsButtonPanel = createConfigureColumnsButton(inputTable);
         }
     }
 
+    @NotNull
+    private Control createConfigureColumnsButton(@NotNull Composite parent) {
+        Composite buttonsPanel = UIUtils.createComposite(parent, 1);
+        buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+        UIUtils.createPushButton(
+            buttonsPanel,
+            null,
+            DTMessages.data_transfer_wizard_settings_group_preview_columns,
+            DBIcon.TREE_COLUMNS,
+            SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                final List<StreamMappingContainer> mappings = new ArrayList<>();
+
+                StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
+                if (streamConsumerSettings == null) {
+                    DBWorkbench.getPlatformUI().showError(
+                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                        "Current configuration do not support stream settings"
+                    );
+                    return;
+                }
+                try {
+                    UIUtils.runInProgressDialog(monitor -> refreshMappings(monitor, streamConsumerSettings, mappings));
+                } catch (InvocationTargetException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        DTMessages.stream_transfer_consumer_title_configuration_load_failed,
+                        DTMessages.stream_transfer_consumer_message_cannot_load_configuration,
+                        e
+                    );
+                    return;
+                }
+
+                new ConfigureColumnsDialog(getShell(), mappings, streamConsumerSettings).open();
+            })
+        );
+        if (false) {
+            // TODO: move extraction settings to dialog a bit later
+            UIUtils.createPushButton(
+                buttonsPanel,
+                DTUIMessages.database_producer_page_extract_settings_name_and_title,
+                null,
+                null,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                    ConfigureDataExtractionDialog dialog = new ConfigureDataExtractionDialog(getShell(), getWizard());
+                    dialog.open();
+                })
+            );
+        }
+        return buttonsPanel;
+    }
+
+    private void setConfigureColumnsButtonVisible(boolean visible) {
+        UIUtils.enableWithChildren(columnsButtonPanel, visible);
+    }
+
     private boolean isDataImport() {
-        return getWizard().getPage(StreamConsumerPageSettings.class) == null;
+        return getWizard().getSettings().isProducerOptional();
     }
 
     @Nullable
@@ -440,8 +462,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             setSelectedSettings(false);
         }
 
-        UIUtils.packColumns(inputsTable.getTable(), true);
-        UIUtils.packColumns(nodesTable.getTable(), true);
+        packTablesColumns();
 
         updatePageCompletion();
     }

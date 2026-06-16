@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.tools.transfer.ui;
 
-package org.jkiss.dbeaver.registry.updater;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
-import org.w3c.dom.Element;
+public interface DataTransferFeatures {
+    DBRFeature CATEGORY_DATA_TRANSFER = DBRFeature.createCategory("DATA_TRANSFER", "Data Transfer features");
+    DBRFeature DATA_TRANSFER = DBRFeature.createFeature(CATEGORY_DATA_TRANSFER, "DATA_TRANSFER_START");
 
-/**
- * Update site descriptor
- */
-public class UpdateSiteDescriptor {
-
-    private String siteName;
-    private String baseURL;
-    private int priority;
-
-    public UpdateSiteDescriptor(Element element)
-    {
-
-    }
+    String PARAM_TRANSFER_DATA_TYPE = "dataType";
+    String PARAM_TRANSFER_TYPE = "transferType";
+    String IS_TASK = "isTask";
 }
