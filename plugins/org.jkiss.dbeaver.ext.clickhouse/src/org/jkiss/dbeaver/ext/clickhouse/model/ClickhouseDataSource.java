@@ -51,6 +51,7 @@ import org.osgi.framework.Version;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -61,6 +62,7 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     private static Map<String, String> dataTypeMap = new HashMap<>();
     private final TableEnginesCache engineCache = new TableEnginesCache();
+    private Boolean jsonStringSerializationSupported;
 
     static {
         dataTypeMap.put(String.class.getName(), "String");
@@ -311,6 +313,10 @@ public class ClickhouseDataSource extends GenericDataSource {
             return DBPDataKind.ARRAY;
         } else if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE)) {
             return DBPDataKind.STRUCT;
+        } else if (typeName.equalsIgnoreCase(ClickhouseConstants.DATA_TYPE_JSON)) {
+            // Render JSON columns through the JSON content viewer/editor (see ClickhouseJSONValueHandler).
+            // Exact match only: parameterized JSON(...) and Nullable(JSON)/Array(JSON)/Map(_,JSON) stay UNKNOWN.
+            return DBPDataKind.CONTENT;
         }
         return super.resolveDataKind(typeName, valueType);
     }
@@ -370,6 +376,60 @@ public class ClickhouseDataSource extends GenericDataSource {
             }
         }
 
+        enableJsonStringSerialization(connection);
+
         return connection;
+    }
+
+    /**
+     * Makes the driver serialize {@code JSON} columns as canonical JSON strings, so that
+     * {@code getString()} returns valid JSON instead of a flattened {@code java.util.Map}. This is what
+     * lets the JSON content viewer/editor render those columns (see {@code ClickhouseJSONValueHandler}).
+     * <p>
+     * The {@code output_format_binary_write_json_as_string} setting is applied through the driver's own
+     * default query settings rather than a {@code SET} statement: a server-side {@code SET} changes the
+     * wire format without the driver knowing, which desynchronizes its binary reader. The setting is only
+     * applied when the server actually exposes it, so connecting to servers that predate it is unaffected.
+     */
+    private void enableJsonStringSerialization(@NotNull Connection connection) {
+        if (!isJsonStringSerializationSupported(connection)) {
+            return;
+        }
+        try {
+            Object querySettings = BeanUtils.invokeObjectMethod(
+                connection, ClickhouseConstants.DRIVER_GET_DEFAULT_QUERY_SETTINGS_METHOD);
+            BeanUtils.invokeObjectMethod(
+                querySettings,
+                ClickhouseConstants.DRIVER_SERVER_SETTING_METHOD,
+                new Class[]{String.class, String.class},
+                new Object[]{ClickhouseConstants.SETTING_JSON_AS_STRING, "1"});
+            BeanUtils.invokeObjectMethod(
+                connection,
+                ClickhouseConstants.DRIVER_SET_DEFAULT_QUERY_SETTINGS_METHOD,
+                new Class[]{querySettings.getClass()},
+                new Object[]{querySettings});
+        } catch (Throwable e) {
+            log.debug("Can't enable JSON string serialization for ClickHouse JSON columns", e);
+        }
+    }
+
+    /**
+     * Whether the connected server exposes the {@code output_format_binary_write_json_as_string} setting.
+     * Detected by probing {@code system.settings} rather than gating on a server version: the setting is
+     * not tied to a single clean release boundary, so a capability probe is authoritative and survives
+     * backports. The result is cached for the lifetime of the data source.
+     */
+    private synchronized boolean isJsonStringSerializationSupported(@NotNull Connection connection) {
+        if (jsonStringSerializationSupported == null) {
+            try (Statement stmt = connection.createStatement();
+                 ResultSet resultSet = stmt.executeQuery(
+                     "SELECT count() FROM system.settings WHERE name = '" + ClickhouseConstants.SETTING_JSON_AS_STRING + "'")) {
+                jsonStringSerializationSupported = resultSet.next() && resultSet.getInt(1) > 0;
+            } catch (SQLException e) {
+                log.debug("Can't detect support for the " + ClickhouseConstants.SETTING_JSON_AS_STRING + " setting", e);
+                jsonStringSerializationSupported = false;
+            }
+        }
+        return jsonStringSerializationSupported;
     }
 }
