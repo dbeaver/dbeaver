@@ -33,15 +33,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
-import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -56,7 +57,6 @@ public class VersionUpdateDialog extends Dialog {
 
     private static final Log log = Log.getLog(VersionUpdateDialog.class);
 
-    private static final String PROP_DISTRIBUTION_TYPE = "dbeaver.distribution.type";
     private static final String OS_WINDOWS = "win";
     private static final String OS_MACOS = "mac";
     private static final String OS_LINUX = "linux";
@@ -261,73 +261,11 @@ public class VersionUpdateDialog extends Dialog {
         if (buttonId == INFO_ID) {
             ShellUtils.launchProgram(newVersion.getBaseURL());
         } else if (buttonId == UPGRADE_ID) {
-            final PlatformInstaller installer = getPlatformInstaller();
-            if (installer != null) {
-                final AbstractJob job = new AbstractJob("Downloading installation file") {
-                    @NotNull
-                    @Override
-                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                        final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
-                        final Path folder;
-                        final Path file;
-
-                        try {
-                            final String executable = installer.getExecutableName(app);
-
-                            folder = Files.createTempDirectory(executable);
-                            file = Files.createFile(folder.resolve(executable));
-
-                            log.debug("Downloading installation file to " + file);
-                            WebUtils.downloadRemoteFile(monitor, "Obtaining installer", getDownloadURL(app, installer, newVersion), file, null);
-                        } catch (IOException e) {
-                            return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
-                        } catch (InterruptedException e) {
-                            log.debug("Canceled by user", e);
-                            return Status.OK_STATUS;
-                        }
-
-                        if (UIUtils.confirmAction(CoreMessages.dialog_version_update_downloader_title, NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, app.getName()))) {
-                            final IWorkbench workbench = PlatformUI.getWorkbench();
-                            final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-
-                            // Arm shutdown listener now because later will be too late
-                            final IWorkbenchListener listener = new IWorkbenchListener() {
-                                {
-                                    workbench.addWorkbenchListener(this);
-                                }
-
-                                @Override
-                                public boolean preShutdown(IWorkbench workbench, boolean forced) {
-                                    return true;
-                                }
-
-                                @Override
-                                public void postShutdown(IWorkbench workbench) {
-                                    try {
-                                        installer.run(file, log);
-                                    } catch (Exception e) {
-                                        log.error("Failed to run the installer script", e);
-                                    }
-                                }
-                            };
-
-                            UIUtils.asyncExec(() -> {
-                                ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_EXIT, workbenchWindow);
-
-                                if (!workbench.isClosing()) {
-                                    workbench.removeWorkbenchListener(listener);
-                                    ShellUtils.launchProgram(folder.toString());
-                                }
-                            });
-                        } else {
-                            ShellUtils.showInSystemExplorer(file.toAbsolutePath().toString());
-                        }
-
-                        return Status.OK_STATUS;
-                    }
-                };
-                job.setUser(true);
-                job.schedule();
+            var app = (DBeaverApplication) DBWorkbench.getPlatform().getApplication();
+            var installer = getPlatformInstaller();
+            var downloadUrl = app.getLatestVersionDownloadUrl(newVersion);
+            if (installer != null && downloadUrl != null) {
+                scheduleDownloadAndInstall(installer, downloadUrl);
             } else {
                 ShellUtils.launchProgram(getDownloadPageURL(newVersion));
             }
@@ -347,6 +285,76 @@ public class VersionUpdateDialog extends Dialog {
         close();
     }
 
+    private void scheduleDownloadAndInstall(@NotNull PlatformInstaller installer, @NotNull URI downloadUrl) {
+        final AbstractJob job = new AbstractJob("Downloading installation file") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                Path folder;
+                Path file;
+
+                try {
+                    var url = downloadUrl.toString();
+                    var filename = url.substring(url.lastIndexOf('/') + 1);
+                    folder = Files.createTempDirectory(filename);
+                    file = Files.createFile(folder.resolve(filename));
+
+                    log.debug("Downloading installation file to " + file);
+                    WebUtils.downloadRemoteFile(monitor, "Obtaining installer", url, file, null);
+                } catch (IOException e) {
+                    return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
+                } catch (InterruptedException e) {
+                    log.debug("Canceled by user", e);
+                    return Status.OK_STATUS;
+                }
+
+                if (UIUtils.confirmAction(
+                    CoreMessages.dialog_version_update_downloader_title,
+                    NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, GeneralUtils.getProductName())
+                )) {
+                    var workbench = PlatformUI.getWorkbench();
+                    var workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+
+                    // Arm shutdown listener now because later will be too late
+                    var listener = new IWorkbenchListener() {
+                        {
+                            workbench.addWorkbenchListener(this);
+                        }
+
+                        @Override
+                        public boolean preShutdown(IWorkbench workbench, boolean forced) {
+                            return true;
+                        }
+
+                        @Override
+                        public void postShutdown(IWorkbench workbench) {
+                            try {
+                                installer.run(file, log);
+                            } catch (Exception e) {
+                                log.error("Failed to run the installer script", e);
+                            }
+                        }
+                    };
+
+                    UIUtils.asyncExec(() -> {
+                        ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_EXIT, workbenchWindow);
+
+                        if (!workbench.isClosing()) {
+                            workbench.removeWorkbenchListener(listener);
+                            ShellUtils.launchProgram(folder.toString());
+                        }
+                    });
+                } else {
+                    ShellUtils.showInSystemExplorer(file.toAbsolutePath().toString());
+                }
+
+                return Status.OK_STATUS;
+            }
+        };
+        job.setUser(true);
+        job.schedule();
+    }
+
     @Nullable
     private PlatformInstaller getPlatformInstaller() {
         return switch (Platform.getOS()) {
@@ -354,12 +362,6 @@ public class VersionUpdateDialog extends Dialog {
             case Platform.OS_MACOSX -> new MacintoshInstaller();
             default -> null;
         };
-    }
-
-    @NotNull
-    private String getDownloadURL(@NotNull ApplicationDescriptor application, @NotNull PlatformInstaller installer, @NotNull VersionDescriptor version) {
-        final String executable = installer.getExecutableName(application);
-        return CommonUtils.removeTrailingSlash(version.getDownloadURL()) + '/' + executable;
     }
 
     @NotNull
@@ -372,7 +374,7 @@ public class VersionUpdateDialog extends Dialog {
         } else {
             os = OS_LINUX;
         }
-        String dist = System.getProperty(PROP_DISTRIBUTION_TYPE);
+        String dist = System.getProperty(DBeaverApplication.PROP_DISTRIBUTION_TYPE);
         if (CommonUtils.isEmpty(dist) && RuntimeUtils.isLinux()) {
             // If distribution type was not set explicitly, then let's attempt a dumb guess.
             try {
@@ -388,11 +390,8 @@ public class VersionUpdateDialog extends Dialog {
             (dist == null ? "" : "&dist=" + dist);
     }
 
-    private interface PlatformInstaller {
+    private sealed interface PlatformInstaller {
         void run(@NotNull Path executable, @NotNull Log log) throws Exception;
-
-        @NotNull
-        String getExecutableName(@NotNull ApplicationDescriptor application);
     }
 
     private static final class WindowsInstaller implements PlatformInstaller {
@@ -404,16 +403,6 @@ public class VersionUpdateDialog extends Dialog {
                 "start", "/W", path, "&&", "del", path,
             });
         }
-
-        @NotNull
-        @Override
-        public String getExecutableName(@NotNull ApplicationDescriptor application) {
-            if ("zip".equals(System.getProperty(PROP_DISTRIBUTION_TYPE))) {
-                return application.getId() + "-latest-win32.win32." + Platform.getOSArch() + ".zip";
-            } else {
-                return application.getId() + "-latest-" + Platform.getOSArch() + "-setup.exe";
-            }
-        }
     }
 
     private static final class MacintoshInstaller implements PlatformInstaller {
@@ -424,12 +413,6 @@ public class VersionUpdateDialog extends Dialog {
                 "/bin/sh", "-c",
                 "open -F -W " + path + " && rm " + path
             });
-        }
-
-        @NotNull
-        @Override
-        public String getExecutableName(@NotNull ApplicationDescriptor application) {
-            return application.getId() + "-latest-macos-" + Platform.getOSArch() + ".dmg";
         }
     }
 }

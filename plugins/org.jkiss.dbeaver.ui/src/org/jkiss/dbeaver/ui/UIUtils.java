@@ -2390,6 +2390,25 @@ public class UIUtils {
         for (Control child : parent.getChildren()) {
             if (childType.isInstance(child)) {
                 return childType.cast(child);
+            } else if (child instanceof Composite c) {
+                T subChild = getChildOfType(c, childType);
+                if (subChild != null) {
+                    return subChild;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static <T extends Control> T getChildOfTypeDeep(@NotNull Composite parent, @NotNull Class<T> childType) {
+        for (Control child : parent.getChildren()) {
+            if (childType.isInstance(child)) {
+                return childType.cast(child);
+            } else if (child instanceof Composite c) {
+                T subChild = getChildOfType(c, childType);
+                if (subChild != null) {
+                    return subChild;
+                }
             }
         }
         return null;
