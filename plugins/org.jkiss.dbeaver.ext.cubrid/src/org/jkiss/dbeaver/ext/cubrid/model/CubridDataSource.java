@@ -71,7 +71,7 @@ public class CubridDataSource extends GenericDataSource
             @NotNull CubridMetaModel metaModel)
             throws DBException {
         super(monitor, container, metaModel, new CubridSQLDialect());
-        this.metaModel = new CubridMetaModel();
+        this.metaModel = metaModel;
         this.privilageCache = new CubridPrivilageCache();
         this.serverCache = new CubridServerCache();
     }
