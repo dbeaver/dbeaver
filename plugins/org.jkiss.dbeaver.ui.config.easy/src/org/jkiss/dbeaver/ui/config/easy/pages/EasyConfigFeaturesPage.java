@@ -51,7 +51,11 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
     public void applySettings() {
         var registry = EasyConfigFeatureRegistry.getInstance();
         for (Map.Entry<EasyConfigFeatureDescriptor, UIObservable<Boolean>> entry : features.entrySet()) {
-            registry.setFeatureEnabled(entry.getKey(), entry.getValue().get());
+            boolean enabled = entry.getValue().get();
+            if (registry.isFeatureEnabled(entry.getKey()) != enabled) {
+                getWizard().markForRestart();
+            }
+            registry.setFeatureEnabled(entry.getKey(), enabled);
         }
     }
 
@@ -71,15 +75,14 @@ public class EasyConfigFeaturesPage extends EasyConfigWizardPage {
                     .wrap()
                     .align(UIAlignX.FILL)
                     .grow(UIGrowX.ALWAYS)))
-            .row(rb -> rb.scrolledPanel(
-                false, true, pb1 -> pb1
-                    .align(UIAlignX.FILL, UIAlignY.FILL)
-                    .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
-                    .indent(pb2 -> {
-                        for (EasyConfigFeatureDescriptor descriptor : EasyConfigFeatureRegistry.getInstance().getFeatures()) {
-                            pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
-                        }
-                    })
+            .row(rb -> rb.scrolledPanel(false, true, pb1 -> pb1
+                .align(UIAlignX.FILL, UIAlignY.FILL)
+                .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
+                .indent(pb2 -> {
+                    for (EasyConfigFeatureDescriptor descriptor : EasyConfigFeatureRegistry.getInstance().getFeatures()) {
+                        pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
+                    }
+                })
             ));
     }
 }

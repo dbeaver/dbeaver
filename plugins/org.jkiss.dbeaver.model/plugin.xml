@@ -233,8 +233,6 @@
     <extension point="org.jkiss.dbeaver.easyConfig">
         <feature id="cloud" label="Cloud integration (AWS, Azure, Google Cloud)" enabledByDefault="true"/>
         <feature id="dashboards" label="Database dashboards" enabledByDefault="true"/>
-        <feature id="git" label="Git version control" enabledByDefault="false"/>
-        <feature id="tableau" label="Tableau integration" enabledByDefault="false"/>
         <feature id="debugger" label="Procedure debugger" enabledByDefault="false"/>
     </extension>
 
