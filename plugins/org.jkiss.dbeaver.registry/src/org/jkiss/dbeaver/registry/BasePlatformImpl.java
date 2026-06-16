@@ -383,6 +383,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public String getClientId() {
+        return GlobalSettings.getInstance().getClientId();
+    }
+
+    @NotNull
+    @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
