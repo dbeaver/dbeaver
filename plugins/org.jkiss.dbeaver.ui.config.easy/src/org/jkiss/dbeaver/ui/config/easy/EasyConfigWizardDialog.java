@@ -65,6 +65,11 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     }
 
     @Override
+    public int getShellStyle() {
+        return SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+    }
+
+    @Override
     public void updateSize() {
         // don't update size - pages are adapted to the dialog size
     }

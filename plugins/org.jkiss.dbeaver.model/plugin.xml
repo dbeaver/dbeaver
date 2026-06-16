@@ -230,10 +230,4 @@
             type="java.lang.Object"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.easyConfig">
-        <feature id="cloud" label="Cloud integration (AWS, Azure, Google Cloud)" enabledByDefault="true"/>
-        <feature id="dashboards" label="Database dashboards" enabledByDefault="true"/>
-        <feature id="debugger" label="Procedure debugger" enabledByDefault="false"/>
-    </extension>
-
 </plugin>
