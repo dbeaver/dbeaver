@@ -548,6 +548,46 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
         System.out.println("Addition asserts checked: " + additionAssertsChecked);
     }
 
+    @Test
+    public void insertingFragmentBetweenComments() throws Exception {
+
+        // GIVEN
+        String originalSql = String.join(
+            "\n",
+            "/* lead */",
+            "SELECT id",
+            "FROM t1 -- inner",
+            "JOIN t2 ON t1.id = t2.id",
+            "ORDER BY id",
+            "/* trail */"
+        );
+        String newSqlWithoutComments = String.join(
+            "\n",
+            "SELECT id",
+            "FROM t1",
+            "JOIN t2 ON t1.id = t2.id",
+            "JOIN t3 ON t1.id = t3.id",
+            "ORDER BY id"
+        );
+
+        // WHEN
+        QueryReconstructor queryReconstructor = new QueryReconstructor(BasicSQLDialect.INSTANCE, originalSql);
+        String reconstructedText = queryReconstructor.reconstructFromOriginalFragments(newSqlWithoutComments);
+
+        //THEN
+        String expectedText = String.join(
+            "\n",
+            "/* lead */",
+            "SELECT id",
+            "FROM t1 -- inner",
+            "JOIN t2 ON t1.id = t2.id",
+            "JOIN t3 ON t1.id = t3.id",
+            "ORDER BY id",
+            "/* trail */"
+        );
+        Assertions.assertEquals(expectedText, reconstructedText);
+    }
+
     @NotNull
     private Pattern getPattern(@NotNull String string) {
         // using regex-based matching with alphanumerical boundaries instead of String::contains
