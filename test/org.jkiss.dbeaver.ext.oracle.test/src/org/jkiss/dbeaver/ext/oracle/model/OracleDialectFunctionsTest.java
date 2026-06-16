@@ -80,4 +80,10 @@ public class OracleDialectFunctionsTest extends DBeaverUnitTest {
         String actualDataType = dialect.convertExternalDataType(dialect, mockTypedObject, dataSource);
         Assertions.assertEquals("NUMBER(22,11)", actualDataType);
     }
+
+    @Test
+    public void doesNotRegisterGlobalVariablesAsKeywordsWithoutDriverInitialization() {
+        Assertions.assertNull(dialect.getKeywordType("SYSDATE"));
+        Assertions.assertNull(dialect.getKeywordType("SYSTIMESTAMP"));
+    }
 }

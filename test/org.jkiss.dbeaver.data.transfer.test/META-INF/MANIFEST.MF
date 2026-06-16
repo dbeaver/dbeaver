@@ -8,6 +8,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Fragment-Host: org.jkiss.dbeaver.data.transfer
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.mockito.mockito-core,
- org.jkiss.dbeaver.test.platform,
+Require-Bundle: org.jkiss.dbeaver.test.platform,
  org.jkiss.dbeaver.model
