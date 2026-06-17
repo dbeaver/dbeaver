@@ -58,7 +58,7 @@ public class NIOEFSFileSystem extends NIOFileSystem {
 
     @Override
     public void close() throws IOException {
-
+        //does nothing
     }
 
     @Override
@@ -72,16 +72,19 @@ public class NIOEFSFileSystem extends NIOFileSystem {
     }
 
     @Override
+    @NotNull
     public Iterable<Path> getRootDirectories() {
         return List.of(new NIOEFSPath(this));
     }
 
     @Override
+    @NotNull
     public Iterable<FileStore> getFileStores() {
         return List.of(new NIOEFSFileStore(this));
     }
 
     @Override
+    @NotNull
     public NIOEFSPath getPath(@NotNull String first, @NotNull String... more) {
         StringBuilder pathJoiner = new StringBuilder();
         StringJoiner uriCreator = new StringJoiner("/");

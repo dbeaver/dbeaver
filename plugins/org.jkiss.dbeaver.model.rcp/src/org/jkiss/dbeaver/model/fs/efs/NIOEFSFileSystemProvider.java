@@ -68,6 +68,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         throw new FileSystemNotFoundException("Filesystem for: " + uri + "not yet created. Use newFileSystem() instead");
     }
 
+    @NotNull
     private URI getRootSoreUri(@NotNull URI uri) {
         return NIOEFSUtils.createCopyWithPath(uri, "/");
     }
@@ -98,9 +99,10 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     }
 
     @Override
+    @NotNull
     public SeekableByteChannel newByteChannel(
         @NotNull Path path, Set<? extends OpenOption> options,
-        FileAttribute<?>... attrs
+        @NotNull FileAttribute<?>... attrs
     ) throws IOException {
         if (Files.isDirectory(path)) {
             throw new IllegalArgumentException("Cannot open channel for a folder");
@@ -171,7 +173,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     }
 
     @Override
-    public void copy(@NotNull Path source, @NotNull Path target, CopyOption... options) throws IOException {
+    public void copy(@NotNull Path source, @NotNull Path target, @NotNull CopyOption... options) throws IOException {
         int efsOptions = EFS.NONE;
         for (CopyOption opt : options) {
             if (opt == StandardCopyOption.REPLACE_EXISTING) {
@@ -191,7 +193,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     }
 
     @Override
-    public void move(Path source, Path target, CopyOption... options) throws IOException {
+    public void move(@NotNull Path source, @NotNull Path target, @NotNull CopyOption... options) throws IOException {
         int efsOptions = EFS.NONE;
         for (CopyOption opt : options) {
             if (opt == StandardCopyOption.REPLACE_EXISTING) {

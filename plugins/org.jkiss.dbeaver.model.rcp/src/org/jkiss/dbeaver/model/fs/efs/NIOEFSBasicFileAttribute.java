@@ -31,6 +31,7 @@ public class NIOEFSBasicFileAttribute extends NIOFileBasicAttribute {
     }
 
     @Override
+    @NotNull
     public FileTime lastModifiedTime() {
         return FileTime.fromMillis(fileInfo.getLastModified());
     }

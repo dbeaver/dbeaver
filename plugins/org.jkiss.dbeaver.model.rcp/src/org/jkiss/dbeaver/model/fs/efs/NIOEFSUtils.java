@@ -16,18 +16,12 @@
  */
 package org.jkiss.dbeaver.model.fs.efs;
 
-import org.eclipse.core.filesystem.IFileStore;
 import org.jkiss.code.NotNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class NIOEFSUtils {
-
-    @NotNull
-    public static IFileStore getRootStore(@NotNull IFileStore iFileStore) {
-        return iFileStore.getParent() == null ? iFileStore : getRootStore(iFileStore.getParent());
-    }
 
     @NotNull
     public static URI createCopyWithPath(@NotNull URI copyFrom, @NotNull String path) {

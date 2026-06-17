@@ -41,7 +41,6 @@ public class NIOEFSByteArrayChannel extends ByteArrayChannel {
 
     @Override
     protected void createNewFile() throws IOException {
-        // if file already exists and CREATE_NEW was requested, fail
         try {
             IFileInfo info = store.fetchInfo(EFS.NONE, null);
             if (info.exists()) {
