@@ -33,9 +33,6 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFile;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFileSystemRoot;
-import org.jkiss.dbeaver.model.fs.nio.EFSNIOFolder;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -44,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -182,23 +180,9 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
     @Override
     public <T> T adaptResource(DBFVirtualFileSystemRoot fsRoot, Path path, Class<T> adapter) {
         if (adapter == IResource.class) {
-            return adapter.cast(createResourceFromPath(fsRoot, path));
+            return adapter.cast(ResourceUtils.createResourceFromPath(fsRoot, getEclipseProject(), path));
         }
         return null;
-    }
-
-    @NotNull
-    private IResource createResourceFromPath(DBFVirtualFileSystemRoot fsRoot, Path path) {
-        EFSNIOFileSystemRoot root = new EFSNIOFileSystemRoot(
-            getEclipseProject(),
-            fsRoot,
-            fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
-        );
-        if (fsRoot.getFileSystem().isDirectory(path)) {
-            return new EFSNIOFolder(root, path);
-        } else {
-            return new EFSNIOFile(root, path);
-        }
     }
 
     @Nullable

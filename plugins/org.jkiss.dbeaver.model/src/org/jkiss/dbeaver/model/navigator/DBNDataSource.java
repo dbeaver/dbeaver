@@ -35,15 +35,13 @@ import java.util.List;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
-{
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
     private final DBPDataSourceContainer dataSource;
     private final DBXTreeNode treeRoot;
 
-    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource)
-    {
+    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource) {
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getNavigatorRoot();
@@ -52,8 +50,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
 
     @Nullable
     @Override
-    public DBNNode getParentNode()
-    {
+    public DBNNode getParentNode() {
         DBPDataSourceFolder folder = dataSource.getFolder();
         if (folder != null) {
             DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getFolderNode(folder);
@@ -105,8 +102,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
             return null;
         }
         DBXTreeNode childNode = metaChildren.getFirst();
-        if (childNode instanceof DBXTreeItem) {
-            return getChildrenClass((DBXTreeItem) childNode);
+        if (childNode instanceof DBXTreeItem ti) {
+            return getChildrenClass(ti);
         }
         return null;
     }
@@ -129,13 +126,6 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public String getNodeFullName()
     {
         return getNodeDisplayName();
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return makeDataSourceItemPath(dataSource);
     }
 
     @Override
@@ -174,9 +164,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         if (USE_ICON_DECORATIONS) {
             boolean hasNetworkHandlers = hasNetworkHandlers();
             if (dataSource.isConnectionReadOnly() || hasNetworkHandlers) {
-                if (image instanceof DBIconComposite) {
-                    ((DBIconComposite) image).setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
-                    ((DBIconComposite) image).setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
+                if (image instanceof DBIconComposite ic) {
+                    ic.setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
+                    ic.setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
                 } else {
                     image = new DBIconComposite(
                         image,
@@ -251,12 +241,12 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
-            if (node instanceof DBNDataSource) {
-                if (!((DBNDataSource) node).moveToFolder(getOwnerProject(), folder)) {
+            if (node instanceof DBNDataSource dsNode) {
+                if (!dsNode.moveToFolder(getOwnerProject(), folder)) {
                     return;
                 }
-            } else if (node instanceof DBNLocalFolder) {
-                ((DBNLocalFolder) node).getFolder().setParent(dataSource.getFolder());
+            } else if (node instanceof DBNLocalFolder lfNode) {
+                lfNode.getFolder().setParent(dataSource.getFolder());
             }
         }
         DBNModel.updateConfigAndRefreshDatabases(this);
@@ -296,16 +286,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
 
     public static DBNDataSource getDataSourceNode(DBNNode node) {
         for (DBNNode pn = node; pn != null; pn = pn.getParentNode()) {
-            if (pn instanceof DBNDataSource) {
-                return (DBNDataSource) pn;
+            if (pn instanceof DBNDataSource dsNode) {
+                return dsNode;
             }
         }
         return null;
-    }
-
-    @NotNull
-    public static String makeDataSourceItemPath(DBPDataSourceContainer dataSource) {
-        return NodePathType.database.getPrefix() + DBNUtils.encodeNodePath(dataSource.getId());
     }
 
 }

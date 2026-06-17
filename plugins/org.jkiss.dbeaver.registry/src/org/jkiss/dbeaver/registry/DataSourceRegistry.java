@@ -86,13 +86,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private DBACredentialsProvider authCredentialsProvider;
     protected Throwable lastError;
 
-    public DataSourceRegistry(DBPProject project) {
+    public DataSourceRegistry(@NotNull DBPProject project) {
         this(project, new DataSourceConfigurationManagerNIO(project), DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     public DataSourceRegistry(
         @NotNull DBPProject project,
-        DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DBPPreferenceStore preferenceStore
     ) {
         this.project = project;

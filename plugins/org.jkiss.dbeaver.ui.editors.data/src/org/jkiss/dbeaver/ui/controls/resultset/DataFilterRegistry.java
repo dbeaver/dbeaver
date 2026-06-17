@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -284,6 +284,25 @@ class DataFilterRegistry {
                 saver = new ConfigSaver();
                 saver.schedule(3000);
             }
+        }
+    }
+
+    void removeDataFilter(@NotNull DBSDataContainer object) {
+        String objectId = makeObjectId(object);
+        synchronized (savedFilters) {
+            savedFilters.remove(objectId);
+
+            if (saver == null) {
+                saver = new ConfigSaver();
+                saver.schedule(3000);
+            }
+        }
+    }
+
+    boolean hasDataFilter(@NotNull DBSDataContainer object) {
+        String objectId = makeObjectId(object);
+        synchronized (savedFilters) {
+            return savedFilters.containsKey(objectId);
         }
     }
 
