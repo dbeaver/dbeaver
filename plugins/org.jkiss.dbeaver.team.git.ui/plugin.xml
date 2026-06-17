@@ -126,7 +126,8 @@
             </enabledWhen>
         </activity>
 
-        <activityPatternBinding activityId="dbeaver.activity.git" pattern="org.jkiss.dbeaver.team.git.ui"/>
+        <activityPatternBinding activityId="dbeaver.activity.git" pattern="org.jkiss.dbeaver.team.git.ui.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.git" pattern="org.jkiss.dbeaver.git.*"/>
         <activityPatternBinding activityId="dbeaver.activity.git" pattern="org.eclipse.egit.*"/>
     </extension>
 

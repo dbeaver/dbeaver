@@ -66,18 +66,18 @@ public final class EasyConfigFeatureRegistry {
 
     public boolean isFeatureEnabled(@NotNull EasyConfigFeatureDescriptor descriptor) {
         var store = DBWorkbench.getPlatform().getPreferenceStore();
-        var value = store.getString(getPreferenceKey(descriptor));
+        var value = store.getString(getFeatureKey(descriptor));
         return CommonUtils.toBoolean(value, descriptor.isEnabledByDefault());
     }
 
     public void setFeatureEnabled(@NotNull EasyConfigFeatureDescriptor descriptor, boolean enabled) {
         var store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(getPreferenceKey(descriptor), String.valueOf(enabled));
+        store.setValue(getFeatureKey(descriptor), String.valueOf(enabled));
         PrefUtils.savePreferenceStore(store);
     }
 
     @NotNull
-    private static String getPreferenceKey(@NotNull EasyConfigFeatureDescriptor descriptor) {
-        return "easyConfig." + descriptor.getId();
+    private static String getFeatureKey(@NotNull EasyConfigFeatureDescriptor descriptor) {
+        return "easyConfig.feature." + descriptor.getId();
     }
 }
