@@ -194,9 +194,7 @@ public class StringEditorTableFactory<T> {
         Composite rightArea = UIUtils.createPlaceholder(valueTable.getParent(), 1, 5);
         rightArea.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        Composite buttonsGroup = UIUtils.createPlaceholder(rightArea, 1, 5);
-        buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-
+        Composite buttonsGroup = createButtonsGroup(rightArea);
         addButton = addButton(buttonsGroup);
         removeButton = removeButton(buttonsGroup);
         clearButton = clearButton(buttonsGroup);
@@ -206,6 +204,13 @@ public class StringEditorTableFactory<T> {
         upButton = upButton(bottomButtonsGroup);
         downButton = downButton(bottomButtonsGroup);
         return rightArea;
+    }
+
+    @NotNull
+    protected Composite createButtonsGroup(@NotNull Composite parent) {
+        Composite buttonsGroup = UIUtils.createPlaceholder(parent, 1, 5);
+        buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        return buttonsGroup;
     }
 
     @NotNull

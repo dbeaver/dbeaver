@@ -23,7 +23,10 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -36,6 +39,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNObjectNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
@@ -78,6 +82,10 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         this.singleSelection = singleSelection;
     }
 
+    public static boolean isShowConnected() {
+        return showConnected;
+    }
+
     @Override
     protected boolean isResizable()
     {
@@ -94,29 +102,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         group.setLayoutData(gd);
 
         DatabaseNavigatorTreeFilter navigatorFilter = createNavigatorFilter();
-        navigatorTree = new DatabaseNavigatorTree(
-            group,
-            rootNode,
-            (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER,
-            false,
-            navigatorFilter
-        ) {
-            @NotNull
-            @Override
-            protected ShowConnectedToggleWhenApplicable showConnectedToggleWhenApplicable() {
-                return rootNode instanceof DBNContainer && ((DBNContainer) rootNode).getChildrenClass() == DBPDataSourceContainer.class
-                    ? ShowConnectedToggleWhenApplicable.DEFAULT
-                    : ShowConnectedToggleWhenApplicable.HIDE;
-            }
-
-            @Override
-            public void setFilterShowConnected(boolean filterShowConnected) {
-                showConnected = filterShowConnected;
-                super.setFilterShowConnected(filterShowConnected);
-            }
-        };
-        navigatorTree.setAutoExpandOnShowConnected(true);
-        navigatorTree.setFilterShowConnected(showConnected);
+        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, navigatorFilter);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = 500;
@@ -125,7 +111,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
 
         final TreeViewer treeViewer = navigatorTree.getViewer();
-        ViewerFilter viewerFilter = this.createViewerFilter(navigatorTree);
+        ViewerFilter viewerFilter = createViewerFilter();
         if (viewerFilter != null) {
             treeViewer.addFilter(viewerFilter);
         }
@@ -165,6 +151,27 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         });
         treeViewer.getTree().setFocus();
 
+        if (rootNode instanceof DBNContainer && ((DBNContainer) rootNode).getChildrenClass() == DBPDataSourceContainer.class) {
+            final Button showConnectedCheck = new Button(group, SWT.CHECK);
+            showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+            showConnectedCheck.setSelection(showConnected);
+            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showConnected = showConnectedCheck.getSelection();
+                    treeViewer.getControl().setRedraw(false);
+                    try {
+                        treeViewer.refresh();
+                        if (showConnected) {
+                            treeViewer.expandToLevel(TREE_EXPANSION_DEPTH, false);
+                        }
+                    } finally {
+                        treeViewer.getControl().setRedraw(true);
+                    }
+                }
+            });
+        }
+
         return group;
     }
 
@@ -191,7 +198,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         return null;
     }
 
-    protected ViewerFilter createViewerFilter(DatabaseNavigatorTree navigatorTree) {
+    protected ViewerFilter createViewerFilter() {
         return null;
     }
 
