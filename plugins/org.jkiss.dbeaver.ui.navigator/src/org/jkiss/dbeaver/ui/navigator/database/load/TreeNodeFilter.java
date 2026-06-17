@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import org.eclipse.jface.viewers.IToolTipProvider;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
@@ -62,8 +64,14 @@ public class TreeNodeFilter extends ContextMenuTreeNodeSpecial implements IToolT
     }
 
     public void configureFilters(@NotNull DatabaseNavigatorTree navigatorTree) {
-        if (getParent() instanceof DBNDatabaseNode dbNode) {
+        // Managers cannot filter some nodes (databases specifically)
+        if (getParent() instanceof DBNDatabaseNode dbNode && canNodeBeFilteredByUser(dbNode)) {
             NavigatorHandlerFilterConfig.configureFilters(navigatorTree.getShell(), dbNode);
         }
+    }
+
+    private boolean canNodeBeFilteredByUser(@NotNull DBNDatabaseNode dbNode) {
+        UIServiceFilterConfig serviceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
+        return serviceFilterConfig == null || serviceFilterConfig.canBeFilteredByUser(dbNode);
     }
 }
