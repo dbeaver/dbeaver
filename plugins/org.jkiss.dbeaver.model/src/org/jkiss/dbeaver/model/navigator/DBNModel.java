@@ -399,7 +399,10 @@ public class DBNModel {
             for (DBNDatabaseNode child : children) {
                 if (child instanceof DBNDatabaseFolder) {
                     Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
-                    if (itemsClass != null && itemsClass.isAssignableFrom(objectToCache.getClass())) {
+                    // Some folders are only grouping nodes and do not expose a children class (itemsClass == null).
+                    // We still need to traverse them, otherwise getNodeByObject may not reach nested items
+                    // until that branch was expanded manually in the navigator.
+                    if (itemsClass == null || itemsClass.isAssignableFrom(objectToCache.getClass())) {
                         cached = cacheNodeChildren(monitor, child, objectToCache, addFiltered);
                         if (cached) {
                             break;
