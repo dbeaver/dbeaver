@@ -68,7 +68,15 @@ public class NIOEFSFileSystem extends NIOFileSystem {
 
     @Override
     public boolean isReadOnly() {
-        return !rootFileStore.getFileSystem().canDelete() && !rootFileStore.getFileSystem().canWrite();
+        return !canDelete() && !canWrite();
+    }
+
+    public boolean canDelete() {
+        return rootFileStore.getFileSystem().canDelete();
+    }
+
+    public boolean canWrite() {
+        return rootFileStore.getFileSystem().canWrite();
     }
 
     @Override

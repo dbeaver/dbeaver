@@ -187,7 +187,7 @@ public class NIOEFSPath extends NIOPath {
     }
 
     @NotNull
-    private IFileStore createStore() {
+    public IFileStore createStore() {
         return getFileSystem().createStore(toAbsolutePath().pathParts);
     }
 

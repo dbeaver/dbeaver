@@ -20,6 +20,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -92,12 +93,6 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         return getOrCreateFileSystem(uri).getPath(uri.getPath());
     }
 
-    @NotNull
-    public NIOEFSPath getRelativePath(@NotNull URI uri, @NotNull String pathName) {
-        NIOEFSFileSystem fileSystem = getOrCreateFileSystem(uri);
-        return new NIOEFSPath(uri, pathName, fileSystem);
-    }
-
     @Override
     @NotNull
     public SeekableByteChannel newByteChannel(
@@ -107,8 +102,9 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         if (Files.isDirectory(path)) {
             throw new IllegalArgumentException("Cannot open channel for a folder");
         }
-        var store = getStore(path);
-        if (Files.exists(path)) {
+        NIOEFSPath nioefsPath = toNIOEFSPath(path);
+        IFileStore store = nioefsPath.createStore();
+        if (exists(nioefsPath)) {
             try (InputStream out = store.openInputStream(EFS.NONE, null)) {
                 return new NIOEFSByteArrayChannel(out.readAllBytes(), options, store);
             } catch (CoreException e) {
@@ -120,9 +116,10 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     }
 
     @Override
+    @NotNull
     public DirectoryStream<Path> newDirectoryStream(@NotNull Path dir, @Nullable DirectoryStream.Filter<? super Path> filter)
     throws IOException {
-        IFileStore store = getStore(dir);
+        IFileStore store = toNIOEFSPath(dir).createStore();
         IFileStore[] children;
         try {
             children = store.childStores(EFS.NONE, null);
@@ -154,46 +151,33 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
 
     @Override
     public void createDirectory(@NotNull Path dir, @Nullable FileAttribute<?>... ignored) throws IOException {
-        IFileStore store = getStore(dir);
-        try {
-            store.mkdir(EFS.NONE, null);
-        } catch (CoreException e) {
-            throw new IOException(e);
-        }
+        IFileStore store = toNIOEFSPath(dir).createStore();
+        performStoreOperation(() -> store.mkdir(EFS.NONE, null));
     }
 
     @Override
     public void delete(@NotNull Path path) throws IOException {
-        IFileStore store = getStore(path);
-        try {
-            store.delete(EFS.NONE, null);
-        } catch (CoreException e) {
-            throw new IOException(e);
-        }
+        IFileStore store = toNIOEFSPath(path).createStore();
+        performStoreOperation(() -> store.delete(EFS.NONE, null));
     }
 
     @Override
     public void copy(@NotNull Path source, @NotNull Path target, @NotNull CopyOption... options) throws IOException {
-        int efsOptions = EFS.NONE;
-        for (CopyOption opt : options) {
-            if (opt == StandardCopyOption.REPLACE_EXISTING) {
-                efsOptions |= EFS.OVERWRITE;
-            } else {
-                throw new UnsupportedOperationException(
-                    "Only supported option is StandardCopyOption.REPLACE_EXISTING, but found: " + Arrays.toString(options));
-            }
-        }
-        IFileStore src = getStore(source);
-        IFileStore dst = getStore(target);
-        try {
-            src.copy(dst, efsOptions, null);
-        } catch (CoreException e) {
-            throw new IOException(e);
-        }
+        copyOrMoveOperation(IFileStore::copy, source, target, options);
     }
 
     @Override
     public void move(@NotNull Path source, @NotNull Path target, @NotNull CopyOption... options) throws IOException {
+        copyOrMoveOperation(IFileStore::move, source, target, options);
+    }
+
+    private void copyOrMoveOperation(
+        @NotNull ToStoreOperation operation,
+        @NotNull Path source,
+        @NotNull Path target,
+        @NotNull CopyOption... options
+    )
+    throws IOException {
         int efsOptions = EFS.NONE;
         for (CopyOption opt : options) {
             if (opt == StandardCopyOption.REPLACE_EXISTING) {
@@ -206,7 +190,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         IFileStore src = getStore(source);
         IFileStore dst = getStore(target);
         try {
-            src.move(dst, efsOptions, null);
+            operation.execute(src, dst, efsOptions, null);
         } catch (CoreException e) {
             throw new IOException(e);
         }
@@ -223,13 +207,28 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     }
 
     @Override
-    public FileStore getFileStore(Path path) throws IOException {
-        return null;
+    @NotNull
+    public FileStore getFileStore(@NotNull Path path) throws IOException {
+        return new NIOEFSFileStore(toNIOEFSPath(path).getFileSystem());
     }
 
     @Override
-    public void checkAccess(Path path, AccessMode... modes) throws IOException {
-        // todo implement
+    public void checkAccess(@NotNull Path path, @NotNull AccessMode... modes) throws IOException {
+        NIOEFSPath nioefsPath = toNIOEFSPath(path);
+        if (!exists(nioefsPath)) {
+            throw new NoSuchFileException(toString());
+        }
+        Set<AccessMode> supportedModes = new HashSet<>();
+        supportedModes.add(AccessMode.READ);
+        if (nioefsPath.getFileSystem().canWrite()) {
+            supportedModes.add(AccessMode.WRITE);
+        }
+        for (AccessMode mode : supportedModes) {
+            if (!supportedModes.contains(mode)) {
+                throw new IOException();
+            }
+        }
+
     }
 
 
@@ -241,7 +240,8 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
 
     @Override
     @NotNull
-    public <A extends BasicFileAttributes> A readAttributes(@NotNull Path path, Class<A> type, LinkOption... options) throws IOException {
+    public <A extends BasicFileAttributes> A readAttributes(@NotNull Path path, @NotNull Class<A> type, @NotNull LinkOption... options)
+    throws IOException {
         if (!type.isAssignableFrom(BasicFileAttributes.class)) {
             throw new UnsupportedOperationException("Only BasicFileAttributes supported");
         }
@@ -250,10 +250,8 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         return type.cast(new NIOEFSBasicFileAttribute(info));
     }
 
-
-    @Override
-    public boolean exists(@NotNull Path path, @NotNull LinkOption... options) {
-        return path instanceof NIOEFSPath nioefsPath ? nioefsPath.getFileInfo().exists() : super.exists(path, options);
+    public boolean exists(@NotNull NIOEFSPath nioefsPath) {
+        return nioefsPath.getFileInfo().exists();
     }
 
     @NotNull
@@ -269,5 +267,36 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         } catch (CoreException e) {
             throw new IOException(e);
         }
+    }
+
+    private NIOEFSPath toNIOEFSPath(@NotNull Path path) throws IOException {
+        if (path instanceof NIOEFSPath nioefsPath) {
+            return nioefsPath;
+        } else {
+            throw new IOException("Path must be an instance of " + NIOEFSPath.class.getName());
+        }
+    }
+
+    private void performStoreOperation(@NotNull StoreOperation storeOperation) throws IOException {
+        try {
+            storeOperation.run();
+        } catch (CoreException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @FunctionalInterface
+    private interface StoreOperation {
+        void run() throws CoreException;
+    }
+
+    @FunctionalInterface
+    private interface ToStoreOperation {
+        void execute(
+            @NotNull IFileStore source,
+            @NotNull IFileStore destination,
+            int options,
+            @Nullable IProgressMonitor monitor
+        ) throws CoreException;
     }
 }
