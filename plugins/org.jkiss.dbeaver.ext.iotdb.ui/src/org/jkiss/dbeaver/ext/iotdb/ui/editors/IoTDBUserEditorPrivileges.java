@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.ext.iotdb.ui.editors;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -41,19 +40,19 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
-    private static Log log = Log.getLog(IoTDBUserEditorPrivileges.class);
+    private static final Log log = Log.getLog(IoTDBUserEditorPrivileges.class);
 
     private PageControl pageControl;
     private Table databasesTable;
@@ -65,12 +64,8 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
     private PrivilegeTableControl tablePrivilegesTable;
     private volatile List<IoTDBGrant> grants;
 
-    private Font boldFont;
-
     @Override
     public void createPartControl(Composite parent) {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
         pageControl = new PageControl(parent);
 
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -153,43 +148,34 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
         pageControl.createProgressPanel();
 
-        parent.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                UIUtils.dispose(boldFont);
-            }
-        });
+        tablePrivilegesTable.addListener(SWT.Modify, event -> {
+            final IoTDBPrivilege privilege = (IoTDBPrivilege) event.data;
+            final int tp = event.detail;
+            final String db = selectedDatabase.name;
+            final String tb = selectedTable;
+            addChangeCommand(
+                new IoTDBCommandGrantPrivilege(getDatabaseObject(), tp, db, tb, privilege),
+                new DBECommandReflector<IoTDBRelationalUser, IoTDBCommandGrantPrivilege>() {
+                    @Override
+                    public void redoCommand(@NotNull IoTDBCommandGrantPrivilege command) {
+                        // no-op
+                    }
 
-        tablePrivilegesTable.addListener(SWT.Modify, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                final IoTDBPrivilege privilege = (IoTDBPrivilege) event.data;
-                final int tp = event.detail;
-                final String db = selectedDatabase.name;
-                final String tb = selectedTable;
-                addChangeCommand(
-                    new IoTDBCommandGrantPrivilege(getDatabaseObject(), tp, db, tb, privilege),
-                    new DBECommandReflector<IoTDBRelationalUser, IoTDBCommandGrantPrivilege>() {
-                        @Override
-                        public void redoCommand(@NotNull IoTDBCommandGrantPrivilege command) {
-                            // no-op
-                        }
-
-                        @Override
-                        public void undoCommand(@NotNull IoTDBCommandGrantPrivilege command) {
-                            // no-op
-                        }
-                    });
-            }
-        });
+                    @Override
+                    public void undoCommand(@NotNull IoTDBCommandGrantPrivilege command) {
+                        // no-op
+                    }
+                });
+        }
+        );
     }
 
     private void showDatabaseTables() {
         LoadingJob.createService(
-            new DatabaseLoadService<List<String>>(
-                    IoTDBUiMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
+            new DatabaseLoadService<>(
+                IoTDBUiMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
-                public List<String> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<String> evaluate(@NotNull DBRProgressMonitor monitor) {
                     if (selectedDatabase == null) {
                         return Collections.emptyList();
                     }
@@ -215,11 +201,9 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
             return;
         }
         List<IoTDBGrant> currentGrants = new ArrayList<>();
-        String db = "";
-        String tb = "";
         for (IoTDBGrant grant : grants) {
-            db = selectedDatabase.name.equals("(ALL)") ? "*" : selectedDatabase.name;
-            tb = selectedTable.equals("(ALL)") ? "*" : selectedTable;
+            String db = selectedDatabase.name.equals("(ALL)") ? "*" : selectedDatabase.name;
+            String tb = selectedTable.equals("(ALL)") ? "*" : selectedTable;
             if (grant.matches(db, tb)) {
                 currentGrants.add(grant);
             }
@@ -243,7 +227,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 executionContext
             ) {
                 @Override
-                public List<IoTDBPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<IoTDBPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) {
                     IoTDBRelationalUser user = getDatabaseObject();
                     if (user == null) {
                         isLoaded = false;
@@ -283,7 +267,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 if (grants != null) {
                     for (IoTDBGrant grant : grants) {
                         if (grant.canHighlightDatabase(db)) {
-                            item.setFont(boldFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
                             break;
                         }
                     }
@@ -306,7 +290,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 if (grants != null) {
                     for (IoTDBGrant grant : grants) {
                         if (grant.canHighlightTable(selectedDatabase.name, tb)) {
-                            item.setFont(boldFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
                             break;
                         }
                     }
@@ -333,14 +317,14 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
         }
 
         public ProgressVisualizer<List<String>> createTablesLoadVisualizer() {
-            return new ProgressVisualizer<List<String>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable List<String> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
                         return;
                     }
-                    tablesTable.removeAll();;
+                    tablesTable.removeAll();
                     if (tables != null) {
                         for (String table : tables) {
                             TableItem item = new TableItem(tablesTable, SWT.NONE);
@@ -356,7 +340,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
         }
 
         public ProgressVisualizer<List<IoTDBPrivilege>> createPrivilegesLoadVisualizer() {
-            return new ProgressVisualizer<List<IoTDBPrivilege>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable List<IoTDBPrivilege> privileges) {
                     super.completeLoading(privileges);

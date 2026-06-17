@@ -135,7 +135,8 @@ public class UIUtils {
         };
     }
 
-    public static VerifyListener getNumberVerifyListener(Locale locale) {
+    @NotNull
+    public static VerifyListener getNumberVerifyListener(@NotNull Locale locale) {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
         final char[] allowedChars = new char[] {
             symbols.getDecimalSeparator(), symbols.getGroupingSeparator(),
@@ -154,7 +155,8 @@ public class UIUtils {
         };
     }
 
-    public static VerifyListener getUnsignedLongOrEmptyTextVerifyListener(Text text) {
+    @NotNull
+    public static VerifyListener getUnsignedLongOrEmptyTextVerifyListener(@NotNull Text text) {
         return e -> {
             if (e.text.isEmpty()) {
                 e.doit = true;
@@ -212,7 +214,7 @@ public class UIUtils {
             SWT.COLOR_WIDGET_LIGHT_SHADOW;
     }
 
-    public static void createToolBarSeparator(ToolBar toolBar, int style) {
+    public static void createToolBarSeparator(@NotNull ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);//SEPARATOR | style);
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
@@ -233,19 +235,21 @@ public class UIUtils {
             .applyTo(composite);
     }
 
-    public static TableColumn createTableColumn(Table table, int style, String text) {
+    @NotNull
+    public static TableColumn createTableColumn(@NotNull Table table, int style, @NotNull String text) {
         TableColumn column = new TableColumn(table, style);
         column.setText(text);
         return column;
     }
 
-    public static TreeColumn createTreeColumn(Tree tree, int style, String text) {
+    @NotNull
+    public static TreeColumn createTreeColumn(@NotNull Tree tree, int style, @NotNull String text) {
         TreeColumn column = new TreeColumn(tree, style);
         column.setText(text);
         return column;
     }
 
-    public static void executeOnResize(Control control, Runnable runnable) {
+    public static void executeOnResize(@NotNull Control control, @NotNull Runnable runnable) {
         control.addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e) {
@@ -255,11 +259,11 @@ public class UIUtils {
         });
     }
 
-    public static void packColumns(Table table) {
+    public static void packColumns(@NotNull Table table) {
         packColumns(table, false);
     }
 
-    public static void packColumns(Table table, boolean fit) {
+    public static void packColumns(@NotNull Table table, boolean fit) {
         table.setRedraw(false);
         try {
             int totalWidth = 0;
@@ -395,7 +399,7 @@ public class UIUtils {
         }
     }
 
-    public static void maxTableColumnsWidth(Table table) {
+    public static void maxTableColumnsWidth(@NotNull Table table) {
         table.setRedraw(false);
         try {
             int columnCount = table.getColumnCount();
@@ -420,7 +424,7 @@ public class UIUtils {
         }
     }
 
-    public static int getColumnAtPos(TableItem item, int x, int y) {
+    public static int getColumnAtPos(@NotNull TableItem item, int x, int y) {
         int columnCount = item.getParent().getColumnCount();
         for (int i = 0; i < columnCount; i++) {
             Rectangle rect = item.getBounds(i);
@@ -431,7 +435,7 @@ public class UIUtils {
         return -1;
     }
 
-    public static int getColumnAtPos(TreeItem item, int x, int y) {
+    public static int getColumnAtPos(@NotNull TreeItem item, int x, int y) {
         int columnCount = item.getParent().getColumnCount();
         for (int i = 0; i < columnCount; i++) {
             Rectangle rect = item.getBounds(i);
@@ -442,7 +446,8 @@ public class UIUtils {
         return -1;
     }
 
-    public static TableItem getNextTableItem(Table table, TableItem item) {
+    @Nullable
+    public static TableItem getNextTableItem(@NotNull Table table, @NotNull TableItem item) {
         TableItem[] items = table.getItems();
         for (int i = 0; i < items.length - 1; i++) {
             if (items[i] == item) {
@@ -452,7 +457,8 @@ public class UIUtils {
         return null;
     }
 
-    public static TableItem getPreviousTableItem(Table table, TableItem item) {
+    @Nullable
+    public static TableItem getPreviousTableItem(@NotNull Table table, @NotNull TableItem item) {
         TableItem[] items = table.getItems();
         for (int i = 1; i < items.length; i++) {
             if (items[i] == item) {
@@ -462,7 +468,8 @@ public class UIUtils {
         return null;
     }
 
-    public static TreeItem getNextTreeItem(Tree tree, TreeItem item) {
+    @Nullable
+    public static TreeItem getNextTreeItem(@NotNull Tree tree, @NotNull TreeItem item) {
         TreeItem[] items = tree.getItems();
         for (int i = 0; i < items.length - 1; i++) {
             if (items[i] == item) {
@@ -472,7 +479,7 @@ public class UIUtils {
         return null;
     }
 
-    public static void dispose(Widget widget) {
+    public static void dispose(@Nullable Widget widget) {
         if (widget != null && !widget.isDisposed()) {
             try {
                 widget.dispose();
@@ -482,7 +489,7 @@ public class UIUtils {
         }
     }
 
-    public static void dispose(Resource resource) {
+    public static void dispose(@Nullable Resource resource) {
         if (resource != null && !resource.isDisposed()) {
             try {
                 resource.dispose();
@@ -492,7 +499,12 @@ public class UIUtils {
         }
     }
 
-    public static void showMessageBox(final Shell shell, final String title, final String info, final int messageType) {
+    public static void showMessageBox(
+        @Nullable Shell shell,
+        @NotNull String title,
+        @NotNull String info,
+        int messageType
+    ) {
         DBPImage icon = null;
         if (messageType == SWT.ICON_ERROR) {
             icon = DBIcon.STATUS_ERROR;
@@ -528,15 +540,20 @@ public class UIUtils {
         syncExec(messageBoxRunnable);
     }
 
-    public static boolean confirmAction(final String title, final String question) {
+    public static boolean confirmAction(@NotNull String title, @NotNull String question) {
         return confirmAction(null, title, question);
     }
 
-    public static boolean confirmAction(@Nullable Shell shell, final String title, final String question) {
+    public static boolean confirmAction(@Nullable Shell shell, @NotNull String title, @NotNull String question) {
         return confirmAction(shell, title, question, DBIcon.STATUS_QUESTION);
     }
 
-    public static boolean confirmAction(@Nullable Shell shell, String title, String message, @NotNull DBPImage image) {
+    public static boolean confirmAction(
+        @Nullable Shell shell,
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull DBPImage image
+    ) {
         final Reply[] reply = {null};
         syncExec(() -> reply[0] = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
             .setTitle(title)
@@ -553,7 +570,13 @@ public class UIUtils {
     /**
      * Confirm action with custom labels
      */
-    public static boolean confirmAction(@Nullable Shell shell, String title, String message, @NotNull DBPImage image, String[] buttons) {
+    public static boolean confirmAction(
+        @Nullable Shell shell,
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull DBPImage image,
+        @NotNull String[] buttons
+    ) {
         final Reply[] reply = {null};
         syncExec(() -> reply[0] = MessageBoxBuilder.builder(shell != null ? shell : getActiveWorkbenchShell())
             .setTitle(title)
@@ -566,11 +589,11 @@ public class UIUtils {
         return reply[0] == Reply.OK;
     }
 
-    public static int getFontHeight(Control control) {
+    public static int getFontHeight(@NotNull Control control) {
         return getFontHeight(control.getFont());
     }
 
-    public static int getFontHeight(Font font) {
+    public static int getFontHeight(@NotNull Font font) {
         FontData[] fontData = font.getFontData();
         if (fontData.length == 0) {
             return 20;
@@ -592,7 +615,7 @@ public class UIUtils {
         }
     }
 
-    public static Font makeBoldFont(Font normalFont) {
+    public static Font makeBoldFont(@NotNull Font normalFont) {
         return modifyFont(normalFont, SWT.BOLD);
     }
 
@@ -708,11 +731,13 @@ public class UIUtils {
         titledComposite.setText(title);
     }
 
-    public static Label createControlLabel(Composite parent, String label) {
+    @NotNull
+    public static Label createControlLabel(@NotNull Composite parent, @NotNull String label) {
         return createControlLabel(parent, label, 1);
     }
 
-    public static Label createControlLabel(Composite parent, String label, int hSpan) {
+    @NotNull
+    public static Label createControlLabel(@NotNull Composite parent, @NotNull String label, int hSpan) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
         // Vert align center. Because height of single line control may differ from label height. This makes form ugly.
@@ -723,14 +748,15 @@ public class UIUtils {
         return textLabel;
     }
 
-    public static Label createLabel(Composite parent, String label) {
+    @NotNull
+    public static Label createLabel(@NotNull Composite parent, String label) {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label);
-
         return textLabel;
     }
 
-    public static Label createLabel(Composite parent, @NotNull DBPImage image) {
+    @NotNull
+    public static Label createLabel(@NotNull Composite parent, @NotNull DBPImage image) {
         Label imageLabel = new Label(parent, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(image));
 
@@ -847,11 +873,14 @@ public class UIUtils {
             }
         }
     }
-    public static Text createLabelText(Composite parent, String label, String value) {
+
+    @NotNull
+    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @NotNull String value) {
         return createLabelText(parent, label, value, SWT.BORDER);
     }
 
-    public static Text createLabelText(Composite parent, String label, String value, int style) {
+    @NotNull
+    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @NotNull String value, int style) {
         return createLabelText(parent, label, value, style, new GridData(GridData.FILL_HORIZONTAL));
     }
 
@@ -928,7 +957,7 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Spinner createSpinner(Composite parent, String tooltip, int value, int minimum, int maximum) {
+    public static Spinner createSpinner(@NotNull Composite parent, @Nullable String tooltip, int value, int minimum, int maximum) {
         Spinner spinner = new Spinner(parent, SWT.BORDER);
         spinner.setMinimum(minimum);
         spinner.setMaximum(maximum);
@@ -946,19 +975,22 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Button createLabelCheckbox(Composite parent, String label, boolean checked) {
+    public static Button createLabelCheckbox(@NotNull Composite parent, @NotNull String label, boolean checked) {
         return createLabelCheckbox(parent, label, null, checked, SWT.NONE);
     }
 
     @NotNull
-    public static Button createLabelCheckbox(Composite parent, String label, String tooltip, boolean checked) {
+    public static Button createLabelCheckbox(@NotNull Composite parent, @NotNull String label, @Nullable String tooltip, boolean checked) {
         return createLabelCheckbox(parent, label, tooltip, checked, SWT.NONE);
     }
 
     @NotNull
     public static Button createLabelCheckbox(
-        @NotNull Composite parent, @NotNull String label, @Nullable String tooltip,
-        boolean checked, int style
+        @NotNull Composite parent,
+        @NotNull String label,
+        @Nullable String tooltip,
+        boolean checked,
+        int style
     ) {
         Label labelControl = createControlLabel(parent, label);
         // labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -984,7 +1016,14 @@ public class UIUtils {
         return button;
     }
 
-    public static Button createCheckbox(Composite parent, String label, String tooltip, boolean checked, int hSpan) {
+    @NotNull
+    public static Button createCheckbox(
+        @NotNull Composite parent,
+        @NotNull String label,
+        @Nullable String tooltip,
+        boolean checked,
+        int hSpan
+    ) {
         Button checkbox = createCheckbox(parent, label, checked);
         if (tooltip != null) {
             checkbox.setToolTipText(tooltip);
@@ -997,7 +1036,8 @@ public class UIUtils {
         return checkbox;
     }
 
-    public static Button createCheckbox(Composite parent, String label, boolean checked) {
+    @NotNull
+    public static Button createCheckbox(@NotNull Composite parent, @NotNull String label, boolean checked) {
         final Button button = new Button(parent, SWT.CHECK);
         button.setText(label);
         if (checked) {
@@ -1007,7 +1047,8 @@ public class UIUtils {
         return button;
     }
 
-    public static Button createCheckbox(Composite parent, boolean checked) {
+    @NotNull
+    public static Button createCheckbox(@NotNull Composite parent, boolean checked) {
         final Button button = new Button(parent, SWT.CHECK);
         if (checked) {
             button.setSelection(true);
@@ -1016,11 +1057,13 @@ public class UIUtils {
         return button;
     }
 
-    public static Combo createLabelCombo(Composite parent, String label, int style) {
+    @NotNull
+    public static Combo createLabelCombo(@NotNull Composite parent, @NotNull String label, int style) {
         return createLabelCombo(parent, label, null, style);
     }
 
-    public static Combo createLabelCombo(Composite parent, String label, String tooltip, int style) {
+    @NotNull
+    public static Combo createLabelCombo(@NotNull Composite parent, @NotNull String label, @Nullable String tooltip, int style) {
         Label labelControl = createControlLabel(parent, label);
         if (tooltip != null) {
             labelControl.setToolTipText(tooltip);
@@ -1035,7 +1078,8 @@ public class UIUtils {
         return combo;
     }
 
-    public static Button createToolButton(Composite parent, String text, SelectionListener selectionListener) {
+    @NotNull
+    public static Button createToolButton(@NotNull Composite parent, @NotNull String text, @Nullable SelectionListener selectionListener) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText(text);
         button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -1045,11 +1089,24 @@ public class UIUtils {
         return button;
     }
 
-    public static ToolItem createToolItem(ToolBar parent, String text, DBPImage icon, SelectionListener selectionListener) {
+    @NotNull
+    public static ToolItem createToolItem(
+        @NotNull ToolBar parent,
+        @Nullable String text,
+        @Nullable DBPImage icon,
+        @Nullable SelectionListener selectionListener
+    ) {
         return createToolItem(parent, text, icon != null ? DBeaverIcons.getImage(icon) : null, selectionListener);
     }
 
-    public static ToolItem createToolItem(ToolBar parent, String title, String text, DBPImage icon, SelectionListener selectionListener) {
+    @NotNull
+    public static ToolItem createToolItem(
+        @NotNull ToolBar parent,
+        @Nullable String title,
+        @Nullable String text,
+        @Nullable DBPImage icon,
+        @Nullable SelectionListener selectionListener
+    ) {
         ToolItem toolItem = createToolItem(parent, text, icon != null ? DBeaverIcons.getImage(icon) : null, selectionListener);
         if (title != null) {
             toolItem.setText(title);
@@ -1057,7 +1114,13 @@ public class UIUtils {
         return toolItem;
     }
 
-    public static ToolItem createToolItem(ToolBar parent, String text, Image icon, SelectionListener selectionListener) {
+    @NotNull
+    public static ToolItem createToolItem(
+        @NotNull ToolBar parent,
+        @Nullable String text,
+        @Nullable Image icon,
+        @Nullable SelectionListener selectionListener
+    ) {
         ToolItem button = new ToolItem(parent, SWT.PUSH);
         button.setToolTipText(text);
         if (icon != null) {
@@ -1069,7 +1132,7 @@ public class UIUtils {
         return button;
     }
 
-    public static void updateContributionItems(IContributionManager manager) {
+    public static void updateContributionItems(@NotNull IContributionManager manager) {
         for (IContributionItem item : manager.getItems()) {
             item.update();
         }
@@ -1092,17 +1155,17 @@ public class UIUtils {
     }
 
     @Nullable
-    public static Shell getShell(IShellProvider provider) {
+    public static Shell getShell(@Nullable IShellProvider provider) {
         return provider == null ? null : provider.getShell();
     }
 
     @Nullable
-    public static Shell getShell(IWorkbenchPart part) {
+    public static Shell getShell(@Nullable IWorkbenchPart part) {
         return part == null ? null : getShell(part.getSite());
     }
 
     @Nullable
-    public static Integer getTextInteger(Text text) {
+    public static Integer getTextInteger(@NotNull Text text) {
         String str = text.getText();
         str = str.trim();
         if (str.isEmpty()) {
@@ -1117,7 +1180,7 @@ public class UIUtils {
     }
 
     @Nullable
-    public static IHandlerActivation registerKeyBinding(IServiceLocator serviceLocator, IAction action) {
+    public static IHandlerActivation registerKeyBinding(@NotNull IServiceLocator serviceLocator, @NotNull IAction action) {
         IHandlerService handlerService = serviceLocator.getService(IHandlerService.class);
         if (handlerService != null) {
             return handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action));
@@ -1126,10 +1189,12 @@ public class UIUtils {
         }
     }
 
-    public static Composite createPlaceholder(Composite parent, int columns) {
+    @NotNull
+    public static Composite createPlaceholder(@NotNull Composite parent, int columns) {
         return createPlaceholder(parent, columns, 0);
     }
 
+    @NotNull
     public static Composite createComposite(@NotNull Composite parent, int columns) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
@@ -1179,6 +1244,7 @@ public class UIUtils {
         });
     }
 
+    @NotNull
     public static Composite createPlaceholder(@NotNull Composite parent, int columns, int spacing) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
@@ -1190,7 +1256,8 @@ public class UIUtils {
         return ph;
     }
 
-    public static Composite createFormPlaceholder(Composite parent, int columns, int hSpan) {
+    @NotNull
+    public static Composite createFormPlaceholder(@NotNull Composite parent, int columns, int hSpan) {
         Composite ph = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(columns, false);
         gl.marginHeight = 0;
@@ -1202,11 +1269,13 @@ public class UIUtils {
         return ph;
     }
 
-    public static Label createHorizontalLine(Composite parent) {
+    @NotNull
+    public static Label createHorizontalLine(@NotNull Composite parent) {
         return createHorizontalLine(parent, 1, 0);
     }
 
-    public static Label createHorizontalLine(Composite parent, int hSpan, int vIndent) {
+    @NotNull
+    public static Label createHorizontalLine(@NotNull Composite parent, int hSpan, int vIndent) {
         Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData gd = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
         gd.horizontalSpan = hSpan;
@@ -1216,7 +1285,7 @@ public class UIUtils {
     }
 
     @Nullable
-    public static String getComboSelection(Combo combo) {
+    public static String getComboSelection(@NotNull Combo combo) {
         int selectionIndex = combo.getSelectionIndex();
         if (selectionIndex < 0) {
             return null;
@@ -1224,7 +1293,7 @@ public class UIUtils {
         return combo.getItem(selectionIndex);
     }
 
-    public static boolean setComboSelection(Combo combo, String value) {
+    public static boolean setComboSelection(@NotNull Combo combo, @Nullable String value) {
         if (value == null) {
             return false;
         }
@@ -1238,12 +1307,8 @@ public class UIUtils {
         return false;
     }
 
-    //    public static Combo createEncodingCombo(Composite parent, String curCharset)
-    //    {
-    //
-    //    }
-
-    public static Combo createEncodingCombo(Composite parent, @Nullable String curCharset) {
+    @NotNull
+    public static Combo createEncodingCombo(@NotNull Composite parent, @Nullable String curCharset) {
         Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN);
         encodingCombo.setVisibleItemCount(30);
         SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
@@ -1276,7 +1341,7 @@ public class UIUtils {
     }
 
     @NotNull
-    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style) {
+    public static CustomSashForm createPartDivider(@Nullable IWorkbenchPart workbenchPart, @NotNull Composite parent, int style) {
         return new CustomSashForm(parent, style);
     }
 
@@ -1448,22 +1513,23 @@ public class UIUtils {
         return button;
     }
 
-    public static void setHelp(Control control, String pluginId, String helpContextID) {
+    public static void setHelp(@Nullable Control control, @NotNull String pluginId, @NotNull String helpContextID) {
         if (control != null && !control.isDisposed()) {
             PlatformUI.getWorkbench().getHelpSystem().setHelp(control, pluginId + "." + helpContextID); //$NON-NLS-1$
         }
     }
 
-    public static void setHelp(Control control, String helpContextID) {
+    public static void setHelp(@NotNull Control control, @NotNull String helpContextID) {
         setHelp(control, UIActivator.PLUGIN_ID, helpContextID);
     }
 
-    public static String makeAnchor(String text) {
+    @NotNull
+    public static String makeAnchor(@NotNull String text) {
         return "<a>" + text + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Nullable
-    public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass) {
+    public static <T> T findView(@NotNull IWorkbenchWindow workbenchWindow, @NotNull Class<T> viewClass) {
         IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
         for (IViewReference ref : references) {
             IViewPart view = ref.getView(false);
@@ -1475,7 +1541,7 @@ public class UIUtils {
     }
 
     @Nullable
-    public static IViewPart findView(IWorkbenchWindow workbenchWindow, String viewId) {
+    public static IViewPart findView(@NotNull IWorkbenchWindow workbenchWindow, @NotNull String viewId) {
         IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
         for (IViewReference ref : references) {
             if (ref.getId().equals(viewId)) {
@@ -1485,13 +1551,13 @@ public class UIUtils {
         return null;
     }
 
-    public static void setClipboardContents(Display display, Transfer transfer, Object contents) {
+    public static void setClipboardContents(@NotNull Display display, @NotNull Transfer transfer, @NotNull Object contents) {
         Clipboard clipboard = new Clipboard(display);
         clipboard.setContents(new Object[] {contents}, new Transfer[] {transfer});
         clipboard.dispose();
     }
 
-    public static void showPreferencesFor(Shell shell, Object element, String... defPageID) {
+    public static void showPreferencesFor(@Nullable Shell shell, Object element, String... defPageID) {
         PreferenceDialog propDialog;
         if (element == null) {
             propDialog = PreferencesUtil.createPreferenceDialogOn(shell, defPageID[0], defPageID, null, PreferencesUtil.OPTION_NONE);
@@ -1584,7 +1650,7 @@ public class UIUtils {
         }
     }
 
-    public static void addDefaultEditActionsSupport(final IServiceLocator site, final Control control) {
+    public static void addDefaultEditActionsSupport(@NotNull IServiceLocator site, @NotNull Control control) {
         UIUtils.addFocusTracker(site, UIUtils.INLINE_WIDGET_EDITOR_ID, control);
     }
 
@@ -1605,7 +1671,7 @@ public class UIUtils {
     }
 
     @Nullable
-    public static IWorkbenchPartSite getWorkbenchPartSite(IServiceLocator serviceLocator) {
+    public static IWorkbenchPartSite getWorkbenchPartSite(@NotNull IServiceLocator serviceLocator) {
         IWorkbenchPartSite partSite = serviceLocator.getService(IWorkbenchPartSite.class);
         if (partSite == null) {
             IWorkbenchPart activePart = serviceLocator.getService(IWorkbenchPart.class);
@@ -1629,7 +1695,7 @@ public class UIUtils {
     }
 
     @Nullable
-    public static ISelectionProvider getSelectionProvider(IServiceLocator serviceLocator) {
+    public static ISelectionProvider getSelectionProvider(@NotNull IServiceLocator serviceLocator) {
         ISelectionProvider selectionProvider = serviceLocator.getService(ISelectionProvider.class);
         if (selectionProvider != null) {
             return selectionProvider;
@@ -1652,7 +1718,7 @@ public class UIUtils {
         }
     }
 
-    public static void enableWithChildren(Control control, boolean enable) {
+    public static void enableWithChildren(@Nullable Control control, boolean enable) {
         if (control == null || control.isDisposed()) {
             return;
         }
@@ -1681,7 +1747,7 @@ public class UIUtils {
      * @param control control to check
      * @return true if it has focus
      */
-    public static boolean hasFocus(Control control) {
+    public static boolean hasFocus(@Nullable Control control) {
         if (control == null || control.isDisposed()) {
             return false;
         }
@@ -1697,7 +1763,8 @@ public class UIUtils {
         return false;
     }
 
-    public static CTabItem getTabItem(CTabFolder tabFolder, Object data) {
+    @Nullable
+    public static CTabItem getTabItem(@NotNull CTabFolder tabFolder, @NotNull Object data) {
         for (CTabItem item : tabFolder.getItems()) {
             if (item.getData() == data) {
                 return item;
@@ -1706,7 +1773,7 @@ public class UIUtils {
         return null;
     }
 
-    public static void disposeControlOnItemDispose(final CTabItem tabItem) {
+    public static void disposeControlOnItemDispose(@NotNull CTabItem tabItem) {
         tabItem.addDisposeListener(e -> {
             final Control control = tabItem.getControl();
             if (!control.isDisposed()) {
@@ -1715,7 +1782,8 @@ public class UIUtils {
         });
     }
 
-    public static TreeItem getTreeItem(Tree tree, Object data) {
+    @Nullable
+    public static TreeItem getTreeItem(@NotNull Tree tree, @NotNull Object data) {
         for (TreeItem item : tree.getItems()) {
             if (item.getData() == data) {
                 return item;
@@ -1728,7 +1796,8 @@ public class UIUtils {
         return null;
     }
 
-    private static TreeItem getTreeItem(TreeItem parent, Object data) {
+    @Nullable
+    private static TreeItem getTreeItem(@NotNull TreeItem parent, @NotNull Object data) {
         for (TreeItem item : parent.getItems()) {
             if (item.getData() == data) {
                 return item;
@@ -1745,7 +1814,8 @@ public class UIUtils {
         return (ratio * v1 + (100 - ratio) * v2) / 100;
     }
 
-    public static RGB blend(RGB c1, RGB c2, int ratio) {
+    @NotNull
+    public static RGB blend(@NotNull RGB c1, @NotNull RGB c2, int ratio) {
         int r = blend(c1.red, c2.red, ratio);
         int g = blend(c1.green, c2.green, ratio);
         int b = blend(c1.blue, c2.blue, ratio);
@@ -1771,26 +1841,29 @@ public class UIUtils {
         }
     }
 
-    public static boolean isInDialog(Control control) {
+    public static boolean isInDialog(@NotNull Control control) {
         return control.getShell().getData() instanceof Dialog;
     }
 
-    public static boolean isInWizard(Control control) {
+    public static boolean isInWizard(@NotNull Control control) {
         return control.getShell().getData() instanceof IWizardContainer;
     }
 
-    public static Link createLink(Composite parent, String text, SelectionListener listener) {
+    @NotNull
+    public static Link createLink(@NotNull Composite parent, @NotNull String text, @NotNull SelectionListener listener) {
         Link link = new Link(parent, SWT.NONE);
         link.setText(text);
         link.addSelectionListener(listener);
         return link;
     }
 
-    public static Point drawMessageOverControl(Control control, PaintEvent e, String message, int verticalOffset) {
+    @NotNull
+    public static Point drawMessageOverControl(@NotNull Control control, @NotNull PaintEvent e, @NotNull String message, int verticalOffset) {
         return drawMessageOverControl(control, e.gc, message, verticalOffset);
     }
 
-    public static Point drawMessageOverControl(Control control, GC gc, String message, int verticalOffset) {
+    @NotNull
+    public static Point drawMessageOverControl(@NotNull Control control, @NotNull GC gc, @NotNull String message, int verticalOffset) {
         Rectangle bounds = getControlPaintBounds(control);
         Point textSize = gc.textExtent(message);
 
@@ -1836,19 +1909,21 @@ public class UIUtils {
         return bounds;
     }
 
+    @NotNull
     public static SharedTextColors getSharedTextColors() {
         return SHARED_TEXT_COLORS;
     }
 
+    @NotNull
     public static SharedFonts getSharedFonts() {
         return SHARED_FONTS;
     }
 
     public static void run(
-        IRunnableContext runnableContext,
+        @NotNull IRunnableContext runnableContext,
         boolean fork,
         boolean cancelable,
-        final DBRRunnableWithProgress runnableWithProgress
+        @NotNull DBRRunnableWithProgress runnableWithProgress
     )
     throws InvocationTargetException, InterruptedException {
         runnableContext.run(fork, cancelable,
@@ -1856,11 +1931,13 @@ public class UIUtils {
         );
     }
 
-    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress) {
+    @NotNull
+    public static AbstractUIJob runUIJob(@NotNull String jobName, @NotNull DBRRunnableWithProgress runnableWithProgress) {
         return runUIJob(jobName, 0, runnableWithProgress);
     }
 
-    public static AbstractUIJob runUIJob(String jobName, int timeout, final DBRRunnableWithProgress runnableWithProgress) {
+    @NotNull
+    public static AbstractUIJob runUIJob(@NotNull String jobName, int timeout, @NotNull DBRRunnableWithProgress runnableWithProgress) {
         AbstractUIJob job = new AbstractUIJob(jobName) {
             @NotNull
             @Override
@@ -1979,7 +2056,7 @@ public class UIUtils {
         return (T) result[0];
     }
 
-    public static <T> T runWithDialog(final DBRRunnableWithReturn<T> runnable) throws DBException {
+    public static <T> T runWithDialog(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
         if (workbenchWindow != null) {
@@ -2012,7 +2089,7 @@ public class UIUtils {
      * Runs task in Eclipse progress dialog.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InvocationTargetException {
+    public static void runInProgressDialog(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException {
         try {
             IRunnableContext runnableContext;
             IWorkbench workbench = PlatformUI.getWorkbench();
@@ -2028,7 +2105,7 @@ public class UIUtils {
         }
     }
 
-    public static void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable) {
+    public static void runInUI(@NotNull IRunnableContext context, @NotNull DBRRunnableWithProgress runnable) {
         try {
             PlatformUI.getWorkbench().getProgressService().runInUI(context,
                 monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)), ResourcesPlugin.getWorkspace().getRoot()
@@ -2040,7 +2117,7 @@ public class UIUtils {
         }
     }
 
-    public static void runInUI(final DBRRunnableWithProgress runnable) {
+    public static void runInUI(@NotNull DBRRunnableWithProgress runnable) {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         IRunnableContext context = window != null ? window : DummyRunnableContext.INSTANCE;
@@ -2067,7 +2144,7 @@ public class UIUtils {
         }
     }
 
-    public static void asyncExec(Runnable runnable) {
+    public static void asyncExec(@NotNull Runnable runnable) {
         try {
             Display display = getDisplay();
             if (!display.isDisposed()) {
@@ -2078,7 +2155,7 @@ public class UIUtils {
         }
     }
 
-    public static void syncExec(Runnable runnable) {
+    public static void syncExec(@NotNull Runnable runnable) {
         try {
             Display display = getDisplay();
             if (!display.isDisposed()) {
@@ -2089,7 +2166,7 @@ public class UIUtils {
         }
     }
 
-    public static <T> T syncExec(RunnableWithResult<T> runnable) {
+    public static <T> T syncExec(@NotNull RunnableWithResult<T> runnable) {
         try {
             getDisplay().syncExec(runnable);
             return runnable.getResult();
@@ -2186,12 +2263,13 @@ public class UIUtils {
         return PlatformUI.getWorkbench().getSharedImages().getImage(id);
     }
 
+    @NotNull
     public static ImageDescriptor getShardImageDescriptor(String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(id);
     }
 
-    public static void addVariablesToControl(@NotNull Control controlForTip, @NotNull String[] variables, String toolTipPattern) {
-        final StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
+    public static void addVariablesToControl(@NotNull Control controlForTip, @NotNull String[] variables, @NotNull String toolTipPattern) {
+        StringContentProposalProvider proposalProvider = new StringContentProposalProvider(Arrays
             .stream(variables)
             .map(GeneralUtils::variablePattern)
             .toArray(String[]::new));
@@ -2201,13 +2279,12 @@ public class UIUtils {
         ContentAssistUtils.installContentProposal(controlForTip, new SmartTextContentAdapter(), proposalProvider);
     }
 
-    public static void setContentProposalToolTip(Control control, String toolTip, String... variables) {
+    public static void setContentProposalToolTip(@NotNull Control control, @NotNull String toolTip, String... variables) {
         control.setToolTipText(getSupportedVariablesTip(toolTip, variables));
-
     }
 
     @NotNull
-    public static String getSupportedVariablesTip(String toolTip, String... variables) {
+    public static String getSupportedVariablesTip(@NotNull String toolTip, String... variables) {
         StringBuilder varsTip = new StringBuilder();
         varsTip.append(toolTip).append(". ").append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
         for (int i = 0; i < variables.length; i++) {
@@ -2226,7 +2303,7 @@ public class UIUtils {
         resizeShell(shell, compSize);
     }
 
-    public static void resizeShell(@NotNull Shell shell, Point compSize) {
+    public static void resizeShell(@NotNull Shell shell, @NotNull Point compSize) {
         final Rectangle displayArea = shell.getDisplay().getClientArea();
         final Point shellLocation = shell.getLocation();
         final Point shellSize = shell.getSize();
@@ -2251,7 +2328,7 @@ public class UIUtils {
         }
     }
 
-    public static void waitJobCompletion(AbstractJob job) {
+    public static void waitJobCompletion(@NotNull AbstractJob job) {
         waitJobCompletion(job, null);
     }
 
@@ -2316,7 +2393,7 @@ public class UIUtils {
     /**
      * Returns the grey value in which the given color would be drawn in grey-scale.
      */
-    public static double greyLevel(RGB rgb) {
+    public static double greyLevel(@NotNull RGB rgb) {
         if (rgb.red == rgb.green && rgb.green == rgb.blue) {
             return rgb.red;
         }
@@ -2326,11 +2403,11 @@ public class UIUtils {
     /**
      * Returns whether the given color is dark or light depending on the colors grey-scale level.
      */
-    public static boolean isDark(RGB rgb) {
+    public static boolean isDark(@NotNull RGB rgb) {
         return greyLevel(rgb) < 128;
     }
 
-    public static void openWebBrowser(String url) {
+    public static void openWebBrowser(@NotNull String url) {
         url = url.trim();
         if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
             url = "http://" + url;
@@ -2338,7 +2415,7 @@ public class UIUtils {
         ShellUtils.launchProgram(url);
     }
 
-    public static <T extends Control> void addEmptyTextHint(T control, DBRValueProvider<String, T> tipProvider) {
+    public static <T extends Control> void addEmptyTextHint(@NotNull T control, @NotNull DBRValueProvider<String, T> tipProvider) {
         control.addPaintListener(e -> {
             String tip = tipProvider.getValue(control);
             if (tip != null && isEmptyTextControl(control) && !control.isFocusControl()) {
@@ -2355,13 +2432,13 @@ public class UIUtils {
         });
     }
 
-    private static boolean isEmptyTextControl(Control control) {
-        return (control instanceof Text && ((Text) control).getCharCount() == 0) ||
-            (control instanceof StyledText && ((StyledText) control).getCharCount() == 0) ||
-            (control instanceof Combo && ((Combo) control).getText().isEmpty());
+    private static boolean isEmptyTextControl(@NotNull Control control) {
+        return (control instanceof Text text && text.getCharCount() == 0) ||
+            (control instanceof StyledText styledText && styledText.getCharCount() == 0) ||
+            (control instanceof Combo combo && combo.getText().isEmpty());
     }
 
-    public static void expandAll(AbstractTreeViewer treeViewer) {
+    public static void expandAll(@NotNull AbstractTreeViewer treeViewer) {
         Control control = treeViewer.getControl();
         control.setRedraw(false);
         try {
@@ -2414,14 +2491,15 @@ public class UIUtils {
         return null;
     }
 
-    public static Object normalizePropertyValue(Object text) {
+    @NotNull
+    public static Object normalizePropertyValue(@NotNull Object text) {
         if (text instanceof String) {
             return CommonUtils.toString(text).trim();
         }
         return text;
     }
 
-    public static void setControlVisible(Control control, boolean visible) {
+    public static void setControlVisible(@NotNull Control control, boolean visible) {
         control.setVisible(visible);
         if (control.getLayoutData() instanceof GridData gd) {
             gd.exclude = !visible;
@@ -2429,9 +2507,9 @@ public class UIUtils {
     }
 
     public static void drawTextWithBackground(@NotNull GC gc, @NotNull String text, int x, int y) {
-        final Point size = gc.textExtent(text);
-        final int centerX = x - size.x / 2;
-        final int centerY = y - size.y;
+        Point size = gc.textExtent(text);
+        int centerX = x - size.x / 2;
+        int centerY = y - size.y;
 
         gc.setForeground(UIStyles.getDefaultTextForeground());
         gc.setBackground(UIStyles.getDefaultTextBackground());
