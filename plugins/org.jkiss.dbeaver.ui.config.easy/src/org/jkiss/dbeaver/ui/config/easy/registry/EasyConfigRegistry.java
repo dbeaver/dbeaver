@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.config.easy.spi;
+package org.jkiss.dbeaver.ui.config.easy.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -25,19 +25,23 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class EasyConfigPageRegistry {
+public final class EasyConfigRegistry {
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.easyConfig";
 
-    private static EasyConfigPageRegistry instance;
+    private static EasyConfigRegistry instance;
 
     private final List<EasyConfigPageDescriptor> pages;
+    private final List<EasyConfigActionDescriptor> actions;
 
-    private EasyConfigPageRegistry(@NotNull IExtensionRegistry registry) {
+    private EasyConfigRegistry(@NotNull IExtensionRegistry registry) {
         var pages = new ArrayList<EasyConfigPageDescriptor>();
+        var actions = new ArrayList<EasyConfigActionDescriptor>();
 
         for (IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_ID)) {
             if ("page".equals(element.getName())) {
                 pages.add(new EasyConfigPageDescriptor(element));
+            } else if ("action".equals(element.getName())) {
+                actions.add(new EasyConfigActionDescriptor(element));
             } else {
                 throw new IllegalStateException("Unknown element " + element.getName());
             }
@@ -46,12 +50,16 @@ public final class EasyConfigPageRegistry {
         this.pages = pages.stream()
             .sorted(Comparator.comparingInt(EasyConfigPageDescriptor::getOrder))
             .toList();
+
+        this.actions = actions.stream()
+            .sorted(Comparator.comparing(EasyConfigActionDescriptor::getLabel))
+            .toList();
     }
 
     @NotNull
-    public static synchronized EasyConfigPageRegistry getInstance() {
+    public static synchronized EasyConfigRegistry getInstance() {
         if (instance == null) {
-            instance = new EasyConfigPageRegistry(Platform.getExtensionRegistry());
+            instance = new EasyConfigRegistry(Platform.getExtensionRegistry());
         }
         return instance;
     }
@@ -59,5 +67,10 @@ public final class EasyConfigPageRegistry {
     @NotNull
     public List<EasyConfigPageDescriptor> getPages() {
         return pages;
+    }
+
+    @NotNull
+    public List<EasyConfigActionDescriptor> getActions() {
+        return actions;
     }
 }

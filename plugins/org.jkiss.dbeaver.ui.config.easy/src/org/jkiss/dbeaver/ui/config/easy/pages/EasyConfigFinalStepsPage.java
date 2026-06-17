@@ -18,16 +18,22 @@ package org.jkiss.dbeaver.ui.config.easy.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.config.easy.nls.EasyConfigMessages;
-import org.jkiss.dbeaver.ui.config.sample.SampleDatabaseUtil;
+import org.jkiss.dbeaver.ui.config.easy.registry.EasyConfigAction;
+import org.jkiss.dbeaver.ui.config.easy.registry.EasyConfigActionDescriptor;
+import org.jkiss.dbeaver.ui.config.easy.registry.EasyConfigRegistry;
 import org.jkiss.dbeaver.ui.forms.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
-    private final UIObservable<Boolean> createSampleDatabase = UIObservable.of(true);
-    private final UIObservable<Boolean> showTips = UIObservable.of(true);
+    private static final Log log = Log.getLog(EasyConfigFinalStepsPage.class);
+
+    private final List<ActionState> states = new ArrayList<>();
 
     public EasyConfigFinalStepsPage() {
         super(EasyConfigMessages.final_steps_title, EasyConfigMessages.final_steps_description);
@@ -38,12 +44,18 @@ public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
         setControl(UIPanelBuilder.build(parent, buildPanel()));
     }
 
+    @Override
+    public void applySettings() {
+        for (ActionState state : states) {
+            state.action().applyState(state.value().get());
+        }
+    }
+
     @NotNull
     private Consumer<UIPanelBuilder> buildPanel() {
         return pb -> pb
             .margins(10, 10)
-            .accept(buildSampleDatabasePanel(createSampleDatabase))
-            .accept(buildTipsPanel(showTips))
+            .accept(buildActionsPanel())
             .row(rb -> rb.label(lb -> lb
                 .text(EasyConfigMessages.final_steps_header)
                 .wrap()
@@ -52,52 +64,43 @@ public class EasyConfigFinalStepsPage extends EasyConfigWizardPage {
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildTipsPanel(@NotNull UIObservable<Boolean> showTips) {
-        if (!canShowTipsOption()) {
-            return UIRowBuilder.identityConsumer();
-        }
-        return pb -> pb
-            .row(rb -> rb.label(lb -> lb
-                .text("You can enable tips that will appear daily to help you get "
-                    + "familiar with the application and learn some useful features.")
-                .wrap()
-                .align(UIAlignX.FILL)
-                .grow(UIGrowX.ALWAYS)))
-            .indent(pb1 -> pb1
-                .row(rb -> rb.checkBox("Turn on \"Tip of the day\"", showTips)));
+    private Consumer<UIPanelBuilder> buildActionsPanel() {
+        return pb -> {
+            for (EasyConfigActionDescriptor descriptor : EasyConfigRegistry.getInstance().getActions()) {
+                EasyConfigAction.OfCheckbox action;
+                try {
+                    action = (EasyConfigAction.OfCheckbox) descriptor.createAction();
+                } catch (DBException e) {
+                    log.error("Error creating easy config action " + descriptor.getLabel(), e);
+                    continue;
+                }
+                if (!action.isApplicable()) {
+                    continue;
+                }
+                var value = UIObservable.of(action.loadState());
+                pb.accept(buildAction(descriptor.getLabel(), descriptor.getDescription(), value));
+                states.add(new ActionState(action, value));
+            }
+        };
     }
 
     @NotNull
-    private static Consumer<UIPanelBuilder> buildSampleDatabasePanel(@NotNull UIObservable<Boolean> createSampleDatabase) {
-        if (!canShowSampleDatabaseOption()) {
-            return UIRowBuilder.identityConsumer();
-        }
+    private Consumer<UIPanelBuilder> buildAction(
+        @NotNull String label,
+        @NotNull String description,
+        @NotNull UIObservable<Boolean> value
+    ) {
         return pb -> pb
-            .margins(10, 10)
             .row(rb -> rb.label(lb -> lb
-                .text("DBeaver comes with a handy sample database powered by SQLite that you can use "
-                    + "to explore the features and capabilities of the application.")
+                .text(description)
                 .wrap()
                 .align(UIAlignX.FILL)
                 .grow(UIGrowX.ALWAYS)))
             .indent(pb1 -> pb1
-                .row(rb -> rb.checkBox("Create sample database", createSampleDatabase)))
+                .row(rb -> rb.checkBox(label, value)))
             .row(UIRowBuilder::horizontalSpacer);
     }
 
-    private static boolean canShowTipsOption() {
-        // FIXME we don't have access to tip of the day stuff because it's located in the standalone app
-        //   bundle for some reason. We also can't just put this page there, as this page also
-        //   features the sample database option, which can appear in the non-standalone app as well.
-        return false;
-    }
-
-    private static boolean canShowSampleDatabaseOption() {
-        var project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (project == null) {
-            return false;
-        }
-        // Don't show the option to create a sample database if it already exists in the workspace
-        return !SampleDatabaseUtil.isSampleDatabaseExists(project.getDataSourceRegistry());
+    private record ActionState(@NotNull EasyConfigAction.OfCheckbox action, @NotNull UIObservable<Boolean> value) {
     }
 }

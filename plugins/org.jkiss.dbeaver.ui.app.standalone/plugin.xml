@@ -542,4 +542,11 @@
                 type="java.lang.Object"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.easyConfig">
+        <action
+            label="Turn on &quot;Tip of the day&quot;"
+            description="You can enable tips that will appear daily to help you get familiar with the application and learn some useful features."
+            class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.EasyConfigShowTipsAction"/>
+    </extension>
+
 </plugin>

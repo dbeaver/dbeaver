@@ -63,14 +63,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="preferenceKey" type="string" use="required">
-            <annotation>
-               <documentation>
-
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="enabled" type="string" use="required">
+         <attribute name="enabledByDefault" type="string" use="required">
             <annotation>
                <documentation>
 

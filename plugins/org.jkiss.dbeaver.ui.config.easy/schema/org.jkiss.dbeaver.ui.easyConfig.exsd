@@ -18,8 +18,8 @@
       </annotation>
       <complexType>
          <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="action"/>
             <element ref="page"/>
-            <element ref="feature"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -42,6 +42,35 @@
                </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="action">
+      <complexType>
+         <attribute name="label" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.ui.config.easy.registry.EasyConfigAction:"/>
                </appInfo>
             </annotation>
          </attribute>
@@ -72,39 +101,6 @@
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.jkiss.dbeaver.ui.config.easy.pages.EasyConfigWizardPage:"/>
                </appInfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="feature">
-      <complexType>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="label" type="string" use="required">
-            <annotation>
-               <documentation>
-
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="preferenceKey" type="string" use="required">
-            <annotation>
-               <documentation>
-
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="enabled" type="string" use="required">
-            <annotation>
-               <documentation>
-
-               </documentation>
             </annotation>
          </attribute>
       </complexType>
