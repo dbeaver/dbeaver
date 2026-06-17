@@ -44,6 +44,7 @@ import java.util.function.Consumer;
 public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     private final UIObservable<DBPPlatformLanguage> language =
         UIObservable.of(DBPPlatformDesktop.getInstance().getPlatformLanguage(), DBPPlatformLanguage.class);
+    private Control languagePicker;
 
     public EasyConfigWizardDialog(@NotNull IWorkbenchWindow window) {
         super(window, new EasyConfigWizard());
@@ -55,6 +56,11 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
             setLanguage(language);
             UIReloadableNLS.reloadMessages();
             getShell().layout(true, true);
+        });
+
+        addPageChangedListener(event -> {
+            boolean firstPageSelected = event.getSelectedPage() == getWizard().getStartingPage();
+            UIUtils.setControlVisible(languagePicker, firstPageSelected);
         });
     }
 
@@ -78,9 +84,9 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     @Override
     protected Control createHelpControl(@NotNull Composite parent) {
         ((GridLayout) parent.getLayout()).numColumns++;
-        Control control = UIPanelBuilder.build(parent, buildLanguagePanel(language));
-        control.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        return control;
+        languagePicker = UIPanelBuilder.build(parent, buildLanguagePanel(language));
+        languagePicker.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        return languagePicker;
     }
 
     @Override
