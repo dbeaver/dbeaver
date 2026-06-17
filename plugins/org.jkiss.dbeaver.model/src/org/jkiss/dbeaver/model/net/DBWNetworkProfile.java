@@ -38,8 +38,6 @@ import java.util.*;
  */
 public class DBWNetworkProfile extends DBPConfigurationProfile {
 
-    public static final String SOURCE_GLOBAL = "global";
-
     // Secret key prefix
     public static final String PROFILE_KEY_PREFIX = "/network-profile/";
 

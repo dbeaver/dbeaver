@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.net;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
@@ -30,7 +29,6 @@ import java.util.List;
  * Network profile manager
  */
 public abstract class DBWNetworkProfileManager {
-    private static final Log log = Log.getLog(DBWNetworkProfileManager.class);
 
     @Nullable
     private volatile List<DBWNetworkProfile> profiles;
