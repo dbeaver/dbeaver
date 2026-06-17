@@ -71,7 +71,7 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @Nullable
     public NIOEFSPath getParent() {
-        return pathParts.length > 1 ? subpath(0, pathParts.length - 2) : null;
+        return pathParts.length > 1 ? subpath(0, 1) : null;
     }
 
     @Override
@@ -98,7 +98,8 @@ public class NIOEFSPath extends NIOPath {
             pathResolver.add(pathParts[i]);
             uriPartRemover.add(pathParts[i]);
         }
-        String uriShortedPath = directURI.getPath().replaceAll(uriPartRemover + ".*", "");
+        //Path a/b/c/a/b, remover /c result-> a/b
+        String uriShortedPath = directURI.getPath().replaceAll(uriPartRemover + ".*", uriPartRemover.toString());
 
         return new NIOEFSPath(NIOEFSUtils.createCopyWithPath(directURI, uriShortedPath), pathResolver.toString(), getFileSystem());
     }
