@@ -18,13 +18,12 @@ package org.jkiss.dbeaver.ext.mysql.ui.editors;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
 
 /**
@@ -66,13 +65,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private PrivilegeTableControl otherPrivilegesTable;
     private volatile List<MySQLGrant> grants;
 
-    private Font boldFont;
-
     @Override
-    public void createPartControl(Composite parent)
-    {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
+    public void createPartControl(Composite parent) {
         pageControl = new PageControl(parent);
 
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -167,64 +161,52 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
         pageControl.createProgressPanel();
 
-        parent.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                UIUtils.dispose(boldFont);
-            }
-        });
-
         addGrantListener(tablePrivilegesTable);
         addGrantListener(otherPrivilegesTable);
     }
 
     private void addGrantListener(final PrivilegeTableControl privTable)
     {
-        privTable.addListener(SWT.Modify, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
-                final boolean isGrant = event.detail >= 1;
-                final boolean withGrantOption = event.detail == 2;
-                final MySQLCatalog curCatalog = selectedCatalog;
-                final MySQLTableBase curTable = selectedTable;
-                updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
+        privTable.addListener(SWT.Modify, event -> {
+            final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
+            final boolean isGrant = event.detail >= 1;
+            final boolean withGrantOption = event.detail == 2;
+            final MySQLCatalog curCatalog = selectedCatalog;
+            final MySQLTableBase curTable = selectedTable;
+            updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
 
-                // Add command
-                addChangeCommand(
-                    new MySQLCommandGrantPrivilege(
-                        getDatabaseObject(),
-                        isGrant,
-                        withGrantOption,
-                        curCatalog,
-                        curTable,
-                        privilege),
-                    new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
-                        @Override
-                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
-                        {
-                            if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, isGrant);
-                            }
-                            updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
+            // Add command
+            addChangeCommand(
+                new MySQLCommandGrantPrivilege(
+                    getDatabaseObject(),
+                    isGrant,
+                    withGrantOption,
+                    curCatalog,
+                    curTable,
+                    privilege),
+                new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                    @Override
+                    public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                    {
+                        if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
+                            privTable.checkPrivilege(privilege, isGrant);
                         }
-                        @Override
-                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
-                        {
-                            if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
-                                privTable.checkPrivilege(privilege, !isGrant);
-                            }
-                            updateLocalData(privilege, !isGrant, !withGrantOption, curCatalog, curTable);
+                        updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
+                    }
+                    @Override
+                    public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                    {
+                        if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
+                            privTable.checkPrivilege(privilege, !isGrant);
                         }
-                    });
-            }
-        });
+                        updateLocalData(privilege, !isGrant, !withGrantOption, curCatalog, curTable);
+                    }
+                });
+        }
+        );
     }
 
-    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption, MySQLCatalog curCatalog, MySQLTableBase curTable)
-    {
+    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption, MySQLCatalog curCatalog, MySQLTableBase curTable) {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
         boolean found = false;
@@ -265,21 +247,20 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void showCatalogTables()
     {
         LoadingJob.createService(
-            new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLUIMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
-                @Override
-                public Collection<MySQLTableBase> evaluate(@NotNull DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
-                    if (selectedCatalog == null) {
-                        return Collections.emptyList();
+                new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
+                    @Override
+                    public Collection<MySQLTableBase> evaluate(@NotNull DBRProgressMonitor monitor) {
+                        if (selectedCatalog == null) {
+                            return Collections.emptyList();
+                        }
+                        try {
+                            return selectedCatalog.getTableCache().getAllObjects(monitor, selectedCatalog);
+                        } catch (DBException e) {
+                            log.error(e);
+                        }
+                        return null;
                     }
-                    try {
-                        return selectedCatalog.getTableCache().getAllObjects(monitor, selectedCatalog);
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
-                    return null;
-                }
-            },
+                },
             pageControl.createTablesLoadVisualizer())
             .schedule();
     }
@@ -312,16 +293,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         LoadingJob.createService(
-            new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLUIMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
-                @Override
-                public java.util.List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        return getDatabaseObject().getDataSource().getPrivileges(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+                new DatabaseLoadService<>(MySQLUIMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
+                    @Override
+                    public java.util.List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
+                        try {
+                            return getDatabaseObject().getDataSource().getPrivileges(monitor);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
                     }
-                }
-            },
+                },
             pageControl.createPrivilegesLoadVisualizer())
             .schedule();
     }
@@ -358,7 +339,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 if (grants != null) {
                     for (MySQLGrant grant : grants) {
                         if (grant.matches(catalog) && !grant.isEmpty()) {
-                            item.setFont(boldFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
                             break;
                         }
                     }
@@ -376,7 +357,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 if (grants != null) {
                     for (MySQLGrant grant : grants) {
                         if (grant.matches(selectedCatalog) && grant.matches(table) && !grant.isEmpty()) {
-                            item.setFont(boldFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
                             break;
                         }
                     }
@@ -389,8 +370,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     public RefreshResult refreshPart(Object source, boolean force)
     {
         if (force ||
-            (source instanceof DBNEvent && ((DBNEvent) source).getSource() == DBNEvent.UPDATE_ON_SAVE) ||
-            !isLoaded) {
+            (source instanceof DBNEvent event && event.getSource() == DBNEvent.UPDATE_ON_SAVE) ||
+            !isLoaded
+        ) {
             isLoaded = false;
             activatePart();
             return RefreshResult.REFRESHED;
@@ -404,7 +386,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
 
         public ProgressVisualizer<Collection<MySQLTableBase>> createTablesLoadVisualizer() {
-            return new ProgressVisualizer<Collection<MySQLTableBase>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable Collection<MySQLTableBase> tables) {
                     super.completeLoading(tables);
@@ -432,20 +414,22 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
 
         public ProgressVisualizer<java.util.List<MySQLPrivilege>> createPrivilegesLoadVisualizer() {
-            return new ProgressVisualizer<java.util.List<MySQLPrivilege>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable java.util.List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     List<MySQLPrivilege> otherPrivs = new ArrayList<>();
                     List<MySQLPrivilege> tablePrivs = new ArrayList<>();
-                    for (MySQLPrivilege priv : privs) {
-                        if (priv.getKind() == MySQLPrivilege.Kind.ADMIN) {
-                            continue;
-                        }
-                        if (priv.getContext().contains("Table")) {
-                            tablePrivs.add(priv);
-                        } else {
-                            otherPrivs.add(priv);
+                    if (privs != null) {
+                        for (MySQLPrivilege priv : privs) {
+                            if (priv.getKind() == MySQLPrivilege.Kind.ADMIN) {
+                                continue;
+                            }
+                            if (priv.getContext().contains("Table")) {
+                                tablePrivs.add(priv);
+                            } else {
+                                otherPrivs.add(priv);
+                            }
                         }
                     }
                     tablePrivilegesTable.fillPrivileges(tablePrivs);
