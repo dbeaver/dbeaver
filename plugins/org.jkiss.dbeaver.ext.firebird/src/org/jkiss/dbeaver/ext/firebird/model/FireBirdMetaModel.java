@@ -444,8 +444,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
-        return session.prepareStatement(
-            "select " +
+        String sql = "select " +
                 "RC.RDB$RELATION_NAME TABLE_NAME," +
                 "ISGMT.RDB$FIELD_NAME as COLUMN_NAME," +
                 "CAST((ISGMT.RDB$FIELD_POSITION + 1) as SMALLINT) as KEY_SEQ," +
@@ -455,8 +454,13 @@ public class FireBirdMetaModel extends GenericMetaModel
                 "RDB$RELATION_CONSTRAINTS RC " +
                 "INNER JOIN RDB$INDEX_SEGMENTS ISGMT ON RC.RDB$INDEX_NAME = ISGMT.RDB$INDEX_NAME " +
                 "where RC.RDB$CONSTRAINT_TYPE IN ('PRIMARY KEY','UNIQUE') " +
-                (forParent == null ? "" : "AND RC.RDB$RELATION_NAME = '" + forParent.getName()) + "' " +
-                "ORDER BY ISGMT.RDB$FIELD_NAME ");
+                (forParent == null ? "" : "AND RC.RDB$RELATION_NAME = ? ") +
+                "ORDER BY ISGMT.RDB$FIELD_NAME ";
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        if (forParent != null) {
+            dbStat.setString(1, forParent.getName());
+        }
+        return dbStat;
     }
 
     @Override

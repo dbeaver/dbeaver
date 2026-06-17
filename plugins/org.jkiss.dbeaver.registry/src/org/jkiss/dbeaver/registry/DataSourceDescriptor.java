@@ -784,8 +784,8 @@ public class DataSourceDescriptor
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        if (dataSource instanceof DBPRefreshableObject) {
-            dataSource = (DBPDataSource) ((DBPRefreshableObject) dataSource).refreshObject(monitor);
+        if (dataSource instanceof DBPRefreshableObject refreshableObject) {
+            dataSource = (DBPDataSource) refreshableObject.refreshObject(monitor);
         } else {
             this.reconnect(monitor, false);
         }

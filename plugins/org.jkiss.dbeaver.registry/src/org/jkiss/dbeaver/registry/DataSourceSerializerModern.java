@@ -1016,10 +1016,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             return;
         }
         Map<String, Object> securityCfg = JSONUtils.getObject(conObject, "security");
+        List<DBPDataSourcePermission> permissions = new ArrayList<>();
         if (!CommonUtils.isEmpty(securityCfg)) {
             List<String> permissionRestrictions = JSONUtils.deserializeStringList(securityCfg, "permission-restrictions");
             if (!CommonUtils.isEmpty(permissionRestrictions)) {
-                List<DBPDataSourcePermission> permissions = new ArrayList<>();
                 for (String perm : permissionRestrictions) {
                     try {
                         permissions.add(DBPDataSourcePermission.getById(perm));
@@ -1027,11 +1027,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         log.debug(e);
                     }
                 }
-                if (!permissions.isEmpty()) {
-                    permissionOwner.setModifyPermissions(permissions);
-                }
             }
         }
+        permissionOwner.setModifyPermissions(permissions);
     }
 
     @Nullable
