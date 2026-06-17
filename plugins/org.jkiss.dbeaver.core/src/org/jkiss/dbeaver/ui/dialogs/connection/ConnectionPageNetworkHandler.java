@@ -31,9 +31,11 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -178,9 +180,17 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     }
 
     public void loadConfiguration(@Nullable DBWNetworkProfile profile) {
-        DBWHandlerConfiguration profileConfiguration = profile != null ? profile.getConfiguration(handlerDescriptor) : null;
-
         if (profile != null) {
+            if (profile.isGlobal() && !DBWorkbench.isDistributed()) {
+                // Resolve global profile secrets
+                try {
+                    profile.resolveSecrets(DBSSecretController.getGlobalSecretController());
+                } catch (DBException e) {
+                    log.error("Can't resolve profile '" + profile.getProfileId() + "' secrets", e);
+                }
+            }
+            DBWHandlerConfiguration profileConfiguration = profile.getConfiguration(handlerDescriptor);
+
             // Use configuration from the profile
             if (profileConfiguration != null && profileConfiguration.isEnabled()) {
                 handlerConfiguration = new DBWHandlerConfiguration(profileConfiguration);

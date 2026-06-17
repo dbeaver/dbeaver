@@ -165,6 +165,11 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         }
     }
 
+    // Global profile is the one which doesn't has a project and also doesn't belong to some subject (e.g. cloud)
+    public boolean isGlobal() {
+        return getProject() == null && secretSubject == null;
+    }
+
     private void loadFromLegacySecret(DBSSecretController secretController) throws DBException {
         if (!(secretController instanceof DBSSecretBrowser secretBrowser) || getProject() == null) {
             return;
