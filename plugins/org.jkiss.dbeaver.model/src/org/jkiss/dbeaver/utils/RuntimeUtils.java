@@ -192,7 +192,7 @@ public final class RuntimeUtils {
     }
 
     /**
-     * @deprecated consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
+     * Consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
      */
     @NotNull
     public static String formatExecutionTime(long ms) {
