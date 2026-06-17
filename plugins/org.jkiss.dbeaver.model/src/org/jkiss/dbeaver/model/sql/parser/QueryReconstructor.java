@@ -177,6 +177,9 @@ public class QueryReconstructor {
         if (rm.find() && rm.end() == result.length()) { // if presented text ends with newline
             Matcher fm = Pattern.compile("^([\\t\\f ]*+[\\r\\n]++)++").matcher(fragment);
             if (fm.find() && fm.start() == 0) { // and appendance starts with newline
+                int lastNewline = Math.max(result.lastIndexOf("\n"), result.lastIndexOf("\r"));
+                // need to drop symbols after \n like \t and etc
+                result.setLength(lastNewline + 1); // and appendance starts with newline
                 preparedFragment = fragment.substring(fm.end()); // truncate leading newlines of the appendance
             }
         }

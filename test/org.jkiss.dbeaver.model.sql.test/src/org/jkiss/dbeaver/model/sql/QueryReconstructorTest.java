@@ -588,6 +588,42 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
         Assertions.assertEquals(expectedText, reconstructedText);
     }
 
+    @Test
+    public void replacingSelectAllWithColumns() throws Exception {
+
+        // GIVEN
+        String originalSql = String.join(
+            "\n",
+            "SELECT",
+            "\t*",
+            "FROM t -- c",
+            "ORDER BY x"
+        );
+        String newSqlWithoutComments = String.join(
+            "\n",
+            "SELECT",
+            "\tt.a,",
+            "\tt.b",
+            "FROM t",
+            "ORDER BY x"
+        );
+
+        // WHEN
+        QueryReconstructor queryReconstructor = new QueryReconstructor(BasicSQLDialect.INSTANCE, originalSql);
+        String reconstructedText = queryReconstructor.reconstructFromOriginalFragments(newSqlWithoutComments);
+
+        // THEN
+        String expectedText = String.join(
+            "\n",
+            "SELECT",
+            "\tt.a,",
+            "\tt.b",
+            "FROM t -- c",
+            "ORDER BY x"
+        );
+        Assertions.assertEquals(expectedText, reconstructedText);
+    }
+
     @NotNull
     private Pattern getPattern(@NotNull String string) {
         // using regex-based matching with alphanumerical boundaries instead of String::contains
