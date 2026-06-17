@@ -71,7 +71,11 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @Nullable
     public NIOEFSPath getParent() {
-        return pathParts.length > 1 ? getName(pathParts.length - 2) : null;
+        return pathParts.length > 1
+            ? getName(pathParts.length - 2)
+            : isAbsolute() && !isRoot()
+                ? getRoot()
+                : null;
     }
 
     @Override
@@ -185,6 +189,10 @@ public class NIOEFSPath extends NIOPath {
     @NotNull
     private IFileStore createStore() {
         return getFileSystem().createStore(toAbsolutePath().pathParts);
+    }
+
+    private boolean isRoot() {
+        return isAbsolute() && pathParts.length == 0;
     }
 
     @NotNull

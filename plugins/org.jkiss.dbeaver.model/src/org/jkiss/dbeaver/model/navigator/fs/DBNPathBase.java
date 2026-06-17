@@ -464,7 +464,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     }
 
     private void walkFileTree(@NotNull Path resource, @NotNull Path targetDir, @NotNull FileAction action) throws IOException {
-        Path parentResource = Objects.requireNonNullElse(resource.getParent(), resource);
+        Path parentResource = Objects.requireNonNullElse(resource.toAbsolutePath().getParent(), resource);
         Files.walkFileTree(
             resource, new SimpleFileVisitor<>() {
 
