@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -30,7 +29,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
-import java.util.UUID;
 
 /**
  * GlobalSettings
@@ -40,7 +38,6 @@ public class GlobalSettings {
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
     private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
     private static final String DBEAVER_PROP_LANGUAGE = "nl";
-    private static final String DBEAVER_PROP_CLIENT_ID = "clientId";
 
     private static final Log log = Log.getLog(GlobalSettings.class);
 
@@ -58,16 +55,6 @@ public class GlobalSettings {
     public synchronized String getGlobalProperty(@NotNull String key) {
         loadProperties();
         return properties.getProperty(key);
-    }
-
-    @NotNull
-    public synchronized String getClientId() {
-        String clientId = getGlobalProperty(DBEAVER_PROP_CLIENT_ID);
-        if (CommonUtils.isEmpty(clientId)) {
-            clientId = "C-" + UUID.randomUUID();
-            setGlobalProperty(DBEAVER_PROP_CLIENT_ID, clientId);
-        }
-        return clientId;
     }
 
     public synchronized void setGlobalProperty(@NotNull String key, @Nullable String value) {
