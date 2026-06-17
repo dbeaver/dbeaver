@@ -81,8 +81,8 @@ public class DBDDataFilter {
         synchronized (constraints) {
             for (DBDAttributeConstraint ac : constraints) {
                 DBSAttributeBase attribute = ac.getAttribute();
-                if (!ac.isVisible() && attribute instanceof DBDAttributeBinding
-                    && DBDAttributeConstraint.isVisibleByDefault((DBDAttributeBinding) attribute)) {
+                if (!ac.isVisible() && attribute instanceof DBDAttributeBinding binding
+                    && DBDAttributeConstraint.isVisibleByDefault(binding)) {
                     return true;
                 }
             }
