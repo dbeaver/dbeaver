@@ -37,6 +37,7 @@ public abstract class EasyConfigWizardPage extends WizardPage {
         setTitle(title.get());
         setDescription(description.get());
         setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO));
+        setPageComplete(false); // set to true by EasyConfigWizardDialog#showPage
 
         this.title = title;
         this.description = description;

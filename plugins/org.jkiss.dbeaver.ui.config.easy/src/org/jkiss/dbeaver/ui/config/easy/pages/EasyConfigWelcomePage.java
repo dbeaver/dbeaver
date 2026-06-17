@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import java.util.function.Consumer;
 
 public class EasyConfigWelcomePage extends EasyConfigWizardPage {
-
     public EasyConfigWelcomePage() {
         super(EasyConfigMessages.welcome_title, EasyConfigMessages.welcome_description);
+        setPageComplete(true);
     }
 
     @Override

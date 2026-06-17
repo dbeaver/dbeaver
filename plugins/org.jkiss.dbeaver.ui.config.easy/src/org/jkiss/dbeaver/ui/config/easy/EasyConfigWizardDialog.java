@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.config.easy;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -25,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
@@ -78,6 +81,14 @@ public final class EasyConfigWizardDialog extends ActiveWizardDialog {
     @Override
     public void updateSize() {
         // don't update size - pages are adapted to the dialog size
+    }
+
+    @Override
+    public void showPage(@Nullable IWizardPage page) {
+        super.showPage(page);
+        if (page instanceof WizardPage page1) {
+            page1.setPageComplete(true);
+        }
     }
 
     @NotNull
