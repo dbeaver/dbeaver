@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.fs.efs;
 
 import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -216,7 +215,7 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
     public void checkAccess(@NotNull Path path, @NotNull AccessMode... modes) throws IOException {
         NIOEFSPath nioefsPath = toNIOEFSPath(path);
         if (!exists(nioefsPath)) {
-            throw new NoSuchFileException(toString());
+            throw new NoSuchFileException(nioefsPath.toString());
         }
         Set<AccessMode> supportedModes = new HashSet<>();
         supportedModes.add(AccessMode.READ);
@@ -228,13 +227,11 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
                 throw new IOException();
             }
         }
-
     }
 
 
     @Override
     public <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-        // todo implement
         return null;
     }
 
@@ -245,9 +242,11 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         if (!type.isAssignableFrom(BasicFileAttributes.class)) {
             throw new UnsupportedOperationException("Only BasicFileAttributes supported");
         }
-        IFileStore store = getStore(path);
-        IFileInfo info = store.fetchInfo();
-        return type.cast(new NIOEFSBasicFileAttribute(info));
+        NIOEFSPath nioefsPath = toNIOEFSPath(path);
+        if (!exists(nioefsPath)) {
+            throw new NoSuchFileException(nioefsPath.toString());
+        }
+        return type.cast(new NIOEFSBasicFileAttribute(nioefsPath.getFileInfo()));
     }
 
     public boolean exists(@NotNull NIOEFSPath nioefsPath) {
