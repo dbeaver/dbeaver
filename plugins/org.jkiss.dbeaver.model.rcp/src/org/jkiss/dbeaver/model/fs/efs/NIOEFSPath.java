@@ -71,7 +71,7 @@ public class NIOEFSPath extends NIOPath {
     @Override
     @Nullable
     public NIOEFSPath getParent() {
-        return pathParts.length > 1 ? subpath(0, 1) : null;
+        return pathParts.length > 1 ? getName(pathParts.length - 2) : null;
     }
 
     @Override

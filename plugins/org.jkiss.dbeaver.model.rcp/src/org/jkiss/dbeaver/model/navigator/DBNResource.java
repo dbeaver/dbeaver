@@ -488,7 +488,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
 
     @NotNull
     private NIOEFSPath createPath(@NotNull URI locationUri, @NotNull String pathName) {
-        return new NIOEFSFileSystemProvider().getRelativePath(locationUri, pathName);
+        return new NIOEFSFileSystemProvider().getPath(locationUri);
     }
 
     @NotNull
