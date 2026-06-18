@@ -53,10 +53,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCreateBase {
 
@@ -82,7 +80,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         if (curNode == null) {
             return null;
         }
-        DBPProject toProject = curNode.getOwnerProject();
+        Optional<DBPProject> toProject = Optional.ofNullable(curNode.getOwnerProjectOrNull());
         Clipboard clipboard = new Clipboard(Display.getDefault());
         List<String> failedToPasteResources = new LinkedList<>();
         try {
@@ -91,7 +89,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             if (cbNodes != null) {
                 for (DBNNode nodeObject : cbNodes) {
                     if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                        if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                        if (toProject.isEmpty() || !toProject.get().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                             failedToPasteResources.add(nodeObject.getName());
                         }
                     }
@@ -133,7 +131,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     for (String fileName : files) {
                         final File file = new File(fileName);
                         if (file.exists()) {
-                            if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                            if (toProject.isEmpty() || !toProject.get().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                                 failedToPasteResources.add(fileName);
                             }
                         }
@@ -159,7 +157,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     UINavigatorMessages.failed_to_paste_due_to_permissions_title,
                     NLS.bind(
                         UINavigatorMessages.failed_to_paste_due_to_permissions_message,
-                        toProject.getDisplayName(),
+                        toProject.map(DBPProject::getDisplayName).orElse("Cant find owner project"),
                         String.join(",\n", failedToPasteResources)
                     )
                 );
