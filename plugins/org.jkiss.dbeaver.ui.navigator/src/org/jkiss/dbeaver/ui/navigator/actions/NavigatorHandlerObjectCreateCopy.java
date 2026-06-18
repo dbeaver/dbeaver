@@ -88,10 +88,9 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
             if (cbNodes != null) {
                 for (DBNNode nodeObject : cbNodes) {
-                    if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                        if (toProject.isEmpty() || !toProject.get().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                    if (nodeObject instanceof DBNResource && curNode instanceof DBNResource &&
+                        (toProject.isEmpty() || !toProject.get().hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))) {
                             failedToPasteResources.add(nodeObject.getName());
-                        }
                     }
                 }
                 if (failedToPasteResources.isEmpty()) {

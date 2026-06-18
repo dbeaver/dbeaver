@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.nio.NIOFileSystemProvider;
 
 import java.io.IOException;
@@ -36,8 +35,6 @@ import java.nio.file.attribute.FileAttributeView;
 import java.util.*;
 
 public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
-
-    private static final Log log = Log.getLog(NIOEFSFileSystemProvider.class);
 
     private final Map<URI, NIOEFSFileSystem> fileSystemMap = new HashMap<>();
 

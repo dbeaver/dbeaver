@@ -32,17 +32,23 @@ public abstract class NIOPath implements Path {
 
     protected NIOPath(@Nullable String path, FileSystem fileSystem) {
         this.fileSystem = fileSystem;
-        var separator = fileSystem.getSeparator();
+        String separator = fileSystem.getSeparator();
         if (CommonUtils.isNotEmpty(path) && path.endsWith(separator)) {
-            path = path.substring(0, path.length() - separator.length());
+            if (path.length() == separator.length()) {
+                // its root
+                path = null;
+            } else {
+                path = path.substring(0, path.length() - separator.length());
+            }
         }
         this.path = path;
     }
 
+
     @Override
     public boolean isAbsolute() {
         return path == null // empty is just empty path
-            || (!CommonUtils.isEmpty(path) && path.charAt(0) == '/');
+            || (CommonUtils.isNotEmpty(path) && path.startsWith(getFileSystem().getSeparator()));
     }
 
     protected String resolveString(String otherPath) {

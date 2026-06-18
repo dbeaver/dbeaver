@@ -20,7 +20,6 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.nio.NIOFileSystem;
 
 import java.io.IOException;
@@ -35,9 +34,6 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 public class NIOEFSFileSystem extends NIOFileSystem {
-
-    private static final Log log = Log.getLog(NIOEFSFileSystem.class);
-
 
     private final IFileStore rootFileStore;
 

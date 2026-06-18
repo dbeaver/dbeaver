@@ -72,7 +72,7 @@ public class NIOEFSPath extends NIOPath {
     @Nullable
     public NIOEFSPath getParent() {
         return pathParts.length > 1
-            ? getName(pathParts.length - 2)
+            ? subpath(0, pathParts.length - 2)
             : isAbsolute() && !isRoot()
                 ? getRoot()
                 : null;
