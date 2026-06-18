@@ -241,6 +241,7 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 - Never commit directly to `master`. All changes go through `devel` first.
 - Pull requests that only fix typos, formatting, or trivial refactoring are generally **not accepted** per the contributor guide.
 - **Naming convention**: issues, commit messages, and PR titles should follow the format `#issueNumber title` (e.g., `#12345 Fix NPE in PostgreSQL dialect`).
+- **AI-generated PRs**: large pull requests that are entirely AI-generated are strongly discouraged. Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
 
 ---
 
