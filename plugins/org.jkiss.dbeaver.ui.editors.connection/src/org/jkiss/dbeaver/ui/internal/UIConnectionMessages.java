@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -319,6 +319,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_create_dialog_profile_name;
     public static String pref_page_network_profiles_tool_create_dialog_error_title;
     public static String pref_page_network_profiles_tool_create_dialog_error_info;
+    public static String pref_page_network_profiles_tool_create_dialog_error_global_info;
     public static String pref_page_network_profiles_tool_delete_title;
     public static String pref_page_network_profiles_tool_delete_text;
     public static String pref_page_network_profiles_tool_copy_title;
