@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -73,7 +73,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private final Map<String, T> dataSources = new LinkedHashMap<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
-    private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
+    private final DBWNetworkProfileManager networkProfileManager;
     private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
 
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
@@ -98,6 +98,8 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
+
+        this.networkProfileManager = new ProjectNetworkProfileManager(project);
     }
 
     // Multi-user registry:
@@ -470,58 +472,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     ////////////////////////////////////////////////////
     // Config profiles
 
-    @Nullable
-    @Override
-    public DBWNetworkProfile getNetworkProfile(@Nullable String source, @NotNull String name) {
-        if (!CommonUtils.isEmpty(source)) {
-            // Search in external sources
-            DBWNetworkProfileProvider profileProvider = RuntimeUtils.getObjectAdapter(this.getProject(), DBWNetworkProfileProvider.class);
-            if (profileProvider != null) {
-                return profileProvider.getNetworkProfile(source, name);
-            }
-            return null;
-        }
-        // Search in project profiles
-        synchronized (networkProfiles) {
-            return networkProfiles.stream()
-                .filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name))
-                .findFirst().orElse(null);
-        }
-    }
-
     @NotNull
     @Override
-    public List<DBWNetworkProfile> getNetworkProfiles() {
-        return networkProfiles;
-    }
-
-    @Override
-    public void updateNetworkProfile(@NotNull DBWNetworkProfile profile) {
-        for (int i = 0; i < networkProfiles.size(); i++) {
-            if (CommonUtils.equalObjects(networkProfiles.get(i).getProfileName(), profile.getProfileName())) {
-                networkProfiles.set(i, profile);
-                return;
-            }
-        }
-        networkProfiles.add(profile);
-    }
-
-    @Override
-    public void removeNetworkProfile(@NotNull DBWNetworkProfile profile) {
-        if (getProject().isUseSecretStorage()) {
-            try {
-                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-                secretController.setPrivateSecretValue(
-                    profile.getSecretKeyId(),
-                    null
-                );
-                secretController.flushChanges();
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI()
-                    .showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
-            }
-        }
-        networkProfiles.remove(profile);
+    public DBWNetworkProfileManager getNetworkProfiles() {
+        return networkProfileManager;
     }
 
     ////////////////////////////////////////////////////
@@ -1080,7 +1034,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.persistSecrets(secretController);
         }
-        for (DBWNetworkProfile np : getNetworkProfiles()) {
+        for (DBWNetworkProfile np : getNetworkProfiles().getProfiles()) {
             np.persistSecrets(secretController);
         }
         for (DBAAuthProfile ap : getAllAuthProfiles()) {
@@ -1093,7 +1047,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.resolveSecrets(secretController);
         }
-        for (DBWNetworkProfile np : getNetworkProfiles()) {
+        for (DBWNetworkProfile np : getNetworkProfiles().getProfiles()) {
             np.resolveSecrets(secretController);
         }
         for (DBAAuthProfile ap : getAllAuthProfiles()) {
@@ -1169,4 +1123,46 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    private static class ProjectNetworkProfileManager extends DBWNetworkProfileManager {
+        @NotNull
+        private final DBPProject project;
+
+        public ProjectNetworkProfileManager(@NotNull DBPProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void saveSettings() {
+            project.getDataSourceRegistry().flushConfig();
+        }
+
+        @NotNull
+        @Override
+        protected DBSSecretController getSecretController() throws DBException {
+            return DBSSecretController.getProjectSecretController(project);
+        }
+
+        @NotNull
+        @Override
+        protected DBWNetworkProfileManager getParentManager() {
+            return project.getWorkspace().getPlatform().getNetworkProfiles();
+        }
+
+        @Override
+        public void removeProfile(@NotNull DBWNetworkProfile profile) {
+            super.removeProfile(profile);
+            if (project.isUseSecretStorage()) {
+                try {
+                    DBSSecretController secretController = getSecretController();
+                    secretController.setPrivateSecretValue(
+                        profile.getSecretKeyId(),
+                        null
+                    );
+                    secretController.flushChanges();
+                } catch (DBException e) {
+                    log.error("Error removing network profile secrets", e);
+                }
+            }
+        }
+    }
 }
