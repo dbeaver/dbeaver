@@ -1,4 +1,4 @@
-# DBeaver – Copilot Agent Instructions
+# DBeaver – AI Agent Instructions
 
 ## What is DBeaver?
 
