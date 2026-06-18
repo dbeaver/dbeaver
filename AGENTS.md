@@ -180,6 +180,8 @@ Features are contributed via Eclipse extension points declared in `plugin.xml`. 
 
 ### Adding a new database driver
 
+> **Note**: For many drivers, updating `plugin.xml` alone is enough — you only need to implement Java classes when the existing JDBC infrastructure does not cover your use case.
+
 1. Create `plugins/org.jkiss.dbeaver.ext.{db}/` with `META-INF/MANIFEST.MF`, `plugin.xml`, and a `pom.xml` (`eclipse-plugin`).
 2. Add an optionally-UI sibling `plugins/org.jkiss.dbeaver.ext.{db}.ui/`.
 3. Implement `DBPDataSourceProvider<YourDataSource>` → register it in `plugin.xml` under `org.jkiss.dbeaver.dataSourceProvider`.
