@@ -280,7 +280,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 client,
                 SSHUIMessages.model_ssh_configurator_group_general_text,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             tunnelImplCombo = UIUtils.createLabelCombo(
@@ -322,7 +322,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 client,
                 SSHUIMessages.model_ssh_configurator_group_timeouts_text,
                 2,
-                GridData.VERTICAL_ALIGN_FILL
+                GridData.VERTICAL_ALIGN_BEGINNING
             );
             keepAliveText = UIUtils.createLabelText(
                 timeoutsGroup,
@@ -351,10 +351,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_label_local_host,
                 null,
                 SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL)
+                GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(200, SWT.DEFAULT).create()
             );
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
-            localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             localPortSpinner = UIUtils.createLabelText(
                 portForwardingGroup,
                 SSHUIMessages.model_ssh_configurator_label_local_port,
@@ -368,10 +367,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_label_remote_host,
                 null,
                 SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL)
+                GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(200, SWT.DEFAULT).create()
             );
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
-            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             remotePortSpinner = UIUtils.createLabelText(
                 portForwardingGroup,
