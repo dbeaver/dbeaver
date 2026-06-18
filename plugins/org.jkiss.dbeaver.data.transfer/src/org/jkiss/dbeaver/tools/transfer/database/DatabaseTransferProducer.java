@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
@@ -209,8 +209,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
             }
 
-            boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver().isEmbedded();
-            boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
+            boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver()
+                .isEmbedded();
+            boolean forceDataReadTransactions
+                = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
             boolean selectiveExportFromUI = useFetchedRows != null;
 
             DBCExecutionContext context;
@@ -223,7 +225,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 throw new DBCException("Can't retrieve execution context from data container " + dataContainer);
             }
             if (!selectiveExportFromUI && newConnection) {
-                context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
+                context = DBUtils.getObjectOwnerInstance(getDatabaseObject())
+                    .openIsolatedContext(monitor, "Data transfer producer", context);
                 DBExecUtils.setExecutionContextDefaults(monitor, dataSource, context, defaultCatalog, null, defaultSchema);
             }
             if (task != null) {
@@ -260,8 +263,6 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                         try {
                             totalRows = dataContainer.countData(transferSource, session, dataFilter, readFlags);
                             checkCanceled(monitor);
-                        } catch (OperationCanceledException e) {
-                            throw e;
                         } catch (Throwable e) {
                             log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
                             try {
@@ -332,9 +333,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         });
     }
 
-    private static void checkCanceled(@NotNull DBRProgressMonitor monitor) {
+    private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws DBInterruptedException {
         if (monitor.isCanceled()) {
-            throw new OperationCanceledException("Data transfer was canceled");
+            throw new DBInterruptedException("Data transfer was canceled");
         }
     }
 

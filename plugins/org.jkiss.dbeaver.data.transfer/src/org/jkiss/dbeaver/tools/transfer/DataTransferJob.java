@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -109,7 +109,7 @@ public class DataTransferJob extends AbstractJob {
                     parentMonitor.worked(1);
                 }
                 jobMonitor.worked(1);
-            } catch (OperationCanceledException e) {
+            } catch (DBInterruptedException e) {
                 return Status.CANCEL_STATUS;
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
@@ -151,7 +151,7 @@ public class DataTransferJob extends AbstractJob {
             producer.transferData(monitor, consumer, processor, nodeSettings, task);
 
             if (isTransferCanceled(monitor)) {
-                throw new OperationCanceledException("Data transfer was canceled");
+                throw new DBInterruptedException("Data transfer was canceled");
             }
 
             totalStatistics.accumulate(producer.getStatistics());
