@@ -33,15 +33,16 @@ public abstract class NIOPath implements Path {
     protected NIOPath(@Nullable String path, FileSystem fileSystem) {
         this.fileSystem = fileSystem;
         String separator = fileSystem.getSeparator();
+        String preparedPath = path;
         if (CommonUtils.isNotEmpty(path) && path.endsWith(separator)) {
             if (path.length() == separator.length()) {
                 // its root
-                path = null;
+                preparedPath = null;
             } else {
-                path = path.substring(0, path.length() - separator.length());
+                preparedPath = path.substring(0, path.length() - separator.length());
             }
         }
-        this.path = path;
+        this.path = preparedPath;
     }
 
 

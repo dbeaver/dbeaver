@@ -313,10 +313,16 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 boolean doCopy = !isTheSameFileSystem(node);
                 monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource);
                 try {
-                    FileAction moveOrCopy = doCopy
-                        ? (file, targetFile) -> Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING)
-                        : this::moveFile;
-                    walkFileTree(resource, folder, moveOrCopy);
+                    if (doCopy) {
+                        walkFileTree(
+                            resource,
+                            folder,
+                            (file, targetFile) -> Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING),
+                            null
+                        );
+                    } else {
+                        walkFileTree(resource, folder, this::moveFile, this::deleteEmptyDirectory);
+                    }
                 } finally {
                     monitor.worked(1);
                 }
@@ -463,7 +469,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         }
     }
 
-    private void walkFileTree(@NotNull Path resource, @NotNull Path targetDir, @NotNull FileAction action) throws IOException {
+    private void walkFileTree(
+        @NotNull Path resource,
+        @NotNull Path targetDir,
+        @NotNull BiFileAction action,
+        @Nullable FileAction directoryPostVisitAction
+    ) throws IOException {
         Path parentResource = Objects.requireNonNullElse(resource.toAbsolutePath().getParent(), resource);
         Files.walkFileTree(
             resource, new SimpleFileVisitor<>() {
@@ -483,6 +494,17 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     Files.createDirectories(targetDirPath);
                     return FileVisitResult.CONTINUE;
                 }
+
+                @Override
+                @NotNull
+                public FileVisitResult postVisitDirectory(@NotNull Path dir, @Nullable IOException exc) throws IOException {
+                    if (directoryPostVisitAction == null) {
+                        return super.postVisitDirectory(dir, exc);
+                    } else {
+                        directoryPostVisitAction.accept(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                }
             }
         );
     }
@@ -500,10 +522,28 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         }
     }
 
+    private void deleteEmptyDirectory(@NotNull Path dir) throws IOException {
+        if (Files.isDirectory(dir)) {
+            try (Stream<Path> entries = Files.list(dir)) {
+                if (entries.findAny().isEmpty()) {
+                    log.trace("Deleting empty directory: " + dir);
+                    Files.delete(dir);
+                } else {
+                    log.warn("Trying to delete non empty directory, skipping deletion");
+                }
+            }
+        }
+    }
+
     @FunctionalInterface
-    private interface FileAction {
+    private interface BiFileAction {
 
         void accept(@NotNull Path file, @NotNull Path targetFile) throws IOException;
 
+    }
+
+    @FunctionalInterface
+    private interface FileAction {
+        void accept(@NotNull Path file) throws IOException;
     }
 }
