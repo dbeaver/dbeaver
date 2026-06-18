@@ -27,6 +27,7 @@ import java.nio.file.Path;
 public abstract class BaseApplicationImpl extends AbstractApplication {
     public static final String DBEAVER_DATA_DIR = "DBeaverData";
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    public static final String SECURE_DATA_FOLDER = "secure";
 
     public static final String ECLIPSE_EXIT_DATA = "eclipse.exitdata";
 
