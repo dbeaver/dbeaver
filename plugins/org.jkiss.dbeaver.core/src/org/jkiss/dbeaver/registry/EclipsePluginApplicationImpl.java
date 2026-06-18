@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
-import java.nio.file.Path;
-
 /**
  * EclipseApplicationImpl
  */
@@ -61,12 +59,6 @@ public abstract class EclipsePluginApplicationImpl extends DesktopApplicationImp
     @Override
     public String getDefaultProjectName() {
         return "DBeaver";
-    }
-
-    @NotNull
-    @Override
-    public Path getWorkspacePath() {
-        return null;
     }
 
     @NotNull
