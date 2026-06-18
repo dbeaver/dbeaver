@@ -93,14 +93,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         blockControlGd.heightHint = 350;
         blockControl.setLayoutData(blockControlGd);
 
-        includeTable = StringEditorTableUtils.createEditableList(
-            blockControl, UINavigatorMessages.dialog_filter_list_include,
-            filter.getInclude(), null, null
-        );
-        excludeTable = StringEditorTableUtils.createEditableList(
-            blockControl, UINavigatorMessages.dialog_filter_list_exclude,
-            filter.getExclude(), null, null
-        );
+        includeTable = createIncludeTable(blockControl);
+        excludeTable = createExcludeTable(blockControl);
 
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
@@ -110,6 +104,23 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         return composite;
     }
+
+    @NotNull
+    protected Table createIncludeTable(@NotNull Composite parent) {
+        return StringEditorTableUtils.createEditableList(
+            parent, UINavigatorMessages.dialog_filter_list_include,
+            filter.getInclude(), null, null
+        );
+    }
+
+    @NotNull
+    protected Table createExcludeTable(@NotNull Composite parent) {
+        return StringEditorTableUtils.createEditableList(
+            parent, UINavigatorMessages.dialog_filter_list_exclude,
+            filter.getExclude(), null, null
+        );
+    }
+
 
     @NotNull
     protected Composite setTopPanel(@NotNull Composite composite) {
@@ -258,7 +269,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations() {
         saveChangedFilterState();
-        if (shouldSaveFilterInRegistry()) {
+        if (isSaveFilterInRegistry()) {
             dsRegistry.updateSavedFilter(filter);
         }
     }
@@ -270,7 +281,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         filter.setName(namesCombo.getText());
     }
 
-    protected boolean shouldSaveFilterInRegistry() {
+    protected boolean isSaveFilterInRegistry() {
         return !CommonUtils.isEmpty(filter.getName());
     }
 

@@ -91,6 +91,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
                         propertySource = propsControl.makeProperties(
                             monitor,
                             getSite().getDriver(),
+                            tempDataSource,
                             tmpConnectionInfo,
                             driverSubstitution);
                     } finally {

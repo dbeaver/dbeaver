@@ -424,7 +424,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 producer.dataSourceContainer = DBUtils.findDataSourceByObjectId(project, id);
                                 if (producer.dataSourceContainer != null && !serializeContext.isDataSourceFailed(producer.dataSourceContainer)) {
                                     try {
-                                        producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id);
+                                        producer.dataContainer = (DBSDataContainer) DBUtils.findObjectById(monitor, project, id, true);
                                     } catch (DBException e) {
                                         serializeContext.addError(e);
                                         serializeContext.addDataSourceFail(producer.dataSourceContainer);
