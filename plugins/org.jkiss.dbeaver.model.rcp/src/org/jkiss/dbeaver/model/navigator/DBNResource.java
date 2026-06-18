@@ -60,6 +60,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private static final NumberFormat numberFormat = new DecimalFormat();
+    public static final NIOEFSFileSystemProvider NIOEFS_FILE_SYSTEM_PROVIDER = new NIOEFSFileSystemProvider();
 
     private IResource resource;
     private DBPResourceHandler handler;
@@ -473,7 +474,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 return location != null
                     ? adapter.cast(location.toPath())
                     : resource.getLocationURI() != null
-                        ? adapter.cast(createPath(resource.getLocationURI(), resource.getName()))
+                        ? adapter.cast(createPath(resource.getLocationURI()))
                         : null;
             } else if (adapter == InputStream.class && resource instanceof IFile file) {
                 try {
@@ -487,8 +488,8 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @NotNull
-    private NIOEFSPath createPath(@NotNull URI locationUri, @NotNull String pathName) {
-        return new NIOEFSFileSystemProvider().getPath(locationUri);
+    private NIOEFSPath createPath(@NotNull URI locationUri) {
+        return NIOEFS_FILE_SYSTEM_PROVIDER.getPath(locationUri);
     }
 
     @NotNull

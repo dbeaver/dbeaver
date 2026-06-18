@@ -222,9 +222,9 @@ public class NIOEFSFileSystemProvider extends NIOFileSystemProvider {
         if (nioefsPath.getFileSystem().canWrite()) {
             supportedModes.add(AccessMode.WRITE);
         }
-        for (AccessMode mode : supportedModes) {
+        for (AccessMode mode : modes) {
             if (!supportedModes.contains(mode)) {
-                throw new IOException();
+                throw new AccessDeniedException(nioefsPath.toString(), null, "Unsupported access mode: " + mode);
             }
         }
     }
