@@ -20,20 +20,26 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 public final class EasyConfigFeatureRegistry {
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.easyConfig";
+    private static final String CONFIG_FILE = "easy-config.json";
+
+    private static final Log log = Log.getLog(EasyConfigFeatureRegistry.class);
 
     private static EasyConfigFeatureRegistry instance;
 
     private final List<EasyConfigFeatureDescriptor> features;
+
+    private final Object stateLock = new Object();
+    private volatile State state;
 
     private EasyConfigFeatureRegistry(@NotNull IExtensionRegistry registry) {
         var features = new ArrayList<EasyConfigFeatureDescriptor>();
@@ -65,19 +71,66 @@ public final class EasyConfigFeatureRegistry {
     }
 
     public boolean isFeatureEnabled(@NotNull EasyConfigFeatureDescriptor descriptor) {
-        var store = DBWorkbench.getPlatform().getPreferenceStore();
-        var value = store.getString(getFeatureKey(descriptor));
-        return CommonUtils.toBoolean(value, descriptor.isEnabledByDefault());
+        var state = currentState();
+        var feature = state.features().get(descriptor.getId());
+        return feature != null && feature.enabled() || descriptor.isEnabledByDefault();
     }
 
     public void setFeatureEnabled(@NotNull EasyConfigFeatureDescriptor descriptor, boolean enabled) {
-        var store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(getFeatureKey(descriptor), String.valueOf(enabled));
-        PrefUtils.savePreferenceStore(store);
+        synchronized (stateLock) {
+            state = currentState()
+                .withFeature(descriptor.getId(), new State.Feature(enabled));
+            saveState(state);
+        }
     }
 
     @NotNull
-    private static String getFeatureKey(@NotNull EasyConfigFeatureDescriptor descriptor) {
-        return "easyConfig.feature." + descriptor.getId();
+    private State currentState() {
+        if (state == null) {
+            synchronized (stateLock) {
+                if (state == null) {
+                    state = loadState();
+                }
+            }
+        }
+        return state;
+    }
+
+    @NotNull
+    private static State loadState() {
+        Path path = DBWorkbench.getPlatform().getLocalConfigurationFile(EasyConfigFeatureRegistry.CONFIG_FILE);
+        if (Files.exists(path)) {
+            try (var reader = Files.newBufferedReader(path)) {
+                return JSONUtils.GSON.fromJson(reader, State.class);
+            } catch (Exception e) {
+                log.error("Error loading easy config state from " + path, e);
+            }
+        }
+        return new State(Map.of());
+    }
+
+    private static void saveState(@NotNull State state) {
+        Path path = DBWorkbench.getPlatform().getLocalConfigurationFile(EasyConfigFeatureRegistry.CONFIG_FILE);
+        try (var writer = Files.newBufferedWriter(path)) {
+            JSONUtils.GSON.toJson(state, writer);
+        } catch (Exception e) {
+            log.error("Error saving easy config state to " + path, e);
+        }
+    }
+
+    private record State(@NotNull Map<String, Feature> features) {
+        State {
+            features = Map.copyOf(features);
+        }
+
+        @NotNull
+        State withFeature(@NotNull String id, @NotNull Feature feature) {
+            var newFeatures = new HashMap<>(features);
+            newFeatures.put(id, feature);
+            return new State(newFeatures);
+        }
+
+        private record Feature(boolean enabled) {
+        }
     }
 }
