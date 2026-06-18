@@ -255,8 +255,7 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 3. **Dependencies in `MANIFEST.MF`, not `pom.xml`**: Adding a dependency means editing `Require-Bundle:` in `META-INF/MANIFEST.MF`. Maven `<dependencies>` are only for Maven-only artifacts resolved via P2 (`pomDependencies=consider`).
 4. **UI thread safety**: All SWT/UI updates must run on the display thread. Use `UIUtils.asyncExec(Runnable)` or `UIUtils.syncExec(Runnable)` (from `org.jkiss.dbeaver.ui`).
 5. **`@Property` on getters only**: The `@Property` annotation is processed reflectively at runtime; it must be placed on the getter method, not the field.
-6. **Checkstyle is present but commented out in CI**: The lint step (`lint-java`) is commented out in `push-pr-devel.yml` due to permissions requirements, but the formatter profile (`docs/codestyle/eclipse-formatter-profile.xml`) is the authoritative style guide. Use Eclipse IDE with that profile imported.
-7. **Java 21 required**: The target platform requires `JavaSE-21`. Do not use preview features.
+6. **Java 21 required**: The target platform requires `JavaSE-21`. Do not use preview features.
 
 ---
 
