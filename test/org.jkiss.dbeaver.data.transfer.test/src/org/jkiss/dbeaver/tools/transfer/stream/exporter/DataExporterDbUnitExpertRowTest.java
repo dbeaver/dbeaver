@@ -22,16 +22,15 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.stream.IntStream;
-
-import static org.junit.Assert.assertEquals;
 
 public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
 
@@ -40,7 +39,6 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     private String tableName = "test_table";
 
     private String columnName = "test_column";
-
 
     private DataExporterDbUnit exporter;
 
@@ -105,8 +103,7 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         assertOutputMatches(expectedRow);
     }
 
-
-    @Before
+    @BeforeEach
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
         IStreamDataExporterSite mockSite = ExporterTestsUtils.getIStreamDataExporterSiteMock(
@@ -131,7 +128,7 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         var actualOutput = stringWriter.toString().lines().toList();
         var expectedOutput = constructExpectedOutput(expectedRow).lines().toList();
         IntStream.range(0, actualOutput.size())
-            .forEach(i -> assertEquals(expectedOutput.get(i), actualOutput.get(i)));
+            .forEach(i -> Assertions.assertEquals(expectedOutput.get(i), actualOutput.get(i)));
     }
 
     private String constructExpectedOutput(@NotNull String row) {

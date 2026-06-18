@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.access.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.SMObjectType;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -50,7 +51,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.secret.*;
-import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -784,8 +784,8 @@ public class DataSourceDescriptor
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
-        if (dataSource instanceof DBPRefreshableObject) {
-            dataSource = (DBPDataSource) ((DBPRefreshableObject) dataSource).refreshObject(monitor);
+        if (dataSource instanceof DBPRefreshableObject refreshableObject) {
+            dataSource = (DBPDataSource) refreshableObject.refreshObject(monitor);
         } else {
             this.reconnect(monitor, false);
         }
@@ -1315,12 +1315,15 @@ public class DataSourceDescriptor
         // Update config from profile
         if (!CommonUtils.isEmpty(resolvedConnectionInfo.getConfigProfileName())) {
             // Update config from profile
-            DBWNetworkProfile profile = registry.getNetworkProfile(
+            DBWNetworkProfile profile = registry.getNetworkProfiles().getProfile(
                 resolvedConnectionInfo.getConfigProfileSource(),
                 resolvedConnectionInfo.getConfigProfileName());
             if (profile != null) {
                 if (secretController != null) {
                     profile.resolveSecrets(secretController);
+                } else if (profile.isGlobal() && !DBWorkbench.isDistributed()) {
+                    // Global profile secrets are stored in global secret controller
+                    profile.resolveSecrets(DBSSecretController.getGlobalSecretController());
                 }
                 for (DBWHandlerConfiguration handlerCfg : profile.getConfigurations()) {
                     if (handlerCfg.isEnabled()) {
@@ -2198,11 +2201,16 @@ public class DataSourceDescriptor
             // Handlers. If config profile is set then props are saved there
             DBWNetworkProfile activeProfile = CommonUtils.isEmpty(connectionInfo.getConfigProfileName())
                 ? null
-                : this.getRegistry().getNetworkProfile(connectionInfo.getConfigProfileSource(), connectionInfo.getConfigProfileName());
+                : this.getRegistry().getNetworkProfiles().getProfile(
+                    connectionInfo.getConfigProfileSource(),
+                    connectionInfo.getConfigProfileName()
+                );
 
             List<Map<String, Object>> handlersConfigs = new ArrayList<>();
             for (DBWHandlerConfiguration hc : connectionInfo.getHandlers()) {
-                DBWHandlerConfiguration profileConfig = activeProfile == null ? null : activeProfile.getConfiguration(hc.getHandlerDescriptor());
+                DBWHandlerConfiguration profileConfig = activeProfile == null ?
+                    null :
+                    activeProfile.getConfiguration(hc.getHandlerDescriptor());
                 if (profileConfig == null || !profileConfig.isEnabled()) {
                     Map<String, Object> handlerProps = hc.saveToSecret();
                     if (!handlerProps.isEmpty()) {
