@@ -65,8 +65,9 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
         super.stop();
     }
 
+    @NotNull
     @Override
-    public @Nullable Path getDefaultWorkingFolder() {
+    public Path getWorkspacePath() {
         return null;
     }
 

@@ -48,11 +48,11 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
-import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -76,7 +76,10 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Properties;
 import java.util.Set;
@@ -122,7 +125,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public static final String PROP_DISTRIBUTION_TYPE = "dbeaver.distribution.type";
 
     private final Path FILE_WITH_WORKSPACES;
-    private final Path defaultWorkspacePath;
 
     static boolean WORKSPACE_MIGRATED = false;
 
@@ -145,7 +147,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(BasePlatformImpl.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
+        this(BaseApplicationImpl.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
     }
 
     protected DBeaverApplication(
@@ -153,15 +155,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         @NotNull String defaultAppWorkspaceName,
         @NotNull String defaultWorkspacesFile
     ) {
-        // Explicitly set UTF-8 as default file encoding
-        // In some places Eclipse reads this property directly.
-        //System.setProperty(StandardConstants.ENV_FILE_ENCODING, GeneralUtils.UTF8_ENCODING);
-
-        String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
-
-        // Workspace dir
-        defaultWorkspacePath = RuntimeUtils.getWorkspacePath(workingDirectory, defaultAppWorkspaceName);
-        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
+        super(defaultWorkspaceLocation, defaultAppWorkspaceName);
+        FILE_WITH_WORKSPACES = getGlobalDataPath().resolve(defaultWorkspacesFile);
     }
 
     /**
@@ -221,6 +216,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             } catch (Exception e) {
                 e.printStackTrace(System.out);
             }
+        }
+        try {
+            setWorkspacePath(RuntimeUtils.getLocalPathFromURL(instanceLoc.getURL()));
+        } catch (IOException e) {
+            log.error("Error settings workspace path", e);
         }
 
         loadStartupActions(instanceLoc);
@@ -305,7 +305,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
 
-        if (!isWorkspaceSwitchingAllowed() && !defaultWorkspacePath.equals(defaultHomePath)) {
+        if (!isWorkspaceSwitchingAllowed() && !getWorkspacePath().equals(defaultHomePath)) {
             log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
                 + GeneralUtils.getProductName() + ".");
             return IApplication.EXIT_OK;
@@ -412,7 +412,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!CommonUtils.isEmpty(lastWorkspace)) {
             try {
                 Path lwPath = Path.of(lastWorkspace);
-                if (!defaultWorkspacePath.equals(lwPath)) {
+                if (!getWorkspacePath().equals(lwPath)) {
                     final URL selectedWorkspaceURL = lwPath.toUri().toURL();
                     instanceLoc.set(selectedWorkspaceURL, true);
                     return true;
@@ -433,11 +433,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @NotNull
-    public Path getDefaultWorkingFolder() {
-        return defaultWorkspacePath;
-    }
-
-    @NotNull
     @Override
     public Class<? extends DBPPlatform> getPlatformClass() {
         return DesktopPlatform.class;
@@ -449,7 +444,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     public Path getDefaultInstanceLocation() {
-        Path defaultHomePath = defaultWorkspacePath;
+        Path defaultHomePath = getWorkspacePath();
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
             try {
@@ -544,7 +539,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
-        Path defaultHomePath = defaultWorkspacePath;
+        Path defaultHomePath = getWorkspacePath();
         try {
             if (!Files.exists(defaultHomePath) || isEmptyFolder(defaultHomePath)) {
                 if (!tryMigrateFromPreviousVersion(defaultHomePath)) {
@@ -624,7 +619,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     private void writeWorkspaceInfo() {
-        Path defaultDir = getDefaultWorkingFolder();
+        Path defaultDir = getWorkspacePath();
         Path metadataFolder = defaultDir.resolve(DBPWorkspace.METADATA_FOLDER);
         if (!Files.exists(metadataFolder)) {
             try {
