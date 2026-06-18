@@ -219,11 +219,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             settings.selectConsumer(null, null, true);
         } else {
             if (settings.isConsumerOptional()) {
-                if (forceUpdate || settings.getConsumer() == null || !haveConsumerFromSettings()) {
+                if (forceUpdate || settings.getConsumer() == null || !haveDescriptor(getWizard().getSettings().getConsumer())) {
                     settings.selectConsumer(target.node, target.processor, true);
                 }
             } else if (settings.isProducerOptional()) {
-                if (forceUpdate || settings.getProducer() == null || !haveConsumerFromSettings()) {
+                if (forceUpdate || settings.getProducer() == null || !haveDescriptor(getWizard().getSettings().getProducer())) {
                     settings.selectProducer(target.node, target.processor, true);
                 }
             } else {
@@ -242,12 +242,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         }
     }
 
-    private boolean haveConsumerFromSettings() {
-        var currentConsumer = getWizard().getSettings().getConsumer();
-        if (nodesTable.getInput() instanceof Collection<?> collection && currentConsumer != null) {
+    private boolean haveDescriptor(@Nullable DataTransferNodeDescriptor descriptor) {
+        if (nodesTable.getInput() instanceof Collection<?> collection && descriptor != null) {
             for (Object item : collection) {
                 if (item instanceof TransferTarget target) {
-                    if (target.node != null && target.node.getId().equals(currentConsumer.getId())) {
+                    if (target.node != null && target.node.getId().equals(descriptor.getId())) {
                         return true;
                     }
                 }
