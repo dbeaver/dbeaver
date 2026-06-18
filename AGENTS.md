@@ -241,6 +241,7 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 - **Release branches** — exist for each release; never commit to them directly.
 - Pull requests that only fix typos, formatting, or trivial refactoring are generally **not accepted** per the contributor guide.
 - **Naming convention**: issues, commit messages, and PR titles should follow the format `org/repo#issueNumber title` (e.g., `dbeaver/dbeaver#12345 Fix NPE in PostgreSQL dialect`).
+- **Linking PRs to issues**: always link a pull request to its corresponding GitHub issue. Use the GitHub UI "Development" link on the PR sidebar when possible; if a direct link is not available, add `Closes org/project#issueNumber` in the PR description (e.g., `Closes dbeaver/dbeaver#12345`).
 - **AI-generated PRs**: large pull requests that are entirely AI-generated are strongly discouraged. Keep AI-assisted contributions focused and small, and ensure each change is understood and reviewed by a human contributor.
 
 ---
