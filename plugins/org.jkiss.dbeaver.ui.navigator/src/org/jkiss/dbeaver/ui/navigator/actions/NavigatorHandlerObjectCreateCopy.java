@@ -157,7 +157,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     UINavigatorMessages.failed_to_paste_due_to_permissions_title,
                     NLS.bind(
                         UINavigatorMessages.failed_to_paste_due_to_permissions_message,
-                        toProject.map(DBPProject::getDisplayName).orElse("Cant find owner project"),
+                        toProject.map(DBPProject::getDisplayName).orElse("Can't find owner project"),
                         String.join(",\n", failedToPasteResources)
                     )
                 );
