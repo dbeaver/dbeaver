@@ -273,3 +273,7 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 | `docs/license_header.txt` | Required license header for Java files |
 | `docs/devel.txt` | Brief contributor workflow notes |
 | `.github/workflows/push-pr-devel.yml` | CI: build on PR and push to `devel` |
+
+## Code Contribution Guide
+
+For detailed contribution instructions, see the [Code contribution guide](https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code).
