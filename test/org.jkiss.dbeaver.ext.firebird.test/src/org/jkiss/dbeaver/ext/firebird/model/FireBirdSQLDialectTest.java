@@ -17,20 +17,19 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
 public class FireBirdSQLDialectTest extends DBeaverUnitTest {
 
     private FireBirdSQLDialect dialect;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         dialect = new FireBirdSQLDialect();
     }
@@ -40,53 +39,53 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
     @Test
     public void testBlockHeaderStringsContainExecuteBlock() {
         String[] headers = dialect.getBlockHeaderStrings();
-        assertNotNull("Block headers should not be null", headers);
+        Assertions.assertNotNull(headers, "Block headers should not be null");
         List<String> headerList = Arrays.asList(headers);
-        assertTrue("Block headers must contain EXECUTE BLOCK", headerList.contains("EXECUTE BLOCK"));
+        Assertions.assertTrue(headerList.contains("EXECUTE BLOCK"), "Block headers must contain EXECUTE BLOCK");
     }
 
     @Test
     public void testBlockBoundStringsContainBeginEnd() {
         String[][] bounds = dialect.getBlockBoundStrings();
-        assertNotNull("Block bounds should not be null", bounds);
-        assertEquals("Should have exactly one BEGIN/END pair", 1, bounds.length);
-        assertEquals("BEGIN", bounds[0][0]);
-        assertEquals("END", bounds[0][1]);
+        Assertions.assertNotNull(bounds, "Block bounds should not be null");
+        Assertions.assertEquals(1, bounds.length, "Should have exactly one BEGIN/END pair");
+        Assertions.assertEquals("BEGIN", bounds[0][0]);
+        Assertions.assertEquals("END", bounds[0][1]);
     }
 
     // ---- Boolean behavior methods ----
 
     @Test
     public void testSupportsAliasInSelect() {
-        assertTrue("Firebird supports alias in SELECT", dialect.supportsAliasInSelect());
+        Assertions.assertTrue(dialect.supportsAliasInSelect(), "Firebird supports alias in SELECT");
     }
 
     @Test
     public void testSupportsAliasInHaving() {
-        assertFalse("Firebird does not support alias in HAVING", dialect.supportsAliasInHaving());
+        Assertions.assertFalse(dialect.supportsAliasInHaving(), "Firebird does not support alias in HAVING");
     }
 
     @Test
     public void testSupportsInsertAllDefaultValues() {
-        assertTrue("Firebird supports INSERT with all default values",
-            dialect.supportsInsertAllDefaultValuesStatement());
+        Assertions.assertTrue(dialect.supportsInsertAllDefaultValuesStatement(),
+            "Firebird supports INSERT with all default values");
     }
 
     // ---- Identifier handling ----
 
     @Test
     public void testValidIdentifierPartAcceptsDollarSign() {
-        assertTrue("Dollar sign must be valid in identifiers", dialect.validIdentifierPart('$', false));
+        Assertions.assertTrue(dialect.validIdentifierPart('$', false), "Dollar sign must be valid in identifiers");
     }
 
     @Test
     public void testValidIdentifierPartAcceptsUnderscore() {
-        assertTrue("Underscore must be valid in identifiers", dialect.validIdentifierPart('_', false));
+        Assertions.assertTrue(dialect.validIdentifierPart('_', false), "Underscore must be valid in identifiers");
     }
 
     @Test
     public void testValidIdentifierPartRejectsSpace() {
-        assertFalse("Space must not be valid in unquoted identifiers", dialect.validIdentifierPart(' ', false));
+        Assertions.assertFalse(dialect.validIdentifierPart(' ', false), "Space must not be valid in unquoted identifiers");
     }
 
     // ---- Keyword array structure (via reflection) ----
@@ -95,8 +94,8 @@ public class FireBirdSQLDialectTest extends DBeaverUnitTest {
     public void testFirebirdKeywordsArrayIsSorted() throws Exception {
         String[] keywords = getStaticStringArray("FIREBIRD_KEYWORDS");
         for (int i = 1; i < keywords.length; i++) {
-            assertTrue("Keywords array must be sorted alphabetically: '" + keywords[i - 1] + "' before '" + keywords[i] + "'",
-                keywords[i - 1].compareTo(keywords[i]) < 0);
+            Assertions.assertTrue(keywords[i - 1].compareTo(keywords[i]) < 0,
+                "Keywords array must be sorted alphabetically: '" + keywords[i - 1] + "' before '" + keywords[i] + "'");
         }
     }
 

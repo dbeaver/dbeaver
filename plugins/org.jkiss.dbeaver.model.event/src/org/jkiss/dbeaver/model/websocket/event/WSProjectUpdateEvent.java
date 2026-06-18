@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
         this.projectInfo = projectInfo;
     }
 
+    @NotNull
     public static WSProjectUpdateEvent create(
         @Nullable String sessionId,
         @Nullable String userId,
@@ -57,6 +58,7 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
         );
     }
 
+    @NotNull
     public static WSProjectUpdateEvent update(
         @Nullable String sessionId,
         @Nullable String userId,
@@ -72,6 +74,7 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
         );
     }
 
+    @NotNull
     public static WSProjectUpdateEvent delete(
         @Nullable String sessionId,
         @Nullable String userId,

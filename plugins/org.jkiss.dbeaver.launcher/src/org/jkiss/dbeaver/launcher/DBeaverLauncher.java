@@ -1919,6 +1919,12 @@ public class DBeaverLauncher {
     public int run(String[] args) {
         int result;
         try {
+            if (DelegateMainLauncher.canHandle(args)) {
+                commands = args;
+                String[] passThruArgs = processCommandLine(Arrays.copyOf(args, args.length));
+                DelegateMainLauncher.run(passThruArgs);
+                return 0;
+            }
             basicRun(args);
             String exitCode = System.getProperty(PROP_EXITCODE);
             try {
