@@ -118,6 +118,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     @NotNull
     private final List<DBWHandlerConfiguration> handlers;
     private final DBPConnectionBootstrap bootstrap;
+    @NotNull
     private DBPConnectionType connectionType;
     private DBPDriverConfigurationType configurationType;
     private String connectionColor;
@@ -175,11 +176,12 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.closeIdleInterval = info.closeIdleInterval;
     }
 
+    @Nullable
     public String getClientHomeId() {
         return clientHomeId;
     }
 
-    public void setClientHomeId(String clientHomeId) {
+    public void setClientHomeId(@Nullable String clientHomeId) {
         this.clientHomeId = clientHomeId;
     }
 
@@ -188,50 +190,56 @@ public class DBPConnectionConfiguration implements DBPObject {
         return hostName;
     }
 
-    public void setHostName(String hostName) {
+    public void setHostName(@Nullable String hostName) {
         this.hostName = hostName;
     }
 
+    @Nullable
     public String getHostPort() {
         return hostPort;
     }
 
-    public void setHostPort(String hostPort) {
+    public void setHostPort(@Nullable String hostPort) {
         this.hostPort = hostPort;
     }
 
+    @Nullable
     public String getServerName() {
         return serverName;
     }
 
-    public void setServerName(String serverName) {
+    public void setServerName(@Nullable String serverName) {
         this.serverName = serverName;
     }
 
+    @Nullable
     public String getDatabaseName() {
         return databaseName;
     }
 
-    public void setDatabaseName(String databaseName) {
+    public void setDatabaseName(@Nullable String databaseName) {
         this.databaseName = databaseName;
     }
 
+    @Nullable
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public void setUrl(@Nullable String url) {
         this.url = url;
     }
 
+    @Nullable
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(String userName) {
+    public void setUserName(@Nullable String userName) {
         this.userName = userName;
     }
 
+    @Nullable
     public String getUserPassword() {
         return userPassword;
     }
@@ -243,19 +251,20 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
-    public boolean hasProperty(String name) {
+    public boolean hasProperty(@NotNull String name) {
         return properties.containsKey(name);
     }
 
-    public String getProperty(String name) {
+    @Nullable
+    public String getProperty(@NotNull String name) {
         return properties.get(name);
     }
 
-    public void setProperty(String name, String value) {
+    public void setProperty(@NotNull String name, @Nullable String value) {
         properties.put(name, value);
     }
 
-    public void removeProperty(String name) {
+    public void removeProperty(@NotNull String name) {
         properties.remove(name);
     }
     
@@ -272,15 +281,16 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Provider properties (extra configuration parameters)
 
-    public String getProviderProperty(String name) {
+    @Nullable
+    public String getProviderProperty(@NotNull String name) {
         return providerProperties.get(name);
     }
 
-    public void setProviderProperty(String name, String value) {
+    public void setProviderProperty(@NotNull String name, @Nullable String value) {
         providerProperties.put(name, value);
     }
 
-    public void removeProviderProperty(String name) {
+    public void removeProviderProperty(@NotNull String name) {
         providerProperties.remove(name);
     }
 
@@ -297,11 +307,12 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Runtime attributes
 
-    public Object getRuntimeAttribute(String name) {
+    @Nullable
+    public Object getRuntimeAttribute(@NotNull String name) {
         return runtimeAttributes.get(name);
     }
 
-    public void setRuntimeAttribute(String name, Object value) {
+    public void setRuntimeAttribute(@NotNull String name, @Nullable Object value) {
         runtimeAttributes.put(name, value);
     }
 
@@ -317,11 +328,12 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Events
 
+    @Nullable
     public DBRShellCommand getEvent(DBPConnectionEventType eventType) {
         return events.get(eventType);
     }
 
-    public void setEvent(DBPConnectionEventType eventType, DBRShellCommand command) {
+    public void setEvent(@NotNull DBPConnectionEventType eventType, @Nullable DBRShellCommand command) {
         if (command == null) {
             events.remove(eventType);
         } else {
@@ -329,6 +341,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         }
     }
 
+    @NotNull
     public DBPConnectionEventType[] getDeclaredEvents() {
         Set<DBPConnectionEventType> eventTypes = events.keySet();
         return eventTypes.toArray(new DBPConnectionEventType[0]);
@@ -386,11 +399,12 @@ public class DBPConnectionConfiguration implements DBPObject {
     ////////////////////////////////////////////////////
     // Misc
 
+    @NotNull
     public DBPConnectionType getConnectionType() {
         return connectionType;
     }
 
-    public void setConnectionType(DBPConnectionType connectionType) {
+    public void setConnectionType(@NotNull DBPConnectionType connectionType) {
         this.connectionType = connectionType;
     }
 
@@ -408,11 +422,12 @@ public class DBPConnectionConfiguration implements DBPObject {
      *
      * @return RGB color or null
      */
+    @Nullable
     public String getConnectionColor() {
         return connectionColor;
     }
 
-    public void setConnectionColor(String color) {
+    public void setConnectionColor(@Nullable String color) {
         this.connectionColor = color;
     }
 
@@ -527,21 +542,25 @@ public class DBPConnectionConfiguration implements DBPObject {
                 log.error("Authentication model '" + authModelId + "' not found. Use default.");
             }
         }
-        return getAuthModelDescriptor(AuthModelDatabaseNative.ID);
+        DBPAuthModelDescriptor defModel = getAuthModelDescriptor(AuthModelDatabaseNative.ID);
+        assert defModel != null;
+        return defModel;
     }
 
-    private DBPAuthModelDescriptor getAuthModelDescriptor(String id) {
+    @Nullable
+    private DBPAuthModelDescriptor getAuthModelDescriptor(@NotNull String id) {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getAuthModel(id);
     }
 
-    public void setAuthModelId(String authModelId) {
+    public void setAuthModelId(@NotNull String authModelId) {
         this.authModelId = authModelId;
     }
 
-    public String getAuthProperty(String name) {
+    public String getAuthProperty(@NotNull String name) {
         return authProperties == null ? null : authProperties.get(name);
     }
 
+    @NotNull
     public Map<String, String> getAuthProperties() {
         return authProperties;
     }
@@ -575,10 +594,9 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DBPConnectionConfiguration)) {
+        if (!(obj instanceof DBPConnectionConfiguration source)) {
             return false;
         }
-        DBPConnectionConfiguration source = (DBPConnectionConfiguration) obj;
         return
             CommonUtils.equalOrEmptyStrings(this.hostName, source.hostName) &&
                 CommonUtils.equalOrEmptyStrings(this.hostPort, source.hostPort) &&

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.fs.DBFResourceAdapter;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -74,7 +76,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     @NotNull
     @Override
     public String getNodeType() {
-        return NodePathType.dbvfs.name() + ".path";
+        return DBFUtils.DBVFS_NODE_TYPE + ".path";
     }
 
     @NotNull
@@ -94,7 +96,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     @Nullable
     @Override
     public DBPImage getNodeIcon() {
-        return getOwnerProject().getWorkspace().getResourceIcon(this);
+        return getOwnerWorkspace().getResourceIcon(this);
     }
 
     @Override
@@ -210,13 +212,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return this;
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getName();
-    }
-
     @Override
     public boolean supportsRename() {
         return true;
@@ -245,7 +240,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return getParentNode().supportsDrop(otherNode);
         }
 
-        if (getOwnerProject() instanceof DBFResourceAdapter rm) {
+        if (getOwnerResourceAdapter() != null) {
             // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
             return (otherNode.getAdapter(Path.class) != null || (otherNode instanceof DBNStreamData source && source.supportsStreamData()))
                 && otherNode != this
@@ -434,16 +429,29 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return getPath() != null && Files.exists(getPath());
     }
 
+    @Nullable
+    public DBFResourceAdapter getOwnerResourceAdapter() {
+        DBPObject owner = getOwnerProjectOrNull();
+        if (owner == null) {
+            owner = getOwnerWorkspace();
+        }
+        return owner instanceof DBFResourceAdapter ra ? ra : null;
+    }
+
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == Path.class) {
             return adapter.cast(getPath());
         }
+        // Try to get resource adapter from parent (project or workspace)
         DBNFileSystemRoot rootNode = getFileSystemRoot();
-        if (rootNode != null && getOwnerProject() instanceof DBFResourceAdapter rm) {
-            T result = rm.adaptResource(rootNode.getRoot(), getPath(), adapter);
-            if (result != null) {
-                return result;
+        if (rootNode != null) {
+            DBFResourceAdapter ra = getOwnerResourceAdapter();
+            if (ra != null) {
+                T result = ra.adaptResource(rootNode.getRoot(), getPath(), adapter);
+                if (result != null) {
+                    return result;
+                }
             }
         }
         return super.getAdapter(adapter);

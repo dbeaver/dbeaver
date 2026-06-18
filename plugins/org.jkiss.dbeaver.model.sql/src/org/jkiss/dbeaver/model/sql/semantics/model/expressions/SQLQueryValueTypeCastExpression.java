@@ -39,7 +39,7 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
         @NotNull SQLQueryValueExpression value,
         @NotNull String typeRefString
     ) {
-        super(syntaxNode);
+        super(syntaxNode, value);
         this.value = value;
         this.typeRefString = typeRefString;
     }
