@@ -269,6 +269,5 @@ Use Mockito for mocking. Common mocks: `DBRProgressMonitor`, `DBPDataSourceConta
 | `product/aggregate/pom.xml` | Top-level build entry point used by CI |
 | `plugins/org.jkiss.dbeaver.model/META-INF/MANIFEST.MF` | Core API bundle exports |
 | `docs/license_header.txt` | Required license header for Java files |
-| `docs/codestyle/eclipse-formatter-profile.xml` | Eclipse Java formatter settings |
 | `docs/devel.txt` | Brief contributor workflow notes |
 | `.github/workflows/push-pr-devel.yml` | CI: build on PR and push to `devel` |
