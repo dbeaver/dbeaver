@@ -21,9 +21,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.ext.informix.InformixUtils;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -32,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -50,6 +54,15 @@ public class InformixMetaModel extends GenericMetaModel
         super();
     }
 
+    @NotNull
+    @Override
+    public GenericDataSource createDataSourceImpl(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
+        return new InformixDataSource(monitor, container, this);
+    }
+
     public String getViewDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericView sourceObject,
@@ -61,7 +74,61 @@ public class InformixMetaModel extends GenericMetaModel
     public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         return InformixUtils.getProcedureSource(monitor, sourceObject);
     }
-    
+
+    @Override
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+        GenericDataSource dataSource = container.getDataSource();
+        GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
+        GenericSchema schema = container.getSchema();
+        String schemaName = schema == null || DBUtils.isVirtualObject(schema) ? null : schema.getName();
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
+            StringBuilder query = new StringBuilder("SELECT procname, procid, isproc FROM informix.sysprocedures");
+            if (!CommonUtils.isEmpty(schemaName)) {
+                query.append(" WHERE owner = ?");
+            }
+            query.append(" ORDER BY procname, procid");
+
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
+                if (!CommonUtils.isEmpty(schemaName)) {
+                    dbStat.setString(1, schemaName);
+                }
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+
+                        String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, "procname");
+                        if (CommonUtils.isEmpty(procedureName)) {
+                            continue;
+                        }
+                        long procId = JDBCUtils.safeGetLong(dbResult, "procid");
+                        // GenericProcedure uses specificName as its unique key.
+                        String specificName = String.valueOf(procId);
+                        procedureName = GenericUtils.normalizeProcedureName(procedureName);
+
+                        String isProc = GenericUtils.safeGetString(procObject, dbResult, "isproc");
+                        DBSProcedureType procedureType = "f".equalsIgnoreCase(isProc) ?
+                            DBSProcedureType.FUNCTION :
+                            DBSProcedureType.PROCEDURE;
+                        container.addProcedure(createProcedureImpl(
+                            container,
+                            procedureName,
+                            specificName,
+                            null,
+                            procedureType,
+                            null
+                        ));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, dataSource);
+        }
+    }
+
     @Override
     public String getTableDDL(
         @NotNull DBRProgressMonitor monitor,

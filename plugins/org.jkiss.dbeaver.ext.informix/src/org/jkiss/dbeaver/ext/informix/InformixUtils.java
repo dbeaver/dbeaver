@@ -75,14 +75,29 @@ public class InformixUtils {
     }
 
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure) throws DBException {
+        String procedureCondition;
+        long procId = getProcedureId(procedure);
+        if (procId > 0) {
+            procedureCondition = "p.procid = " + procId;
+        } else {
+            procedureCondition = String.format("p.procname = '%s'", procedure.getName());
+        }
         String sqlProcedure = String.format("select b.data "
             + "from sysprocbody b "
             + "join sysprocedures p on b.procid=p.procid "
-            + "where datakey='T' and p.procname = '%s'"
-            + "order by b.procid, b.seqno", procedure.getName());
+            + "where datakey='T' and %s "
+            + "order by b.procid, b.seqno", procedureCondition);
         return listToString(
             getSource(monitor, sqlProcedure, procedure.getName(),
                 procedure.getDataSource()), null);
+    }
+
+    private static long getProcedureId(GenericProcedure procedure) {
+        try {
+            return Long.parseLong(procedure.getUniqueName());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     public static String getViewSource(DBRProgressMonitor monitor,
