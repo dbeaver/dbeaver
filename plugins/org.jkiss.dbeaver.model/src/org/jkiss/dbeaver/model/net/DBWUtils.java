@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ public class DBWUtils {
     public static final String SSH_TUNNEL = "ssh_tunnel";
 
     public static void updateConfigWithTunnelInfo(
-        DBWHandlerConfiguration configuration,
-        DBPConnectionConfiguration connectionInfo,
-        String localHost,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @Nullable String localHost,
         int localPort
     ) {
         // Replace database host/port and URL
@@ -62,7 +62,10 @@ public class DBWUtils {
     }
 
     @NotNull
-    public static String getTargetTunnelHostName(@Nullable DBPDataSourceContainer dataSourceContainer, @NotNull DBPConnectionConfiguration cfg) {
+    public static String getTargetTunnelHostName(
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPConnectionConfiguration cfg
+    ) {
         String hostText = cfg.getHostName();
         // For localhost ry to get real host name from tunnel configuration
         if (isLocalAddress(hostText)) {
@@ -89,7 +92,8 @@ public class DBWUtils {
         return CommonUtils.notEmpty(hostText);
     }
 
-    public static @Nullable String getTunnelHostFromConfig(DBWHandlerConfiguration hc) {
+    @Nullable
+    public static String getTunnelHostFromConfig(@NotNull DBWHandlerConfiguration hc) {
         String host = hc.getStringProperty(DBWHandlerConfiguration.PROP_HOST);
         if (CommonUtils.isEmpty(host)) {
             return null;
@@ -97,7 +101,7 @@ public class DBWUtils {
         return host;
     }
 
-    public static boolean isLocalAddress(String hostText) {
+    public static boolean isLocalAddress(@Nullable String hostText) {
         return CommonUtils.isEmpty(hostText) ||
             hostText.equals(LOCALHOST_NAME) ||
             hostText.equals(LOCAL_NAME) ||
@@ -111,7 +115,8 @@ public class DBWUtils {
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
         return CommonUtils.isEmpty(cfg.getConfigProfileName())
             ? null
-            : dataSourceContainer.getRegistry().getNetworkProfile(cfg.getConfigProfileSource(), cfg.getConfigProfileName());
+            : dataSourceContainer.getRegistry().getNetworkProfiles().getProfile(
+                cfg.getConfigProfileSource(), cfg.getConfigProfileName());
     }
 
     /**

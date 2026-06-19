@@ -407,7 +407,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             manager.add(new Separator());
 
-            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles()) {
+            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles().getAllProfiles()) {
                 manager.add(new ChooseNetworkProfileAction(dataSource, profile, null, index++));
             }
 
@@ -1063,7 +1063,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (CommonUtils.isEmpty(configuration.getConfigProfileName())) {
             return null;
         }
-        return dataSource.getRegistry().getNetworkProfile(
+        return dataSource.getRegistry().getNetworkProfiles().getProfile(
             configuration.getConfigProfileSource(),
             configuration.getConfigProfileName()
         );
