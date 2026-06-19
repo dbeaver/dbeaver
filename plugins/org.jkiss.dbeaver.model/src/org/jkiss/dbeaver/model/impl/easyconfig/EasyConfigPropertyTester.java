@@ -33,6 +33,12 @@ public final class EasyConfigPropertyTester extends PropertyTester {
         if (!PROP_IS_FEATURE_ENABLED.equals(property)) {
             return false;
         }
+        if (!EasyConfigUtils.isShowOnStartup()) {
+            // Some features might be disabled by default by plugin declaration.
+            // But since Easy Config is an unreleased feature, there's no way to configure what's enabled or not.
+            // So assume all features are enabled when the flag is absent.
+            return true;
+        }
         if (!(expectedValue instanceof String value)) {
             return false;
         }

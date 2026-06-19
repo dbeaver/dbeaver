@@ -14,19 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.config.easy.handler;
+package org.jkiss.dbeaver.model.impl.easyconfig;
 
-import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.easyconfig.EasyConfigUtils;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.ui.config.easy.EasyConfigWizardDialog;
+import org.jkiss.utils.CommonUtils;
 
-public final class WorkbenchInitializerEasyConfig implements IWorkbenchWindowInitializer {
-    @Override
-    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (EasyConfigUtils.isShowOnStartup()) {
-            new EasyConfigWizardDialog(configurer.getWindow()).open();
-        }
+public final class EasyConfigUtils {
+    /**
+     * Force Easy Config to show at every launch
+     */
+    private static final String PROP_SHOW_ON_STARTUP = "dbeaver.show.easy.config.on.startup";
+
+    private EasyConfigUtils() {
+    }
+
+    /**
+     * Returns whether Easy Config should be shown at startup.
+     * <p>
+     * This is determined by the system property {@code dbeaver.show.easy.config.on.startup}.
+     */
+    public static boolean isShowOnStartup() {
+        return CommonUtils.getBoolean(System.getProperty(PROP_SHOW_ON_STARTUP));
     }
 }
