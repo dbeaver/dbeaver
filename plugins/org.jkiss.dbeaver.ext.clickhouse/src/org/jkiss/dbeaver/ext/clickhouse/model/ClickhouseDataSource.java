@@ -51,7 +51,6 @@ import org.osgi.framework.Version;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -62,7 +61,8 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     private static Map<String, String> dataTypeMap = new HashMap<>();
     private final TableEnginesCache engineCache = new TableEnginesCache();
-    private Boolean jsonStringSerializationSupported;
+    // output_format_binary_write_json_as_string was introduced in ClickHouse 24.10.
+    private static final Version JSON_AS_STRING_MIN_VERSION = new Version(24, 10, 0);
 
     static {
         dataTypeMap.put(String.class.getName(), "String");
@@ -414,22 +414,19 @@ public class ClickhouseDataSource extends GenericDataSource {
     }
 
     /**
-     * Whether the connected server exposes the {@code output_format_binary_write_json_as_string} setting.
-     * Detected by probing {@code system.settings} rather than gating on a server version: the setting is
-     * not tied to a single clean release boundary, so a capability probe is authoritative and survives
-     * backports. The result is cached for the lifetime of the data source.
+     * Whether the connected server is new enough to expose the
+     * {@code output_format_binary_write_json_as_string} setting (introduced in ClickHouse 24.10). The
+     * version is taken from the already-open connection, so it is available even for the very first
+     * connection (before the data source caches the server version) and needs no access to
+     * {@code system.settings}, which may be restricted or fail for some users.
      */
-    private synchronized boolean isJsonStringSerializationSupported(@NotNull Connection connection) {
-        if (jsonStringSerializationSupported == null) {
-            try (Statement stmt = connection.createStatement();
-                 ResultSet resultSet = stmt.executeQuery(
-                     "SELECT count() FROM system.settings WHERE name = '" + ClickhouseConstants.SETTING_JSON_AS_STRING + "'")) {
-                jsonStringSerializationSupported = resultSet.next() && resultSet.getInt(1) > 0;
-            } catch (SQLException e) {
-                log.debug("Can't detect support for the " + ClickhouseConstants.SETTING_JSON_AS_STRING + " setting", e);
-                jsonStringSerializationSupported = false;
-            }
+    private boolean isJsonStringSerializationSupported(@NotNull Connection connection) {
+        try {
+            String serverVersion = connection.getMetaData().getDatabaseProductVersion();
+            return new Version(serverVersion).compareTo(JSON_AS_STRING_MIN_VERSION) >= 0;
+        } catch (Throwable e) {
+            log.debug("Can't determine ClickHouse server version for JSON rendering", e);
+            return false;
         }
-        return jsonStringSerializationSupported;
     }
 }
