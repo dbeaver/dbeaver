@@ -1486,6 +1486,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.spreadsheet.setFont(ResultSetThemeSettings.instance.resultSetFont);
 
         {
+            this.backgroundDefault = null;
+            this.foregroundDefault = null;
+
             if (this.cellHeaderSelectionBackground != null) {
                 UIUtils.dispose(this.cellHeaderSelectionBackground);
                 this.cellHeaderSelectionBackground = null;
