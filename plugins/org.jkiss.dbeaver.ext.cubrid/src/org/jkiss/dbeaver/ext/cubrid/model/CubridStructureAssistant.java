@@ -73,7 +73,7 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
         List<DBSObjectReference> objects
     ) throws SQLException, DBException {
 
-        String sql = "SELECT class_name, owner_name, comment FROM db_class WHERE class_name = ?";
+        String sql = "SELECT class_name, owner_name, comment FROM db_class WHERE class_name LIKE ?";
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(sql);
             dbStat.setString(1, tableNameMask);
