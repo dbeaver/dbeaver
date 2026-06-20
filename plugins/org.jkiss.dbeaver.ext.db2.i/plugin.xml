@@ -44,6 +44,7 @@
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="schema-filters-enabled" value="false"/>
+                    <parameter name="native-batch-auto-commit" value="true"/>
 
                     <!-- Enable table/column descriptions -->
                     <property name="translate binary" value="true"/>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,4 +24,5 @@ public class DBPDriverConstants {
     public static final String PARAM_SUPPORTS_READ_ONLY_MODE = "supports-read-only-mode";
     public static final String PARAM_SUPPORTS_CATALOG_SELECTION = "supports-catalog-selection";
     public static final String PARAM_SUPPORTS_SCHEMA_SELECTION = "supports-schema-selection";
+    public static final String PARAM_NATIVE_BATCH_AUTO_COMMIT = "native-batch-auto-commit";
 }
