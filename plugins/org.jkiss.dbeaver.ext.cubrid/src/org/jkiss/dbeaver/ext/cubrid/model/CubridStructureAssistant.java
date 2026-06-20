@@ -74,19 +74,19 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
     ) throws SQLException, DBException {
 
         String sql = "SELECT class_name, owner_name, comment FROM db_class WHERE class_name LIKE ?";
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             dbStat.setString(1, tableNameMask);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            while (dbResult.next()) {
-                String schemaName = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
-                String tableName = JDBCUtils.safeGetString(dbResult, CubridConstants.CLASS_NAME);
-                String comment = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-                GenericSchema resolvedSchema = dataSource.getSchema(schemaName);
-                if (resolvedSchema != null) {
-                    objects.add(new TableReference(resolvedSchema, tableName, comment));
-                } else {
-                    throw new DBException("Schema not found for name: " + schemaName);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String schemaName = JDBCUtils.safeGetString(dbResult, CubridConstants.OWNER_NAME);
+                    String tableName = JDBCUtils.safeGetString(dbResult, CubridConstants.CLASS_NAME);
+                    String comment = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
+                    GenericSchema resolvedSchema = dataSource.getSchema(schemaName);
+                    if (resolvedSchema != null) {
+                        objects.add(new TableReference(resolvedSchema, tableName, comment));
+                    } else {
+                        throw new DBException("Schema not found for name: " + schemaName);
+                    }
                 }
             }
         } catch (SQLException e) {
