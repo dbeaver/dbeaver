@@ -400,6 +400,7 @@ public class CustomFormEditor {
                 CommonUtils.toBoolean(value),
                 1
             );
+            CSSUtils.setWidgetDefaultBackGround(editor);
             Label label = UIUtils.createLabel(bPH, propertyDisplayName);
             CSSUtils.setWidgetDefaultBackGround(label);
             label.addMouseListener(new MouseAdapter() {
