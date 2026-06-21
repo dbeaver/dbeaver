@@ -17,22 +17,37 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.resource.FontRegistry;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.themes.*;
+import org.eclipse.ui.internal.util.PrefUtil;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -51,25 +66,37 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
+import org.osgi.service.event.EventHandler;
 
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * PrefPageDatabaseUserInterface
  */
 public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main"; //$NON-NLS-1$
+
+    private static final Collection<String> QUICK_FONT_IDS = List.of(
+        UIFonts.DBeaver.MAIN_FONT,
+        UIFonts.DBeaver.MONOSPACE_FONT
+    );
+
 
     private Button automaticUpdateCheck;
     private Combo workspaceLanguage;
@@ -84,6 +111,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private Button statusBarShowBreadcrumbsCheck;
     private Button statusBarShowStatusCheck;
     private Combo statusBarBreadcrumbPositionCombo;
+
+    @Nullable
+    private FontsController fontsController = null;
 
     public PrefPageDatabaseUserInterface()
     {
@@ -224,6 +254,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                     }
                 });
             }
+
+            this.fontsController = this.prepareFontsController(composite, QUICK_FONT_IDS);
         }
 
         Composite breadcrumbs = UIUtils.createTitledComposite(
@@ -257,6 +289,57 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         setSettings();
         return composite;
+    }
+
+    @NotNull
+    private FontsController prepareFontsController(@NotNull Composite parent, @NotNull Collection<String> fontIds) {
+        FontsController controller = new FontsController(parent);
+
+        IThemeRegistry themeRegistry = WorkbenchPlugin.getDefault().getThemeRegistry();
+        Map<String, FontDefinition> fontDefs = Stream.of(themeRegistry.getFonts())
+            .collect(Collectors.toMap(ThemeElementDefinition::getId, f -> f));
+        Map<String, ThemeElementCategory> catDefs = Stream.of(themeRegistry.getCategories())
+            .collect(Collectors.toMap(ThemeElementCategory::getId, f -> f));
+
+        Map<String, Composite> groups = new HashMap<>();
+        Composite catContainer = null;
+
+        for (String fontId : fontIds) {
+            FontDefinition fontDef = fontDefs.get(fontId);
+            if (fontDef != null) {
+                catContainer = groups.get(fontDef.getCategoryId());
+                if (catContainer == null) {
+                    ThemeElementCategory cat = catDefs.get(fontDef.getCategoryId());
+                    catContainer = UIUtils.createTitledComposite(parent, cat.getName(), SWT.NONE);
+                    catContainer.getParent().setToolTipText(cat.getDescription());
+                    catContainer.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+                    GridLayoutFactory.swtDefaults().margins(0, 3).numColumns(3).applyTo(catContainer);
+                    groups.put(fontDef.getCategoryId(), catContainer);
+                }
+
+                controller.createEntry(catContainer, fontDef);
+            }
+        }
+
+        controller.refreshAllFontsInitial();
+
+        if (this.getContainer() instanceof IWorkbenchPreferenceContainer wpc && catContainer != null) {
+            Composite info = new Composite(catContainer, SWT.NONE);
+            info.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
+            GridLayoutFactory.fillDefaults().margins(0, 0).spacing(2, 2).numColumns(2).applyTo(info);
+
+            UIUtils.createInfoLabel(info, "");
+            UIUtils.createPreferenceLink(
+                info,
+                "More color and font settings at <a>''{0}''</a>",
+                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                wpc, null
+            );
+        }
+
+        parent.addDisposeListener(e -> controller.dispose());
+
+        return controller;
     }
 
     private void setSettings() {
@@ -309,6 +392,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
         statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
+
+        if (this.fontsController != null) {
+            this.fontsController.refreshAllFonts();
+        }
     }
 
     private boolean isWindowsDesktopClient() {
@@ -385,6 +472,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
 
+        if (this.fontsController != null) {
+            this.fontsController.apply();
+        }
+
         return true;
     }
 
@@ -396,7 +487,319 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     }
 
     @Override
-    public void setElement(IAdaptable element)
-    {
+    public void setElement(IAdaptable element) {
+    }
+
+    private static class FontsController {
+
+        private class FontEntry {
+            private static final ResourceBundle SWT_RESOURCE_BUNDLE = ResourceBundle.getBundle(ColorsAndFontsPreferencePage.class.getName());
+
+            @NotNull
+            private final FontDefinition definition;
+            @NotNull
+            private final Label example;
+
+            @Nullable
+            private Font currentFont = null;
+            @Nullable
+            private Font customFont = null;
+
+            public FontEntry(@NotNull Composite container, @NotNull FontDefinition fontDef) {
+                this.definition = fontDef;
+
+                Label title  = UIUtils.createLabel(container, fontDef.getName() + ": ");
+                title.setToolTipText(fontDef.getDescription());
+
+                this.example = UIUtils.createLabel(container, "<font example placeholder>");
+                this.example.setToolTipText(fontDef.getDescription());
+
+                UIUtils.createPushButton(
+                    container, null, "Modify", UIIcon.EDIT,
+                    SelectionListener.widgetSelectedAdapter(e -> {
+                        final FontDialog fontDialog = new FontDialog(container.getShell());
+                        fontDialog.setEffectsVisible(false);
+                        fontDialog.setFontList(this.example.getFont().getFontData());
+                        final FontData data = fontDialog.open();
+                        if (data != null) {
+                            final Font oldFont = this.customFont;
+                            this.customFont = new Font(this.example.getFont().getDevice(), data);
+                            this.example.setFont(this.customFont);
+                            this.example.setText(this.prepareFontDescription(this.customFont));
+                            if (oldFont != null) {
+                                oldFont.dispose();
+                            }
+                            updateLayout(this.example, null);
+                        }
+                    })
+                );
+            }
+
+            public void refresh(@NotNull FontRegistry fonts) {
+                this.currentFont = fonts.get(this.definition.getId());
+                this.example.setFont(this.currentFont);
+                this.example.setText(this.prepareFontDescription(this.currentFont));
+                this.releaseCustomFontIfExists();
+            }
+
+            @NotNull
+            private FontDefinition[] getDescendantFonts(@NotNull FontDefinition definition) {
+                List<FontDefinition> list = new ArrayList<>(5);
+                String id = definition.getId();
+
+                IThemeRegistry themeRegistry = WorkbenchPlugin.getDefault().getThemeRegistry();
+                FontDefinition[] fonts = themeRegistry.getFonts();
+                FontDefinition[] sorted = new FontDefinition[fonts.length];
+                System.arraycopy(fonts, 0, sorted, 0, sorted.length);
+
+                Arrays.sort(sorted, new IThemeRegistry.HierarchyComparator(fonts));
+
+                for (FontDefinition fontDefinition : sorted) {
+                    if (id.equals(fontDefinition.getDefaultsTo())) {
+                        list.add(fontDefinition);
+                    }
+                }
+                return list.toArray(new FontDefinition[list.size()]);
+            }
+
+            public boolean apply(@NotNull IPreferenceStore fontsPrefStore, @NotNull FontRegistry fontRegistry) {
+                if (this.customFont != null) {
+                    Set<FontDefinition> fontPreferencesToSet = new LinkedHashSet<>();
+                    this.collectFontsToUpdate(fontRegistry, this.definition, fontPreferencesToSet);
+                    this.putToPreferenceStore(fontsPrefStore, fontPreferencesToSet, this.customFont.getFontData());
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            private void putToPreferenceStore(
+                @NotNull IPreferenceStore fontsPrefStore,
+                @NotNull Set<FontDefinition> fontPreferencesToSet,
+                @NotNull FontData[] data
+            ) {
+                // see org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage::performFontOk()
+                String fdString = PreferenceConverter.getStoredRepresentation(data);
+                for (FontDefinition def : fontPreferencesToSet) {
+                    String key = createPreferenceKey(def);
+                    String storeString = fontsPrefStore.getString(key);
+                    def.appendState(ThemeElementDefinition.State.MODIFIED_BY_USER);
+
+                    if (!fdString.equals(storeString)) {
+                        fontsPrefStore.setValue(key, fdString);
+                    }
+                }
+            }
+
+            private void collectFontsToUpdate(
+                @NotNull FontRegistry fontRegistry,
+                @NotNull FontDefinition definition,
+                @NotNull Set<FontDefinition> fontPreferencesToSet
+            ) {
+                // see org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage::setFontPreferenceValue()
+                for (FontDefinition fontDefinition : this.getDescendantFonts(definition)) {
+                    if (isDefault(fontRegistry, fontDefinition)) {
+                        this.collectFontsToUpdate(fontRegistry, fontDefinition, fontPreferencesToSet);
+                    }
+                }
+                fontPreferencesToSet.add(definition);
+            }
+
+            private boolean isDefault(@NotNull FontRegistry fontRegistry, @NotNull FontDefinition fontDef) {
+                String defaultFontID = fontDef.getDefaultsTo();
+                return defaultFontID != null && Arrays.equals(fontRegistry.getFontData(fontDef.getId()), fontRegistry.getFontData(defaultFontID));
+            }
+
+            @NotNull
+            private String createPreferenceKey(@NotNull FontDefinition definition) {
+                if (definition.isOverridden() || definition.isAddedByCss()) {
+                    return ThemeElementHelper.createPreferenceKey(currentCssTheme, currentTheme, definition.getId());
+                }
+                return ThemeElementHelper.createPreferenceKey(currentTheme, definition.getId());
+            }
+
+            @NotNull
+            private String prepareFontDescription(@NotNull Font currentFont) {
+                FontData[] fontData = currentFont.getFontData();
+
+                // recalculate sample text
+                StringBuilder tmp = new StringBuilder();
+                for (FontData currentFontData : fontData) {
+                    tmp.append(currentFontData.getName());
+                    tmp.append(' ');
+                    tmp.append(currentFontData.getHeight());
+
+                    int style = currentFontData.getStyle();
+                    if ((style & SWT.BOLD) != 0) {
+                        tmp.append(' ');
+                        tmp.append(SWT_RESOURCE_BUNDLE.getString("boldFont")); //$NON-NLS-1$
+                    }
+                    if ((style & SWT.ITALIC) != 0) {
+                        tmp.append(' ');
+                        tmp.append(SWT_RESOURCE_BUNDLE.getString("italicFont")); //$NON-NLS-1$
+                    }
+                }
+                return tmp.toString();
+            }
+
+            public void releaseCustomFontIfExists() {
+                if (this.customFont != null) {
+                    this.customFont.dispose();
+                    this.customFont = null;
+                }
+            }
+        }
+
+        @NotNull
+        private final IPropertyChangeListener themeChangeListener = event -> {
+            if (this.isThemeChanged() || event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)) {
+                this.refreshAllFonts();
+            }
+        };
+
+        @NotNull
+        private final EventHandler themeRegistryRestyledHandler = e -> {
+            if (this.isThemeChanged()) {
+                this.refreshAllFonts();
+            }
+        };
+
+        @NotNull
+        private final IPropertyChangeListener currentThemeListener = event -> {
+            if (event.getSource() instanceof FontRegistry) {
+                String fontId = event.getProperty();
+                FontData[] fontData = (FontData[]) event.getNewValue();
+                this.refreshFont(fontId, fontData);
+            }
+        };
+
+        @NotNull
+        private final Composite container;
+        @NotNull
+        private final Map<String, FontEntry> fontEntriesById = new HashMap<>();
+
+        @NotNull
+        private final IWorkbench workbench;
+        @Nullable
+        private final IThemeEngine themeEngine;
+        @NotNull
+        private final IEventBroker eventBroker;
+
+        @NotNull
+        private ITheme currentTheme;
+        @Nullable
+        private org.eclipse.e4.ui.css.swt.theme.ITheme currentCssTheme;
+
+        public FontsController(@NotNull Composite container) {
+            this.container = container;
+            this.workbench = Workbench.getInstance();
+            this.themeEngine = this.workbench.getService(IThemeEngine.class);
+            this.eventBroker = this.workbench.getService(IEventBroker.class);
+
+            this.workbench.getThemeManager().addPropertyChangeListener(this.themeChangeListener);
+            this.eventBroker.subscribe(WorkbenchThemeManager.Events.THEME_REGISTRY_RESTYLED, this.themeRegistryRestyledHandler);
+
+            this.currentTheme = this.getCurrentTheme();
+            this.currentCssTheme = this.getCurrentCssTheme();
+
+            this.currentTheme.addPropertyChangeListener(this.currentThemeListener);
+        }
+
+        public void createEntry(@NotNull Composite catContainer, @NotNull FontDefinition fontDef) {
+            this.fontEntriesById.put(fontDef.getId(), new FontEntry(catContainer, fontDef));
+        }
+
+        private void refreshFont(@NotNull String fontId, @NotNull FontData[] fontData) {
+            FontEntry entry = this.fontEntriesById.get(fontId);
+            if (entry != null) {
+                FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
+                entry.refresh(fonts);
+                this.updateLayout(entry.example, null);
+            }
+        }
+
+        public void refreshAllFonts() {
+            this.refreshAllFontsImpl(true);
+        }
+
+        public void refreshAllFontsInitial() {
+            this.refreshAllFontsImpl(false);
+        }
+
+        private void refreshAllFontsImpl(boolean updateLayout) {
+            FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
+            for (FontEntry entry : this.fontEntriesById.values()) {
+                entry.refresh(fonts);
+                if (updateLayout) {
+                    this.updateLayout(entry.example, this.container);
+                }
+            }
+            if (updateLayout) {
+                this.updateLayout(this.container, null);
+            }
+        }
+
+        public void apply() {
+            FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
+            IPreferenceStore fontsPrefStore = PrefUtil.getInternalPreferenceStore();
+
+            boolean changesMade = false;
+            for (FontEntry entry : this.fontEntriesById.values()) {
+                changesMade |= entry.apply(fontsPrefStore, fonts);
+            }
+            if (changesMade) {
+                PrefUtil.savePrefs();
+                eventBroker.send(WorkbenchThemeManager.Events.THEME_REGISTRY_MODIFIED, null);
+            }
+        }
+
+        private void updateLayout(@NotNull Control start, @Nullable Control end) {
+            for (Control cc = start, prev = null; cc != null && cc != end; cc = cc.getParent()) {
+                if (cc instanceof ScrolledComposite sc) {
+                    sc.layout();
+                    if (prev != null) {
+                        sc.setMinSize(prev.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                    }
+                    break;
+                } else {
+                    cc.pack(true);
+                }
+                prev = cc;
+            }
+        }
+
+        private boolean isThemeChanged() {
+            ITheme actualTheme = this.getCurrentTheme();
+            org.eclipse.e4.ui.css.swt.theme.ITheme actualCssTheme = this.getCurrentCssTheme();
+            boolean changed = this.currentTheme != actualTheme || this.currentCssTheme != actualCssTheme;
+            if (changed) {
+                this.currentTheme.removePropertyChangeListener(this.currentThemeListener);
+                this.currentTheme = actualTheme;
+                this.currentCssTheme = actualCssTheme;
+                this.currentTheme.addPropertyChangeListener(this.currentThemeListener);
+            }
+            return changed;
+        }
+
+        @NotNull
+        private ITheme getCurrentTheme() {
+            return this.workbench.getThemeManager().getCurrentTheme();
+        }
+
+        @Nullable
+        private org.eclipse.e4.ui.css.swt.theme.ITheme getCurrentCssTheme() {
+            if (this.themeEngine != null) {
+                return this.themeEngine.getActiveTheme();
+            }
+            return null;
+        }
+
+        public void dispose() {
+            this.currentTheme.removePropertyChangeListener(this.currentThemeListener);
+            this.eventBroker.unsubscribe(themeRegistryRestyledHandler);
+            this.workbench.getThemeManager().removePropertyChangeListener(themeChangeListener);
+            this.fontEntriesById.values().forEach(FontEntry::releaseCustomFontIfExists);
+            this.fontEntriesById.clear();
+        }
     }
 }

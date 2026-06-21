@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceNode;
 import org.eclipse.ui.internal.themes.*;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -403,13 +404,16 @@ public class FontPreferenceOverrides {
         }
     }
     
-    private static class FontPreferenceNodePageOverride extends PreferenceNode {
-        private final PreferenceNode originalNode;
+    private static class FontPreferenceNodePageOverride extends WorkbenchPreferenceNode {
+        private final WorkbenchPreferenceNode originalNode;
         private final Set<String> prefIdsToHide;
         private IPreferencePage page = null;
         
-        public FontPreferenceNodePageOverride(PreferenceNode originalNode, Set<String> prefIdsToHide) {
-            super(originalNode.getId());
+        public FontPreferenceNodePageOverride(
+            @NotNull WorkbenchPreferenceNode originalNode,
+            @NotNull Set<String> prefIdsToHide
+        ) {
+            super(originalNode.getId(), originalNode.getConfigurationElement());
             this.originalNode = originalNode;
             this.prefIdsToHide = prefIdsToHide;
         }
@@ -460,7 +464,22 @@ public class FontPreferenceOverrides {
                 page = null;
             }
             originalNode.disposeResources();
-        }   
+        }
+
+        @Override
+        public int getPriority() {
+            return this.originalNode.getPriority();
+        }
+
+        @Override
+        public void setPriority(int pri) {
+            this.originalNode.setPriority(pri);
+        }
+
+        @Override
+        public <T> T getAdapter(Class<T> adapter) {
+            return this.originalNode.getAdapter(adapter);
+        }
     }
 
     public static void hideFontPrefs(@NotNull Set<String> prefIdsToHide) {
@@ -473,9 +492,9 @@ public class FontPreferenceOverrides {
         IPreferenceNode catNode = pm.find(viewsCatId);
         IPreferenceNode rawFontsNode = pm.find(fontsPrefPageId);
         
-        if (rawFontsNode instanceof PreferenceNode) {
+        if (rawFontsNode instanceof WorkbenchPreferenceNode originalNode) {
             catNode.remove(rawFontsNode);
-            catNode.add(new FontPreferenceNodePageOverride((PreferenceNode)rawFontsNode, prefIdsToHide));
+            catNode.add(new FontPreferenceNodePageOverride(originalNode, prefIdsToHide));
         }
     }
 
