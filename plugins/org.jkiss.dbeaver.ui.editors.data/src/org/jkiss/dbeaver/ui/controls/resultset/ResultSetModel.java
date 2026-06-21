@@ -503,7 +503,8 @@ public class ResultSetModel implements DBDResultSetModel {
             } else {
                 valueToEdit = value;
             }
-        } else if (valueToEdit instanceof DBDValue complexValue) {
+        } else if (valueToEdit instanceof DBDValue complexValue
+            && (attr != topAttribute || (rowIndexes != null && rowIndexes.length > 0))) {
             DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
         } else {
             valueToEdit = value;
