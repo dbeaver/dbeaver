@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -124,6 +125,11 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
 
     public void setReferencedConstraint(OracleTableConstraint referencedKey) {
         this.referencedKey = referencedKey;
+    }
+
+    @Override
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {
+        setReferencedConstraint(referencedConstraint instanceof OracleTableConstraint c ? c : null);
     }
 
     @NotNull

@@ -141,8 +141,6 @@ public class DTMessages extends NLS {
     public static String database_consumer_settings_option_ignore_duplicate_rows;
     public static String database_consumer_settings_option_on_duplicate_key_method_label;
     public static String database_consumer_settings_option_transfer_auto_generated_columns;
-    public static String database_consumer_settings_option_migrate_primary_keys;
-    public static String database_consumer_settings_option_migrate_foreign_keys;
     public static String database_consumer_settings_option_disable_referential_integrity;
     public static String database_consumer_settings_option_use_bulk_load;
     public static String database_consumer_settings_option_truncate_before_load;

@@ -111,8 +111,10 @@ public abstract class JDBCTableForeignKey<
         return referencedConstraint;
     }
 
-    public void setReferencedConstraint(PRIMARY_KEY referencedConstraint) {
-        this.referencedConstraint = referencedConstraint;
+    @Override
+    @SuppressWarnings("unchecked")
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {
+        this.referencedConstraint = (PRIMARY_KEY) referencedConstraint;
     }
 
     @NotNull

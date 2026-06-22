@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -53,7 +54,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
 
     private List<DB2TableForeignKeyColumn> columns;
 
-    private DB2TableUniqueKey referencedKey;
+    private DBSEntityConstraint referencedKey;
 
     // -----------------
     // Constructor
@@ -151,12 +152,13 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
     @Nullable
     @Override
     @Property(id = "reference", viewable = false)
-    public DB2TableUniqueKey getReferencedConstraint() {
+    public DBSEntityConstraint getReferencedConstraint() {
         return referencedKey;
     }
 
-    public void setReferencedConstraint(DB2TableUniqueKey referencedKey) {
-        this.referencedKey = referencedKey;
+    @Override
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {
+        this.referencedKey = referencedConstraint;
     }
 
     @Property(viewable = true, editable = true)

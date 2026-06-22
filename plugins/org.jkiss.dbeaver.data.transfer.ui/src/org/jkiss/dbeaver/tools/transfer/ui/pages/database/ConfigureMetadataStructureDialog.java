@@ -161,9 +161,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                         container,
                         mapping,
                         new ArrayList<>(),
-                        mapping.getChangedPropertiesMap(),
-                        settings
-                    );
+                        mapping.getChangedPropertiesMap());
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -163,6 +164,11 @@ public class ExasolTableForeignKey extends JDBCTableConstraint<ExasolTable, Exas
     public void setReferencedConstraint(ExasolTableUniqueKey referencedKey) {
         this.referencedKey = referencedKey;
         this.refTable = referencedKey == null ? null : referencedKey.getTable();
+    }
+
+    @Override
+    public void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {
+        setReferencedConstraint(referencedConstraint instanceof ExasolTableUniqueKey uk ? uk : null);
     }
 
     @Property(viewable = true, editable = true, updatable = true)

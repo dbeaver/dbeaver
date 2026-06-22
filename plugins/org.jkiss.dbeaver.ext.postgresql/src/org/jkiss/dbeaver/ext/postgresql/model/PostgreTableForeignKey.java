@@ -144,6 +144,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
         return refConstraint;
     }
 
+    @Override
     public void setReferencedConstraint(@Nullable DBSEntityConstraint refConstraint) {
         this.refConstraint = refConstraint;
         this.refTable = refConstraint == null ? null : (PostgreTableBase) refConstraint.getParentObject();

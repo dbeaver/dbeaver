@@ -60,9 +60,9 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private String targetName;
     private DatabaseMappingType mappingType;
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
-    private final List<DatabaseMappingConstraint> constraintMappings = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
     private Map<String, Object> rawChangedPropertiesMap; // For tasks with empty container
+    private Object extraMappingState;
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
@@ -86,9 +86,6 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         for (DatabaseMappingAttribute attribute : container.attributeMappings) {
             this.attributeMappings.add(new DatabaseMappingAttribute(attribute, this));
         }
-        for (DatabaseMappingConstraint constraint : container.constraintMappings) {
-            this.constraintMappings.add(new DatabaseMappingConstraint(constraint, this));
-        }
     }
 
     public DatabaseConsumerSettings getSettings() {
@@ -101,15 +98,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     public void setTarget(DBSDataManipulator target) {
-        setTarget(target, true);
-    }
-
-    void setTarget(DBSDataManipulator target, boolean resetConstraintMappings) {
         this.target = target;
         this.targetName = null;
-        if (resetConstraintMappings) {
-            this.constraintMappings.clear();
-        }
     }
 
     @Override
@@ -128,7 +118,6 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         boolean updateAttributesNames
     ) throws DBException {
         this.mappingType = mappingType;
-        constraintMappings.clear();
         refreshAttributesMappingTypes(monitor, forceRefresh, updateAttributesNames);
     }
 
@@ -146,14 +135,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     void setMappingType(DatabaseMappingType mappingType) {
-        setMappingType(mappingType, true);
-    }
-
-    void setMappingType(DatabaseMappingType mappingType, boolean resetConstraintMappings) {
         this.mappingType = mappingType;
-        if (resetConstraintMappings) {
-            this.constraintMappings.clear();
-        }
     }
 
     public boolean isCompleted() {
@@ -240,17 +222,27 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     @Nullable
+    public Object getExtraMappingState() {
+        return extraMappingState;
+    }
+
+    public void setExtraMappingState(@Nullable Object extraMappingState) {
+        this.extraMappingState = extraMappingState;
+    }
+
+
+    @Nullable
     DatabaseMappingAttribute getAttributeMapping(@NotNull DBDAttributeBinding sourceAttr) {
         return getAttributeMapping((DBSAttributeBase) sourceAttr);
     }
 
     @Nullable
-    DatabaseMappingAttribute getAttributeMapping(@NotNull DBSAttributeBase sourceAttr) {
+    public DatabaseMappingAttribute getAttributeMapping(@NotNull DBSAttributeBase sourceAttr) {
         return CommonUtils.findBestCaseAwareMatch(
             attributeMappings,
-            sourceAttr instanceof DBDAttributeBinding binding ?
-                CommonUtils.notNull(binding.getLabel(), binding.getName()) :
-                sourceAttr.getName(),
+            sourceAttr instanceof DBDAttributeBinding binding
+                ? CommonUtils.notNull(binding.getLabel(), binding.getName())
+                : sourceAttr.getName(),
             attr -> attr.getSourceLabelOrName(attr.getSource(), false, false));
     }
 
@@ -288,12 +280,6 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings;
     }
 
-    @NotNull
-    public Collection<DatabaseMappingConstraint> getConstraintMappings(@NotNull DBRProgressMonitor monitor) throws DBException {
-        DatabaseMappingConstraint.refreshConstraintMappings(monitor, this, constraintMappings);
-        return constraintMappings;
-    }
-
     private void readAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         for (DBSAttributeBase attr : DTUtils.getAttributes(monitor, source, this)) {
             addAttributeMapping(monitor, attr);
@@ -328,15 +314,6 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
-        if (!constraintMappings.isEmpty()) {
-            Map<String, Object> constraintsSection = new LinkedHashMap<>();
-            settings.put("constraints", constraintsSection);
-            for (DatabaseMappingConstraint constraintMapping : constraintMappings) {
-                Map<String, Object> constraintSettings = new LinkedHashMap<>();
-                constraintsSection.put(constraintMapping.getSource().getName(), constraintSettings);
-                constraintMapping.saveSettings(constraintSettings);
-            }
-        }
         if (!CommonUtils.isEmpty(changedPropertiesMap)) {
             Map<String, Object> propertiesMap = new LinkedHashMap<>();
             settings.put("changedProperties", propertiesMap);
@@ -348,6 +325,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             // In case then we have only the raw map of changed container properties
             settings.put("changedProperties", rawChangedPropertiesMap);
         }
+        consumerSettings.saveContainerExtraSettings(this, settings);
     }
 
     public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
@@ -393,20 +371,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
-        Map<String, Object> constraintsSection = JSONUtils.getObject(settings, "constraints");
-        if (!constraintsSection.isEmpty()) {
-            try {
-                for (DatabaseMappingConstraint constraintMapping : getConstraintMappings(new VoidProgressMonitor())) {
-                    Map<String, Object> constraintSettings = JSONUtils.getObject(constraintsSection, constraintMapping.getSource().getName());
-                    if (!constraintSettings.isEmpty()) {
-                        constraintMapping.loadSettings(constraintSettings);
-                    }
-                }
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
         rawChangedPropertiesMap = JSONUtils.getObject(settings, "changedProperties");
+        consumerSettings.loadContainerExtraSettings(this, settings);
     }
 
     public boolean isSameMapping(DatabaseMappingContainer mapping) {

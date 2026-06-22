@@ -1365,12 +1365,8 @@ public final class DBUtils {
         return false;
     }
 
-    @Nullable
-    public static DBSEntityConstraint findEntityConstraint(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntity entity,
-        @NotNull Collection<? extends DBSEntityAttribute> attributes
-    ) throws DBException {
+    public static DBSEntityConstraint findEntityConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity, @NotNull Collection<? extends DBSEntityAttribute> attributes)
+        throws DBException {
         // Check constraints
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
         if (!CommonUtils.isEmpty(constraints)) {
