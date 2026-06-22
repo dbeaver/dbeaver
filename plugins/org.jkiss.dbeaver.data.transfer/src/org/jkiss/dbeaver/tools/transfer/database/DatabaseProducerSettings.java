@@ -113,7 +113,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
 
 
     @Override
-    public    void loadSettings(
+    public void loadSettings(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DataTransferSettings dataTransferSettings,
         @NotNull Map<String, Object> settings
