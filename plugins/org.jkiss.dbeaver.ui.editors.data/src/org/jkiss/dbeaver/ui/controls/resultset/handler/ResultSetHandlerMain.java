@@ -50,10 +50,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -516,6 +513,10 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
             case IResultSetCommands.CMD_FILTER_SAVE_SETTING: {
                 rsv.saveDataFilter();
+                break;
+            }
+            case IResultSetCommands.CMD_FILTER_RESET_SETTING: {
+                rsv.resetSavedDataFilter();
                 break;
             }
             case IResultSetCommands.CMD_FILTER_CLEAR_SETTING: {

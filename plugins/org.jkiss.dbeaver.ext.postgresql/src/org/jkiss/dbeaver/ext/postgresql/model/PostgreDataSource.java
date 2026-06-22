@@ -560,7 +560,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
                 newConfig.setUrl(newURL);
-                // Also patch the proxy source URL so DPI/UPD server connects to the requested database
+                // Also update the proxy source URL so the underlying connection targets the requested database
                 String proxySourceUrl = newConfig.getProperty(DBConstants.PROP_PROXY_SOURCE_URL);
                 if (proxySourceUrl != null) {
                     newConfig.setProperty(
