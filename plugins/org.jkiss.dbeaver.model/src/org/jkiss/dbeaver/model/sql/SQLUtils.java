@@ -691,7 +691,7 @@ public final class SQLUtils {
     }
 
     public static int getConstraintOrderIndex(@NotNull DBDDataFilter dataFilter, @NotNull DBDAttributeConstraint constraint) {
-        int index = dataFilter.getConstraints().indexOf(constraint);
+        int index = ArrayUtils.indexOf(dataFilter.getConstraints(), constraint);
         return index == -1 ? index : index + 1;
     }
 

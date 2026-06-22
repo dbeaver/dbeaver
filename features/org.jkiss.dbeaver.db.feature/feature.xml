@@ -41,6 +41,7 @@
    <plugin id="org.jkiss.dbeaver.ext.spanner" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.sqlite" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.teradata" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.timeplus" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.trino" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.vertica" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.ocient" version="0.0.0" />
