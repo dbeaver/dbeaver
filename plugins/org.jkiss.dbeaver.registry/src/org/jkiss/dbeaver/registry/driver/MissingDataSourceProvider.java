@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -50,6 +51,7 @@ public class MissingDataSourceProvider implements DBPDataSourceProvider<DBPDataS
     public DBPPropertyDescriptor[] getConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
         return new DBPPropertyDescriptor[0];
