@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlListener;
@@ -31,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.forms.widgets.ColumnLayout;
+import org.eclipse.ui.forms.widgets.ColumnLayoutData;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
@@ -215,7 +218,10 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             // Create edit forms
             for (DBPPropertyDescriptor prop : sortedProps) {
-                Composite placeholder = UIUtils.createComposite(propertiesGroup, 2);
+                var placeholder = CompositeFactory.newComposite(SWT.NONE)
+                    .layoutData(new ColumnLayoutData())
+                    .layout(GridLayoutFactory.fillDefaults().numColumns(2).create())
+                    .create(propertiesGroup);
 
                 formEditor.createPropertyEditor(placeholder, prop);
 
