@@ -1488,7 +1488,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             homeFolder = Path.of(driversHome);
         } else {
             if (platform.getWorkspace().getAbsolutePath().getParent() == null) {
-                homeFolder = platform.getApplication().getDefaultWorkingFolder();
+                homeFolder = platform.getApplication().getWorkspacePath();
                 if (homeFolder != null && homeFolder.getParent() != null) {
                     homeFolder = homeFolder.getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 } else {
@@ -1496,7 +1496,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     return RuntimeUtils.getUserHomeDir().toPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
                 }
             } else {
-                homeFolder = platform.getWorkspace().getAbsolutePath().getParent().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
+                homeFolder = platform.getApplication().getGlobalDataPath().resolve(DBConstants.DEFAULT_DRIVERS_FOLDER);
             }
         }
         if (!Files.exists(homeFolder)) {

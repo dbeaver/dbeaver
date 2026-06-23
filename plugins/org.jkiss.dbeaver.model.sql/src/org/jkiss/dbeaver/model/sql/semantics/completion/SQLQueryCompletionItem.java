@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -119,6 +120,15 @@ public abstract class SQLQueryCompletionItem {
         boolean absolute
     ) {
         return new SQLColumnNameCompletionItem(score, filterKey, columnInfo, sourceInfo, absolute);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forGlobalPseudoColumn(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull SQLQueryResultPseudoColumn columnInfo
+    ) {
+        return new SQLGlobalPseudoColumnCompletionItem(score, filterKey, columnInfo);
     }
 
     @NotNull
@@ -282,6 +292,31 @@ public abstract class SQLQueryCompletionItem {
         @Override
         protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitColumnName(this);
+        }
+    }
+
+    public static class SQLGlobalPseudoColumnCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
+        public final SQLQueryResultPseudoColumn columnInfo;
+
+        SQLGlobalPseudoColumnCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull SQLQueryResultPseudoColumn columnInfo
+        ) {
+            super(score, filterKey);
+            this.columnInfo = columnInfo;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.GLOBAL_PSEUDO_COLUMN;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitGlobalPseudoColumn(this);
         }
     }
 

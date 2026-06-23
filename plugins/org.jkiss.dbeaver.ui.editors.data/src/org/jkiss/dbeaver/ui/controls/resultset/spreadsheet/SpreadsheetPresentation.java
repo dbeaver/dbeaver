@@ -1731,7 +1731,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             int targetPosition = getConstraintPosition(dropC, pin);
             switch (location) {
                 case DROP_AFTER:
-                    if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraints().size() - 1) {
+                    if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraintsCount() - 1) {
                         targetPosition++;
                     }
                     break;
@@ -1786,14 +1786,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @NotNull
     private static List<DBDAttributeConstraint> getOrderedConstraints(@NotNull DBDDataFilter filter, boolean pin) {
-        final List<DBDAttributeConstraint> constraints = filter.getConstraints();
+        DBDAttributeConstraint[] constraints = filter.getConstraints();
         if (pin) {
-            return constraints.stream()
+            return Arrays.stream(constraints)
                 .filter(x -> x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED))
                 .sorted(Comparator.comparing(x -> x.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)))
                 .collect(Collectors.toList());
         } else {
-            return constraints.stream()
+            return Arrays.stream(constraints)
                 .sorted(Comparator.comparing(DBDAttributeConstraintBase::getVisualPosition))
                 .collect(Collectors.toList());
         }

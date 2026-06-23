@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,7 +170,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
             escapeChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
         boolean strictQuotes = CommonUtils.toBoolean(processorProperties.get(PROP_STRICT_QUOTES));
-        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0), 0, strictQuotes);
+        return new CSVReader(reader, delimiter, quoteChar, escapeChar, 0, strictQuotes);
     }
 
     private Reader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties, boolean useBufferedStream) throws UnsupportedEncodingException {

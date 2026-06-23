@@ -87,6 +87,12 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
 
     @Nullable
     @Override
+    public String visitGlobalPseudoColumn(@NotNull SQLGlobalPseudoColumnCompletionItem pseudoColumn) {
+        return pseudoColumn.columnInfo.description;
+    }
+
+    @Nullable
+    @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
         return tableName.object.getDescription();
     }
