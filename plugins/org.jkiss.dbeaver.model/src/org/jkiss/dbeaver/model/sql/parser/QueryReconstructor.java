@@ -230,7 +230,9 @@ public class QueryReconstructor {
         while (trailingCommentIndex >= 0 && lastToken.absoluteBegin < comments[trailingCommentIndex].cleanPosition()) {
             trailingCommentIndex--;
         }
-        int end = comments[trailingCommentIndex].accumulatedOffset() + lastToken.absoluteEnd;
+        // when all comments are positioned after the last token (purely trailing)
+        int lastTokenOffset = trailingCommentIndex >= 0 ? comments[trailingCommentIndex].accumulatedOffset() : 0;
+        int end = lastTokenOffset + lastToken.absoluteEnd;
 
         boolean hasOnlySurroundingComments = (trailingCommentIndex + 1) - (leadingCommentIndex - 1) <= 1;
 

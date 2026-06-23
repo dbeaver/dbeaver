@@ -624,6 +624,21 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
         Assertions.assertEquals(expectedText, reconstructedText);
     }
 
+    @Test
+    public void trailingOnlyComment() throws Exception {
+
+        // GIVEN
+        String originalSql = "SELECT * FROM tablename --comment";
+        String newSqlWithoutComments = "SELECT col FROM tablename";
+
+        // WHEN
+        QueryReconstructor queryReconstructor = new QueryReconstructor(BasicSQLDialect.INSTANCE, originalSql);
+        String reconstructedText = queryReconstructor.reconstructFromOriginalFragments(newSqlWithoutComments);
+
+        // THEN
+        Assertions.assertEquals("SELECT col FROM tablename --comment", reconstructedText);
+    }
+
     @NotNull
     private Pattern getPattern(@NotNull String string) {
         // using regex-based matching with alphanumerical boundaries instead of String::contains
