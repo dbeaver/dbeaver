@@ -53,6 +53,9 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.FrameworkUtil;
@@ -69,41 +72,41 @@ import java.util.stream.StreamSupport;
  */
 public class FindReplaceOverlay {
 
-    private static final class KeyboardShortcuts {
-        private static final List<KeyStroke> SEARCH_FORWARD = List.of(
+    protected static final class KeyboardShortcuts {
+        public static final List<KeyStroke> SEARCH_FORWARD = List.of(
             KeyStroke.getInstance(SWT.CR),
             KeyStroke.getInstance(SWT.KEYPAD_CR)
         );
-        private static final List<KeyStroke> SEARCH_BACKWARD = List.of(
+        public static final List<KeyStroke> SEARCH_BACKWARD = List.of(
             KeyStroke.getInstance(SWT.SHIFT, SWT.CR),
             KeyStroke.getInstance(SWT.SHIFT, SWT.KEYPAD_CR)
         );
-        private static final List<KeyStroke> SEARCH_ALL = List.of(
+        public static final List<KeyStroke> SEARCH_ALL = List.of(
             KeyStroke.getInstance(SWT.MOD1, SWT.CR),
             KeyStroke.getInstance(SWT.MOD1, SWT.KEYPAD_CR)
         );
-        private static final List<KeyStroke> OPTION_CASE_SENSITIVE = List.of(
+        public static final List<KeyStroke> OPTION_CASE_SENSITIVE = List.of(
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'C'),
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'c')
         );
-        private static final List<KeyStroke> OPTION_WHOLE_WORD = List.of(
+        public static final List<KeyStroke> OPTION_WHOLE_WORD = List.of(
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'D'),
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'd')
         );
-        private static final List<KeyStroke> OPTION_REGEX = List.of(
+        public static final List<KeyStroke> OPTION_REGEX = List.of(
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'P'),
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'p')
         );
-        private static final List<KeyStroke> OPTION_SEARCH_IN_SELECTION = List.of(
+        public static final List<KeyStroke> OPTION_SEARCH_IN_SELECTION = List.of(
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'I'),
             KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'i')
         );
-        private static final List<KeyStroke> CLOSE = List.of(
+        public static final List<KeyStroke> CLOSE = List.of(
             KeyStroke.getInstance(SWT.ESC),
             KeyStroke.getInstance(SWT.MOD1, 'F'),
             KeyStroke.getInstance(SWT.MOD1, 'f')
         );
-        private static final List<KeyStroke> TOGGLE_REPLACE = List.of(
+        public static final List<KeyStroke> TOGGLE_REPLACE = List.of(
             KeyStroke.getInstance(SWT.MOD1, 'R'),
             KeyStroke.getInstance(SWT.MOD1, 'r')
         );
@@ -135,15 +138,14 @@ public class FindReplaceOverlay {
     private final ISelectionProvider selectionProvider;
     private final IWorkbenchPart targetPart;
 
-    private FindReplaceLogic findReplaceLogic;
+    protected FindReplaceLogic findReplaceLogic;
     private boolean isOpened = false;
     private boolean replaceBarOpen;
 
-    private final Composite targetControl;
-    private Consumer<SearchQuickFilterInfo> findAllAction;
-    private boolean findAllActionApplied = false;
+    protected final Composite targetControl;
 
-    private Composite containerControl, realContainerControl;
+    protected Composite containerControl;
+    protected Composite realContainerControl;
     private AccessibleToolBar replaceToggleTools;
     private ToolItem replaceToggle;
 
@@ -151,15 +153,15 @@ public class FindReplaceOverlay {
 
     private Composite searchContainer;
     private Composite searchBarContainer;
-    private HistoryTextWrapper searchBar;
+    protected HistoryTextWrapper searchBar;
     private AccessibleToolBar searchTools;
     private ToolItem searchInSelectionButton;
-    private ToolItem wholeWordSearchButton;
-    private ToolItem caseSensitiveSearchButton;
-    private ToolItem regexSearchButton;
+    protected ToolItem wholeWordSearchButton;
+    protected ToolItem caseSensitiveSearchButton;
+    protected ToolItem regexSearchButton;
     private ToolItem searchBackwardButton;
     private ToolItem searchForwardButton;
-    private ToolItem selectAllButton;
+    protected ToolItem selectAllButton;
     private AccessibleToolBar closeTools;
 
     private Composite replaceContainer;
@@ -169,10 +171,10 @@ public class FindReplaceOverlay {
     private ToolItem replaceButton;
     private ToolItem replaceAllButton;
 
-    private Color widgetBackgroundColor;
-    private Color overlayBackgroundColor;
-    private Color normalTextForegroundColor;
-    private Color errorTextForegroundColor;
+    protected Color widgetBackgroundColor;
+    protected Color overlayBackgroundColor;
+    protected Color normalTextForegroundColor;
+    protected Color errorTextForegroundColor;
 
     private ControlDecoration searchBarDecoration;
     private ContentAssistCommandAdapter contentAssistSearchField;
@@ -365,42 +367,24 @@ public class FindReplaceOverlay {
 
     private HistoryStore searchHistory;
 
-    @Nullable
-    private Consumer<Boolean> extraContentVisibilitySetter = null;
-
     public FindReplaceOverlay(
         @NotNull IWorkbenchPart part,
         @NotNull Composite targetControl,
         @NotNull IFindReplaceTarget target,
-        @Nullable ISelectionProvider selectionProvider,
-        @Nullable Consumer<SearchQuickFilterInfo> findAllAction
-    ) {
-        this(part, targetControl, target, selectionProvider, findAllAction, null);
-    }
-
-    public FindReplaceOverlay(
-        @NotNull IWorkbenchPart part,
-        @NotNull Composite targetControl,
-        @NotNull IFindReplaceTarget target,
-        @Nullable ISelectionProvider selectionProvider,
-        @Nullable Consumer<SearchQuickFilterInfo> findAllAction,
-        @Nullable Consumer<Composite> extraContentCtor
+        @Nullable ISelectionProvider selectionProvider
     ) {
         this.targetPart = part;
         this.targetControl = targetControl;
         this.selectionProvider = selectionProvider;
-        this.findAllAction = findAllAction;
 
         this.createFindReplaceLogic(target);
-        this.createContainerAndSearchControls(targetControl, extraContentCtor);
+        this.createContainerAndSearchControls(targetControl);
         this.containerControl.setVisible(false);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this.containerControl, IAbstractTextEditorHelpContextIds.FIND_REPLACE_OVERLAY);
     }
 
     public void setFilterState(@Nullable SearchQuickFilterInfo quickFilter) {
         if (quickFilter != null) {
-            this.findAllActionApplied = true;
-            this.open();
             this.regexSearchButton.setSelection(quickFilter.isUseRegex());
             this.wholeWordSearchButton.setSelection(quickFilter.isWholeWord());
             this.caseSensitiveSearchButton.setSelection(quickFilter.isCaseSensitive());
@@ -440,26 +424,10 @@ public class FindReplaceOverlay {
         this.searchBar.storeHistory();
     }
 
-    private void performSelectAll() {
+    protected void performSelectAll() {
         BusyIndicator.showWhile(
             this.containerControl.getShell() != null ? this.containerControl.getShell().getDisplay() : Display.getCurrent(),
-            () -> {
-                if (this.findAllAction != null) {
-                    this.findAllActionApplied = true;
-                    if (CommonUtils.isEmpty(this.searchBar.getText())) {
-                        this.findAllAction.accept(null);
-                    } else {
-                        this.findAllAction.accept(new SearchQuickFilterInfo(
-                            this.searchBar.getText(),
-                            this.caseSensitiveSearchButton.getSelection(),
-                            this.regexSearchButton.getSelection(),
-                            this.wholeWordSearchButton.getSelection()
-                        ));
-                    }
-                } else {
-                    this.findReplaceLogic.performSelectAll();
-                }
-            }
+            () -> this.findReplaceLogic.performSelectAll()
         );
         this.searchBar.storeHistory();
     }
@@ -505,11 +473,21 @@ public class FindReplaceOverlay {
      */
     @NotNull
     private IDialogSettings getDialogSettings() {
-        IDialogSettings settings = PlatformUI.getDialogSettingsProvider(FrameworkUtil.getBundle(FindReplaceAction.class)).getDialogSettings();
         // '.class.getClass()' wtf, but SWT does it like this, see https://github.com/eclipse-platform/eclipse.platform.ui/blob/e314e028bde8b21b0005ca6b671f59c1e00dba3a/bundles/org.eclipse.ui.workbench.texteditor/src/org/eclipse/ui/internal/findandreplace/overlay/FindReplaceOverlay.java#L382
-        IDialogSettings dialogSettings = settings.getSection(FindReplaceAction.class.getClass().getName());
+        return this.getDialogSettings(FindReplaceAction.class, FindReplaceAction.class.getClass().getName());
+    }
+
+    @NotNull
+    protected IDialogSettings getDialogSettings(@NotNull Class<?> dialogContextClass) {
+        return this.getDialogSettings(dialogContextClass, dialogContextClass.getName());
+    }
+
+    @NotNull
+    private IDialogSettings getDialogSettings(@NotNull Class<?> dialogContextClass, @NotNull String sectionName) {
+        IDialogSettings settings = PlatformUI.getDialogSettingsProvider(FrameworkUtil.getBundle(dialogContextClass)).getDialogSettings();
+        IDialogSettings dialogSettings = settings.getSection(sectionName);
         if (dialogSettings == null) {
-            dialogSettings = settings.addNewSection(FindReplaceAction.class.getClass().getName());
+            dialogSettings = settings.addNewSection(sectionName);
         }
         return dialogSettings;
     }
@@ -544,13 +522,7 @@ public class FindReplaceOverlay {
 
         UIUtils.asyncExec(() -> this.containerControl.setVisible(false));
 
-        if (this.findAllAction != null && this.findAllActionApplied) {
-            this.findAllActionApplied = false;
-            BusyIndicator.showWhile(
-                this.containerControl.getShell() != null ? this.containerControl.getShell().getDisplay() : Display.getCurrent(),
-                () -> this.findAllAction.accept(null)
-            );
-        }
+        this.onClose();
 
         if (this.findReplaceLogic.getTarget() instanceof IFindReplaceTargetExtension e) {
             e.endSession();
@@ -558,6 +530,10 @@ public class FindReplaceOverlay {
 
         this.isOpened = false;
         this.raizeEvent(l -> l.closed(this));
+    }
+
+    protected void onClose() {
+        // do nothing by default
     }
 
     public void open() {
@@ -590,11 +566,11 @@ public class FindReplaceOverlay {
         return this.isOpened;
     }
 
-    private void storeOverlaySettings() {
+    protected void storeOverlaySettings() {
         this.getDialogSettings().put(REPLACE_BAR_OPEN_DIALOG_SETTING, this.replaceBarOpen);
     }
 
-    private void restoreOverlaySettings() {
+    protected void restoreOverlaySettings() {
         boolean shouldOpenReplaceBar = this.getDialogSettings().getBoolean(REPLACE_BAR_OPEN_DIALOG_SETTING);
         this.setReplaceVisible(shouldOpenReplaceBar);
     }
@@ -636,12 +612,12 @@ public class FindReplaceOverlay {
         }
     }
 
-    private void createContainerAndSearchControls(@NotNull Composite parent, @Nullable Consumer<Composite> extraContentCtor) {
+    private void createContainerAndSearchControls(@NotNull Composite parent) {
         if (this.insertedInTargetParent()) {
             parent = parent.getParent();
         }
         this.retrieveColors();
-        this.createMainContainer(parent, extraContentCtor);
+        this.createMainContainer(parent);
         this.initializeSearchShortcutHandlers();
 
         this.containerControl.layout();
@@ -676,6 +652,8 @@ public class FindReplaceOverlay {
         }
         this.overlayBackgroundColor = this.retrieveDefaultCompositeBackground();
         this.errorTextForegroundColor = JFaceColors.getErrorText(this.targetControl.getShell().getDisplay());
+
+        this.widgetBackgroundColor = UIStyles.getDefaultWidgetBackground();
     }
 
     @NotNull
@@ -697,7 +675,7 @@ public class FindReplaceOverlay {
     /**
      * A composite with a fixed background color, not adapting to theming.
      */
-    private static class FixedColorComposite extends Composite {
+    protected static class FixedColorComposite extends Composite {
         @NotNull
         private final Color fixColor;
 
@@ -713,7 +691,7 @@ public class FindReplaceOverlay {
         }
     }
 
-    private void createMainContainer(@NotNull final Composite parent, @Nullable Consumer<Composite> extraContentCtor) {
+    private void createMainContainer(@NotNull final Composite parent) {
         Color borderColor = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
         this.containerControl = new FixedColorComposite(parent, SWT.NONE, borderColor);
         GridDataFactory.fillDefaults().exclude(true).applyTo(this.containerControl);
@@ -722,35 +700,9 @@ public class FindReplaceOverlay {
         GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).applyTo(this.realContainerControl);
         GridLayoutFactory.fillDefaults().numColumns(2).equalWidth(false).margins(2, 2).spacing(2, 0).applyTo(this.realContainerControl);
 
-        createReplaceToggle();
-        createContentsContainer();
-
-        if (extraContentCtor != null) {
-            Composite placeholder = new FixedColorComposite(
-                this.realContainerControl,
-                SWT.NONE,
-                this.overlayBackgroundColor
-            );
-            GridData placeholderLayoutData = GridDataFactory.fillDefaults().hint(0, 0).create();
-            placeholder.setLayoutData(placeholderLayoutData);
-
-            Composite extraContentContainer = new FixedColorComposite(this.realContainerControl, SWT.NONE, this.overlayBackgroundColor);
-            GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).spacing(0, 2).applyTo(extraContentContainer);
-            GridData extraContentLayoutData = GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).create();
-            extraContentContainer.setLayoutData(extraContentLayoutData);
-            extraContentCtor.accept(extraContentContainer);
-
-            this.extraContentVisibilitySetter = b -> {
-                placeholderLayoutData.exclude = !b;
-                extraContentLayoutData.exclude = !b;
-                placeholder.setVisible(b);
-                extraContentContainer.setVisible(b);
-                for (Control c = extraContentContainer; c != null && c != parent; c = c.getParent()) {
-                    this.containerControl.layout(true);
-                }
-                this.updatePlacementAndVisibility(true);
-            };
-        }
+        this.createReplaceToggle();
+        this.createContentsContainer();
+        this.createExtraContent(this.realContainerControl);
 
         this.containerControl.addDisposeListener(e -> {
             this.raizeEvent(l -> {
@@ -761,17 +713,20 @@ public class FindReplaceOverlay {
         });
     }
 
+    protected void createExtraContent(@NotNull Composite realContainerControl) {
+    }
+
     private void createReplaceToggle() {
         this.replaceToggleTools = new AccessibleToolBar(this.realContainerControl);
         GridDataFactory.fillDefaults().grab(false, true).align(GridData.FILL, GridData.FILL).applyTo(this.replaceToggleTools);
         this.replaceToggleTools.addMouseListener(MouseListener.mouseDownAdapter(e -> this.setReplaceVisible(!this.replaceBarOpen)));
 
         this.replaceToggle = new AccessibleToolItemBuilder(this.replaceToggleTools)
-                .withShortcuts(KeyboardShortcuts.TOGGLE_REPLACE)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_OPEN_REPLACE_AREA))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_replaceToggle_toolTip)
-                .withOperation(() -> this.setReplaceVisible(!this.replaceBarOpen)).withShortcuts(KeyboardShortcuts.TOGGLE_REPLACE)
-                .build();
+            .withShortcuts(KeyboardShortcuts.TOGGLE_REPLACE)
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_OPEN_REPLACE))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_replaceToggle_toolTip)
+            .withOperation(() -> this.setReplaceVisible(!this.replaceBarOpen)).withShortcuts(KeyboardShortcuts.TOGGLE_REPLACE)
+            .build();
 
         this.replaceToggleTools.setBackground(this.realContainerControl.getBackground());
     }
@@ -799,24 +754,30 @@ public class FindReplaceOverlay {
         this.searchTools.createToolItem(SWT.SEPARATOR);
 
         this.searchBackwardButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.PUSH)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_FIND_PREV))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_upSearchButton_toolTip)
-                .withOperation(() -> this.performSearch(false))
-                .withShortcuts(KeyboardShortcuts.SEARCH_BACKWARD).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_FIND_PREV))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_upSearchButton_toolTip)
+            .withOperation(() -> this.performSearch(false))
+            .withShortcuts(KeyboardShortcuts.SEARCH_BACKWARD).build();
 
         this.searchForwardButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.PUSH)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_FIND_NEXT))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_downSearchButton_toolTip)
-                .withOperation(() -> this.performSearch(true))
-                .withShortcuts(KeyboardShortcuts.SEARCH_FORWARD).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_FIND_NEXT))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_downSearchButton_toolTip)
+            .withOperation(() -> this.performSearch(true))
+            .withShortcuts(KeyboardShortcuts.SEARCH_FORWARD).build();
         this.searchForwardButton.setSelection(true); // by default, search down
 
-        this.selectAllButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.PUSH)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_SEARCH_ALL))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_searchAllButton_toolTip)
-                .withOperation(this::performSelectAll).withShortcuts(KeyboardShortcuts.SEARCH_ALL).build();
+        AccessibleToolItemBuilder selectAllButtonBuilder = new AccessibleToolItemBuilder(this.searchTools);
+        this.configureSelectAllButton(selectAllButtonBuilder);
+        this.selectAllButton = selectAllButtonBuilder.build();
 
         this.searchTools.setBackground(this.searchContainer.getBackground());
+    }
+
+    protected void configureSelectAllButton(@NotNull AccessibleToolItemBuilder buttonBuilder) {
+        buttonBuilder.withStyleBits(SWT.PUSH)
+                     .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_FIND_ALL))
+                     .withToolTipText(FindReplaceMessages.FindReplaceOverlay_searchAllButton_toolTip)
+                     .withOperation(this::performSelectAll).withShortcuts(KeyboardShortcuts.SEARCH_ALL);
     }
 
     private void createCloseTools() {
@@ -826,59 +787,59 @@ public class FindReplaceOverlay {
 
         // Close button
         new AccessibleToolItemBuilder(this.closeTools).withStyleBits(SWT.PUSH)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_CLOSE))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_closeButton_toolTip) //
-                .withOperation(this::close)
-                .withShortcuts(KeyboardShortcuts.CLOSE).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_CLOSE))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_closeButton_toolTip) //
+            .withOperation(this::close)
+            .withShortcuts(KeyboardShortcuts.CLOSE).build();
 
         this.closeTools.setBackground(this.searchContainer.getBackground());
     }
 
     private void createAreaSearchButton() {
         this.searchInSelectionButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.CHECK)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_SEARCH_IN_AREA))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_searchInSelectionButton_toolTip)
-                .withOperation(() -> {
-                    this.activateInFindReplacerIf(SearchOptions.GLOBAL, !this.searchInSelectionButton.getSelection());
-                    this.updateIncrementalSearch();
-                })
-                .withShortcuts(KeyboardShortcuts.OPTION_SEARCH_IN_SELECTION).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_MATCH_IN_SELECTION))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_searchInSelectionButton_toolTip)
+            .withOperation(() -> {
+                this.activateInFindReplacerIf(SearchOptions.GLOBAL, !this.searchInSelectionButton.getSelection());
+                this.updateIncrementalSearch();
+            })
+            .withShortcuts(KeyboardShortcuts.OPTION_SEARCH_IN_SELECTION).build();
         this.searchInSelectionButton.setSelection(this.findReplaceLogic.isActive(SearchOptions.WHOLE_WORD));
     }
 
     private void createRegexSearchButton() {
         this.regexSearchButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.CHECK)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_FIND_REGEX))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_regexSearchButton_toolTip)
-                .withOperation(() -> {
-                    this.activateInFindReplacerIf(SearchOptions.REGEX, this.regexSearchButton.getSelection());
-                    this.wholeWordSearchButton.setEnabled(this.findReplaceLogic.isAvailable(SearchOptions.WHOLE_WORD));
-                    this.updateIncrementalSearch();
-                    this.updateContentAssistAvailability();
-                    this.decorate();
-                }).withShortcuts(KeyboardShortcuts.OPTION_REGEX).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_MATCH_REGEX))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_regexSearchButton_toolTip)
+            .withOperation(() -> {
+                this.activateInFindReplacerIf(SearchOptions.REGEX, this.regexSearchButton.getSelection());
+                this.wholeWordSearchButton.setEnabled(this.findReplaceLogic.isAvailable(SearchOptions.WHOLE_WORD));
+                this.updateIncrementalSearch();
+                this.updateContentAssistAvailability();
+                this.decorate();
+            }).withShortcuts(KeyboardShortcuts.OPTION_REGEX).build();
         this.regexSearchButton.setSelection(this.findReplaceLogic.isActive(SearchOptions.REGEX));
     }
 
     private void createCaseSensitiveButton() {
         this.caseSensitiveSearchButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.CHECK)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_CASE_SENSITIVE))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_caseSensitiveButton_toolTip)
-                .withOperation(() -> {
-                    this.activateInFindReplacerIf(SearchOptions.CASE_SENSITIVE, this.caseSensitiveSearchButton.getSelection());
-                    this.updateIncrementalSearch();
-                }).withShortcuts(KeyboardShortcuts.OPTION_CASE_SENSITIVE).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_MATCH_CASE))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_caseSensitiveButton_toolTip)
+            .withOperation(() -> {
+                this.activateInFindReplacerIf(SearchOptions.CASE_SENSITIVE, this.caseSensitiveSearchButton.getSelection());
+                this.updateIncrementalSearch();
+            }).withShortcuts(KeyboardShortcuts.OPTION_CASE_SENSITIVE).build();
         this.caseSensitiveSearchButton.setSelection(this.findReplaceLogic.isActive(SearchOptions.CASE_SENSITIVE));
     }
 
     private void createWholeWordsButton() {
         this.wholeWordSearchButton = new AccessibleToolItemBuilder(this.searchTools).withStyleBits(SWT.CHECK)
-                .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_WHOLE_WORD))
-                .withToolTipText(FindReplaceMessages.FindReplaceOverlay_wholeWordsButton_toolTip)
-                .withOperation(() -> {
-                    this.activateInFindReplacerIf(SearchOptions.WHOLE_WORD, this.wholeWordSearchButton.getSelection());
-                    this.updateIncrementalSearch();
-                }).withShortcuts(KeyboardShortcuts.OPTION_WHOLE_WORD).build();
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_MATCH_WORD))
+            .withToolTipText(FindReplaceMessages.FindReplaceOverlay_wholeWordsButton_toolTip)
+            .withOperation(() -> {
+                this.activateInFindReplacerIf(SearchOptions.WHOLE_WORD, this.wholeWordSearchButton.getSelection());
+                this.updateIncrementalSearch();
+            }).withShortcuts(KeyboardShortcuts.OPTION_WHOLE_WORD).build();
         this.wholeWordSearchButton.setSelection(this.findReplaceLogic.isActive(SearchOptions.WHOLE_WORD));
     }
 
@@ -887,7 +848,7 @@ public class FindReplaceOverlay {
         this.replaceTools.createToolItem(SWT.SEPARATOR);
         GridDataFactory.fillDefaults().grab(false, true).align(GridData.CENTER, GridData.END).applyTo(this.replaceTools);
         this.replaceButton = new AccessibleToolItemBuilder(this.replaceTools).withStyleBits(SWT.PUSH)
-            .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_REPLACE))
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_REPLACE))
             .withToolTipText(FindReplaceMessages.FindReplaceOverlay_replaceButton_toolTip)
             .withOperation(() -> {
                 if (this.getFindString().isEmpty()) {
@@ -898,7 +859,7 @@ public class FindReplaceOverlay {
             }).withShortcuts(KeyboardShortcuts.SEARCH_FORWARD).build();
 
         this.replaceAllButton = new AccessibleToolItemBuilder(this.replaceTools).withStyleBits(SWT.PUSH)
-            .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_REPLACE_ALL))
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_REPLACE_ALL))
             .withToolTipText(FindReplaceMessages.FindReplaceOverlay_replaceAllButton_toolTip)
             .withOperation(() -> {
                 if (this.getFindString().isEmpty()) {
@@ -939,7 +900,7 @@ public class FindReplaceOverlay {
     }
 
     private void createSearchBar() {
-        this.searchBarContainer = new Composite(this.searchContainer, SWT.NONE);
+        this.searchBarContainer = new FixedColorComposite(this.searchContainer, SWT.NONE, this.widgetBackgroundColor);
         GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL)
             .applyTo(this.searchBarContainer);
         GridLayoutFactory.fillDefaults().numColumns(1)
@@ -951,11 +912,7 @@ public class FindReplaceOverlay {
         GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).applyTo(this.searchBar);
         this.searchBar.forceFocus();
         this.searchBar.selectAll();
-        this.searchBar.addModifyListener(e -> {
-            this.wholeWordSearchButton.setEnabled(this.findReplaceLogic.isAvailable(SearchOptions.WHOLE_WORD));
-            this.updateIncrementalSearch();
-            this.decorate();
-        });
+        this.searchBar.addModifyListener(this::onSearchFieldModified);
         this.searchBar.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(@NotNull FocusEvent e) {
@@ -971,9 +928,16 @@ public class FindReplaceOverlay {
         this.searchBar.setMessage(FindReplaceMessages.FindReplaceOverlay_searchBar_message);
         this.contentAssistSearchField = createContentAssistField(this.searchBar, true);
         this.searchBar.setTabList(null);
+        this.searchBar.setWidgetBackground(this.widgetBackgroundColor);
     }
 
-    private void updateIncrementalSearch() {
+    protected void onSearchFieldModified(@NotNull ModifyEvent event) {
+        this.wholeWordSearchButton.setEnabled(this.findReplaceLogic.isAvailable(SearchOptions.WHOLE_WORD));
+        this.updateIncrementalSearch();
+        this.decorate();
+    }
+
+    protected void updateIncrementalSearch() {
         String text = this.searchBar.getText();
         if (CommonUtils.isNotEmpty(text)) { // don't try to find <empty string>; it works but selection behaves really weird, so don't
             this.findReplaceLogic.setFindString(text);
@@ -987,7 +951,7 @@ public class FindReplaceOverlay {
     }
 
     private void createReplaceBar() {
-        this.replaceBarContainer = new Composite(this.replaceContainer, SWT.NONE);
+        this.replaceBarContainer = new FixedColorComposite(this.replaceContainer, SWT.NONE, this.widgetBackgroundColor);
         GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.END)
             .applyTo(this.replaceBarContainer);
         GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false)
@@ -1004,6 +968,7 @@ public class FindReplaceOverlay {
         this.replaceBar.addFocusListener(this.targetActionActivationHandling);
         this.replaceBar.addFocusListener(FocusListener.focusLostAdapter(e -> this.resetErrorColoring()));
         this.contentAssistReplaceField = createContentAssistField(this.replaceBar, false);
+        this.replaceBar.setWidgetBackground(this.widgetBackgroundColor);
     }
 
     private void createSearchContainer() {
@@ -1032,10 +997,10 @@ public class FindReplaceOverlay {
     private void setReplaceVisible(boolean visible) {
         if (this.findReplaceLogic.getTarget().isEditable() && visible) {
             this.createReplaceDialog();
-            this.replaceToggle.setImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_CLOSE_REPLACE_AREA));
+            this.replaceToggle.setImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_CLOSE_REPLACE));
         } else {
             this.hideReplace();
-            this.replaceToggle.setImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_OPEN_REPLACE_AREA));
+            this.replaceToggle.setImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_OPEN_REPLACE));
         }
         this.updateContentAssistAvailability();
     }
@@ -1158,7 +1123,7 @@ public class FindReplaceOverlay {
         }
     }
 
-    private void updatePlacementAndVisibility(boolean keepLocation) {
+    protected void updatePlacementAndVisibility(boolean keepLocation) {
         if (!okayToUse(targetControl)) {
             this.close();
             return;
@@ -1368,17 +1333,11 @@ public class FindReplaceOverlay {
         this.setContentAssistsEnablement(true); // findReplaceLogic.isAvailableAndActive(SearchOptions.REGEX));
     }
 
-    private void decorate() {
+    protected void decorate() {
         if (this.regexSearchButton.getSelection()) {
             SearchDecoration.validateRegex(getFindString(), this.searchBarDecoration);
         } else {
             this.searchBarDecoration.hide();
-        }
-    }
-
-    public void setExtrasVisibility(boolean value) {
-        if (this.extraContentVisibilitySetter != null) {
-            this.extraContentVisibilitySetter.accept(value);
         }
     }
 }

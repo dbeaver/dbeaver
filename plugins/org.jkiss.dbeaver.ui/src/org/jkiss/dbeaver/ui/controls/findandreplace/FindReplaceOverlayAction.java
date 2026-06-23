@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.findandreplace;
 
 import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
@@ -57,7 +58,13 @@ class FindReplaceOverlayAction {
         if (this.shortcuts.isEmpty()) {
             return originalTooltipText;
         }
-        return originalTooltipText + " (" + this.shortcuts.getFirst().format() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
+        String shortcutText = "(" + this.shortcuts.getFirst().format() + ")";
+        String boundText = NLS.bind(originalTooltipText, shortcutText);
+        if (boundText.equals(originalTooltipText)) {
+            return originalTooltipText + " " + shortcutText; //$NON-NLS-1$ //$NON-NLS-2$
+        } else {
+            return boundText;
+        }
     }
 
 }

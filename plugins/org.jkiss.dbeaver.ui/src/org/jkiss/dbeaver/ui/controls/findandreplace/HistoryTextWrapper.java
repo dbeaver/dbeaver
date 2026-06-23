@@ -28,6 +28,8 @@ import org.eclipse.ui.internal.findandreplace.FindReplaceMessages;
 import org.eclipse.ui.internal.findandreplace.HistoryStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.function.Consumer;
 
@@ -62,7 +64,7 @@ public class HistoryTextWrapper extends Composite {
         this.tools = new AccessibleToolBar(this);
         this.dropDown = new AccessibleToolItemBuilder(this.tools).withStyleBits(SWT.PUSH)
             .withToolTipText(FindReplaceMessages.FindReplaceOverlay_searchHistory_toolTip)
-            .withImage(FindReplaceOverlayImages.get(FindReplaceOverlayImages.KEY_OPEN_HISTORY))
+            .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_OPEN_HISTORY))
             .withOperation(this::createHistoryMenuDropdown)
             .build();
 
@@ -126,10 +128,14 @@ public class HistoryTextWrapper extends Composite {
 
     @Override
     public void setBackground(@Nullable Color color) {
+        this.textBar.setBackground(color);
+    }
+
+    public void setWidgetBackground(@Nullable Color color) {
         super.setBackground(color);
 
-        this.textBar.setBackground(color);
         this.tools.setBackground(color);
+        this.dropDown.setBackground(color);
     }
 
     @Override

@@ -109,7 +109,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private Spreadsheet spreadsheet;
 
     private SpreadsheetFindReplaceTarget findReplaceTarget;
-    private FindReplaceOverlay findReplaceOverlay;
+    private ResultsetFindReplaceOverlay findReplaceOverlay;
 
     @Nullable
     private DBDAttributeBinding curAttribute;
@@ -231,17 +231,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
 
         this.findReplaceTarget = new SpreadsheetFindReplaceTarget(this.spreadsheet);
-        this.findReplaceOverlay = new FindReplaceOverlay(
+        this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
             this.controller.getSite().getPart(),
             this.spreadsheet,
             this.findReplaceTarget,
-            this,
-            f -> {
-                this.controller.getModel().setQuickFilter(f);
-                this.findReplaceOverlay.setExtrasVisibility(f != null);
-                this.refreshData(false, false, false);
-            },
-            c -> UIUtils.createInfoLabel(c, "Data autoloading is temporarily disabled.").setToolTipText("Close quick search or reset 'Search all' filter with empty string to enable it back.")
+            this
         ) {
             @NotNull
             @Override
@@ -260,7 +254,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
         };
         this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
-        this.findReplaceOverlay.setExtrasVisibility(this.controller.getModel().getQuickFilter() != null);
     }
 
     @NotNull
@@ -2425,8 +2418,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 !controller.isRefreshInProgress() &&
                 !(controller.getContainer().getDataContainer() != null && controller.getContainer().getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH)) &&
                 !(getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS) < getSpreadsheet().getMaxVisibleRows()) &&
-                (controller.isRecordMode() || spreadsheet.isRowVisible(rowNum)) &&
-                controller.getModel().getQuickFilter() == null
+                (controller.isRecordMode() || spreadsheet.isRowVisible(rowNum))
             ) {
                 controller.readNextSegment();
             }

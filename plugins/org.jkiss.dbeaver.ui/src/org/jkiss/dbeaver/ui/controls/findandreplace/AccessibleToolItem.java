@@ -16,16 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.controls.findandreplace;
 
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
@@ -34,7 +35,9 @@ import java.util.List;
 /**
  * Derived from <a href="https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/bundles/org.eclipse.ui.workbench.texteditor/src/org/eclipse/ui/internal/findandreplace/overlay/AccessibleToolItem.java">eclipse.platform.ui</a>
  */
-class AccessibleToolItem {
+public class AccessibleToolItem {
+    @NotNull
+    private final ToolBar toolbar;
     @NotNull
     private final ToolItem toolItem;
 
@@ -42,10 +45,10 @@ class AccessibleToolItem {
     private FindReplaceOverlayAction action = new FindReplaceOverlayAction(() -> { });
 
     AccessibleToolItem(@NotNull Composite parent, int styleBits) {
-        ToolBar toolbar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
-        GridDataFactory.fillDefaults().grab(true, true).align(SWT.CENTER, SWT.CENTER).applyTo(toolbar);
-        this.toolItem = new ToolItem(toolbar, styleBits);
-        this.addToolItemTraverseListener(toolbar);
+        this.toolbar = new ToolBar(parent, SWT.FLAT | SWT.HORIZONTAL);
+        GridDataFactory.fillDefaults().grab(true, true).align(SWT.CENTER, SWT.CENTER).applyTo(this.toolbar);
+        this.toolItem = new ToolItem(this.toolbar, styleBits);
+        this.addToolItemTraverseListener(this.toolbar);
     }
 
     private void addToolItemTraverseListener(@NotNull ToolBar parent) {
@@ -87,6 +90,20 @@ class AccessibleToolItem {
         this.action.addShortcuts(shortcuts);
         this.setToolTipText(this.toolItem.getToolTipText());
         this.toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> operation.run()));
+    }
+
+    void setContextMenuManager(@NotNull MenuManager contextMenuManager) {
+        this.toolbar.addMouseListener(MouseListener.mouseDownAdapter(e -> {
+            if (e.button == 3) {
+                Rectangle bounds = this.toolItem.getBounds();
+                Point location = this.toolbar.toDisplay(bounds.x, bounds.y);
+                location.y += bounds.height;
+
+                Menu menu = contextMenuManager.createContextMenu(this.toolbar);
+                menu.setLocation(location);
+                menu.setVisible(true);
+            }
+        }));
     }
 
     void registerActionShortcutsAtControl(@NotNull Control control) {

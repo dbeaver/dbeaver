@@ -132,15 +132,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         activateTextKeyBindings(controller, text);
         trackPresentationControl();
 
-        this.findReplaceOverlay = new FindReplaceOverlay(
+        this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
             this.controller.getSite().getPart(),
             this.text,
             this.findReplaceTarget,
-            this,
-            f -> {
-                this.controller.getModel().setQuickFilter(f);
-                this.refreshData(false, false, false);
-            }
+            this
         ) {
             @Override
             protected boolean hasSelectionBoundsConflict(@Nullable ISelection selection, @NotNull Rectangle bounds) {

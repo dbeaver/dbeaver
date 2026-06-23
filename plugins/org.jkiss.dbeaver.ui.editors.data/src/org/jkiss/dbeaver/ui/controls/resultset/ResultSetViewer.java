@@ -4322,6 +4322,9 @@ public class ResultSetViewer extends Viewer
 
 
     public void readNextSegment() {
+        if (this.model.getQuickFilter() != null) {
+            return;
+        }
         if (!verifyQuerySafety()) {
             return;
         }

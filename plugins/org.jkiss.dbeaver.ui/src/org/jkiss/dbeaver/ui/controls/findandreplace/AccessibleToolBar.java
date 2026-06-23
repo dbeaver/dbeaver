@@ -38,7 +38,7 @@ import java.util.List;
  * <p>
  * Derived from <a href="https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/bundles/org.eclipse.ui.workbench.texteditor/src/org/eclipse/ui/internal/findandreplace/overlay/AccessibleToolBar.java">eclipse.platform.ui</a>
  */
-class AccessibleToolBar extends Composite {
+public class AccessibleToolBar extends Composite {
 
     @NotNull
     private final List<AccessibleToolItem> accessibleToolItems = new ArrayList<>();

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.findandreplace;
 
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -32,7 +33,7 @@ import java.util.Objects;
  * <p>
  * Derived from <a href="https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/bundles/org.eclipse.ui.workbench.texteditor/src/org/eclipse/ui/internal/findandreplace/overlay/AccessibleToolItemBuilder.java">eclipse.platform.ui</a>
  */
-class AccessibleToolItemBuilder {
+public class AccessibleToolItemBuilder {
     @NotNull
     private final AccessibleToolBar accessibleToolBar;
 
@@ -49,6 +50,9 @@ class AccessibleToolItemBuilder {
 
     @Nullable
     private Runnable operation = null;
+
+    @Nullable
+    private MenuManager contextMenuManager = null;
 
     public AccessibleToolItemBuilder(@NotNull AccessibleToolBar accessibleToolBar) {
         this.accessibleToolBar = Objects.requireNonNull(accessibleToolBar);
@@ -85,6 +89,12 @@ class AccessibleToolItemBuilder {
     }
 
     @NotNull
+    public AccessibleToolItemBuilder withContextMenu(@NotNull MenuManager contextMenuManager) {
+        this.contextMenuManager = contextMenuManager;
+        return this;
+    }
+
+    @NotNull
     public ToolItem build() {
         AccessibleToolItem accessibleToolItem = this.accessibleToolBar.createToolItem(this.styleBits);
         if (this.image != null) {
@@ -95,6 +105,9 @@ class AccessibleToolItemBuilder {
         }
         if (this.operation != null) {
             accessibleToolItem.setOperation(this.operation, this.shortcuts);
+        }
+        if (this.contextMenuManager != null) {
+            accessibleToolItem.setContextMenuManager(this.contextMenuManager);
         }
 
         return accessibleToolItem.getToolItem();
