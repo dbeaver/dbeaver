@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.app.config.registry;
 
 /**
- * An action that can be performed in Easy Config as the last step.
+ * An action that can be performed in Product Config as the last step.
  */
 public sealed interface ProductConfigAction {
     /**

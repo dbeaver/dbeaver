@@ -33,7 +33,7 @@ public final class ProductConfigWizard extends Wizard {
     private boolean restartRequired = false;
 
     public ProductConfigWizard() {
-        setWindowTitle("Easy Config");
+        setWindowTitle("Product Configuration");
     }
 
     @Override
