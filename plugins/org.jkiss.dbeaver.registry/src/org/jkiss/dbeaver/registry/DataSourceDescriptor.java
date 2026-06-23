@@ -1076,7 +1076,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    protected DBPDataSource openConnectionDetached(@NotNull DBRProgressMonitor monitor, boolean detachedProcess) {
+    protected DBPDataSource openConnectionDetached(@NotNull DBRProgressMonitor monitor, boolean detachedProcess) throws DBException {
         return null;
     }
 
@@ -1191,38 +1191,10 @@ public class DataSourceDescriptor
                 }
 
                 if (tunnelConfiguration != null) {
-                    // SSH tunneling can be disabled in multi-user apps
-                    DBPWorkspace workspace = getProject().getWorkspace();
-                    if (!workspace.supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)) {
-                        throw new DBException(
-                            "SSH tunneling is required for this connection, but it is currently disabled. Please contact your administrator.");
-                    }
-
                     monitor.subTask("Initialize tunnel");
-                    tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
-                    try {
-                        if (!tunnelConfiguration.isSavePassword()) {
-                            DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
-                            if (rc != DBWTunnel.AuthCredentials.NONE) {
-                                if (!askForPassword(this, tunnelConfiguration, rc)) {
-                                    tunnelHandler = null;
-                                    return false;
-                                }
-                            }
-                        }
-                        // We need to resolve jump server differently due to it being a part of ssh configuration
-                        DBExecUtils.startContextInitiation(this);
-                        try {
-                            DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
-                            if (dataSourceProvider instanceof DBWHandlerConfigurator) {
-                                ((DBWHandlerConfigurator) dataSourceProvider).activateHandler(tunnelHandler, resolvedConnectionInfo, tunnelConfiguration);
-                            }
-                            resolvedConnectionInfo = tunnelHandler.initializeHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
-                        } finally {
-                            DBExecUtils.finishContextInitiation(this);
-                        }
-                    } catch (Exception e) {
-                        throw new DBCException("Error initializing tunnel", e);
+                    resolvedConnectionInfo = initTunnelHandler(monitor, tunnelConfiguration, resolvedConnectionInfo);
+                    if (resolvedConnectionInfo == null) {
+                        return false;
                     }
                     monitor.worked(1);
                 }
@@ -1260,15 +1232,7 @@ public class DataSourceDescriptor
                 }
             }
 
-            if (tunnelHandler != null) {
-                try {
-                    tunnelHandler.closeTunnel(monitor);
-                } catch (Exception e1) {
-                    log.error("Error closing tunnel", e1);
-                } finally {
-                    tunnelHandler = null;
-                }
-            }
+            closeTunnelHandler(monitor);
             if (isSharedCredentials()) {
                 this.resetAllSecrets();
             }
@@ -1282,6 +1246,58 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    @Nullable
+    protected DBPConnectionConfiguration initTunnelHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration tunnelConfiguration,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException {
+        // SSH tunneling can be disabled in multi-user apps
+        DBPWorkspace workspace = getProject().getWorkspace();
+        if (!workspace.supportsRealmFeature(DBAPermissionRealm.FEATURE_SSH_TUNNELING)) {
+            throw new DBException(
+                "SSH tunneling is required for this connection, but it is currently disabled. Please contact your administrator.");
+        }
+
+        tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
+        try {
+            if (!tunnelConfiguration.isSavePassword()) {
+                DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
+                if (rc != DBWTunnel.AuthCredentials.NONE) {
+                    if (!askForPassword(this, tunnelConfiguration, rc)) {
+                        tunnelHandler = null;
+                        return null;
+                    }
+                }
+            }
+            // We need to resolve jump server differently due to it being a part of ssh configuration
+            DBExecUtils.startContextInitiation(this);
+            try {
+                DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
+                if (dataSourceProvider instanceof DBWHandlerConfigurator) {
+                    ((DBWHandlerConfigurator) dataSourceProvider).activateHandler(tunnelHandler, connectionInfo, tunnelConfiguration);
+                }
+                return tunnelHandler.initializeHandler(monitor, tunnelConfiguration, connectionInfo);
+            } finally {
+                DBExecUtils.finishContextInitiation(this);
+            }
+        } catch (Exception e) {
+            throw new DBCException("Error initializing tunnel", e);
+        }
+    }
+
+    protected void closeTunnelHandler(@NotNull DBRProgressMonitor monitor) {
+        if (tunnelHandler != null) {
+            try {
+                tunnelHandler.closeTunnel(monitor);
+            } catch (Throwable e) {
+                log.error("Error closing tunnel", e);
+            } finally {
+                tunnelHandler = null;
+            }
         }
     }
 
@@ -1510,11 +1526,7 @@ public class DataSourceDescriptor
             // Close tunnelHandler
             if (tunnelHandler != null) {
                 monitor.subTask("Close tunnel");
-                try {
-                    tunnelHandler.closeTunnel(monitor);
-                } catch (Throwable e) {
-                    log.error("Error closing tunnel", e);
-                }
+                closeTunnelHandler(monitor);
             }
             monitor.worked(1);
 
