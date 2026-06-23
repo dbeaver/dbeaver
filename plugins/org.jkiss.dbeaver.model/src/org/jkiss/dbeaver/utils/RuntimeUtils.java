@@ -53,6 +53,10 @@ import java.util.*;
  * RuntimeUtils
  */
 public final class RuntimeUtils {
+
+    public static final String ENV_WORKSPACE_PATH = "DBEAVER_WORKSPACE";
+    public static final String ENV_DATA_PATH = "DBEAVER_DATA";
+
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
     private static final boolean IS_OS_ARCH_AARCH64;
@@ -580,7 +584,29 @@ public final class RuntimeUtils {
     }
 
     @NotNull
+    public static Path getWorkspacePath(@NotNull String workingDirectory, @NotNull String defaultAppWorkspaceName) {
+        String customWorkspacePath = System.getenv(ENV_WORKSPACE_PATH);
+        if (!CommonUtils.isEmpty(customWorkspacePath)) {
+            // Custom location
+            return Path.of(customWorkspacePath);
+        }
+
+        return Path.of(workingDirectory).resolve(defaultAppWorkspaceName);
+    }
+
+    @NotNull
     public static String getWorkingDirectory(@NotNull String subPath) {
+        String customDataPath = System.getenv(ENV_DATA_PATH);
+        if (!CommonUtils.isEmpty(customDataPath)) {
+            // Custom location
+            return Path.of(customDataPath).resolve(subPath).toAbsolutePath().toString();
+        }
+
+        // Detect default workspace location
+        // Since 6.1.3 it is different for different OSes
+        // Windows: %AppData%/DBeaverData
+        // MacOS: ~/Library/DBeaverData
+        // Linux: $XDG_DATA_HOME/DBeaverData
         String workingDirectory;
         if (isWindows()) {
             String appData = System.getenv("AppData");
