@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
             case CMD_SHOW_COLUMNS: {
                 ResultSetModel model = spreadsheet.getController().getModel();
                 List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
-                List<DBDAttributeConstraint> constraints = model.getDataFilter().getConstraints();
+                DBDAttributeConstraint[] constraints = model.getDataFilter().getConstraints();
                 for (DBDAttributeConstraint ac : constraints) {
                     DBSAttributeBase attribute = ac.getAttribute();
                     if (!ac.isVisible() && attribute instanceof DBDAttributeBinding
