@@ -125,8 +125,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -651,6 +651,29 @@ public class ResultSetViewer extends Viewer
             DBeaverNotifications.showNotification(
                 DBeaverNotifications.NT_GENERIC,
                 "Data filter was saved",
+                filtersPanel.getFilterText(),
+                DBPMessageType.INFORMATION, null);
+        }
+    }
+
+    public boolean hasSavedDataFilter() {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer instanceof DBSEntity && DataFilterRegistry.getInstance().hasDataFilter(dataContainer);
+    }
+
+    public void resetSavedDataFilter() {
+        DBCExecutionContext context = getExecutionContext();
+        DBSDataContainer dataContainer = getDataContainer();
+        if (context == null || dataContainer == null) {
+            log.error("Can't reset saved data filter with null context");
+            return;
+        }
+        DataFilterRegistry.getInstance().removeDataFilter(dataContainer);
+
+        if (filtersPanel != null) {
+            DBeaverNotifications.showNotification(
+                DBeaverNotifications.NT_GENERIC,
+                ResultSetMessages.controls_resultset_filter_saved_filter_reset_message,
                 filtersPanel.getFilterText(),
                 DBPMessageType.INFORMATION, null);
         }
@@ -2540,7 +2563,9 @@ public class ResultSetViewer extends Viewer
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null) {
                 DBPDataSource dataSource = dataContainer.getDataSource();
-                statusMessage += " [" + dataSource.getContainer().getName() + "]";
+                if (dataSource != null) {
+                    statusMessage += " [" + dataSource.getContainer().getName() + "]";
+                }
             }
         }
         if (isTooltip) {
@@ -3019,7 +3044,7 @@ public class ResultSetViewer extends Viewer
     private Point getKeyboardCursorLocation() {
         Control control = getActivePresentation().getControl();
         Point cursorLocation = getActivePresentation().getCursorLocation();
-        if (cursorLocation == null) {
+        if (control == null || cursorLocation == null) {
             return null;
         }
         return control.getDisplay().map(control, null, cursorLocation);
@@ -3672,12 +3697,15 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {
+    private void fillAttributeTransformersMenu(@NotNull IMenuManager manager, @NotNull DBDAttributeBinding attr) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
             return;
         }
         final DBPDataSource dataSource = dataContainer.getDataSource();
+        if (dataSource == null) {
+            return;
+        }
         final DBDRegistry registry = DBWorkbench.getPlatform().getValueHandlerRegistry();
         final DBVTransformSettings transformSettings = DBVUtils.getTransformSettings(attr, false);
         DBDAttributeTransformerDescriptor customTransformer = null;
@@ -3847,6 +3875,7 @@ public class ResultSetViewer extends Viewer
         filtersMenu.add(new Separator());
         if (getDataContainer() instanceof DBSEntity) {
             filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_SAVE_SETTING));
+            filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_RESET_SETTING));
         }
         filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_CLEAR_SETTING));
         filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_EDIT_SETTINGS));
@@ -4174,14 +4203,16 @@ public class ResultSetViewer extends Viewer
         );
 
         if (applied) {
-            getModel().resetOrdering(rowIdentifier.getAttributes());
+            if (rowIdentifier != null) {
+                getModel().resetOrdering(rowIdentifier.getAttributes());
+            }
             getActivePresentation().refreshData(false, false, true);
             updateFiltersText();
         }
     }
 
-    private DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer) {
-
+    @Nullable
+    private DBDDataFilter restoreDataFilter(@NotNull DBSDataContainer dataContainer) {
         // Restore data filter
         final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
         if (savedConfig != null) {
@@ -4201,7 +4232,7 @@ public class ResultSetViewer extends Viewer
         return null;
     }
 
-    public void refreshWithFilter(DBDDataFilter filter) {
+    public void refreshWithFilter(@Nullable DBDDataFilter filter) {
         if (!checkForChanges()) {
             return;
         }

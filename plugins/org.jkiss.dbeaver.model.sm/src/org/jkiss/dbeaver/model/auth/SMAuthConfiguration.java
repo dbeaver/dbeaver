@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import org.jkiss.code.NotNull;
 
 import java.util.Map;
 
-public class AuthInfo {
+/**
+ * Used to pass configuration of auth providers
+ */
+public class SMAuthConfiguration {
     private final String authProvider;
     private transient Map<String, Object> userCredentials;
 
-    public AuthInfo(@NotNull String authProvider, @NotNull Map<String, Object> userCredentials) {
+    public SMAuthConfiguration(@NotNull String authProvider, @NotNull Map<String, Object> userCredentials) {
         this.authProvider = authProvider;
         this.userCredentials = userCredentials;
     }
