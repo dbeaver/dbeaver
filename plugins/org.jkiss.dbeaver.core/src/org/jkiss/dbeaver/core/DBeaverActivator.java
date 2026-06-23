@@ -74,21 +74,20 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
-        if (AWTUtils.isDesktopSupported()) {
-            try {
-                injectProxyPeer();
-            } catch (Throwable e) {
-                getLog().warn(e.getMessage());
-                getPreferenceStore().setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, false);
-            }
-        } else if (getPreferenceStore().getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH)) {
-            // Just log it here
-            getLog().warn("Desktop interface not available");
+        try {
+            injectProxyPeer();
+        } catch (Throwable e) {
+            getLog().warn(e.getMessage());
             getPreferenceStore().setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, false);
         }
     }
 
     private void injectProxyPeer() throws NoSuchFieldException, IllegalAccessException {
+        if (!AWTUtils.isDesktopSupported()) {
+            getLog().warn("Desktop interface not available");
+            getPreferenceStore().setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, false);
+            return;
+        }
         ProxyInjector proxyInjector = new ProxyInjector();
         if (getPreferenceStore().getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH)) {
             // Redirect BROWSE requests to the embedded browser
