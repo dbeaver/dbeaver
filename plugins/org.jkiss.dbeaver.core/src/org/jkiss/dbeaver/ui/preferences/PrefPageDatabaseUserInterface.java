@@ -83,6 +83,7 @@ import org.osgi.service.event.EventHandler;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -297,9 +298,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         IThemeRegistry themeRegistry = WorkbenchPlugin.getDefault().getThemeRegistry();
         Map<String, FontDefinition> fontDefs = Stream.of(themeRegistry.getFonts())
-            .collect(Collectors.toMap(ThemeElementDefinition::getId, f -> f));
+            .collect(Collectors.toMap(ThemeElementDefinition::getId, Function.identity()));
         Map<String, ThemeElementCategory> catDefs = Stream.of(themeRegistry.getCategories())
-            .collect(Collectors.toMap(ThemeElementCategory::getId, f -> f));
+            .collect(Collectors.toMap(ThemeElementCategory::getId, Function.identity()));
 
         Map<String, Composite> groups = new HashMap<>();
         Composite catContainer = null;
@@ -325,13 +326,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (this.getContainer() instanceof IWorkbenchPreferenceContainer wpc && catContainer != null) {
             Composite info = new Composite(catContainer, SWT.NONE);
-            info.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).create());
+            GridDataFactory.fillDefaults().span(3, 1).applyTo(info);
             GridLayoutFactory.fillDefaults().margins(0, 0).spacing(2, 2).numColumns(2).applyTo(info);
 
             UIUtils.createInfoLabel(info, "");
             UIUtils.createPreferenceLink(
                 info,
-                "More color and font settings at <a>''{0}''</a>",
+                CoreMessages.pref_page_ui_general_link_more_color_and_font_settings,
                 EditorUtils.COLORS_AND_FONTS_PAGE_ID,
                 wpc, null
             );
