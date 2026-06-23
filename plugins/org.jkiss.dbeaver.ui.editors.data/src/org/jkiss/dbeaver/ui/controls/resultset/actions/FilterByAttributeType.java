@@ -50,7 +50,7 @@ public enum FilterByAttributeType {
             return cellValue;
         }
     },
-    INPUT(ResultSetMessages.controls_resultset_viewer_action_filter_input, UIIcon.FIND_REPLACE) {
+    INPUT(ResultSetMessages.controls_resultset_viewer_action_filter_input, UIIcon.FILTER_INPUT) {
         @Override
         public Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {

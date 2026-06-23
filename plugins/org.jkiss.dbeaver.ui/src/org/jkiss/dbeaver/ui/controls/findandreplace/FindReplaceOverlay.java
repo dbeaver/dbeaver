@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.findandreplace;
 
-import org.eclipse.core.runtime.ILog;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.bindings.keys.KeyStroke;
 import org.eclipse.jface.dialogs.Dialog;
@@ -72,46 +71,6 @@ import java.util.stream.StreamSupport;
  */
 public class FindReplaceOverlay {
 
-    protected static final class KeyboardShortcuts {
-        public static final List<KeyStroke> SEARCH_FORWARD = List.of(
-            KeyStroke.getInstance(SWT.CR),
-            KeyStroke.getInstance(SWT.KEYPAD_CR)
-        );
-        public static final List<KeyStroke> SEARCH_BACKWARD = List.of(
-            KeyStroke.getInstance(SWT.SHIFT, SWT.CR),
-            KeyStroke.getInstance(SWT.SHIFT, SWT.KEYPAD_CR)
-        );
-        public static final List<KeyStroke> SEARCH_ALL = List.of(
-            KeyStroke.getInstance(SWT.MOD1, SWT.CR),
-            KeyStroke.getInstance(SWT.MOD1, SWT.KEYPAD_CR)
-        );
-        public static final List<KeyStroke> OPTION_CASE_SENSITIVE = List.of(
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'C'),
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'c')
-        );
-        public static final List<KeyStroke> OPTION_WHOLE_WORD = List.of(
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'D'),
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'd')
-        );
-        public static final List<KeyStroke> OPTION_REGEX = List.of(
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'P'),
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'p')
-        );
-        public static final List<KeyStroke> OPTION_SEARCH_IN_SELECTION = List.of(
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'I'),
-            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'i')
-        );
-        public static final List<KeyStroke> CLOSE = List.of(
-            KeyStroke.getInstance(SWT.ESC),
-            KeyStroke.getInstance(SWT.MOD1, 'F'),
-            KeyStroke.getInstance(SWT.MOD1, 'f')
-        );
-        public static final List<KeyStroke> TOGGLE_REPLACE = List.of(
-            KeyStroke.getInstance(SWT.MOD1, 'R'),
-            KeyStroke.getInstance(SWT.MOD1, 'r')
-        );
-    }
-
     public static final String ID_DATA_KEY = "org.eclipse.ui.internal.findreplace.overlay.FindReplaceOverlay.id"; //$NON-NLS-1$
 
     private static final String REPLACE_BAR_OPEN_DIALOG_SETTING = "replaceBarOpen"; //$NON-NLS-1$
@@ -120,16 +79,6 @@ public class FindReplaceOverlay {
     private static final String MINIMAL_WIDTH_TEXT = "THIS TEXT IS SHORT "; //$NON-NLS-1$
     private static final String IDEAL_WIDTH_TEXT = "THIS TEXT HAS A REASONABLE LENGTH FOR SEARCHING"; //$NON-NLS-1$
     private static final int HISTORY_SIZE = 15;
-
-
-    public interface EventListener {
-        default void opened(@NotNull FindReplaceOverlay overlay) {
-        }
-        default void closed(@NotNull FindReplaceOverlay overlay) {
-        }
-        default void disposed(@NotNull FindReplaceOverlay overlay) {
-        }
-    }
 
     @NotNull
     private final List<EventListener> eventListeners = Collections.synchronizedList(new ArrayList<>());
@@ -195,9 +144,7 @@ public class FindReplaceOverlay {
         }
 
         /*
-         * Adapted from
-         * org.eclipse.jdt.internal.ui.javaeditor.JavaEditor#setActionsActivated(
-         * boolean)
+         * Adapted from org.eclipse.jdt.internal.ui.javaeditor.JavaEditor#setActionsActivated(boolean)
          */
         private void setTextEditorActionsActivated(boolean state) {
             if (!(targetPart instanceof AbstractTextEditor) || targetPart.getSite().getWorkbenchWindow().isClosing()) {
@@ -211,13 +158,16 @@ public class FindReplaceOverlay {
                     this.globalActionHandlerDeaction = null;
                 }
             }
-            try {
-                Method method = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", boolean.class); //$NON-NLS-1$
-                method.setAccessible(true);
-                method.invoke(targetPart, state);
-            } catch (IllegalArgumentException | ReflectiveOperationException ex) {
-                ILog.of(FindReplaceOverlay.class).error("cannot (de-)activate actions for text editor", ex); //$NON-NLS-1$
-            }
+
+            // looks like we are already doing this for all our text editors, where we are able to introduce this find&replace overlay
+            // see org.jkiss.dbeaver.ui.editors.TextEditorUtils.enableHostEditorKeyBindingsSupport(..)
+            // try {
+            //     Method method = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", boolean.class); //$NON-NLS-1$
+            //     method.setAccessible(true);
+            //     method.invoke(targetPart, state);
+            // } catch (IllegalArgumentException | ReflectiveOperationException ex) {
+            // ILog.of(FindReplaceOverlay.class).error("cannot (de-)activate actions for text editor", ex); //$NON-NLS-1$
+            // }
         }
 
         static final class DeactivateGlobalActionHandlers {
@@ -254,106 +204,6 @@ public class FindReplaceOverlay {
     };
 
     private final CustomFocusOrder customFocusOrder = new CustomFocusOrder();
-
-    private class CustomFocusOrder {
-        private final Listener searchBarToReplaceBar = e -> {
-            if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
-                e.doit = false;
-                replaceBar.forceFocus();
-            }
-        };
-
-        private final Listener replaceBarToSearchBarAndTools = e -> {
-            switch (e.detail) {
-                case SWT.TRAVERSE_TAB_NEXT:
-                    e.doit = false;
-                    searchBar.getDropDownTool().forceFirstControlFocus();
-                    break;
-                case SWT.TRAVERSE_TAB_PREVIOUS:
-                    e.doit = false;
-                    searchBar.getTextBar().forceFocus();
-                    break;
-                default:
-                // Proceed as normal
-            }
-        };
-
-        private final Listener searchToolsToReplaceBar = e -> {
-            switch (e.detail) {
-                case SWT.TRAVERSE_TAB_PREVIOUS:
-                    e.doit = false;
-                    replaceBar.forceFocus();
-                    break;
-                default:
-                // Proceed as normal
-            }
-        };
-
-        private final Listener closeToolsToReplaceTools = e -> {
-            switch (e.detail) {
-                case SWT.TRAVERSE_TAB_NEXT:
-                    e.doit = false;
-                    replaceBar.getDropDownTool().forceFirstControlFocus();
-                    break;
-                default:
-                // Proceed as normal
-            }
-        };
-
-        private final Listener replaceToolsToCloseTools = e -> {
-            switch (e.detail) {
-                case SWT.TRAVERSE_TAB_PREVIOUS:
-                    e.doit = false;
-                    closeTools.forceFirstControlFocus();
-                    break;
-                default:
-                // Proceed as normal
-            }
-        };
-
-        void apply() {
-            searchBar.getTextBar().addListener(SWT.Traverse, searchBarToReplaceBar);
-            replaceBar.getTextBar().addListener(SWT.Traverse, replaceBarToSearchBarAndTools);
-            searchBar.getDropDownTool().getFirstControl().addListener(SWT.Traverse, searchToolsToReplaceBar);
-            closeTools.getFirstControl().addListener(SWT.Traverse, closeToolsToReplaceTools);
-            replaceBar.getDropDownTool().getFirstControl().addListener(SWT.Traverse, replaceToolsToCloseTools);
-        }
-
-        void dispose() {
-            searchBar.getTextBar().removeListener(SWT.Traverse, searchBarToReplaceBar);
-            replaceBar.getTextBar().removeListener(SWT.Traverse, replaceBarToSearchBarAndTools);
-            searchBar.getDropDownTool().getFirstControl().removeListener(SWT.Traverse, searchToolsToReplaceBar);
-            closeTools.getFirstControl().removeListener(SWT.Traverse, closeToolsToReplaceTools);
-            replaceBar.getDropDownTool().getFirstControl().removeListener(SWT.Traverse, replaceToolsToCloseTools);
-        }
-    }
-
-    public enum PreferredLocation {
-        TOP_RIGHT {
-            @NotNull
-            @Override
-            public Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height) {
-                return new Rectangle(right - width, top, width, height);
-            }
-        },
-        BOTTOM_RIGHT {
-            @NotNull
-            @Override
-            public Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height) {
-                return new Rectangle(right - width, bottom - height, width, height);
-            }
-        },
-        BOTTOM_LEFT {
-            @NotNull
-            @Override
-            public Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height) {
-                return new Rectangle(left, bottom - height, width, height);
-            }
-        };
-
-        @NotNull
-        public abstract Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height);
-    }
 
     @NotNull
     private static final PreferredLocation[] locationsApplicationOrder = new PreferredLocation[] {
@@ -1339,5 +1189,171 @@ public class FindReplaceOverlay {
         } else {
             this.searchBarDecoration.hide();
         }
+    }
+
+
+    private class CustomFocusOrder {
+        private final Listener searchBarToReplaceBar = e -> {
+            if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                e.doit = false;
+                replaceBar.forceFocus();
+            }
+        };
+
+        private final Listener replaceBarToSearchBarAndTools = e -> {
+            switch (e.detail) {
+                case SWT.TRAVERSE_TAB_NEXT:
+                    e.doit = false;
+                    searchBar.getDropDownTool().forceFirstControlFocus();
+                    break;
+                case SWT.TRAVERSE_TAB_PREVIOUS:
+                    e.doit = false;
+                    searchBar.getTextBar().forceFocus();
+                    break;
+                default:
+                    // Proceed as normal
+            }
+        };
+
+        private final Listener searchToolsToReplaceBar = e -> {
+            switch (e.detail) {
+                case SWT.TRAVERSE_TAB_PREVIOUS:
+                    e.doit = false;
+                    replaceBar.forceFocus();
+                    break;
+                default:
+                    // Proceed as normal
+            }
+        };
+
+        private final Listener closeToolsToReplaceTools = e -> {
+            switch (e.detail) {
+                case SWT.TRAVERSE_TAB_NEXT:
+                    e.doit = false;
+                    replaceBar.getDropDownTool().forceFirstControlFocus();
+                    break;
+                default:
+                    // Proceed as normal
+            }
+        };
+
+        private final Listener replaceToolsToCloseTools = e -> {
+            switch (e.detail) {
+                case SWT.TRAVERSE_TAB_PREVIOUS:
+                    e.doit = false;
+                    closeTools.forceFirstControlFocus();
+                    break;
+                default:
+                    // Proceed as normal
+            }
+        };
+
+        void apply() {
+            searchBar.getTextBar().addListener(SWT.Traverse, searchBarToReplaceBar);
+            replaceBar.getTextBar().addListener(SWT.Traverse, replaceBarToSearchBarAndTools);
+            searchBar.getDropDownTool().getFirstControl().addListener(SWT.Traverse, searchToolsToReplaceBar);
+            closeTools.getFirstControl().addListener(SWT.Traverse, closeToolsToReplaceTools);
+            replaceBar.getDropDownTool().getFirstControl().addListener(SWT.Traverse, replaceToolsToCloseTools);
+        }
+
+        void dispose() {
+            searchBar.getTextBar().removeListener(SWT.Traverse, searchBarToReplaceBar);
+            replaceBar.getTextBar().removeListener(SWT.Traverse, replaceBarToSearchBarAndTools);
+            searchBar.getDropDownTool().getFirstControl().removeListener(SWT.Traverse, searchToolsToReplaceBar);
+            closeTools.getFirstControl().removeListener(SWT.Traverse, closeToolsToReplaceTools);
+            replaceBar.getDropDownTool().getFirstControl().removeListener(SWT.Traverse, replaceToolsToCloseTools);
+        }
+    }
+
+    public enum PreferredLocation {
+        TOP_RIGHT {
+            @NotNull
+            @Override
+            public Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height) {
+                return new Rectangle(right - width, top, width, height);
+            }
+        },
+        BOTTOM_RIGHT {
+            @NotNull
+            @Override
+            public Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height) {
+                return new Rectangle(right - width, bottom - height, width, height);
+            }
+        },
+        BOTTOM_LEFT {
+            @NotNull
+            @Override
+            public Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height) {
+                return new Rectangle(left, bottom - height, width, height);
+            }
+        };
+
+        @NotNull
+        public abstract Rectangle prepareBounds(int left, int top, int right, int bottom, int width, int height);
+    }
+
+    /**
+     * Find&Replace overlay lifecycle events listener
+     */
+    public interface EventListener {
+
+        /**
+         * Triggered on overlay open
+         */
+        default void opened(@NotNull FindReplaceOverlay overlay) {
+        }
+
+        /**
+         * Triggered on overlay close
+         */
+        default void closed(@NotNull FindReplaceOverlay overlay) {
+        }
+
+        /**
+         * Triggered on overlay dispose
+         */
+        default void disposed(@NotNull FindReplaceOverlay overlay) {
+        }
+    }
+
+
+    protected static final class KeyboardShortcuts {
+        public static final List<KeyStroke> SEARCH_FORWARD = List.of(
+            KeyStroke.getInstance(SWT.CR),
+            KeyStroke.getInstance(SWT.KEYPAD_CR)
+        );
+        public static final List<KeyStroke> SEARCH_BACKWARD = List.of(
+            KeyStroke.getInstance(SWT.SHIFT, SWT.CR),
+            KeyStroke.getInstance(SWT.SHIFT, SWT.KEYPAD_CR)
+        );
+        public static final List<KeyStroke> SEARCH_ALL = List.of(
+            KeyStroke.getInstance(SWT.MOD1, SWT.CR),
+            KeyStroke.getInstance(SWT.MOD1, SWT.KEYPAD_CR)
+        );
+        public static final List<KeyStroke> OPTION_CASE_SENSITIVE = List.of(
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'C'),
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'c')
+        );
+        public static final List<KeyStroke> OPTION_WHOLE_WORD = List.of(
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'D'),
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'd')
+        );
+        public static final List<KeyStroke> OPTION_REGEX = List.of(
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'P'),
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'p')
+        );
+        public static final List<KeyStroke> OPTION_SEARCH_IN_SELECTION = List.of(
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'I'),
+            KeyStroke.getInstance(SWT.MOD1 | SWT.SHIFT, 'i')
+        );
+        public static final List<KeyStroke> CLOSE = List.of(
+            KeyStroke.getInstance(SWT.ESC),
+            KeyStroke.getInstance(SWT.MOD1, 'F'),
+            KeyStroke.getInstance(SWT.MOD1, 'f')
+        );
+        public static final List<KeyStroke> TOGGLE_REPLACE = List.of(
+            KeyStroke.getInstance(SWT.MOD1, 'R'),
+            KeyStroke.getInstance(SWT.MOD1, 'r')
+        );
     }
 }

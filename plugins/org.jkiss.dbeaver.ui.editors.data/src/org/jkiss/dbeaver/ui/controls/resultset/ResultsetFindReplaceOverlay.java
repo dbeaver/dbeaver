@@ -180,10 +180,6 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
         this.decorate();
     }
 
-    private void persistInteractiveFilterHistoryJob() {
-        this.searchBar.storeHistory();
-    }
-
     @Override
     protected void performSelectAll() {
         if (this.isInteractiveFilterEnabled) {
