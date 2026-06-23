@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.devtools.handlers;
+package org.jkiss.dbeaver.ui.app.standalone.config;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
+import org.jkiss.dbeaver.ui.app.config.registry.ProductConfigAction;
+import org.jkiss.dbeaver.ui.app.standalone.tipoftheday.ShowTipOfTheDayDialog;
 
-public class ShowEasyConfigHandler extends AbstractHandler {
-    @Nullable
+public class ProductConfigShowTipsAction implements ProductConfigAction.OfCheckbox {
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
-        return null;
+    public boolean loadState() {
+        return ShowTipOfTheDayDialog.isShowOnStartup();
+    }
+
+    @Override
+    public void applyState(boolean value) {
+        ShowTipOfTheDayDialog.setShowOnStartup(value);
+    }
+
+    @Override
+    public boolean isApplicable() {
+        return true;
     }
 }

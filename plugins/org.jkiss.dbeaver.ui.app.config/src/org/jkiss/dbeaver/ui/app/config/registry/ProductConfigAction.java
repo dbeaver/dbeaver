@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.devtools.handlers;
+package org.jkiss.dbeaver.ui.app.config.registry;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
+/**
+ * An action that can be performed in Easy Config as the last step.
+ */
+public sealed interface ProductConfigAction {
+    /**
+     * Whether this action is applicable in current context. If not, it won't be shown in the UI.
+     */
+    boolean isApplicable();
 
-public class ShowEasyConfigHandler extends AbstractHandler {
-    @Nullable
-    @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
-        return null;
+    /**
+     * A checkbox action.
+     */
+    non-sealed interface OfCheckbox extends ProductConfigAction {
+        boolean loadState();
+
+        void applyState(boolean value);
     }
 }
