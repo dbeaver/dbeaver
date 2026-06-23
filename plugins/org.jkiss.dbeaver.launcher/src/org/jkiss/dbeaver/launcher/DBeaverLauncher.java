@@ -35,8 +35,8 @@ import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.security.Security;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -947,8 +947,14 @@ public class DBeaverLauncher {
     }
 
     private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
+        String customWorkspacePath = System.getenv(Constants.ENV_WORKSPACE_PATH);
+        if (customWorkspacePath != null && !customWorkspacePath.isBlank()) {
+            // Custom location
+            return Path.of(customWorkspacePath);
+        }
+
+
         String productName = findProductIdInArgs(args);
-        String customWorkspacePath = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if (ARG_DATA.equals(arg)) {
@@ -2331,6 +2337,12 @@ public class DBeaverLauncher {
     }
 
     public static String getWorkingDirectory(String defaultWorkspaceLocation) {
+        String customDataPath = System.getenv(Constants.ENV_DATA_PATH);
+        if (customDataPath != null && !customDataPath.isBlank()) {
+            // Custom location
+            return Path.of(customDataPath).resolve(defaultWorkspaceLocation).toAbsolutePath().toString();
+        }
+
         String osName = (System.getProperty("os.name")).toUpperCase();
         String workingDirectory;
         if (osName.contains("WIN")) {
