@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ public interface IActionConstants {
 
     String LOG_VIEW_ID = "org.eclipse.pde.runtime.LogView"; //$NON-NLS-1$
     String HELP_VIEW_ID = "org.eclipse.help.ui.HelpView"; //$NON-NLS-1$
+    String CHAT_VIEW_ID = "com.dbeaver.ai.chat"; //$NON-NLS-1$
 
     String M_DATABASE = "dataSourceMenu"; //$NON-NLS-1$
     String M_DRIVER_GROUP = "driverGroup"; //$NON-NLS-1$

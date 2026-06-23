@@ -422,11 +422,12 @@ public class ResultSetModel implements DBDResultSetModel {
         return (this.filteredRows != null ? this.filteredRows : this.curRows).get(index);
     }
 
+    @Nullable
     public Long getTotalRowCount() {
         return totalRowCount;
     }
 
-    void setTotalRowCount(Long totalRowCount) {
+    void setTotalRowCount(@Nullable Long totalRowCount) {
         this.totalRowCount = totalRowCount;
     }
 
@@ -1011,8 +1012,9 @@ public class ResultSetModel implements DBDResultSetModel {
             }
             if ((!forceUpdate &&
                 constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION
-                && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
-                constraint.getVisualPosition() == constraint.getOriginalVisualPosition())) {
+                && constraint.getVisualPosition() != filterConstraint.getVisualPosition()
+                && constraint.getVisualPosition() == constraint.getOriginalVisualPosition())
+            ) {
                 // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
@@ -1056,7 +1058,7 @@ public class ResultSetModel implements DBDResultSetModel {
             this.dataFilter.addConstraints(missingConstraints);
         }
 
-        if (filter.getConstraints().size() != attributes.length) {
+        if (filter.getConstraintsCount() != attributes.length) {
             // Update visibility
             for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
                 final DBDAttributeBinding attr = iter.next();
