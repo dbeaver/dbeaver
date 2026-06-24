@@ -219,11 +219,11 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             settings.selectConsumer(null, null, true);
         } else {
             if (settings.isConsumerOptional()) {
-                if (forceUpdate || settings.getConsumer() == null || !haveDescriptor(getWizard().getSettings().getConsumer())) {
+                if (forceUpdate || settings.getConsumer() == null || !hasTargetDescriptor(settings.getConsumer())) {
                     settings.selectConsumer(target.node, target.processor, true);
                 }
             } else if (settings.isProducerOptional()) {
-                if (forceUpdate || settings.getProducer() == null || !haveDescriptor(getWizard().getSettings().getProducer())) {
+                if (forceUpdate || settings.getProducer() == null || !hasTargetDescriptor(settings.getProducer())) {
                     settings.selectProducer(target.node, target.processor, true);
                 }
             } else {
@@ -242,7 +242,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         }
     }
 
-    private boolean haveDescriptor(@Nullable DataTransferNodeDescriptor descriptor) {
+    private boolean hasTargetDescriptor(@Nullable DataTransferNodeDescriptor descriptor) {
         if (nodesTable.getInput() instanceof Collection<?> collection && descriptor != null) {
             for (Object item : collection) {
                 if (item instanceof TransferTarget target) {
