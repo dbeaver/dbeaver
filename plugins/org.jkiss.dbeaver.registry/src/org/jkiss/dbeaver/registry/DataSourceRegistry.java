@@ -794,7 +794,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             true);
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,

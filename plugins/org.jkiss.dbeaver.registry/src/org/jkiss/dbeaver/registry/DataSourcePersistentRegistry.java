@@ -35,7 +35,7 @@ public interface DataSourcePersistentRegistry extends DBPDataSourceRegistry {
     /**
      * Loads data sources from storages.
      */
-    @NotNull
+    @Nullable
     DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
