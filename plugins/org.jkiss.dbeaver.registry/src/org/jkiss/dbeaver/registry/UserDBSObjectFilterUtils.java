@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.security.SMObjectType;
+import org.jkiss.dbeaver.model.auth.SMObjectType;
 
 import java.io.IOException;
 import java.util.Collection;

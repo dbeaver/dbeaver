@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -92,7 +92,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
     private JDBCExecutionContext executionContextTable;
     private JDBCExecutionContext executionContextCatalogSchema;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         DBPDataSourceContainer dataSourceContainer = configureTestContainer("sqlite_jdbc");
         mockDataSource = Mockito.mock(JDBCDataSource.class);//new GenericDataSource(monitor, dataSourceContainer, new GenericMetaModel(), sqlDialect);
@@ -144,23 +144,23 @@ public class DBUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void checkIdentifiersQuote() throws Exception {
-        Assert.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "table_name"), "table_name");
-        Assert.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "table name"), "\"table name\"");
-        Assert.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "TableName"), "\"TableName\"");
+        Assertions.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "table_name"), "table_name");
+        Assertions.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "table name"), "\"table name\"");
+        Assertions.assertEquals(DBUtils.getQuotedIdentifier(mockDataSource, "TableName"), "\"TableName\"");
     }
 
     @Test
     public void testExtractTypeModifiers() throws DBException {
-        Assert.assertEquals(new Pair<>("NUMBER", new String[0]), DBUtils.getTypeModifiers("NUMBER"));
-        Assert.assertEquals(new Pair<>("NUMBER", new String[]{"5"}), DBUtils.getTypeModifiers("NUMBER(5)"));
-        Assert.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5"}), DBUtils.getTypeModifiers("NUMBER(10,   5)"));
-        Assert.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5", "TEST"}), DBUtils.getTypeModifiers("NUMBER (10, 5, TEST)"));
-        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER()"));
-        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER("));
-        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER)"));
-        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER(5, 10"));
-        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("(5, 10)"));
-        Assert.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("()"));
+        Assertions.assertEquals(new Pair<>("NUMBER", new String[0]), DBUtils.getTypeModifiers("NUMBER"));
+        Assertions.assertEquals(new Pair<>("NUMBER", new String[]{"5"}), DBUtils.getTypeModifiers("NUMBER(5)"));
+        Assertions.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5"}), DBUtils.getTypeModifiers("NUMBER(10,   5)"));
+        Assertions.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5", "TEST"}), DBUtils.getTypeModifiers("NUMBER (10, 5, TEST)"));
+        Assertions.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER()"));
+        Assertions.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER("));
+        Assertions.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER)"));
+        Assertions.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("NUMBER(5, 10"));
+        Assertions.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("(5, 10)"));
+        Assertions.assertThrows(DBException.class, () -> DBUtils.getTypeModifiers("()"));
     }
 
     @Test
@@ -183,7 +183,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             "catalog_test",
             null,
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -195,7 +195,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             null,
             "catalog_test",
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -207,7 +207,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             null,
             null,
             null);
-        Assert.assertEquals(dbsObject, mockDataSource);
+        Assertions.assertEquals(dbsObject, mockDataSource);
     }
 
     @Test
@@ -219,7 +219,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             null,
             "schema_test",
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -231,7 +231,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             "catalog_name",
             "schema_test",
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -243,7 +243,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             null,
             null,
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -255,7 +255,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             "catalog_name",
             null,
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -267,7 +267,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
             "catalog_test",
             "schema_test",
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntity);
     }
 
     @Test
@@ -279,23 +279,23 @@ public class DBUtilsTest extends DBeaverUnitTest {
             "DBO",
             "DBO",
             "table_test");
-        Assert.assertEquals(dbsObject, mockEntityDBO);
-        Assert.assertNotEquals(dbsObject, mockEntity);
+        Assertions.assertEquals(dbsObject, mockEntityDBO);
+        Assertions.assertNotEquals(dbsObject, mockEntity);
     }
 
     @Test
     public void testGetSimpleQualifiedNameForEntityMetadata() {
         // Typical PostgreSQL: schema + table, no catalog
-        Assert.assertEquals("public.authors", DBUtils.getSimpleQualifiedName(null, "public", "authors"));
+        Assertions.assertEquals("public.authors", DBUtils.getSimpleQualifiedName(null, "public", "authors"));
 
         // Full catalog.schema.table (e.g. SQL Server)
-        Assert.assertEquals("mydb.dbo.orders", DBUtils.getSimpleQualifiedName("mydb", "dbo", "orders"));
+        Assertions.assertEquals("mydb.dbo.orders", DBUtils.getSimpleQualifiedName("mydb", "dbo", "orders"));
 
         // Table only, no catalog or schema (e.g. SQLite)
-        Assert.assertEquals("users", DBUtils.getSimpleQualifiedName(null, null, "users"));
+        Assertions.assertEquals("users", DBUtils.getSimpleQualifiedName(null, null, "users"));
 
         // All nulls should produce empty string
-        Assert.assertEquals("", DBUtils.getSimpleQualifiedName(null, null, null));
+        Assertions.assertEquals("", DBUtils.getSimpleQualifiedName(null, null, null));
     }
 
 }
