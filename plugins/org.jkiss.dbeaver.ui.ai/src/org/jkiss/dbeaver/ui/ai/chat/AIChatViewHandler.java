@@ -57,7 +57,7 @@ final class AIChatViewHandler {
         };
         this.partListener = new PartListener(view.getSite().getWorkbenchWindow()) {
             private IEditorPart lastPart;
-            private void updateActivePart(IWorkbenchPart part) {
+            private void updateActivePart(@NotNull IWorkbenchPart part) {
                 if (!(part instanceof IEditorPart editor) || part == lastPart) {
                     return;
                 }
@@ -66,24 +66,24 @@ final class AIChatViewHandler {
             }
 
             @Override
-            public void partActivated(IWorkbenchPart part) {
+            public void partActivated(@NotNull IWorkbenchPart part) {
                 updateActivePart(part);
             }
 
             @Override
-            public void partDeactivated(IWorkbenchPart part) {
+            public void partDeactivated(@NotNull IWorkbenchPart part) {
                 // No need to refresh on deactivation. It leads to endless loop because
                 // embedded editors get focus forcibly
                 //updateActiveConversation(part.getSite().getWorkbenchWindow());
             }
 
             @Override
-            public void partOpened(IWorkbenchPart part) {
+            public void partOpened(@NotNull IWorkbenchPart part) {
                 updateActivePart(part);
             }
 
             @Override
-            public void partClosed(IWorkbenchPart part) {
+            public void partClosed(@NotNull IWorkbenchPart part) {
                 updateActivePart(part);
             }
         };
@@ -179,17 +179,17 @@ final class AIChatViewHandler {
         private final IWorkbenchWindow window;
         private final IPageListener pageListener;
 
-        public PartListener(IWorkbenchWindow window) {
+        public PartListener(@NotNull IWorkbenchWindow window) {
             this.window = window;
             this.pageListener = new AbstractPageListener() {
                 @Override
-                public void pageOpened(IWorkbenchPage page) {
+                public void pageOpened(@NotNull IWorkbenchPage page) {
                     page.addPartListener(PartListener.this);
                     pages.add(page);
                 }
 
                 @Override
-                public void pageClosed(IWorkbenchPage page) {
+                public void pageClosed(@NotNull IWorkbenchPage page) {
                     page.removePartListener(PartListener.this);
                     pages.remove(page);
                 }

@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -36,7 +37,7 @@ import java.util.Map;
 public class AIChatToggleHandler extends AbstractHandler implements IElementUpdater {
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
         IViewPart view = UIUtils.findView(window, IActionConstants.CHAT_VIEW_ID);
@@ -59,7 +60,7 @@ public class AIChatToggleHandler extends AbstractHandler implements IElementUpda
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         IViewPart view = UIUtils.findView(window, IActionConstants.CHAT_VIEW_ID);
         element.setChecked(view != null);

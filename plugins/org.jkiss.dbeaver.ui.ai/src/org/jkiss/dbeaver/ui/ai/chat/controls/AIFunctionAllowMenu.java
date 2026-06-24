@@ -198,6 +198,7 @@ public final class AIFunctionAllowMenu {
         switch (action) {
             case ALLOW_TOOL_IN_SESSION -> sessionAllowedFunctions.add(function.getFullId());
             case ALLOW_TOOLBOX_IN_SESSION -> sessionAllowedToolboxes.add(function.getToolbox().getToolboxId());
+            default -> {}
         }
 
         if (pendingApproval != null && shouldApproveFunctionCall(action) && approvalCallback != null) {

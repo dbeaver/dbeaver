@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -37,6 +38,7 @@ public class AIChatConversationSettings extends AIContextSettings {
         this.conversation = conversation;
     }
 
+    @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return conversation.getDataSource();

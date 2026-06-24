@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
+
 import java.time.Duration;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public record AIExtendedUsage(
     int embeddingTokens,
     Duration totalTime
 ) {
-    public static AIExtendedUsage from(List<AIMessageMeta> messageMetas) {
+    public static AIExtendedUsage from(@NotNull List<AIMessageMeta> messageMetas) {
         int totalInputTokens = 0;
         int cachedTokens = 0;
         int totalOutputTokens = 0;

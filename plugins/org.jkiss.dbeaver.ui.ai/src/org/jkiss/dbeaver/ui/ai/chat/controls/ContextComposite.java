@@ -248,6 +248,7 @@ public class ContextComposite extends Composite {
         conversationNameText.setText(conversation.getCaption());
     }
 
+    @NotNull
     private static DBPImage getConversationIcon(@NotNull AIChatConversation conversation) {
         DBPImage convIcon = AIIcons.AI;
         {
@@ -387,7 +388,8 @@ public class ContextComposite extends Composite {
 
         manager.add(new EmptyAction("Metadata sent to AI"));
         DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
-        boolean showSchemas = false, showCatalogs = false;
+        boolean showSchemas = false;
+        boolean showCatalogs = false;
         if (contextDefaults != null) {
             showSchemas = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
             showCatalogs = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
@@ -497,6 +499,7 @@ public class ContextComposite extends Composite {
         manager.add(deleteConversationAction);
     }
 
+    @NotNull
     private String createNewConversationName() {
         String baseName = AIChatMessages.ai_chat_default_conversation_name;
         String name = baseName;
@@ -538,6 +541,7 @@ public class ContextComposite extends Composite {
 
     private class ChangeContextLevelAction extends Action {
         private final boolean dataSourceContext;
+
         public ChangeContextLevelAction(boolean dataSourceContext) {
             super(dataSourceContext ? "This connection" : "This conversation", Action.AS_RADIO_BUTTON);
             this.dataSourceContext = dataSourceContext;
@@ -602,6 +606,7 @@ public class ContextComposite extends Composite {
             setChecked(settings.getScope() == scope);
         }
 
+        @NotNull
         private static String getScopeTitle(
             @NotNull AIContextSettings settings,
             @NotNull AIDatabaseScope scope,

@@ -127,7 +127,7 @@ public class WaveformRenderer implements Flow.Subscriber<ByteBuffer> {
     }
 
     @Override
-    public void onError(Throwable throwable) {
+    public void onError(@NotNull Throwable throwable) {
 
     }
 

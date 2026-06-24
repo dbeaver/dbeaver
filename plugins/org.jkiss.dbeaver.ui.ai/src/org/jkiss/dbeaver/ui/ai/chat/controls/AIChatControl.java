@@ -139,6 +139,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         }
     }
 
+    @NotNull
     public AIChatSession getChatSession() {
         return chatSession;
     }
@@ -309,6 +310,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return true;
     }
 
+    @NotNull
     public AIAssistant getAssistant() {
         return chatSession.getAssistant();
     }
@@ -417,40 +419,6 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             new Position(query.getOffset(), query.getLength())
         );
         return newConversation;
-    }
-
-/*
-    @Override
-    public void messageAdded(@NotNull AIChatConversation conversation, @NotNull AIChatMessage chatMessage) {
-        if (promptComposite.isDisposed()) {
-            // Chat was closed
-            return;
-        }
-        UIUtils.syncExec(() -> {
-            try {
-                // if response contains function calls send statistics event
-                chatSession.notifyMessageAdd(activeConversation, chatMessage);
-            } finally {
-                chatSession.setBusy(false);
-                waitingForResponse = false;
-            }
-            // if response contains function calls send statistics event
-            promptComposite.setPromptText("");
-        });
-    }
-
-    @Override
-    public void messageChunkAdded(
-        @NotNull AIChatConversation conversation,
-        @NotNull AIChatMessage message,
-        @NotNull String chunk
-    ) {
-        UIUtils.syncExec(() -> chatSession.notifyMessageChunkReceived(conversation, message, chunk));
-    }
-*/
-
-    private PromptComposite getPromptComposite() {
-        return promptComposite;
     }
 
     /**

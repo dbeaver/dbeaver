@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatView;
@@ -27,7 +28,7 @@ import org.jkiss.dbeaver.ui.ai.chat.AIChatView;
 public class AIChatSendPromptHandler extends AbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         IViewPart view = UIUtils.findView(HandlerUtil.getActiveWorkbenchWindow(event), IActionConstants.CHAT_VIEW_ID);
         if (view instanceof AIChatView chatView) {
             chatView.getChat().sendPrompt();

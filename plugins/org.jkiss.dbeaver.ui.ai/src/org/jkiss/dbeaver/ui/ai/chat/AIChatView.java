@@ -44,7 +44,7 @@ public class AIChatView extends ViewPart {
     private AISettingsEventListener aiSettingsEventListener;
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         chat = new AIChatControl(parent, new AIChatControllerMain());
         handler = new AIChatViewHandler(this);
 

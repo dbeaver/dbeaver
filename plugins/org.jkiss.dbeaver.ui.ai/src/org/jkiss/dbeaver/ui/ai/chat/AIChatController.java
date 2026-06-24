@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.ai.AIContextSettings;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
+/**
+ * AI chat controller. Provides info about chat host environment.
+ */
 public interface AIChatController extends DBPContextProvider {
 
     String CMD_ATTACH = "com.dbeaver.ai.chat.attach";

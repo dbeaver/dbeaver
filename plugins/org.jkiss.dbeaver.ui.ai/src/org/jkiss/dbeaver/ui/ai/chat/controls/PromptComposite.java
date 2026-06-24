@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.ai.AIChatListener;
 import org.jkiss.dbeaver.model.ai.AIChatMessage;
@@ -50,10 +49,7 @@ import java.util.List;
 
 public class PromptComposite extends Composite {
 
-    private static final Log log = Log.getLog(PromptComposite.class);
-
     // A stroke used to submit the prompt
-
     private final AIChatControl chat;
     private final StyledText promptText;
     private final Button sendButton;

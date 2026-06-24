@@ -213,7 +213,7 @@ final class WebViewMessageList extends Composite implements AISettingsEventListe
 
         browser.addLocationListener(new LocationAdapter() {
             @Override
-            public void changing(LocationEvent event) {
+            public void changing(@NotNull LocationEvent event) {
                 String url = event.location;
                 if (shouldOpenExternally(url)) {
                     event.doit = false;
