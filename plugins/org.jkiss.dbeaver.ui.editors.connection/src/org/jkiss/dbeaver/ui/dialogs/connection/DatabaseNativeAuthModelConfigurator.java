@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
@@ -53,7 +56,11 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected Text passwordText;
 
     protected Button savePasswordCheck;
+    protected Button credentialsFromEnvCheck;
     protected Button showPasswordButton;
+
+    @Nullable
+    private Control envVariablesHintControl;
 
     protected DBPDataSourceContainer dataSource;
 
@@ -118,12 +125,15 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         if (this.passwordText != null && !this.passwordText.isDisposed()) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             if (canEditCredentialsPerPolicy) {
-                this.passwordText.setEnabled(credentialsPromptMode || dataSource.isSavePassword() || isForceSaveCredentials());
+                boolean savePasswordSelected = this.savePasswordCheck == null
+                    || dataSource.isSavePassword()
+                    || isForceSaveCredentials();
+                this.passwordText.setEnabled(credentialsPromptMode || savePasswordSelected);
                 if (this.savePasswordCheck != null) {
                     this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
                 }
                 if (showPasswordButton != null) {
-                    this.showPasswordButton.setEnabled(credentialsPromptMode || dataSource.isSavePassword() || isForceSaveCredentials());
+                    this.showPasswordButton.setEnabled(credentialsPromptMode || savePasswordSelected);
                 }
             } else {
                 if (this.savePasswordCheck != null) {
@@ -135,6 +145,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 }
             }
         }
+        if (credentialsFromEnvCheck != null && !credentialsFromEnvCheck.isDisposed()) {
+            credentialsFromEnvCheck.setSelection(dataSource.isCredentialsFromEnvironment());
+        }
+        updateCredentialsFromEnvState();
         if (dataSource.isTemporary()) {
             if (this.passwordText != null) {
                 this.passwordText.setEnabled(true);
@@ -142,6 +156,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             if (this.savePasswordCheck != null) {
                 this.savePasswordCheck.setSelection(true);
                 this.savePasswordCheck.setEnabled(false);
+            }
+            if (credentialsFromEnvCheck != null) {
+                credentialsFromEnvCheck.setEnabled(false);
             }
             if (this.showPasswordButton != null) {
                 this.showPasswordButton.setEnabled(false);
@@ -151,6 +168,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
+        boolean credentialsFromEnv = credentialsFromEnvCheck != null && credentialsFromEnvCheck.getSelection();
+        dataSource.setCredentialsFromEnvironment(credentialsFromEnv);
+
         boolean resetPassword = !credentialsPromptMode &&
             (!canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection()));
         if (dataSource.isSharedCredentials()) {
@@ -250,6 +270,66 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 UIConnectionMessages.dialog_connection_auth_label_show_password,
                 UIIcon.SHOW_ALL_DETAILS, SelectionListener.widgetSelectedAdapter(e -> showPasswordText(serviceSecurity))
             );
+        }
+
+        createCredentialsFromEnvControls(parent, propertyChangeListener);
+    }
+
+    private void createCredentialsFromEnvControls(@NotNull Composite authPanel, @NotNull Runnable propertyChangeListener) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+            return;
+        }
+        credentialsFromEnvCheck = UIUtils.createCheckbox(
+            authPanel,
+            UIConnectionMessages.dialog_connection_auth_credentials_from_env,
+            UIConnectionMessages.dialog_connection_auth_credentials_from_env_tip,
+            false,
+            1
+        );
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (authPanel.getLayout() instanceof GridLayout gridLayout) {
+            gd.horizontalSpan = gridLayout.numColumns;
+        }
+        credentialsFromEnvCheck.setLayoutData(gd);
+        credentialsFromEnvCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            updateCredentialsFromEnvState();
+            propertyChangeListener.run();
+        }));
+
+        envVariablesHintControl = UIUtils.createInfoLabel(authPanel, UIConnectionMessages.dialog_connection_auth_env_variables_hint);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        if (authPanel.getLayout() instanceof GridLayout gridLayout) {
+            gd.horizontalSpan = gridLayout.numColumns;
+        }
+        envVariablesHintControl.setLayoutData(gd);
+        envVariablesHintControl.setVisible(false);
+    }
+
+    private void updateCredentialsFromEnvState() {
+        boolean credentialsFromEnv = credentialsFromEnvCheck != null
+            && !credentialsFromEnvCheck.isDisposed()
+            && credentialsFromEnvCheck.getSelection();
+        if (envVariablesHintControl != null && !envVariablesHintControl.isDisposed()) {
+            envVariablesHintControl.setVisible(credentialsFromEnv);
+        }
+        if (savePasswordCheck != null && !savePasswordCheck.isDisposed()) {
+            savePasswordCheck.setEnabled(!isForceSaveCredentials());
+            boolean savePassword = savePasswordCheck.getSelection();
+            if (credentialsFromEnv) {
+                if (passwordText != null && !passwordText.isDisposed()) {
+                    passwordText.setEnabled(true);
+                }
+                if (showPasswordButton != null && !showPasswordButton.isDisposed()) {
+                    showPasswordButton.setEnabled(true);
+                }
+            } else if (!credentialsPromptMode) {
+                if (passwordText != null && !passwordText.isDisposed()) {
+                    passwordText.setEnabled(savePassword);
+                }
+                if (showPasswordButton != null && !showPasswordButton.isDisposed()) {
+                    showPasswordButton.setEnabled(savePassword);
+                }
+            }
         }
     }
 

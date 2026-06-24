@@ -160,7 +160,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
             descriptor.setSavePassword(savePasswordCheck.getSelection());
 
-            if (!descriptor.isSavePassword()) {
+            if (!descriptor.isSavePassword() && !descriptor.isCredentialsFromEnvironment()) {
                 descriptor.resetPassword();
             }
         }
