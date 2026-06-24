@@ -28,6 +28,8 @@ public interface UIServiceFilterConfig {
 
     boolean isUserChangeable(@Nullable DBSObjectFilter filter);
 
+    boolean canBeFilteredByUser(@NotNull DBNDatabaseNode originalNode);
+
     void configFilterInDialog(
         @NotNull Shell shell,
         @NotNull DBNDatabaseNode originalNode,
@@ -45,4 +47,6 @@ public interface UIServiceFilterConfig {
         @NotNull DBNDatabaseNode parentNode,
         @NotNull DBXTreeItem itemsMeta
     ) throws DBException;
+
+    boolean isUseUserFilter(@NotNull DBNDatabaseNode originalNode);
 }
