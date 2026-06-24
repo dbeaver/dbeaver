@@ -86,7 +86,8 @@ public class SQLServerGenericDataSource extends GenericDataSource {
         }
         if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_ENCRYPT_PASSWORD))) {
             try {
-                DBPPropertyDescriptor[] properties = driver.getDataSourceProvider().getConnectionProperties(monitor, driver, connectionInfo);
+                DBPPropertyDescriptor[] properties = driver.getDataSourceProvider()
+                    .getConnectionProperties(monitor, driver, container, connectionInfo);
                 for (DBPPropertyDescriptor descriptor : properties) {
                     if (descriptor.getId().equals(PROP_ENCRYPT_PASS) && descriptor instanceof PropertyDescriptor) {
                         connectionInfo.setProperty(PROP_ENCRYPT_PASS, "true"); // To apply changes

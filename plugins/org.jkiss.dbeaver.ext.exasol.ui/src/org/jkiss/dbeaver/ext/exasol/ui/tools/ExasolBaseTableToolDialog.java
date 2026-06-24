@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ext.exasol.ui.tools;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
@@ -40,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SQLScriptProgressListener;
@@ -60,9 +58,7 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
     private static final String VARIABLE_SCHEMA = "schema";
 	
 
-	ExasolBaseTableToolDialog(IWorkbenchPartSite partSite, String title,
-                              Collection<ExasolTableBase> objects)
-	{
+	ExasolBaseTableToolDialog(IWorkbenchPartSite partSite, String title, Collection<ExasolTableBase> objects) {
 		super(partSite, title, objects, true);
 	}
 	
@@ -71,8 +67,7 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
         return 0;
     }
     
-    protected String replaceVars(String input, final ExasolTableBase table)
-    {
+    protected String replaceVars(String input, final ExasolTableBase table) {
         return GeneralUtils.replaceVariables(input, name -> {
             switch (name) {
                 case VARIABLE_TABLE:
@@ -93,43 +88,42 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
     
 	
 	@Override
-	protected SQLScriptProgressListener<ExasolTableBase> getScriptListener()
-	{
+	protected SQLScriptProgressListener<ExasolTableBase> getScriptListener() {
         final int nbExtraColumns = getNumberExtraResultingColumns();
 
-        return new SQLScriptStatusDialog<ExasolTableBase>(getTitle() + " " + ExasolMessages.dialog_table_tools_progress,null) {
-        	@Override
-        	protected void createStatusColumns(Tree objectTree)
-        	{
+        return new SQLScriptStatusDialog<>(getTitle() + " " + ExasolMessages.dialog_table_tools_progress, null) {
+            @Override
+            protected void createStatusColumns(Tree objectTree) {
                 TreeColumn msgColumn = new TreeColumn(objectTree, SWT.NONE);
                 msgColumn.setText(ExasolMessages.dialog_table_tools_result);
 
                 for (int i = 0; i < nbExtraColumns; i++) {
                     new TreeColumn(objectTree, SWT.NONE);
                 }
-        	}
-        	
+            }
+
             // DF: This method is for tools that return resultsets
             @Override
-            public void processObjectResults(@NotNull ExasolTableBase exasolTable, @Nullable DBCStatement statement, @Nullable DBCResultSet resultSet) throws DBCException
-            {
+            public void processObjectResults(
+                @NotNull ExasolTableBase exasolTable,
+                @Nullable DBCStatement statement,
+                @Nullable DBCResultSet resultSet
+            ) throws DBCException {
                 if (resultSet == null) {
                     return;
                 }
                 // Retrieve column names
-            	DBCResultSetMetaData rsMetaData = resultSet.getMeta();
+                DBCResultSetMetaData rsMetaData = resultSet.getMeta();
 
                 try {
 
                     TreeItem treeItem = getTreeItem(exasolTable);
-                    Font f = UIUtils.makeBoldFont(treeItem.getFont());
                     if (treeItem != null) {
 
                         // Display the column names
-                        TreeItem subItem = null;
-                        subItem = new TreeItem(treeItem, SWT.NONE);
-                        subItem.setFont(f);
-                        for (DBCAttributeMetaData column: rsMetaData.getAttributes()) {
+                        TreeItem subItem = new TreeItem(treeItem, SWT.NONE);
+                        subItem.setFont(BaseThemeSettings.instance.treeAndTableFont);
+                        for (DBCAttributeMetaData column : rsMetaData.getAttributes()) {
                             subItem.setText(column.getOrdinalPosition(), column.getName());
                             subItem.setGrayed(true);
                         }
@@ -150,8 +144,7 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
 
             }
 
-        
-        	
+
         };
 	}
 	
@@ -195,7 +188,7 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
                                 	
                                 	Integer[] resultSetData = new Integer[] { affectedRows };
 
-                                    JDBCStatementImpl<Statement> stmt = new JDBCStatementImpl<Statement>(
+                                    JDBCStatementImpl<Statement> stmt = new JDBCStatementImpl<>(
                                         (JDBCSession) session, () -> statement, null, true);
                                     final LocalResultSet resultSet = new LocalResultSet<>(session, stmt);
                                 	resultSet.addColumn("ROWS_AFFECTED", DBPDataKind.NUMERIC);
@@ -230,11 +223,6 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
             }
         };
         job.setUser(false);
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-            }
-        });
         job.schedule();
     }
 
