@@ -11,6 +11,7 @@ Export-Package: org.jkiss.dbeaver.model.websocket,
  org.jkiss.dbeaver.model.websocket.event,
  org.jkiss.dbeaver.model.websocket.event.datasource,
  org.jkiss.dbeaver.model.websocket.event.permissions,
+ org.jkiss.dbeaver.model.websocket.event.profile,
  org.jkiss.dbeaver.model.websocket.event.resource,
  org.jkiss.dbeaver.model.websocket.event.session,
  org.jkiss.dbeaver.model.websocket.registry

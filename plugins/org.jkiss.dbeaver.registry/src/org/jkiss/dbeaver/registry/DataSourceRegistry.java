@@ -863,6 +863,14 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                         folder.setParent(null);
                     }
                 }
+                for (DBWNetworkProfile profile : networkProfileManager.getProfiles()) {
+                    if (!parseResults.addedProfiles.contains(profile) && !parseResults.updatedProfiles.contains(profile)) {
+                        parseResults.removedProfiles.add(profile);
+                    }
+                }
+                for (DBWNetworkProfile profile : parseResults.removedProfiles) {
+                    networkProfileManager.removeProfile(profile);
+                }
             }
         }
 
@@ -1132,8 +1140,16 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
 
         @Override
+        public void reloadProfiles() {
+            project.getDataSourceRegistry().refreshConfig();
+        }
+
+        @Override
         public void saveSettings() {
-            project.getDataSourceRegistry().flushConfig();
+            // TODO: find a better way to save network profiles.
+            if (project.getDataSourceRegistry() instanceof DataSourcePersistentRegistry dspr) {
+                dspr.saveDataSources();
+            }
         }
 
         @NotNull
