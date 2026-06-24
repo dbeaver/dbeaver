@@ -602,4 +602,8 @@ public final class AIUtils {
         return DBUtils.getObjectByPath(
             monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true);
     }
+
+    public static boolean useStreamMode() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_USE_STREAM_MODE);
+    }
 }

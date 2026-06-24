@@ -67,5 +67,7 @@ public class AIConstants {
     public static final String AI_CHAT_SHOW_TIME_SPENT = "ai.chat.show.time.spent";
     public static final String AI_CHAT_SHOW_TOKENS_SPENT = "ai.chat.show.tokens.spent";
     public static final String AI_CHAT_SHOW_TOTAL_TOKENS_SPENT = "ai.chat.show.total.tokens.spent";
+    public static final String USER_QUOTA_PROPERTY = "ai.userQuota";
+    public static final String LOG_STATS_PROPERTY = "ai.logStats";
 }
 
