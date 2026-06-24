@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -200,7 +201,11 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             createGeneralSettingSPanel(composite, settings);
 
             {
-                final ExpandableComposite expander = new ExpandableComposite(composite, SWT.NONE);
+                final ExpandableCompositeEx expander = new ExpandableCompositeEx(
+                    composite,
+                    ExpandableComposite.CLIENT_INDENT | SWT.SEPARATOR,
+                    ExpandableComposite.TWISTIE
+                );
                 expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
                 expander.addExpansionListener(new ExpansionAdapter() {
                     @Override
