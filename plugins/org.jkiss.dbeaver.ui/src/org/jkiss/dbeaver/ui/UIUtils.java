@@ -2203,7 +2203,9 @@ public class UIUtils {
     public static Color getConnectionColor(@NotNull DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {
-            rgbString = connectionInfo.getConnectionType().getColor();
+            rgbString = UIStyles.isDarkTheme() ?
+                connectionInfo.getConnectionType().getAlternativeColor() :
+                connectionInfo.getConnectionType().getColor();
         }
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
@@ -2213,7 +2215,16 @@ public class UIUtils {
 
     @Nullable
     public static Color getConnectionTypeColor(@NotNull DBPConnectionType connectionType) {
-        String rgbString = connectionType.getColor();
+        return getConnectionTypeColor(connectionType, false);
+    }
+
+    @Nullable
+    public static Color getConnectionTypeColor(@NotNull DBPConnectionType connectionType, boolean alternative) {
+        // If it is dark theme then alternative color would be default one
+        // For some cases we need to get another color (e.g. updating color for a different theme)
+        String rgbString = UIStyles.isDarkTheme() ^ alternative ?
+            connectionType.getAlternativeColor() :
+            connectionType.getColor();
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             "dev",
             ModelMessages.dbp_connection_type_table_development,
             "255,255,255",
+            "255,255,255",
             ModelMessages.dbp_connection_type_table_regular_development_database,
             true,
             false,
@@ -61,7 +62,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         TEST = new DBPConnectionType(
             "test",
             ModelMessages.dbp_connection_type_table_test,
-            "org.jkiss.dbeaver.color.connectionType.qa.background",
+            "214,250,207",
+            "64,89,66",
             ModelMessages.dbp_connection_type_table_test_database,
             true,
             false,
@@ -77,7 +79,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         PROD = new DBPConnectionType(
             "prod",
             ModelMessages.dbp_connection_type_table_production,
-            "org.jkiss.dbeaver.color.connectionType.prod.background",
+            "250,207,207",
+            "97,61,63",
             ModelMessages.dbp_connection_type_table_production_database,
             false,
             true,
@@ -101,6 +104,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private String id;
     private String name;
     private String color;
+    private String alternativeColor;
     private String description;
     private boolean autocommit;
     private boolean confirmExecute;
@@ -115,11 +119,12 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
 
-    public DBPConnectionType(DBPConnectionType source) {
+    public DBPConnectionType(@NotNull DBPConnectionType source) {
         this(
             source.id,
             source.name,
             source.color,
+            source.alternativeColor,
             source.description,
             source.autocommit,
             source.confirmExecute,
@@ -135,10 +140,11 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     public DBPConnectionType(
-        String id,
-        String name,
-        String color,
-        String description,
+        @NotNull String id,
+        @NotNull String name,
+        @NotNull String color,
+        @Nullable String alternativeColor,
+        @Nullable String description,
         boolean autocommit,
         boolean confirmExecute,
         boolean confirmDataChange,
@@ -153,6 +159,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             id,
             name,
             color,
+            alternativeColor,
             description,
             autocommit,
             confirmExecute,
@@ -168,10 +175,11 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     private DBPConnectionType(
-        String id,
-        String name,
-        String color,
-        String description,
+        @NotNull String id,
+        @NotNull String name,
+        @NotNull String color,
+        @Nullable String alternativeColor,
+        @Nullable String description,
         boolean autocommit,
         boolean confirmExecute,
         boolean confirmDataChange,
@@ -182,11 +190,12 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autoCloseConnections,
         int closeIdleConnectionPeriod,
         boolean predefined,
-        List<DBPDataSourcePermission> connectionModifyRestrictions)
-    {
+        @Nullable List<DBPDataSourcePermission> connectionModifyRestrictions
+    ) {
         this.id = id;
         this.name = name;
         this.color = getColorValueFixed(color);
+        this.alternativeColor = getColorValueFixed(alternativeColor);
         this.description = description;
         this.autocommit = autocommit;
         this.confirmExecute = confirmExecute;
@@ -207,35 +216,49 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         return predefined;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public String setId(String id) {
+    @NotNull
+    public String setId(@NotNull String id) {
         return this.id = id;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
+    @NotNull
     public String getColor() {
         return color;
     }
 
-    public void setColor(String color) {
+    public void setColor(@NotNull String color) {
         this.color = getColorValueFixed(color);
     }
 
+    @Nullable
+    public String getAlternativeColor() {
+        return alternativeColor == null ? color : alternativeColor;
+    }
+
+    public void setAlternativeColor(@Nullable String color) {
+        this.alternativeColor = getColorValueFixed(color);
+    }
+
+    @Nullable
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 
@@ -335,7 +358,11 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         }
     }
 
-    private String getColorValueFixed(String color) {
+    @Nullable
+    private String getColorValueFixed(@Nullable String color) {
+        if (color == null) {
+            return null;
+        }
         // Backward compatibility.
         // In old times we had hardcoded colors now we need to change them to color constants
         if (PROD != null && this.id.equals(PROD.id) && color.equals("247,159,129")) {
@@ -389,7 +416,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getConnectionType(defTypeName, DEV);
     }
 
-    public static void setDefaultConnectionType(DBPConnectionType connectionType) {
+    public static void setDefaultConnectionType(@NotNull DBPConnectionType connectionType) {
         DBWorkbench.getPlatform().getPreferenceStore().setValue(DEFAULT_CONNECTION_TYPE_PREF, connectionType.getId());
     }
 

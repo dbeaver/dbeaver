@@ -65,6 +65,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     private Text typeName;
     private Text typeDescription;
     private ColorSelector colorPicker;
+    private ColorSelector alternativeColorPicker;
     private Button autocommitCheck;
     private Button confirmCheck;
     private Button confirmDataChangeCheck;
@@ -198,6 +199,13 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
 //                colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 colorPicker.addListener(event -> {
                     getSelectedType().setColor(StringConverter.asString(colorPicker.getColorValue()));
+                    updateTableInfo();
+                });
+
+                UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color + " (alternative)");
+                alternativeColorPicker = new ColorSelector(groupSettings);
+                alternativeColorPicker.addListener(event -> {
+                    getSelectedType().setAlternativeColor(StringConverter.asString(alternativeColorPicker.getColorValue()));
                     updateTableInfo();
                 });
 /*
@@ -396,16 +404,23 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
     }
 
+    @NotNull
     private DBPConnectionType getSelectedType() {
         return (DBPConnectionType) typeTable.getItem(typeTable.getSelectionIndex()).getData();
     }
 
-    private void showSelectedType(DBPConnectionType connectionType) {
+    private void showSelectedType(@NotNull DBPConnectionType connectionType) {
         final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
         } else {
             colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
+        }
+        final Color alternativeConnectionTypeColor = UIUtils.getConnectionTypeColor(connectionType, true);
+        if (alternativeConnectionTypeColor != null) {
+            alternativeColorPicker.setColorValue(alternativeConnectionTypeColor.getRGB());
+        } else {
+            alternativeColorPicker.setColorValue(alternativeColorPicker.getButton().getBackground().getRGB());
         }
 
         typeId.setText(connectionType.getId());
@@ -575,6 +590,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setConfirmExecute(changed.isConfirmExecute());
                 source.setConfirmDataChange(changed.isConfirmDataChange());
                 source.setColor(changed.getColor());
+                source.setAlternativeColor(changed.getAlternativeColor());
                 source.setModifyPermissions(changed.getModifyPermission());
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());

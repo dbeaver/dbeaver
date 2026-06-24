@@ -195,6 +195,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                             jsonWriter.beginObject();
                             JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_NAME, ct.getName());
                             JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_COLOR, ct.getColor());
+                            JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_ALTERNATIVE_COLOR, ct.getAlternativeColor());
                             JSONUtils.fieldNE(jsonWriter, RegistryConstants.ATTR_DESCRIPTION, ct.getDescription());
                             JSONUtils.field(jsonWriter, "auto-commit", ct.isAutocommit());
                             JSONUtils.field(jsonWriter, "confirm-execute", ct.isConfirmExecute());
@@ -443,6 +444,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 String name = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_NAME);
                 String description = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_DESCRIPTION);
                 String color = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_COLOR);
+                String alternativeColor = JSONUtils.getObjectProperty(ctConfig, RegistryConstants.ATTR_ALTERNATIVE_COLOR);
                 Boolean autoCommit = JSONUtils.getObjectProperty(ctConfig, "auto-commit");
                 Boolean confirmExecute = JSONUtils.getObjectProperty(ctConfig, "confirm-execute");
                 Boolean confirmDataChange = JSONUtils.getObjectProperty(ctConfig, "confirm-data-change");
@@ -458,6 +460,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         id,
                         name,
                         color,
+                        alternativeColor,
                         description,
                         CommonUtils.toBoolean(autoCommit),
                         CommonUtils.toBoolean(confirmExecute),
