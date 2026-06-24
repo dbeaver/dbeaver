@@ -54,12 +54,12 @@
                         <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
                     </or>
                 </not>
-                <test property="org.jkiss.dbeaver.easyConfig.isFeatureEnabled" value="ai"/>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="ai"/>
             </and>
         </definition>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.easyConfig">
+    <extension point="org.jkiss.dbeaver.app.config">
         <feature id="ai" label="AI integration" enabledByDefault="true"/>
     </extension>
 

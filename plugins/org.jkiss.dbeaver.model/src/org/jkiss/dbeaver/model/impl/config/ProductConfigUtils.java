@@ -14,20 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.devtools.handlers;
+package org.jkiss.dbeaver.model.impl.config;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
+import org.jkiss.utils.CommonUtils;
 
-public class ShowEasyConfigHandler extends AbstractHandler {
-    @Nullable
-    @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
-        return null;
+public final class ProductConfigUtils {
+    /**
+     * Force Product Config to show at every launch
+     */
+    private static final String PROP_SHOW_ON_STARTUP = "dbeaver.show.easy.config.on.startup";
+
+    private ProductConfigUtils() {
+    }
+
+    /**
+     * Returns whether Product Config should be shown at startup.
+     * <p>
+     * This is determined by the system property {@code dbeaver.show.easy.config.on.startup}.
+     */
+    public static boolean isShowOnStartup() {
+        return CommonUtils.getBoolean(System.getProperty(PROP_SHOW_ON_STARTUP));
     }
 }

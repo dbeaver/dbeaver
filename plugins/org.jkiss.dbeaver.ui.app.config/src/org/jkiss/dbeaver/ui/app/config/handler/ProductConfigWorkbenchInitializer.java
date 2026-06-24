@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.devtools.handlers;
+package org.jkiss.dbeaver.ui.app.config.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
+import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 
-public class ShowEasyConfigHandler extends AbstractHandler {
-    @Nullable
+public final class ProductConfigWorkbenchInitializer implements IWorkbenchWindowInitializer {
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
-        return null;
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        if (ProductConfigUtils.isShowOnStartup()) {
+            new ProductConfigWizardDialog(configurer.getWindow()).open();
+        }
     }
 }
