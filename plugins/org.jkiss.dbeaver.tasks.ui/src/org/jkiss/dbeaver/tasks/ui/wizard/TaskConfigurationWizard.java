@@ -74,7 +74,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     private boolean promptVariables;
     private DBTTaskContext taskContext;
     @Nullable private DBTTaskFolder currentSelectedTaskFolder;
-    private boolean taskEditorDisabled;
 
     protected TaskConfigurationWizard() {
     }
@@ -183,7 +182,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public boolean isTaskSaveEnabled() {
-        return !taskEditorDisabled;
+        return !getContainer().isSelectorMode();
     }
 
     public boolean isNewTaskEditor() {
@@ -344,80 +343,80 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return true;
     }
 
-    public void createTaskActions(Composite parent, int hSpan) {
+    public void createTaskActions(@NotNull Composite parent) {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
             return;
         }
 
-        IViewDescriptor tasksViewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID);
-        if (tasksViewDescriptor == null || getContainer().isSelectorMode()) {
-            // Do not create save buttons
-            UIUtils.createEmptyLabel(parent, hSpan, 1);
-            taskEditorDisabled = true;
-        } else {
-            Composite panel = new Composite(parent, SWT.NONE);
-            panel.setBackground(parent.getBackground());
-            if (parent.getLayout() instanceof GridLayout) {
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = hSpan;
-                panel.setLayoutData(gd);
-            }
-            boolean supportsVariables = false;//getTaskType().supportsVariables();
-            GridLayout layout = new GridLayout(1, false);
-            panel.setLayout(layout);
+        createTaskViewButton(parent);
+        createVariablesButton(parent);
+        createActionButtons(parent);
+    }
 
-            if (supportsVariables) {
-                layout.numColumns++;
-                UIUtils.createPushButton(panel,  null, null, UIIcon.SQL_VARIABLE, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        configureVariables();
-                    }
-                });
-            }
+    private static void createTaskViewButton(@NotNull Composite parent) {
+        IViewDescriptor descriptor = PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID);
+        if (descriptor == null) {
+            return;
+        }
 
-            layout.numColumns++;
-            Button taskViewButton = UIUtils.createPushButton(
-                panel,
-                null,
-                TaskUIMessages.task_config_wizard_link_open_tasks_view,
-                null,
-                SelectionListener.widgetSelectedAdapter(e -> {
-                    try {
-                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(tasksViewDescriptor.getId());
-                    } catch (PartInitException e1) {
-                        DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
-                    }
-                })
-            );
-            Image viewImage = tasksViewDescriptor.getImageDescriptor().createImage();
-            taskViewButton.setImage(viewImage);
-            taskViewButton.addDisposeListener(e -> viewImage.dispose());
-            taskViewButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            if (actionsConfigurator == null) {
-                IObjectPropertyConfigurator<?, ?> configurator = null;
-
-                UIPropertyConfiguratorDescriptor descriptor = UIPropertyConfiguratorRegistry.getInstance()
-                    .getDescriptor(TaskConfigurationWIzardActionConfigurator.class.getName());
-                if (descriptor != null) {
-                    try {
-                        configurator = descriptor.createConfigurator();
-                    } catch (DBException e) {
-                        log.debug("Error creating actions configurator", e);
-                    }
+        ((GridLayout) parent.getLayout()).numColumns++;
+        Button taskViewButton = UIUtils.createPushButton(
+            parent,
+            null,
+            TaskUIMessages.task_config_wizard_link_open_tasks_view,
+            null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                try {
+                    UIUtils.getActiveWorkbenchWindow().getActivePage().showView(descriptor.getId());
+                } catch (PartInitException e1) {
+                    DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
                 }
+            })
+        );
+        Image viewImage = descriptor.getImageDescriptor().createImage();
+        taskViewButton.setImage(viewImage);
+        taskViewButton.addDisposeListener(e -> viewImage.dispose());
+        taskViewButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+    }
 
-                if (configurator instanceof TaskConfigurationWIzardActionConfigurator<?> configurator1) {
-                    @SuppressWarnings("unchecked")
-                    var actionsConfigurator = (TaskConfigurationWIzardActionConfigurator<SETTINGS>) configurator1;
-                    this.actionsConfigurator = actionsConfigurator;
+    private void createVariablesButton(@NotNull Composite parent) {
+        if (true) {
+            // Disabled, for some reason. See blame to figure out why
+            return;
+        }
+        ((GridLayout) parent.getLayout()).numColumns++;
+        UIUtils.createPushButton(
+            parent,
+            null,
+            null,
+            UIIcon.SQL_VARIABLE,
+            SelectionListener.widgetSelectedAdapter(e -> configureVariables())
+        );
+    }
+
+    private void createActionButtons(@NotNull Composite parent) {
+        if (actionsConfigurator == null) {
+            IObjectPropertyConfigurator<?, ?> configurator = null;
+
+            UIPropertyConfiguratorDescriptor descriptor = UIPropertyConfiguratorRegistry.getInstance()
+                .getDescriptor(TaskConfigurationWIzardActionConfigurator.class.getName());
+            if (descriptor != null) {
+                try {
+                    configurator = descriptor.createConfigurator();
+                } catch (DBException e) {
+                    log.debug("Error creating actions configurator", e);
                 }
             }
 
-            if (actionsConfigurator != null) {
-                actionsConfigurator.createControl(panel, this, this::updateTaskButtons);
+            if (configurator instanceof TaskConfigurationWIzardActionConfigurator<?> configurator1) {
+                @SuppressWarnings("unchecked")
+                var actionsConfigurator = (TaskConfigurationWIzardActionConfigurator<SETTINGS>) configurator1;
+                this.actionsConfigurator = actionsConfigurator;
             }
+        }
+
+        if (actionsConfigurator != null) {
+            actionsConfigurator.createControl(parent, this, this::updateTaskButtons);
         }
     }
 

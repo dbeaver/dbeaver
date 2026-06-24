@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -243,9 +244,8 @@ public class AutoRefreshControl {
                     for (int i = 0; i < presetList.size(); i++) {
                         final Integer timeout = presetList.get(i);
                         mi = new MenuItem(schedulerMenu, SWT.PUSH);
-                        String text = i == 0 ?
-                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval, timeout) :
-                            NLS.bind(UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1, timeout);
+                        String pattern = i == 0 ? UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval : UIMessages.sql_editor_resultset_filter_panel_menu_refresh_interval_1;
+                        String text = MessageFormat.format(pattern, timeout);
                         mi.setText(text);
                         if (isAutoRefreshEnabled() && timeout == defaultInterval) {
                             schedulerMenu.setDefaultItem(mi);

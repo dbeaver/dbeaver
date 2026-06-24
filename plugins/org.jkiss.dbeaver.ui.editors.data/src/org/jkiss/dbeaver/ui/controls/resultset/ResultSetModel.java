@@ -379,11 +379,12 @@ public class ResultSetModel implements DBDResultSetModel {
         return curRows.get(index);
     }
 
+    @Nullable
     public Long getTotalRowCount() {
         return totalRowCount;
     }
 
-    void setTotalRowCount(Long totalRowCount) {
+    void setTotalRowCount(@Nullable Long totalRowCount) {
         this.totalRowCount = totalRowCount;
     }
 
@@ -503,7 +504,8 @@ public class ResultSetModel implements DBDResultSetModel {
             } else {
                 valueToEdit = value;
             }
-        } else if (valueToEdit instanceof DBDValue complexValue) {
+        } else if (valueToEdit instanceof DBDValue complexValue
+            && (attr != topAttribute || (rowIndexes != null && rowIndexes.length > 0))) {
             DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
         } else {
             valueToEdit = value;
@@ -877,7 +879,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }, "Release values", 5000);
     }
 
-    @Nullable
+    @NotNull
     public DBDDataFilter getDataFilter() {
         return dataFilter;
     }
@@ -933,9 +935,10 @@ public class ResultSetModel implements DBDResultSetModel {
                 continue;
             }
             if ((!forceUpdate &&
-                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
-                constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
-            {
+                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION
+                && constraint.getVisualPosition() != filterConstraint.getVisualPosition()
+                && constraint.getVisualPosition() == constraint.getOriginalVisualPosition())
+            ) {
                 // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
@@ -979,7 +982,7 @@ public class ResultSetModel implements DBDResultSetModel {
             this.dataFilter.addConstraints(missingConstraints);
         }
 
-        if (filter.getConstraints().size() != attributes.length) {
+        if (filter.getConstraintsCount() != attributes.length) {
             // Update visibility
             for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
                 final DBDAttributeBinding attr = iter.next();

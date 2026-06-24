@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,10 +146,12 @@ public class DiagramPart extends PropertyAwarePart {
         return (EntityDiagram) getModel();
     }
 
+    @NotNull
     public Font getNormalFont() {
         return ERDThemeSettings.instance.diagramFont;
     }
 
+    @NotNull
     public Font getBoldFont() {
         return ERDThemeSettings.instance.diagramFontBold;
     }
@@ -195,7 +197,7 @@ public class DiagramPart extends PropertyAwarePart {
         monitor.worked(1);
     }
 
-    private void resetConnectionConstraints(DBRProgressMonitor monitor, List<?> sourceConnections) {
+    private void resetConnectionConstraints(@NotNull DBRProgressMonitor monitor, @Nullable List<?> sourceConnections) {
         if (monitor.isCanceled()) {
             return;
         }
@@ -340,51 +342,53 @@ public class DiagramPart extends PropertyAwarePart {
     }
 
     @Nullable
-    public NodePart getChildByObject(Object object) {
+    public NodePart getChildByObject(@Nullable Object object) {
         for (Object child : getChildren()) {
-            if (child instanceof NodePart && ((NodePart) child).getElement().getObject() == object) {
-                return (NodePart) child;
+            if (child instanceof NodePart nodePart && nodePart.getElement().getObject() == object) {
+                return nodePart;
             }
         }
         return null;
     }
 
     @Nullable
-    public EntityPart getEntityPart(ERDEntity erdEntity) {
+    public EntityPart getEntityPart(@Nullable ERDEntity erdEntity) {
         for (Object child : getChildren()) {
-            if (child instanceof EntityPart && ((EntityPart) child).getEntity() == erdEntity) {
-                return (EntityPart) child;
-            }
-        }
-        return null;
-    }
-
-    public List<EntityPart> getEntityParts() {
-        List<EntityPart> result = new ArrayList<>();
-        for (Object child : getChildren()) {
-            if (child instanceof EntityPart) {
-                result.add((EntityPart) child);
-            }
-        }
-        return result;
-    }
-
-    @Nullable
-    public NotePart getNotePart(ERDNote erdNote) {
-        for (Object child : getChildren()) {
-            if (child instanceof NotePart && ((NotePart) child).getNote() == erdNote) {
-                return (NotePart) child;
+            if (child instanceof EntityPart entityPart && entityPart.getEntity() == erdEntity) {
+                return entityPart;
             }
         }
         return null;
     }
 
     @NotNull
-    public Command createEntityAddCommand(List<ERDEntity> entities, Point location) {
+    public List<EntityPart> getEntityParts() {
+        List<EntityPart> result = new ArrayList<>();
+        for (Object child : getChildren()) {
+            if (child instanceof EntityPart  entityPart) {
+                result.add(entityPart);
+            }
+        }
+        return result;
+    }
+
+    @Nullable
+    public NotePart getNotePart(@Nullable ERDNote erdNote) {
+        for (Object child : getChildren()) {
+            if (child instanceof NotePart notePart && notePart.getNote() == erdNote) {
+                return notePart;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    public Command createEntityAddCommand(@NotNull List<ERDEntity> entities, @NotNull Point location) {
         return new EntityAddCommand(this, entities, location);
     }
 
-    public Command createEntityDeleteCommand(EntityPart entityPart) {
+    @NotNull
+    public Command createEntityDeleteCommand(@NotNull EntityPart entityPart) {
         return new EntityRemoveCommand(entityPart);
     }
 
