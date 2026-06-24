@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -1572,6 +1573,7 @@ public class UIUtils {
     /**
      * Creates a new link that opens the given preference page either in the current
      * preference container, is present, or in a new modal dialog.
+     * If element is specified then open property dialog for this element.
      */
     @NotNull
     public static Link createPreferenceLink(
@@ -1579,10 +1581,10 @@ public class UIUtils {
         @NotNull String message,
         @NotNull String pageId,
         @Nullable IWorkbenchPreferenceContainer pageContainer,
-        @Nullable Object pageData
+        @Nullable IAdaptable element
     ) {
         final IPreferenceNode node = findPreferenceNode(pageId);
-        final Link link = new Link(parent, 0);
+        final Link link = new Link(parent, SWT.NONE);
 
         if (node == null) {
             link.setText(NLS.bind(WorkbenchMessages.PreferenceNode_NotFound, pageId));
@@ -1594,14 +1596,19 @@ public class UIUtils {
             link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (pageContainer != null && canOpenHere) {
                     // Open in the same dialog
-                    pageContainer.openPage(pageId, pageData);
+                    pageContainer.openPage(pageId, element);
+                } else if (element != null) {
+                    UIUtils.showPreferencesFor(
+                        link.getShell(),
+                        element,
+                        pageId);
                 } else {
                     // Open in a new dialog
                     PreferencesUtil.createPreferenceDialogOn(
                         link.getShell(),
                         pageId,
                         new String[] {pageId},
-                        pageData,
+                        null,
                         PreferencesUtil.OPTION_NONE
                     ).open();
                 }
