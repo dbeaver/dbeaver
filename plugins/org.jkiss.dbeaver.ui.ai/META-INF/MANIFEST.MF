@@ -19,6 +19,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.navigator,
+ org.eclipse.e4.ui.css.core,
+ org.eclipse.e4.ui.css.swt,
  org.eclipse.ui.workbench,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,

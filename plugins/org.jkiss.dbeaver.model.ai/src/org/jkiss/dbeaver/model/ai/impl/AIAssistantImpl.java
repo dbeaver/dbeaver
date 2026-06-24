@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
+import org.jkiss.dbeaver.model.ai.qm.QMAIChatStorageInMemory;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -41,10 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -59,12 +58,14 @@ public class AIAssistantImpl implements AIAssistant {
     protected static final int MAX_FUNCTION_CALLS = 10;
 
     protected final DBPWorkspace workspace;
+    private String chatSessionId;
 
     private AIEngineRequestFactory requestFactory;
     private AIToolboxManager toolboxManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
+        this.chatSessionId = UUID.randomUUID().toString();
     }
 
     @NotNull
@@ -376,6 +377,18 @@ public class AIAssistantImpl implements AIAssistant {
             toolboxManager = createToolboxManager();
         }
         return toolboxManager;
+    }
+
+    @NotNull
+    @Override
+    public AIChatSession.SessionIdProvider getChatSessionProvider() {
+        return monitor -> chatSessionId;
+    }
+
+    @NotNull
+    @Override
+    public AIChatStorage createChatStorage() {
+        return new QMAIChatStorageInMemory();
     }
 
     @NotNull

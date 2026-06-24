@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -64,4 +65,10 @@ public interface AIAssistant {
      */
     @NotNull
     AIToolboxManager getToolboxManager();
+
+    @NotNull
+    AIChatSession.SessionIdProvider getChatSessionProvider();
+
+    @NotNull
+    AIChatStorage createChatStorage();
 }

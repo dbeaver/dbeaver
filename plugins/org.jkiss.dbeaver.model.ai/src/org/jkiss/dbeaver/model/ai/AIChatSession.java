@@ -587,7 +587,7 @@ public class AIChatSession {
 
     public interface SessionIdProvider {
         @NotNull
-        String getSessionId(DBRProgressMonitor monitor) throws DBException;
+        String getSessionId(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
     private static boolean isStatsLoggingEnabled() {

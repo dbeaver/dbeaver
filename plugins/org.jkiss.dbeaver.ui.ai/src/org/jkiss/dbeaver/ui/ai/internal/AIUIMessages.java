@@ -67,6 +67,15 @@ public class AIUIMessages extends NLS {
     public static String confirm_meta_transfer_usage_title;
     public static String confirm_meta_transfer_usage_message;
 
+    public static String ai_function_allow_menu_ask_every_time;
+    public static String ai_function_allow_menu_session_only;
+    public static String ai_function_allow_menu_allow_tool_session_only;
+    public static String ai_function_allow_menu_allow_tool_always;
+    public static String ai_function_allow_menu_allow_agent_session_only;
+    public static String ai_function_allow_menu_allow_agent_always;
+    public static String ai_function_allow_menu_always;
+    public static String ai_function_allow_menu_configure;
+
     public static String ai_suggestion_popup_title;
     public static String ai_suggestion_popup_message;
     public static String scope_selector_customize;
