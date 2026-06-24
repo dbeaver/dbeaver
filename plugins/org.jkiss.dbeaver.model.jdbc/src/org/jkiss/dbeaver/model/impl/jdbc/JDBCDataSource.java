@@ -87,6 +87,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     private JDBCRemoteInstance defaultRemoteInstance;
 
     protected Version databaseVersion = null;
+    protected Version driverVersion = null;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
     protected List<Path> tempFiles;
@@ -535,6 +536,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
             readDatabaseServerVersion(session, metaData);
+            readDriverVersion(metaData);
 
             if (this.sqlDialect instanceof JDBCSQLDialect jdbcDialect) {
                 try {
@@ -577,6 +579,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
+    protected synchronized void readDriverVersion(@NotNull DatabaseMetaData metaData) {
+        if (driverVersion == null) {
+            try {
+                driverVersion = new Version(
+                    metaData.getDriverMajorVersion(),
+                    metaData.getDriverMinorVersion(),
+                    0);
+            } catch (Throwable e) {
+                log.error("Error determining driver version", e);
+                driverVersion = new Version(0, 0, 0);
+            }
+        }
+    }
+
     public boolean isServerVersionAtLeast(int major, int minor) {
         if (databaseVersion == null) {
             log.warn(new DBException("Checking server version before connection initialization"));
@@ -591,15 +607,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     public boolean isDriverVersionAtLeast(int major, int minor) {
+        if (driverVersion != null) {
+            if (driverVersion.getMajor() < major) {
+                return false;
+            } else {
+                return driverVersion.getMajor() != major || driverVersion.getMinor() >= minor;
+            }
+        }
         try {
             Driver driver = getDriverInstance(new VoidProgressMonitor());
             int majorVersion = driver.getMajorVersion();
             if (majorVersion < major) {
                 return false;
-            } else if (majorVersion == major && driver.getMinorVersion() < minor) {
-                return false;
+            } else {
+                return majorVersion != major || driver.getMinorVersion() >= minor;
             }
-            return true;
         } catch (DBException e) {
             log.debug("Can't obtain driver instance", e);
             return false;

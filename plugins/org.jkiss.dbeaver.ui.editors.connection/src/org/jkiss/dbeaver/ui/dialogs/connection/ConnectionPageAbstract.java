@@ -68,7 +68,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected IDataSourceConnectionEditorSite site;
     // Driver name
-    protected Text driverText;
+    protected Label driverText;
     protected Text passwordText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
@@ -224,11 +224,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             gd.horizontalSpan = 5;
             driverInfoComp.setLayoutData(gd);
 
-            Label driverLabel = new Label(driverInfoComp, SWT.NONE);
-            driverLabel.setText(UIConnectionMessages.dialog_connection_driver);
+            Label driverLabel = UIUtils.createControlLabel(driverInfoComp, UIConnectionMessages.dialog_connection_driver);
             driverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            driverText = new Text(driverInfoComp, SWT.READ_ONLY);
+            driverText = new Label(driverInfoComp, SWT.NONE);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             //gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 2;
