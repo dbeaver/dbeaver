@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,13 +67,17 @@ public class DatabaseTransferUtils {
         monitor.subTask("Refresh database model");
         DBSObjectContainer container = consumerSettings.getContainer();
         DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
+
+        boolean refreshed = false;
         if (navigatorModel != null) {
             var containerNode = navigatorModel.getNodeByObject(monitor, container, false);
             if (containerNode != null) {
                 containerNode.refreshNode(monitor, containerMapping);
+                refreshed = true;
             }
-        } else if (container instanceof DBPRefreshableObject) {
-            ((DBPRefreshableObject) container).refreshObject(monitor);
+        }
+        if (!refreshed && container instanceof DBPRefreshableObject refreshableObject) {
+            refreshableObject.refreshObject(monitor);
         }
         refreshDatabaseMappings(monitor, consumerSettings, containerMapping, false);
     }
