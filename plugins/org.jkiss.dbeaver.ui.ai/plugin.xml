@@ -89,6 +89,24 @@
                 </visibleWhen>
             </command>
         </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:window?before=primary.views">
+            <command commandId="com.dbeaver.ai.chat.toggle" style="toggle">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-general?after=sql_tools">
+            <command commandId="com.dbeaver.ai.chat.toggle" id="ai.dropdown.menu" style="pulldown">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="ai" visible="true"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:ai.dropdown.menu">
+            <command commandId="org.jkiss.dbeaver.ui.ai.showCompletion"/>
+            <separator name="configuration" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.ai.configuration"/>
+            <!--            <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>-->
+        </menuContribution>
+
     </extension>
 
     <extension point="org.eclipse.ui.activities">
