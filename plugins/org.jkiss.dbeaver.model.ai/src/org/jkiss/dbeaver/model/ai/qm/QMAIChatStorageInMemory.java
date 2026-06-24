@@ -138,4 +138,9 @@ public class QMAIChatStorageInMemory implements AIChatStorage {
     ) throws DBException {
         return List.of();
     }
+
+    @Override
+    public boolean canPersist() {
+        return false;
+    }
 }

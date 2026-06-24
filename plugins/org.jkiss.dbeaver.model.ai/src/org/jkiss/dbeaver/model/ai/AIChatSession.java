@@ -118,6 +118,11 @@ public class AIChatSession {
         );
     }
 
+    @NotNull
+    public AIChatStorage getStorage() {
+        return storage;
+    }
+
     @Nullable
     public AIDatabaseContext createDatabaseContext(
         @NotNull DBRProgressMonitor monitor,

@@ -80,6 +80,7 @@ public class ContextComposite extends Composite {
 
     private IAction changeScopeAction;
     private IAction addConversationAction;
+    @Nullable
     private IAction deleteConversationAction;
 
     public ContextComposite(@NotNull AIChatControl chat, @NotNull Composite parent) {
@@ -415,7 +416,9 @@ public class ContextComposite extends Composite {
         boolean busy = chat.isBusy();
         changeScopeAction.setEnabled(!busy && chat.getCompletionSettings() != null);
         addConversationAction.setEnabled(!busy);
-        deleteConversationAction.setEnabled(!busy);
+        if (deleteConversationAction != null) {
+            deleteConversationAction.setEnabled(!busy);
+        }
     }
 
     private void contributeContextActions(@NotNull IContributionManager manager) {
@@ -476,27 +479,29 @@ public class ContextComposite extends Composite {
                 }
             }
         };
-        deleteConversationAction = new Action("Delete conversation", DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
-            @Override
-            public void run() {
-                if (DBWorkbench.getPlatformUI().confirmAction(
-                    "Delete conversation",
-                    "Are you sure you want to delete conversation '" + chat.getActiveConversation().getCaption() + "'?"
-                )) {
-                    try {
-                        chat.removeActiveConversation();
-                    } catch (Exception e) {
-                        DBWorkbench.getPlatformUI().showError(
-                            "Error deleting conversation",
-                            "Could not delete conversation: " + e.getMessage(),
-                            e
-                        );
+        manager.add(addConversationAction);
+        if (chat.getChatSession().getStorage().canPersist()) {
+            deleteConversationAction = new Action("Delete conversation", DBeaverIcons.getImageDescriptor(UIIcon.DELETE)) {
+                @Override
+                public void run() {
+                    if (DBWorkbench.getPlatformUI().confirmAction(
+                        "Delete conversation",
+                        "Are you sure you want to delete conversation '" + chat.getActiveConversation().getCaption() + "'?"
+                    )) {
+                        try {
+                            chat.removeActiveConversation();
+                        } catch (Exception e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                "Error deleting conversation",
+                                "Could not delete conversation: " + e.getMessage(),
+                                e
+                            );
+                        }
                     }
                 }
-            }
-        };
-        manager.add(addConversationAction);
-        manager.add(deleteConversationAction);
+            };
+            manager.add(deleteConversationAction);
+        }
     }
 
     @NotNull

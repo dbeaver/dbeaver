@@ -75,4 +75,8 @@ public interface AIChatStorage {
         @NotNull Instant from,
         @NotNull Instant to
     ) throws DBException;
+
+    default boolean canPersist() {
+        return true;
+    }
 }
