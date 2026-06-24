@@ -22,6 +22,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 
+/**
+ * This is a legacy handler for show completion.
+ * TODO: Must be replaced with AI chat view command
+ */
 public class AITranslateHandler extends AbstractHandler {
 
     @Override
