@@ -17,9 +17,7 @@
 package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
 /**
@@ -29,12 +27,6 @@ public interface DBSTableForeignKey extends DBSEntityReferrer, DBSEntityAssociat
     @NotNull
     DBSForeignKeyModifyRule getDeleteRule();
 
-    default void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule) {}
-
     @NotNull
     DBSForeignKeyModifyRule getUpdateRule();
-
-    default void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {}
-
-    default void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint) {}
 }

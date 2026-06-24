@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyEditable;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -43,7 +43,7 @@ import java.util.List;
  *
  * @author Denis Forveille
  */
-public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableForeignKeyColumn> implements DBSTableForeignKey {
+public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableForeignKeyColumn> implements DBSTableForeignKeyEditable {
 
     private static final Log log = Log.getLog(DB2TableForeignKey.class);
 
@@ -121,10 +121,20 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
         return db2UpdateRule.getRule();
     }
 
+    @Override
+    public void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule) {
+        this.db2UpdateRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule);
+    }
+
     @NotNull
     @Override
     public DBSForeignKeyModifyRule getDeleteRule() {
         return db2DeleteRule.getRule();
+    }
+
+    @Override
+    public void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule) {
+        this.db2DeleteRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule);
     }
 
     // -----------------

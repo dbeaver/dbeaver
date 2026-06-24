@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyEditable;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -38,7 +38,7 @@ import java.sql.ResultSet;
 /**
  * OracleTableForeignKey
  */
-public class OracleTableForeignKey extends OracleTableConstraintBase implements DBSTableForeignKey
+public class OracleTableForeignKey extends OracleTableConstraintBase implements DBSTableForeignKeyEditable
 {
     private static final Log log = Log.getLog(OracleTableForeignKey.class);
 

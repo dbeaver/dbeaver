@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyEditable;
 
 import java.util.List;
 
@@ -38,8 +39,7 @@ public abstract class JDBCTableForeignKey<
     COLUMN extends DBSTableConstraintColumn,
     PRIMARY_KEY extends DBSEntityConstraint>
     extends JDBCTableConstraint<TABLE, COLUMN>
-    implements DBSTableForeignKey
-{
+    implements DBSTableForeignKeyEditable {
     @Nullable
     protected PRIMARY_KEY referencedConstraint;
     protected DBSForeignKeyModifyRule deleteRule;
