@@ -367,7 +367,18 @@ public class AIAssistantImpl implements AIAssistant {
 
     @Override
     public boolean isFunctionSupported() {
-        return false;
+        AIToolboxManager toolboxManager = this.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        if (!functionSettings.isFunctionsEnabled()) {
+            return false;
+        }
+        try {
+            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            return engineDescriptor.isSupportsFunctions();
+        } catch (DBException e) {
+            log.debug(e);
+            return false;
+        }
     }
 
     @NotNull
