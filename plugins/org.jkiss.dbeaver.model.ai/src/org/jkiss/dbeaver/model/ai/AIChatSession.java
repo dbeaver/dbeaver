@@ -159,7 +159,11 @@ public class AIChatSession {
                     );
                     for (QMAIConversationHistory history : conversationsHistory) {
                         DBPDataSourceContainer dataSourceContainer = getContainer(history.getDataSource());
-                        AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(getAssistant(), history, dataSourceContainer);
+                        AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(
+                            assistant,
+                            history,
+                            dataSourceContainer
+                        );
                         String contextJson = history.getContext().getContextJson();
                         if (contextJson != null) {
                             AIChatConversationSettings convSettings = new AIChatConversationSettings(this, conversation);
@@ -256,7 +260,7 @@ public class AIChatSession {
         listeners.remove(listener);
     }
 
-    public <T> void notifyListeners(@NotNull BiConsumer<AIChatListener, T> consumer, T payload) {
+    public <T> void notifyListeners(@NotNull BiConsumer<AIChatListener, T> consumer, @NotNull T payload) {
         for (AIChatListener listener : listeners.toArray(AIChatListener[]::new)) {
             try {
                 consumer.accept(listener, payload);
@@ -503,11 +507,11 @@ public class AIChatSession {
             }
         }
         DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
-        DBSLogicalDataSource lDataSource = DBSLogicalDataSource.createLogicalDataSource(container, executionContext);
+        DBSLogicalDataSource lgDataSource = DBSLogicalDataSource.createLogicalDataSource(container, executionContext);
 
         updateScopeSettingsIfNeeded(settings, container);
         assert settings.getScope() != null;
-        AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(lDataSource).setScope(settings.getScope());
+        AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(lgDataSource).setScope(settings.getScope());
         if (executionContext != null) {
             builder.setExecutionContext(executionContext);
         }
@@ -585,6 +589,7 @@ public class AIChatSession {
         return project.getDataSourceRegistry().getDataSource(dataSource.dataSourceId());
     }
 
+    // Chat session provider
     public interface SessionIdProvider {
         @NotNull
         String getSessionId(@NotNull DBRProgressMonitor monitor) throws DBException;
@@ -596,7 +601,7 @@ public class AIChatSession {
             .getProperty(AIConstants.LOG_STATS_PROPERTY, false);
     }
 
-    private void logConversationStats(UUID conversationId) throws DBException {
+    private void logConversationStats(@NotNull UUID conversationId) throws DBException {
         List<QMAIMessageMeta> conversationHistoryMeta = storage
             .getConversationHistoryMeta(conversationId);
         if (conversationHistoryMeta.isEmpty()) {
@@ -623,6 +628,9 @@ public class AIChatSession {
                 case AIMetaTypes.EMBEDDING -> {
                     embeddingTokenCount = embeddingTokenCount + qmaiMessageMeta.totalInputTokens();
                     embeddingDuration = embeddingDuration.plus(qmaiMessageMeta.timeSpent());
+                }
+                default -> {
+                    // Do nothing?
                 }
             }
         }
@@ -657,9 +665,10 @@ public class AIChatSession {
     }
 
     private class ChatSessionListener implements AIChatListener {
+        @NotNull
         private final AIChatStorage storage;
 
-        public ChatSessionListener(AIChatStorage storage) {
+        public ChatSessionListener(@NotNull AIChatStorage storage) {
             this.storage = storage;
         }
 

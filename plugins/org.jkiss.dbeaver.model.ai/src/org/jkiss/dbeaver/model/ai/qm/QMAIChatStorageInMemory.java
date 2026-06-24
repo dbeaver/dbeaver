@@ -135,8 +135,7 @@ public class QMAIChatStorageInMemory implements AIChatStorage {
         @NotNull String engineId,
         @NotNull Instant from,
         @NotNull Instant to
-    )
-    throws DBException {
+    ) throws DBException {
         return List.of();
     }
 }

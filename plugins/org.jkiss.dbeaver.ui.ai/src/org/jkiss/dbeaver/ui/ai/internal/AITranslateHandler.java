@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 public class AITranslateHandler extends AbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) {
+    public Object execute(@NotNull ExecutionEvent event) {
         ActionUtils.runCommand(SQLEditorCommands.CMD_AI_CHAT_TOGGLE, HandlerUtil.getActiveWorkbenchWindow(event));
         return null;
     }

@@ -137,7 +137,7 @@ public class QMAIChatHistoryMapper {
     }
 
     @Nullable
-    private static String toJsonString(Object object) {
+    private static String toJsonString(@Nullable Object object) {
         if (object == null) {
             return null;
         }
@@ -168,7 +168,7 @@ public class QMAIChatHistoryMapper {
             String fcString = it.functionCall();
             String frString = it.functionResult();
             List<AIMessageMeta> messageMetas = toAIMessageMeta(it.meta());
-                LocalDateTime messageTime = LocalDateTime.ofInstant(it.timestamp(), ZoneId.systemDefault());
+            LocalDateTime messageTime = LocalDateTime.ofInstant(it.timestamp(), ZoneId.systemDefault());
             AIMessage aiMessage;
             if (!CommonUtils.isEmpty(fcString)) {
                 if (role == AIMessageType.CONFIRMATION) {
@@ -205,6 +205,7 @@ public class QMAIChatHistoryMapper {
         }
     }
 
+    @NotNull
     public static Set<QMAIContextObject> toQMAIContextObjects(
         @NotNull AIDatabaseContext context
     ) {

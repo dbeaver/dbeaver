@@ -52,7 +52,7 @@ public class UserTokenQuotaService implements AIChatListener {
     }
 
     @NotNull
-    public QuotaStatus getUserQuotaStatus(String sessionId, String engineId) throws DBException {
+    public QuotaStatus getUserQuotaStatus(@NotNull String sessionId, @NotNull String engineId) throws DBException {
         UserQuotaSettings config = getConfig();
 
         if (config == null || !config.enabled()) {
@@ -109,6 +109,7 @@ public class UserTokenQuotaService implements AIChatListener {
                     switch (messageMeta.type()) {
                         case AIMetaTypes.EMBEDDING -> v.addAndGetEmbeddingTokenCount(usage.totalInputTokens());
                         case AIMetaTypes.PROMPT -> v.addAndGetPromptTokenCount(usage.totalInputTokens());
+                        default -> {}
                     }
 
                     return v;
@@ -117,10 +118,11 @@ public class UserTokenQuotaService implements AIChatListener {
         }
     }
 
+    @NotNull
     private TokenCount computeTotalInputTokenCount(
-        String sessionId,
-        String engineId,
-        Instant now
+        @NotNull String sessionId,
+        @NotNull String engineId,
+        @NotNull Instant now
     ) {
         try {
             List<QMAIMessageMeta> historyMeta = chatStorage.getConversationHistoryMeta(
@@ -185,7 +187,7 @@ public class UserTokenQuotaService implements AIChatListener {
     }
 
     private static class UncheckedDBException extends RuntimeException {
-        public UncheckedDBException(DBException cause) {
+        public UncheckedDBException(@NotNull DBException cause) {
             super(cause);
         }
 

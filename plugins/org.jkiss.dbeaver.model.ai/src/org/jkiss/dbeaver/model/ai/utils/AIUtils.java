@@ -431,7 +431,8 @@ public final class AIUtils {
         } else if (dbsObject instanceof DBSEntity) {
             objectInfo = "table '" + objectFullName + "'";
         } else if (dbsObject instanceof DBSEntityAttribute) {
-            objectInfo = "column '" + objectFullName + "' in the table '" + DBUtils.getObjectFullName(dbsObject.getParentObject(), DBPEvaluationContext.DDL) + "'";
+            objectInfo = "column '" + objectFullName + "' in the table '" +
+                DBUtils.getObjectFullName(dbsObject.getParentObject(), DBPEvaluationContext.DDL) + "'";
         } else {
             objectInfo = DBUtils.getObjectTypeName(dbsObject) + " '" + objectFullName + "'";
         }

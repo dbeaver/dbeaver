@@ -34,6 +34,7 @@ public record QMAIChatMessage(
     boolean deleted,
     @Nullable List<QMAIMessageMeta> meta
 ) {
+    @NotNull
     @Override
     public String toString() {
         return role + " - " + (CommonUtils.isEmpty(displayMessage) ? content : displayMessage);
