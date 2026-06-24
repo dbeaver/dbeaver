@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="timeplus"
+              class="org.jkiss.dbeaver.ext.timeplus.model.TimeplusMetaModel"
+              driverClass="com.timeplus.jdbc.TimeplusDriver,com.timeplus.proton.jdbc.ProtonDriver"
+              dialect="generic"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.timeplus.TimeplusDataSourceProvider"
+                description="Timeplus"
+                id="timeplus"
+                parent="generic"
+                label="Timeplus"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
+                dialect="generic">
+            <drivers managable="true">
+
+                <!-- Timeplus: stream processing platform (Native TCP driver) -->
+                <driver
+                    id="timeplus_native"
+                    label="Timeplus"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
+                    class="com.timeplus.jdbc.TimeplusDriver"
+                    sampleURL="jdbc:timeplus://{host}:{port}[/{database}]"
+                    defaultPort="8463"
+                    description="Timeplus Native JDBC driver (TCP). For streaming and batch queries; recommended for Timeplus Enterprise."
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://docs.timeplus.com/jdbc"
+                    categories="sql,analytic,streaming"
+                    allowsEmptyPassword="true">
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <file type="jar" path="maven:/com.timeplus:timeplus-native-jdbc:2.0.9"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+
+                <!-- Timeplus Proton: JDBC over HTTP (batch queries) -->
+                <driver
+                    id="timeplus_proton"
+                    label="Timeplus Proton"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
+                    class="com.timeplus.proton.jdbc.ProtonDriver"
+                    sampleURL="jdbc:proton://{host}:{port}/{database}"
+                    defaultPort="8123"
+                    defaultDatabase="default"
+                    defaultUser="default"
+                    description="Timeplus Proton JDBC driver (HTTP). For batch queries; use LIMIT or table(stream) for historical data."
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://docs.timeplus.com/jdbc"
+                    categories="sql,analytic,streaming"
+                    allowsEmptyPassword="true">
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <file type="jar" path="maven:/com.timeplus:proton-jdbc:0.7.1"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="omit-schema" value="true"/>
+                    <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+
+            </drivers>
+        </datasource>
+    </extension>
+
+</plugin>
