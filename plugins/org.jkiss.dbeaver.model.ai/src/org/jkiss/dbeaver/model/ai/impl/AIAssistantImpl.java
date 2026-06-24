@@ -58,7 +58,7 @@ public class AIAssistantImpl implements AIAssistant {
     protected static final int MAX_FUNCTION_CALLS = 10;
 
     protected final DBPWorkspace workspace;
-    private String chatSessionId;
+    private final String chatSessionId;
 
     private AIEngineRequestFactory requestFactory;
     private AIToolboxManager toolboxManager;
@@ -326,6 +326,7 @@ public class AIAssistantImpl implements AIAssistant {
                     chatListener.error(
                         new DBException(
                             "Too many AI function calls (" + AIAssistantImpl.MAX_FUNCTION_CALLS + ")"));
+                    chatListener.complete(List.of(), true);
                     return;
                 }
                 fc.transformArguments(context, functionContext);
