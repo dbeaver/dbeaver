@@ -237,7 +237,8 @@ public class AIEngineRequestFactory {
         try {
             return engine.getContextWindowSize(monitor);
         } catch (DBException e) {
-            log.debug("Cannot determine engine " + engine + " context window size. Set to default " +
+            log.debug("Cannot determine engine " + engine.getClass().getSimpleName() +
+                " context window size. Set to default " +
                 AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, e);
             return AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE;
         }
