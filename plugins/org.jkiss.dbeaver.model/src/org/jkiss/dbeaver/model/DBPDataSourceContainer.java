@@ -154,6 +154,7 @@ public interface DBPDataSourceContainer extends
      * @param credentialsFromEnvironment {@code true} to resolve credentials from OS environment variables
      */
     default void setCredentialsFromEnvironment(boolean credentialsFromEnvironment) {
+        // no-op; implemented by DataSourceDescriptor
     }
 
     /**
