@@ -202,7 +202,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                     updateTableInfo();
                 });
 
-                UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color + " (alternative)");
+                UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color_alternative);
                 alternativeColorPicker = new ColorSelector(groupSettings);
                 alternativeColorPicker.addListener(event -> {
                     getSelectedType().setAlternativeColor(StringConverter.asString(alternativeColorPicker.getColorValue()));
@@ -410,13 +410,13 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     }
 
     private void showSelectedType(@NotNull DBPConnectionType connectionType) {
-        final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
+        final Color connectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getColor());
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
         } else {
             colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
         }
-        final Color alternativeConnectionTypeColor = UIUtils.getConnectionTypeColor(connectionType, true);
+        final Color alternativeConnectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getAlternativeColor());
         if (alternativeConnectionTypeColor != null) {
             alternativeColorPicker.setColorValue(alternativeConnectionTypeColor.getRGB());
         } else {

@@ -384,6 +384,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             return CommonUtils.equalObjects(id, ct.id) &&
                 CommonUtils.equalObjects(name, ct.name) &&
                 CommonUtils.equalObjects(color, ct.color) &&
+                CommonUtils.equalObjects(alternativeColor, ct.alternativeColor) &&
                 CommonUtils.equalObjects(description, ct.description) &&
                 autocommit == ct.autocommit &&
                 confirmExecute == ct.confirmExecute &&
