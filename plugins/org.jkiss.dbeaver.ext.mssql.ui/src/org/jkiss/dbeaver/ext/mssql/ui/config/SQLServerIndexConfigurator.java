@@ -53,7 +53,7 @@ public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServ
             DBSIndexType.CLUSTERED
     };
 
-    @NotNull
+    @Nullable
     @Override
     public SQLServerTableIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableIndex index, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
