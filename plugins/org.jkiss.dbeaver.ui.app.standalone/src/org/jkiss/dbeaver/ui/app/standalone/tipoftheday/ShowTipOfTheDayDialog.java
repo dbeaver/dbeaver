@@ -20,6 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -97,6 +99,15 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     protected Composite createDialogArea(@NotNull Composite parent) {
         getShell().setText(TipOfTheDayMessages.tip_of_the_day_title);
 
+        Font dialogFont = BaseThemeSettings.instance.baseFont;
+        FontData[] fontData = dialogFont.getFontData();
+        for (int i = 0; i < fontData.length; i++) {
+            FontData fd = fontData[i];
+            fontData[i] = new FontData(fd.getName(), fd.getHeight() + 1, SWT.NONE);
+        }
+        Font largeFont = new Font(dialogFont.getDevice(), fontData);
+        parent.addDisposeListener(e -> largeFont.dispose());
+
         tipIndex = new Random(System.currentTimeMillis()).nextInt(tips.size());
 
         Composite dialogArea = super.createDialogArea(parent);
@@ -132,7 +143,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         gd.widthHint = 300;
         gd.heightHint = 100;
         formText.setLayoutData(gd);
-        formText.setFont(BaseThemeSettings.instance.baseFontBold);
+        formText.setFont(largeFont);
         formText.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(this::navigateLink));
         showTip();
 
