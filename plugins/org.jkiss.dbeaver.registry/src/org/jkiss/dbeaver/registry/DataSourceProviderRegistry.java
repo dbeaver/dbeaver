@@ -109,6 +109,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
             o -> onDriversConfigChanged()
         );
+        WorkspaceConfigEventManager.addConfigChangedListener(
+            RegistryConstants.CONNECTION_TYPES_FILE_NAME,
+            o -> {
+                connectionTypes.clear();
+                loadConnectionTypes();
+            }
+
+        );
     }
 
     private void onDriversConfigChanged() {
@@ -626,8 +634,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     try (var ignored2 = xml.startElement(RegistryConstants.TAG_TYPE)) {
                         xml.addAttribute(RegistryConstants.ATTR_ID, connectionType.getId());
                         xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(connectionType.getName()));
-                        xml.addAttribute(RegistryConstants.ATTR_COLOR, connectionType.getColor());
-                        xml.addAttribute(RegistryConstants.ATTR_ALTERNATIVE_COLOR, connectionType.getAlternativeColor());
+                        xml.addAttribute(RegistryConstants.ATTR_COLOR, connectionType.getColorLight());
+                        xml.addAttribute(RegistryConstants.ATTR_COLOR_DARK, connectionType.getColorDark());
                         xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.toString(connectionType.getDescription()));
                         xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, connectionType.isAutocommit());
                         xml.addAttribute(RegistryConstants.ATTR_CONFIRM_EXECUTE, connectionType.isConfirmExecute());
@@ -787,11 +795,18 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                         break;
                     }
                 }
+                String colorLight = attributes.getValue(RegistryConstants.ATTR_COLOR);
+                String colorDark = attributes.getValue(RegistryConstants.ATTR_COLOR_DARK);
+
                 DBPConnectionType connectionType = new DBPConnectionType(
                     typeId,
                     attributes.getValue(RegistryConstants.ATTR_NAME),
-                    attributes.getValue(RegistryConstants.ATTR_COLOR),
-                    attributes.getValue(RegistryConstants.ATTR_ALTERNATIVE_COLOR),
+                    origType != null && CommonUtils.equalObjects(origType.getColorConstant(), colorLight)
+                        ? origType.getColorLight()
+                        : colorLight,
+                    origType != null && CommonUtils.equalObjects(origType.getColorConstant(), colorDark)
+                        ? origType.getColorDark()
+                        : colorDark,
                     attributes.getValue(RegistryConstants.ATTR_DESCRIPTION),
                     CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
                     CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),

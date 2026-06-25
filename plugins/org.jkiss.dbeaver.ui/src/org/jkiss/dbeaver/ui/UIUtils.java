@@ -2204,8 +2204,8 @@ public class UIUtils {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {
             rgbString = UIStyles.isDarkTheme() ?
-                connectionInfo.getConnectionType().getAlternativeColor() :
-                connectionInfo.getConnectionType().getColor();
+                connectionInfo.getConnectionType().getColorDark() :
+                connectionInfo.getConnectionType().getColorLight();
         }
         return getConnectionColorByRGB(rgbString);
     }
@@ -2214,8 +2214,8 @@ public class UIUtils {
     public static Color getConnectionTypeColor(@NotNull DBPConnectionType connectionType) {
         // If it is dark theme then alternative color would be default one
         String rgbString = UIStyles.isDarkTheme() ?
-            connectionType.getAlternativeColor() :
-            connectionType.getColor();
+            connectionType.getColorDark() :
+            connectionType.getColorLight();
         return getConnectionColorByRGB(rgbString);
     }
 
@@ -2227,7 +2227,7 @@ public class UIUtils {
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
             RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
-            return SHARED_TEXT_COLORS.getColor(rgb);
+            return getSharedColor(rgb);
         } else {
             Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
             if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {

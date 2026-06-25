@@ -133,7 +133,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                         DBPConnectionType newType = new DBPConnectionType(DBPConnectionType.DEFAULT_TYPE);
                         newType.setId(name.toLowerCase());
                         newType.setName("New type");
-                        newType.setColor("255,255,255");
+                        newType.setColorLight("255,255,255");
                         addTypeToTable(newType, newType);
                         typeTable.select(typeTable.getItemCount() - 1);
                         typeTable.showSelection();
@@ -198,14 +198,14 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 colorPicker = new ColorSelector(groupSettings);
 //                colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 colorPicker.addListener(event -> {
-                    getSelectedType().setColor(StringConverter.asString(colorPicker.getColorValue()));
+                    getSelectedType().setColorLight(StringConverter.asString(colorPicker.getColorValue()));
                     updateTableInfo();
                 });
 
                 UIUtils.createControlLabel(groupSettings, CoreMessages.pref_page_connection_types_label_color_alternative);
                 alternativeColorPicker = new ColorSelector(groupSettings);
                 alternativeColorPicker.addListener(event -> {
-                    getSelectedType().setAlternativeColor(StringConverter.asString(alternativeColorPicker.getColorValue()));
+                    getSelectedType().setColorDark(StringConverter.asString(alternativeColorPicker.getColorValue()));
                     updateTableInfo();
                 });
 /*
@@ -410,13 +410,13 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
     }
 
     private void showSelectedType(@NotNull DBPConnectionType connectionType) {
-        final Color connectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getColor());
+        final Color connectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getColorLight());
         if (connectionTypeColor != null) {
             colorPicker.setColorValue(connectionTypeColor.getRGB());
         } else {
             colorPicker.setColorValue(colorPicker.getButton().getBackground().getRGB());
         }
-        final Color alternativeConnectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getAlternativeColor());
+        final Color alternativeConnectionTypeColor = UIUtils.getConnectionColorByRGB(connectionType.getColorDark());
         if (alternativeConnectionTypeColor != null) {
             alternativeColorPicker.setColorValue(alternativeConnectionTypeColor.getRGB());
         } else {
@@ -528,7 +528,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         TableItem item = new TableItem(typeTable, SWT.LEFT);
         item.setText(0, connectionType.getName());
         item.setText(1, CommonUtils.toString(connectionType.getDescription()));
-        if (connectionType.getColor() != null) {
+        if (connectionType.getColorLight() != null) {
             Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
             //item.setBackground(0, connectionColor);
             item.setBackground(1, connectionColor);
@@ -589,8 +589,8 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
                 source.setAutocommit(changed.isAutocommit());
                 source.setConfirmExecute(changed.isConfirmExecute());
                 source.setConfirmDataChange(changed.isConfirmDataChange());
-                source.setColor(changed.getColor());
-                source.setAlternativeColor(changed.getAlternativeColor());
+                source.setColorLight(changed.getColorLight());
+                source.setColorDark(changed.getColorDark());
                 source.setModifyPermissions(changed.getModifyPermission());
                 source.setSmartCommit(changed.isSmartCommit());
                 source.setSmartCommitRecover(changed.isSmartCommitRecover());

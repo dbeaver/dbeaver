@@ -58,7 +58,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             14400, //1 hour
             true,
-            null); //$NON-NLS-1$ //$NON-NLS-3$
+            null,
+            null
+        ); //$NON-NLS-1$ //$NON-NLS-3$
         TEST = new DBPConnectionType(
             "test",
             ModelMessages.dbp_connection_type_table_test,
@@ -75,7 +77,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             7200, //2 hours
             true,
-            null); //$NON-NLS-1$ //$NON-NLS-3$
+            null,
+            "org.jkiss.dbeaver.color.connectionType.qa.background"
+        ); //$NON-NLS-1$ //$NON-NLS-3$
         PROD = new DBPConnectionType(
             "prod",
             ModelMessages.dbp_connection_type_table_production,
@@ -92,7 +96,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             true,
             3600, //1 hour
             true,
-            null); //$NON-NLS-1$ //$NON-NLS-3$
+            null,
+            "org.jkiss.dbeaver.color.connectionType.prod.background"
+        ); //$NON-NLS-1$ //$NON-NLS-3$
 
         SYSTEM_TYPES = new DBPConnectionType[] { DEV, TEST, PROD };
 
@@ -103,8 +109,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
 
     private String id;
     private String name;
-    private String color;
-    private String alternativeColor;
+    private String colorLight;
+    private String colorDark;
     private String description;
     private boolean autocommit;
     private boolean confirmExecute;
@@ -115,6 +121,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private int closeIdleTransactionPeriod;
     private boolean autoCloseConnections;
     private int closeIdleConnectionPeriod;
+    private final String colorConstant;
 
     private boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
@@ -123,8 +130,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this(
             source.id,
             source.name,
-            source.color,
-            source.alternativeColor,
+            source.colorLight,
+            source.colorDark,
             source.description,
             source.autocommit,
             source.confirmExecute,
@@ -136,14 +143,16 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             source.autoCloseConnections,
             source.closeIdleConnectionPeriod,
             source.predefined,
-            source.connectionModifyRestrictions);
+            source.connectionModifyRestrictions,
+            source.colorConstant
+        );
     }
 
     public DBPConnectionType(
         @NotNull String id,
         @NotNull String name,
-        @NotNull String color,
-        @Nullable String alternativeColor,
+        @NotNull String colorLight,
+        @Nullable String colorDark,
         @Nullable String description,
         boolean autocommit,
         boolean confirmExecute,
@@ -153,13 +162,13 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autoCloseTransactions,
         int closeIdleTransactionPeriod,
         boolean autoCloseConnections,
-        int closeIdleConnectionPeriod)
-    {
+        int closeIdleConnectionPeriod
+    ) {
         this(
             id,
             name,
-            color,
-            alternativeColor,
+            colorLight,
+            colorDark,
             description,
             autocommit,
             confirmExecute,
@@ -171,14 +180,16 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             autoCloseConnections,
             closeIdleConnectionPeriod,
             false,
-            null);
+            null,
+            null
+        );
     }
 
     private DBPConnectionType(
         @NotNull String id,
         @NotNull String name,
-        @NotNull String color,
-        @Nullable String alternativeColor,
+        @NotNull String colorLight,
+        @Nullable String colorDark,
         @Nullable String description,
         boolean autocommit,
         boolean confirmExecute,
@@ -190,12 +201,13 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         boolean autoCloseConnections,
         int closeIdleConnectionPeriod,
         boolean predefined,
-        @Nullable List<DBPDataSourcePermission> connectionModifyRestrictions
+        @Nullable List<DBPDataSourcePermission> connectionModifyRestrictions,
+        @Nullable String colorConstant
     ) {
         this.id = id;
         this.name = name;
-        this.color = getColorValueFixed(color);
-        this.alternativeColor = getColorValueFixed(alternativeColor);
+        this.colorLight = getColorValueFixed(colorLight);
+        this.colorDark = getColorValueFixed(colorDark);
         this.description = description;
         this.autocommit = autocommit;
         this.confirmExecute = confirmExecute;
@@ -207,6 +219,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         this.autoCloseConnections = autoCloseConnections;
         this.closeIdleConnectionPeriod = closeIdleConnectionPeriod;
         this.predefined = predefined;
+        this.colorConstant = colorConstant;
         if (connectionModifyRestrictions != null) {
             this.connectionModifyRestrictions = new ArrayList<>(connectionModifyRestrictions);
         }
@@ -236,21 +249,21 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     @NotNull
-    public String getColor() {
-        return color;
+    public String getColorLight() {
+        return colorLight;
     }
 
-    public void setColor(@NotNull String color) {
-        this.color = getColorValueFixed(color);
+    public void setColorLight(@NotNull String colorLight) {
+        this.colorLight = getColorValueFixed(colorLight);
     }
 
     @Nullable
-    public String getAlternativeColor() {
-        return alternativeColor == null ? color : alternativeColor;
+    public String getColorDark() {
+        return colorDark == null ? colorLight : colorDark;
     }
 
-    public void setAlternativeColor(@Nullable String color) {
-        this.alternativeColor = getColorValueFixed(color);
+    public void setColorDark(@Nullable String color) {
+        this.colorDark = getColorValueFixed(color);
     }
 
     @Nullable
@@ -359,6 +372,11 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     }
 
     @Nullable
+    public String getColorConstant() {
+        return colorConstant;
+    }
+
+    @Nullable
     private String getColorValueFixed(@Nullable String color) {
         if (color == null) {
             return null;
@@ -366,9 +384,9 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         // Backward compatibility.
         // In old times we had hardcoded colors now we need to change them to color constants
         if (PROD != null && this.id.equals(PROD.id) && color.equals("247,159,129")) {
-            return PROD.color;
+            return PROD.colorLight;
         } else if (TEST != null && this.id.equals(TEST.id) && color.equals("196,255,181")) {
-            return TEST.color;
+            return TEST.colorLight;
         }
         return color;
     }
@@ -383,8 +401,8 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
         if (obj instanceof DBPConnectionType ct) {
             return CommonUtils.equalObjects(id, ct.id) &&
                 CommonUtils.equalObjects(name, ct.name) &&
-                CommonUtils.equalObjects(color, ct.color) &&
-                CommonUtils.equalObjects(alternativeColor, ct.alternativeColor) &&
+                CommonUtils.equalObjects(colorLight, ct.colorLight) &&
+                CommonUtils.equalObjects(colorDark, ct.colorDark) &&
                 CommonUtils.equalObjects(description, ct.description) &&
                 autocommit == ct.autocommit &&
                 confirmExecute == ct.confirmExecute &&
