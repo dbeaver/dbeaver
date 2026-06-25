@@ -178,8 +178,7 @@ public class CubridUser extends GenericSchema
     public List<CubridTrigger> getUserTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<CubridTrigger> userTriggers = new ArrayList<>();
         for (GenericTrigger<?> trigger : super.getTriggers(monitor)) {
-            if (trigger instanceof CubridTrigger) {
-                CubridTrigger cubridTrigger = (CubridTrigger) trigger;
+            if (trigger instanceof CubridTrigger cubridTrigger) {             
                 String event = cubridTrigger.getEvent();
                 if ("COMMIT".equals(event) || "ROLLBACK".equals(event)) {
                     userTriggers.add(cubridTrigger);
