@@ -43,7 +43,6 @@ public class DataTransferJob extends AbstractJob {
     private final DBTTask task;
     private final DBRProgressMonitor parentMonitor;
     private long elapsedTime;
-    private boolean hasErrors;
 
     private final Log log;
     private final PrintStream logStream;
@@ -72,10 +71,6 @@ public class DataTransferJob extends AbstractJob {
         return elapsedTime;
     }
 
-    public boolean isHasErrors() {
-        return hasErrors;
-    }
-
     public DBCStatistics getTotalStatistics() {
         return totalStatistics;
     }
@@ -86,7 +81,6 @@ public class DataTransferJob extends AbstractJob {
         final int pipeCount = settings.getDataPipes().size();
         final DBRProgressMonitor monitor = parentMonitor != null ? parentMonitor : jobMonitor;
         monitor.beginTask("Perform data transfer", pipeCount);
-        hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
             if (monitor.isCanceled()) {
@@ -100,17 +94,15 @@ public class DataTransferJob extends AbstractJob {
                 if (logStream != null) {
                     Log.setLogWriter(logStream);
                 }
-                boolean transferResult = transferData(monitor, transferPipe);
+                transferData(monitor, transferPipe);
                 Log.setLogWriter(null);
 
-                hasErrors |= !transferResult;
                 if (parentMonitor != null) {
                     parentMonitor.worked(1);
                 }
                 jobMonitor.worked(1);
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
-                IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             }
         }
@@ -119,7 +111,7 @@ public class DataTransferJob extends AbstractJob {
         return Status.OK_STATUS;
     }
 
-    private boolean transferData(
+    private void transferData(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataTransferPipe transferPipe
     ) throws DBException, IOException {
@@ -150,7 +142,6 @@ public class DataTransferJob extends AbstractJob {
             totalStatistics.accumulate(consumer.getStatistics());
 
             consumer.finishTransfer(monitor, false);
-            return true;
         } catch (Exception e) {
             consumer.finishTransfer(monitor, e, task, false);
             log.error("Error transferring data from " + inputName + " to " + outputName, e);
