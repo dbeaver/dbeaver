@@ -7,6 +7,8 @@ Bundle-Version: 1.0.84.qualifier
 Import-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.internal
 Export-Package: org.jkiss.dbeaver.ui.ai,
+ org.jkiss.dbeaver.ui.ai.chat,
+ org.jkiss.dbeaver.ui.ai.chat.controls,
  org.jkiss.dbeaver.ui.ai.controls,
  org.jkiss.dbeaver.ui.ai.engine.openai,
  org.jkiss.dbeaver.ui.ai.engine.copilot,
@@ -19,6 +21,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.navigator,
+ org.eclipse.e4.ui.css.core,
+ org.eclipse.e4.ui.css.swt,
  org.eclipse.ui.workbench,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,
