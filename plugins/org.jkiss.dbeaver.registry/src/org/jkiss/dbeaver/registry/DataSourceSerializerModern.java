@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
@@ -497,7 +496,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
 
             // Network profiles
-            DBWNetworkProfileManager networkProfileManager = registry.getNetworkProfiles();
             for (Map.Entry<String, Map<String, Object>> vmMap : JSONUtils.getNestedObjects(configurationMap, "network-profiles")) {
                 String profileId = vmMap.getKey();
                 Map<String, Object> profileMap = vmMap.getValue();
@@ -513,12 +511,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
-                if (networkProfileManager.getProfile(null, profileId) != null) {
-                    parseResults.updatedProfiles.add(profile);
-                } else {
-                    parseResults.addedProfiles.add(profile);
-                }
-                networkProfileManager.addOrUpdateProfile(profile);
+                registry.getNetworkProfiles().addOrUpdateProfile(profile);
+                parseResults.updatedProfiles.add(profile);
             }
 
             // Auth profiles

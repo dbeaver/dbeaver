@@ -30,7 +30,6 @@ public class DataSourceParseResults {
     public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
     public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
     public final Set<DBPDataSourceFolder> removedFolders = new LinkedHashSet<>();
-    public final Set<DBWNetworkProfile> addedProfiles = new LinkedHashSet<>();
     public final Set<DBWNetworkProfile> updatedProfiles = new LinkedHashSet<>();
     public final Set<DBWNetworkProfile> removedProfiles = new LinkedHashSet<>();
 }

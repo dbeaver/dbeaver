@@ -864,7 +864,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                     }
                 }
                 for (DBWNetworkProfile profile : networkProfileManager.getProfiles()) {
-                    if (!parseResults.addedProfiles.contains(profile) && !parseResults.updatedProfiles.contains(profile)) {
+                    if (!parseResults.updatedProfiles.contains(profile)) {
                         parseResults.removedProfiles.add(profile);
                     }
                 }
@@ -1146,10 +1146,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         @Override
         public void saveSettings() {
-            // TODO: find a better way to save network profiles.
-            if (project.getDataSourceRegistry() instanceof DataSourcePersistentRegistry dspr) {
-                dspr.saveDataSources();
-            }
+            project.getDataSourceRegistry().flushConfig();
         }
 
         @NotNull

@@ -199,25 +199,12 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
     }
 
     public boolean equalConfigurations(@Nullable DBWNetworkProfile other) {
-        if (this == other) {
-            return true;
-        }
-        if (other == null) {
-            return false;
-        }
-        if (!Objects.equals(getProfileId(), other.getProfileId())) {
-            return false;
-        }
-        if (!Objects.equals(getProfileName(), other.getProfileName())) {
-            return false;
-        }
-        if (!Objects.equals(getProfileDescription(), other.getProfileDescription())) {
-            return false;
-        }
-        if (!Objects.equals(getProperties(), other.getProperties())) {
-            return false;
-        }
-        if (this.configurations.size() != other.configurations.size()) {
+        if (other == null ||
+            !Objects.equals(getProfileName(), other.getProfileName()) ||
+            !Objects.equals(getProfileDescription(), other.getProfileDescription()) ||
+            !Objects.equals(getProperties(), other.getProperties()) ||
+            this.configurations.size() != other.configurations.size()
+        ) {
             return false;
         }
         for (DBWHandlerConfiguration cfg : configurations) {
