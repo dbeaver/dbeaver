@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.controls.ValueFormatSelector;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -93,7 +94,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             propsEditor.getControl().setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(200, 150).create());
         }
         {
-            final ExpandableComposite generalExpander = new ExpandableComposite(
+            final ExpandableCompositeEx generalExpander = new ExpandableCompositeEx(
                 composite,
                 ExpandableComposite.CLIENT_INDENT | SWT.SEPARATOR,
                 ExpandableComposite.TWISTIE
