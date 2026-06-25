@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -117,13 +118,13 @@ public class CubridTrigger extends GenericTableTrigger {
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, editable = true, updatable = true, order = 4, visibleIf = TargetTableValidator.class)
     public CubridTable getTable() {
         return (CubridTable) super.getTable();
     }
 
     @Nullable
-    @Property(viewable = true, editable = true, listProvider = ColumnNameListProvider.class, order = 5)
+    @Property(viewable = true, editable = true, listProvider = ColumnNameListProvider.class, order = 5, visibleIf = TargetTableValidator.class)
     public String getTargetColumn() {
         return targetColumn;
     }
@@ -320,4 +321,11 @@ public class CubridTrigger extends GenericTableTrigger {
         }
     }
 
+    public static class TargetTableValidator implements IPropertyValueValidator<CubridTrigger, Object> {
+        @Override
+        public boolean isValidValue(@NotNull CubridTrigger object, @Nullable Object value) throws IllegalArgumentException {
+            String event = object.getEvent();
+            return !"COMMIT".equals(event) && !"ROLLBACK".equals(event);
+        }
+    }
 }

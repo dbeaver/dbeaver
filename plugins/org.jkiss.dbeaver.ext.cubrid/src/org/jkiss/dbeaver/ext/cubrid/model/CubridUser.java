@@ -175,6 +175,35 @@ public class CubridUser extends GenericSchema
         return indexes;
     }
 
+    public List<CubridTrigger> getUserTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<CubridTrigger> userTriggers = new ArrayList<>();
+        for (GenericTrigger<?> trigger : super.getTriggers(monitor)) {
+            if (trigger instanceof CubridTrigger) {
+                CubridTrigger cubridTrigger = (CubridTrigger) trigger;
+                String event = cubridTrigger.getEvent();
+                if ("COMMIT".equals(event) || "ROLLBACK".equals(event)) {
+                    userTriggers.add(cubridTrigger);
+                }
+            }
+        }
+        return userTriggers;
+    }
+
+    @Override
+    public List<CubridTrigger> getTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<CubridTrigger> tableTriggers = new ArrayList<>();
+        for (GenericTrigger<?> trigger : super.getTriggers(monitor)) {
+            if (trigger instanceof CubridTrigger) {
+                CubridTrigger cubridTrigger = (CubridTrigger) trigger;
+                String event = cubridTrigger.getEvent();
+                if (!"COMMIT".equals(event) && !"ROLLBACK".equals(event)) {
+                    tableTriggers.add(cubridTrigger);
+                }
+            }
+        }
+        return tableTriggers;
+    }
+
     public class CubridTableCache extends TableCache {
         private String lastTableName;
         private final Map<String, ColumnExtraInfo> columnInfoMap = new HashMap<>();
