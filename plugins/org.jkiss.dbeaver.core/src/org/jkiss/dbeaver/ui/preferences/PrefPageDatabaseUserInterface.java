@@ -757,7 +757,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         private void updateLayout(@NotNull Control start, @Nullable Control end) {
             for (Control cc = start, prev = null; cc != null && cc != end; cc = cc.getParent()) {
                 if (cc instanceof ScrolledComposite sc) {
-                    sc.layout();
+                    sc.layout(true, true);
                     if (prev != null) {
                         sc.setMinSize(prev.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     }
