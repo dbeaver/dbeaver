@@ -548,6 +548,97 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
         System.out.println("Addition asserts checked: " + additionAssertsChecked);
     }
 
+    @Test
+    public void insertingFragmentBetweenComments() throws Exception {
+
+        // GIVEN
+        String originalSql = String.join(
+            "\n",
+            "/* lead */",
+            "SELECT id",
+            "FROM t1 -- inner",
+            "JOIN t2 ON t1.id = t2.id",
+            "ORDER BY id",
+            "/* trail */"
+        );
+        String newSqlWithoutComments = String.join(
+            "\n",
+            "SELECT id",
+            "FROM t1",
+            "JOIN t2 ON t1.id = t2.id",
+            "JOIN t3 ON t1.id = t3.id",
+            "ORDER BY id"
+        );
+
+        // WHEN
+        QueryReconstructor queryReconstructor = new QueryReconstructor(BasicSQLDialect.INSTANCE, originalSql);
+        String reconstructedText = queryReconstructor.reconstructFromOriginalFragments(newSqlWithoutComments);
+
+        //THEN
+        String expectedText = String.join(
+            "\n",
+            "/* lead */",
+            "SELECT id",
+            "FROM t1 -- inner",
+            "JOIN t2 ON t1.id = t2.id",
+            "JOIN t3 ON t1.id = t3.id",
+            "ORDER BY id",
+            "/* trail */"
+        );
+        Assertions.assertEquals(expectedText, reconstructedText);
+    }
+
+    @Test
+    public void replacingSelectAllWithColumns() throws Exception {
+
+        // GIVEN
+        String originalSql = String.join(
+            "\n",
+            "SELECT",
+            "\t*",
+            "FROM t -- c",
+            "ORDER BY x"
+        );
+        String newSqlWithoutComments = String.join(
+            "\n",
+            "SELECT",
+            "\tt.a,",
+            "\tt.b",
+            "FROM t",
+            "ORDER BY x"
+        );
+
+        // WHEN
+        QueryReconstructor queryReconstructor = new QueryReconstructor(BasicSQLDialect.INSTANCE, originalSql);
+        String reconstructedText = queryReconstructor.reconstructFromOriginalFragments(newSqlWithoutComments);
+
+        // THEN
+        String expectedText = String.join(
+            "\n",
+            "SELECT",
+            "\tt.a,",
+            "\tt.b",
+            "FROM t -- c",
+            "ORDER BY x"
+        );
+        Assertions.assertEquals(expectedText, reconstructedText);
+    }
+
+    @Test
+    public void trailingOnlyComment() throws Exception {
+
+        // GIVEN
+        String originalSql = "SELECT * FROM tablename --comment";
+        String newSqlWithoutComments = "SELECT col FROM tablename";
+
+        // WHEN
+        QueryReconstructor queryReconstructor = new QueryReconstructor(BasicSQLDialect.INSTANCE, originalSql);
+        String reconstructedText = queryReconstructor.reconstructFromOriginalFragments(newSqlWithoutComments);
+
+        // THEN
+        Assertions.assertEquals("SELECT col FROM tablename --comment", reconstructedText);
+    }
+
     @NotNull
     private Pattern getPattern(@NotNull String string) {
         // using regex-based matching with alphanumerical boundaries instead of String::contains
