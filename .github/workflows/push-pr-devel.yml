@@ -24,8 +24,10 @@ jobs:
       timeout-minutes: 5
       mvn-args: -Pproduct-dbeaver-ce,product-dbeaver-eclipse-ce
 
-# Commented as it requires push write permissions
-#  lint-java:
-#    name: Check style
-#    uses: dbeaver/dbeaver-common/.github/workflows/java-checkstyle.yml@devel
-#    secrets: inherit
+  lint-java:
+    name: Check style
+    uses: dbeaver/dbeaver-common/.github/workflows/java-checkstyle.yml@devel
+    secrets: inherit
+    permissions:
+      contents: read
+      pull-requests: read
