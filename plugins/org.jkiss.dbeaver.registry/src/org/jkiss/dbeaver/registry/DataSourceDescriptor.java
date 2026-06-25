@@ -1371,7 +1371,7 @@ public class DataSourceDescriptor
             }
         }
         // Process variables
-        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+        if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS) || credentialsFromEnvironment) {
             IVariableResolver variableResolver = new DataSourceVariableResolver(
                 this, this.resolvedConnectionInfo);
             this.resolvedConnectionInfo.resolveDynamicVariables(variableResolver);
