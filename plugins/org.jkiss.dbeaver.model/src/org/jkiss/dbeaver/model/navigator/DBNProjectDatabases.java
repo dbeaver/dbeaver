@@ -212,7 +212,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 }
                 DBPDataSourceContainer oldContainer = dataSource.getDataSourceContainer();
                 registryToRefresh.add(oldContainer.getRegistry());
-                if (oldContainer.getRegistry() == dataSourceRegistry) {
+                if (oldContainer.getRegistry() == dataSourceRegistry && nodeProject != null) {
                     // the same registry
                     continue;
                 }
