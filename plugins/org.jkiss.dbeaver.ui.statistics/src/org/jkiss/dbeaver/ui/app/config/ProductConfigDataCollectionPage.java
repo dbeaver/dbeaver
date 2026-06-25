@@ -39,11 +39,6 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
     }
 
     @Override
-    public boolean isPageApplicable() {
-        return !UIStatisticsActivator.isSkipDataShareConfirmation();
-    }
-
-    @Override
     public void loadSettings() {
         sendUsageStatistics.set(UIStatisticsActivator.isTrackingEnabled());
     }
