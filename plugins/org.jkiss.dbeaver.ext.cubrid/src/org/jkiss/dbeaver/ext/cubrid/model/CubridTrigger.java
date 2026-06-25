@@ -215,6 +215,10 @@ public class CubridTrigger extends GenericTableTrigger {
         super.setDescription(description);
     }
 
+    public static boolean isUserTrigger(String event) {
+        return "COMMIT".equals(event) || "ROLLBACK".equals(event);
+    }
+
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
@@ -325,7 +329,7 @@ public class CubridTrigger extends GenericTableTrigger {
         @Override
         public boolean isValidValue(@NotNull CubridTrigger object, @Nullable Object value) throws IllegalArgumentException {
             String event = object.getEvent();
-            return !"COMMIT".equals(event) && !"ROLLBACK".equals(event);
+            return !isUserTrigger(event);
         }
     }
 }

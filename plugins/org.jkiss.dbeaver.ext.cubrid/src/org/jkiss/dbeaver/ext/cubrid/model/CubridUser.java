@@ -180,7 +180,7 @@ public class CubridUser extends GenericSchema
         for (GenericTrigger<?> trigger : super.getTriggers(monitor)) {
             if (trigger instanceof CubridTrigger cubridTrigger) {             
                 String event = cubridTrigger.getEvent();
-                if ("COMMIT".equals(event) || "ROLLBACK".equals(event)) {
+                if (CubridTrigger.isUserTrigger(event)) {
                     userTriggers.add(cubridTrigger);
                 }
             }
@@ -194,7 +194,7 @@ public class CubridUser extends GenericSchema
         for (GenericTrigger<?> trigger : super.getTriggers(monitor)) {
             if (trigger instanceof CubridTrigger cubridTrigger) {
                 String event = cubridTrigger.getEvent();
-                if (!"COMMIT".equals(event) && !"ROLLBACK".equals(event)) {
+                if (!CubridTrigger.isUserTrigger(event)) {
                     tableTriggers.add(cubridTrigger);
                 }
             }
