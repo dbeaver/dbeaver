@@ -2291,9 +2291,12 @@ public class UIUtils {
     }
 
     @NotNull
-    public static String getSupportedVariablesTip(@NotNull String toolTip, String... variables) {
+    public static String getSupportedVariablesTip(@Nullable String toolTip, @NotNull String... variables) {
         StringBuilder varsTip = new StringBuilder();
-        varsTip.append(toolTip).append(". ").append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
+        if (CommonUtils.isNotEmpty(toolTip)) {
+            varsTip.append(toolTip).append(". ");
+        }
+        varsTip.append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
         for (int i = 0; i < variables.length; i++) {
             String var = variables[i];
             if (i > 0) {
@@ -2307,17 +2310,7 @@ public class UIUtils {
 
     @NotNull
     public static String getSupportedVariablesTip(@NotNull String... variables) {
-        StringBuilder varsTip = new StringBuilder();
-        varsTip.append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
-        for (int i = 0; i < variables.length; i++) {
-            String var = variables[i];
-            if (i > 0) {
-                varsTip.append(",\n");
-            }
-            varsTip.append("  ").append(GeneralUtils.variablePattern(var));
-        }
-        varsTip.append("."); //$NON-NLS-1$
-        return varsTip.toString();
+        return getSupportedVariablesTip(null, variables);
     }
 
     public static void resizeShell(@NotNull Shell shell) {
