@@ -2305,6 +2305,21 @@ public class UIUtils {
         return varsTip.toString();
     }
 
+    @NotNull
+    public static String getSupportedVariablesTip(@NotNull String... variables) {
+        StringBuilder varsTip = new StringBuilder();
+        varsTip.append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
+        for (int i = 0; i < variables.length; i++) {
+            String var = variables[i];
+            if (i > 0) {
+                varsTip.append(",\n");
+            }
+            varsTip.append("  ").append(GeneralUtils.variablePattern(var));
+        }
+        varsTip.append("."); //$NON-NLS-1$
+        return varsTip.toString();
+    }
+
     public static void resizeShell(@NotNull Shell shell) {
         final Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
         resizeShell(shell, compSize);

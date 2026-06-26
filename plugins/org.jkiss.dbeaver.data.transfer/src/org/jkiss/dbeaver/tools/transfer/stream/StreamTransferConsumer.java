@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -716,7 +716,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     @NotNull
     public String getOutputFolder() {
-        return translatePattern(settings.getOutputFolder(), null);
+        return translatePattern(settings.getOutputFolder());
     }
 
     @NotNull
@@ -734,7 +734,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         Object extension = processorProperties == null ? null : processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = CommonUtils.notNull(
             runtimeParameters.outputFileNameToReuse, 
-            translatePattern(settings.getOutputFilePattern(), null).trim()
+            translatePattern(settings.getOutputFilePattern()).trim()
         );
         // Can't rememeber why did we need this. It breaks file names in case of multiple tables export (#6911)
         // if (parameters.orderNumber > 0 && !settings.isUseSingleFile()) {
@@ -806,7 +806,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return dir.resolve(fileName);
     }
 
-    public String translatePattern(String pattern, final Path targetFile) {
+    @NotNull
+    public String translatePattern(@NotNull String pattern) {
         final Date ts;
         if (parameters.startTimestamp != null) {
             // Use saved timestamp (#7352)
