@@ -296,10 +296,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private FontsController prepareFontsController(@NotNull Composite parent, @NotNull Collection<String> fontIds) {
         FontsController controller = new FontsController(parent);
 
-        IThemeRegistry themeRegistry = WorkbenchPlugin.getDefault().getThemeRegistry();
-        Map<String, FontDefinition> fontDefs = Stream.of(themeRegistry.getFonts())
+        Map<String, FontDefinition> fontDefs = Stream.of(controller.themeRegistry.getFonts())
             .collect(Collectors.toMap(ThemeElementDefinition::getId, Function.identity()));
-        Map<String, ThemeElementCategory> catDefs = Stream.of(themeRegistry.getCategories())
+        Map<String, ThemeElementCategory> catDefs = Stream.of(controller.themeRegistry.getCategories())
             .collect(Collectors.toMap(ThemeElementCategory::getId, Function.identity()));
 
         Map<String, Composite> groups = new HashMap<>();
@@ -395,7 +394,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
 
         if (this.fontsController != null) {
-            this.fontsController.refreshAllFonts();
+            this.fontsController.resetToDefaults();
         }
     }
 
@@ -523,17 +522,21 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                         fontDialog.setFontList(this.example.getFont().getFontData());
                         final FontData data = fontDialog.open();
                         if (data != null) {
-                            final Font oldFont = this.customFont;
-                            this.customFont = new Font(this.example.getFont().getDevice(), data);
-                            this.example.setFont(this.customFont);
-                            this.example.setText(this.prepareFontDescription(this.customFont));
-                            if (oldFont != null) {
-                                oldFont.dispose();
-                            }
-                            updateLayout(this.example, null);
+                            this.setFont(fontDialog.getFontList());
                         }
                     })
                 );
+            }
+
+            private void setFont(@NotNull FontData[] fontData) {
+                final Font oldFont = this.customFont;
+                this.customFont = new Font(this.example.getFont().getDevice(), fontData);
+                this.example.setFont(this.customFont);
+                this.example.setText(this.prepareFontDescription(this.customFont));
+                if (oldFont != null) {
+                    oldFont.dispose();
+                }
+                updateLayout(this.example, null);
             }
 
             public void refresh(@NotNull FontRegistry fonts) {
@@ -543,12 +546,46 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 this.releaseCustomFontIfExists();
             }
 
+            public void resetToDefault(@NotNull IPreferenceStore fontsPrefStore) {
+                this.setFont(this.getDefaultFontData(fontsPrefStore, this.definition));
+            }
+
+            @NotNull
+            private FontData[] getDefaultFontData(@NotNull IPreferenceStore fontsPrefStore, @NotNull FontDefinition definition) {
+                FontData[] fontData;
+                if (definition.isOverridden()) {
+                    fontData = definition.getValue();
+                } else if (definition.getDefaultsTo() != null) {
+                    fontData = this.getFontAncestorValue(fontsPrefStore, definition);
+                } else {
+                    fontData = PreferenceConverter.getDefaultFontDataArray(fontsPrefStore, createPreferenceKey(definition));
+                }
+                return fontData;
+            }
+
+            @NotNull
+            private FontData[] getFontAncestorValue(@NotNull IPreferenceStore fontsPrefStore, @NotNull FontDefinition definition) {
+                FontDefinition ancestor = this.getFontAncestor(definition);
+                if (ancestor == null) {
+                    return PreferenceConverter.getDefaultFontDataArray(fontsPrefStore, createPreferenceKey(definition));
+                }
+                return currentTheme.getFontRegistry().getFontData(ancestor.getId());
+            }
+
+            @Nullable
+            private FontDefinition getFontAncestor(@NotNull FontDefinition definition) {
+                String defaultsTo = definition.getDefaultsTo();
+                if (defaultsTo == null) {
+                    return null;
+                }
+                return themeRegistry.findFont(defaultsTo);
+            }
+
             @NotNull
             private FontDefinition[] getDescendantFonts(@NotNull FontDefinition definition) {
                 List<FontDefinition> list = new ArrayList<>(5);
                 String id = definition.getId();
 
-                IThemeRegistry themeRegistry = WorkbenchPlugin.getDefault().getThemeRegistry();
                 FontDefinition[] fonts = themeRegistry.getFonts();
                 FontDefinition[] sorted = new FontDefinition[fonts.length];
                 System.arraycopy(fonts, 0, sorted, 0, sorted.length);
@@ -685,6 +722,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         private final IThemeEngine themeEngine;
         @NotNull
         private final IEventBroker eventBroker;
+        @NotNull
+        private final IThemeRegistry themeRegistry;
 
         @NotNull
         private ITheme currentTheme;
@@ -696,6 +735,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             this.workbench = Workbench.getInstance();
             this.themeEngine = this.workbench.getService(IThemeEngine.class);
             this.eventBroker = this.workbench.getService(IEventBroker.class);
+
+            this.themeRegistry = WorkbenchPlugin.getDefault().getThemeRegistry();
 
             this.workbench.getThemeManager().addPropertyChangeListener(this.themeChangeListener);
             this.eventBroker.subscribe(WorkbenchThemeManager.Events.THEME_REGISTRY_RESTYLED, this.themeRegistryRestyledHandler);
@@ -738,6 +779,16 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (updateLayout) {
                 this.updateLayout(this.container, null);
             }
+        }
+
+        public void resetToDefaults() {
+            IPreferenceStore fontsPrefStore = PrefUtil.getInternalPreferenceStore();
+
+            for (FontEntry entry : this.fontEntriesById.values()) {
+                entry.resetToDefault(fontsPrefStore);
+            }
+
+            this.updateLayout(this.container, null);
         }
 
         public void apply() {
