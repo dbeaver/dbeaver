@@ -150,17 +150,22 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     }
 
     @Override
-    protected void saveDataSources(DBRProgressMonitor monitor) {
+    protected void saveDataSources(@NotNull DBRProgressMonitor monitor) {
         if (getProject().isInMemory()) {
             return;
         }
 
+        // Save everything BUT data sources
+        // It can be used to save profiles, connection types, etc
+        // Do not save all project datasources in TE
+        // We save them only thru persistDataSourceX methods
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
-        saveConfigurationToManager(monitor, buffer, null);
+        saveConfigurationToManager(monitor, buffer, dataSourceContainer -> false);
 
         try {
+            String configuration = new String(buffer.getData(), StandardCharsets.UTF_8);
             rmController.updateProjectDataSources(
-                getRemoteProjectId(), new String(buffer.getData(), StandardCharsets.UTF_8), List.of());
+                getRemoteProjectId(), configuration, List.of());
             lastError = null;
         } catch (DBException e) {
             lastError = e;
