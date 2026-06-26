@@ -195,7 +195,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     private CTabFolder resultTabs;
     private TabFolderReorder resultTabsReorder;
-    private CTabItem activeResultsTab;
 
     private SQLLogPanel logViewer;
     private SQLEditorOutputViewer outputViewer;
@@ -1503,12 +1502,17 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         {
+            final CTabItem[] clickedTab = new CTabItem[1];
             resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e ->
-                activeResultsTab = resultTabs.getItem(new Point(e.x, e.y))));
+                    clickedTab[0] = resultTabs.getItem(new Point(e.x, e.y))));
+
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
-                final CTabItem activeTab = getActiveResultsTab();
+                CTabItem target = clickedTab[0];
+                final CTabItem activeTab = (target != null && !target.isDisposed())
+                        ? target
+                        : getActiveResultsTab();
                 boolean activeTabHasSingleResult = activeTab != null && activeTab.getData() instanceof QueryResultsContainer;
                 boolean activeTabHasMultipleResults = activeTab != null && activeTab.getData() instanceof SingleTabQueryProcessor;
                 if (activeTabHasSingleResult || activeTabHasMultipleResults) {
@@ -1910,15 +1914,20 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private CTabItem getActiveResultsTab() {
-        return activeResultsTab == null || activeResultsTab.isDisposed() ?
-            (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
+        if (resultTabs == null || resultTabs.isDisposed()) {
+            return null;
+        }
+        CTabItem sel = resultTabs.getSelection();
+        if (sel == null || sel.isDisposed()) {
+            return null;
+        }
+        return sel;
     }
 
     public void closeActiveTab() {
         CTabItem tabItem = getActiveResultsTab();
         if (tabItem != null && tabItem.getShowClose()) {
             tabItem.dispose();
-            activeResultsTab = null;
         }
     }
 
@@ -4306,8 +4315,9 @@ public class SQLEditor extends SQLEditorBase implements
                     cr.viewer.updateFiltersText(false);
                 }
                 if (!result.hasError() && !queryProcessor.resultContainers.isEmpty()) {
-                    if (owner.activeResultsTab != null && !owner.activeResultsTab.isDisposed()) {
-                        owner.setResultTabSelection(owner.activeResultsTab);
+                    CTabItem active = owner.getActiveResultsTab();
+                    if (active != null) {
+                        owner.setResultTabSelection(active);
                     } else {
                         owner.setResultTabSelection(queryProcessor.resultContainers.getFirst().getResultsTab());
                     }
