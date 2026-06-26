@@ -66,7 +66,7 @@ public class ScopeSelectorDialog extends BaseDialog {
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return UIUtils.getSettingsSection(AIUIActivator.getDefault().getDialogSettings(), DIALOG_ID);
+        return UIUtils.getSettingsSection(AIUIActivator.getInstance().getDialogSettings(), DIALOG_ID);
     }
 
     @NotNull
