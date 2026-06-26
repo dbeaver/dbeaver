@@ -295,6 +295,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
+        if (RuntimeUtils.isWindows()) {
+            setWindowsAppUserModelID();
+        }
+
         // Initialize display early
         // It sets main windows name and images
         getDisplay();
@@ -507,6 +511,29 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             } catch (Exception e) {
                 log.debug(e);
             }
+        }
+    }
+
+    /**
+     * Sets an explicit AppUserModelID so Windows can group the native launcher
+     * and the JVM process under the same taskbar button.
+     * Must be called before the first SWT Display is created.
+     * Uses reflection to avoid a compile-time dependency on the Windows-only SWT class.
+     */
+    private void setWindowsAppUserModelID() {
+        try {
+            ClassLoader swtClassLoader = Display.class.getClassLoader();
+            Class<?> osClass = Class.forName(
+                    "org.eclipse.swt.internal.win32.OS",
+                    true,
+                    swtClassLoader
+            );
+            java.lang.reflect.Method method = osClass.getMethod(
+                    "SetCurrentProcessExplicitAppUserModelID", char[].class
+            );
+            method.invoke(null, (Object) "DBeaverCorp.DBeaverCE".toCharArray());
+        } catch (Exception e) {
+            log.debug("Failed to set Windows AppUserModelID", e);
         }
     }
 
