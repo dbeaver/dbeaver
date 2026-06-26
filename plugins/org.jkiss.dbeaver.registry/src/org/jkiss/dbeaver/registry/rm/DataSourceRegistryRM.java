@@ -165,7 +165,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         try {
             String configuration = new String(buffer.getData(), StandardCharsets.UTF_8);
             rmController.updateProjectDataSources(
-                getRemoteProjectId(), configuration, null);
+                getRemoteProjectId(), configuration, List.of());
             lastError = null;
         } catch (DBException e) {
             lastError = e;
