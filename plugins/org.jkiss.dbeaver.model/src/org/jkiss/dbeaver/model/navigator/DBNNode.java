@@ -322,8 +322,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
 
     static void sortNodes(@NotNull List<? extends DBNNode> nodes) {
         nodes.sort((Comparator<DBNNode>) (o1, o2) -> {
-            boolean isFolder1 = o1 instanceof DBNLocalFolder;
-            boolean isFolder2 = o2 instanceof DBNLocalFolder;
+            boolean isFolder1 = o1 instanceof DBNLocalFolder || o1 instanceof DBNDriverGroup;
+            boolean isFolder2 = o2 instanceof DBNLocalFolder || o2 instanceof DBNDriverGroup;
             if (isFolder1 && !isFolder2) {
                 return -1;
             } else if (!isFolder1 && isFolder2) {

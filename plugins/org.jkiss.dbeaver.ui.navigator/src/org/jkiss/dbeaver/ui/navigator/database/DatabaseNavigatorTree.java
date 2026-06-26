@@ -843,11 +843,13 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (filterShowConnected && element instanceof DBNDataSource dataSource && !dataSource.getDataSourceContainer().isConnected()) {
                 return false;
             }
-            if ((filterShowConnected ||
-                (hasPattern && getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection) ||
-                (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder
-            ) {
+            if (isConnectionOrFolderFiltering() && element instanceof DBNLocalFolder) {
                 return hasVisibleConnections(viewer, (DBNLocalFolder) element);
+            }
+            if (isConnectionOrFolderFiltering() && element instanceof DBNDriverGroup dg) {
+                return dg.getDataSources().stream().anyMatch(ds ->
+                    (!filterShowConnected || ds.getDataSourceContainer().isConnected()) &&
+                    (!hasPattern || isLeafMatch(viewer, ds)));
             }
             if (!filter.select(element)) {
                 return false;
@@ -892,6 +894,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
             }
             return needToMatch;
+        }
+
+        private boolean isConnectionOrFolderFiltering() {
+            return filterShowConnected
+                || (hasPattern && getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection)
+                || (hasPattern && filter.filterFolders());
         }
 
         private boolean isPatternMatched(String labelText, Object element) {

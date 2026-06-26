@@ -24,6 +24,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -72,20 +74,17 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
                 if (element instanceof DBNProject || element instanceof DBNProjectDatabases) {
                     return true;
                 }
-                if (element instanceof DBNLocalFolder) {
-                    for (DBNDataSource ds : ((DBNLocalFolder) element).getNestedDataSources()) {
-                        if (taskType.isDriverApplicable(ds.getDataSourceContainer().getDriver()) &&
-                            (!showConnected || ds.getDataSourceContainer().isConnected())) {
-                            return true;
-                        }
-                    }
-                    return false;
+                if (element instanceof DBNLocalFolder localFolder) {
+                    return localFolder.getNestedDataSources().stream().anyMatch(SQLToolTaskObjectSelectorDialog.this::isApplicableDataSource);
                 }
-                if (element instanceof DBNDataSource) {
-                    if (showConnected && !((DBNDataSource) element).getDataSourceContainer().isConnected()) {
+                if (element instanceof DBNDriverGroup driverGroup) {
+                    return driverGroup.getDataSources().stream().anyMatch(SQLToolTaskObjectSelectorDialog.this::isApplicableDataSource);
+                }
+                if (element instanceof DBNDataSource dataSource) {
+                    if (showConnected && !dataSource.getDataSourceContainer().isConnected()) {
                         return false;
                     }
-                    return taskType.isDriverApplicable(((DBNDataSource) element).getDataSourceContainer().getDriver());
+                    return taskType.isDriverApplicable(dataSource.getDataSourceContainer().getDriver());
                 }
                 if (element instanceof DBNDatabaseItem) {
                     DBSObject object = ((DBNDatabaseItem) element).getObject();
@@ -139,6 +138,12 @@ class SQLToolTaskObjectSelectorDialog extends BaseDialog {
             }
         }
         getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
+    }
+
+    private boolean isApplicableDataSource(@NotNull DBNDataSource dataSource) {
+        DBPDataSourceContainer container = dataSource.getDataSourceContainer();
+        return taskType.isDriverApplicable(container.getDriver()) &&
+            (!showConnected || container.isConnected());
     }
 
     public List<DBSObject> getSelectedObjects() {

@@ -116,6 +116,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 return element instanceof DBNProject ||
                     element instanceof DBNProjectDatabases ||
                     element instanceof DBNLocalFolder ||
+                    element instanceof DBNDriverGroup ||
                     element instanceof DBNDataSource;
             }
         };
@@ -215,14 +216,17 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
                 if (showConnected) {
-                    if (element instanceof DBNDataSource) {
-                        return ((DBNDataSource) element).getDataSource() != null;
+                    if (element instanceof DBNDataSource dataSource) {
+                        return dataSource.getDataSource() != null;
                     }
-                    if (element instanceof DBNLocalFolder) {
-                        return ((DBNLocalFolder) element).hasConnected();
+                    if (element instanceof DBNLocalFolder localFolder) {
+                        return localFolder.hasConnected();
+                    }
+                    if (element instanceof DBNDriverGroup driverGroup) {
+                        return driverGroup.hasConnected();
                     }
                 }
-                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
+                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDriverGroup || element instanceof DBNDataSource;
             }
         });
         treeViewer.addSelectionChangedListener(
@@ -273,7 +277,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     }
 
     private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
-        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
+        if (node instanceof DBNLocalFolder || node instanceof DBNDriverGroup || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
             if (node instanceof DBNProject p && !p.getProject().isOpen()) {
                 // Don't try to expand unloaded projects - let the user do it
                 return;
