@@ -890,7 +890,7 @@ public class DataSourceDescriptor
             this.originalShareCredentials = isSharedCredentials();
         }
         // Save only if secrets were already resolved or it is a new connection
-        if (secretsResolved || (force && getProject().isUseSecretStorage())) {
+        if ((secretsResolved || force) && getProject().isUseSecretStorage()) {
             DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
             persistSecrets(secretController, isNewDataSource);
         }
