@@ -77,7 +77,12 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public boolean supportsMaterializedViews() {
-        return dataSource.isServerVersionAtLeast(9, 3);
+        if (dataSource.isServerVersionAtLeast(9, 3)) {
+            return true;
+        }
+        // GaussDB reports PostgreSQL 9.2 version but supports materialized views
+        String serverVersion = dataSource.getServerVersion();
+        return serverVersion != null && serverVersion.toLowerCase().contains("gaussdb");
     }
 
     @Override
