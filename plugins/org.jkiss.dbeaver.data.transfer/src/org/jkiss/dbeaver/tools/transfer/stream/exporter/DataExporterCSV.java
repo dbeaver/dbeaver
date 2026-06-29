@@ -52,12 +52,12 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     public static final String PROCESSOR_ID = "stream.csv";
 
-    private static final String PROP_DELIMITER = "delimiter";
-    private static final String PROP_ROW_DELIMITER = "rowDelimiter";
+    public static final String PROP_DELIMITER = "delimiter";
+    public static final String PROP_ROW_DELIMITER = "rowDelimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_HEADER_FORMAT = "headerFormat";
     private static final String PROP_HEADER_CASE = "headerCase";
-    private static final String PROP_QUOTE_CHAR = "quoteChar";
+    public static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
     private static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
