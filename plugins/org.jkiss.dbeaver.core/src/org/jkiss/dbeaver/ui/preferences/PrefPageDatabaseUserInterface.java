@@ -35,7 +35,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -365,22 +364,18 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                     .get(workspaceLanguage.getSelectionIndex());
                 DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
 
-                try {
-                    if (curLanguage != language) {
-                        if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
-                            languageManager.setPlatformLanguage(language);
-                        }
-                        if (UIUtils.confirmAction(
-                            getShell(),
-                            "Restart " + GeneralUtils.getProductName(),
-                            "You need to restart " + GeneralUtils.getProductName()
-                                + " to perform actual language change.\nDo you want to restart?"
-                        )) {
-                            restartWorkbenchOnPrefChange();
-                        }
+                if (curLanguage != language) {
+                    if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
+                        languageManager.setPlatformLanguage(language);
                     }
-                } catch (DBException e) {
-                    DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
+                    if (UIUtils.confirmAction(
+                        getShell(),
+                        "Restart " + GeneralUtils.getProductName(),
+                        "You need to restart " + GeneralUtils.getProductName()
+                            + " to perform actual language change.\nDo you want to restart?"
+                    )) {
+                        restartWorkbenchOnPrefChange();
+                    }
                 }
             }
         }

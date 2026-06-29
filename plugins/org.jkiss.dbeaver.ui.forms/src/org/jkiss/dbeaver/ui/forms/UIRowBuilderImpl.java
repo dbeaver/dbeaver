@@ -116,7 +116,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @NotNull
     @Override
     public UIRowBuilder button(
-        @NotNull String text,
+        @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
         @NotNull Consumer<? super ButtonBuilder> handler
     ) {
@@ -128,7 +128,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+    public UIRowBuilder radioButton(@NotNull UIObservable<String> text, @NotNull Consumer<? super ButtonBuilder> handler) {
         var builder = new ButtonBuilderImpl(text, null, Kind.RADIO);
         handler.accept(builder);
         controls.add(builder);
@@ -137,7 +137,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super ButtonBuilder> handler) {
+    public UIRowBuilder checkBox(@NotNull UIObservable<String> text, @NotNull Consumer<? super ButtonBuilder> handler) {
         var builder = new ButtonBuilderImpl(text, null, Kind.CHECK);
         handler.accept(builder);
         controls.add(builder);
