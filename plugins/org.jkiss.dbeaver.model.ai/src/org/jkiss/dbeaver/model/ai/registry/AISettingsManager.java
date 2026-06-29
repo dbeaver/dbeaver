@@ -24,31 +24,23 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class AISettingsManager {
     private static final Log log = Log.getLog(AISettingsManager.class);
 
     public static final String AI_CONFIGURATION_FILE_NAME = "ai-configuration.json";
-
-    private static final String AI_DISABLED_KEY = "aiDisabled";
-    private static final String ACTIVE_ENGINE_KEY = "activeEngine";
-    private static final String PROPERTIES_KEY = "properties";
-    private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
-    private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
-    public static final String ENGINE_PROPERTIES = "properties";
 
     private static AISettingsManager instance = null;
 
@@ -99,65 +91,24 @@ public class AISettingsManager {
 
     @NotNull
     private static AISettings loadSettingsFromConfig() {
-        Map<String, Object> configMap = null;
         try {
             String content = loadConfig();
+            AISettings settings;
             if (!CommonUtils.isEmpty(content)) {
-                configMap = READ_PROPS_GSON.fromJson(new StringReader(content), JSONUtils.MAP_TYPE_TOKEN);
+                settings = READ_PROPS_GSON.fromJson(content, AISettings.class);
+
+                String activeEngine = settings.activeEngine();
+                if (activeEngine == null || !settings.hasConfiguration(activeEngine)) {
+                    settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
+                }
+            } else {
+                settings = new AISettings();
             }
+            return settings;
         } catch (Exception e) {
             log.error("Error loading AI settings, falling back to defaults.", e);
+            return new AISettings();
         }
-        if (configMap == null) {
-            configMap = new LinkedHashMap<>();
-        }
-
-        AISettings settings = new AISettings();
-
-        {
-            Map<String, AIEngineProperties> engineConfigurationMap = new LinkedHashMap<>();
-
-            if (!configMap.isEmpty()) {
-                settings.setAiDisabled(JSONUtils.getBoolean(configMap, AI_DISABLED_KEY));
-                settings.setActiveEngine(JSONUtils.getString(configMap, ACTIVE_ENGINE_KEY));
-                JSONUtils.getObject(configMap, PROPERTIES_KEY).forEach(settings::setProperty);
-
-                @SuppressWarnings("unchecked")
-                Map<String, String> customInstructions = (Map<String, String>) configMap.get(CUSTOM_INSTRUCTIONS_KEY);
-                if (!CommonUtils.isEmpty(customInstructions)) {
-                    settings.setCustomInstructions(customInstructions);
-                }
-
-                Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
-
-                for (Map.Entry<String, Object> entry : ecRoot.entrySet()) {
-                    String engineId = entry.getKey();
-                    AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-                    if (engineDescriptor == null) {
-                        log.error("AI engine '" + engineId + "' not found. Ignore config");
-                        continue;
-                    }
-                    if (entry.getValue() instanceof Map map) {
-                        try {
-                            Map<String, Object> properties = JSONUtils.getObject(map, ENGINE_PROPERTIES);
-                            JsonElement engineConfigTree = READ_PROPS_GSON.toJsonTree(properties, Map.class);
-                            AIEngineProperties engineSettings = READ_PROPS_GSON.fromJson(
-                                engineConfigTree, engineDescriptor.getPropertiesType());
-
-                            engineConfigurationMap.put(engineDescriptor.getId(), engineSettings);
-                        } catch (JsonSyntaxException e) {
-                            log.error("Error parsing '" + engineId + "' properties", e);
-                        }
-                    }
-                }
-            }
-            settings.setEngineConfigurations(engineConfigurationMap);
-        }
-        if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
-            settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
-        }
-
-        return settings;
     }
 
     /**
@@ -178,39 +129,7 @@ public class AISettingsManager {
                 return;
             }
 
-            JsonObject json = new JsonObject();
-            json.addProperty(AI_DISABLED_KEY, settings.isAiDisabled());
-            json.addProperty(ACTIVE_ENGINE_KEY, settings.activeEngine());
-
-            JsonObject propertiesObject = new JsonObject();
-            for (Map.Entry<String, Object> property : settings.getAllProperties().entrySet()) {
-                JsonElement propValue = SAVE_PROPS_GSON.toJsonTree(property.getValue());
-                propertiesObject.add(property.getKey(), propValue);
-            }
-            json.add(PROPERTIES_KEY, propertiesObject);
-
-            Map<String, String> customInstructions = settings.getCustomInstructions();
-            if (!customInstructions.isEmpty()) {
-                JsonObject object = new JsonObject();
-
-                for (Map.Entry<String, String> entry : customInstructions.entrySet()) {
-                    object.addProperty(entry.getKey(), entry.getValue());
-                }
-                json.add(CUSTOM_INSTRUCTIONS_KEY, object);
-            }
-
-            JsonObject engineConfigurations = new JsonObject();
-            for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {
-                JsonElement savedProps = SAVE_PROPS_GSON.toJsonTree(configuration.getValue());
-                if (savedProps instanceof JsonObject jo && !jo.isEmpty()) {
-                    JsonObject props = new JsonObject();
-                    props.add(ENGINE_PROPERTIES, savedProps);
-                    engineConfigurations.add(configuration.getKey(), props);
-                }
-            }
-            json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
-
-            String content = SAVE_PROPS_GSON.toJson(json);
+            String content = SAVE_PROPS_GSON.toJson(settings);
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 

@@ -37,10 +37,10 @@ public class AIConfigurationProfile {
     private String profileId;
     private String profileName;
     private String engineId;
-    private final Set<String> resolvedSecrets = new HashSet<>();
+    private AIEngineProperties configuration;
 
-    private volatile AIEngineDescriptor engineDescriptor;
-    private AIEngineProperties engineConfiguration;
+    private final Set<String> resolvedSecrets = new HashSet<>();
+    private transient AIEngineDescriptor engineDescriptor;
 
     public AIConfigurationProfile() {
     }
@@ -63,25 +63,25 @@ public class AIConfigurationProfile {
 
     @NotNull
     public synchronized AIEngineProperties getConfiguration() throws DBException {
-        if (engineConfiguration != null) {
-            return engineConfiguration;
+        if (configuration != null) {
+            return configuration;
         }
         AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-        engineConfiguration = engineDescriptor.createPropertiesInstance();
+        configuration = engineDescriptor.createPropertiesInstance();
 
         if (!AISettingsManager.saveSecretsAsPlainText()) {
             if (!resolvedSecrets.contains(engineId)) {
-                engineConfiguration.resolveSecrets();
+                configuration.resolveSecrets();
                 resolvedSecrets.add(engineId);
             }
         }
 
-        return engineConfiguration;
+        return configuration;
     }
 
     public void saveSecrets() throws DBException {
-        if (engineConfiguration != null) {
-            engineConfiguration.saveSecrets();
+        if (configuration != null) {
+            configuration.saveSecrets();
         }
     }
 

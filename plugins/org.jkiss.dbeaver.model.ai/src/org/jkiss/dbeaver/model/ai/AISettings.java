@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +31,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -37,9 +42,11 @@ public class AISettings implements DBPAdaptable {
     protected static final Log log = Log.getLog(AISettings.class);
     private boolean aiDisabled;
 
-    private final List<AIConfigurationProfile> configurations = new ArrayList<>();
+    private final Map<String, AIConfigurationProfile> configurations = new LinkedHashMap<>();
+    private String defaultConfiguration;
 
     private String activeEngine;
+    @JsonAdapter(EngineConfigAdapter.class)
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
@@ -177,5 +184,44 @@ public class AISettings implements DBPAdaptable {
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
+    }
+
+    // Type adapter to read legacy engine configurations
+    public static class EngineConfigAdapter  extends TypeAdapter<Map<String, AIEngineProperties>> {
+        @Override
+        public void write(JsonWriter out, Map<String, AIEngineProperties> value) throws IOException {
+            out.beginObject();
+            out.name("engineConfigurations");
+
+            // Just save all configs with default map adapter
+            TypeAdapter<Map> childAdapter = AISettingsManager.SAVE_PROPS_GSON.getAdapter(Map.class);
+            childAdapter.write(out, value);
+
+            out.endObject();
+        }
+
+        @Override
+        public Map<String, AIEngineProperties> read(JsonReader in) throws IOException {
+            Map<String, AIEngineProperties> result = new LinkedHashMap<>();
+
+            // On read we need to get engine ID in order to determine impl class
+            in.beginObject();
+            while (in.hasNext()) {
+                String engineId = in.nextName();
+
+                AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+                if (engineDescriptor == null) {
+                    log.error("AI engine '" + engineId + "' not found. Ignore config");
+                    continue;
+                }
+
+                AIEngineProperties engineProperties = AISettingsManager.READ_PROPS_GSON.fromJson(
+                    in, engineDescriptor.getPropertiesType());
+                result.put(engineId, engineProperties);
+            }
+            in.endObject();
+
+            return result;
+        }
     }
 }
