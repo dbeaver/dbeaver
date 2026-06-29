@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.statistics.UIStatisticsActivator
 Require-Bundle: org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.app.config
 Automatic-Module-Name: org.jkiss.dbeaver.ui.statistics
 

@@ -175,6 +175,7 @@
                 <module>org.jkiss.dbeaver.data.office.ui</module>
                 <module>org.jkiss.dbeaver.ui.config.sample</module>
                 <module>org.jkiss.dbeaver.ui.config.migration</module>
+                <module>org.jkiss.dbeaver.ui.app.config</module>
                 <module>org.jkiss.dbeaver.cmp.simple.ui</module>
 
                 <module>org.jkiss.dbeaver.debug.ui</module>

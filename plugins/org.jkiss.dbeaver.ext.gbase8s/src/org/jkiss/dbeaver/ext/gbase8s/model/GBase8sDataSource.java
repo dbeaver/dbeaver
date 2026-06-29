@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
 import java.lang.reflect.Field;
+import java.sql.SQLException;
+import java.util.Set;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -40,6 +42,11 @@ import org.jkiss.utils.CommonUtils;
 public class GBase8sDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(GBase8sDataType.class);
+
+    private static final Set<Integer> FEATURE_NOT_SUPPORTED_CODES = Set.of(
+        -79700,	// this is documented as "Feature not supported", see https://www.gbase.cn/docs/gbase-8s/06%20%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/01%20JDBCDriver%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97/09%20%E9%99%84%E5%BD%95#-79700
+        -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
+    );
 
     public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
             throws DBException {
@@ -70,5 +77,20 @@ public class GBase8sDataSource extends GenericDataSource {
         } catch (Exception e) {
             log.error("Failed to replace the connector of the database/table in queryGetActiveDB", e);
         }
+    }
+
+    @Override
+    public ErrorType discoverErrorType(Throwable error) {
+        // #41319 when calling PreparedStatement.setNCharacterStream()
+        // the driver should be thrown SQLFeatureNotSupportedException, but it doesn't
+        // so detect it by analyzing errorCode and handle it properly
+        if (error instanceof SQLException sqlEx) {
+            int errorCode = sqlEx.getErrorCode();
+            if (FEATURE_NOT_SUPPORTED_CODES.contains(errorCode)) {
+                return ErrorType.FEATURE_UNSUPPORTED;
+            }
+        }
+
+        return super.discoverErrorType(error);  // fallback case
     }
 }
