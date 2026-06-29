@@ -16,19 +16,26 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.utils.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DataExporterCSVTest extends DBeaverUnitTest {
 
@@ -36,49 +43,54 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     private StringWriter stringWriter;
     private IStreamDataExporterSite site;
 
+    private Map<String, Object> properties;
+
+    private DBDAttributeBinding[] columns;
+
     @BeforeEach
     public void setUp() {
+        properties = new HashMap<>();
         stringWriter = new StringWriter();
+        columns = new DBDAttributeBinding[]{};
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        site = Mockito.mock(IStreamDataExporterSite.class);
-        Mockito.when(site.getWriter()).thenReturn(printWriter);
-
-        dataExporterCSV = new DataExporterCSV();
-        try {
-            dataExporterCSV.init(site);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        site = mock(IStreamDataExporterSite.class);
+        when(site.getWriter()).thenReturn(printWriter);
+        when(site.getProperties()).thenReturn(properties);
+        when(site.getAttributes()).thenReturn(columns);
     }
 
     @Test
-    public void testExportHeader() {
-        // Mocking attributes
-        DBDAttributeBinding[] columns = new DBDAttributeBinding[3];
-        columns[0] = Mockito.mock(DBDAttributeBinding.class);
-        Mockito.when(columns[0].getName()).thenReturn("ID");
-        Mockito.when(columns[0].getLabel()).thenReturn("Identifier");
+    public void testExportHeader() throws DBException, IOException {
+        initExporter();
+        // given
+        addColumn("ID", "Identifier");
+        addColumn("NAME", "Name");
+        addColumn("AGE", "Age");
+        // when
+        dataExporterCSV.exportHeader(mock(DBCSession.class));
+        // then
+        String expectedHeader = "\"IDENTIFIER\",\"NAME\",\"AGE\",";
+        Assertions.assertEquals(expectedHeader, stringWriter.toString());
+    }
 
-        columns[1] = Mockito.mock(DBDAttributeBinding.class);
-        Mockito.when(columns[1].getName()).thenReturn("NAME");
-        Mockito.when(columns[1].getLabel()).thenReturn("Name");
+    @NotNull
+    private DBDAttributeBinding addColumn(@NotNull String name, @NotNull String label) {
+        DBDAttributeBinding dbdAttributeBinding = mock(DBDAttributeBinding.class);
+        when(dbdAttributeBinding.getName()).thenReturn(name);
+        when(dbdAttributeBinding.getLabel()).thenReturn(label);
+        columns = ArrayUtils.add(DBDAttributeBinding.class, columns, dbdAttributeBinding);
+        when(site.getAttributes()).thenReturn(columns);
+        return dbdAttributeBinding;
+    }
 
-        columns[2] = Mockito.mock(DBDAttributeBinding.class);
-        Mockito.when(columns[2].getName()).thenReturn("AGE");
-        Mockito.when(columns[2].getLabel()).thenReturn("Age");
 
-        Mockito.when(site.getAttributes()).thenReturn(columns);
-        Mockito.when(site.getProperties()).thenReturn(new HashMap<>());
+    private void initExporter() throws DBException {
+        dataExporterCSV = new DataExporterCSV();
+        dataExporterCSV.init(site);
+    }
 
-        try {
-            dataExporterCSV.exportHeader(Mockito.mock(DBCSession.class));
-
-            String expectedHeader = "\"IDENTIFIER\",\"NAME\",\"AGE\",";
-            Assertions.assertEquals(expectedHeader, stringWriter.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assertions.fail("Exception occurred: " + e.getMessage());
-        }
+    private void setProperty(@NotNull String key, @NotNull Object value) {
+        properties.put(key, value);
     }
 }
