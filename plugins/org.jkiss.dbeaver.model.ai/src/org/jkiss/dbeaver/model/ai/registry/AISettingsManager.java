@@ -17,24 +17,26 @@
 package org.jkiss.dbeaver.model.ai.registry;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class AISettingsManager {
@@ -97,10 +99,7 @@ public class AISettingsManager {
             if (!CommonUtils.isEmpty(content)) {
                 settings = READ_PROPS_GSON.fromJson(content, AISettings.class);
 
-                String activeEngine = settings.activeEngine();
-                if (activeEngine == null || !settings.hasConfiguration(activeEngine)) {
-                    settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
-                }
+                settings.migrateLegacySettings();
             } else {
                 settings = new AISettings();
             }
@@ -257,4 +256,108 @@ public class AISettingsManager {
             return obj;
         }
     }
+
+    // Type adapter to read legacy engine configurations
+    // It has nested 'properties' element which we have to handle manually
+    public static class EngineConfigAdapter  extends TypeAdapter<Map<String, AIEngineProperties>> {
+        @Override
+        public void write(JsonWriter out, Map<String, AIEngineProperties> value) throws IOException {
+            out.beginObject();
+
+            for (Map.Entry<String, AIEngineProperties> ep : value.entrySet()) {
+                out.name(ep.getKey());
+                out.beginObject();
+                out.name("properties");
+                TypeAdapter childAdapter = AISettingsManager.SAVE_PROPS_GSON.getAdapter(ep.getValue().getClass());
+                childAdapter.write(out, ep.getValue());
+                out.endObject();
+            }
+
+            out.endObject();
+        }
+
+        @Override
+        public Map<String, AIEngineProperties> read(JsonReader in) throws IOException {
+            Map<String, AIEngineProperties> result = new LinkedHashMap<>();
+
+            // On read we need to get engine ID in order to determine impl class
+            in.beginObject();
+            while (in.hasNext()) {
+                String engineId = in.nextName();
+                in.beginObject();
+
+                AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+                if (engineDescriptor == null) {
+                    log.error("AI engine '" + engineId + "' not found. Ignore config");
+                    continue;
+                }
+
+                in.nextName();// properties
+                AIEngineProperties engineProperties = AISettingsManager.READ_PROPS_GSON.fromJson(
+                    in, engineDescriptor.getPropertiesType());
+                result.put(engineId, engineProperties);
+
+                in.endObject();
+            }
+            in.endObject();
+
+            return result;
+        }
+    }
+
+    // Profile adapter. We need it because engine properties are dynamic and depend on engine
+    public static class ConfigProfileAdapter  extends TypeAdapter<AIConfigurationProfile> {
+        @Override
+        public void write(JsonWriter out, AIConfigurationProfile value) throws IOException {
+            out.beginObject();
+            out.name("name");
+            out.value(value.getProfileName());
+            out.name("engine");
+            out.value(value.getEngineId());
+
+            AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(value.getEngineId());
+            if (engineDescriptor == null) {
+                log.error("AI engine '" + value.getEngineId() + "' not found. Ignore config");
+            } else {
+                try {
+                    AIEngineProperties configuration = value.getConfiguration();
+                    TypeAdapter childAdapter = AISettingsManager.SAVE_PROPS_GSON.getAdapter(configuration.getClass());
+
+                    out.name("configuration");
+                    childAdapter.write(out, configuration);
+                } catch (Exception e) {
+                    log.error("Error saving engine '" + value.getEngineId() + "' settings", e);
+                }
+            }
+
+            out.endObject();
+        }
+
+        @Override
+        public AIConfigurationProfile read(JsonReader in) throws IOException {
+            AIConfigurationProfile result = new AIConfigurationProfile();
+
+            in.beginObject();
+            while (in.hasNext()) {
+                String prop = in.nextName();
+                switch (prop) {
+                    case "name" -> result.setProfileName(in.nextString());
+                    case "engine" -> result.setEngineId(in.nextString());
+                    case "configuration" -> {
+                        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(result.getEngineId());
+                        if (engineDescriptor == null) {
+                            log.error("AI engine '" + result.getEngineId() + "' not found. Ignore config");
+                            continue;
+                        }
+                        result.setConfiguration(READ_PROPS_GSON.fromJson(
+                            in, engineDescriptor.getPropertiesType()));
+                    }
+                }
+            }
+            in.endObject();
+
+            return result;
+        }
+    }
+
 }

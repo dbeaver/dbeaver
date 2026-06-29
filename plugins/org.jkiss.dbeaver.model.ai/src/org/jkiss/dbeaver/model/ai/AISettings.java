@@ -16,22 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.TypeAdapter;
 import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -46,12 +43,12 @@ public class AISettings implements DBPAdaptable {
     private String defaultConfiguration;
 
     private String activeEngine;
-    @JsonAdapter(EngineConfigAdapter.class)
+    @JsonAdapter(AISettingsManager.EngineConfigAdapter.class)
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
-    private final Set<String> resolvedSecrets = new HashSet<>();
-
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
+
+    private transient final Set<String> resolvedSecrets = new HashSet<>();
 
     public AISettings() {
         try {
@@ -60,6 +57,20 @@ public class AISettings implements DBPAdaptable {
             log.error("Error checking AI configuration", e);
             aiDisabled = true;
         }
+    }
+
+    @NotNull
+    public AIConfigurationProfile[] getConfigurations() {
+        return configurations.values().toArray(new AIConfigurationProfile[0]);
+    }
+
+    @NotNull
+    public String getDefaultConfiguration() {
+        return defaultConfiguration;
+    }
+
+    public void setDefaultConfiguration(@NotNull String defaultConfiguration) {
+        this.defaultConfiguration = defaultConfiguration;
     }
 
     /**
@@ -112,7 +123,7 @@ public class AISettings implements DBPAdaptable {
         this.aiDisabled = aiDisabled;
     }
 
-    @Nullable
+    @NotNull
     public String activeEngine() {
         return activeEngine;
     }
@@ -186,42 +197,28 @@ public class AISettings implements DBPAdaptable {
         return null;
     }
 
-    // Type adapter to read legacy engine configurations
-    public static class EngineConfigAdapter  extends TypeAdapter<Map<String, AIEngineProperties>> {
-        @Override
-        public void write(JsonWriter out, Map<String, AIEngineProperties> value) throws IOException {
-            out.beginObject();
-            out.name("engineConfigurations");
-
-            // Just save all configs with default map adapter
-            TypeAdapter<Map> childAdapter = AISettingsManager.SAVE_PROPS_GSON.getAdapter(Map.class);
-            childAdapter.write(out, value);
-
-            out.endObject();
+    // Patches configuration to support legacy configuration format
+    public void migrateLegacySettings() {
+        // Def engine
+        if (activeEngine == null || !hasConfiguration(activeEngine)) {
+            activeEngine = OpenAIConstants.OPENAI_ENGINE;
         }
 
-        @Override
-        public Map<String, AIEngineProperties> read(JsonReader in) throws IOException {
-            Map<String, AIEngineProperties> result = new LinkedHashMap<>();
-
-            // On read we need to get engine ID in order to determine impl class
-            in.beginObject();
-            while (in.hasNext()) {
-                String engineId = in.nextName();
-
+        if (configurations.isEmpty() && !engineConfigurations.isEmpty()) {
+            // Profiles from engine settings
+            for (Map.Entry<String, AIEngineProperties> ep : engineConfigurations.entrySet()) {
+                String engineId = ep.getKey();
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-                if (engineDescriptor == null) {
-                    log.error("AI engine '" + engineId + "' not found. Ignore config");
-                    continue;
+                if (engineDescriptor != null) {
+                    AIConfigurationProfile cp = new AIConfigurationProfile();
+                    cp.setProfileName(engineDescriptor.getLabel());
+                    cp.setEngineId(engineId);
+                    cp.setConfiguration(ep.getValue());
+                    configurations.put(ep.getKey(), cp);
                 }
-
-                AIEngineProperties engineProperties = AISettingsManager.READ_PROPS_GSON.fromJson(
-                    in, engineDescriptor.getPropertiesType());
-                result.put(engineId, engineProperties);
             }
-            in.endObject();
-
-            return result;
+            defaultConfiguration = activeEngine;
         }
     }
+
 }

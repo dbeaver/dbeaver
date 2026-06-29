@@ -176,7 +176,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @NotNull
     private List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (token == null || token.isEmpty()) {
-            throw new DBException(AIUIMessages.openai_configurator_token_required);
+            //throw new DBException(AIUIMessages.openai_configurator_token_required);
+            return List.of();
         }
 
         OpenAIProperties properties = new OpenAIProperties();

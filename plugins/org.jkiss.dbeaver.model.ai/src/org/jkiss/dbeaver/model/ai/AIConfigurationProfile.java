@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.annotations.JsonAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,10 +32,10 @@ import java.util.Set;
  * AI engine settings profile
  * Keeps global parameters and configuration of an AI engine
  */
+@JsonAdapter(AISettingsManager.ConfigProfileAdapter.class)
 public class AIConfigurationProfile {
     protected static final Log log = Log.getLog(AIConfigurationProfile.class);
 
-    private String profileId;
     private String profileName;
     private String engineId;
     private AIEngineProperties configuration;
@@ -46,8 +47,21 @@ public class AIConfigurationProfile {
     }
 
     @NotNull
+    public String getProfileName() {
+        return profileName;
+    }
+
+    public void setProfileName(@NotNull String profileName) {
+        this.profileName = profileName;
+    }
+
+    @NotNull
     public String getEngineId() {
         return engineId;
+    }
+
+    public void setEngineId(@NotNull String engineId) {
+        this.engineId = engineId;
     }
 
     @NotNull
@@ -77,6 +91,10 @@ public class AIConfigurationProfile {
         }
 
         return configuration;
+    }
+
+    public void setConfiguration(@NotNull AIEngineProperties configuration) {
+        this.configuration = configuration;
     }
 
     public void saveSecrets() throws DBException {
