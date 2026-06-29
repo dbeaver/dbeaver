@@ -29,6 +29,12 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.ArrayUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockito.Mock;
 
 import java.io.IOException;
@@ -37,6 +43,7 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -47,6 +54,9 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     private static final String DEFAULT_VALUE_SEPARATOR = ",";
     // must be used in expectedTemplate as quote
     private static final String DEFAULT_QUOTE = "\"";
+
+    private static final String ALTERNATIVE_VALUE_SEPARATOR = ";";
+    private static final String ALTERNATIVE_QUOTE = "~";
 
     private DataExporterCSV dataExporterCSV;
     private StringWriter stringWriter;
@@ -92,16 +102,19 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         assertEquals(expectedHeader, stringWriter.toString());
     }
 
-    @Test
-    public void testOneRowExport() throws DBException, IOException {
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testOneRowExport(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         // given
         Object[][] rows = {{"a", "b", "c"}};
         // then
-        assertRowsEquals("a,b,c", ",", "\"", rows);
+        assertRowsEquals("a,b,c", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testMultipleRowsExport() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testMultipleRowsExport(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"a", "b", "c"},
             {"d", "e", "f"},
@@ -112,41 +125,45 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
             """
                 a,b,c
                 d,e,f
-                g,h,i""", ",", "\"", rows
+                g,h,i""", valueSeparator, quoteSeparator, rows
         );
     }
 
-    @Test
-    public void testEmptyFields() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testEmptyFields(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"", "", ""}
         };
 
         assertRowsEquals(
-            "\"\",\"\",\"\"", ",", "\"", rows
+            "\"\",\"\",\"\"", valueSeparator, quoteSeparator, rows
         );
     }
 
-    @Test
-    public void testQuotedComma() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuotedComma(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"a,b", "c", "d"}
         };
 
-        assertRowsEquals("\"a,b\",c,d", ",", "\"", rows);
+        assertRowsEquals("\"a,b\",c,d", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testQuotedQuote() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuotedQuote(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"a\"b", "c", "d"}
         };
 
-        assertRowsEquals("\"a\"\"b\",c,d", ",", "\"", rows);
+        assertRowsEquals("\"a\"\"b\",c,d", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testQuotedNewLine() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuotedNewLine(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"a\nb", "c", "d"}
         };
@@ -154,61 +171,66 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         assertRowsEquals(
             """
                 "a
-                b",c,d""", ",", "\"", rows
+                b",c,d""", valueSeparator, quoteSeparator, rows
         );
     }
 
-    @Test
-    public void testQuoteAndComma() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuoteAndComma(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"a,\"b", "c", "d"}
         };
 
-        assertRowsEquals("\"a,\"\"b\",c,d", ",", "\"", rows);
+        assertRowsEquals("\"a,\"\"b\",c,d", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testOnlyQuote() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testOnlyQuote(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"\""}
         };
 
-        assertRowsEquals("\"\"\"\"", ",", "\"", rows);
+        assertRowsEquals("\"\"\"\"", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testOnlyComma() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testOnlyComma(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {","}
         };
 
-        assertRowsEquals("\",\"", ",", "\"", rows);
+        assertRowsEquals("\",\"", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testLeadingAndTrailingSpaces() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testLeadingAndTrailingSpaces(@NotNull String valueSeparator, @NotNull String quoteSeparator)
+    throws DBException, IOException {
         Object[][] rows = {
             {" a ", "b ", " c"}
         };
 
-        assertRowsEquals(" a ,b , c", ",", "\"", rows);
+        assertRowsEquals(" a ,b , c", valueSeparator, quoteSeparator, rows);
     }
 
-    @Test
-    public void testUnicode() throws DBException, IOException {
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testUnicode(@NotNull String valueSeparator, @NotNull String quoteSeparator) throws DBException, IOException {
         Object[][] rows = {
             {"Привет", "こんにちは", "😀"}
         };
 
-        assertRowsEquals("Привет,こんにちは,😀", ",", "\"", rows);
+        assertRowsEquals("Привет,こんにちは,😀", valueSeparator, quoteSeparator, rows);
     }
-
 
     private void assertRowsEquals(
         @NotNull String expectedRowsTemplate,
         @NotNull String customSeparator,
         @NotNull String customQuote,
-        @NotNull Object[][] rows,
+        @NotNull Object[][] rowsTemplate,
         @NotNull DBDValueHandler... handlers
     )
     throws DBException, IOException {
@@ -217,7 +239,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         properties.put(DataExporterCSV.PROP_QUOTE_CHAR, customQuote);
 
         if (handlers.length == 0) {
-            handlers = new DBDValueHandler[rows[0].length];
+            handlers = new DBDValueHandler[rowsTemplate[0].length];
             Arrays.fill(handlers, JDBCStringValueHandler.INSTANCE);
         }
         for (int i = 0; i < handlers.length; i++) {
@@ -226,23 +248,32 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         // when
         initExporter();
         dataExporterCSV.exportHeader(dbcSession);
-        for (Object[] row : rows) {
+        for (Object[] row : rowsTemplate) {
+            for (int i = 0; i < row.length; i++) {
+                if (row[i] instanceof String rowTemplate) {
+                    row[i] = replaceTemplateQuotesAndSeparator(rowTemplate, customSeparator, customQuote);
+                }
+            }
             dataExporterCSV.exportRow(dbcSession, resultSetMock, row);
         }
         // then
-
         // strip header and following empty line
         String resultOnlyRows = stringWriter.toString().replaceFirst(".*" + rowsSeparator, "");
         resultOnlyRows = resultOnlyRows.endsWith(rowsSeparator)
             ? resultOnlyRows.substring(0, resultOnlyRows.length() - 1)
             : resultOnlyRows;
-        assertEquals(
-            expectedRowsTemplate
-                .replace(DEFAULT_VALUE_SEPARATOR, customSeparator)
-                .replace(DEFAULT_QUOTE, customQuote)
-            ,
-            resultOnlyRows
-        );
+        assertEquals(replaceTemplateQuotesAndSeparator(expectedRowsTemplate, customSeparator, customQuote), resultOnlyRows);
+    }
+
+    @NotNull
+    private String replaceTemplateQuotesAndSeparator(
+        @NotNull String template,
+        @NotNull String customSeparator,
+        @NotNull String customQuote
+    ) {
+        return template
+            .replace(DEFAULT_VALUE_SEPARATOR, customSeparator)
+            .replace(DEFAULT_QUOTE, customQuote);
     }
 
     @NotNull
@@ -261,5 +292,15 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         dataExporterCSV = new DataExporterCSV();
         properties.put(DataExporterCSV.PROP_ROW_DELIMITER, rowsSeparator);
         dataExporterCSV.init(site);
+    }
+
+    public static class SeparatorProvides implements ArgumentsProvider {
+        @Override
+        public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) throws Exception {
+            return Stream.of(
+                Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE),
+                Arguments.of(ALTERNATIVE_VALUE_SEPARATOR, ALTERNATIVE_QUOTE)
+            );
+        }
     }
 }
