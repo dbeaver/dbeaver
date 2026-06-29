@@ -55,4 +55,57 @@
             </not>
         </definition>
     </extension>
+
+    <extension point="com.dbeaver.ai.function">
+        <category
+            id="schema.discovery"
+            name="Database schema discovery"
+            description="Functions for database schema discovery"/>
+
+        <function
+            id="listSchemaNames"
+            name="List schema names"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="ALL"
+            system="true"
+            class="org.jkiss.dbeaver.model.ai.functions.ListSchemaNamesFunction"
+            categoryId="schema.discovery"
+            description="Lists schemas available in the current datasource or catalog/database.">
+            <parameter name="catalogName" required="false" type="string" description="Name of catalog/database containing schemas. Leave empty if catalog is not known or not supported by server."/>
+        </function>
+
+        <function
+            id="listTableNames"
+            name="List table names"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="ALL"
+            system="true"
+            class="org.jkiss.dbeaver.model.ai.functions.ListTableNamesFunction"
+            categoryId="schema.discovery"
+            description="Returns a list of tables available in the current datasource. Call it also to verify whether a table exists.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog or database name. Leave empty if catalog is not known."/>
+            <parameter name="schemaName" required="false" type="string" description="Schema name. Short name without preceding catalog name. Leave empty if schema is not known."/>
+        </function>
+
+        <function
+            id="getTableDetails"
+            name="Get table details"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="ALL"
+            system="true"
+            class="org.jkiss.dbeaver.model.ai.functions.GetTableDetailsFunction"
+            categoryId="schema.discovery"
+            description="Returns detailed information (columns, constraints, etc) about a specific tables as a DDL. Pass all needed tables in tableNames, do not call it separately for each table. Additional ddl parameters are disabled by default as they may slow down DDL extraction. To ensure that a certain tables exist call tool 'db_listTableNames'.">
+            <parameter name="tableNames" required="true" type="string" description="Comma-separated list of fully qualified table names (with preceding catalog or/and schema names)"/>
+            <parameter name="ddlConstraints" required="false" type="boolean" description="Adds constrains (primary keys, foreign keys) in the DDL. Default: false."/>
+            <parameter name="ddlIndexes" required="false" type="boolean" description="Adds indexes and other storage information in the DDL. Default: false."/>
+            <parameter name="ddlComments" required="false" type="boolean" description="Adds table and column comments in the DDL. Default: false."/>
+            <parameter name="ddlReferences" required="false" type="boolean" description="Adds foreign keys from other referencing tables in the DDL. Default: false."/>
+        </function>
+
+    </extension>
+
 </plugin>
