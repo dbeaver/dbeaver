@@ -3350,6 +3350,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         refreshEditorIconAndTitle();
 
+        firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
+
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
         }
