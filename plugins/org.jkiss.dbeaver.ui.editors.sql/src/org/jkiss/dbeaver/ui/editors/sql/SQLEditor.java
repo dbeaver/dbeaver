@@ -21,6 +21,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -3340,6 +3341,16 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
+        }
+
+        if (resultsSash != null && !resultsSash.isDisposed()) {
+            for (Composite c = resultsSash; c != null; c = c.getParent()) {
+                if (!c.isDisposed() && c.getParent() instanceof CTabFolder tabFolder) {
+                    CSSUtils.markConnectionTypeColor(tabFolder);
+                    WidgetElement.applyStyles(tabFolder, true);
+                    break;
+                }
+            }
         }
 
         DBCExecutionContext executionContext = getExecutionContext();
