@@ -34,7 +34,7 @@ import java.text.SimpleDateFormat;
 
 public class ClickHouseDateTimeValueHandler extends JDBCDateTimeValueHandler {
     public static final String CLICKHOUSE_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    public static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + CLICKHOUSE_TIMESTAMP_FORMAT + "''");
+    public static final ThreadLocal<SimpleDateFormat> DEFAULT_DATETIME_FORMAT = ThreadLocal.withInitial(() -> new SimpleDateFormat("''" + CLICKHOUSE_TIMESTAMP_FORMAT + "''"));
 
     public ClickHouseDateTimeValueHandler(DBDFormatSettings formatSettings) {
         super(formatSettings);
@@ -43,7 +43,7 @@ public class ClickHouseDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @Nullable
     @Override
     protected Format getNativeValueFormat(DBSTypedObject type) {
-        return DEFAULT_DATETIME_FORMAT;
+        return DEFAULT_DATETIME_FORMAT.get();
     }
 
     @Override
