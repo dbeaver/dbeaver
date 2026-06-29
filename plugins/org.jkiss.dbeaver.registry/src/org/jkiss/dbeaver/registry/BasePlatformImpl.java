@@ -412,7 +412,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @Override
-    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) {
         if (CommonUtils.equalObjects(language, this.platformLanguage)) {
             return;
         }
