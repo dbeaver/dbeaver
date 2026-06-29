@@ -65,12 +65,47 @@ public class AISettings implements DBPAdaptable {
     }
 
     @NotNull
-    public String getDefaultConfiguration() {
-        return defaultConfiguration;
+    public AIConfigurationProfile getDefaultConfiguration() throws DBException {
+        AIConfigurationProfile profile = getDefaultConfigurationOrNull();
+        if (profile == null) {
+            throw new DBException("AI engine is not configured");
+        }
+        return profile;
     }
 
-    public void setDefaultConfiguration(@NotNull String defaultConfiguration) {
-        this.defaultConfiguration = defaultConfiguration;
+    @Nullable
+    public AIConfigurationProfile getDefaultConfigurationOrNull() {
+        return configurations.get(defaultConfiguration);
+    }
+
+    public void setDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        defaultConfiguration = profile == null ? null : profile.getProfileId();
+        activeEngine = profile == null ? OpenAIConstants.OPENAI_ENGINE : profile.getEngineId();
+    }
+
+    public AIConfigurationProfile createConfiguration(
+        @NotNull String id,
+        @NotNull AIEngineDescriptor engine
+    ) throws DBException {
+        if (id.isBlank()) {
+            throw new DBException("Empty aI configuration ID");
+        }
+        if (configurations.containsKey(id)) {
+            throw new DBException("AI configuration '" + id + "' already exists");
+        }
+        AIConfigurationProfile profile = new AIConfigurationProfile();
+        profile.setProfileId(id);
+        profile.setEngineId(engine.getId());
+        configurations.put(id, profile);
+
+        return profile;
+    }
+
+    public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
+        configurations.remove(profile.getProfileId());
+        if (defaultConfiguration.equals(profile.getProfileId())) {
+            defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
+        }
     }
 
     /**
@@ -119,8 +154,10 @@ public class AISettings implements DBPAdaptable {
         return aiDisabled;
     }
 
+    // Disables AI integration. Saves configuration.
     public void setAiDisabled(boolean aiDisabled) {
         this.aiDisabled = aiDisabled;
+        AISettingsManager.getInstance().saveSettings();
     }
 
     @NotNull
@@ -211,6 +248,7 @@ public class AISettings implements DBPAdaptable {
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                 if (engineDescriptor != null) {
                     AIConfigurationProfile cp = new AIConfigurationProfile();
+                    cp.setProfileId(engineId);
                     cp.setProfileName(engineDescriptor.getLabel());
                     cp.setEngineId(engineId);
                     cp.setConfiguration(ep.getValue());
@@ -218,6 +256,22 @@ public class AISettings implements DBPAdaptable {
                 }
             }
             defaultConfiguration = activeEngine;
+        } else if (!configurations.isEmpty()) {
+            // Set profile IDs
+            for (Map.Entry<String, AIConfigurationProfile> ep : configurations.entrySet()) {
+                ep.getValue().setProfileId(ep.getKey());
+            }
+
+            if (engineConfigurations.isEmpty()) {
+                // Copy to engine configs for backward compatibility
+                for (Map.Entry<String, AIConfigurationProfile> ep : configurations.entrySet()) {
+                    try {
+                        engineConfigurations.put(ep.getValue().getEngineId(), ep.getValue().getConfiguration());
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+            }
         }
     }
 

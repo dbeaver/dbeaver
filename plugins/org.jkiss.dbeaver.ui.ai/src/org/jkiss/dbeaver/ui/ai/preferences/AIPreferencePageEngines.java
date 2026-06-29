@@ -117,7 +117,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 e
             );
         }
-        AISettingsManager.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().saveSettings();
         try {
             store.save();
         } catch (IOException e) {

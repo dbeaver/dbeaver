@@ -36,6 +36,7 @@ import java.util.Set;
 public class AIConfigurationProfile {
     protected static final Log log = Log.getLog(AIConfigurationProfile.class);
 
+    private String profileId;
     private String profileName;
     private String engineId;
     private AIEngineProperties configuration;
@@ -44,6 +45,15 @@ public class AIConfigurationProfile {
     private transient AIEngineDescriptor engineDescriptor;
 
     public AIConfigurationProfile() {
+    }
+
+    @NotNull
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(@NotNull String profileId) {
+        this.profileId = profileId;
     }
 
     @NotNull
