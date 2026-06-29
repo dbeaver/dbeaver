@@ -36,6 +36,9 @@ import java.util.*;
 public class AISettings implements DBPAdaptable {
     protected static final Log log = Log.getLog(AISettings.class);
     private boolean aiDisabled;
+
+    private final List<AIConfigurationProfile> configurations = new ArrayList<>();
+
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
@@ -52,6 +55,9 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
+    /**
+     * Global AI settings used by different modules
+     */
     @NotNull
     public Map<String, Object> getAllProperties() {
         return properties;
@@ -90,7 +96,6 @@ public class AISettings implements DBPAdaptable {
         customInstructions.clear();
         customInstructions.putAll(instructions);
     }
-
 
     public boolean isAiDisabled() {
         return aiDisabled;

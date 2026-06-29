@@ -142,7 +142,7 @@ public class AIChatSession {
         if (dataSource == null) {
             return null;
         }
-        AICompletionSettings dataSourceSettings = new AICompletionSettings(dataSource);
+        AIDataSourceSettings dataSourceSettings = new AIDataSourceSettings(dataSource);
         AIChatConversationSettings customSettings = conversation.getCustomSettings();
         if (customSettings != null && !dataSourceSettings.equalsSettings(customSettings)) {
             return customSettings;
