@@ -605,64 +605,10 @@ public final class AIUtils {
         DBSObject object = DBUtils.getObjectByPath(
             monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true);
         if (object == null) {
-            object = findObjectByPathIgnoreCase(
-                monitor, executionContext, rootContainer, catalogName, schemaName, objectName);
+            object = DBUtils.getObjectByPath(
+                monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true, false);
         }
         return object;
-    }
-
-    @Nullable
-    private static DBSObject findObjectByPathIgnoreCase(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer rootContainer,
-        @Nullable String catalogName,
-        @Nullable String schemaName,
-        @NotNull String objectName
-    ) throws DBException {
-        DBSObjectContainer container = rootContainer;
-        if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
-            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-            if (contextDefaults != null && contextDefaults.getDefaultCatalog() != null
-                && DBSCatalog.class.isAssignableFrom(container.getPrimaryChildType(monitor))
-            ) {
-                container = contextDefaults.getDefaultCatalog();
-            }
-        }
-        if (!CommonUtils.isEmpty(catalogName)) {
-            container = getChildIgnoreCase(monitor, container, catalogName) instanceof DBSObjectContainer container1 ? container1 : null;
-            if (container == null) {
-                return null;
-            }
-        }
-        if (!CommonUtils.isEmpty(schemaName)) {
-            container = getChildIgnoreCase(monitor, container, schemaName) instanceof DBSObjectContainer container1 ? container1 : null;
-            if (container == null) {
-                return null;
-            }
-        }
-        return getChildIgnoreCase(monitor, container, objectName);
-    }
-
-    @Nullable
-    private static DBSObject getChildIgnoreCase(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectContainer container,
-        @NotNull String name
-    ) throws DBException {
-        DBSObject child = container.getChild(monitor, name);
-        if (child != null) {
-            return child;
-        }
-        Collection<? extends DBSObject> children = container.getChildren(monitor);
-        if (children != null) {
-            for (DBSObject candidate : children) {
-                if (name.equalsIgnoreCase(candidate.getName())) {
-                    return candidate;
-                }
-            }
-        }
-        return null;
     }
 
     public static boolean useStreamMode() {
