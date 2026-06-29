@@ -666,6 +666,8 @@ public class CoreMessages extends NLS {
 
     public static String project_selector_tooltip;
 
+    public static String pref_page_user_interface_fonts_modify_tooltip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

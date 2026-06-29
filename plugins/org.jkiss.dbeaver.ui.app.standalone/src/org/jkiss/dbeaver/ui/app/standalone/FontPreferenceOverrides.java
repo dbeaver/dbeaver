@@ -38,6 +38,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIFontPreferenceManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 
@@ -498,16 +499,18 @@ public class FontPreferenceOverrides {
         }
     }
 
-    public static void overrideFontPrefValues(Map<String, List<String>> fontOverrides) {
+    public static void overrideFontPrefValues(@NotNull Map<String, List<String>> fontOverrides) {
         WorkbenchThemeManager.getInstance().addPropertyChangeListener(event -> {
             String fontPropertyId = event.getProperty();
             List<String> fontIdsToOverride = fontOverrides.get(fontPropertyId);
             if (fontIdsToOverride != null) {
                 FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
                 FontData[] data = fonts.getFontData(fontPropertyId);
-                for (String fontId: fontIdsToOverride) {
-                    fonts.put(fontId, data);
+                UIFontPreferenceManager m = new UIFontPreferenceManager();
+                for (String fontId : fontIdsToOverride) {
+                    m.setFontPreference(fontId, data);
                 }
+                m.savePrefs();
             }
         });
     }
