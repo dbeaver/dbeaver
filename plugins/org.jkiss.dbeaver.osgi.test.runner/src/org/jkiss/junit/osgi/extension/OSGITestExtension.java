@@ -197,7 +197,11 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
         ClassLoader prev = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(osgiLoader);
-            osgiMethod.invoke(osgiInstance);
+            if (invocationContext.getArguments().isEmpty()) {
+                osgiMethod.invoke(osgiInstance);
+            } else {
+                osgiMethod.invoke(osgiInstance, invocationContext.getArguments().toArray());
+            }
         } catch (InvocationTargetException e) {
             throw e.getCause();
         } finally {
@@ -207,6 +211,15 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
 
     @Override
     public void interceptTestMethod(
+        @NotNull Invocation<Void> inv,
+        @NotNull ReflectiveInvocationContext<Method> ctx,
+        @NotNull ExtensionContext ext
+    ) throws Throwable {
+        interceptWithOsgi(inv, ctx);
+    }
+
+    @Override
+    public void interceptTestTemplateMethod(
         @NotNull Invocation<Void> inv,
         @NotNull ReflectiveInvocationContext<Method> ctx,
         @NotNull ExtensionContext ext
