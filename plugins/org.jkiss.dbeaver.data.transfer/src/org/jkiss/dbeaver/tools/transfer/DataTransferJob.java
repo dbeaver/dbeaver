@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -45,6 +46,7 @@ public class DataTransferJob extends AbstractJob {
     private final DBRProgressMonitor parentMonitor;
     private long elapsedTime;
     private boolean hasErrors;
+    private volatile boolean transferCanceled;
 
     private final Log log;
     private final PrintStream logStream;
@@ -85,7 +87,13 @@ public class DataTransferJob extends AbstractJob {
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor jobMonitor) {
         final int pipeCount = settings.getDataPipes().size();
-        final DBRProgressMonitor monitor = parentMonitor != null ? parentMonitor : jobMonitor;
+        final DBRProgressMonitor baseMonitor = parentMonitor != null ? parentMonitor : jobMonitor;
+        final DBRProgressMonitor monitor = new ProxyProgressMonitor(baseMonitor) {
+            @Override
+            public boolean isCanceled() {
+                return transferCanceled || super.isCanceled();
+            }
+        };
         monitor.beginTask("Perform data transfer", pipeCount);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
@@ -121,6 +129,12 @@ public class DataTransferJob extends AbstractJob {
             }
         }
         return Status.OK_STATUS;
+    }
+
+    @Override
+    protected void canceling() {
+        transferCanceled = true;
+        super.canceling();
     }
 
     private boolean transferData(
