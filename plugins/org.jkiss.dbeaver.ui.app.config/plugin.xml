@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension-point id="org.jkiss.dbeaver.ui.app.config" name="%extension-point.org.jkiss.dbeaver.ui.app.config.name" schema="schema/org.jkiss.dbeaver.ui.app.config.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.ui.app.config">
+       <page id="welcome" order="1000" class="org.jkiss.dbeaver.ui.app.config.pages.ProductConfigWelcomePage"/>
+       <page id="appearance" order="2000" class="org.jkiss.dbeaver.ui.app.config.pages.ProductConfigAppearancePage"/>
+       <page id="features" order="3000" class="org.jkiss.dbeaver.ui.app.config.pages.ProductConfigFeaturesPage"/>
+       <page id="finalSteps" order="5000" class="org.jkiss.dbeaver.ui.app.config.pages.ProductConfigFinalStepsPage"/>
+   </extension>
+
+   <extension point="org.jkiss.dbeaver.workbenchHandler">
+      <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.config.handler.ProductConfigWorkbenchInitializer" order="0"/>
+   </extension>
+
+</plugin>
