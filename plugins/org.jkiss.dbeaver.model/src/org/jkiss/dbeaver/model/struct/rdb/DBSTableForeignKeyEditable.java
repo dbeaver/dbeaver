@@ -14,35 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer;
+package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-
-import java.util.Map;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 
 /**
- * Transfer settings
+ * Editable extension of {@link DBSTableForeignKey}.
  */
-public interface IDataTransferSettings {
+public interface DBSTableForeignKeyEditable extends DBSTableForeignKey {
 
-    void loadSettings(
-        @NotNull DBRRunnableContext runnableContext,
-        @NotNull DataTransferSettings dataTransferSettings,
-        @NotNull Map<String, Object> settings
-    );
+    void setDeleteRule(@NotNull DBSForeignKeyModifyRule deleteRule);
 
-    void saveSettings(@NotNull Map<String, Object> settings);
+    void setUpdateRule(@NotNull DBSForeignKeyModifyRule updateRule);
 
-    @NotNull
-    String getSettingsSummary();
-
-    /**
-     * Returns non-persistent parameters for data transfer execution which is shared between consumers of the task
-     */
-    @Nullable
-    default Object prepareRuntimeParameters() {
-        return null;
-    }
+    void setReferencedConstraint(@Nullable DBSEntityConstraint referencedConstraint);
 }
