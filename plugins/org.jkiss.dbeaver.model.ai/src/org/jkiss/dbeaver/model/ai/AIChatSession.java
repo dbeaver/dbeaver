@@ -165,7 +165,7 @@ public class AIChatSession {
                     for (QMAIConversationHistory history : conversationsHistory) {
                         DBPDataSourceContainer dataSourceContainer = getContainer(history.getDataSource());
                         AIChatConversation conversation = QMAIChatHistoryMapper.toAIChatConversation(
-                            assistant,
+                            getAssistant(),
                             history,
                             dataSourceContainer
                         );

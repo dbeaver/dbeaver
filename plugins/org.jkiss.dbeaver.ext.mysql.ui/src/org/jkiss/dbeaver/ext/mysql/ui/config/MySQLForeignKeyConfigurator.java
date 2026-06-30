@@ -39,7 +39,7 @@ import java.util.Map;
 public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLTableForeignKey> {
 
 
-    @NotNull
+    @Nullable
     @Override
     public MySQLTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull MySQLTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
