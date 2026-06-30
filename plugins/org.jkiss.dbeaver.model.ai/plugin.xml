@@ -47,13 +47,20 @@
     <extension point="org.eclipse.core.expressions.definitions">
         <!-- Enabled by the policy, has precedence over the user's preference -->
         <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy">
-            <not>
-                <or>
-                    <test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
-                    <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
-                </or>
-            </not>
+            <and>
+                <not>
+                    <or>
+                        <test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
+                        <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
+                    </or>
+                </not>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="ai"/>
+            </and>
         </definition>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature id="ai" label="AI integration" enabledByDefault="true"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">

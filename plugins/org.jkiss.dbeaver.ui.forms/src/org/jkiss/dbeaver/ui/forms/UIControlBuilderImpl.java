@@ -48,25 +48,26 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
     private UIObservable<Font> font;
-    private String tooltip;
+    private UIObservable<String> tooltip;
 
-    int alignX = SWT.BEGINNING;
-    int alignY = SWT.CENTER;
+    UIAlignX alignX = UIAlignX.LEFT;
+    UIAlignY alignY = UIAlignY.CENTER;
+    UIGrowX growX = UIGrowX.NEVER;
+    UIGrowY growY = UIGrowY.NEVER;
     int widthHint = SWT.DEFAULT;
     int heightHint = SWT.DEFAULT;
-    boolean grow = false;
 
     @NotNull
     @Override
-    public B visible(@NotNull UIObservable<Boolean> binding) {
-        visible = binding;
+    public B visible(@NotNull UIObservable<Boolean> value) {
+        visible = value;
         return builder();
     }
 
     @NotNull
     @Override
-    public B enabled(@NotNull UIObservable<Boolean> binding) {
-        enabled = binding;
+    public B enabled(@NotNull UIObservable<Boolean> value) {
+        enabled = value;
         return builder();
     }
 
@@ -79,37 +80,52 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     @NotNull
     @Override
-    public B tooltip(@NotNull String value) {
+    public B tooltip(@NotNull UIObservable<String> value) {
         tooltip = value;
         return builder();
     }
 
     @NotNull
     @Override
-    public B grow() {
-        grow = true;
+    public B grow(@NotNull UIGrowX x, @NotNull UIGrowY y) {
+        growX = x;
+        growY = y;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow(@NotNull UIGrowX x) {
+        growX = x;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow(@NotNull UIGrowY y) {
+        growY = y;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignX x, @NotNull UIAlignY y) {
-        alignX = x.toSWT();
-        alignY = y.toSWT();
+        alignX = x;
+        alignY = y;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignX x) {
-        alignX = x.toSWT();
+        alignX = x;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignY y) {
-        alignY = y.toSWT();
+        alignY = y;
         return builder();
     }
 
@@ -167,7 +183,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             context.bindValue(WidgetProperties.font().observe(control), delegate(font));
         }
         if (tooltip != null) {
-            control.setToolTipText(tooltip);
+            context.bindValue(WidgetProperties.tooltipText().observe(control), delegate(tooltip));
         }
     }
 
@@ -190,6 +206,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
         private UIObservable<String> text;
         private UIObservable<DBIcon> image;
+        private int style = SWT.NONE;
 
         @NotNull
         @Override
@@ -207,8 +224,15 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
+        public LabelBuilder wrap() {
+            style |= SWT.WRAP;
+            return this;
+        }
+
+        @NotNull
+        @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return UIControlFactory.createLabel(parent, SWT.NONE);
+            return UIControlFactory.createLabel(parent, style);
         }
 
         @Override
@@ -332,12 +356,12 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             }
         }
 
-        private final String text;
+        private final UIObservable<String> text;
         private final Consumer<SelectionEvent> onSelect;
         private final Kind kind;
         private UIObservable<Boolean> selected;
 
-        ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
+        ButtonBuilderImpl(@Nullable UIObservable<String> text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
             this.text = text;
             this.onSelect = onSelect;
             this.kind = kind;
@@ -353,7 +377,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            Button button = UIControlFactory.createButton(parent, kind.toSWT(), text);
+            Button button = UIControlFactory.createButton(parent, kind.toSWT());
             if (onSelect != null) {
                 button.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
             }
@@ -373,6 +397,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @Override
         protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
+            if (text != null) {
+                context.bindValue(WidgetProperties.text().observe(control), delegate(text));
+            }
             if (selected != null) {
                 context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
             }
