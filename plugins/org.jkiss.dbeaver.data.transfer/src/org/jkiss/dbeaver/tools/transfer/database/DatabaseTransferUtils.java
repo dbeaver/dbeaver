@@ -157,11 +157,35 @@ public class DatabaseTransferUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer schema,
         @NotNull DatabaseMappingContainer containerMapping,
-        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties) throws DBException
-    {
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties) throws DBException {
+        return generateTargetTableDDL(monitor, executionContext, schema, containerMapping, changedProperties, null);
+    }
+
+    /**
+     * Method generates array of actions for table creation and optional key migration.
+     *
+     * @param monitor progress monitor
+     * @param executionContext execution context for DDL generation
+     * @param schema table container
+     * @param containerMapping mapping container can not be null
+     * @param changedProperties list of properties what feature table must have
+     * @param consumerSettings transfer settings; when set, PK/FK migration flags are respected
+     * @return array of persist actions table creation
+     * @throws DBException on any DB error
+     */
+    @NotNull
+    public static DBEPersistAction[] generateTargetTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer schema,
+        @NotNull DatabaseMappingContainer containerMapping,
+        @Nullable Map<DBPPropertyDescriptor, Object> changedProperties,
+        @Nullable DatabaseConsumerSettings consumerSettings
+    ) throws DBException {
         if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
             return new DBEPersistAction[0];
         }
+        boolean hasExtraTargetStructure = consumerSettings != null && consumerSettings.hasExtraTargetStructure();
         // Check whether we have any changes in mappings
         if (containerMapping.getMappingType() == DatabaseMappingType.existing) {
             boolean hasChanges = false;
@@ -172,7 +196,7 @@ public class DatabaseTransferUtils {
                     break;
                 }
             }
-            if (!hasChanges) {
+            if (!hasChanges && !hasExtraTargetStructure) {
                 return new DBEPersistAction[0];
             }
         }
@@ -181,13 +205,16 @@ public class DatabaseTransferUtils {
             try {
                 final List<DBEPersistAction> actions = new ArrayList<>();
                 generateStructTableDDL(monitor, executionContext, schema, containerMapping, actions, changedProperties);
+                if (hasExtraTargetStructure) {
+                    Collections.addAll(actions, consumerSettings.generateExtraTargetTableDDL(
+                        monitor, executionContext, schema, containerMapping));
+                }
                 return actions.toArray(DBEPersistAction[]::new);
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Can't create or update target table", null, e);
                 if (!DBWorkbench.getPlatformUI().confirmAction(
                     "Generate DDL automatically",
-                    "Do you want to create or update target object with auto-generated SQL script?"))
-                {
+                    "Do you want to create or update target object with auto-generated SQL script?")) {
                     throw new DBException("Target table create or update was canceled");
                 }
             }
@@ -197,7 +224,6 @@ public class DatabaseTransferUtils {
         // Try plain SQL mode
 
         DBPDataSource dataSource = executionContext.getDataSource();
-        StringBuilder sql = new StringBuilder(500);
 
         String tableName;
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
@@ -212,6 +238,7 @@ public class DatabaseTransferUtils {
         }
 
         List<DBEPersistAction> actions = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(500);
 
         if (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() != null) {
             sql.append("DROP TABLE ");
@@ -228,12 +255,14 @@ public class DatabaseTransferUtils {
                 if (attr.getMappingType() != DatabaseMappingType.create) {
                     continue;
                 }
-                if (!mappedAttrs.isEmpty()) sql.append(",\n");
+                if (!mappedAttrs.isEmpty()) {
+                    sql.append(",\n");
+                }
                 sql.append("\t");
                 appendAttributeClause(dataSource, sql, attr);
                 mappedAttrs.put(attr.getSource(), attr);
             }
-            if (containerMapping.getSource() instanceof DBSEntity) {
+            if (!hasExtraTargetStructure && containerMapping.getSource() instanceof DBSEntity) {
                 // Make primary key
                 Collection<? extends DBSEntityAttribute> identifier = DBUtils.getBestTableIdentifier(monitor, (DBSEntity) containerMapping.getSource());
                 if (!CommonUtils.isEmpty(identifier)) {
@@ -265,6 +294,10 @@ public class DatabaseTransferUtils {
                     actions.add(generateTargetAttributeDDL(dataSource, attr));
                 }
             }
+        }
+        if (hasExtraTargetStructure) {
+            Collections.addAll(actions, consumerSettings.generateExtraTargetTableDDL(
+                monitor, executionContext, schema, containerMapping));
         }
         return actions.toArray(new DBEPersistAction[0]);
     }
@@ -310,7 +343,12 @@ public class DatabaseTransferUtils {
         return targetName;
     }
 
-    private static void getTableFullName(@Nullable DBSObjectContainer schema, @NotNull DBPDataSource dataSource, @NotNull StringBuilder sql, @NotNull String tableName) {
+    private static void getTableFullName(
+        @Nullable DBSObjectContainer schema,
+        @NotNull DBPDataSource dataSource,
+        @NotNull StringBuilder sql,
+        @NotNull String tableName
+    ) {
         if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
             sql.append(DBUtils.getFullyQualifiedName(dataSource, schema.getName(), tableName));
         } else {
@@ -319,8 +357,10 @@ public class DatabaseTransferUtils {
     }
 
     @NotNull
-    private static SQLObjectEditor<DBSEntity, ?> getTableManager(DBERegistry editorsRegistry, Class<? extends DBSObject> tableClass)
-        throws DBException {
+    private static SQLObjectEditor<DBSEntity, ?> getTableManager(
+        @NotNull DBERegistry editorsRegistry,
+        @NotNull Class<? extends DBSObject> tableClass
+    ) throws DBException {
         SQLObjectEditor<DBSEntity, ?> tableManager = editorsRegistry.getObjectManager(tableClass, SQLObjectEditor.class);
         if (tableManager == null) {
             throw new DBException("Table manager not found for '" + tableClass.getName() + "'");
@@ -329,7 +369,8 @@ public class DatabaseTransferUtils {
     }
 
     @NotNull
-    private static Class<? extends DBSObject> getTableClass(DBRProgressMonitor monitor, DBSObjectContainer schema) throws DBException {
+    private static Class<? extends DBSObject> getTableClass(@Nullable DBRProgressMonitor monitor, @NotNull DBSObjectContainer schema)
+            throws DBException {
         Class<? extends DBSObject> tableClass = schema.getPrimaryChildType(monitor);
         if (!DBSEntity.class.isAssignableFrom(tableClass)) {
             throw new DBException("Wrong table container child type: " + tableClass.getName());
@@ -367,15 +408,17 @@ public class DatabaseTransferUtils {
                 throw new DBException("Table create is not supported by driver " + schema.getDataSource().getContainer().getDriver().getName());
             }
             Class<? extends DBSEntityAttribute> attrClass;
-            SQLObjectEditor<DBSEntityAttribute,?> attributeManager;
+            SQLObjectEditor<DBSEntityAttribute, ?> attributeManager;
+            Class<?>[] childTypes;
             if (executionContext.getDataSource().getInfo().isDynamicMetadata()) {
                 attrClass = null;
                 attributeManager = null;
             } else {
-                if (!(tableManager instanceof DBEStructEditor)) {
-                    throw new DBException("Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
+                if (!(tableManager instanceof DBEStructEditor<?> dbeStructEditor)) {
+                    throw new DBException(
+                        "Table create not supported by " + executionContext.getDataSource().getContainer().getDriver().getName());
                 }
-                Class<?>[] childTypes = ((DBEStructEditor<?>) tableManager).getChildTypes();
+                childTypes = dbeStructEditor.getChildTypes();
                 attrClass = BeanUtils.findAssignableType(childTypes, DBSEntityAttribute.class);
                 if (attrClass == null) {
                     throw new DBException("Column manager not found for '" + tableClass.getName() + "'");
@@ -392,10 +435,8 @@ public class DatabaseTransferUtils {
 
             DBSEntity table;
             DBECommand createCommand = null;
-            if (containerMapping.getMappingType() == DatabaseMappingType.create ||
-                (containerMapping.getMappingType() == DatabaseMappingType.recreate
-                    && containerMapping.getTarget() == null))
-            {
+            if (containerMapping.getMappingType() == DatabaseMappingType.create || (
+                containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() == null)) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, true);
@@ -427,21 +468,18 @@ public class DatabaseTransferUtils {
                         continue;
                     }
                     DBSEntityAttribute newAttribute = attributeManager.createNewObject(monitor, commandContext, table, null, options);
-                    if (!(newAttribute instanceof DBPNamedObject2)) {
+                    if (!(newAttribute instanceof DBPNamedObject2 namedObject2)) {
                         throw new DBException("Table column name cannot be set for " + attrClass.getName());
                     }
-                    ((DBPNamedObject2) newAttribute).setName(
-                        getTransformedName(newAttribute.getDataSource(), attributeMapping.getTargetName(), false));
+                    namedObject2.setName(getTransformedName(newAttribute.getDataSource(), attributeMapping.getTargetName(), false));
 
                     // Set attribute properties
-                    if (newAttribute instanceof DBSTypedObjectExt2) {
-                        DBSTypedObjectExt2 typedAttr = (DBSTypedObjectExt2) newAttribute;
-
+                    if (newAttribute instanceof DBSTypedObjectExt2 typedAttr) {
                         boolean typeModifiersSet = false;
-                        if (typedAttr instanceof DBSTypedObjectExt3) {
+                        if (typedAttr instanceof DBSTypedObjectExt3 typedObjectExt3) {
                             String fullTargetTypeName = attributeMapping.getTargetType(executionContext.getDataSource(), true);
                             typeModifiersSet = fullTargetTypeName.contains("(");
-                            ((DBSTypedObjectExt3) typedAttr).setFullTypeName(fullTargetTypeName);
+                            typedObjectExt3.setFullTypeName(fullTargetTypeName);
                         } else {
                             String targetAttrType = attributeMapping.getTargetType(executionContext.getDataSource(), false);
                             typedAttr.setTypeName(targetAttrType);
@@ -459,8 +497,8 @@ public class DatabaseTransferUtils {
                     }
 
                     SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
-                    if (createCommand instanceof DBECommandAggregator) {
-                        ((DBECommandAggregator)createCommand).aggregateCommand(attrCreateCommand);
+                    if (createCommand instanceof DBECommandAggregator<?> aggregator) {
+                        aggregator.aggregateCommand(attrCreateCommand);
                     }
                 }
             }
@@ -485,8 +523,8 @@ public class DatabaseTransferUtils {
         @Nullable Map<DBPPropertyDescriptor, Object> changedProperties,
         @Nullable DBECommandContext commandContext,
         @Nullable DatabaseMappingContainer containerMapping,
-        @NotNull DBSEntity table)
-    {
+        @NotNull DBSEntity table
+    ) {
         PropertySourceEditable propertySource = new PropertySourceEditable(commandContext, table, table);
         if (CommonUtils.isEmpty(changedProperties) && containerMapping != null
             && !CommonUtils.isEmpty(containerMapping.getRawChangedPropertiesMap())) {
@@ -510,10 +548,11 @@ public class DatabaseTransferUtils {
         }
     }
 
+    @NotNull
     private static String getTableFinalName(
-        String targetName,
+        @NotNull String targetName,
         @NotNull Class<? extends DBSObject> tableClass,
-        DBSEntity table,
+        @Nullable DBSEntity table,
         boolean extraTransform
     ) throws DBException {
         if (table == null) {
@@ -528,8 +567,8 @@ public class DatabaseTransferUtils {
         } else {
             tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
         }
-        if (table instanceof DBPNamedObject2) {
-            ((DBPNamedObject2) table).setName(tableFinalName);
+        if (table instanceof DBPNamedObject2 namedObject2 && tableFinalName != null) {
+            namedObject2.setName(tableFinalName);
         } else {
             throw new DBException("Table name cannot be set for " + tableClass.getName());
         }
@@ -537,7 +576,7 @@ public class DatabaseTransferUtils {
     }
 
     @NotNull
-    static DBEPersistAction generateTargetAttributeDDL(DBPDataSource dataSource, DatabaseMappingAttribute attribute) {
+    static DBEPersistAction generateTargetAttributeDDL(@NotNull DBPDataSource dataSource, @NotNull DatabaseMappingAttribute attribute) {
         StringBuilder sql = new StringBuilder(500);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget(), DBPEvaluationContext.DDL))
             .append(" ADD ");
@@ -545,15 +584,21 @@ public class DatabaseTransferUtils {
         return new SQLDatabasePersistAction(sql.toString());
     }
 
-    private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
+    private static void appendAttributeClause(
+        @NotNull DBPDataSource dataSource,
+        @NotNull StringBuilder sql,
+        @NotNull DatabaseMappingAttribute attr
+    ) {
         String attrName = getTransformedName(dataSource, attr.getTargetName(), false);
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attrName)).append(" ").append(attr.getTargetType(dataSource, true));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
-            if (attr.getSource().isRequired()) sql.append(" NOT NULL");
+            if (attr.getSource() != null && attr.getSource().isRequired()) {
+                sql.append(" NOT NULL");
+            }
         }
     }
 
-    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBException {
+    public static void executeDDL(@NotNull DBCSession session, @NotNull DBEPersistAction[] actions) throws DBException {
         if (actions.length == 0) {
             return;
         }
@@ -567,7 +612,13 @@ public class DatabaseTransferUtils {
         }
     }
 
-    static void createTargetDynamicTable(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull DBSObjectContainer schema, @NotNull DatabaseMappingContainer containerMapping, boolean recreate) throws DBException {
+    static void createTargetDynamicTable(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer schema,
+        @NotNull DatabaseMappingContainer containerMapping,
+        boolean recreate
+    ) throws DBException {
         ensureHasEditMetadataPermission(executionContext.getDataSource().getContainer());
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
@@ -645,8 +696,8 @@ public class DatabaseTransferUtils {
         }
     }
 
-    static class TargetCommandContext extends AbstractCommandContext {
-        TargetCommandContext(DBCExecutionContext executionContext) {
+    public static class TargetCommandContext extends AbstractCommandContext {
+        public TargetCommandContext(DBCExecutionContext executionContext) {
             super(executionContext, true);
         }
     }
