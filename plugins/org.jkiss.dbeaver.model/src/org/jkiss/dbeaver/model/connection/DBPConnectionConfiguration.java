@@ -562,6 +562,9 @@ public class DBPConnectionConfiguration implements DBPObject {
 
     @NotNull
     public Map<String, String> getAuthProperties() {
+        if (authProperties == null) {
+            return Collections.emptyMap();
+        }
         return authProperties;
     }
 
