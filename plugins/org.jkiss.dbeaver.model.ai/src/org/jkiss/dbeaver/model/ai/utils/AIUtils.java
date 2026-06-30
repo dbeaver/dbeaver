@@ -23,11 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -57,17 +54,10 @@ public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
 
-    @Nullable
-    public static AIEngineDescriptor getActiveEngineDescriptor() {
-        return AIEngineRegistry.getInstance().getEngineDescriptor(
-            AISettingsManager.getInstance().getSettings().activeEngine()
-        );
-    }
-
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
-        return configuration.isValidConfiguration();
+        AIConfigurationProfile configuration = aiSettings.getDefaultConfigurationOrNull();
+        return configuration != null && configuration.getConfiguration().isValidConfiguration();
     }
     /**
      * Retrieves a secret value from the global secret controller.

@@ -75,7 +75,7 @@ public class AIConfigurationProfile {
     }
 
     @NotNull
-    public AIEngineDescriptor getEngineDescriptor() throws DBException {
+    public synchronized AIEngineDescriptor getEngineDescriptor() throws DBException {
         if (engineDescriptor == null) {
             engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
             if (engineDescriptor == null) {
@@ -86,12 +86,14 @@ public class AIConfigurationProfile {
     }
 
     @NotNull
-    public synchronized AIEngineProperties getConfiguration() throws DBException {
-        if (configuration != null) {
-            return configuration;
-        }
+    public AIEngineProperties getConfiguration() throws DBException {
         AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-        configuration = engineDescriptor.createPropertiesInstance();
+        synchronized (this) {
+            if (configuration != null) {
+                return configuration;
+            }
+            configuration = engineDescriptor.createPropertiesInstance();
+        }
 
         if (!AISettingsManager.saveSecretsAsPlainText()) {
             if (!resolvedSecrets.contains(engineId)) {

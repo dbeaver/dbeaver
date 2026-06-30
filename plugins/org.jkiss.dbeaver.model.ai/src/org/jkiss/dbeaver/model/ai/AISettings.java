@@ -74,6 +74,20 @@ public class AISettings implements DBPAdaptable {
     }
 
     @Nullable
+    public AIConfigurationProfile getConfigurationOrNull(@NotNull String profileId) {
+        return configurations.get(profileId);
+    }
+
+    @NotNull
+    public AIConfigurationProfile getConfiguration(@NotNull String profileId) throws DBException {
+        AIConfigurationProfile profile = getConfigurationOrNull(profileId);
+        if (profile == null) {
+            throw new DBException("AI configuration '" + profileId + "' not found");
+        }
+        return profile;
+    }
+
+    @Nullable
     public AIConfigurationProfile getDefaultConfigurationOrNull() {
         return configurations.get(defaultConfiguration);
     }
@@ -160,62 +174,8 @@ public class AISettings implements DBPAdaptable {
         AISettingsManager.getInstance().saveSettings();
     }
 
-    @NotNull
-    public String activeEngine() {
-        return activeEngine;
-    }
-
-    public void setActiveEngine(@NotNull String activeEngine) {
-        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
-        if (engineDescriptor != null) {
-            // Replacement?
-            activeEngine = engineDescriptor.getId();
-        }
-        this.activeEngine = activeEngine;
-    }
-
     public boolean hasConfiguration(@NotNull String engineId) {
         return engineConfigurations.containsKey(engineId);
-    }
-
-    @NotNull
-    public synchronized <T extends AIEngineProperties> T getEngineConfiguration(@NotNull String engineId) throws DBException {
-        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-        if (engineDescriptor == null) {
-            throw new DBException("AI engine " + engineId + " not found");
-        }
-
-        AIEngineProperties aiEngineSettings = engineConfigurations.get(engineId);
-        if (aiEngineSettings == null) {
-            aiEngineSettings = engineDescriptor.createPropertiesInstance();
-        }
-
-        if (!AISettingsManager.saveSecretsAsPlainText()) {
-            if (!resolvedSecrets.contains(engineId)) {
-                aiEngineSettings.resolveSecrets();
-                resolvedSecrets.add(engineId);
-            }
-        }
-
-        return (T) aiEngineSettings;
-    }
-
-    @NotNull
-    public Map<String, AIEngineProperties> getEngineConfigurations() {
-        return engineConfigurations;
-    }
-
-    public void setEngineConfiguration(
-        @NotNull String engineId,
-        @NotNull AIEngineProperties engineConfiguration
-    ) {
-        engineConfigurations.put(engineId, engineConfiguration);
-    }
-
-    public void setEngineConfigurations(
-        @NotNull Map<String, AIEngineProperties> engineConfigurations
-    ) {
-        this.engineConfigurations.putAll(engineConfigurations);
     }
 
     public void saveSecrets() throws DBException {

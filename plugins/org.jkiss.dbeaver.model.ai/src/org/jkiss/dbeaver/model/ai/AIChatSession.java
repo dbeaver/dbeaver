@@ -396,7 +396,7 @@ public class AIChatSession {
         @Nullable AIConfirmation confirmation
     ) throws DBException {
         String sessionId = sessionIdProvider.getSessionId(monitor);
-        String engineId = AISettingsManager.getInstance().getSettings().activeEngine();
+        String engineId = AISettingsManager.getInstance().getSettings().getDefaultConfiguration().getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
             sessionId,
             engineId

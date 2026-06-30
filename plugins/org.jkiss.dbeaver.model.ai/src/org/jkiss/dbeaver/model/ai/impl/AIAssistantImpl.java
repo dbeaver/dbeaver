@@ -490,14 +490,9 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    public static String getActiveEngineId() {
-        return AISettingsManager.getInstance().getSettings().activeEngine();
-    }
-
-    public boolean isEngineSupports(Class<?> api) {
-        return AIEngineRegistry.getInstance().isEngineSupports(
-            getActiveEngineId(),
-            api);
+    @NotNull
+    public static String getActiveEngineId() throws DBException {
+        return AISettingsManager.getInstance().getSettings().getDefaultConfiguration().getEngineId();
     }
 
     @NotNull
@@ -566,12 +561,12 @@ public class AIAssistantImpl implements AIAssistant {
     @Nullable
     private AIEngineProperties getActiveEngineConfiguration() throws DBException {
         AISettingsManager settingsManager = AISettingsManager.getInstance();
-        String activeEngine = settingsManager.getSettings().activeEngine();
-        if (activeEngine == null || activeEngine.isEmpty()) {
+        AIConfigurationProfile profile = settingsManager.getSettings().getDefaultConfigurationOrNull();
+        if (profile == null || !profile.getConfiguration().isValidConfiguration()) {
             log.warn("No active AI engine configured");
             return null;
         }
-        return settingsManager.getSettings().getEngineConfiguration(activeEngine);
+        return profile.getConfiguration();
     }
 
     protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
