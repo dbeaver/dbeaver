@@ -200,7 +200,22 @@ public class OSGITestExtension implements BeforeAllCallback, AfterAllCallback, I
             if (invocationContext.getArguments().isEmpty()) {
                 osgiMethod.invoke(osgiInstance);
             } else {
-                osgiMethod.invoke(osgiInstance, invocationContext.getArguments().toArray());
+                Object[] args = invocationContext.getArguments().toArray();
+                // enums are special case, since they can come from different class loader
+                Class<?>[] parameterTypes = osgiMethod.getParameterTypes();
+                for (int i = 0; i < args.length; i++) {
+                    Object arg = args[i];
+                    Class<?> expected = parameterTypes[i];
+
+                    if (arg != null && expected.isEnum()) {
+                        args[i] = Enum.valueOf(
+                            (Class<? extends Enum>) expected,
+                            ((Enum<?>) arg).name()
+                        );
+                    }
+                }
+
+                osgiMethod.invoke(osgiInstance, args);
             }
         } catch (InvocationTargetException e) {
             throw e.getCause();
