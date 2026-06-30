@@ -482,7 +482,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 @NotNull
                 @Override
                 public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-                    Path targetFile = targetDir.resolve(parentResource.relativize(file));
+                    Path targetFile = targetDir.resolve(stringResolveRepresentation(file));
                     action.accept(file, targetFile);
                     return FileVisitResult.CONTINUE;
                 }
@@ -490,7 +490,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 @NotNull
                 @Override
                 public FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attrs) throws IOException {
-                    Path targetDirPath = targetDir.resolve(parentResource.relativize(dir));
+                    Path targetDirPath = targetDir.resolve(stringResolveRepresentation(dir));
                     Files.createDirectories(targetDirPath);
                     return FileVisitResult.CONTINUE;
                 }
@@ -504,6 +504,14 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                         directoryPostVisitAction.accept(dir);
                         return FileVisitResult.CONTINUE;
                     }
+                }
+
+                //because some file systems does not support path resolve from different providers
+                @NotNull
+                private String stringResolveRepresentation(@NotNull Path file) {
+                    StringJoiner relativizedString = new StringJoiner(targetDir.getFileSystem().getSeparator());
+                    parentResource.relativize(file).iterator().forEachRemaining(p -> relativizedString.add(p.getFileName().toString()));
+                    return relativizedString.toString();
                 }
             }
         );
