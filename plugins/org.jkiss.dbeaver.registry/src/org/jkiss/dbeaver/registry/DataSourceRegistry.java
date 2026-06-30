@@ -1168,7 +1168,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         @Override
         public void removeProfile(@NotNull DBWNetworkProfile profile) {
             super.removeProfile(profile);
-            if (project.isUseSecretStorage()) {
+            if (!DBWorkbench.isDistributed() && project.isUseSecretStorage()) {
                 try {
                     DBSSecretController secretController = getSecretController();
                     secretController.setPrivateSecretValue(
