@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -207,6 +208,100 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
 
     @ParameterizedTest
     @ArgumentsSource(SeparatorProvides.class)
+    public void testQuoteNever(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+        // then
+        assertRowsEquals(
+            "a,b,c", valueSeparator, quoteSeparator,
+            new Object[][]{{"a", "b", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuoteNeverComma(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            "a,b,c",
+            valueSeparator,
+            quoteSeparator,
+            new Object[][]{{"a,b", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuoteNeverQuote(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            "a\"b,c",
+            valueSeparator,
+            quoteSeparator,
+            new Object[][]{{"a\"b", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuoteNeverNewLine(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            """
+                a
+                b,c""",
+            valueSeparator,
+            quoteSeparator,
+            new Object[][]{{"a\nb", "c"}}
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
+    public void testQuoteNeverMultipleRows(
+        @NotNull String valueSeparator,
+        @NotNull String quoteSeparator
+    ) throws DBException, IOException {
+        // given
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+
+        // then
+        assertRowsEquals(
+            """
+                a,b,c
+                d,e,f""",
+            valueSeparator,
+            quoteSeparator,
+            new Object[][]{
+                {"a", "b", "c"},
+                {"d", "e", "f"}
+            }
+        );
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorProvides.class)
     public void testLeadingAndTrailingSpaces(@NotNull String valueSeparator, @NotNull String quoteSeparator)
     throws DBException, IOException {
         Object[][] rows = {
@@ -295,11 +390,18 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     }
 
     public static class SeparatorProvides implements ArgumentsProvider {
+
+        @NotNull
         @Override
-        public Stream<? extends Arguments> provideArguments(ParameterDeclarations parameters, ExtensionContext context) throws Exception {
+        public Stream<? extends Arguments> provideArguments(@Nullable ParameterDeclarations parameters, @Nullable ExtensionContext context)
+        throws Exception {
             return Stream.of(
                 Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE),
-                Arguments.of(ALTERNATIVE_VALUE_SEPARATOR, ALTERNATIVE_QUOTE)
+                Arguments.of(ALTERNATIVE_VALUE_SEPARATOR, ALTERNATIVE_QUOTE),
+                // multichars separators
+                Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE),
+                Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE),
+                Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE)
             );
         }
     }
