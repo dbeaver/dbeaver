@@ -36,14 +36,13 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -99,7 +98,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private DBDAttributeBinding[] columns;
     private DataExporterArrayFormat dataExporterArrayFormat;
 
-    private final StringBuilder buffer = new StringBuilder();
+    private final StringBuilder lineBuffer = new StringBuilder();
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
@@ -225,7 +224,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs == null) {
-                        writeCellValue(DBConstants.NULL_VALUE_LABEL, false);
+                        writeCellValue(DBConstants.NULL_VALUE_LABEL, true);
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cs.getContentReader());
                     } else {
@@ -330,106 +329,74 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         return false;
     }
 
-    private void writeCellValue(String value, boolean quote)
+    private void writeCellValue(@NotNull String value, boolean quote)
     {
-        if (!useQuotes) {
-            quote = false;
-        }
-        // check for needed quote
-        final boolean hasQuotes = useQuotes && value.contains(quoteChar);
+        writeLines(Arrays.stream(value.split("\n")).iterator(), quote);
+    }
 
-        if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            if (value.indexOf('\n') != -1) {
-                value = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
+    private void writeCellValue(@NotNull Reader reader) throws IOException {
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            writeLines(bufferedReader.lines().iterator(), false);
+        }
+    }
+
+    private void writeLines(@NotNull Iterator<String> multiRow, boolean quote) {
+        boolean isQuoteLines = quote;
+        boolean isMoreThenOneLine = false;
+        StringJoiner multiLineBuffer = new StringJoiner(CommonUtils.isNotEmpty(lineFeedEscapeString) ? lineFeedEscapeString : "\n");
+        while (multiRow.hasNext()) {
+            String line = multiRow.next();
+            if (!isQuoteLines && useQuotes) {
+                isQuoteLines = lineNeedQuotation(line) || isMoreThenOneLine;
             }
+            multiLineBuffer.add(processLine(line));
+            isMoreThenOneLine = true;
         }
 
+        PrintWriter out = getWriter();
+        if (isQuoteLines && useQuotes) {
+            out.write(quoteChar);
+        }
+        out.write(multiLineBuffer.toString());
+        if (isQuoteLines && useQuotes) {
+            out.write(quoteChar);
+        }
+    }
+
+    private boolean lineNeedQuotation(@NotNull String line) {
         if (quoteStrategy == QuoteStrategy.ALL ||
             quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
-            (useQuotes && value.isEmpty())
+            (useQuotes && line.isEmpty())
         ) {
-            quote = true;
-        } else if (!quote) {
-            if (hasQuotes ||
-                value.contains(delimiter) ||
-                value.indexOf('\r') != -1 ||
-                value.indexOf('\n') != -1 ||
-                value.contains(rowDelimiter)
-            ) {
-                quote = true;
-            }
+            return true;
+        } else {
+            return line.contains(delimiter) || line.contains(rowDelimiter);
         }
+    }
 
-        if (quote && hasQuotes) {
-            // escape quotes with double quotes
-            buffer.setLength(0);
+    @NotNull
+    private String processLine(@NotNull String line) {
+        lineBuffer.setLength(0);
+        // escape quotes with double quotes
+        if (useQuotes && line.contains(quoteChar)) {
             int index = 0;
-            while (index < value.length()) {
-                if (isQuoteChar(value, index)) {
-                    buffer.append(quoteChar.repeat(2));
+            while (index < line.length()) {
+                if (isQuoteChar(line, index)) {
+                    lineBuffer.append(quoteChar.repeat(2));
                     index += quoteChar.length();
                 } else {
-                    buffer.append(value.charAt(index++));
+                    lineBuffer.append(line.charAt(index++));
                 }
             }
-
-            value = buffer.toString();
+            return lineBuffer.toString();
+        } else {
+            return line;
         }
-        PrintWriter out = getWriter();
-        if (quote && useQuotes) out.write(quoteChar);
-        out.write(value);
-        if (quote && useQuotes) out.write(quoteChar);
     }
 
     private boolean isQuoteChar(@NotNull String value, int toffset) {
         // if separator is longer it might contain quote char in it.
         return (delimiter.length() <= quoteChar.length() || !value.startsWith(delimiter, toffset)) && value.startsWith(quoteChar, toffset);
-    }
-
-    private void writeCellValue(Reader reader) throws IOException
-    {
-        try {
-            PrintWriter out = getWriter();
-            if (useQuotes && quoteStrategy != QuoteStrategy.DISABLED) {
-                out.write(quoteChar);
-            }
-            // Copy reader
-            // todo buffer overwhelm
-            char[] buffer = new char[2000];
-            for (int count = reader.read(buffer); count > 0; count = reader.read(buffer)) {
-                int index = 0;
-                while (index < count) {
-                    // escape quotes with double quotes
-                    if (useQuotes && isQuoteChar(buffer, index)) {
-                        out.write(quoteChar.repeat(2));
-                        index += quoteChar.length();
-                    } else {
-                        out.write(buffer[index++]);
-                    }
-                }
-            }
-            if (useQuotes && quoteStrategy != QuoteStrategy.DISABLED) {
-                out.write(quoteChar);
-            }
-        } finally {
-            ContentUtils.close(reader);
-        }
-    }
-
-
-    private boolean isQuoteChar(@NotNull char[] buffer, int toffset) {
-        // if separator is longer it might contain quote char in it.
-        return (delimiter.length() <= quoteChar.length() || !contains(buffer, toffset, delimiter))
-            && contains(buffer, toffset, quoteChar);
-    }
-
-    private boolean contains(@NotNull char[] buffer, int toffset, @NotNull String toFind) {
-        int endIndex = toffset + toFind.length();
-        if (endIndex > buffer.length) {
-            return false;
-        }
-        char[] toFindChars = toFind.toCharArray();
-        return Arrays.equals(buffer, toffset, endIndex, toFindChars, 0, toFindChars.length);
     }
 
     private void writeDelimiter()
