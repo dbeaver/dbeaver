@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
+import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -82,6 +83,78 @@ public class CSSUtils {
             colorByConnectionType = COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(tb));
         }
         return colorByConnectionType;
+    }
+
+    /**
+     * Re-applies CSS styles to the widget and its children immediately.
+     * Useful to refresh connection-type colors without waiting for the next CSS engine pass.
+     */
+    public static void applyStyles(@NotNull Widget widget) {
+        if (widget.isDisposed()) {
+            return;
+        }
+        try {
+            WidgetElement.applyStyles(widget, true);
+        } catch (Throwable e) {
+            // CSS engine may not be available in all configurations
+        }
+    }
+
+    public static void refreshConnectionTypeToolbars(@NotNull Control root) {
+        refreshConnectionTypeControls(root);
+    }
+
+    public static void refreshConnectionTypeControls(@NotNull Control root) {
+        if (root.isDisposed()) {
+            return;
+        }
+        if (root instanceof ToolBar toolBar) {
+            refreshConnectionTypeToolbar(toolBar);
+            return;
+        }
+        if (isDatabaseColored(root) && root instanceof Composite composite) {
+            Color bgColor = getCurrentEditorConnectionColor(root);
+            Color effectiveBg = bgColor != null ? bgColor : UIStyles.getDefaultWidgetBackground();
+            composite.setBackground(effectiveBg);
+            composite.redraw();
+        }
+        if (root instanceof Composite parent) {
+            for (Control child : parent.getChildren()) {
+                refreshConnectionTypeControls(child);
+            }
+        }
+    }
+
+    public static void refreshConnectionTypeToolbar(@NotNull ToolBar toolBar) {
+        if (toolBar.isDisposed()) {
+            return;
+        }
+        Color bgColor = getCurrentEditorConnectionColor(toolBar);
+        if (bgColor == null && !isDatabaseColored(toolBar)) {
+            return;
+        }
+        markConnectionTypeColor(toolBar);
+        Color effectiveBg = bgColor != null ? bgColor : UIStyles.getDefaultWidgetBackground();
+        toolBar.setForeground(UIStyles.getDefaultTextForeground());
+        // Reset first so native toolbar rendering drops cached item backgrounds (light theme)
+        toolBar.setBackground(null);
+        toolBar.setBackground(effectiveBg);
+        Control parent = toolBar.getParent();
+        if (parent != null && !parent.isDisposed()) {
+            parent.setBackground(effectiveBg);
+        }
+        refreshNativeToolBarBackground(toolBar);
+        toolBar.redraw();
+        toolBar.update();
+    }
+
+    private static void refreshNativeToolBarBackground(@NotNull ToolBar toolBar) {
+        try {
+            Class<?> cls = Class.forName("org.jkiss.dbeaver.ui.swt.windows.ToolBarRenderFix");
+            cls.getMethod("refreshDynamicBackground", ToolBar.class).invoke(null, toolBar);
+        } catch (Throwable ignored) {
+            // Windows-specific bundle not available
+        }
     }
 
     public static void setWidgetDefaultBackGround(@NotNull Control widget) {

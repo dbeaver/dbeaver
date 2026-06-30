@@ -38,7 +38,8 @@ import java.util.List;
 
 /**
  *
- * Fixes white (or light blue) background for toolbar items under the mouse for Windows 11 and Dark theme
+ * Fixes white (or light blue) background for toolbar items under the mouse for Windows 11.
+ * Also helps toolbars that change background color at runtime (e.g. connection-type coloring).
  * https://github.com/dbeaver/pro/issues/9018
  *
  * We intercept the window function to handle the WM_PAINT message of the toolbar UI control,
@@ -71,9 +72,25 @@ public class ToolBarRenderFix implements IPluginService {
     public ToolBarRenderFix() {
     }
 
+    private static boolean isWindows11() {
+        return System.getProperty("os.name").contains("Windows 11");
+    }
+
+    public static void refreshDynamicBackground(@NotNull ToolBar toolBar) {
+        if (toolBar.isDisposed() || !isWindows11()) {
+            return;
+        }
+        OS.SetWindowTheme(toolBar.handle, null, null);
+        OS.InvalidateRect(toolBar.handle, null, true);
+        OS.UpdateWindow(toolBar.handle);
+        OS.SetWindowTheme(toolBar.handle, EXPLORER, null);
+        OS.InvalidateRect(toolBar.handle, null, true);
+        OS.UpdateWindow(toolBar.handle);
+    }
+
     @Override
     public void activateService() {
-        if (UIStyles.isDarkTheme() && System.getProperty("os.name").contains("Windows 11") && !this.isEnabled) {
+        if (isWindows11() && !this.isEnabled) {
             if (this.windowCallback == null) {
                 this.windowCallback = new Callback(this, "customWindowProc", 4); //$NON-NLS-1$
             }
@@ -105,7 +122,9 @@ public class ToolBarRenderFix implements IPluginService {
         // but SWT uses SetWindowLongPtr(..) and so we are
 
         this.handlersByHwnd.put(handler.toolBar.handle, handler);
-        OS.AllowDarkModeForWindow(handler.toolBar.handle, true);
+        if (UIStyles.isDarkTheme()) {
+            OS.AllowDarkModeForWindow(handler.toolBar.handle, true);
+        }
         OS.SetWindowLongPtr(handler.toolBar.handle, OS.GWLP_WNDPROC, handler.myProcPtr);
     }
 

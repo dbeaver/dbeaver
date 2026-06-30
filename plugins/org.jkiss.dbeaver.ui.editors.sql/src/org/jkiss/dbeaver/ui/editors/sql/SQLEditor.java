@@ -21,7 +21,6 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -778,11 +777,11 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        if (topBarMan != null) {
-            topBarMan.getControl().redraw();
+        if (topBarMan != null && topBarMan.getControl() instanceof ToolBar topBar) {
+            CSSUtils.refreshConnectionTypeToolbar(topBar);
         }
-        if (bottomBarMan != null) {
-            bottomBarMan.getControl().redraw();
+        if (bottomBarMan != null && bottomBarMan.getControl() instanceof ToolBar bottomBar) {
+            CSSUtils.refreshConnectionTypeToolbar(bottomBar);
         }
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
@@ -1308,6 +1307,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
+        CSSUtils.markConnectionTypeColor(presentationSwitchFolder);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
         SelectionListener switchListener = SelectionListener.widgetSelectedAdapter(e -> {
@@ -3343,11 +3343,17 @@ public class SQLEditor extends SQLEditorBase implements
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
 
+        // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
+        // refresh immediately instead of waiting for the next CSS engine pass
+        CSSUtils.applyStyles(resultsSash);
+        CSSUtils.refreshConnectionTypeToolbars(resultsSash);
+
+        // Repaint the workbench editor tab folder so the custom tab renderer
+        // picks up the new connection color immediately after a connection change
         if (resultsSash != null && !resultsSash.isDisposed()) {
             for (Composite c = resultsSash; c != null; c = c.getParent()) {
                 if (!c.isDisposed() && c.getParent() instanceof CTabFolder tabFolder) {
-                    CSSUtils.markConnectionTypeColor(tabFolder);
-                    WidgetElement.applyStyles(tabFolder, true);
+                    tabFolder.redraw();
                     break;
                 }
             }
@@ -3362,6 +3368,10 @@ public class SQLEditor extends SQLEditorBase implements
         refreshEditorIconAndTitle();
 
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
+
+        if (getSite() != null) {
+            DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+        }
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
             return;
