@@ -56,7 +56,6 @@ public class LogOutputStream extends OutputStream {
     private final String logFileName;
     private final String logFileNameExtension;
     private final Predicate<String> logFileNamePattern;
-    private boolean closed;
 
     public LogOutputStream(@NotNull File debugLogFile) throws IOException {
         if (debugLogFile.exists() && !debugLogFile.isFile()) {
@@ -106,18 +105,12 @@ public class LogOutputStream extends OutputStream {
     
     @Override
     public synchronized void write(int b) throws IOException {
-        if (closed) {
-            return;
-        }
         this.getLogFileWriter().write(b);
         this.currentLogSize++;
     }
     
     @Override
     public synchronized void write(byte[] b, int off, int len) throws IOException {
-        if (closed) {
-            return;
-        }
         this.getLogFileWriter().write(b, off, len);
         this.currentLogSize += len;
     }
@@ -135,13 +128,9 @@ public class LogOutputStream extends OutputStream {
             this.currentLogFileOutput.close();
             this.currentLogFileOutput = null;
         }
-        this.closed = true;
     }
 
     private synchronized OutputStream getLogFileWriter() throws IOException {
-        if (closed) {
-            throw new IOException("Log stream was closed");
-        }
         if (this.currentLogFileOutput == null || this.rotateCurrentLogFile(false)) {
             this.currentLogFileOutput = new FileOutputStream(this.currentLogFile, true);
         }

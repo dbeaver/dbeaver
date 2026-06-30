@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -205,10 +206,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         Set<DBPDataSourceRegistry> registryToRefresh = new LinkedHashSet<>();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource dataSource) {
-                dataSource.moveToFolder(dataSource.getOwnerProject(), toFolder);
+                DBPProject nodeProject = dataSource.getOwnerProjectOrNull();
+                if(nodeProject != null){
+                    dataSource.moveToFolder(nodeProject, toFolder);
+                }
                 DBPDataSourceContainer oldContainer = dataSource.getDataSourceContainer();
                 registryToRefresh.add(oldContainer.getRegistry());
-                if (oldContainer.getRegistry() == dataSourceRegistry) {
+                if (oldContainer.getRegistry() == dataSourceRegistry && nodeProject != null) {
                     // the same registry
                     continue;
                 }

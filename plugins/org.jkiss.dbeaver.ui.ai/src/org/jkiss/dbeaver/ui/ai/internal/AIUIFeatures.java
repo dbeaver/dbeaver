@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.ai.internal;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
+
+import java.util.Map;
 
 /**
  * Data editor features
@@ -26,4 +31,25 @@ public interface AIUIFeatures {
 
     DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Show AI popup");
     DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Generate AI proposal");
+    DBRFeature AI_CHAT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "Show AI Chat");
+    DBRFeature AI_CHAT_DROP_EVENT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "AI Drop event");
+    DBRFeature AI_CHAT_OPEN_AS_EVENT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "Open File with specific handler");
+    DBRFeature AI_CHAT_ATTACHMENT_INTERACT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "AI Chat attachment interaction");
+    DBRFeature SEND_PROMPT_EVENT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "Send user prompt event");
+    String PARAM_FILE_TYPE = "fileType";
+    String ATTACHMENT_HANDLER_ID = "handlerID";
+    String ATTACHMENT_INTERACTION_NAME = "interactionName";
+
+    @NotNull
+    static Map<String, Object> buildFeatureParameters(@Nullable DBPDataSourceContainer container) {
+        return buildFeatureParameters(container, Map.of());
+    }
+
+    @NotNull
+    static Map<String, Object> buildFeatureParameters(
+        @Nullable DBPDataSourceContainer container,
+        @NotNull Map<String, Object> additionalInfo
+    ) {
+        return AIBaseFeatures.buildFeatureParameters(container, additionalInfo);
+    }
 }

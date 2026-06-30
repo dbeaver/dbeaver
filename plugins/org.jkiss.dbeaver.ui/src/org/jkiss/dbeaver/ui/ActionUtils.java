@@ -26,6 +26,7 @@ import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.Binding;
+import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -117,6 +118,35 @@ public class ActionUtils {
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image) {
         return makeCommandContribution(serviceLocator, commandId, name, image, null, false);
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(@NotNull String text) {
+        return new ActionContributionItem(new EmptyAction(text));
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull Consumer<Event> callback
+    ) {
+        return new ActionContributionItem(new Action(text) {
+            @Override
+            public void runWithEvent(@NotNull Event event) {
+                callback.accept(event);
+            }
+        });
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull DBPImage image,
+        @NotNull Consumer<Event> callback
+    ) {
+        var item = makeContribution(text, callback);
+        item.getAction().setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
+        return item;
     }
 
     public static ContributionItem makeActionContribution(
@@ -273,20 +303,24 @@ public class ActionUtils {
         if (bindingService != null) {
             TriggerSequence sequence = null;
             Binding[] bindings = bindingService.getBindings();
+            Scheme activeScheme = bindingService.getActiveScheme();
+            String activeSchemeId = activeScheme == null ? null : activeScheme.getId();
             if (bindings != null) {
                 for (Binding b : bindings) {
-                    ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
-                    if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
-                        if (paramName != null) {
-                            Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
-                            if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
-                                continue;
+                    if (activeSchemeId == null || activeSchemeId.equals(b.getSchemeId())) {
+                        ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
+                        if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
+                            if (paramName != null) {
+                                Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
+                                if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
+                                    continue;
+                                }
                             }
-                        }
-                        sequence = b.getTriggerSequence();
-                        if (b.getType() == Binding.USER) {
-                            // Prefer user-defined binding over default (system)
-                            break;
+                            sequence = b.getTriggerSequence();
+                            if (b.getType() == Binding.USER) {
+                                // Prefer user-defined binding over default (system)
+                                break;
+                            }
                         }
                     }
                 }
