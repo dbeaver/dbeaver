@@ -67,13 +67,17 @@ public class DatabaseTransferUtils {
         monitor.subTask("Refresh database model");
         DBSObjectContainer container = consumerSettings.getContainer();
         DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
+
+        boolean refreshed = false;
         if (navigatorModel != null) {
             var containerNode = navigatorModel.getNodeByObject(monitor, container, false);
             if (containerNode != null) {
                 containerNode.refreshNode(monitor, containerMapping);
+                refreshed = true;
             }
-        } else if (container instanceof DBPRefreshableObject) {
-            ((DBPRefreshableObject) container).refreshObject(monitor);
+        }
+        if (!refreshed && container instanceof DBPRefreshableObject refreshableObject) {
+            refreshableObject.refreshObject(monitor);
         }
         refreshDatabaseMappings(monitor, consumerSettings, containerMapping, false);
     }
