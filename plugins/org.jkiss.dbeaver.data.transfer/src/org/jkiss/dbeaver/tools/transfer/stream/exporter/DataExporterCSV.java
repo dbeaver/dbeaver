@@ -41,6 +41,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -59,7 +60,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_HEADER_CASE = "headerCase";
     public static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
-    private static final String PROP_QUOTE_NEVER = "quoteNever";
+    public static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
@@ -86,7 +87,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String ROW_DELIMITER_DEFAULT = "default";
 
     private String delimiter;
-    private char quoteChar = '"';
+    private String quoteChar = "\"";
     private boolean useQuotes = true;
     private QuoteStrategy quoteStrategy = QuoteStrategy.DISABLED;
     private String rowDelimiter;
@@ -117,15 +118,15 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
-            quoteChar = quoteStr.charAt(0);
+            quoteChar = quoteStr;
         }
         if (CommonUtils.toBoolean(properties.get(PROP_QUOTE_NEVER))) {
-            quoteChar = ' ';
+            quoteChar = "";
         }
 
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-        useQuotes = quoteChar != ' ';
+        useQuotes = CommonUtils.isNotEmpty(quoteChar);
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
 
         if (headerPosition == null) {
@@ -332,7 +333,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             quote = false;
         }
         // check for needed quote
-        final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
+        final boolean hasQuotes = useQuotes && value.contains(quoteChar);
 
         if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
             if (value.indexOf('\n') != -1) {
@@ -359,19 +360,27 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         if (quote && hasQuotes) {
             // escape quotes with double quotes
             buffer.setLength(0);
-            for (int i = 0; i < value.length(); i++) {
-                char c = value.charAt(i);
-                if (c == quoteChar) {
-                    buffer.append(quoteChar);
+            int index = 0;
+            while (index < value.length()) {
+                if (isQuoteChar(value, index)) {
+                    buffer.append(quoteChar.repeat(2));
+                    index += quoteChar.length();
+                } else {
+                    buffer.append(value.charAt(index++));
                 }
-                buffer.append(c);
             }
+
             value = buffer.toString();
         }
         PrintWriter out = getWriter();
         if (quote && useQuotes) out.write(quoteChar);
         out.write(value);
         if (quote && useQuotes) out.write(quoteChar);
+    }
+
+    private boolean isQuoteChar(@NotNull String value, int toffset) {
+        // if separator is longer it might contain quote char in it.
+        return (delimiter.length() < quoteChar.length() || !value.startsWith(delimiter, toffset)) && value.startsWith(quoteChar, toffset);
     }
 
     private void writeCellValue(Reader reader) throws IOException
@@ -381,22 +390,30 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             if (useQuotes) out.write(quoteChar);
             // Copy reader
             char[] buffer = new char[2000];
-            for (;;) {
-                int count = reader.read(buffer);
-                if (count <= 0) {
-                    break;
-                }
-                for (int i = 0; i < count; i++) {
-                    if (useQuotes && buffer[i] == quoteChar) {
-                        out.write(quoteChar);
+            for (int count = reader.read(buffer); count > 0; count = reader.read(buffer)) {
+                int index = 0;
+                while (index < count) {
+                    // escape quotes with double quotes
+                    if (useQuotes && isQuoteChar(buffer, index)) {
+                        out.write(quoteChar.repeat(2));
+                        index += quoteChar.length();
+                    } else {
+                        out.write(buffer[index++]);
                     }
-                    out.write(buffer[i]);
                 }
             }
             if (useQuotes) out.write(quoteChar);
         } finally {
             ContentUtils.close(reader);
         }
+    }
+
+    private boolean isQuoteChar(@NotNull char[] buffer, int toffset) {
+        char[] quote = quoteChar.toCharArray();
+        char[] separator = delimiter.toCharArray();
+        // if separator is longer it might contain quote char in it.
+        return (delimiter.length() < quoteChar.length() || !Arrays.equals(buffer, toffset, buffer.length, separator, 0, separator.length))
+            && Arrays.equals(buffer, toffset, buffer.length, quote, 0, quote.length);
     }
 
     private void writeDelimiter()

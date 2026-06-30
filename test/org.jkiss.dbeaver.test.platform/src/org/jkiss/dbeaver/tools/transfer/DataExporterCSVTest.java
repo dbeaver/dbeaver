@@ -366,9 +366,10 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         @NotNull String customSeparator,
         @NotNull String customQuote
     ) {
-        return template
-            .replace(DEFAULT_VALUE_SEPARATOR, customSeparator)
-            .replace(DEFAULT_QUOTE, customQuote);
+        // sorted replace to replace correctly
+        return customSeparator.length() > customQuote.length()
+            ? template.replace(DEFAULT_VALUE_SEPARATOR, customSeparator).replace(DEFAULT_QUOTE, customQuote)
+            : template.replace(DEFAULT_QUOTE, customQuote).replace(DEFAULT_VALUE_SEPARATOR, customSeparator);
     }
 
     @NotNull
@@ -401,7 +402,10 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
                 // multichars separators
                 Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE),
                 Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE),
-                Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE)
+                Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE),
+                // starts same char
+                Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_VALUE_SEPARATOR + DEFAULT_QUOTE),
+                Arguments.of(DEFAULT_QUOTE + DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE)
             );
         }
     }
