@@ -515,6 +515,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 }
 
                 registry.getNetworkProfiles().addOrUpdateProfile(profile);
+                parseResults.updatedProfiles.add(profile);
             }
 
             // Auth profiles
