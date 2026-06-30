@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
@@ -53,6 +54,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends CopilotProperties>
     implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+
+    private static final Log log = Log.getLog(CopilotConfigurator.class);
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
@@ -94,12 +97,16 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @Override
     public void loadSettings(@NotNull PROPERTIES configuration) {
-        token = CommonUtils.toString(configuration.getToken());
+        try {
+            token = CommonUtils.toString(configuration.getToken());
+        } catch (DBException e) {
+            log.error(e);
+        }
         modelSelectorField.setSelectedModel(configuration.getModel());
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
-        accessToken = CommonUtils.toString(configuration.getToken(), "");
+        accessToken = token;
         accessTokenText.setText(accessToken);
         applySettings();
 

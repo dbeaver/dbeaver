@@ -53,12 +53,12 @@ public interface AICredentialsProvider<CREDENTIALS> {
      * @return the currently stored credentials without resolving secrets
      */
     @Nullable
-    CREDENTIALS getCredentials();
+    CREDENTIALS getCredentials() throws DBException;
 
     /**
      * Checks if the credentials provided by this provider are valid. This method can be used to verify that the credentials are correctly configured and can be used to authenticate with the AI engine.
      *
      * @return true if the credentials are valid, false otherwise
      */
-    boolean isValid();
+    boolean isValid() throws DBException;
 }

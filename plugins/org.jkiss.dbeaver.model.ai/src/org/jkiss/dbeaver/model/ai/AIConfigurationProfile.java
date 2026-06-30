@@ -25,9 +25,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * AI engine settings profile
  * Keeps global parameters and configuration of an AI engine
@@ -41,7 +38,6 @@ public class AIConfigurationProfile {
     private String engineId;
     private AIEngineProperties configuration;
 
-    private final Set<String> resolvedSecrets = new HashSet<>();
     private transient AIEngineDescriptor engineDescriptor;
 
     public AIConfigurationProfile() {
@@ -93,13 +89,6 @@ public class AIConfigurationProfile {
                 return configuration;
             }
             configuration = engineDescriptor.createPropertiesInstance();
-        }
-
-        if (!AISettingsManager.saveSecretsAsPlainText()) {
-            if (!resolvedSecrets.contains(engineId)) {
-                configuration.resolveSecrets();
-                resolvedSecrets.add(engineId);
-            }
         }
 
         return configuration;

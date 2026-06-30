@@ -562,7 +562,7 @@ public class AIAssistantImpl implements AIAssistant {
     private AIEngineProperties getActiveEngineConfiguration() throws DBException {
         AISettingsManager settingsManager = AISettingsManager.getInstance();
         AIConfigurationProfile profile = settingsManager.getSettings().getDefaultConfigurationOrNull();
-        if (profile == null || !profile.getConfiguration().isValidConfiguration()) {
+        if (profile == null) {
             log.warn("No active AI engine configured");
             return null;
         }

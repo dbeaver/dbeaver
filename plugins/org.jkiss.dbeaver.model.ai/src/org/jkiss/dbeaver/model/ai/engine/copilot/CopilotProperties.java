@@ -56,7 +56,8 @@ public class CopilotProperties implements AIEngineProperties {
 
     @Nullable
     @Property(order = 1, password = true, required = true)
-    public String getToken() {
+    public String getToken() throws DBException {
+        resolveSecrets();
         return token;
     }
 
@@ -124,7 +125,9 @@ public class CopilotProperties implements AIEngineProperties {
      * Resolve secrets from the secret controller.
      */
     public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+        if (token == null) {
+            token = AIUtils.getSecretValueOrDefault(CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+        }
     }
 
     /**
@@ -139,7 +142,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Override
-    public boolean isValidConfiguration() {
+    public boolean isValidConfiguration() throws DBException {
         return !CommonUtils.isEmpty(getToken());
     }
 }

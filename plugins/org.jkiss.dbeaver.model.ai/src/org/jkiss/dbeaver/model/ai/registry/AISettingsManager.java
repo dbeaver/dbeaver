@@ -134,7 +134,10 @@ public class AISettingsManager {
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
             if (!saveSecretsAsPlainText()) {
-                settings.saveSecrets();
+                AIConfigurationProfile profile = settings.getDefaultConfigurationOrNull();
+                if (profile != null) {
+                    profile.saveSecrets();
+                }
             }
 
             this.getSettingsHolder().setSettings(settings);

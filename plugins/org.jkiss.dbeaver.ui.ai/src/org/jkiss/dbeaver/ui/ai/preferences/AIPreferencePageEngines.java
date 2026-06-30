@@ -288,7 +288,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         }
 
         try {
-            selectedProfile.getConfiguration().resolveSecrets();
             activeEngineConfiguratorPage.loadSettings(selectedProfile.getConfiguration());
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(

@@ -56,8 +56,8 @@ public final class AIUtils {
 
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        AIConfigurationProfile configuration = aiSettings.getDefaultConfigurationOrNull();
-        return configuration != null && configuration.getConfiguration().isValidConfiguration();
+        AIConfigurationProfile profile = aiSettings.getDefaultConfigurationOrNull();
+        return profile != null && profile.getConfiguration().isValidConfiguration();
     }
     /**
      * Retrieves a secret value from the global secret controller.

@@ -82,7 +82,8 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Nullable
     @Override
     @Property(order = 1, password = true, required = true)
-    public String getToken() {
+    public String getToken() throws DBException {
+        resolveSecrets();
         return token;
     }
 

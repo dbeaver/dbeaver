@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * AI global settings.
@@ -43,12 +45,12 @@ public class AISettings implements DBPAdaptable {
     private String defaultConfiguration;
 
     private String activeEngine;
+    // Deprecated. Use AIConfigurationProfile instead
+    @Deprecated(forRemoval = true)
     @JsonAdapter(AISettingsManager.EngineConfigAdapter.class)
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
-
-    private transient final Set<String> resolvedSecrets = new HashSet<>();
 
     public AISettings() {
         try {
@@ -174,21 +176,6 @@ public class AISettings implements DBPAdaptable {
         AISettingsManager.getInstance().saveSettings();
     }
 
-    public boolean hasConfiguration(@NotNull String engineId) {
-        return engineConfigurations.containsKey(engineId);
-    }
-
-    public void saveSecrets() throws DBException {
-        for (Map.Entry<String, AIEngineProperties> entry : engineConfigurations.entrySet()) {
-            String engineId = entry.getKey();
-            AIEngineProperties engineConfiguration = entry.getValue();
-
-            if (resolvedSecrets.contains(engineId)) {
-                engineConfiguration.saveSecrets();
-            }
-        }
-    }
-
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
@@ -197,7 +184,7 @@ public class AISettings implements DBPAdaptable {
     // Patches configuration to support legacy configuration format
     public void finishSettingsLoading() {
         // Def engine
-        if (activeEngine == null || !hasConfiguration(activeEngine)) {
+        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
             activeEngine = OpenAIConstants.OPENAI_ENGINE;
         }
 
