@@ -225,4 +225,19 @@
         </perspectiveExtension>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature id="dashboards" label="Database dashboards" enabledByDefault="true"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.activity.dashboards" name="Dashboards Activity">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="dashboards"/>
+            </enabledWhen>
+        </activity>
+
+        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org.jkiss.dbeaver.ui.dashboard.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org.jkiss.dbeaver.dashboard.ui.*"/>
+    </extension>
+
 </plugin>
