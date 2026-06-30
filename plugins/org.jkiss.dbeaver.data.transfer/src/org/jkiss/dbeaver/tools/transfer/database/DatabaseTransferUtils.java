@@ -428,6 +428,7 @@ public class DatabaseTransferUtils {
 
             Map<String, Object> options = new HashMap<>();
             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+            options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true);
 
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
@@ -439,6 +440,7 @@ public class DatabaseTransferUtils {
                 containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() == null)) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
+                transferComment(monitor, commandContext, table, getSourceDescription(containerMapping.getSource()));
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, true);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
@@ -455,6 +457,7 @@ public class DatabaseTransferUtils {
                         null,
                         options);
                     applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
+                    transferComment(monitor, commandContext, table, getSourceDescription(containerMapping.getSource()));
                     tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, false);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
@@ -496,6 +499,12 @@ public class DatabaseTransferUtils {
                         }
                     }
 
+                    transferComment(monitor, commandContext, newAttribute, getSourceDescription(attributeMapping.getSource()));
+                    var attrCache = attributeManager.getObjectsCache(newAttribute);
+                    if (attrCache != null) {
+                        attrCache.cacheObject(newAttribute);
+                    }
+
                     SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
                     if (createCommand instanceof DBECommandAggregator<?> aggregator) {
                         aggregator.aggregateCommand(attrCreateCommand);
@@ -515,6 +524,42 @@ public class DatabaseTransferUtils {
             return table;
         } catch (DBException e) {
             throw new DBException("Can't create or modify target table", e);
+        }
+    }
+
+    @Nullable
+    private static String getSourceDescription(@Nullable Object source) {
+        return source instanceof DBPObjectWithDescription described ? described.getDescription() : null;
+    }
+
+    /**
+     * Transfers the source description (comment) to a freshly created target object (table or column)
+     * that supports editing descriptions. The description is set through the property system so object
+     * managers that emit a separate COMMENT statement on creation (e.g. PostgreSQL) pick up the tracked
+     * change; the property setter also updates the object value for managers that read it directly
+     * (e.g. MySQL inlines it). A direct setter is used as a fallback when the object exposes no editable
+     * description property.
+     */
+    private static void transferComment(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull DBSObject target,
+        @Nullable String description
+    ) {
+        if (CommonUtils.isEmpty(description) || !(target instanceof DBSDescriptionEditable descEditable)) {
+            return;
+        }
+        PropertySourceEditable propertySource = new PropertySourceEditable(commandContext, target, target);
+        propertySource.collectProperties();
+        DBPPropertyDescriptor descProperty = propertySource.getProperty(DBConstants.PROP_ID_DESCRIPTION);
+        if (descProperty instanceof ObjectPropertyDescriptor objectProperty) {
+            // Skip drivers that expose the description but report it as non-editable (e.g. SQLite via
+            // the generic model). They do not support comments, and emitting one is invalid SQL.
+            if (objectProperty.isEditPossible(target)) {
+                propertySource.setPropertyValue(monitor, target, objectProperty, description);
+            }
+        } else {
+            descEditable.setDescription(description);
         }
     }
 

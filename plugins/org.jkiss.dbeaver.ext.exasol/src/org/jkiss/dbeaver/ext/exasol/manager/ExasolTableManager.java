@@ -124,6 +124,13 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
         if (commentAction != null) {
             actions.add(commentAction);
         }
+        // Comments on the table columns
+        for (ExasolTableColumn column : CommonUtils.safeCollection(command.getObject().getAttributes(monitor))) {
+            DBEPersistAction columnCommentAction = ExasolTableColumnManager.buildCommentAction(column);
+            if (columnCommentAction != null) {
+                actions.add(columnCommentAction);
+            }
+        }
     }
 
     // ------
