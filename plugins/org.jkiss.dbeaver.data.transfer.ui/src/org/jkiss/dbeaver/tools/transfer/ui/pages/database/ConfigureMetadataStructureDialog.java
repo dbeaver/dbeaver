@@ -20,8 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -243,7 +241,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         }
     }
 
-    private void createCompositeWithMessage(GridData gd, CTabItem tablePropertiesTab, String message) {
+    private void createCompositeWithMessage(@NotNull GridData gd, @NotNull CTabItem tablePropertiesTab, @NotNull String message) {
         Composite compositeEmpty = new Composite(configTabs, SWT.NONE);
         compositeEmpty.setLayout(new GridLayout(1, false));
         compositeEmpty.setLayoutData(gd);
@@ -322,36 +320,36 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                     DTUIMessages.page_configure_table_DDL_button_execute,
                     null);
                 persistButton.setLayoutData(gridData);
-                persistButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (UIUtils.confirmAction(
-                            getShell(),
-                            DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
-                            DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
-                            // Create target objects
-                            if (applySchemaChanges(container, mapping)) {
-                                pageMapping.autoAssignMappings();
-                            }
-                            close();
+                persistButton.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
+                    if (UIUtils.confirmAction(
+                        getShell(),
+                        DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
+                        DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question
+                    )) {
+                        // Create target objects
+                        if (applySchemaChanges(container, mapping)) {
+                            pageMapping.autoAssignMappings();
                         }
+                        close();
                     }
-                });
+                }));
             }
             final Button copyButton = UIUtils.createPushButton(buttonsBar, DTUIMessages.page_configure_table_DDL_button_copy, null);
             copyButton.setLayoutData(gridData);
-            copyButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialogText);
-                }
-            });
+            copyButton.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> UIUtils.setClipboardContents(
+                Display.getCurrent(),
+                TextTransfer.getInstance(),
+                dialogText
+            )));
             showDDLTab.setControl(viewerComposite);
         }
     }
 
     @Nullable
-    private DBEPersistAction[] generateTablePersistActions(DBSObjectContainer container, DBPDataSource dataSource) {
+    private DBEPersistAction[] generateTablePersistActions(
+        @NotNull DBSObjectContainer container,
+        @Nullable DBPDataSource dataSource
+    ) {
         final DBEPersistAction[][] ddl = new DBEPersistAction[1][];
         try {
             wizard.getRunnableContext().run(true, true, monitor -> {
@@ -364,7 +362,8 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                             executionContext,
                             container,
                             mapping,
-                            propertySource != null ? propertySource.getChangedPropertiesValues() : mapping.getChangedPropertiesMap()
+                            propertySource != null ? propertySource.getChangedPropertiesValues() : mapping.getChangedPropertiesMap(),
+                            settings
                         );
                     }
                 } catch (DBException e) {
@@ -384,8 +383,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         return ddl[0];
     }
 
-    private boolean applySchemaChanges(@NotNull DBSObjectContainer targetContainer,
-                                       @NotNull DatabaseMappingContainer mapping) {
+    private boolean applySchemaChanges(@NotNull DBSObjectContainer targetContainer, @NotNull DatabaseMappingContainer mapping) {
         try {
             wizard.getRunnableContext().run(true, true, monitor -> {
                 monitor.beginTask("Save schema changes in the database", 1);
@@ -415,7 +413,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         return false;
     }
 
-    private void setNewTextToDDLTab(DBSObjectContainer container, DBPDataSource dataSource) {
+    private void setNewTextToDDLTab(@NotNull DBSObjectContainer container, @Nullable DBPDataSource dataSource) {
         persistActions = generateTablePersistActions(container, dataSource);
         String dialogText;
         if (ArrayUtils.isEmpty(persistActions)) {

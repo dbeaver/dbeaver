@@ -34,10 +34,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -69,6 +66,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -93,6 +91,7 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -108,6 +107,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private Spreadsheet spreadsheet;
+
+    private SpreadsheetFindReplaceTarget findReplaceTarget;
+    private ResultsetFindReplaceOverlay findReplaceOverlay;
 
     @Nullable
     private DBDAttributeBinding curAttribute;
@@ -197,7 +199,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.spreadsheet.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN) {
+                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
                     updateGridCursor((GridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
@@ -227,6 +229,37 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         trackPresentationControl();
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
+
+        this.findReplaceTarget = new SpreadsheetFindReplaceTarget(this.spreadsheet);
+        this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
+            this.controller.getSite().getPart(),
+            this.spreadsheet,
+            this.findReplaceTarget,
+            this
+        ) {
+            @NotNull
+            @Override
+            protected Point obtainControlTopLeftPadding(@NotNull Control control) {
+                return new Point(spreadsheet.getRowHeaderWidth(), spreadsheet.getHeaderHeight());
+            }
+
+            @Override
+            protected boolean hasSelectionBoundsConflict(@Nullable ISelection selection, @NotNull Rectangle bounds) {
+                for (GridPos cellPos : spreadsheet.getSelection()) {
+                    if (spreadsheet.getCellBounds(cellPos.col, cellPos.row).intersects(bounds)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
+    }
+
+    @NotNull
+    @Override
+    public FindReplaceOverlay getFindReplaceOverlay() {
+        return this.findReplaceOverlay;
     }
 
     @Override
@@ -1582,7 +1615,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             });
             return adapter.cast(page);
         } else if (adapter == IFindReplaceTarget.class) {
-            return adapter.cast(SpreadsheetFindReplaceTarget.getInstance().owned(this));
+            return adapter.cast(this.findReplaceTarget);
         }
         return null;
     }
@@ -2035,7 +2068,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             } else {
                 // rows
                 if (!recordMode) {
-                    return model.getAllRows().toArray();
+                    List<ResultSetRow> rows = model.getAllRows();
+                    return rows.toArray();
                 } else {
                     DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
                     if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
@@ -2386,7 +2420,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 !controller.isRefreshInProgress() &&
                 !(controller.getContainer().getDataContainer() != null && controller.getContainer().getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH)) &&
                 !(getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS) < getSpreadsheet().getMaxVisibleRows()) &&
-                (controller.isRecordMode() || spreadsheet.isRowVisible(rowNum))) {
+                (controller.isRecordMode() || spreadsheet.isRowVisible(rowNum))
+            ) {
                 controller.readNextSegment();
             }
         }
@@ -2736,10 +2771,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
-
-            final SpreadsheetFindReplaceTarget findReplaceTarget = SpreadsheetFindReplaceTarget
-                .getInstance()
-                .owned(SpreadsheetPresentation.this);
 
             if (findReplaceTarget.isSessionActive()) {
                 boolean hasScope = highlightScopeFirstLine >= 0 && highlightScopeLastLine >= 0;
