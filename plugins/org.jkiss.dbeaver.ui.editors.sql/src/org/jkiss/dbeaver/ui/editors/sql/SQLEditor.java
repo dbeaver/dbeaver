@@ -90,10 +90,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.QueryResultsDecorator;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -983,6 +980,15 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         return null;
+    }
+
+    @NotNull
+    public List<IResultSetContainer> getResultSetContainers() {
+        List<IResultSetContainer> result = new ArrayList<>();
+        for (QueryProcessor processor : queryProcessors) {
+            result.addAll(processor.getResultContainers());
+        }
+        return List.copyOf(result);
     }
 
     @Nullable

@@ -75,6 +75,13 @@ public abstract class DBWNetworkProfileManager {
         return profiles;
     }
 
+    public void reloadProfiles() {
+        synchronized (this) {
+            profiles = null;
+        }
+        getProfilesSafe();
+    }
+
     @NotNull
     protected List<DBWNetworkProfile> loadProfiles() {
         // Do nothing by default

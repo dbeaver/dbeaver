@@ -30,10 +30,13 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -54,6 +57,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class NavigatorDropTargetListener implements DropTargetListener {
+
+    private static final Log log = Log.getLog(NavigatorDropTargetListener.class);
+
     private final Viewer viewer;
 
     public NavigatorDropTargetListener(Viewer viewer) {
@@ -103,16 +109,12 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
             @SuppressWarnings("unchecked")
             Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
-            if (curObject instanceof DBNNode dbNode) {
+            if (curObject instanceof DBNNode currentObjectDbnNode) {
                 if (!CommonUtils.isEmpty(nodesToDrop)) {
-                    for (DBNNode node : nodesToDrop) {
-                        if (!dbNode.supportsDrop(node)) {
-                            return false;
-                        }
-                    }
-                    return true;
+                    return nodesToDrop.stream()
+                        .allMatch(n -> nodeSupportsDrop(currentObjectDbnNode, n));
                 } else {
-                    return dbNode.supportsDrop(null);
+                    return currentObjectDbnNode.supportsDrop(null);
                 }
             } else if (curObject == null) {
                 // Drop to empty area
@@ -141,6 +143,20 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         }
 
         return false;
+    }
+
+    private boolean nodeSupportsDrop(@NotNull DBNNode currentObject, @NotNull DBNNode otherNode) {
+        return currentObject.supportsDrop(otherNode)
+            || (currentObject instanceof DBNPathBase dbnPathBase && supportsDropFromChildNodes(dbnPathBase, otherNode));
+    }
+
+    private boolean supportsDropFromChildNodes(@NotNull DBNPathBase dbnPathBase, @NotNull DBNNode otherNode) {
+        try {
+            return UIUtils.runWithMonitor(monitor -> dbnPathBase.hasDataInTree(monitor, otherNode));
+        } catch (DBException e) {
+            log.warn("Exception occurred while checking drop support for node [%s] on target [%s]".formatted(otherNode, dbnPathBase), e);
+            return false;
+        }
     }
 
     private void moveNodes(DropTargetEvent event) {

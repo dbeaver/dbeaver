@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.controls.findandreplace.SearchQuickFilterInfo;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -67,6 +68,11 @@ public class ResultSetModel implements DBDResultSetModel {
     // Flag saying that edited values update is in progress
     private volatile DataSourceJob updateInProgress = null;
 
+    @Nullable
+    private SearchQuickFilterInfo quickFilter = null;
+    @Nullable
+    private List<ResultSetRow> filteredRows = null;
+
     private DBCStatistics statistics;
     private DBCTrace trace;
     private transient boolean metadataChanged;
@@ -96,6 +102,43 @@ public class ResultSetModel implements DBDResultSetModel {
         this.colorHelper = new ResultSetRowColorHelper(this, POSITION_SORTER);
         this.hintContext = new ResultSetHintContext(this::getDataContainer, this::getSingleSource);
         this.dataFilter = createDataFilter();
+    }
+
+    public void setQuickFilter(@Nullable SearchQuickFilterInfo filter) {
+        this.quickFilter = filter;
+        this.applyQuickFilter();
+    }
+
+    @Nullable
+    public SearchQuickFilterInfo getQuickFilter() {
+        return this.quickFilter;
+    }
+
+    private static boolean rowMatchesQuickFilter(@NotNull ResultSetRow row, @NotNull SearchQuickFilterInfo quickFilter) {
+        for (Object value : row.getValues()) {
+            if (value != null) {
+                String valueString = value.toString();
+                boolean result = CommonUtils.isNotEmpty(valueString) && quickFilter.stringMatch(valueString);
+                if (result) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void applyQuickFilter() {
+        if (this.quickFilter == null) {
+            this.filteredRows = null;
+        } else {
+            this.filteredRows = new ArrayList<>(this.curRows.size());
+            for (ResultSetRow row : this.curRows) {
+                if (rowMatchesQuickFilter(row, this.quickFilter)) {
+                    this.filteredRows.add(row);
+                }
+            }
+        }
+        this.updateAllVisualNumbers();
     }
 
     @NotNull
@@ -360,23 +403,23 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public int getRowCount() {
-        return curRows.size();
+        return this.filteredRows != null ? this.filteredRows.size() : this.curRows.size();
     }
 
     @Override
     @NotNull
     public List<ResultSetRow> getAllRows() {
-        return curRows;
+        return this.filteredRows != null ? this.filteredRows : this.curRows;
     }
 
     @NotNull
     public Object[] getRowData(int index) {
-        return curRows.get(index).values;
+        return (this.filteredRows != null ? this.filteredRows : this.curRows).get(index).values;
     }
 
     @NotNull
     public ResultSetRow getRow(int index) {
-        return curRows.get(index);
+        return (this.filteredRows != null ? this.filteredRows : this.curRows).get(index);
     }
 
     @Nullable
@@ -743,18 +786,32 @@ public class ResultSetModel implements DBDResultSetModel {
 
     void appendData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
-            curRows.clear();
+            this.curRows.clear();
+            if (this.filteredRows != null) {
+                this.filteredRows.clear();
+            }
         }
         int rowCount = rows.size();
-        int firstRowNum = curRows.size();
+        int firstRowNum = this.curRows.size();
         List<ResultSetRow> newRows = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; i++) {
-            newRows.add(
-                new ResultSetRow(firstRowNum + i, rows.get(i)));
+            newRows.add(new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
-        curRows.addAll(newRows);
+        this.curRows.addAll(newRows);
 
-        colorHelper.handleAppendDataColors(resolveVirtualEntity(), resetOldRows, newRows);
+        if (this.filteredRows != null && this.quickFilter != null && !resetOldRows) {
+            // preserve existing filtered state, only filter newRows and update their visual numbers
+            for (ResultSetRow row : newRows) {
+                if (rowMatchesQuickFilter(row, this.quickFilter)) {
+                    row.setVisualNumber(this.filteredRows.size());
+                    this.filteredRows.add(row);
+                }
+            }
+        } else if (this.quickFilter != null) {
+            this.applyQuickFilter();
+        }
+
+        this.colorHelper.handleAppendDataColors(resolveVirtualEntity(), resetOldRows, newRows);
 
         refreshHintsInfo(monitor, newRows, resetOldRows);
     }
@@ -776,6 +833,10 @@ public class ResultSetModel implements DBDResultSetModel {
         this.curRows = new ArrayList<>();
         this.totalRowCount = null;
         this.singleSourceEntity = null;
+
+        if (this.filteredRows != null) {
+            this.filteredRows = new ArrayList<>();
+        }
 
         this.hasData = false;
     }
@@ -802,12 +863,17 @@ public class ResultSetModel implements DBDResultSetModel {
 
     @NotNull
     ResultSetRow addNewRow(int rowNum, @NotNull Object[] data) {
-        ResultSetRow newRow = new ResultSetRow(curRows.size(), data);
+        ResultSetRow newRow = new ResultSetRow(this.curRows.size(), data);
         newRow.setVisualNumber(rowNum);
         newRow.setState(ResultSetRow.STATE_ADDED);
-        shiftRows(newRow, 1);
-        curRows.add(rowNum, newRow);
-        changesCount++;
+        if (this.filteredRows != null) {
+            newRow.setVisualNumber(this.filteredRows.size());
+            this.filteredRows.add(newRow);
+        }
+
+        this.shiftRows(newRow, 1);
+        this.curRows.add(rowNum, newRow);
+        this.changesCount++;
         return newRow;
     }
 
@@ -834,11 +900,21 @@ public class ResultSetModel implements DBDResultSetModel {
     void cleanupRow(@NotNull ResultSetRow row) {
         row.release();
         int index = row.getVisualNumber();
-        if (this.curRows.size() > index) {
-            this.curRows.remove(index);
-            this.shiftRows(row, -1);
+        if (this.filteredRows != null) {
+            if (this.filteredRows.size() > index) {
+                this.filteredRows.remove(index);
+                this.curRows.remove(row);
+                this.shiftRows(row, -1);
+            } else {
+                log.debug("Error removing row from list: invalid row index: " + index);
+            }
         } else {
-            log.debug("Error removing row from list: invalid row index: " + index);
+            if (this.curRows.size() > index) {
+                this.curRows.remove(index);
+                this.shiftRows(row, -1);
+            } else {
+                log.debug("Error removing row from list: invalid row index: " + index);
+            }
         }
     }
 
@@ -848,7 +924,7 @@ public class ResultSetModel implements DBDResultSetModel {
             List<ResultSetRow> rowsToRemove = new ArrayList<>(rows);
             rowsToRemove.sort(Comparator.comparingInt(ResultSetRow::getVisualNumber));
             for (ResultSetRow row : rowsToRemove) {
-                cleanupRow(row);
+                cleanupRow(row); // TODO consider optimize shiftRows(..) usage
             }
             return true;
         } else {
@@ -857,7 +933,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     private void shiftRows(@NotNull ResultSetRow relative, int delta) {
-        for (ResultSetRow row : curRows) {
+        for (ResultSetRow row : (this.filteredRows != null ? this.filteredRows : this.curRows)) {
             if (row.getVisualNumber() >= relative.getVisualNumber()) {
                 row.setVisualNumber(row.getVisualNumber() + delta);
             }
@@ -1008,9 +1084,15 @@ public class ResultSetModel implements DBDResultSetModel {
         for (DBDAttributeBinding binding : bindings) {
             resetOrdering(binding);
         }
+        this.updateAllVisualNumbers();
     }
 
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
+        this.resetOrderingImpl(columnElement);
+        this.updateAllVisualNumbers();
+    }
+
+    private void resetOrderingImpl(@NotNull DBDAttributeBinding columnElement) {
         final boolean hasOrdering = dataFilter.hasOrdering();
 
         // First sort in original order to reset multi-column orderings
@@ -1047,10 +1129,14 @@ public class ResultSetModel implements DBDResultSetModel {
                 return result;
             });
         }
-        for (int i = 0; i < curRows.size(); i++) {
-            curRows.get(i).setVisualNumber(i);
-        }
         colorHelper.handlePostOrdering(resolveVirtualEntity());
+    }
+
+    private void updateAllVisualNumbers() {
+        List<ResultSetRow> rows = this.filteredRows != null ? this.filteredRows : this.curRows;
+        for (int i = 0; i < rows.size(); i++) {
+            rows.get(i).setVisualNumber(i);
+        }
     }
 
     private void fillVisibleAttributes() {

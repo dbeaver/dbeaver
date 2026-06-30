@@ -80,7 +80,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     protected TreeViewer mappingViewer;
     protected Composite buttonsPanel;
     private Button configureButton;
-    private Button previewButton;
+    protected Button previewButton;
     private Button loadMappingsButton;
     private Button upButton;
     private Button downButton;
@@ -289,15 +289,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         } else if (e.character == SWT.DEL) {
                             for (TreeItem item : mappingViewer.getTree().getSelection()) {
                                 element = item.getData();
-                                if (element instanceof DatabaseMappingAttribute attribute) {
-                                    attribute.setMappingType(DatabaseMappingType.skip);
-                                } else if (element instanceof DatabaseMappingContainer container) {
-                                    container.refreshMappingType(
-                                        getWizard().getRunnableContext(),
-                                        DatabaseMappingType.skip,
-                                        false
-                                    );
-                                }
+                                applyMappingSkip(element);
                                 selectNextColumn(item);
                             }
                             updated = true;
@@ -460,11 +452,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 @Override
                 public void update(ViewerCell cell) {
                     DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                    if (!(cell.getElement() instanceof DatabaseMappingAttribute)) {
-                        cell.setText(DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI));
-                    } else {
-                        cell.setText(mapping.getSource().getName());
-                    }
+                    cell.setText(getSourceLabel(mapping));
                     if (mapping.getIcon() != null) {
                         cell.setImage(DBeaverIcons.getImage(mapping.getIcon()));
                     }
@@ -517,15 +505,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                         return transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()), DatabaseMappingType.unspecified);
                     }
-                    if (mapping instanceof DatabaseMappingContainer) {
-                        DBSDataManipulator target = ((DatabaseMappingContainer) mapping).getTarget();
-                        return target != null ? target : mapping.getTargetName();
-                    } else {
-                        if (mapping.getMappingType() == DatabaseMappingType.existing) {
-                            return ((DatabaseMappingAttribute) mapping).getTarget();
-                        }
-                        return mapping.getTargetName();
-                    }
+                    return getTargetEditValue(mapping);
                 }
 
                 @Override
@@ -599,11 +579,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                 return;
                             }
                         }
-                        if (mapping instanceof DatabaseMappingAttribute) {
-                            ((DatabaseMappingAttribute) mapping).setMappingType(mappingType);
-                        } else {
-                            ((DatabaseMappingContainer) mapping).refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
-                        }
+                        applyMappingType(mapping, mappingType);
                         mappingViewer.refresh();
                         setErrorMessage(null);
                     } catch (DBException e) {
@@ -714,8 +690,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             public Object[] getChildren(Object parentElement)
             {
-                if (parentElement instanceof DatabaseMappingContainer) {
-                    return ((DatabaseMappingContainer) parentElement).getAttributeMappings().toArray();
+                if (parentElement instanceof DatabaseMappingContainer containerMapping) {
+                    return getMappingChildren(containerMapping);
                 }
                 return null;
             }
@@ -726,12 +702,72 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 mapColumnsAndTable((DatabaseMappingContainer) selectedMapping);
             } else if (selectedMapping instanceof DatabaseMappingAttribute) {
                 mapColumnsAndTable(((DatabaseMappingAttribute) selectedMapping).getParent());
+            } else if (selectedMapping != null) {
+                DatabaseMappingContainer parent = getMappingContainer(selectedMapping);
+                if (parent != null) {
+                    mapColumnsAndTable(parent);
+                }
             }
         });
     }
 
     @NotNull
-    private CustomComboBoxCellEditor createMappingTypeEditor(DatabaseMappingObject mapping) {
+    protected Object[] getMappingChildren(@NotNull DatabaseMappingContainer containerMapping) {
+        return containerMapping.getAttributeMappings().toArray();
+    }
+
+    @NotNull
+    protected String getSourceLabel(@NotNull DatabaseMappingObject mapping) {
+        if (mapping instanceof DatabaseMappingAttribute && mapping.getSource() != null) {
+            return mapping.getSource().getName();
+        }
+        return DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI);
+    }
+
+    @Nullable
+    protected Object getTargetEditValue(@NotNull DatabaseMappingObject mapping) {
+        if (mapping instanceof DatabaseMappingContainer container) {
+            DBSDataManipulator target = container.getTarget();
+            return target != null ? target : mapping.getTargetName();
+        }
+        if (mapping instanceof DatabaseMappingAttribute attribute) {
+            if (mapping.getMappingType() == DatabaseMappingType.existing) {
+                return attribute.getTarget();
+            }
+            return mapping.getTargetName();
+        }
+        return mapping.getTargetName();
+    }
+
+    @Nullable
+    protected DatabaseMappingContainer getMappingContainer(@NotNull DatabaseMappingObject mapping) {
+        if (mapping instanceof DatabaseMappingContainer container) {
+            return container;
+        }
+        if (mapping instanceof DatabaseMappingAttribute attribute) {
+            return attribute.getParent();
+        }
+        return null;
+    }
+
+    protected void applyMappingType(@NotNull DatabaseMappingObject mapping, @NotNull DatabaseMappingType mappingType) throws DBException {
+        if (mapping instanceof DatabaseMappingAttribute attributeMapping) {
+            attributeMapping.setMappingType(mappingType);
+        } else if (mapping instanceof DatabaseMappingContainer containerMapping) {
+            containerMapping.refreshMappingType(getWizard().getRunnableContext(), mappingType, false);
+        }
+    }
+
+    protected void applyMappingSkip(@Nullable Object element) throws DBException {
+        if (element instanceof DatabaseMappingAttribute attribute) {
+            attribute.setMappingType(DatabaseMappingType.skip);
+        } else if (element instanceof DatabaseMappingContainer container) {
+            container.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.skip, false);
+        }
+    }
+
+    @NotNull
+    protected CustomComboBoxCellEditor createMappingTypeEditor(@NotNull DatabaseMappingObject mapping) {
         List<String> mappingTypes = new ArrayList<>();
         DatabaseMappingType mappingType = mapping.getMappingType();
         if (mappingType != DatabaseMappingType.skip) {
@@ -765,7 +801,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     @NotNull
-    private CellEditor createTargetEditor(@NotNull Object element) throws DBException {
+    protected CellEditor createTargetEditor(@NotNull Object element) throws DBException {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         boolean allowsCreate = true;
         List<String> items = new ArrayList<>();
@@ -896,7 +932,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         };
     }
 
-    private void setMappingTarget(
+    protected void setMappingTarget(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DatabaseMappingObject mapping,
         @NotNull String name,
@@ -1150,7 +1186,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
     }
 
-    private void mapColumnsAndTable(DatabaseMappingContainer mapping) {
+    protected void mapColumnsAndTable(DatabaseMappingContainer mapping) {
         ConfigureMetadataStructureDialog dialog = new ConfigureMetadataStructureDialog(
             getWizard(),
             getDatabaseConsumerSettings(),
