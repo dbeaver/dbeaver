@@ -17,16 +17,12 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -34,42 +30,51 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(AIPreferencePageEngines.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.engines";
     private final AISettings settings;
 
-    private AIEngineDescriptor completionEngine;
-    private Combo serviceCombo;
+    private AIConfigurationProfile selectedProfile;
+    private TableViewer profilesViewer;
 
-    private final Map<String, String> serviceNameMappings = new HashMap<>();
-    private final Map<String, EngineConfiguratorPage> engineConfiguratorMapping = new HashMap<>();
+    private final Map<String, EngineConfiguratorPage> profileConfiguratorMapping = new HashMap<>();
     private EngineConfiguratorPage activeEngineConfiguratorPage;
     private Button connectionTestButton;
+    private Text profileIdText;
+    private Text profileNameText;
 
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
-        String activeEngine = this.settings.activeEngine();
-        completionEngine = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
+
+        try {
+            selectedProfile = settings.getDefaultConfiguration();
+        } catch (DBException e) {
+            log.error(e);
+        }
     }
 
     @Override
@@ -84,14 +89,15 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     @Nullable
     private AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> createEngineConfigurator() {
-        UIPropertyConfiguratorDescriptor engineDescriptor =
-            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getEngineObjectType().getImplName());
-        if (engineDescriptor != null) {
-            try {
+        try {
+            UIPropertyConfiguratorDescriptor engineDescriptor =
+                UIPropertyConfiguratorRegistry.getInstance().getDescriptor(
+                    selectedProfile.getEngineDescriptor().getEngineObjectType().getImplName());
+            if (engineDescriptor != null) {
                 return engineDescriptor.createConfigurator();
-            } catch (DBException e) {
-                log.error(e);
             }
+        } catch (DBException e) {
+            log.error(e);
         }
         return null;
     }
@@ -102,20 +108,19 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             return false;
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        String activeEngineId = serviceNameMappings.get(serviceCombo.getText());
-        this.settings.setActiveEngine(activeEngineId);
-        try {
-            AIEngineProperties engineConfiguration = this.settings.getEngineConfiguration(activeEngineId);
-            activeEngineConfiguratorPage.saveSettings(engineConfiguration);
-            this.settings.setEngineConfiguration(activeEngineId, engineConfiguration);
-        } catch (DBException e) {
-            log.error("Error saving engine settings", e);
+        this.settings.setDefaultConfiguration(selectedProfile);
+        if (selectedProfile != null) {
+            try {
+                activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
+            } catch (DBException e) {
+                log.error("Error saving engine settings", e);
 
-            DBWorkbench.getPlatformUI().showError(
-                "Error saving AI settings",
-                "Error saving engine settings for " + activeEngineId,
-                e
-            );
+                DBWorkbench.getPlatformUI().showError(
+                    "Error saving AI settings",
+                    "Error saving engine settings for " + selectedProfile.getEngineId(),
+                    e
+                );
+            }
         }
         AISettingsManager.getInstance().saveSettings();
         try {
@@ -134,79 +139,148 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite serviceComposite = UIUtils.createComposite(composite, 2);
-        serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
-        List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
-            .getCompletionEngines();
-        completionEngines.sort(Comparator.comparing(AIEngineDescriptor::getLabel));
-        int defaultEngineSelection = -1;
-        for (int i = 0; i < completionEngines.size(); i++) {
-            serviceCombo.add(completionEngines.get(i).getLabel());
-            serviceNameMappings.put(completionEngines.get(i).getLabel(), completionEngines.get(i).getId());
-            if (completionEngines.get(i).isDefault()) {
-                defaultEngineSelection = i;
-            }
-            if (completionEngines.get(i).getId().equals(this.settings.activeEngine())) {
-                serviceCombo.select(i);
-            }
-        }
-        if (serviceCombo.getSelectionIndex() == -1 && defaultEngineSelection != -1) {
-            serviceCombo.select(defaultEngineSelection);
-        }
+        Composite profilesComposite = UIUtils.createComposite(composite, 2);
+        profilesComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        profilesViewer = new TableViewer(profilesComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE | SWT.V_SCROLL);
+        profilesViewer.setContentProvider(ArrayContentProvider.getInstance());
+        Table table = profilesViewer.getTable();
+        GridData gridData = new GridData(GridData.FILL_BOTH);
+        gridData.heightHint = UIUtils.getFontHeight(table) * 6;
+        table.setLayoutData(gridData);
+        createProfilesColumns();
+        profilesViewer.setInput(AISettingsManager.getInstance().getSettings().getConfigurations());
+
+        Composite buttonsPanel = UIUtils.createComposite(profilesComposite, 1);
+        buttonsPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        UIUtils.createPushButton(
+            buttonsPanel,
+            null,
+            "Create new profile",
+            UIIcon.ADD,
+            SelectionListener.widgetSelectedAdapter(e -> {})
+        );
+        UIUtils.createPushButton(
+            buttonsPanel,
+            null,
+            "Delete profile",
+            UIIcon.DELETE,
+            SelectionListener.widgetSelectedAdapter(e -> {})
+        );
+
+        Composite profileGroup = UIUtils.createTitledComposite(
+            composite,
+            "Profile",
+            4,
+            GridData.FILL_HORIZONTAL
+        );
+
+        profileIdText = UIUtils.createLabelText(profileGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
+        profileNameText = UIUtils.createLabelText(profileGroup, "Name", "", SWT.BORDER);
 
         Composite engineGroup = UIUtils.createTitledComposite(
             composite,
-            "Engine Settings",
+            "Settings",
             2,
             GridData.FILL_HORIZONTAL
         );
-        if (completionEngine != null) {
-            drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
-        }
-        serviceCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                String id = serviceNameMappings.get(serviceCombo.getText());
-                completionEngine = AIEngineRegistry.getInstance().getEngineDescriptor(id);
+
+        profilesViewer.addSelectionChangedListener(event -> {
+            Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
+            if (selItem instanceof AIConfigurationProfile profile) {
+                selectedProfile = profile;
                 if (activeEngineConfiguratorPage != null) {
                     activeEngineConfiguratorPage.disposeControl();
                 }
-                drawConfiguratorComposite(id, engineGroup);
+                showProfileSettings(engineGroup);
                 engineGroup.getShell().layout(true, true);
                 UIUtils.resizeShell(parent.getShell());
             }
         });
+
+        if (selectedProfile != null) {
+            profilesViewer.setSelection(new StructuredSelection(selectedProfile));
+            profilesViewer.reveal(selectedProfile);
+        }
+
         performDefaults();
 
         createTestConnectionButton(composite);
         return composite;
     }
 
-    private void drawConfiguratorComposite(@NotNull String id, @NotNull Composite engineGroup) {
-        activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
+    private void createProfilesColumns() {
+        TableViewerColumn nameColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
+        nameColumn.getColumn().setText("Profile");
+        nameColumn.getColumn().setWidth(200);
+        nameColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                if (!(element instanceof AIConfigurationProfile profile)) {
+                    return null;
+                }
+                return profile.getProfileName();
+            }
+        });
 
+        TableViewerColumn engineColumn = new TableViewerColumn(profilesViewer, SWT.RIGHT);
+        engineColumn.getColumn().setText("Engine");
+        engineColumn.getColumn().setWidth(200);
+        engineColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                if (!(element instanceof AIConfigurationProfile profile)) {
+                    return null;
+                }
+                try {
+                    return profile.getEngineDescriptor().getLabel();
+                } catch (DBException e) {
+                    return e.getMessage();
+                }
+            }
+        });
+    }
+
+    private void showProfileSettings(@NotNull Composite engineGroup) {
+        profileIdText.setText(selectedProfile.getProfileId());
+        profileNameText.setText(selectedProfile.getProfileName());
+
+        activeEngineConfiguratorPage = profileConfiguratorMapping.get(selectedProfile.getEngineId());
+
+        AIEngineDescriptor engineDescriptor;
+        try {
+            engineDescriptor = selectedProfile.getEngineDescriptor();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI()
+                .showError(
+                    "Configurator create error",
+                    "Engine configurator for " + selectedProfile.getEngineId() + " was failed",
+                    e
+                );
+            return;
+        }
         if (activeEngineConfiguratorPage == null) {
             AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> engineConfigurator
                 = createEngineConfigurator();
             if (engineConfigurator == null) {
                 DBWorkbench.getPlatformUI()
-                    .showError("Configurator not found", "Engine configurator not found for " + completionEngine.getId());
+                    .showError("Configurator not found", "Engine configurator not found for " + selectedProfile.getEngineId());
                 return;
             }
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
-            activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
-            engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
+            profileConfiguratorMapping.put(selectedProfile.getEngineId(), activeEngineConfiguratorPage);
         } else {
-            activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
+            activeEngineConfiguratorPage.createControl(engineGroup, engineDescriptor);
         }
 
         try {
-            activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
+            selectedProfile.getConfiguration().resolveSecrets();
+            activeEngineConfiguratorPage.loadSettings(selectedProfile.getConfiguration());
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 "Error loading AI settings",
-                "Error loading engine settings for " + id,
+                "Error loading engine settings for " + selectedProfile.getEngineId(),
                 e
             );
         }
@@ -222,7 +296,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
-                String engineId = serviceCombo.getText();
+                String engineId = selectedProfile.getEngineId();
                 try {
                     testConnection();
                     DBWorkbench.getPlatformUI().showMessageBox(
@@ -247,9 +321,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
         Optional<AIEngineProperties> currentProperties = activeEngineConfiguratorPage.getCurrentProperties();
         try (
-            AIEngine selectedEngine = currentProperties.isPresent()
-                ? completionEngine.createEngineInstance(currentProperties.get())
-                : completionEngine.createEngineInstance()
+            AIEngine<?> selectedEngine = currentProperties.isPresent()
+                ? selectedProfile.getEngineDescriptor().createEngineInstance(currentProperties.get())
+                : selectedProfile.getEngineDescriptor().createEngineInstance()
         ) {
             UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
                 try {

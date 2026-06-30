@@ -99,7 +99,7 @@ public class AISettingsManager {
             if (!CommonUtils.isEmpty(content)) {
                 settings = READ_PROPS_GSON.fromJson(content, AISettings.class);
 
-                settings.migrateLegacySettings();
+                settings.finishSettingsLoading();
             } else {
                 settings = new AISettings();
             }

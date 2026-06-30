@@ -235,7 +235,7 @@ public class AISettings implements DBPAdaptable {
     }
 
     // Patches configuration to support legacy configuration format
-    public void migrateLegacySettings() {
+    public void finishSettingsLoading() {
         // Def engine
         if (activeEngine == null || !hasConfiguration(activeEngine)) {
             activeEngine = OpenAIConstants.OPENAI_ENGINE;
@@ -249,7 +249,7 @@ public class AISettings implements DBPAdaptable {
                 if (engineDescriptor != null) {
                     AIConfigurationProfile cp = new AIConfigurationProfile();
                     cp.setProfileId(engineId);
-                    cp.setProfileName(engineDescriptor.getLabel());
+                    cp.setProfileName(engineDescriptor.getId());
                     cp.setEngineId(engineId);
                     cp.setConfiguration(ep.getValue());
                     configurations.put(ep.getKey(), cp);
