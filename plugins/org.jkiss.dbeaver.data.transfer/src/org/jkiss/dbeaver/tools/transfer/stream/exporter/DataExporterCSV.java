@@ -341,36 +341,38 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     }
 
     private void writeLines(@NotNull Iterator<String> multiRow, boolean quote) {
-        boolean isQuoteLines = quote;
         boolean isMoreThenOneLine = false;
         StringJoiner multiLineBuffer = new StringJoiner(CommonUtils.isNotEmpty(lineFeedEscapeString) ? lineFeedEscapeString : "\n");
         while (multiRow.hasNext()) {
             String line = multiRow.next();
-            if (!isQuoteLines && useQuotes) {
-                isQuoteLines = lineNeedQuotation(line) || isMoreThenOneLine;
-            }
             multiLineBuffer.add(processLine(line));
-            isMoreThenOneLine = true;
+            if (!isMoreThenOneLine) {
+                isMoreThenOneLine = multiRow.hasNext();
+            }
         }
 
+        String preparedCellValue = multiLineBuffer.toString();
+        boolean isQuoteLines = useQuotes
+            && (quote || isMoreThenOneLine || cellValueNeedsQuotation(preparedCellValue));
+
         PrintWriter out = getWriter();
-        if (isQuoteLines && useQuotes) {
+        if (isQuoteLines) {
             out.write(quoteChar);
         }
-        out.write(multiLineBuffer.toString());
-        if (isQuoteLines && useQuotes) {
+        out.write(preparedCellValue);
+        if (isQuoteLines) {
             out.write(quoteChar);
         }
     }
 
-    private boolean lineNeedQuotation(@NotNull String line) {
+    private boolean cellValueNeedsQuotation(@NotNull String line) {
         if (quoteStrategy == QuoteStrategy.ALL ||
             quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
-            (useQuotes && line.isEmpty())
+            line.isEmpty()
         ) {
             return true;
         } else {
-            return line.contains(delimiter) || line.contains(rowDelimiter);
+            return line.contains(delimiter) || line.contains(rowDelimiter) || line.contains(quoteChar);
         }
     }
 
