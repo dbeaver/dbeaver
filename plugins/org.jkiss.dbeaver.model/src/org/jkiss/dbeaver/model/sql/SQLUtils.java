@@ -749,6 +749,8 @@ public final class SQLUtils {
                     String contentType = contentValue.getContentType();
                     if (!contentType.startsWith("text") && CommonUtils.isNotEmpty(strValue)) {
                         return strValue;
+                    } else if (CommonUtils.isNotEmpty(strValue)) { // Quote text/json, text/xml, etc...
+                        return sqlDialect.getQuotedString(strValue);
                     }
                 }
             }
