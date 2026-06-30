@@ -219,10 +219,9 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     {
         for (int i = 0; i < row.length && i < columns.length; i++) {
             DBDAttributeBinding column = columns[i];
-            if (row[i] instanceof DBDContent) {
+            if (row[i] instanceof DBDContent content) {
                 // Content
                 // Inline textual content and handle binaries in some special way
-                DBDContent content = (DBDContent)row[i];
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs == null) {
@@ -384,15 +383,18 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private boolean isQuoteChar(@NotNull String value, int toffset) {
         // if separator is longer it might contain quote char in it.
-        return (delimiter.length() < quoteChar.length() || !value.startsWith(delimiter, toffset)) && value.startsWith(quoteChar, toffset);
+        return (delimiter.length() <= quoteChar.length() || !value.startsWith(delimiter, toffset)) && value.startsWith(quoteChar, toffset);
     }
 
     private void writeCellValue(Reader reader) throws IOException
     {
         try {
             PrintWriter out = getWriter();
-            if (useQuotes) out.write(quoteChar);
+            if (useQuotes && quoteStrategy != QuoteStrategy.DISABLED) {
+                out.write(quoteChar);
+            }
             // Copy reader
+            // todo buffer overwhelm
             char[] buffer = new char[2000];
             for (int count = reader.read(buffer); count > 0; count = reader.read(buffer)) {
                 int index = 0;
@@ -406,18 +408,28 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     }
                 }
             }
-            if (useQuotes) out.write(quoteChar);
+            if (useQuotes && quoteStrategy != QuoteStrategy.DISABLED) {
+                out.write(quoteChar);
+            }
         } finally {
             ContentUtils.close(reader);
         }
     }
 
+
     private boolean isQuoteChar(@NotNull char[] buffer, int toffset) {
-        char[] quote = quoteChar.toCharArray();
-        char[] separator = delimiter.toCharArray();
         // if separator is longer it might contain quote char in it.
-        return (delimiter.length() < quoteChar.length() || !Arrays.equals(buffer, toffset, buffer.length, separator, 0, separator.length))
-            && Arrays.equals(buffer, toffset, buffer.length, quote, 0, quote.length);
+        return (delimiter.length() <= quoteChar.length() || !contains(buffer, toffset, delimiter))
+            && contains(buffer, toffset, quoteChar);
+    }
+
+    private boolean contains(@NotNull char[] buffer, int toffset, @NotNull String toFind) {
+        int endIndex = toffset + toFind.length();
+        if (endIndex > buffer.length) {
+            return false;
+        }
+        char[] toFindChars = toFind.toCharArray();
+        return Arrays.equals(buffer, toffset, endIndex, toFindChars, 0, toFindChars.length);
     }
 
     private void writeDelimiter()
