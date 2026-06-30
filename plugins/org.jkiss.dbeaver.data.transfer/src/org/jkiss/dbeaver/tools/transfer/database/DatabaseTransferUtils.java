@@ -532,14 +532,6 @@ public class DatabaseTransferUtils {
         return source instanceof DBPObjectWithDescription described ? described.getDescription() : null;
     }
 
-    /**
-     * Transfers the source description (comment) to a freshly created target object (table or column)
-     * that supports editing descriptions. The description is set through the property system so object
-     * managers that emit a separate COMMENT statement on creation (e.g. PostgreSQL) pick up the tracked
-     * change; the property setter also updates the object value for managers that read it directly
-     * (e.g. MySQL inlines it). A direct setter is used as a fallback when the object exposes no editable
-     * description property.
-     */
     private static void transferComment(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext commandContext,
@@ -553,8 +545,6 @@ public class DatabaseTransferUtils {
         propertySource.collectProperties();
         DBPPropertyDescriptor descProperty = propertySource.getProperty(DBConstants.PROP_ID_DESCRIPTION);
         if (descProperty instanceof ObjectPropertyDescriptor objectProperty) {
-            // Skip drivers that expose the description but report it as non-editable (e.g. SQLite via
-            // the generic model). They do not support comments, and emitting one is invalid SQL.
             if (objectProperty.isEditPossible(target)) {
                 propertySource.setPropertyValue(monitor, target, objectProperty, description);
             }
