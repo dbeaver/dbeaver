@@ -46,7 +46,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +101,38 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         // then
         String expectedHeader = "\"IDENTIFIER\",\"NAME\",\"AGE\"" + rowsSeparator;
         assertEquals(expectedHeader, stringWriter.toString());
+    }
+
+    @Test
+    public void testNotThrowsIfQuoteAndSeparatorAreSameCharAndQuoteNever() throws DBException {
+        // given
+        properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_VALUE_SEPARATOR);
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_VALUE_SEPARATOR);
+        properties.put(DataExporterCSV.PROP_QUOTE_NEVER, true);
+        dataExporterCSV = new DataExporterCSV();
+
+        // then
+        assertDoesNotThrow(() -> dataExporterCSV.init(site));
+    }
+
+    @Test
+    public void testThrowsIfQuoteAndSeparatorAreSameChar() {
+        // given
+        properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_VALUE_SEPARATOR);
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_VALUE_SEPARATOR);
+        // then
+        dataExporterCSV = new DataExporterCSV();
+        assertThrows(IllegalArgumentException.class, () -> dataExporterCSV.init(site));
+    }
+
+    @Test
+    public void testThrowsIfQuoteAndSeparatorAreSameString() {
+        // given
+        properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_QUOTE.repeat(2));
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_QUOTE.repeat(2));
+        // then
+        dataExporterCSV = new DataExporterCSV();
+        assertThrows(IllegalArgumentException.class, () -> dataExporterCSV.init(site));
     }
 
 

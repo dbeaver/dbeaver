@@ -127,8 +127,12 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = CommonUtils.isNotEmpty(quoteChar);
-        quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
 
+        if (useQuotes && quoteChar.equals(delimiter)) {
+            throw new IllegalArgumentException("Quotes and separator cant be the same string: " + quoteChar);
+        }
+
+        quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
         if (headerPosition == null) {
             headerPosition = CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(properties.get(PROP_HEADER)), HeaderPosition.top);
         }
