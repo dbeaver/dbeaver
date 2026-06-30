@@ -798,15 +798,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 String colorLight = attributes.getValue(RegistryConstants.ATTR_COLOR);
                 String colorDark = attributes.getValue(RegistryConstants.ATTR_COLOR_DARK);
 
+                boolean colorConstantUsed = origType != null && CommonUtils.equalObjects(origType.getColorConstant(), colorLight);
                 DBPConnectionType connectionType = new DBPConnectionType(
                     typeId,
                     attributes.getValue(RegistryConstants.ATTR_NAME),
-                    origType != null && CommonUtils.equalObjects(origType.getColorConstant(), colorLight)
-                        ? origType.getColorLight()
-                        : colorLight,
-                    origType != null && CommonUtils.equalObjects(origType.getColorConstant(), colorDark)
-                        ? origType.getColorDark()
-                        : colorDark,
+                    colorConstantUsed ? origType.getColorLight() : colorLight,
+                    colorConstantUsed ? origType.getColorDark() : colorDark,
                     attributes.getValue(RegistryConstants.ATTR_DESCRIPTION),
                     CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
                     CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
