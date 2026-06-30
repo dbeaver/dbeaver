@@ -12,9 +12,12 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.engine.copilot.dto,
  org.jkiss.dbeaver.model.ai.engine.openai,
  org.jkiss.dbeaver.model.ai.engine.openai.dto,
+ org.jkiss.dbeaver.model.ai.functions,
  org.jkiss.dbeaver.model.ai.impl,
  org.jkiss.dbeaver.model.ai.internal,
  org.jkiss.dbeaver.model.ai.prompt,
+ org.jkiss.dbeaver.model.ai.qm,
+ org.jkiss.dbeaver.model.ai.quota,
  org.jkiss.dbeaver.model.ai.registry,
  org.jkiss.dbeaver.model.ai.utils
 Bundle-Release-Date: 20260706

@@ -17,6 +17,7 @@
 
     <plugin id="org.jkiss.dbeaver.ui.app.standalone" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ui.config.sample" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.ui.app.config" version="0.0.0" />
 
     <includes id="org.jkiss.dbeaver.ui.extra.feature" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ui.app.msstore" os="win32" arch="x86_64" version="0.0.0"/>
