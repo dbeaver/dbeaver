@@ -283,14 +283,21 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             new DriverPropertiesDialogPage(this)
         };
     }
-    
+
+    @Override
+    protected void authModelPropertiesChanged() {
+        super.authModelPropertiesChanged();
+        // Auth models MAY change the URL. Let's reflect it
+        updateUrl();
+    }
+
     private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
+        var container = site.getActiveDataSource().createCopy(site.getDataSourceRegistry());
+        saveSettings(container);
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
+            urlText.setText(container.getConnectionConfiguration().getUrl());
         } else {
-            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+            urlText.setText(container.getDriver().getConnectionURL(container.getConnectionConfiguration()));
         }
     }
 }
