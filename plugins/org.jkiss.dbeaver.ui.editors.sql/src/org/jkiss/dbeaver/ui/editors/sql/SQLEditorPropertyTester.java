@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
         if (editorControl == null) {
             return false;
         }
-        boolean hasConnection = editor.getDataSourceContainer() != null;
+        boolean hasConnection = editor.getDataSourceContainer() != null && editor.getExecutionContext() != null;
         switch (property) {
             case PROP_CAN_EXECUTE: {
                 var descriptor = editor.getActivePresentationDescriptor();
@@ -86,7 +86,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
             }
             case PROP_CAN_EXECUTE_NATIVE: {
                 try {
-                    if (editor.getDataSourceContainer() == null) {
+                    if (!hasConnection) {
                         return false;
                     }
                     SQLNativeExecutorDescriptor executorDescriptor =

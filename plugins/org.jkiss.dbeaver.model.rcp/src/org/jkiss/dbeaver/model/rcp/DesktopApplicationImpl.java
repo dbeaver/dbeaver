@@ -43,6 +43,13 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
 
     private boolean isForcedRestart = false;
 
+    public DesktopApplicationImpl() {
+    }
+
+    public DesktopApplicationImpl(@NotNull String defaultWorkspaceLocation, @NotNull String defaultAppWorkspaceName) {
+        super(defaultWorkspaceLocation, defaultAppWorkspaceName);
+    }
+
     @NotNull
     @Override
     public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform) {
@@ -61,7 +68,7 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
 
     @NotNull
     @Override
-    public LockManager createLockManager(@NotNull Path metadataFolder) throws DBException {
+    public LockManager createLockManager(@NotNull String applicationId, @NotNull Path metadataFolder) throws DBException {
         return new LocalFileLockManager(metadataFolder);
     }
 

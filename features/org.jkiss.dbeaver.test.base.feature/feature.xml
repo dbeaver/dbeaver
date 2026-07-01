@@ -2,12 +2,11 @@
 <feature
         id="org.jkiss.dbeaver.test.base.feature"
         label="DBeaver Standalone"
-        version="26.0.4.qualifier"
+        version="26.1.3.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.headless.application">
 
     <copyright>DBeaver Corp and others</copyright>
-    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <url>
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
@@ -28,6 +27,14 @@
     </requires>
     <plugin id="org.jkiss.dbeaver.slf4j" version="0.0.0" />
     <plugin id="org.junit" version="0.0.0" />
+    <plugin id="junit-jupiter-api" version="0.0.0" />
+    <plugin id="junit-jupiter-engine" version="0.0.0" />
+    <plugin id="junit-platform-launcher" version="0.0.0" />
+    <plugin id="junit-platform-engine" version="0.0.0" />
+    <plugin id="junit-platform-commons" version="0.0.0" />
+    <plugin id="junit-platform-suite-api" version="0.0.0" />
+    <plugin id="junit-platform-suite-engine" version="0.0.0" />
+    <plugin id="org.opentest4j" version="0.0.0" />
     <plugin id="com.google.gson" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.headless" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.osgi.test.runner" version="0.0.0"/>

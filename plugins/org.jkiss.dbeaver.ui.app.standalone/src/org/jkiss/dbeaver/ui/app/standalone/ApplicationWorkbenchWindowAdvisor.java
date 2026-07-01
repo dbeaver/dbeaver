@@ -45,6 +45,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -137,6 +138,10 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     @Override
     public void preWindowOpen() {
         log.debug("Configure workbench window");
+
+        DesktopPlatform platform = DBWorkbench.getPlatform(DesktopPlatform.class);
+        platform.postInitialize();
+
         //super.preWindowOpen();
         // Set timeout for short jobs (like SQL queries)
         // Jobs longer than this will show progress dialog

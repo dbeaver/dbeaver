@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,8 +73,8 @@ public class DBDAttributeValue {
         return values;
     }
 
-    public static DBSAttributeBase[] getAttributes(List<DBDAttributeValue> attrValues)
-    {
+    @NotNull
+    public static DBSAttributeBase[] getAttributes(@NotNull List<DBDAttributeValue> attrValues) {
         DBSAttributeBase[] attributes = new DBSAttributeBase[attrValues.size()];
         for (int i = 0; i < attributes.length; i++) {
             attributes[i] = attrValues.get(i).attribute;
@@ -82,8 +82,8 @@ public class DBDAttributeValue {
         return attributes;
     }
 
-    public static Object[] getValues(List<DBDAttributeValue> attrValues)
-    {
+    @NotNull
+    public static Object[] getValues(@NotNull List<DBDAttributeValue> attrValues) {
         Object[] values = new Object[attrValues.size()];
         for (int i = 0; i < values.length; i++) {
             values[i] = attrValues.get(i).value;
@@ -91,7 +91,11 @@ public class DBDAttributeValue {
         return values;
     }
 
-    public static DBDAttributeValue getAttributeValue(List<DBDAttributeValue> valueList, DBSEntityAttribute attribute) {
+    @Nullable
+    public static DBDAttributeValue getAttributeValue(
+        @NotNull List<DBDAttributeValue> valueList,
+        @NotNull DBSEntityAttribute attribute
+    ) {
         for (DBDAttributeValue value : valueList) {
             if (CommonUtils.equalObjects(value.attribute.getName(), attribute.getName())) {
                 return value;
@@ -102,15 +106,12 @@ public class DBDAttributeValue {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof DBDAttributeValue)) {
+        if (!(obj instanceof DBDAttributeValue av)) {
             return false;
         }
-        if (!CommonUtils.equalObjects(value, ((DBDAttributeValue) obj).value)) {
+        if (!CommonUtils.equalObjects(value, av.value)) {
             return false;
         }
-        if (!CommonUtils.equalObjects(attribute.getName(), ((DBDAttributeValue) obj).attribute.getName())) {
-            return false;
-        }
-        return true;
+        return CommonUtils.equalObjects(attribute.getName(), av.attribute.getName());
     }
 }

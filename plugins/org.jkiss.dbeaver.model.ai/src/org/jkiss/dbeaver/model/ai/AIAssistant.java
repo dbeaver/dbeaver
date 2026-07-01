@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * AI Assistant interface.
@@ -42,6 +44,20 @@ public interface AIAssistant {
         @NotNull List<AIMessage> messages
     ) throws DBException;
 
+    /**
+     * Generates the next message in a chat conversation.
+     *
+     * @return future
+     */
+    @NotNull
+    CompletableFuture<AIChatConversation> generateTextStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatSession chatSession,
+        @NotNull AIChatConversation conversation,
+        @NotNull AIChatRequest request,
+        @NotNull AIChatResponseConsumer chatListener
+    ) throws DBException;
+
     boolean isFunctionSupported();
 
     /**
@@ -49,4 +65,10 @@ public interface AIAssistant {
      */
     @NotNull
     AIToolboxManager getToolboxManager();
+
+    @NotNull
+    AIChatSession.SessionIdProvider getChatSessionProvider();
+
+    @NotNull
+    AIChatStorage createChatStorage();
 }

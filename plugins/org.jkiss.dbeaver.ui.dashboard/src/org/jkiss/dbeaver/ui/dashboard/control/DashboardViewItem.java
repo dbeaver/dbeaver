@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
 
     public static final int DEFAULT_HEIGHT = 200;
     private final DashboardListControl groupContainer;
-    private final DashboardItemViewSettings viewItemConfig;
+    private DashboardItemViewSettings viewItemConfig;
 
     private Date lastUpdateTime;
     private DashboardRendererType curViewType;
@@ -74,10 +74,7 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         super(parent, SWT.DOUBLE_BUFFERED);
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.groupContainer = parent;
-        this.viewItemConfig = groupContainer.getView().getViewConfiguration().getItemConfig(item.getId());
-        if (this.viewItemConfig == null) {
-            throw new IllegalStateException("View item configuration not found for '" + item.getId() + "'");
-        }
+        updateViewItemConfig(item);
 
         GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 3;
@@ -137,6 +134,28 @@ public class DashboardViewItem extends Composite implements DashboardItemContain
         this.addPaintListener(this::paintItem);
 
         this.autoUpdateEnabled = true;
+    }
+
+    private void updateViewItemConfig(@NotNull DashboardItemConfiguration item) {
+        this.viewItemConfig = groupContainer.getView().getViewConfiguration().getItemConfig(item.getId());
+        if (this.viewItemConfig == null) {
+            throw new IllegalStateException("View item configuration not found for '" + item.getId() + "'");
+        }
+    }
+
+
+    public void updateDashboardItemConfiguration(@NotNull DashboardItemConfiguration newItem) {
+        updateViewItemConfig(newItem);
+        updateChartLabel(newItem);
+        updateToolBarActions();
+        if (renderer != null) {
+            renderer.disposeDashboard(this);
+            dashboardControl.dispose();
+            dashboardControl = null;
+            renderer = null;
+        }
+        createDashboardRenderer();
+        resetDashboardData();
     }
 
     private void updateChartLabel(@NotNull DashboardItemConfiguration item) {

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
 import org.jkiss.dbeaver.model.impl.auth.SessionContextImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -68,6 +69,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     private final SessionContextImpl workspaceAuthContext;
 
     protected DBPProject activeProject;
+    private DBFFileSystemManager fileSystemManager;
 
     protected BaseWorkspaceImpl(@NotNull DBPPlatform platform, @NotNull Path workspacePath) {
         this.platform = platform;
@@ -306,6 +308,19 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
     @Override
     public boolean supportsRealmFeature(@NotNull String feature) {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBFFileSystemManager getFileSystemManager() {
+        if (fileSystemManager == null) {
+            synchronized (this) {
+                if (fileSystemManager == null) {
+                    fileSystemManager = new DBFFileSystemManager(this);
+                }
+            }
+        }
+        return fileSystemManager;
     }
 
 }

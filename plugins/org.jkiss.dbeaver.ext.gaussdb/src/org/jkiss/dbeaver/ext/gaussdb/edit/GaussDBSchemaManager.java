@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.gaussdb.edit;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDatabase;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBSchema;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager;
@@ -33,8 +34,13 @@ import java.util.Map;
 public class GaussDBSchemaManager extends PostgreSchemaManager {
 
     @Override
-    protected GaussDBSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
-                                                 Object copyFrom, @NotNull Map<String, Object> options) {
+    protected GaussDBSchema createDatabaseObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         GaussDBDatabase database = (GaussDBDatabase) container;
         return database.createSchemaImpl(database, "NewSchema", (PostgreRole) null);
     }
