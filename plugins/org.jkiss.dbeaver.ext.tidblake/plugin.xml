@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="tidblake"
+              class="org.jkiss.dbeaver.ext.tidblake.model.TiDBLakeMetaModel"
+              driverClass="com.tidbcloud.jdbc.LakeDriver"
+              dialect="tidblake"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.tidblake.TiDBLakeDataSourceProvider"
+                description="TiDBLake"
+                id="tidblake"
+                parent="generic"
+                label="TiDBLake"
+                icon="icons/tidblake_icon.png"
+                dialect="tidblake">
+            <drivers managable="true">
+                <driver
+                    id="tidblake"
+                    label="TiDBLake"
+                    class="com.tidbcloud.jdbc.LakeDriver"
+                    sampleURL="jdbc:lake://{host}:{port}[/{database}]"
+                    defaultPort="443"
+                    defaultDatabase="default"
+                    icon="icons/tidblake_icon.png"
+                    iconBig="icons/tidblake_icon_big.png"
+                    description="TiDB Cloud Lake driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://github.com/tidbcloud/lake-jdbc"
+                    categories="sql,analytic,columns">
+                    <file type="jar" path="maven:/com.tidbcloud:lake-jdbc:RELEASE[0.4.6]" load-optional-dependencies="true" bundle="!drivers.lake" />
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <file type="jar" path="drivers/lake" bundle="drivers.lake"/>
+
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="alter-table-add-column" value="true"/>
+                    <parameter name="supports-multi-insert" value="true"/>
+                    <parameter name="omit-catalog" value="false"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>
+                    <parameter name="query-set-active-db" value="USE &quot;?&quot;"/>
+                </driver>
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="tidblake" parent="generic" class="org.jkiss.dbeaver.ext.tidblake.model.TiDBLakeSQLDialect" label="TiDBLake" description="TiDBLake SQL dialect." icon="icons/tidblake_icon.png">
+        </dialect>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="tidblake-ssl"
+                codeName="SSL"
+                prefix="ssl"
+                label="SSL"
+                description="SSL settings"
+                secured="false"
+                desktop="true"
+                order="2"
+                handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
+            <objectType name="org.jkiss.dbeaver.ext.tidblake.TiDBLakeDataSourceProvider"/>
+        </handler>
+    </extension>
+
+</plugin>
