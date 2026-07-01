@@ -34,7 +34,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     @Include
     private final String containerId;
 
-    private final boolean captureActivities;
+    private final boolean isLoggingEnabled;
 
     private String containerName;
     private final String driverId;
@@ -51,7 +51,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     private transient volatile QMMTransactionInfo transaction;
     //private Throwable stack;
 
-    public QMMConnectionInfo(DBCExecutionContext context, boolean transactional, boolean captureActivities) {
+    public QMMConnectionInfo(DBCExecutionContext context, boolean transactional) {
         super(QMMetaObjectType.CONNECTION_INFO);
         this.containerId = context.getDataSource().getContainer().getId();
         this.driverId = context.getDataSource().getContainer().getDriver().getFullId();
@@ -59,7 +59,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         this.projectInfo = new QMMProjectInfo(context.getDataSource().getContainer().getProject());
         initFromContext(context, transactional);
 
-        this.captureActivities = captureActivities;
+        this.isLoggingEnabled = context.isQMLoggingEnabled();
     }
 
     private QMMConnectionInfo(Builder builder) {
@@ -76,7 +76,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         statementStack = builder.statementStack;
         executionStack = builder.executionStack;
         transaction = builder.transaction;
-        this.captureActivities = true;
+        this.isLoggingEnabled = true;
     }
 
     private void initFromContext(DBCExecutionContext context, boolean transactional) {
@@ -114,7 +114,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
-        this.captureActivities = true;
+        this.isLoggingEnabled = true;
     }
 
     @Override
@@ -413,8 +413,8 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return connectionUrl;
     }
 
-    public boolean isCaptureActivities() {
-        return this.captureActivities;
+    public boolean isLoggingEnabled() {
+        return this.isLoggingEnabled;
     }
 
     @Override

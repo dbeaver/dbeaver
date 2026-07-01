@@ -33,7 +33,7 @@ import java.util.Map;
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     @Override
-    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional, boolean captureActivities) {
+    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
 
     }
 

@@ -35,8 +35,8 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
     }
 
     @Override
-    protected void onOpenContext() {
-        QMUtils.getDefaultHandler().handleContextOpen(this, false, false);
+    public boolean isQMLoggingEnabled() {
+        return false;
     }
 
     @Override

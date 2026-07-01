@@ -60,11 +60,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource,
 
         log.debug("Execution context opened (" + dataSource.getName() + "; " + purpose + "; " + this.id +  ")");
 
-        this.onOpenContext();
-    }
-
-    protected void onOpenContext() {
-        QMUtils.getDefaultHandler().handleContextOpen(this, false, true);
+        QMUtils.getDefaultHandler().handleContextOpen(this, false);
     }
 
     public static synchronized long generateContextId() {

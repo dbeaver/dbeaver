@@ -332,7 +332,7 @@ public class TransactionMonitorToolbar {
         }
 
         @Override
-        public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional, boolean captureActivities) {
+        public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
             refreshMonitor();
         }
 

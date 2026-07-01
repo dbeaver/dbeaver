@@ -36,7 +36,7 @@ public interface QMExecutionHandler {
     @NotNull
     String getHandlerName();
 
-    void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional, boolean captureActivities);
+    void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional);
 
     void handleContextUpdate(@NotNull DBCExecutionContext context, boolean transactional);
 
