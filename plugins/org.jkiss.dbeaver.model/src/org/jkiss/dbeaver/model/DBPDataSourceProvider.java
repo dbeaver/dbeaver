@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
@@ -58,8 +59,9 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
     DBPPropertyDescriptor[] getConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull DBPConnectionConfiguration connectionInfo)
-        throws DBException;
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException;
 
     /**
      * Class of datasource.

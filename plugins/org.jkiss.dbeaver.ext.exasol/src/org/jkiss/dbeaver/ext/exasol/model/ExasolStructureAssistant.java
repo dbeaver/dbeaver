@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -340,17 +341,17 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
         DBRProgressMonitor monitor = session.getProgressMonitor();
         //don't use parameter marks because of performance
 
-        String mask = ExasolUtils.quoteString(params.getMask());
+        String mask = SQLUtils.quoteString(dataSource, params.getMask());
         StringBuilder sql = new StringBuilder("/*snapshot execution*/ SELECT table_schem,table_name as column_table,table_type from \"$ODBCJDBC\".ALL_TABLES WHERE ");
         if (schema != null) {
-            sql.append("TABLE_SCHEM = '").append(schema.getName()).append("' AND ");
+            sql.append("TABLE_SCHEM = ").append(SQLUtils.quoteString(dataSource, schema.getName())).append(" AND ");
         }
         if (params.isSearchInComments()) {
             sql.append("(");
         }
-        sql.append("TABLE_NAME LIKE '").append(mask).append("' ");
+        sql.append("TABLE_NAME LIKE ").append(mask).append(" ");
         if (params.isSearchInComments()) {
-            sql.append("OR REMARKS LIKE '").append(mask).append("') ");
+            sql.append("OR REMARKS LIKE ").append(mask).append(") ");
         }
         sql.append("AND TABLE_TYPE = 'TABLE'");
 

@@ -27,11 +27,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
@@ -62,12 +60,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
     private ViewerColumnController<?,?> columnController;
 
     public static DBNFileSystems getFileSystemsNode() {
-        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        if (projectNode != null) {
-            return projectNode.getExtraNode(DBNFileSystems.class);
-        }
-        return null;
+        return getGlobalNavigatorModel().getRoot().getExtraNode(DBNFileSystems.class);
     }
 
     public FileSystemExplorerView() {
@@ -84,6 +77,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
         return super.getRootNode();
     }
 
+    @NotNull
     @Override
     protected DBNNode getDefaultRootNode() {
         DBNFileSystems fsRootNode = getFileSystemsNode();

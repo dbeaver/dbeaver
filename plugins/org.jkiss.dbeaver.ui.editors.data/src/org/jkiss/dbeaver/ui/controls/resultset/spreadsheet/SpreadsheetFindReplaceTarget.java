@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCellLocation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
@@ -62,8 +63,9 @@ import java.util.regex.PatternSyntaxException;
 class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
     private static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
-    private static final Object REDRAW_SYNC = new Object();
-    private static SpreadsheetFindReplaceTarget instance;
+
+    @NotNull
+    private final Object REDRAW_SYNC = new Object();
 
     /**
      * Uses {@link Object#hashCode()} to identity the current owner and determine whether he was changed or not.
@@ -84,17 +86,12 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private boolean currentWholeWord;
     private boolean currentRegEx;
 
-    public static synchronized SpreadsheetFindReplaceTarget getInstance() {
-        if (instance == null) {
-            instance = new SpreadsheetFindReplaceTarget();
-            instance.scopeHighlightColor = UIStyles.getDefaultTextColor("AbstractTextEditor.Color.FindScope", SWT.COLOR_LIST_SELECTION);
-        }
-        return instance;
-    }
+    @NotNull
+    private final Spreadsheet spreadsheet;
 
-    public synchronized SpreadsheetFindReplaceTarget owned(@NotNull SpreadsheetPresentation newOwner) {
-        refreshOwner(newOwner);
-        return this;
+    public SpreadsheetFindReplaceTarget(@NotNull Spreadsheet spreadsheet) {
+        this.scopeHighlightColor = UIStyles.getDefaultTextColor("AbstractTextEditor.Color.FindScope", SWT.COLOR_LIST_SELECTION);
+        this.spreadsheet = spreadsheet;
     }
 
     public boolean isSessionActive() {
@@ -114,39 +111,31 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         return true;
     }
 
+    @NotNull
     @Override
     public Point getSelection() {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return new Point(0, 0);
-        }
-        Collection<Integer> rowSelection = owner.getSpreadsheet().getRowSelection();
+        Collection<Integer> rowSelection = this.spreadsheet.getRowSelection();
         int minRow = rowSelection.stream().mapToInt(v -> v).min().orElse(-1);
         int maxRow = rowSelection.stream().mapToInt(v -> v).max().orElse(-1);
 
         return new Point(minRow, maxRow);
     }
 
+    @NotNull
     @Override
     public String getSelectionText() {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return "";
-        }
-        GridPos selection = owner.getSelection().getFirstElement();
+        GridPos selection = this.spreadsheet.getPresentation().getSelection().getFirstElement();
         if (selection == null) {
             return "";
         }
-        Spreadsheet spreadsheet = owner.getSpreadsheet();
-        GridCell cell = spreadsheet.posToCell(selection);
+        GridCell cell = this.spreadsheet.posToCell(selection);
         String value = cell == null ? "" : CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
         return CommonUtils.toString(value);
     }
 
     @Override
     public boolean isEditable() {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        return owner != null && owner.getController().getReadOnlyStatus() == null;
+        return this.spreadsheet.getPresentation().getController().getReadOnlyStatus() == null;
     }
 
     @Override
@@ -157,31 +146,22 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
         processedCells.clear();
 
-        final SpreadsheetPresentation owner = getActiveSpreadsheet(false);
-        if (owner == null) {
-            return;
-        }
+        SpreadsheetPresentation owner = this.spreadsheet.getPresentation();
         this.sessionActive = true;
         owner.getControl().redraw();
-        this.originalSelection = new ArrayList<>(owner.getSpreadsheet().getSelection());
+        this.originalSelection = new ArrayList<>(this.spreadsheet.getSelection());
         owner.highlightRows(-1, -1, null);
     }
 
     @Override
     public void endSession() {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet(false);
-        if (owner == null) {
-            return;
-        }
         this.sessionActive = false;
         this.searchPattern = null;
         this.firstSearchInSession = true;
-        Control control = owner.getControl();
-        if (control != null && !control.isDisposed()) {
-            Spreadsheet spreadsheet = owner.getSpreadsheet();
-            spreadsheet.deselectAll();
-            spreadsheet.selectCells(this.originalSelection);
-            spreadsheet.redraw();
+        if (!this.spreadsheet.isDisposed()) {
+            this.spreadsheet.deselectAll();
+            this.spreadsheet.selectCells(this.originalSelection);
+            this.spreadsheet.redraw();
         }
     }
 
@@ -191,21 +171,16 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     }
 
     @Override
-    public void setScope(IRegion scope) {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return;
-        }
+    public void setScope(@Nullable IRegion scope) {
         if (scope == null || scope.getLength() == 0) {
-            owner.highlightRows(-1, -1, null);
+            this.spreadsheet.getPresentation().highlightRows(-1, -1, null);
             if (scope == null) {
-                Spreadsheet spreadsheet = owner.getSpreadsheet();
-                spreadsheet.deselectAll();
-                spreadsheet.selectCells(this.originalSelection);
-                spreadsheet.redraw();
+                this.spreadsheet.deselectAll();
+                this.spreadsheet.selectCells(this.originalSelection);
+                this.spreadsheet.redraw();
             }
         } else {
-            owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
+            this.spreadsheet.getPresentation().highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
         }
     }
 
@@ -216,19 +191,14 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
 
     @Override
     public void setSelection(int offset, int length) {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return;
-        }
-        int columnCount = owner.getSpreadsheet().getColumnCount();
+        int columnCount = this.spreadsheet.getColumnCount();
         List<GridPos> selRows = new ArrayList<>();
         for (int rowNum = 0; rowNum < length; rowNum++) {
             for (int col = 0; col < columnCount; col++) {
                 selRows.add(new GridPos(col, offset + rowNum));
             }
         }
-        owner.setSelection(
-            new StructuredSelection(selRows));
+        this.spreadsheet.getPresentation().setSelection(new StructuredSelection(selRows));
     }
 
     @Override
@@ -251,11 +221,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         @NotNull String text,
         boolean regExReplace
     ) {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return;
-        }
-
         // Lazy initialization of search pattern
         if (searchPattern == null && !currentFindString.isEmpty()) {
             searchPattern = createSearchPattern(
@@ -266,7 +231,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             );
         }
 
-        GridPos selection = owner.getSelection().getFirstElement();
+        GridPos selection = this.spreadsheet.getPresentation().getSelection().getFirstElement();
         if (selection == null) {
             return;
         }
@@ -275,13 +240,13 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             return;
         }
 
-        GridCell cell = owner.getSpreadsheet().posToCell(selection);
+        GridCell cell = this.spreadsheet.posToCell(selection);
         if (cell == null) {
             return;
         }
 
-        ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
-        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
+        ResultSetCellLocation cellLocation = this.spreadsheet.getPresentation().getCellLocation(cell);
+        String oldValue = CommonUtils.toString(this.spreadsheet.getContentProvider().getCellValue(
             cell.col, cell.row, true));
         String newValue = oldValue;
 
@@ -289,27 +254,30 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             newValue = searchPattern.matcher(oldValue).replaceAll(text);
         }
 
+        IResultSetController controller = this.spreadsheet.getPresentation().getController();
         try {
             if (oldValue.equals(newValue)) {
                 return;
             }
 
-            Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
+            Object originalValue = this.spreadsheet.getContentProvider().getCellValue(
                 cell.col, cell.row, false);
 
             if (originalValue instanceof DBDContent content) {
                 // Special handling for content/blob values
                 content.updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
-                new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
+                new ResultSetValueController(controller, cellLocation, IValueController.EditType.NONE, null)
                     .updateValue(originalValue, !replaceAll);
             } else {
                 // Standard value update
-                owner.getController().updateCellValue( // TODO introduce value path here
+                // TODO introduce value path here
+                controller.updateCellValue(
                     cellLocation.getAttribute(),
                     cellLocation.getRow(),
                     cellLocation.getRowIndexes(),
                     newValue,
-                    !replaceAll);
+                    !replaceAll
+                );
             }
 
             if (replaceAll) {
@@ -324,10 +292,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             }
         }
 
-        GridPos currentPos = owner.getSpreadsheet().getFocusPos();
+        GridPos currentPos = this.spreadsheet.getFocusPos();
         storeLastFoundPosition(currentPos);
         if (!replaceAll) {
-            owner.getController().redrawData(true, true);
+            controller.redrawData(true, true);
             synchronized (REDRAW_SYNC) {
                 updatedAttributes.add(cellLocation.getAttribute());
                 updatedRows.add(cellLocation.getRow());
@@ -346,9 +314,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                                 redrawJob = null;
                             }
                             UIUtils.syncExec(() -> {
-                                owner.getController().refreshHintCache(attrs, rows, null);
-                                owner.getController().redrawData(false, true);
-                                owner.getController().updatePanelsContent(false);
+                                controller.refreshHintCache(attrs, rows, null);
+                                controller.redrawData(false, true);
+                                controller.updatePanelsContent(false);
                             });
                             return Status.OK_STATUS;
                         }
@@ -384,18 +352,14 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         this.currentWholeWord = wholeWord;
         this.currentRegEx = regExSearch;
 
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return -1;
-        }
+        final SpreadsheetPresentation owner = this.spreadsheet.getPresentation();
         ResultSetModel model = owner.getController().getModel();
         if (model.isEmpty()) {
             return -1;
         }
 
-        Spreadsheet spreadsheet = owner.getSpreadsheet();
-        int rowCount = spreadsheet.getItemCount();
-        int columnCount = spreadsheet.getColumnCount();
+        int rowCount = this.spreadsheet.getItemCount();
+        int columnCount = this.spreadsheet.getColumnCount();
 
         // Handle record mode special column (-1 indicates record selector column)
         boolean recordMode = owner.getController().isRecordMode();
@@ -438,7 +402,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 if (!replaceAll || !processedCells.contains(currentPos)) {
                     String cellText = getCellText(spreadsheet, currentPos, recordMode, minColumn);
                     if (cellText != null && pattern.matcher(cellText).find()) {
-                        selectCell(spreadsheet, currentPos, minColumn);
+                        selectCell(currentPos, minColumn);
                         storeLastFoundPosition(currentPos);
                         return currentPos.row;
                     }
@@ -512,19 +476,15 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
 
     // Stores the last found position for subsequent operations
     private void storeLastFoundPosition(@NotNull GridPos pos) {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner != null) {
-            Spreadsheet spreadsheet = owner.getSpreadsheet();
-            // Adjust column for record mode
-            if (owner.getController().isRecordMode() && pos.col == -1) {
-                pos = new GridPos(0, pos.row);
-            }
-            // Update spreadsheet focus and selection
-            spreadsheet.setFocusColumn(pos.col);
-            spreadsheet.setFocusItem(pos.row);
-            spreadsheet.setCellSelection(pos);
-            spreadsheet.showSelection();
+        // Adjust column for record mode
+        if (this.spreadsheet.getPresentation().getController().isRecordMode() && pos.col == -1) {
+            pos = new GridPos(0, pos.row);
         }
+        // Update spreadsheet focus and selection
+        this.spreadsheet.setFocusColumn(pos.col);
+        this.spreadsheet.setFocusItem(pos.row);
+        this.spreadsheet.setCellSelection(pos);
+        this.spreadsheet.showSelection();
     }
 
     // Retrieves cell text based on mode and position
@@ -547,7 +507,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
 
     // Selects a cell and updates UI focus
     private void selectCell(
-        @NotNull Spreadsheet spreadsheet,
         @NotNull GridPos pos,
         int minColumn
     ) {
@@ -556,10 +515,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             pos = new GridPos(0, pos.row);
         }
         // Update spreadsheet state
-        spreadsheet.setFocusColumn(pos.col);
-        spreadsheet.setFocusItem(pos.row);
-        spreadsheet.setCellSelection(pos);
-        spreadsheet.showSelection();
+        this.spreadsheet.setFocusColumn(pos.col);
+        this.spreadsheet.setFocusItem(pos.row);
+        this.spreadsheet.setCellSelection(pos);
+        this.spreadsheet.showSelection();
     }
 
     // Calculates next cell position based on search direction
@@ -617,54 +576,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                pos.col < columnCount;
     }
 
+    @NotNull
     @Override
     public String toString() {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return super.toString();
-        }
-        DBSDataContainer dataContainer = owner.getController().getDataContainer();
+        DBSDataContainer dataContainer = this.spreadsheet.getPresentation().getController().getDataContainer();
         return "Target: " + (dataContainer == null ? null : dataContainer.getName());
-    }
-
-    private void refreshOwner(@NotNull SpreadsheetPresentation newOwner) {
-        if (this.ownerIdentity == newOwner.hashCode()) {
-            return;
-        }
-        final boolean refreshSession = this.sessionActive;
-        final Pattern searchPattern = this.searchPattern;
-        if (refreshSession) {
-            this.endSession();
-        }
-        this.ownerIdentity = newOwner.hashCode();
-        if (refreshSession) {
-            this.beginSession();
-            this.searchPattern = searchPattern;
-        }
-    }
-
-    @Nullable
-    private SpreadsheetPresentation getActiveSpreadsheet() {
-        return getActiveSpreadsheet(true);
-    }
-
-    @Nullable
-    private SpreadsheetPresentation getActiveSpreadsheet(boolean refreshActiveSpreadsheet) {
-        final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        if (workbenchWindow == null) {
-            return null;
-        }
-        final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
-        if (activeEditor == null) {
-            return null;
-        }
-        final SpreadsheetPresentation spreadsheet = activeEditor.getAdapter(SpreadsheetPresentation.class);
-        if (spreadsheet == null) {
-            return null;
-        }
-        if (refreshActiveSpreadsheet) {
-            refreshOwner(spreadsheet);
-        }
-        return spreadsheet;
     }
 }

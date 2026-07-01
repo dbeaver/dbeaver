@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionService;
@@ -107,6 +109,12 @@ public class ActiveWizardDialog extends WizardDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
+
+        Button nextButton = getButton(IDialogConstants.NEXT_ID);
+        if (nextButton != null) {
+            // Fix ugly spacing between previous/next buttons compared to other buttons
+            ((GridLayout) nextButton.getParent().getLayout()).horizontalSpacing = LayoutConstants.getSpacing().x;
+        }
 
         Button cancelButton = getButton(IDialogConstants.CANCEL_ID);
         cancelButton.setText(cancelButtonLabel);
