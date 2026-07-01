@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.jface.text.templates.TemplateContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -39,25 +40,32 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
     static final String VAR_NAME_SCHEMA = "schema";
     static final String VAR_NAME_CATALOG = "catalog";
 
-    private Class<T> objectType;
+    private final Class<T> objectType;
 
-    SQLContainerResolver(String id, String title, Class<T> objectType)
-    {
+    SQLContainerResolver(String id, String title, Class<T> objectType) {
         super(id, title);
         this.objectType = objectType;
     }
 
     @Override
-    protected void resolveObjects(DBRProgressMonitor monitor, DBCExecutionContext executionContext, TemplateContext context, List<T> entities) throws DBException
-    {
+    protected void resolveObjects(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        TemplateContext context,
+        List<T> entities
+    ) throws DBException {
         DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
         if (objectContainer != null) {
             makeProposalsFromChildren(monitor, executionContext, objectContainer, entities);
         }
     }
 
-    private void makeProposalsFromChildren(DBRProgressMonitor monitor, DBCExecutionContext executionContext, DBSObjectContainer container, List<T> names) throws DBException
-    {
+    private void makeProposalsFromChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer container,
+        @NotNull List<T> names
+    ) throws DBException {
         Collection<? extends DBSObject> children = container.getChildren(monitor);
         if (CommonUtils.isEmpty(children)) {
             return;

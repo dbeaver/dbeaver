@@ -82,9 +82,8 @@ final class UIControlFactory {
     }
 
     @NotNull
-    static Button createButton(@NotNull Composite parent, int style, @NotNull String text) {
+    static Button createButton(@NotNull Composite parent, int style) {
         return ButtonFactory.newButton(style)
-            .text(text)
             .create(parent);
     }
 

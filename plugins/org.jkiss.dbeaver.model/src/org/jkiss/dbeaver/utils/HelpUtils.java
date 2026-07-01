@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,11 @@ public class HelpUtils {
     @NotNull
     public static String getHelpExternalReference(@NotNull String topicId) {
         return GLOBAL_HELP_PREFIX + topicId;
+    }
+
+    @NotNull
+    public static String getHelpExternalReference(@NotNull String topicId, @NotNull String anchor) {
+        return GLOBAL_HELP_PREFIX + topicId + '#' + anchor;
     }
 
     @NotNull

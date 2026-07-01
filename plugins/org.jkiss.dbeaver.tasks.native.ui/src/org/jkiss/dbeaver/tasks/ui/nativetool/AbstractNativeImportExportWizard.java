@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.tasks.ui.nativetool;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
@@ -42,7 +44,7 @@ public abstract class AbstractNativeImportExportWizard<SETTINGS extends Abstract
     }
 
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
+    public void init(@NotNull IWorkbench workbench, @Nullable IStructuredSelection selection) {
         setWindowTitle(taskTitle);
         setNeedsProgressMonitor(true);
     }

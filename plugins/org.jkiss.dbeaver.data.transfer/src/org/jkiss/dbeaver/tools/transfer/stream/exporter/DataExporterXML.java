@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -140,8 +141,12 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            value = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-            getWriter().write(value);
+            String escapedValue = XMLUtils.escapeXml(value);
+            if (escapedValue != null) {
+                getWriter().write(escapedValue);
+            } else {
+                getWriter().write(value);
+            }
         }
     }
 
@@ -155,13 +160,9 @@ public class DataExporterXML extends StreamExporterAbstract {
                 break;
             }
             for (int i = 0; i < count; i++) {
-                if (buffer[i] == '<') {
-                    getWriter().write("&lt;");
-                }
-                else if (buffer[i] == '>') {
-                    getWriter().write("&gt;");
-                } else if (buffer[i] == '&') {
-                    getWriter().write("&amp;");
+                String escaped = XMLUtils.encodeXMLChar(buffer[i]);
+                if (escaped != null) {
+                    getWriter().write(escaped);
                 } else {
                     getWriter().write(buffer[i]);
                 }
