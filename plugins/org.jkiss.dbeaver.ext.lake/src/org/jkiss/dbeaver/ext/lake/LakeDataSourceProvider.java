@@ -37,9 +37,9 @@ public class LakeDataSourceProvider extends GenericDataSourceProvider<LakeDataSo
     @NotNull
     @Override
     public LakeDataSource openDataSource(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBPDataSourceContainer container)
-            throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         return new LakeDataSource(monitor, container, new LakeMetaModel());
     }
 
