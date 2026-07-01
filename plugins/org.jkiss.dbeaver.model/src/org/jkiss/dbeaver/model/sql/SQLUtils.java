@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -50,7 +51,6 @@ public final class SQLUtils {
 
     private static final Log log = Log.getLog(SQLUtils.class);
 
-    public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
     public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile(
@@ -470,7 +470,7 @@ public final class SQLUtils {
             sql.append(" LIKE ?");
             if (dialect instanceof SQLDialectRelational dialectRelational &&
                 dialectRelational.getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE) != null) {
-                sql.append(((SQLDialectRelational) dialect).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
+                sql.append(dialectRelational.getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
             }
         } else {
             sql.append(not ? "<>?" : "=?");
@@ -747,14 +747,14 @@ public final class SQLUtils {
             case CONTENT -> {
                 if (value instanceof DBDContent contentValue) {
                     String contentType = contentValue.getContentType();
-                    if (!contentType.startsWith("text") && CommonUtils.isNotEmpty(strValue)) {
+                    if (!contentType.startsWith(MimeTypes.TEXT) && CommonUtils.isNotEmpty(strValue)) {
+                        // Non-text context. Use as-is
                         return strValue;
                     } else if (CommonUtils.isNotEmpty(strValue)) { // Quote text/json, text/xml, etc...
                         return sqlDialect.getQuotedString(strValue);
                     }
                 }
             }
-            // Text content. Fall down
             case STRING -> {
                 if (strValue != null) {
                     return sqlDialect.getQuotedString(strValue);
@@ -762,14 +762,13 @@ public final class SQLUtils {
             }
             case ROWID -> {
                 if (strValue != null && !sqlDialect.isQuotedString(strValue)) {
+                    // Quote ROWIDs by default
                     return sqlDialect.getQuotedString(strValue);
                 }
             }
-            default -> {
-                if (strValue != null) {
-                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
-                }
-            }
+        }
+        if (strValue != null) {
+            return sqlDialect.escapeScriptValue(attribute, value, strValue);
         }
         return SQLConstants.NULL_VALUE;
     }
@@ -833,7 +832,7 @@ public final class SQLUtils {
             return name;
         }
 
-        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
+        SQLDialect dialect = entity.getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
         char prevChar = 0;
@@ -1225,9 +1224,9 @@ public final class SQLUtils {
     ) throws DBException {
         Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
         if (!CommonUtils.isEmpty(associations)) {
-            for (DBSEntityAssociation fk : associations) {
-                if (fk instanceof DBSTableForeignKey dbsTableForeignKey && fk.getAssociatedEntity() == rightTable) {
-                    return generateTablesJoin(monitor, dbsTableForeignKey, leftAlias, rightAlias);
+            for (DBSEntityAssociation assoc : associations) {
+                if (assoc instanceof DBSTableForeignKey fk && assoc.getAssociatedEntity() == rightTable) {
+                    return generateTablesJoin(monitor, fk, leftAlias, rightAlias);
                 }
             }
         }
@@ -1258,11 +1257,6 @@ public final class SQLUtils {
             }
         }
         return joinSQL.toString();
-    }
-
-    @Nullable
-    public static String getTableAlias(@NotNull DBSEntity table) {
-        return CommonUtils.escapeIdentifier(table.getName());
     }
 
     public static void appendQueryConditions(
