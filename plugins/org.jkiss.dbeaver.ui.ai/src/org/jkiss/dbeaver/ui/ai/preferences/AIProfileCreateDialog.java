@@ -50,11 +50,6 @@ public class AIProfileCreateDialog extends BaseDialog {
         Composite dialogArea = super.createDialogArea(parent);
         Composite enginePanel = UIUtils.createTitledComposite(dialogArea, "AI Configuration", 2);
 
-        Text idText = UIUtils.createLabelText(enginePanel, "ID", "");
-        idText.addModifyListener(e ->  profileId = idText.getText());
-        Text nameText = UIUtils.createLabelText(enginePanel, "Name", "");
-        nameText.addModifyListener(e ->  profileName = nameText.getText());
-
         Combo engineCombo = UIUtils.createLabelCombo(enginePanel, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         aiEngines = AIEngineRegistry.getInstance().getCompletionEngines();
         for (AIEngineDescriptor ed : aiEngines) {
@@ -62,8 +57,14 @@ public class AIProfileCreateDialog extends BaseDialog {
         }
         engineCombo.select(0);
         selectedEngine = aiEngines.getFirst();
-        idText.setText(genProfileId(selectedEngine));
-        nameText.setText(selectedEngine.getLabel());
+        profileId = genProfileId(selectedEngine);
+        profileName = selectedEngine.getLabel();
+
+        Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
+        idText.addModifyListener(e ->  profileId = idText.getText());
+        Text nameText = UIUtils.createLabelText(enginePanel, "Name", selectedEngine.getLabel());
+        nameText.addModifyListener(e ->  profileName = nameText.getText());
+
         engineCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             String oldAutoId = genProfileId(selectedEngine);
             selectedEngine = aiEngines.get(engineCombo.getSelectionIndex());
