@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
  * CSV Exporter
  */
 public class DataExporterCSV extends StreamExporterAbstract implements IAppendableDataExporter {
+
+    private static final Log log = Log.getLog(DataExporterCSV.class);
 
     public static final String PROCESSOR_ID = "stream.csv";
 
@@ -128,7 +130,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         useQuotes = CommonUtils.isNotEmpty(quoteChar);
 
         if (useQuotes && quoteChar.equals(delimiter)) {
-            throw new IllegalArgumentException("Quotes and separator cant be the same string: " + quoteChar);
+            throw new IllegalArgumentException("Quotes and separator can't be the same string: " + quoteChar);
         }
 
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
@@ -331,13 +333,32 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private void writeCellValue(@NotNull String value, boolean quote)
     {
-        writeLines(Arrays.stream(value.split("\n")).iterator(), quote);
+        writeLines(Arrays.stream(value.split("\n", -1)).iterator(), quote);
     }
 
     private void writeCellValue(@NotNull Reader reader) throws IOException {
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            writeLines(bufferedReader.lines().iterator(), false);
+        List<String> lines = new ArrayList<>();
+        try {
+            lineBuffer.setLength(0);
+            char[] buffer = new char[2000];
+            for (int count = reader.read(buffer); count > 0; count = reader.read(buffer)) {
+                for (int i = 0; i < count; i++) {
+                    if (buffer[i] == '\n') {
+                        lineBuffer.append("\n")
+                        lines.add(lineBuffer.toString());
+                        lineBuffer.setLength(0);
+                    } else {
+                        lineBuffer.append(buffer[i]);
+                    }
+                }
+            }
+            if (!lineBuffer.isEmpty()) {
+                lines.add(lineBuffer.toString());
+            }
+        } finally {
+            ContentUtils.close(reader);
         }
+        writeLines(lines.iterator(), false);
     }
 
     private void writeLines(@NotNull Iterator<String> multiRow, boolean quote) {
@@ -372,7 +393,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         ) {
             return true;
         } else {
-            return line.contains(delimiter) || line.contains(rowDelimiter) || line.contains(quoteChar);
+            return line.contains(delimiter) || line.contains(rowDelimiter) || line.contains(quoteChar) || line.indexOf('\r') != -1;
         }
     }
 

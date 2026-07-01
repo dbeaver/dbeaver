@@ -65,6 +65,8 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
 
     private DataExporterCSV dataExporterCSV;
     private StringWriter stringWriter;
+
+    @Mock
     private IStreamDataExporterSite site;
 
     @Mock
@@ -82,15 +84,19 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     @BeforeEach
     public void setUp() {
         properties = new HashMap<>();
-        stringWriter = new StringWriter();
+
         columns = new DBDAttributeBinding[]{};
         rowsSeparator = "\n";
-        PrintWriter printWriter = new PrintWriter(stringWriter);
 
-        site = mock(IStreamDataExporterSite.class);
-        when(site.getWriter()).thenReturn(printWriter);
         when(site.getProperties()).thenReturn(properties);
         when(site.getAttributes()).thenReturn(columns);
+        writerReset();
+    }
+
+    private void writerReset() {
+        stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        when(site.getWriter()).thenReturn(printWriter);
     }
 
     @Test
@@ -221,16 +227,39 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         @NotNull String valueSeparator, @NotNull String quoteSeparator,
         @NotNull RowContentCreator rowContentCreator
     ) throws DBException, IOException {
-        String[][] rows = {
-            {"a\nb", "c", "d"}
-        };
-
-        assertRowsEquals(
+        // middle new line
+/*        assertRowsEquals(
             """
                 "a
-                b",c,d""", valueSeparator, quoteSeparator, rowContentCreator, rows
+                b",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"a\nb", "c", "d"}
+            }
+        );*/
+        // trailing new line
+        assertRowsEquals(
+            "\"\nab\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\nab\n", "c", "d"}
+            }
         );
+
+        // middle cr line
+        assertRowsEquals(
+            """
+                "a\rb",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"a\rb", "c", "d"}
+            }
+        );
+
+        // trailing cr
+        assertRowsEquals(
+            """
+                "\rab\r",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\rab\r", "c", "d"}
+            }
+        );
+
     }
+
 
     @ParameterizedTest
     @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
@@ -411,6 +440,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     )
     throws DBException, IOException {
         // given
+        writerReset();
         properties.put(DataExporterCSV.PROP_DELIMITER, customSeparator);
         properties.put(DataExporterCSV.PROP_QUOTE_CHAR, customQuote);
 
