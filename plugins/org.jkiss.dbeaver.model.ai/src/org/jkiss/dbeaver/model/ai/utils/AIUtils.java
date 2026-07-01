@@ -91,11 +91,11 @@ public final class AIUtils {
 
     @NotNull
     private static String getSecretSuffix(@NotNull AIConfigurationProfile profile) {
-        String suffix = "";
-        if (!profile.getProfileId().equals(profile.getEngineId())) {
-            suffix = "_" + profile.getProfileId();
+        if (!profile.isMigrated()) {
+            return  "_" + profile.getProfileId();
         }
-        return suffix;
+        // Legacy configurations didn't have a prefix
+        return "";
     }
 
     /**

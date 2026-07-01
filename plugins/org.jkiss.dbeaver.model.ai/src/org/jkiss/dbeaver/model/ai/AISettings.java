@@ -195,6 +195,7 @@ public class AISettings implements DBPAdaptable {
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                 if (engineDescriptor != null) {
                     AIConfigurationProfile cp = new AIConfigurationProfile();
+                    cp.setMigrated(true);
                     cp.setProfileId(engineId);
                     cp.setProfileName(engineDescriptor.getId());
                     cp.setEngineId(engineId);

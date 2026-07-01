@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 public class AIConfigurationProfile {
     protected static final Log log = Log.getLog(AIConfigurationProfile.class);
 
+    private boolean migrated;
     private String profileId;
     private String profileName;
     private String engineId;
@@ -70,6 +71,15 @@ public class AIConfigurationProfile {
         this.engineId = engineId;
     }
 
+    // Legacy configuration
+    public boolean isMigrated() {
+        return migrated;
+    }
+
+    public void setMigrated(boolean migrated) {
+        this.migrated = migrated;
+    }
+
     @NotNull
     public synchronized AIEngineDescriptor getEngineDescriptor() throws DBException {
         if (engineDescriptor == null) {
@@ -104,4 +114,8 @@ public class AIConfigurationProfile {
         }
     }
 
+    @Override
+    public String toString() {
+        return profileId + "(" + engineId + ")";
+    }
 }

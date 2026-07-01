@@ -114,6 +114,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         this.settings.setDefaultConfiguration(selectedProfile);
         if (selectedProfile != null) {
+            selectedProfile.setProfileName(profileNameText.getText());
             try {
                 activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
             } catch (DBException e) {
@@ -126,6 +127,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 );
             }
         }
+        profilesViewer.setInput(settings.getConfigurations());
         AISettingsManager.getInstance().saveSettings();
         try {
             store.save();

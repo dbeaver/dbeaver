@@ -318,6 +318,10 @@ public class AISettingsManager {
             out.value(value.getProfileName());
             out.name("engine");
             out.value(value.getEngineId());
+            if (value.isMigrated()) {
+                out.name("migrated");
+                out.value(true);
+            }
 
             AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(value.getEngineId());
             if (engineDescriptor == null) {
@@ -347,6 +351,7 @@ public class AISettingsManager {
                 switch (prop) {
                     case "name" -> result.setProfileName(in.nextString());
                     case "engine" -> result.setEngineId(in.nextString());
+                    case "migrated" -> result.setMigrated(in.nextBoolean());
                     case "configuration" -> {
                         AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(result.getEngineId());
                         if (engineDescriptor == null) {
