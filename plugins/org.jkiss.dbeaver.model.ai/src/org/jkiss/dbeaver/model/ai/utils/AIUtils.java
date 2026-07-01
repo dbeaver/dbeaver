@@ -56,6 +56,7 @@ public final class AIUtils {
 
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        aiSettings.resolveSecrets();
         AIConfigurationProfile profile = aiSettings.getDefaultConfigurationOrNull();
         return profile != null && profile.getConfiguration().isValidConfiguration();
     }
@@ -65,15 +66,36 @@ public final class AIUtils {
      * If the secret value is empty, it returns the provided default value.
      */
     public static String getSecretValueOrDefault(
+        @NotNull AIConfigurationProfile profile,
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
-        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        String suffix = getSecretSuffix(profile);
+        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(
+            secretId + suffix);
         if (CommonUtils.isEmpty(secretValue)) {
             return defaultValue;
         }
 
         return secretValue;
+    }
+
+    public static void setSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret,
+        @Nullable String value
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile), value);
+    }
+
+    @NotNull
+    private static String getSecretSuffix(@NotNull AIConfigurationProfile profile) {
+        String suffix = "";
+        if (!profile.getProfileId().equals(profile.getEngineId())) {
+            suffix = "_" + profile.getProfileId();
+        }
+        return suffix;
     }
 
     /**
@@ -604,4 +626,5 @@ public final class AIUtils {
     public static boolean useStreamMode() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_USE_STREAM_MODE);
     }
+
 }

@@ -100,7 +100,7 @@ public class AIConfigurationProfile {
 
     public void saveSecrets() throws DBException {
         if (configuration != null) {
-            configuration.saveSecrets();
+            configuration.saveSecrets(this);
         }
     }
 

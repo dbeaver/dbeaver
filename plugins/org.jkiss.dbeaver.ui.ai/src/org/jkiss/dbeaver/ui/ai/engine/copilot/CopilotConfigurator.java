@@ -97,11 +97,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @Override
     public void loadSettings(@NotNull PROPERTIES configuration) {
-        try {
-            token = CommonUtils.toString(configuration.getToken());
-        } catch (DBException e) {
-            log.error(e);
-        }
+        token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");

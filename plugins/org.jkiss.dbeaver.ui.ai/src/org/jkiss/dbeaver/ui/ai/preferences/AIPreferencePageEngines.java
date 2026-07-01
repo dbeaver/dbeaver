@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -71,6 +72,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
+        this.settings.resolveSecrets();
 
         try {
             selectedProfile = settings.getDefaultConfiguration();
@@ -160,14 +162,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             null,
             "Create new profile",
             UIIcon.ADD,
-            SelectionListener.widgetSelectedAdapter(e -> {})
+            SelectionListener.widgetSelectedAdapter(e -> addNewProfile())
         );
-        UIUtils.createPushButton(
+        Button deleteProfileBtn = UIUtils.createPushButton(
             buttonsPanel,
             null,
             "Delete profile",
             UIIcon.DELETE,
-            SelectionListener.widgetSelectedAdapter(e -> {})
+            SelectionListener.widgetSelectedAdapter(e -> deleteProfile())
         );
 
         Composite profileGroup = UIUtils.createTitledComposite(
@@ -198,6 +200,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 engineGroup.getShell().layout(true, true);
                 UIUtils.resizeShell(parent.getShell());
             }
+            deleteProfileBtn.setEnabled(selItem instanceof AIConfigurationProfile);
         });
 
         if (selectedProfile != null) {
@@ -211,9 +214,69 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
+    private void addNewProfile() {
+        AIProfileCreateDialog dialog = new AIProfileCreateDialog(getShell());
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+
+        try {
+            AIConfigurationProfile newProfile = settings.createConfiguration(
+                Objects.requireNonNull(dialog.getProfileId()),
+                dialog.getSelectedEngine()
+            );
+            newProfile.setProfileName(Objects.requireNonNull(dialog.getProfileName()));
+            profilesViewer.setInput(settings.getConfigurations());
+
+            AISettingsManager.getInstance().saveSettings();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("New configuration", "Configuration create failed", e);
+        }
+    }
+
+    private void deleteProfile() {
+        if (!UIUtils.confirmAction(
+            getShell(),
+            "Delete configuration",
+            "Are you sure you want to delete AI configuration '" + selectedProfile.getProfileName() + "'?"
+        )) {
+            return;
+        }
+        settings.removeConfiguration(selectedProfile);
+        selectedProfile = null;
+
+        profilesViewer.setInput(settings.getConfigurations());
+
+        AISettingsManager.getInstance().saveSettings();
+    }
+
     private void createProfilesColumns() {
+        TableViewerColumn idColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
+        idColumn.getColumn().setText("ID");
+        idColumn.getColumn().setWidth(100);
+        idColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                if (!(element instanceof AIConfigurationProfile profile)) {
+                    return null;
+                }
+                return profile.getProfileId();
+            }
+
+            @Override
+            public Font getFont(Object element) {
+                if (!(element instanceof AIConfigurationProfile profile)) {
+                    return null;
+                }
+                if (profile == settings.getDefaultConfigurationOrNull()) {
+                    return BaseThemeSettings.instance.baseFontBold;
+                }
+                return super.getFont(element);
+            }
+        });
+
         TableViewerColumn nameColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
-        nameColumn.getColumn().setText("Profile");
+        nameColumn.getColumn().setText("Name");
         nameColumn.getColumn().setWidth(200);
         nameColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override

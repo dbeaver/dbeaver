@@ -97,11 +97,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         if (baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        try {
-            token = CommonUtils.toString(configuration.getToken());
-        } catch (DBException e) {
-            log.error(e);
-        }
+        token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );

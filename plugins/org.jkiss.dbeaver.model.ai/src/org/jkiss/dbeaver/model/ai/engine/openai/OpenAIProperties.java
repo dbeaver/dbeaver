@@ -20,13 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.Map;
@@ -82,8 +82,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Nullable
     @Override
     @Property(order = 1, password = true, required = true)
-    public String getToken() throws DBException {
-        resolveSecrets();
+    public String getToken() {
         return token;
     }
 
@@ -159,15 +158,15 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(OpenAIConstants.GPT_API_TOKEN, token);
+    public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (token == null) {
+            token = AIUtils.getSecretValueOrDefault(profile, OpenAIConstants.GPT_API_TOKEN, token);
+        }
     }
 
     @Override
-    public void saveSecrets() throws DBException {
-        if (token != null) {
-            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
-        }
+    public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.setSecretValue(profile, OpenAIConstants.GPT_API_TOKEN, token);
     }
 
     public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {

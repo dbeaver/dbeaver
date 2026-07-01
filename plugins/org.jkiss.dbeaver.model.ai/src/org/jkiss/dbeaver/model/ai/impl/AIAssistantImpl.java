@@ -485,9 +485,11 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     protected void checkAiEnablement() throws DBException {
-        if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        if (aiSettings.isAiDisabled()) {
             throw new DBException("AI integration is disabled");
         }
+        aiSettings.resolveSecrets();
     }
 
     @NotNull
