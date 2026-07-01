@@ -86,7 +86,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
                 String id = trackingId;
                 if (id != null) {
-                    client.stop(DBWorkbench.getPlatform().getDeploymentId(), id);
+                    client.stop(id);
                 }
                 return true;
             }

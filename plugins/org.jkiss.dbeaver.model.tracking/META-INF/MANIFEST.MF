@@ -9,4 +9,5 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui,
  org.eclipse.ui
+Export-Package: org.jkiss.dbeaver.model.tracking
 Automatic-Module-Name: org.jkiss.dbeaver.model.tracking

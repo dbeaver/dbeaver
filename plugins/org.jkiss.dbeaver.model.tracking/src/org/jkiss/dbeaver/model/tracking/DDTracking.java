@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.model.tracking;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record DDClientInfo(
-    @NotNull String clientId,
-    @NotNull String workspaceId,
-    @NotNull String product,
-    @NotNull String version,
-    @Nullable String os,
-    @Nullable String macAddress,
-    @Nullable String ipAddress
+public record DDTracking(
+    @NotNull String trackingId,
+    boolean online,
+    @Nullable String startTime,
+    @Nullable String stopTime
 ) {
 }
