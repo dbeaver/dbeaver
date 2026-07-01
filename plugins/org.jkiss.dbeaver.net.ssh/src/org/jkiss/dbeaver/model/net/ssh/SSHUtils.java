@@ -286,7 +286,7 @@ public class SSHUtils {
         );
         final SSHAuthConfiguration auth = switch (authType) {
             case PUBLIC_KEY -> {
-                final String path = configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH);
+                final String path = resolveTildePrefix(configuration.getStringProperty(prefix + SSHConstants.PROP_KEY_PATH));
                 if (CommonUtils.isEmpty(path)) {
                     String privKeyValue = configuration.getSecureProperty(prefix + SSHConstants.PROP_KEY_VALUE);
                     if (validate && privKeyValue == null) {
@@ -380,6 +380,29 @@ public class SSHUtils {
         if (markEnabled) {
             configuration.setProperty(prefix + RegistryConstants.ATTR_ENABLED, true);
         }
+    }
+
+    @Nullable
+    private static String resolveTildePrefix(@Nullable String path) {
+        if (path == null) return null;
+        if (path.startsWith("~/") || path.startsWith("~\\")) {
+            String home = System.getProperty("user.home");
+            if (home != null) {
+                return home + path.substring(1);
+            }
+        } else if ("~".equals(path)) {
+            String home = System.getProperty("user.home");
+            if (home != null) {
+                return home;
+            }
+        }
+        if (RuntimeUtils.isWindows() && path.startsWith("%USERPROFILE%")) {
+            String userProfile = System.getenv("USERPROFILE");
+            if (userProfile != null) {
+                return userProfile + path.substring("%USERPROFILE%".length());
+            }
+        }
+        return path;
     }
 
     // Had to extract this code into a separate method to avoid triggering a JDT compiler bug
