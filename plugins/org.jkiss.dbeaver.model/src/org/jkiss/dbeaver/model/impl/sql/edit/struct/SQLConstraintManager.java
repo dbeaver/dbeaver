@@ -64,7 +64,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_constraint,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options)));
+                "ALTER TABLE " + DBUtils.getEntityScriptName(table, options) + " ADD " + getNestedDeclaration(monitor, table, command, options)));
     }
 
     @Override

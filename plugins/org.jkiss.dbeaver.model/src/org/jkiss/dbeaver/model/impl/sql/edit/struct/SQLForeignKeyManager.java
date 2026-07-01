@@ -69,7 +69,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_foreign_key,
-                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + DBUtils.getEntityScriptName(table, options) + " ADD " + getNestedDeclaration(monitor, table, command, options)) //$NON-NLS-1$ //$NON-NLS-2$
         );
     }
 
