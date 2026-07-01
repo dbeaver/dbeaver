@@ -46,8 +46,8 @@ public class LakeDataSourceProvider extends GenericDataSourceProvider<LakeDataSo
     @Nullable
     @Override
     public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
-        if (object instanceof DBPDataSourceContainer && infoType.equals(INFO_TARGET_ADDRESS)) {
-            return ((DBPDataSourceContainer) object).getConnectionConfiguration().getServerName();
+        if (object instanceof DBPDataSourceContainer dsc && infoType.equals(INFO_TARGET_ADDRESS)) {
+            return dsc.getConnectionConfiguration().getServerName();
         }
         return null;
     }
