@@ -97,7 +97,15 @@ public class AISettings implements DBPAdaptable {
                 defaultConfiguration = configurations.values().iterator().next().getProfileId();
             }
         }
-        return configurations.get(defaultConfiguration);
+        AIConfigurationProfile profile = configurations.get(defaultConfiguration);
+        if (profile == null) {
+            if (configurations.isEmpty()) {
+                return null;
+            }
+            profile = configurations.values().iterator().next();
+            defaultConfiguration = profile.getProfileId();
+        }
+        return profile;
     }
 
     public void setDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
