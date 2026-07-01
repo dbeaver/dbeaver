@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
 
@@ -61,6 +62,8 @@ public class AIChatConversation {
     private final LocalDateTime time;
     @Nullable
     private AIChatConversationSettings customSettings;
+    @Nullable
+    private AIConfigurationProfile profile;
 
     /**
      * Sequence number of the next message.
@@ -72,18 +75,26 @@ public class AIChatConversation {
     public AIChatConversation(
         @NotNull String caption,
         @NotNull AIPromptGenerator promptGenerator,
-        @NotNull List<AIChatMessage> messages,
         @Nullable DBPDataSourceContainer container
     ) {
-        this(UUID.randomUUID(), caption, promptGenerator, messages, container, 0);
+        this(caption, promptGenerator, List.of(), container);
     }
 
     public AIChatConversation(
         @NotNull String caption,
         @NotNull AIPromptGenerator promptGenerator,
+        @NotNull List<AIChatMessage> messages,
         @Nullable DBPDataSourceContainer container
     ) {
-        this(caption, promptGenerator, List.of(), container);
+        this(
+            UUID.randomUUID(),
+            caption,
+            promptGenerator,
+            messages,
+            container,
+            0,
+            AISettingsManager.getInstance().getSettings().getDefaultConfigurationOrNull()
+        );
     }
 
     public AIChatConversation(
@@ -92,7 +103,8 @@ public class AIChatConversation {
         @NotNull AIPromptGenerator promptGenerator,
         @NotNull List<AIChatMessage> messages,
         @Nullable DBPDataSourceContainer container,
-        int nextMessageId
+        int nextMessageId,
+        @Nullable AIConfigurationProfile profile
     ) {
         this.uuid = uuid;
         this.caption = StringUtils.truncateToSpace(caption, MAX_CAPTION_LENGTH);
@@ -101,6 +113,7 @@ public class AIChatConversation {
         this.messages = new ArrayList<>(messages);
         this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getLast().message().getTime();
         this.nextMessageId = nextMessageId;
+        this.profile = profile;
     }
 
     @NotNull
@@ -226,6 +239,15 @@ public class AIChatConversation {
 
     public void setCustomSettings(@Nullable AIChatConversationSettings customSettings) {
         this.customSettings = customSettings;
+    }
+
+    @Nullable
+    public AIConfigurationProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(@Nullable AIConfigurationProfile profile) {
+        this.profile = profile;
     }
 
     @NotNull

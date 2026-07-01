@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -69,6 +70,7 @@ public class QMAIChatHistoryMapper {
             dataSource,
             chatMessages,
             qmaiContext,
+            conversation.getProfile() == null ? null : conversation.getProfile().getProfileId(),
             conversation.getNextMessageId(),
             false
         );
@@ -106,7 +108,8 @@ public class QMAIChatHistoryMapper {
             generator,
             toAIMessages(assistant, history.getMessages()),
             container,
-            history.getNextMessageId()
+            history.getNextMessageId(),
+            AISettingsManager.getInstance().getSettings().getConfigurationOrNull(history.getProfileId())
         );
     }
 

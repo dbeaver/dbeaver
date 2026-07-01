@@ -308,6 +308,13 @@ public class AIChatSession {
         );
     }
 
+    public void notifyConversationProfileChanged(@NotNull AIChatConversation conversation) {
+        this.notifyListeners(
+            (aiChatListener, message) ->
+                aiChatListener.conversationProfileChanged(conversation), conversation
+        );
+    }
+
     public void notifyMessagesRemove(@NotNull AIChatConversation conversation, @NotNull AIChatMessage afterInclusive) {
         final int index = conversation.getMessages().indexOf(afterInclusive);
         if (index >= 0) {
@@ -714,6 +721,21 @@ public class AIChatSession {
 
             try {
                 storage.renameConversation(conversation.getId().toString(), newName);
+            } catch (DBException e) {
+                log.error("Error renaming conversation", e);
+            }
+        }
+
+        @Override
+        public void conversationProfileChanged(@NotNull AIChatConversation conversation) {
+            if (conversation.isTemporary()) {
+                return;
+            }
+
+            try {
+                storage.changeConversationProfile(
+                    conversation.getId().toString(),
+                    conversation.getProfile() == null ? null : conversation.getProfile().getProfileId());
             } catch (DBException e) {
                 log.error("Error renaming conversation", e);
             }

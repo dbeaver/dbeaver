@@ -319,6 +319,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         promptComposite.setFocusOnPrompt();
     }
 
+    public void setConversationProfile(@NotNull AIChatConversation conversation, @Nullable AIConfigurationProfile profile) {
+        conversation.setProfile(profile);
+        chatSession.notifyConversationProfileChanged(conversation);
+    }
+
     public void renameConversation(@NotNull AIChatConversation conversation, @NotNull String newName) {
         conversation.setCaption(
             AIChatUtils.normalizeConversationCaption(newName)
