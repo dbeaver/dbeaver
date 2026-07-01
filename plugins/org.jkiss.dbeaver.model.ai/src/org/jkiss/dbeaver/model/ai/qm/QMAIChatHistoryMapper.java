@@ -102,6 +102,17 @@ public class QMAIChatHistoryMapper {
             }
         }
 
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        AIConfigurationProfile profile;
+        if (history.getProfileId() != null) {
+            profile = aiSettings.getConfigurationOrNull(history.getProfileId());
+            if (profile == null) {
+                log.debug("AI configuration '" + history.getProfileId() + "' not found");
+            }
+        } else {
+            profile = null;
+        }
+
         return new AIChatConversation(
             UUID.fromString(history.getId()),
             history.getCaption(),
@@ -109,7 +120,7 @@ public class QMAIChatHistoryMapper {
             toAIMessages(assistant, history.getMessages()),
             container,
             history.getNextMessageId(),
-            AISettingsManager.getInstance().getSettings().getConfigurationOrNull(history.getProfileId())
+            profile
         );
     }
 
