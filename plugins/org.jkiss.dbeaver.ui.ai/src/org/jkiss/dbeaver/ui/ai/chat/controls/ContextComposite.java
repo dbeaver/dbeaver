@@ -410,6 +410,12 @@ public class ContextComposite extends Composite {
             }
             manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
         }
+
+        manager.add(new Separator());
+        manager.add(new EmptyAction("Active configuration"));
+        for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
+            manager.add(new ChangeProfileAction(profile));
+        }
     }
 
     private void updateActions() {
@@ -654,13 +660,41 @@ public class ContextComposite extends Composite {
 
         private void chooseCustomScope() {
             DBPDataSourceContainer container = settings.getDataSourceContainer();
+            if (container == null) {
+                return;
+            }
+            DBCExecutionContext executionContext = chat.getExecutionContext(container);
+            if (executionContext == null) {
+                return;
+            }
             AIChatUtils.chooseCustomScope(
                 getShell(),
                 settings,
                 container,
-                chat::getExecutionContext,
+                ds -> executionContext,
                 chat.getActiveConversation()
             );
+        }
+    }
+
+    private class ChangeProfileAction extends Action {
+
+        private final AIConfigurationProfile profile;
+
+        public ChangeProfileAction(
+            @NotNull AIConfigurationProfile profile
+        ) {
+            super(profile.getProfileName(), AS_RADIO_BUTTON);
+            this.profile = profile;
+            setChecked(chat.getActiveConversation().getProfile() == profile);
+        }
+
+        @Override
+        public void run() {
+            if (!isChecked()) {
+                return;
+            }
+            chat.getActiveConversation().setProfile(profile);
         }
     }
 

@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatStorageInMemory;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.registry.AIToolboxRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -90,19 +89,20 @@ public class AIAssistantImpl implements AIAssistant {
     @Override
     public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIConfigurationProfile profile,
         @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         checkAiEnablement();
 
-        AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-        try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
+        AIEngineDescriptor engineDescriptor = profile.getEngineDescriptor();
+        try (AIEngine<?> engine = engineDescriptor.createEngineInstance(profile)) {
             AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
+                profile,
                 functionContext,
                 messages,
-                engine,
-                engineDescriptor
+                engine
             );
 
             AIEngineRequest request = completionRequest;
@@ -176,11 +176,15 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIChatResponseConsumer chatListener
     ) throws DBException {
         checkAiEnablement();
+        AIConfigurationProfile configurationProfile = conversation.getProfile();
+        if (configurationProfile == null) {
+            throw new DBException("Conversation has no configuration attached");
+        }
         CompletableFuture<AIChatConversation> future = conversation.startConversation();
 
         try {
-            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-            AIEngine<?> engine = engineDescriptor.createEngineInstance();
+            AIEngineDescriptor engineDescriptor = configurationProfile.getEngineDescriptor();
+            AIEngine<?> engine = engineDescriptor.createEngineInstance(configurationProfile);
             AIFunctionContext functionContext = new AIFunctionContext(
                 monitor,
                 request.context(),
@@ -217,11 +221,11 @@ public class AIAssistantImpl implements AIAssistant {
                 // When request finishes we process all function calls in response consumer
                 executeEngineStreamRequest(
                     monitor,
+                    configurationProfile,
                     functionContext,
-                    curMessages,
-                    engineResponseConsumer,
                     engine,
-                    engineDescriptor
+                    curMessages,
+                    engineResponseConsumer
                 );
             }
 
@@ -237,17 +241,17 @@ public class AIAssistantImpl implements AIAssistant {
 
     private void executeEngineStreamRequest(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIConfigurationProfile profile,
         @NotNull AIFunctionContext functionContext,
-        @NotNull List<AIMessage> messages,
-        @NotNull AIEngineResponseConsumer listener,
         @NotNull AIEngine<?> engine,
-        @NotNull AIEngineDescriptor engineDescriptor
+        @NotNull List<AIMessage> messages,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         AIEngineRequest request = getRequestFactory().build(
             monitor,
             this,
+            profile,
             engine,
-            engineDescriptor,
             functionContext,
             messages
         );
@@ -367,14 +371,14 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @Override
-    public boolean isFunctionSupported() {
+    public boolean isFunctionSupported(@NotNull AIConfigurationProfile profile) {
         AIToolboxManager toolboxManager = this.getToolboxManager();
         AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
         if (!functionSettings.isFunctionsEnabled()) {
             return false;
         }
         try {
-            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            AIEngineDescriptor engineDescriptor = profile.getEngineDescriptor();
             return engineDescriptor.isSupportsFunctions();
         } catch (DBException e) {
             log.debug(e);
@@ -406,16 +410,16 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     public AIEngineRequest buildAiEngineRequest(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIConfigurationProfile profile,
         @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages,
-        @NotNull AIEngine<?> engine,
-        @NotNull AIEngineDescriptor engineDescriptor
+        @NotNull AIEngine<?> engine
     ) throws DBException {
         return getRequestFactory().build(
             monitor,
             this,
+            profile,
             engine,
-            engineDescriptor,
             functionContext,
             messages
         );
@@ -493,28 +497,8 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    public static String getActiveEngineId() throws DBException {
-        return AISettingsManager.getInstance().getSettings().getDefaultConfiguration().getEngineId();
-    }
-
-    @NotNull
-    public AIEngine<?> createEngine() throws DBException {
-        return AIEngineRegistry.getInstance().createEngine(getActiveEngineId());
-    }
-
-    @NotNull
-    public AIEngineDescriptor getEngineDescriptor() throws DBException {
-        AIEngineDescriptor descriptor = AIEngineRegistry.getInstance().getEngineDescriptor(getActiveEngineId());
-        if (descriptor == null) {
-            log.trace("Active engine is not present in the configuration, switching to default active engine");
-            AIEngineDescriptor defaultCompletionEngineDescriptor =
-                AIEngineRegistry.getInstance().getDefaultCompletionEngineDescriptor();
-            if (defaultCompletionEngineDescriptor == null) {
-                throw new DBException("AI engine  not found");
-            }
-            descriptor = defaultCompletionEngineDescriptor;
-        }
-        return descriptor;
+    public AIEngine<?> createEngine(@NotNull AIConfigurationProfile profile) throws DBException {
+        return profile.getEngineDescriptor().createEngineInstance(profile);
     }
 
     @NotNull

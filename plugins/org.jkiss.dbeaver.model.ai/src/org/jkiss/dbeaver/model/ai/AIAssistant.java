@@ -33,6 +33,7 @@ public interface AIAssistant {
     /**
      * Generates text according to the prompt
      *
+     * @param profile engine configuration profile
      * @param functionContext database context. Creates database snapshot according to this context.
      * @param messages        user messages
      * @return generated text
@@ -40,7 +41,7 @@ public interface AIAssistant {
     @NotNull
     AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIFunctionContext functionContext,
+        AIConfigurationProfile profile, @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException;
 
@@ -58,7 +59,7 @@ public interface AIAssistant {
         @NotNull AIChatResponseConsumer chatListener
     ) throws DBException;
 
-    boolean isFunctionSupported();
+    boolean isFunctionSupported(@NotNull AIConfigurationProfile profile);
 
     /**
      * Toolbox manager

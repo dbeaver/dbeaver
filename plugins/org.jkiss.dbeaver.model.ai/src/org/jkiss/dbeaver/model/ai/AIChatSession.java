@@ -403,7 +403,11 @@ public class AIChatSession {
         @Nullable AIConfirmation confirmation
     ) throws DBException {
         String sessionId = sessionIdProvider.getSessionId(monitor);
-        String engineId = AISettingsManager.getInstance().getSettings().getDefaultConfiguration().getEngineId();
+        AIConfigurationProfile configurationProfile = conversation.getProfile();
+        if (configurationProfile == null) {
+            throw new DBException("No configuration attached to a conversation");
+        }
+        String engineId = configurationProfile.getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
             sessionId,
             engineId

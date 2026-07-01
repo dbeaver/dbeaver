@@ -67,6 +67,11 @@ public class AISettingsManager {
         return instance;
     }
 
+    @NotNull
+    public static synchronized AISettings getStaticSettings() {
+        return getInstance().getSettings();
+    }
+
     public void addChangedListener(AISettingsEventListener listener) {
         this.settingsChangedListeners.add(listener);
     }

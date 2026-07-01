@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -101,13 +102,12 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIEngine createEngineInstance() throws DBException {
-        return createEngineInstance(
-            AISettingsManager.getInstance().getSettings().getDefaultConfiguration().getConfiguration());
+    public AIEngine<?> createEngineInstance(@NotNull AIConfigurationProfile profile) throws DBException {
+        return createEngineInstance(profile.getConfiguration());
     }
 
     @NotNull
-    public AIEngine createEngineInstance(@NotNull AIEngineProperties properties) throws DBException {
+    public AIEngine<?> createEngineInstance(@NotNull AIEngineProperties properties) throws DBException {
         return objectType.createInstance(AIEngine.class, properties);
     }
 }

@@ -291,7 +291,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                         chatSession.setBusy(false);
                     });
                     return Status.OK_STATUS;
-                } catch (DBException e) {
+                } catch (Exception e) {
                     return GeneralUtils.makeExceptionStatus(e);
                 }
             }

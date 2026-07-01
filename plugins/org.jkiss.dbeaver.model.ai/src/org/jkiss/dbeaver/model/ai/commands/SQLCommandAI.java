@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -121,6 +122,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         AIAssistantResponse result = assistant.generateText(
             monitor,
+            AISettingsManager.getStaticSettings().getDefaultConfiguration(),
             fc,
             List.of(AIMessage.userMessage(prompt))
         );

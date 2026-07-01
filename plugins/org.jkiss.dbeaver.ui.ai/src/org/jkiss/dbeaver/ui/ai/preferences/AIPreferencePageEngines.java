@@ -420,7 +420,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         try (
             AIEngine<?> selectedEngine = currentProperties.isPresent()
                 ? selectedProfile.getEngineDescriptor().createEngineInstance(currentProperties.get())
-                : selectedProfile.getEngineDescriptor().createEngineInstance()
+                : selectedProfile.getEngineDescriptor().createEngineInstance(selectedProfile)
         ) {
             UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
                 try {
