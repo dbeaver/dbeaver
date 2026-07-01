@@ -41,7 +41,8 @@ public interface AIAssistant {
     @NotNull
     AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        AIConfigurationProfile profile, @NotNull AIFunctionContext functionContext,
+        @NotNull AIConfigurationProfile profile,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException;
 

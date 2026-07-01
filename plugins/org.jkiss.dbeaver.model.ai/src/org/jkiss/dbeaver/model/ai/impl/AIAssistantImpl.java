@@ -423,21 +423,7 @@ public class AIAssistantImpl implements AIAssistant {
             functionContext,
             messages
         );
-    }
-
-    @NotNull
-    private static AIFunctionContext createAiFunctionContext(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
-        @NotNull List<AIMessage> messages
-    ) {
-        return new AIFunctionContext(
-            monitor,
-            context,
-            systemGenerator
-        );
-    }
+   }
 
     @NotNull
     protected AIFunctionResult callFunction(
