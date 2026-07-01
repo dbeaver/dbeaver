@@ -34,6 +34,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -82,7 +83,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         if (curNode == null) {
             return null;
         }
-        DBPProject toProject = curNode.getOwnerProject();
+        DBPProject toProject = curNode.getOwnerProjectOrNull();
         Clipboard clipboard = new Clipboard(Display.getDefault());
         List<String> failedToPasteResources = new LinkedList<>();
         try {
@@ -90,10 +91,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
             if (cbNodes != null) {
                 for (DBNNode nodeObject : cbNodes) {
-                    if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                        if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                    if (nodeObject instanceof DBNResource && curNode instanceof DBNResource && !hasPermission(toProject)) {
                             failedToPasteResources.add(nodeObject.getName());
-                        }
                     }
                 }
                 if (failedToPasteResources.isEmpty()) {
@@ -132,10 +131,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                 if (files != null) {
                     for (String fileName : files) {
                         final File file = new File(fileName);
-                        if (file.exists()) {
-                            if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                        if (file.exists() && !hasPermission(toProject)) {
                                 failedToPasteResources.add(fileName);
-                            }
                         }
                     }
                     if (failedToPasteResources.isEmpty()) {
@@ -159,7 +156,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     UINavigatorMessages.failed_to_paste_due_to_permissions_title,
                     NLS.bind(
                         UINavigatorMessages.failed_to_paste_due_to_permissions_message,
-                        toProject.getDisplayName(),
+                        toProject != null ? toProject.getDisplayName() : "Can't find owner project",
                         String.join(",\n", failedToPasteResources)
                     )
                 );
@@ -169,6 +166,10 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         }
 
         return null;
+    }
+
+    private boolean hasPermission(@Nullable DBPProject toProject) {
+        return toProject != null && toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
     }
 
     private void pastNodeToResource(@NotNull DBRProgressMonitor monitor, @NotNull DBNResource currentNode, @NotNull DBNNode nodeToPaste)

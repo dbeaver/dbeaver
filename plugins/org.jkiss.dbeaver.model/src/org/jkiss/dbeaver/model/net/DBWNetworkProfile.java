@@ -198,4 +198,22 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
         }
     }
 
+    public boolean equalConfigurations(@Nullable DBWNetworkProfile other) {
+        if (other == null ||
+            !Objects.equals(getProfileName(), other.getProfileName()) ||
+            !Objects.equals(getProfileDescription(), other.getProfileDescription()) ||
+            !Objects.equals(getProperties(), other.getProperties()) ||
+            this.configurations.size() != other.configurations.size()
+        ) {
+            return false;
+        }
+        for (DBWHandlerConfiguration cfg : configurations) {
+            DBWHandlerConfiguration otherCfg = other.getConfiguration(cfg.getId());
+            if (!Objects.equals(cfg, otherCfg)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
