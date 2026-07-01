@@ -37,4 +37,6 @@ public interface AIEngineProperties {
 
     void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 
+    void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
+
 }

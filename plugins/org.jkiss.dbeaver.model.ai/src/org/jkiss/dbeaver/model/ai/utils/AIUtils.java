@@ -89,6 +89,15 @@ public final class AIUtils {
             secret + getSecretSuffix(profile), value);
     }
 
+    public static void deleteSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile),
+            null);
+    }
+
     @NotNull
     private static String getSecretSuffix(@NotNull AIConfigurationProfile profile) {
         if (!profile.isMigrated()) {

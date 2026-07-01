@@ -169,6 +169,11 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         AIUtils.setSecretValue(profile, OpenAIConstants.GPT_API_TOKEN, token);
     }
 
+    @Override
+    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.deleteSecretValue(profile, OpenAIConstants.GPT_API_TOKEN);
+    }
+
     public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {
 
         @Override

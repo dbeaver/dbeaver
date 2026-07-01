@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -91,6 +92,11 @@ public class AISettings implements DBPAdaptable {
 
     @Nullable
     public AIConfigurationProfile getDefaultConfigurationOrNull() {
+        if (CommonUtils.isEmpty(defaultConfiguration)) {
+            if (!configurations.isEmpty()) {
+                defaultConfiguration = configurations.values().iterator().next().getProfileId();
+            }
+        }
         return configurations.get(defaultConfiguration);
     }
 
@@ -119,8 +125,13 @@ public class AISettings implements DBPAdaptable {
 
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
         configurations.remove(profile.getProfileId());
-        if (defaultConfiguration.equals(profile.getProfileId())) {
+        if (CommonUtils.equalObjects(defaultConfiguration, profile.getProfileId())) {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
+        }
+        try {
+            profile.getConfiguration().deleteSecrets(profile);
+        } catch (DBException e) {
+            log.error(e);
         }
     }
 

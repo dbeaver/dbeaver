@@ -69,6 +69,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     private Button connectionTestButton;
     private Text profileIdText;
     private Text profileNameText;
+    private Composite engineGroup;
 
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
@@ -184,7 +185,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         profileIdText = UIUtils.createLabelText(profileGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
         profileNameText = UIUtils.createLabelText(profileGroup, "Name", "", SWT.BORDER);
 
-        Composite engineGroup = UIUtils.createTitledComposite(
+        engineGroup = UIUtils.createTitledComposite(
             composite,
             "Settings",
             2,
@@ -198,7 +199,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 if (activeEngineConfiguratorPage != null) {
                     activeEngineConfiguratorPage.disposeControl();
                 }
-                showProfileSettings(engineGroup);
+                showProfileSettings();
                 engineGroup.getShell().layout(true, true);
                 UIUtils.resizeShell(parent.getShell());
             }
@@ -229,6 +230,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             );
             newProfile.setProfileName(Objects.requireNonNull(dialog.getProfileName()));
             profilesViewer.setInput(settings.getConfigurations());
+            profilesViewer.setSelection(new StructuredSelection(newProfile));
 
             AISettingsManager.getInstance().saveSettings();
         } catch (DBException e) {
@@ -250,6 +252,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         profilesViewer.setInput(settings.getConfigurations());
 
         AISettingsManager.getInstance().saveSettings();
+        showProfileSettings();
     }
 
     private void createProfilesColumns() {
@@ -319,7 +322,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         });
     }
 
-    private void showProfileSettings(@NotNull Composite engineGroup) {
+    private void showProfileSettings() {
+        Composite settingsComposite = engineGroup.getParent();
+        if (selectedProfile == null) {
+            if (activeEngineConfiguratorPage != null) {
+                activeEngineConfiguratorPage.disposeControl();
+            }
+            profileIdText.setText("");
+            profileNameText.setText("");
+            profileNameText.setEnabled(false);
+            settingsComposite.setVisible(false);
+            return;
+        }
+        profileNameText.setEnabled(true);
+        settingsComposite.setVisible(true);
         profileIdText.setText(selectedProfile.getProfileId());
         profileNameText.setText(selectedProfile.getProfileName());
 
@@ -373,6 +389,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
+                if (selectedProfile == null) {
+                    return;
+                }
                 String engineId = selectedProfile.getEngineId();
                 try {
                     testConnection();
@@ -392,7 +411,8 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             })
         );
 
-        connectionTestButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        connectionTestButton.setEnabled(
+            activeEngineConfiguratorPage != null && activeEngineConfiguratorPage.getCurrentProperties().isPresent());
     }
 
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {

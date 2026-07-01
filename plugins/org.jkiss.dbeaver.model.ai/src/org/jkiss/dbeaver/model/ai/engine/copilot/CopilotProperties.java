@@ -137,6 +137,11 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Override
+    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.deleteSecretValue(profile, CopilotConstants.COPILOT_ACCESS_TOKEN);
+    }
+
+    @Override
     public boolean isValidConfiguration() throws DBException {
         return !CommonUtils.isEmpty(getToken());
     }
