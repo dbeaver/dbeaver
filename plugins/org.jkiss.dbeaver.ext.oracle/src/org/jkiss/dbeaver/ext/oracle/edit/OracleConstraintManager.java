@@ -96,7 +96,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     }
 
     @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OracleTableConstraint> command) {
+    protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<OracleTableConstraint> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append((command.getObject()).getSearchCondition()).append(")");
         } else {

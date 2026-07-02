@@ -47,7 +47,7 @@ import java.util.Map;
 public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<PostgreTableForeignKey> {
 
 
-    @NotNull
+    @Nullable
     @Override
     public PostgreTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull PostgreTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {

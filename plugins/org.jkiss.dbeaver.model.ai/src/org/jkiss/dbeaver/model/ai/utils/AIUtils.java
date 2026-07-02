@@ -69,6 +69,7 @@ public final class AIUtils {
         AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
         return configuration.isValidConfiguration();
     }
+
     /**
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.
@@ -109,6 +110,7 @@ public final class AIUtils {
      * @param object  the DBSObject from which to retrieve the DDL
      * @param monitor the progress monitor
      */
+    @Nullable
     public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
         if (object instanceof DBSProcedure
             || object instanceof DBSTrigger
@@ -300,7 +302,7 @@ public final class AIUtils {
     ) {
         switch (context.getScope()) {
             case CURRENT_DATABASE, CURRENT_SCHEMA -> {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
                 }
@@ -338,7 +340,7 @@ public final class AIUtils {
                 return true;
             }
             case CURRENT_SCHEMA -> {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
                 }
@@ -600,8 +602,13 @@ public final class AIUtils {
             }
         }
 
-        return DBUtils.getObjectByPath(
+        DBSObject object = DBUtils.getObjectByPath(
             monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true);
+        if (object == null) {
+            object = DBUtils.getObjectByPath(
+                monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true, false);
+        }
+        return object;
     }
 
     public static boolean useStreamMode() {
