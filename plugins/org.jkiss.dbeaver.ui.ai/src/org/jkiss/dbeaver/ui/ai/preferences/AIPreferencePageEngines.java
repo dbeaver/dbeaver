@@ -301,7 +301,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                     String engineName = profile.getEngineDescriptor().getLabel();
                     String model = profile.getConfiguration().getModel();
                     return CommonUtils.isEmpty(model) ? engineName :
-                        engineName + " (" + model + ")";
+                        engineName + " - " + model;
                 } catch (DBException e) {
                     return e.getMessage();
                 }

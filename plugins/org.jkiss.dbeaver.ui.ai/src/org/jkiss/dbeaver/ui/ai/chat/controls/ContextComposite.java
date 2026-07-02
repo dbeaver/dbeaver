@@ -341,7 +341,7 @@ public class ContextComposite extends Composite {
         ) {
             LocalDateTime msgTime = conversion.getTime();
             manager.add(new Action(
-                conversion.getCaption() + " - " + msgTime.format(
+                conversion.getCaption() + " / " + msgTime.format(
                         msgTime.toLocalDate().equals(today) ? CONV_TIME_FORMAT : CONV_DATE_TIME_FORMAT),
                 DBeaverIcons.getImageDescriptor(getConversationIcon(conversion))
             ) {
@@ -684,9 +684,20 @@ public class ContextComposite extends Composite {
         public ChangeProfileAction(
             @NotNull AIConfigurationProfile profile
         ) {
-            super(profile.getProfileName(), AS_RADIO_BUTTON);
+            super(genProfileName(profile), AS_RADIO_BUTTON);
             this.profile = profile;
             setChecked(chat.getActiveConversation().getProfile() == profile);
+        }
+
+        @NotNull
+        private static String genProfileName(@NotNull AIConfigurationProfile profile) {
+            String model = null;
+            try {
+                model = profile.getConfiguration().getModel();
+            } catch (DBException e) {
+                log.debug(e);
+            }
+            return profile.getProfileName() + (model == null ? "" : " / " + model);
         }
 
         @Override
