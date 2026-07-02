@@ -49,7 +49,7 @@ import java.util.*;
  * MySQLTable
  */
 public class MySQLTable extends MySQLTableBase
-    implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer, DBSEntityConstrainable
+    implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer, DBSEntityConstrainable, DBSDescriptionEditable
 {
     private static final Log log = Log.getLog(MySQLTable.class);
 
@@ -786,6 +786,11 @@ public class MySQLTable extends MySQLTableBase
     public String getDescription()
     {
         return additionalInfo.description;
+    }
+
+    @Override
+    public void setDescription(@Nullable String description) {
+        additionalInfo.description = description;
     }
 
     @Override
