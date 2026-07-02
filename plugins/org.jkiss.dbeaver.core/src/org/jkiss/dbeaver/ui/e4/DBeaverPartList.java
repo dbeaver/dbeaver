@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,15 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.ConnectionLabelUtils;
 import org.jkiss.dbeaver.ui.SearchCellLabelProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.Method;
 
@@ -106,19 +107,28 @@ public class DBeaverPartList extends BasicPartList {
             if (pattern == null) {
                 return true;
             }
-            final ILabelProvider provider = (ILabelProvider) ((ContentViewer) viewer).getLabelProvider();
-            final String name = provider.getText(element);
+            final CellLabelProvider provider = (CellLabelProvider) ((ContentViewer) viewer).getLabelProvider();
+            final String name = provider.getFilterText(element);
             return SearchCellLabelProvider.matches(pattern, name);
         }
     }
 
     private class CellLabelProvider extends SearchCellLabelProvider {
-        private final Font italicFont;
-        private final Font italicBoldFont;
 
         public CellLabelProvider() {
-            this.italicFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.ITALIC);
-            this.italicBoldFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.BOLD | SWT.ITALIC);
+        }
+
+        @Nullable
+        private DBPDataSourceContainer resolveContainer(@NotNull Object element) {
+            if (!(element instanceof MPart part)) {
+                return null;
+            }
+            return DBeaverEditorPartUtils.getDataSourceContainer(part);
+        }
+
+        @NotNull
+        String getFilterText(@NotNull Object element) {
+            return ConnectionLabelUtils.appendConnectionSuffix(getText(element), resolveContainer(element));
         }
 
         @Nullable
@@ -130,11 +140,13 @@ public class DBeaverPartList extends BasicPartList {
         @NotNull
         @Override
         public String getText(@NotNull Object element) {
-            if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
-                return "*" + ((MUILabel) element).getLocalizedLabel();
-            } else {
-                return ((MUILabel) element).getLocalizedLabel();
+            if (!(element instanceof MUILabel label)) {
+                return "";
             }
+            if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
+                return "*" + label.getLocalizedLabel();
+            }
+            return label.getLocalizedLabel();
         }
 
         @Nullable
@@ -143,7 +155,7 @@ public class DBeaverPartList extends BasicPartList {
             if (isShowing(element)) {
                 return null;
             } else {
-                return italicFont;
+                return BaseThemeSettings.instance.baseFontItalic;
             }
         }
 
@@ -151,9 +163,9 @@ public class DBeaverPartList extends BasicPartList {
         @Override
         public Font getMatchFont(@NotNull Object element) {
             if (isShowing(element)) {
-                return boldFont;
+                return BaseThemeSettings.instance.baseFontBold;
             } else {
-                return italicBoldFont;
+                return BaseThemeSettings.instance.baseFontItalic;
             }
         }
 
@@ -169,10 +181,9 @@ public class DBeaverPartList extends BasicPartList {
         }
 
         @Override
-        public void dispose() {
-            italicFont.dispose();
-            italicBoldFont.dispose();
-            super.dispose();
+        public void update(@NotNull ViewerCell cell) {
+            super.update(cell);
+            ConnectionLabelUtils.applyConnectionInfo(cell, resolveContainer(cell.getElement()));
         }
 
         private boolean isShowing(@NotNull Object element) {

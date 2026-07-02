@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -560,16 +560,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
                 newConfig.setUrl(newURL);
+                // Also update the proxy source URL so the underlying connection targets the requested database
+                String proxySourceUrl = newConfig.getProperty(DBConstants.PROP_PROXY_SOURCE_URL);
+                if (proxySourceUrl != null) {
+                    newConfig.setProperty(
+                        DBConstants.PROP_PROXY_SOURCE_URL,
+                        PostgreUtils.updateDatabaseNameInURL(proxySourceUrl, databaseName)
+                    );
+                }
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);
             } else {
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
         } catch (DBCException e) {
-            final Throwable cause = CommonUtils.getRootCause(e);
-            final StackTraceElement element = cause.getStackTrace()[0];
-
             final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
-            if ("sun.security.util.DerValue".equals(element.getClassName()) && handler != null) { //$NON-NLS-1$
+            if (handler != null && isSSLKeyReadError(e)) {
                 try {
                     final Path dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
                     if (SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst)) {
@@ -605,9 +610,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return pgConnection;
     }
 
+    private static boolean isSSLKeyReadError(@NotNull Throwable error) {
+        StackTraceElement[] rootStack = CommonUtils.getRootCause(error).getStackTrace();
+        if (rootStack.length > 0 && "sun.security.util.DerValue".equals(rootStack[0].getClassName())) {
+            return true;
+        }
+        return CommonUtils.getAllExceptionMessages(error).contains("Could not read SSL key");
+    }
+
     @Override
-    public <T> T getAdapter(@NotNull Class<T> adapter)
-    {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
@@ -877,7 +889,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
-            if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
+            if (PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                return ErrorType.EXECUTION_CANCELED;
+            } else if (PostgreConstants.ERROR_ADMIN_SHUTDOWN.equals(sqlState)) {
                 return ErrorType.CONNECTION_LOST;
             } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
                 return ErrorType.TRANSACTION_ABORTED;

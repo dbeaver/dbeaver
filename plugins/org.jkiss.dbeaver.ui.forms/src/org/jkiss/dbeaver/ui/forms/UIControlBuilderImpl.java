@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.forms;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
@@ -26,78 +27,105 @@ import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
-    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.LabelBuilderImpl,
-    UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
+    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.ControlBuilderImpl,
+    UIControlBuilderImpl.LabelBuilderImpl, UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
-    private String tooltip;
+    private UIObservable<Font> font;
+    private UIObservable<String> tooltip;
 
-    int alignX = SWT.BEGINNING;
-    int alignY = SWT.CENTER;
+    UIAlignX alignX = UIAlignX.LEFT;
+    UIAlignY alignY = UIAlignY.CENTER;
+    UIGrowX growX = UIGrowX.NEVER;
+    UIGrowY growY = UIGrowY.NEVER;
     int widthHint = SWT.DEFAULT;
     int heightHint = SWT.DEFAULT;
-    boolean grow = false;
 
     @NotNull
     @Override
-    public B visible(@NotNull UIObservable<Boolean> binding) {
-        visible = binding;
+    public B visible(@NotNull UIObservable<Boolean> value) {
+        visible = value;
         return builder();
     }
 
     @NotNull
     @Override
-    public B enabled(@NotNull UIObservable<Boolean> binding) {
-        enabled = binding;
+    public B enabled(@NotNull UIObservable<Boolean> value) {
+        enabled = value;
         return builder();
     }
 
     @NotNull
     @Override
-    public B tooltip(@NotNull String value) {
+    public B font(@NotNull UIObservable<Font> value) {
+        font = value;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B tooltip(@NotNull UIObservable<String> value) {
         tooltip = value;
         return builder();
     }
 
     @NotNull
     @Override
-    public B grow() {
-        grow = true;
+    public B grow(@NotNull UIGrowX x, @NotNull UIGrowY y) {
+        growX = x;
+        growY = y;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow(@NotNull UIGrowX x) {
+        growX = x;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow(@NotNull UIGrowY y) {
+        growY = y;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignX x, @NotNull UIAlignY y) {
-        alignX = x.toSWT();
-        alignY = y.toSWT();
+        alignX = x;
+        alignY = y;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignX x) {
-        alignX = x.toSWT();
+        alignX = x;
         return builder();
     }
 
     @NotNull
     @Override
     public B align(@NotNull UIAlignY y) {
-        alignY = y.toSWT();
+        alignY = y;
         return builder();
     }
 
@@ -151,8 +179,11 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             var binding = UIObservables.and(row != null ? row.enabled : null, enabled);
             context.bindValue(WidgetProperties.enabled().observe(control), delegate(binding));
         }
+        if (font != null) {
+            context.bindValue(WidgetProperties.font().observe(control), delegate(font));
+        }
         if (tooltip != null) {
-            control.setToolTipText(tooltip);
+            context.bindValue(WidgetProperties.tooltipText().observe(control), delegate(tooltip));
         }
     }
 
@@ -167,19 +198,79 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         return ((UIObservableImpl<T>) observable).delegate();
     }
 
-    static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
-        private final String text;
-        private final int style;
+    @NotNull
+    private static <E> IObservableList<E> delegate(@NotNull UIObservableList<E> observable) {
+        return ((UIObservableListImpl<E>) observable).delegate();
+    }
 
-        LabelBuilderImpl(@NotNull String text, int style) {
+    static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
+        private UIObservable<String> text;
+        private UIObservable<DBIcon> image;
+        private int style = SWT.NONE;
+
+        @NotNull
+        @Override
+        public LabelBuilder text(@Nullable UIObservable<String> text) {
             this.text = text;
-            this.style = style;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        public LabelBuilder image(@Nullable UIObservable<DBIcon> image) {
+            this.image = image;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        public LabelBuilder wrap() {
+            style |= SWT.WRAP;
+            return this;
         }
 
         @NotNull
         @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return UIControlFactory.createLabel(parent, style, text);
+            return UIControlFactory.createLabel(parent, style);
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Label control, @Nullable UIRowBuilderImpl row) {
+            super.bind(context, control, row);
+            if (text != null) {
+                context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+            }
+            if (image != null) {
+                var observable = image.map(DBeaverIcons::getImage, Image.class);
+                context.bindValue(WidgetProperties.image().observe(control), UIControlBuilderImpl.delegate(observable));
+            }
+        }
+    }
+
+    static final class LinkBuilderImpl extends UIControlBuilderImpl<LinkBuilder, Link> implements LinkBuilder {
+        private final UIObservable<String> text;
+        private final Consumer<SelectionEvent> onSelect;
+        private final int style;
+
+        LinkBuilderImpl(@NotNull UIObservable<String> text, @NotNull Consumer<SelectionEvent> onSelect, int style) {
+            this.text = text;
+            this.onSelect = onSelect;
+            this.style = style;
+        }
+
+        @NotNull
+        @Override
+        protected Link create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            Link link = UIControlFactory.createLink(parent, style);
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
+            return link;
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Link control, @Nullable UIRowBuilderImpl row) {
+            super.bind(context, control, row);
+            context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
         }
     }
 
@@ -251,15 +342,29 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class ButtonBuilderImpl extends UIControlBuilderImpl<ButtonBuilder, Button> implements ButtonBuilder {
-        private final String text;
+        enum Kind {
+            BUTTON,
+            CHECK,
+            RADIO;
+
+            int toSWT() {
+                return switch (this) {
+                    case BUTTON -> SWT.NONE;
+                    case CHECK -> SWT.CHECK;
+                    case RADIO -> SWT.RADIO;
+                };
+            }
+        }
+
+        private final UIObservable<String> text;
         private final Consumer<SelectionEvent> onSelect;
-        private final int style;
+        private final Kind kind;
         private UIObservable<Boolean> selected;
 
-        ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, int style) {
+        ButtonBuilderImpl(@Nullable UIObservable<String> text, @Nullable Consumer<SelectionEvent> onSelect, @NotNull Kind kind) {
             this.text = text;
             this.onSelect = onSelect;
-            this.style = style;
+            this.kind = kind;
         }
 
         @NotNull
@@ -272,22 +377,29 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            Button button = UIControlFactory.createButton(parent, style, text);
+            Button button = UIControlFactory.createButton(parent, kind.toSWT());
             if (onSelect != null) {
                 button.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
             }
             return button;
         }
 
-        @NotNull
+        @Nullable
         @Override
         protected Point preferredSize(@NotNull Button control) {
-            return new Point(UIUtils.getDialogButtonWidth(control), SWT.DEFAULT);
+            if (kind == Kind.BUTTON) {
+                return new Point(UIUtils.getDialogButtonWidth(control), SWT.DEFAULT);
+            } else {
+                return null;
+            }
         }
 
         @Override
         protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
+            if (text != null) {
+                context.bindValue(WidgetProperties.text().observe(control), delegate(text));
+            }
             if (selected != null) {
                 context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
             }
@@ -295,20 +407,20 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class ComboBuilderImpl<T> extends UIControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
+        private final UIObservableList<? extends T> items;
         private final UIObservable<T> binding;
         private final Function<? super T, String> converter;
-        private final List<? extends T> items;
         private final int style;
 
         public ComboBuilderImpl(
+            @NotNull UIObservableList<? extends T> items,
             @NotNull UIObservable<T> binding,
             @NotNull Function<? super T, String> converter,
-            @NotNull List<? extends T> items,
             int style
         ) {
+            this.items = items;
             this.binding = binding;
             this.converter = converter;
-            this.items = List.copyOf(items);
             this.style = style;
         }
 
@@ -319,6 +431,15 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             for (T item : items) {
                 combo.add(converter.apply(item));
             }
+            UIControlBuilderImpl.delegate(items).addListChangeListener(event -> {
+                // NOTE: Could possibly be optimized to reflect just the changed elements
+                var selection = combo.getText();
+                combo.removeAll();
+                for (T item : items) {
+                    combo.add(converter.apply(item));
+                }
+                combo.setText(selection);
+            });
             return combo;
         }
 
@@ -332,6 +453,20 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
                 UpdateValueStrategy.create(IConverter.create(items::get)),
                 UpdateValueStrategy.create(IConverter.create(items::indexOf))
             );
+        }
+    }
+
+    static final class ControlBuilderImpl extends UIControlBuilderImpl<ControlBuilder, Control> implements ControlBuilder {
+        private final Function<Composite, Control> factory;
+
+        ControlBuilderImpl(@NotNull Function<Composite, Control> factory) {
+            this.factory = factory;
+        }
+
+        @NotNull
+        @Override
+        protected Control create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            return factory.apply(parent);
         }
     }
 }

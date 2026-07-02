@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.model.fs;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.event.DBFEvent;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -43,10 +43,10 @@ public class DBFFileSystemManager implements DBFEventListener {
     private static final Log log = Log.getLog(DBFFileSystemManager.class);
     private volatile Map<String, DBFVirtualFileSystem> dbfFileSystems;
     @NotNull
-    private final DBPProject project;
+    private final DBFFileSystemContainer fsContainer;
 
-    public DBFFileSystemManager(@NotNull DBPProject project) {
-        this.project = project;
+    public DBFFileSystemManager(@NotNull DBFFileSystemContainer fsContainer) {
+        this.fsContainer = fsContainer;
         DBFEventManager.getInstance().addListener(this);
     }
 
@@ -64,7 +64,7 @@ public class DBFFileSystemManager implements DBFEventListener {
         var fsRegistry = DBWorkbench.getPlatform().getFileSystemRegistry();
         for (DBFFileSystemDescriptor fileSystemProviderDescriptor : fsRegistry.getFileSystemProviders()) {
             var fsProvider = fileSystemProviderDescriptor.getInstance();
-            for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, project)) {
+            for (DBFVirtualFileSystem dbfFileSystem : fsProvider.getAvailableFileSystems(monitor, fsContainer)) {
                 fsList.put(dbfFileSystem.getId(), dbfFileSystem);
             }
         }
@@ -102,7 +102,13 @@ public class DBFFileSystemManager implements DBFEventListener {
         }
         DBFVirtualFileSystem[] fsCandidates = dbfFileSystems.values().stream()
             .filter(fs -> fs.getProviderId().equals(fsProvider.getId())).toArray(DBFVirtualFileSystem[]::new);
-
+        if (ArrayUtils.isEmpty(fsCandidates)) {
+            Path path = DBFUtils.getPathFromURI(uri.toString());
+            if (path == null) {
+                throw new DBException("File system URI '" + uri + "' is not recognized");
+            }
+            return path;
+        }
         return fsProvider.getInstance().getPathByURI(monitor, uri, fsCandidates);
     }
 

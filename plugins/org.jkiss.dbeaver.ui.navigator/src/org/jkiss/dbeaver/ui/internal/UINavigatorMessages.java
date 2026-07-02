@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,9 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_rename_database_object_exception_message;
     public static String actions_navigator_configure_filters;
     public static String actions_navigator_reset_search;
+    public static String navigator_node_action_connection_view_simple_tooltip;
+    public static String navigator_node_action_connection_view_advanced_tooltip;
+    public static String navigator_node_action_connection_view_custom_tooltip;
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;
@@ -142,6 +145,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
+    public static String dialog_connection_set_default_connection_settings;
+    public static String dialog_connection_set_default_connection_settings_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ public class SQLEditorMessages extends NLS {
     public static String dialog_view_sql_button_copy;
     public static String dialog_view_sql_button_refresh;
     public static String dialog_view_sql_button_execute;
+    public static String dialog_view_sql_save_to_file_failure_title;
+    public static String dialog_view_sql_save_to_file_failure_message;
 
     public static String dialog_sql_param_title;
     public static String dialog_sql_param_column_name;
@@ -281,6 +283,9 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_put_new_scripts_tip;
     public static String pref_page_sql_editor_checkbox_create_script_folders;
     public static String pref_page_sql_editor_checkbox_create_script_folders_tip;
+    public static String pref_page_sql_editor_checkbox_attach_scripts_to_connection;
+    public static String pref_page_sql_editor_checkbox_attach_scripts_to_connection_tip;
+
     public static String pref_page_sql_editor_checkbox_max_editor_on_script_exec;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results;
     public static String pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results_tip;
@@ -351,6 +356,8 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_generator_dialog_button_show_cast_params;
     public static String sql_generator_dialog_button_show_cast_params_tip;
+    public static String sql_generator_dialog_button_format_sql;
+    public static String sql_generator_dialog_button_format_sql_tip;
     public static String action_result_tabs_delete_variables_question;
     public static String script_selector_create_script;
     public static String script_selector_project_scripts;

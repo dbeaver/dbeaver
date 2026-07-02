@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="com.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
    <annotation>
       <appInfo>
-         <meta.schema plugin="com.dbeaver.model.ai" id="com.dbeaver.ai.function" name="AI functions"/>
+         <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.function" name="AI functions"/>
       </appInfo>
       <documentation>
          AI functions for assistant functionality
@@ -18,13 +18,43 @@
       </annotation>
       <complexType>
          <sequence>
+            <element ref="category" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="function" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
       </complexType>
    </element>
 
+   <element name="category">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Unique category identifier
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Human-readable category name
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Optional category description
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
    <element name="function">
       <complexType>
+         <sequence>
+            <element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
@@ -39,19 +69,174 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  Class implementing the AIFunction interface
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunction"/>
+               </appInfo>
+            </annotation>
+         </attribute>
          <attribute name="description" type="string">
             <annotation>
                <documentation>
-                  Function description for AI assistant
+                  Detailed AI-facing function description used by the assistant to understand the function behavior and when to call it
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="category" type="string">
+         <attribute name="userDescription" type="string">
             <annotation>
                <documentation>
+                  Optional shorter user-facing description shown in UI. If omitted, description is used
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="defaultAllowMode">
+            <annotation>
+               <documentation>
+                  Default confirmation mode for this function. If omitted, internal functions are always allowed and external functions ask for confirmation.
+               </documentation>
+            </annotation>
+            <simpleType>
+               <restriction base="string">
+                  <enumeration value="ALWAYS_ALLOW"/>
+                  <enumeration value="ASK"/>
+               </restriction>
+            </simpleType>
+         </attribute>
+         <attribute name="categoryId" type="string">
+            <annotation>
+               <documentation>
+                  Reference to a category id declared in the same or another extension
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="type" type="string">
+            <annotation>
+               <documentation>
+                  Function type: INFORMATION (read-only, returns data) or ACTION (performs an action). Defaults to INFORMATION
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="purpose" type="string">
+            <annotation>
+               <documentation>
+                  Function purpose: TOOL (AI assistant tool), MCP (MCP protocol only), ALL (both). Defaults to TOOL
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="global" type="string">
+            <annotation>
+               <documentation>
+                  If true, this function is included in every AI request regardless of context
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="hidden" type="string">
+            <annotation>
+               <documentation>
+                  If true, this function is not shown in the UI
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="ui" type="string">
+            <annotation>
+               <documentation>
+                  If true, this function requires UI interaction
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="enabledByDefault" type="string">
+            <annotation>
+               <documentation>
+                  If true, this function is enabled by default
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="dependsOn" type="string">
+            <annotation>
+               <documentation>
+                  Comma-separated list of function IDs that must be enabled for this function to work
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="icon" type="string">
+            <annotation>
+               <documentation>
+                  Optional icon path for this function
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="resource"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parameter">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Parameter name
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="type" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Parameter type (e.g. string, integer, boolean)
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Parameter description passed to the AI to explain its purpose
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="required" type="string">
+            <annotation>
+               <documentation>
+                  Whether this parameter is required. Defaults to false
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="defaultValue" type="string">
+            <annotation>
+               <documentation>
+                  Default value used when the parameter is not supplied
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="validValues" type="string">
+            <annotation>
+               <documentation>
+                  Comma-separated list of valid values for this parameter
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="transformer" type="string">
+            <annotation>
+               <documentation>
+                  Optional class implementing AIFunctionParameterTransformer used to transform the raw parameter value before passing it to the function
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="targetSuffix" type="string">
+            <annotation>
+               <documentation>
+                  Suffix appended to the parameter name when storing the transformed value. Used together with transformer
                </documentation>
             </annotation>
          </attribute>
       </complexType>
    </element>
+
 </schema>

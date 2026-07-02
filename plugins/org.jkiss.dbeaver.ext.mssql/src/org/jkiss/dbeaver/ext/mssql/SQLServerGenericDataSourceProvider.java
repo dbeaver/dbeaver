@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,24 @@ package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.mssql.model.generic.SQLServerGenericDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class SQLServerGenericDataSourceProvider extends SQLServerDataSourceProvider {
+public class SQLServerGenericDataSourceProvider extends GenericDataSourceProvider<SQLServerGenericDataSource> {
 
-    public SQLServerGenericDataSourceProvider()
-    {
+    public SQLServerGenericDataSourceProvider() {
+        super(SQLServerGenericDataSource.class);
+    }
+
+    protected SQLServerGenericDataSourceProvider(@NotNull Class<? extends SQLServerGenericDataSource> dsClass) {
+        super(dsClass);
     }
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
+    public SQLServerGenericDataSource openDataSource(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBPDataSourceContainer container)
             throws DBException

@@ -37,7 +37,6 @@ public final class ResultSetPreferences {
     public static final String RS_EDIT_REFRESH_AFTER_UPDATE = "resultset.edit.refreshAfterUpdate"; //$NON-NLS-1$
     public static final String RS_GROUPING_DEFAULT_SORTING = "resultset.grouping.defaultSorting"; //$NON-NLS-1$
     public static final String RS_GROUPING_SHOW_DUPLICATES_ONLY = "resultset.grouping.showDuplicatesOnly"; //$NON-NLS-1$
-    public static final String RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS = "resultset.grouping.showPercentOfTotal"; //$NON-NLS-1$
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTOMATIC_ROW_COUNT = "resultset.automatic.row.count"; //$NON-NLS-1$
@@ -48,8 +47,16 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_CELL_ICONS = "resultset.show.cellIcons"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_ICONS = "resultset.show.attIcons"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_FILTERS = "resultset.show.attFilters"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_FILTER_PANEL = "resultset.show.filterPanel"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ATTR_ORDERING = "resultset.show.attrOrder"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_DESCRIPTION = "resultset.show.columnDescription"; //$NON-NLS-1$
+    public static final String RESULT_SET_COLUMN_HEADER_EXTRA = "resultset.show.columnHeaderExtra"; //$NON-NLS-1$
+
+    public enum ColumnHeaderExtraContent {
+        NOTHING,
+        DESCRIPTION,
+        DATA_TYPE
+    }
 
     public static final String RESULT_SET_SHOW_SEL_ROWS = "resultset.show.selected.rows"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_SEL_COLUMNS = "resultset.show.selected.columns"; //$NON-NLS-1$

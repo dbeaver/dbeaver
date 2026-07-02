@@ -75,6 +75,7 @@
 
             <processor
                     id="stream.xml"
+                    shortId="xml"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterXML"
                     description="%dataTransfer.processor.xml.description"
                     icon="icons/formats/xml.svg"
@@ -87,6 +88,7 @@
             </processor>
             <processor
                     id="stream.dbunit"
+                    shortId="dbunit"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterDbUnit"
                     description="%dataTransfer.processor.dbunit.description"
                     icon="icons/formats/xml.svg"
@@ -102,6 +104,7 @@
             </processor>
             <processor
                     id="stream.json"
+                    shortId="json"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterJSON"
                     description="%dataTransfer.processor.json.description"
                     icon="icons/formats/json.svg"
@@ -119,6 +122,7 @@
             </processor>
             <processor
                     id="stream.html"
+                    shortId="html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
                     icon="icons/formats/html.svg"
@@ -137,6 +141,7 @@
             </processor>
             <processor
                     id="stream.csv"
+                    shortId="csv"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV"
                     description="%dataTransfer.processor.csv.description"
                     icon="icons/formats/csv.svg"
@@ -161,6 +166,7 @@
             </processor>
             <processor
                     id="stream.markdown.table"
+                    shortId="markdown"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterMarkdownTable"
                     description="%dataTransfer.processor.markdownTable.description"
                     icon="icons/formats/markdown.svg"
@@ -176,6 +182,7 @@
             </processor>
             <processor
                     id="stream.sql"
+                    shortId="sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
                     icon="icons/formats/sql.svg"
@@ -199,6 +206,7 @@
             </processor>
             <processor
                     id="stream.txt"
+                    shortId="txt"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterTXT"
                     description="%dataTransfer.processor.txt.description"
                     icon="icons/formats/text.svg"

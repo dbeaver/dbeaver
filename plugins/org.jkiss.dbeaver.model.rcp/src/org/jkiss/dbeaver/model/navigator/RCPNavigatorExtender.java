@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,24 +29,21 @@ public class RCPNavigatorExtender implements DBNModelExtender {
 
     @Nullable
     @Override
-    public DBNNode[] getExtraNodes(@NotNull DBNNode parentNode) {
-        if (parentNode instanceof DBNProject) {
-            if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
-                return null;
-            }
-            DBNFileSystems fsNode = new DBNFileSystems((DBNProject) parentNode) {
-                @Override
-                protected void dispose(boolean reflect) {
-                    super.dispose(reflect);
-                    EFSNIOMonitor.removeListener(resourceListener);
-                    resourceListener = null;
-                }
-            };
-            resourceListener = new DBFResourceListener(fsNode);
-            EFSNIOMonitor.addListener(resourceListener);
-            return new DBNNode[]{ fsNode };
+    public DBNNode createNode(@NotNull DBNNode parentNode) {
+        if (ArrayUtils.isEmpty(DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviders())) {
+            return null;
         }
-        return null;
+        DBNFileSystems fsNode = new DBNFileSystems(parentNode) {
+            @Override
+            protected void dispose(boolean reflect) {
+                super.dispose(reflect);
+                EFSNIOMonitor.removeListener(resourceListener);
+                resourceListener = null;
+            }
+        };
+        resourceListener = new DBFResourceListener(fsNode);
+        EFSNIOMonitor.addListener(resourceListener);
+        return fsNode;
     }
 
 

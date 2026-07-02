@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -48,7 +48,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
     private DBEObjectMaker<GenericTableBase, GenericStructContainer> objectMaker;
     private SQLiteTable table;
 
-    @Before
+    @BeforeEach
     public void setUp() throws DBException {
         DBPDataSourceContainer mockDataSourceContainer = configureTestContainer("sqlite_jdbc");
         dataSource = new GenericDataSource(monitor, new SQLiteMetaModel(), mockDataSourceContainer, new SQLiteSQLDialect());
@@ -94,7 +94,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             "\tColumn2 INTEGER" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -128,7 +128,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
                 "\tColumn2 INTEGER" + lineBreak +
                 ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
     
     @Test
@@ -162,7 +162,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             "\tColumn2 INTEGER NOT NULL" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -210,7 +210,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             "\tCONSTRAINT NewTable_PK PRIMARY KEY (Column1)" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -253,7 +253,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             "\tColumn2 INTEGER DEFAULT (42)" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -290,7 +290,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             "\t\"Column2_#$%^_bas_symbols\" INTEGER NOT NULL" + lineBreak +
             ");" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 
     @Test
@@ -309,6 +309,6 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
 
         String expectedDDL = "DROP TABLE Table_SQLite;" + lineBreak;
 
-        Assert.assertEquals(script, expectedDDL);
+        Assertions.assertEquals(script, expectedDDL);
     }
 }

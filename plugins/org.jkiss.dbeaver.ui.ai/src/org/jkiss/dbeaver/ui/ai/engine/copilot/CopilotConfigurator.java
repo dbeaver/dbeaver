@@ -160,7 +160,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         gridData.horizontalSpan = 2;
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.setLayoutData(gridData);
-        temperatureText.setToolTipText("Lower temperatures give more precise results");
+        temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
@@ -168,8 +168,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     private void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write AI queries to debug log",
-            "Write AI queries with metadata info in the debug logs",
+            AIUIMessages.openai_configurator_log_query_label,
+            AIUIMessages.openai_configurator_log_query_tip,
             false,
             2
         );
@@ -238,7 +238,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         if (service == null) {
             throw new DBException("No authentication service available");
         }
-        try (var client = new CopilotClient(getCurrentAuthURL())) {
+        try (var client = new CopilotClientChat(getCurrentAuthURL())) {
             monitor.subTask("Requesting device code");
             var deviceCodeResponse = client.requestDeviceCode(monitor);
 

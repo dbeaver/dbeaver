@@ -70,8 +70,11 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private List<String> filesToOpenParams;
 
 
-    @CommandLine.Option(names = {"-con", "-connect", "-ds-spec", "--datasource-specification"}, arity = "1", split = ",",
-        description = "Connects to a specified database")
+    @CommandLine.Option(
+        names = {"-con", "-connect", "-ds-spec", "--datasource-specification"},
+        arity = "1..*",
+        description = "Connects to a specified database"
+    )
     private List<String> connectionSpecs;
 
     @CommandLine.Option(names = {"-disconnectAll"}, description = "Disconnect from all databases")
@@ -82,7 +85,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
 
     @CommandLine.Option(names = {"-bringToFront"}, description = "Bring DBeaver window on top of other applications")
     private boolean bringToFront;
-    @CommandLine.Option(names = {"-q"}, description = "Run quietly (do not print logs)")
+    @CommandLine.Option(names = {"-q", "-quiet"}, description = "Run quietly (do not print logs)")
     private boolean quiet;
 
     @Nullable
@@ -104,7 +107,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
             return;
         }
 
-        if (newInstance) {
+        if (meta.isSupportNewInstance() && newInstance) {
             context.setPostAction(CLIProcessResult.PostAction.START_INSTANCE);
             return;
         }

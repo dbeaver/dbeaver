@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -73,12 +74,13 @@ public class TextViewDialog extends ValueViewDialog {
     private CTabFolder editorContainer;
     private boolean dirty;
 
-    public TextViewDialog(IValueController valueController) {
+    public TextViewDialog(@NotNull IValueController valueController) {
         super(valueController);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent)
+    protected Composite createDialogArea(@NotNull Composite parent)
     {
         Composite dialogGroup = super.createDialogArea(parent);
 
@@ -187,9 +189,8 @@ public class TextViewDialog extends ValueViewDialog {
             getShell().setMinimumSize(minSize);
         }
 
-        UIUtils.asyncExec(() -> {
-            primeEditorValue(getValueController().getValue());
-        });
+        UIUtils.asyncExec(() ->
+            primeEditorValue(getValueController().getValue()));
         return dialogGroup;
     }
 
@@ -202,9 +203,11 @@ public class TextViewDialog extends ValueViewDialog {
         }
     }
 
-    private String getBinaryString()
-    {
+    private String getBinaryString() {
         byte[] bytes = getBinaryContent();
+        if (bytes == null) {
+            return "";
+        }
         int length = bytes.length;
         String stringValue;
         try {
@@ -260,7 +263,11 @@ public class TextViewDialog extends ValueViewDialog {
             }
         }
 
-        try (DBCSession session = getValueController().getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make text value from editor")) {
+        try (DBCSession session = getValueController().getExecutionContext().openSession(
+            new VoidProgressMonitor(),
+            DBCExecutionPurpose.UTIL,
+            "Make text value from editor"
+        )) {
             return getValueController().getValueHandler().getValueFromObject(
                 session,
                 getValueController().getValueType(),
@@ -333,7 +340,7 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         super.createButtonsForButtonBar(parent);
         if (getValueController().getValueType().getDataKind() == DBPDataKind.STRING) {
             Button button = createButton(parent, IDialogConstants.PROCEED_ID, ResultSetMessages.dialog_text_view_open_editor, false);

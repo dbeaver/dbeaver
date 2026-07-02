@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+
 public record AISchemaGenerationOptions(
-    int maxDbSnapshotTokens,
     boolean sendObjectComment,
     boolean sendColumnTypes,
     boolean sendConstraints,
-    boolean sendForeignKeys
+    boolean sendForeignKeys,
+    boolean sendIndexes,
+    boolean sendFullDDL,
+    boolean sendReferences,
+    boolean useFQN
 ) {
 
     public static Builder builder() {
@@ -30,26 +37,34 @@ public record AISchemaGenerationOptions(
 
     public Builder toBuilder() {
         return new Builder()
-            .withMaxDbSnapshotTokens(maxDbSnapshotTokens)
             .withSendObjectComment(sendObjectComment)
             .withSendColumnTypes(sendColumnTypes)
             .withSendConstraints(sendConstraints)
-            .withSendForeignKeys(sendForeignKeys);
+            .withSendForeignKeys(sendForeignKeys)
+            .withSendIndexes(sendIndexes)
+            .withSendFullDDL(sendFullDDL)
+            .withSendFullDDL(sendReferences)
+            .withUseFQN(useFQN);
     }
 
     public static final class Builder {
-        private int maxDbSnapshotTokens;
         private boolean sendObjectComment;
         private boolean sendColumnTypes;
         private boolean sendConstraints;
         private boolean sendForeignKeys;
+        private boolean sendIndexes;
+        private boolean sendFullDDL;
+        private boolean sendReferences;
+        private boolean useFQN;
 
         private Builder() {
-        }
-
-        public Builder withMaxDbSnapshotTokens(int maxDbSnapshotTokens) {
-            this.maxDbSnapshotTokens = maxDbSnapshotTokens;
-            return this;
+            // Init default settings
+            DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+            this.sendColumnTypes = preferenceStore.getBoolean(AIConstants.AI_SEND_TYPE_INFO);
+            this.sendConstraints = preferenceStore.getBoolean(AIConstants.AI_SEND_CONSTRAINTS);
+            this.sendForeignKeys = preferenceStore.getBoolean(AIConstants.AI_SEND_FOREIGN_KEYS);
+            this.sendIndexes = preferenceStore.getBoolean(AIConstants.AI_SEND_INDEXES);
+            this.sendObjectComment = preferenceStore.getBoolean(AIConstants.AI_SEND_DESCRIPTION);
         }
 
         public Builder withSendObjectComment(boolean sendObjectDescription) {
@@ -72,13 +87,41 @@ public record AISchemaGenerationOptions(
             return this;
         }
 
+        @NotNull
+        public Builder withSendIndexes(boolean sendIndexes) {
+            this.sendIndexes = sendIndexes;
+            return this;
+        }
+
+        @NotNull
+        public Builder withSendFullDDL(boolean sendFullDDL) {
+            this.sendFullDDL = sendFullDDL;
+            return this;
+        }
+
+        @NotNull
+        public Builder withSendReferences(boolean sendReferences) {
+            this.sendReferences = sendReferences;
+            return this;
+        }
+
+        @NotNull
+        public Builder withUseFQN(boolean useFQN) {
+            this.useFQN = useFQN;
+            return this;
+        }
+
+        @NotNull
         public AISchemaGenerationOptions build() {
             return new AISchemaGenerationOptions(
-                maxDbSnapshotTokens,
                 sendObjectComment,
                 sendColumnTypes,
                 sendConstraints,
-                sendForeignKeys
+                sendForeignKeys,
+                sendIndexes,
+                sendFullDDL,
+                sendReferences,
+                useFQN
             );
         }
     }

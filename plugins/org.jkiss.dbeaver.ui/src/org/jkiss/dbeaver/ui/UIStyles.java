@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.e4.ui.css.swt.internal.theme.BootstrapTheme3x;
+import org.eclipse.e4.ui.css.swt.internal.theme.Theme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
 import org.eclipse.jface.action.ToolBarManager;
@@ -71,7 +71,7 @@ public class UIStyles {
 
     private static IThemeEngine getThemeEngine() {
         if (themeEngine == null) {
-            Bundle bundle = FrameworkUtil.getBundle(BootstrapTheme3x.class);
+            Bundle bundle = FrameworkUtil.getBundle(Theme.class);
             if (bundle != null) {
                 BundleContext context = bundle.getBundleContext();
                 if (context != null) {

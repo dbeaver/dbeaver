@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 
 /**
  * AI function metadata.
@@ -32,6 +30,11 @@ public interface AIFunctionDescriptor {
 
     @NotNull
     String getId();
+
+    @NotNull
+    default String getFullId() {
+        return getFullFunctionId(getToolbox().getToolboxId(), getId());
+    }
 
     @NotNull
     String getName();
@@ -49,7 +52,7 @@ public interface AIFunctionDescriptor {
     String getCategoryId();
 
     @Nullable
-    String getDescription();
+    String getAiDescription();
 
     /**
      * Function which returns information about surrounding UI (e.g. open windows, active editor, etc)
@@ -57,23 +60,37 @@ public interface AIFunctionDescriptor {
     boolean isUI();
 
     /**
-     * Global functions are passed in ALL requests
+     * Indicates whether the function is a system function.
+     * System functions are not shown in the UI and can be executed without confirmation.
      */
-    boolean isGlobal();
-
-    boolean isHidden();
+    boolean isSystem();
 
     boolean isEnabledByDefault();
 
     @NotNull
+    AIFunctionAllowMode getDefaultAllowMode();
+
+    @NotNull
     AIFunctionParameter[] getParameters();
+
+    @Nullable
+    AIFunctionParameter getParameter(@NotNull String name);
 
     @NotNull
     String[] getDependsOn();
 
-    boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt);
+    @NotNull
+    default AIFunctionVerifier.FunctionState getFunctionState(@NotNull AIFunctionContext functionContext) {
+        return getInstance() instanceof AIFunctionVerifier verifier ?
+            verifier.getFunctionState(functionContext, this) :
+            AIFunctionVerifier.FunctionState.APPLICABLE;
+    }
 
     @NotNull
-    AIFunction createInstance() throws DBException;
+    AIFunction getInstance();
 
+    @NotNull
+    static String getFullFunctionId(@NotNull String toolboxId, @NotNull String toolId) {
+        return toolboxId + "_" + toolId;
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
@@ -79,6 +80,11 @@ public class DataTransferRegistry {
                     log.error("Referenced data transfer node '" + nodeReference + "' not found");
                 } else {
                     refNode.loadNodeConfigurations(ext);
+                    String settingsOverride = ext.getAttribute("settings");
+                    if (!CommonUtils.isEmpty(settingsOverride)) {
+                        refNode.overrideSettingsType(new NodeSettingsContributor(ext).settingsType);
+                        log.debug("Settings of data transfer node '" + nodeReference + "' overridden with '" + settingsOverride + "'");
+                    }
                 }
             }
         }
@@ -167,7 +173,7 @@ public class DataTransferRegistry {
         return null;
     }
 
-    @Nullable
+    @NotNull
     public List<DataTransferProcessorDescriptor> getAvailableProcessors(
         @NotNull Class<? extends IDataTransferNode<?>> nodeType,
         @NotNull Class<?> objectType) {
@@ -178,7 +184,7 @@ public class DataTransferRegistry {
                 }
             }
         }
-        return null;
+        return List.of();
     }
 
     @NotNull
@@ -207,5 +213,14 @@ public class DataTransferRegistry {
     @Nullable
     public DataTransferEventProcessorDescriptor getEventProcessorById(@NotNull String id) {
         return eventProcessors.get(id);
+    }
+
+    private static final class NodeSettingsContributor extends AbstractDescriptor {
+        private final ObjectType settingsType;
+
+        private NodeSettingsContributor(@NotNull IConfigurationElement config) {
+            super(config);
+            this.settingsType = new ObjectType(config, "settings");
+        }
     }
 }

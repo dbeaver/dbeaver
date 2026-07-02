@@ -19,4 +19,5 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 public class CopilotConstants {
     public static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
     public static final String BASE_AUTH_URL = "https://api.github.com";
+    public static final String TOOL_RESULT_CALL_ID = "call_id";
 }

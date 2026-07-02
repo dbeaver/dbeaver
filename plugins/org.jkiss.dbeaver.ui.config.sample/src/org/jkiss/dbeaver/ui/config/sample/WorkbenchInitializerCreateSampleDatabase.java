@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,33 +20,18 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
-
-import java.io.*;
 
 public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindowInitializer {
 
     private static final String PROP_SAMPLE_DB_CANCELED = "sample.database.canceled";
-    private static final String SAMPLE_DB1_ID = "dbeaver-sample-database-sqlite-1";
-    private static final String SAMPLE_DB1_FOLDER = "sample-database-sqlite-1";
-
-    private static final String SAMPLE_DB_FILE_NAME = "Chinook.db";
-    private static final String SAMPLE_DB_SOURCE_PATH = "data/" + SAMPLE_DB_FILE_NAME;
 
     private static final Log log = Log.getLog(WorkbenchInitializerCreateSampleDatabase.class);
 
@@ -66,19 +51,15 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             return;
         }
         DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
-        if (isSampleDatabaseExists(registry)) {
+        if (SampleDatabaseUtil.isSampleDatabaseExists(registry)) {
             // Already exist
             return;
         }
         if (!showCreateSampleDatabasePrompt(configurer.getWindow().getShell())) {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
         } else {
-            createSampleDatabase(registry);
+            SampleDatabaseUtil.createSampleDatabase(registry);
         }
-    }
-
-    static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {
-        return registry.getDataSource(SAMPLE_DB1_ID) != null;
     }
 
     static boolean showCreateSampleDatabasePrompt(Shell shell) {
@@ -89,52 +70,5 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
         );
     }
 
-    static void createSampleDatabase(DBPDataSourceRegistry dsRegistry) {
-        DataSourceDescriptor dataSource = (DataSourceDescriptor)dsRegistry.getDataSource(SAMPLE_DB1_ID);
-        if (dataSource != null) {
-            return;
-        }
-        DataSourceProviderDescriptor genericDSProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
-        if (genericDSProvider == null) {
-            log.error("Can't find generic data source provider");
-            return;
-        }
-        DriverDescriptor sqliteDriver = genericDSProvider.getDriver("sqlite_jdbc");
-        if (sqliteDriver == null) {
-            log.error("Can't find SQLite driver is generic provider");
-            return;
-        }
-        // Extract bundled database to workspace metadata
-        File dbFolder = GeneralUtils.getMetadataFolder().resolve(SAMPLE_DB1_FOLDER).toFile();
-        if (!dbFolder.exists()) {
-            if (!dbFolder.mkdirs()) {
-                log.error("Can't create target database folder " + dbFolder.getAbsolutePath());
-                return;
-            }
-        }
-        File dbFile = new File(dbFolder, SAMPLE_DB_FILE_NAME);
-        try (InputStream is = WorkbenchInitializerCreateSampleDatabase.class.getClassLoader().getResourceAsStream(SAMPLE_DB_SOURCE_PATH)) {
-            try (OutputStream os = new FileOutputStream(dbFile)) {
-                IOUtils.copyStream(is, os);
-            }
-        } catch (IOException e) {
-            log.error("Error extracting sample database to workspace", e);
-            return;
-        }
-
-        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
-        connectionInfo.setDatabaseName(dbFile.getAbsolutePath());
-        connectionInfo.setConnectionType(DBPConnectionType.DEV);
-        connectionInfo.setUrl(sqliteDriver.getConnectionURL(connectionInfo));
-        dataSource = dsRegistry.createDataSource(SAMPLE_DB1_ID, sqliteDriver, connectionInfo);
-        dataSource.setSavePassword(true);
-        dataSource.getNavigatorSettings().setShowSystemObjects(true);
-        dataSource.setName("DBeaver Sample Database (SQLite)");
-        try {
-            dsRegistry.addDataSource(dataSource);
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Connection create error", null, e);
-        }
-    }
 }
 

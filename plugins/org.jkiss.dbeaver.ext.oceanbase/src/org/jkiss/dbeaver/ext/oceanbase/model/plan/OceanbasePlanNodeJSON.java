@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
+public class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlanCostNode, DBPPropertySource {
 
     private final OceanbasePlanNodeJSON parent;
     private final Map<String, String> nodeProps = new LinkedHashMap<>();
@@ -105,12 +105,14 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         nested.add(new OceanbasePlanNodeJSON(this, name, value));
     }
 
+    @Nullable
     @Property(order = 0, viewable = true)
     @Override
     public String getNodeType() {
         return name;
     }
 
+    @Nullable
     @Property(order = 1, viewable = true)
     @Override
     public String getNodeName() {
@@ -171,11 +173,13 @@ class OceanbasePlanNodeJSON extends AbstractExecutionPlanNode implements DBCPlan
         return rowCount == null ? null : CommonUtils.toLong(rowCount);
     }
 
+    @Nullable
     @Override
     public OceanbasePlanNodeJSON getParent() {
         return parent;
     }
 
+    @NotNull
     @Override
     public Collection<OceanbasePlanNodeJSON> getNested() {
         return nested;

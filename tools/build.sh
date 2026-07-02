@@ -45,7 +45,6 @@ fi
 # Define paths relative to the script location
 WORKSPACE_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 DBEAVER_COMMON_DIR="${WORKSPACE_DIR}/dbeaver-common"
-DBEAVER_JDBC_LIBSQL_DIR="${WORKSPACE_DIR}/dbeaver-jdbc-libsql"
 PRODUCT_DIR="${SCRIPT_DIR}/../product"
 AGGREGATE_DIR="${PRODUCT_DIR}/aggregate"
 
@@ -65,18 +64,6 @@ if [ ! -d "$DBEAVER_COMMON_DIR" ]; then
     git clone https://github.com/dbeaver/dbeaver-common.git "$DBEAVER_COMMON_DIR"
 else
     log "DBeaver common directory already exists at $DBEAVER_COMMON_DIR"
-fi
-
-###############################################################################
-# DBeaver Jdbc-Libsql Repository Management
-###############################################################################
-
-# Clone or verify dbeaver-jdbc-libsql repository
-if [ ! -d "$DBEAVER_JDBC_LIBSQL_DIR" ]; then
-    log "Cloning dbeaver-jdbc-libsql repository..."
-    git clone https://github.com/dbeaver/dbeaver-jdbc-libsql.git "$DBEAVER_JDBC_LIBSQL_DIR"
-else
-    log "DBeaver jdbc-libsql directory already exists at $DBEAVER_JDBC_LIBSQL_DIR"
 fi
 
 ###############################################################################

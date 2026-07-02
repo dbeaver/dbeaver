@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
@@ -872,4 +874,99 @@ public class JDBCUtils {
             == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED);
     }
 
+    public static int getTypeIdFromValue(@Nullable Object value) {
+        if (value instanceof Struct) {
+            return Types.STRUCT;
+        } else if (value instanceof Array || ArrayUtils.isArray(value)) {
+            return Types.ARRAY;
+        } else if (value instanceof Byte) {
+            return Types.TINYINT;
+        } else if (value instanceof Short) {
+            return Types.SMALLINT;
+        } else if (value instanceof Integer) {
+            return Types.INTEGER;
+        } else if (value instanceof Long) {
+            return Types.SMALLINT;
+        } else if (value instanceof Float) {
+            return Types.FLOAT;
+        } else if (value instanceof Double) {
+            return Types.DOUBLE;
+        } else if (value instanceof java.sql.Date) {
+            return Types.DATE;
+        } else if (value instanceof java.sql.Time) {
+            return Types.TIME;
+        } else if (value instanceof java.util.Date) {
+            return Types.TIMESTAMP;
+        } else if (value instanceof String) {
+            return Types.VARCHAR;
+        }
+
+        return Types.OTHER;
+    }
+
+    @NotNull
+    public static String getTypeNameByTypeId(int typeId) {
+        return switch (typeId) {
+            case Types.STRUCT -> "STRUCT";
+            case Types.ARRAY -> "ARRAY";
+            case Types.TINYINT -> "TINYINT";
+            case Types.INTEGER -> "INTEGER";
+            case Types.SMALLINT -> "SMALLINT";
+            case Types.FLOAT -> "FLOAT";
+            case Types.DOUBLE -> "DOUBLE";
+            case Types.DATE -> "DATE";
+            case Types.TIME -> "TIME";
+            case Types.TIMESTAMP -> "TIMESTAMP";
+            case Types.VARCHAR -> "VARCHAR";
+            default -> "VARCHAR";
+        };
+    }
+
+    @NotNull
+    public static String getTypeNameByDataKind(@NotNull DBPDataKind dataKind) {
+        return switch (dataKind) {
+            case BOOLEAN -> "BOOLEAN";
+            case NUMERIC -> "NUMERIC";
+            case STRING -> "VARCHAR";
+            case DATETIME -> "TIMESTAMP";
+            case BINARY -> "BLOB";
+            case CONTENT -> "BLOB";
+            case STRUCT -> "VARCHAR";
+            case ARRAY -> "VARCHAR";
+            case OBJECT -> "VARCHAR";
+            case REFERENCE -> "VARCHAR";
+            case ROWID -> "ROWID";
+            case ANY -> "VARCHAR";
+            default -> "VARCHAR";
+        };
+    }
+
+    @NotNull
+    public static DBPDataKind getDataKindByTypeID(int typeId, @Nullable String typeName) {
+        return switch (typeId) {
+            case Types.BOOLEAN -> DBPDataKind.BOOLEAN;
+            case Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
+            case Types.BIGINT, Types.DECIMAL, Types.DOUBLE, Types.FLOAT, Types.INTEGER, Types.NUMERIC, Types.REAL, Types.SMALLINT ->
+                DBPDataKind.NUMERIC;
+            case Types.BIT, Types.TINYINT -> {
+                if (typeName != null && StringUtils.containsIgnoreCase(typeName, "bool")) {
+                    // Declared as numeric but actually it's a boolean
+                    yield DBPDataKind.BOOLEAN;
+                }
+                yield DBPDataKind.NUMERIC;
+            }
+            case Types.DATE, Types.TIME, Types.TIME_WITH_TIMEZONE, Types.TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE -> DBPDataKind.DATETIME;
+            case Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> DBPDataKind.BINARY;
+            case Types.BLOB, Types.CLOB, Types.NCLOB -> DBPDataKind.CONTENT;
+            case Types.SQLXML -> DBPDataKind.CONTENT;
+            case Types.STRUCT -> DBPDataKind.STRUCT;
+            case Types.ARRAY -> DBPDataKind.ARRAY;
+            case Types.ROWID -> DBPDataKind.ROWID;
+            case Types.REF -> DBPDataKind.REFERENCE;
+            case Types.OTHER ->
+                // TODO: really?
+                DBPDataKind.OBJECT;
+            default -> DBPDataKind.UNKNOWN;
+        };
+    }
 }

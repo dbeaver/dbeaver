@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -239,13 +241,16 @@ public class ObjectPropertyTester extends PropertyTester {
                     node = node.getParentNode();
                 }
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
-                    return true;
+                    return canNodeBeFilteredByUser(dbNode);
                 }
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if (node.getParentNode() instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
-                    return true;
+                if (!(node instanceof DBNDatabaseFolder && node.getParentNode() instanceof DBNDataSource) && // Do not show filters for root folders
+                    node.getParentNode() instanceof DBNDatabaseNode dbNode &&
+                    dbNode.getItemsMeta() != null
+                ) {
+                    return canNodeBeFilteredByUser(dbNode);
                 }
                 break;
             }
@@ -255,10 +260,16 @@ public class ObjectPropertyTester extends PropertyTester {
                 }
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
-                    if ("defined".equals(expectedValue)) {
-                        return filter != null && !filter.isEmpty();
+                    if (filter != null) {
+                        UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
+                        boolean isUserChangeable = service == null || service.isUserChangeable(filter);
+                        if ("defined".equals(expectedValue)) {
+                            return isUserChangeable && !filter.isEmpty();
+                        } else {
+                            return isUserChangeable && !filter.isNotApplicable();
+                        }
                     } else {
-                        return filter != null && !filter.isNotApplicable();
+                        return false;
                     }
                 }
                 break;
@@ -283,14 +294,21 @@ public class ObjectPropertyTester extends PropertyTester {
      * Check whether the owner project of the specified node has required permissions
      */
     public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
-        DBPProject ownerProject = node.getOwnerProjectOrNull();
-        return ownerProject != null && ownerProject.hasRealmPermission(permissionName);
+        DBAPermissionRealm pr = node.getOwnerProjectOrNull();
+        if (pr == null) {
+            pr = node.getOwnerWorkspace();
+        }
+        return pr.hasRealmPermission(permissionName);
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         if (node instanceof DBNProject && DBWorkbench.isDistributed()) {
             return false;
+        }
+        if (node instanceof DBNDataSource) {
+            // We always can create datasource
+            return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
         }
         if (node instanceof DBNDatabaseNode dbNode){
             if (dbNode.isVirtual() || !workspace.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
@@ -301,13 +319,13 @@ public class ObjectPropertyTester extends PropertyTester {
             if (dataSource != null && dataSource.getInfo().isReadOnlyMetaData()) {
                 return false;
             }
-            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(dbNode)) {
+            if (isMetadataChangeDisabled(dbNode)) {
                 return false;
             }
         }
         if (onlySingle == null) {
             // Just try to find first create handler
-            if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
+            if (node instanceof DBNLocalFolder) {
                 // We always can create datasource
                 return node.getOwnerProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
             }
@@ -398,5 +416,10 @@ public class ObjectPropertyTester extends PropertyTester {
             }
         }
         return false;
+    }
+
+    private boolean canNodeBeFilteredByUser(@NotNull DBNDatabaseNode dbNode) {
+        UIServiceFilterConfig serviceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
+        return serviceFilterConfig == null || serviceFilterConfig.canBeFilteredByUser(dbNode);
     }
 }
