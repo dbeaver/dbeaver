@@ -201,9 +201,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
             if (selItem instanceof AIConfigurationProfile profile) {
                 selectedProfile = profile;
-                if (activeEngineConfiguratorPage != null) {
-                    activeEngineConfiguratorPage.disposeControl();
-                }
                 showProfileSettings();
                 refresher.run();
             }
@@ -255,12 +252,22 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             return;
         }
         settings.removeConfiguration(selectedProfile);
+        int selectionIndex = profilesViewer.getTable().getSelectionIndex();
         selectedProfile = null;
+        showProfileSettings();
 
         profilesViewer.setInput(settings.getConfigurations());
+        if (selectionIndex >= profilesViewer.getTable().getItemCount()) {
+            selectionIndex--;
+        }
+        if (selectionIndex >= 0) {
+            selectedProfile = settings.getConfigurations()[selectionIndex];
+            profilesViewer.setSelection(new StructuredSelection(selectedProfile));
+        } else {
+            showProfileSettings();
+        }
 
         AISettingsManager.getInstance().saveSettings();
-        showProfileSettings();
     }
 
     private void createProfilesColumns() {
@@ -311,10 +318,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     private void showProfileSettings() {
         Composite settingsComposite = engineGroup.getParent();
+        if (activeEngineConfiguratorPage != null) {
+            activeEngineConfiguratorPage.disposeControl();
+        }
         if (selectedProfile == null) {
-            if (activeEngineConfiguratorPage != null) {
-                activeEngineConfiguratorPage.disposeControl();
-            }
             profileIdText.setText("");
             profileNameText.setText("");
             profileNameText.setEnabled(false);

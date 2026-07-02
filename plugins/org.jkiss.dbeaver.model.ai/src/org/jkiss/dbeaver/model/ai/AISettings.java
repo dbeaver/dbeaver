@@ -81,6 +81,16 @@ public class AISettings implements DBPAdaptable {
         return configurations.get(profileId);
     }
 
+    @Nullable
+    public AIConfigurationProfile getConfigurationByNameOrNull(@NotNull String profileName) {
+        for (AIConfigurationProfile profile : configurations.values()) {
+            if (Objects.equals(profile.getProfileName(), profileName)) {
+                return profile;
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public AIConfigurationProfile getConfiguration(@NotNull String profileId) throws DBException {
         AIConfigurationProfile profile = getConfigurationOrNull(profileId);

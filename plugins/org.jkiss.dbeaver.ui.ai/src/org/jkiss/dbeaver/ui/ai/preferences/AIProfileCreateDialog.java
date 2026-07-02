@@ -62,7 +62,7 @@ public class AIProfileCreateDialog extends BaseDialog {
 
         Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
         idText.addModifyListener(e ->  profileId = idText.getText());
-        Text nameText = UIUtils.createLabelText(enginePanel, "Name", selectedEngine.getLabel());
+        Text nameText = UIUtils.createLabelText(enginePanel, "Name", genProfileName(selectedEngine));
         nameText.addModifyListener(e ->  profileName = nameText.getText());
 
         engineCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -70,7 +70,7 @@ public class AIProfileCreateDialog extends BaseDialog {
             selectedEngine = aiEngines.get(engineCombo.getSelectionIndex());
             if (oldAutoId.equals(profileId)) {
                 profileId = genProfileId(selectedEngine);
-                profileName = selectedEngine.getLabel();
+                profileName = genProfileName(selectedEngine);
                 idText.setText(profileId);
                 nameText.setText(profileName);
             }
@@ -91,6 +91,21 @@ public class AIProfileCreateDialog extends BaseDialog {
             id = baseId + "_" + i;
         }
         return id;
+    }
+
+
+    @NotNull
+    private String genProfileName(@NotNull AIEngineDescriptor engineDescriptor) {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        String baseName = engineDescriptor.getLabel();
+        String name = baseName;
+        for (int i = 1; ; i++) {
+            if (aiSettings.getConfigurationByNameOrNull(name) == null) {
+                break;
+            }
+            name = baseName + " (" + i + ")";
+        }
+        return name;
     }
 
     @Nullable
