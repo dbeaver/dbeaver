@@ -351,6 +351,21 @@ public final class DBUtils {
         @Nullable String objectName,
         boolean forceConnection
     ) throws DBException {
+        return getObjectByPath(
+            monitor, executionContext, rootSC, catalogName, schemaName, objectName, forceConnection, true);
+    }
+
+    @Nullable
+    public static DBSObject getObjectByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName,
+        boolean forceConnection,
+        boolean caseSensitive
+    ) throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -360,12 +375,12 @@ public final class DBUtils {
         }
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
             // We have both both - just search both
-            DBSObject catalog = rootSC.getChild(monitor, catalogName);
+            DBSObject catalog = getContainerChild(monitor, rootSC, catalogName, caseSensitive);
             if (!(catalog instanceof DBSObjectContainer catalogOC)) {
                 return null;
             }
             rootSC = catalogOC;
-            DBSObject schema = rootSC.getChild(monitor, schemaName);
+            DBSObject schema = getContainerChild(monitor, rootSC, schemaName, caseSensitive);
             if (!(schema instanceof DBSObjectContainer schemaOC)) {
                 return null;
             }
@@ -386,7 +401,7 @@ public final class DBUtils {
                     tryContainer = contextDefaults.getDefaultCatalog();
                 }
             }
-            DBSObject sc = tryContainer.getChild(monitor, containerName);
+            DBSObject sc = getContainerChild(monitor, tryContainer, containerName, caseSensitive);
             if (!forceConnection && !DBStructUtils.isConnectedContainer(sc)) {
                 sc = null;
             }
@@ -407,7 +422,7 @@ public final class DBUtils {
                         sc = selectedObject;
                     } else if (selectedObject instanceof DBSObjectContainer objectContainer) {
                         // Get schema in catalog
-                        sc = objectContainer.getChild(monitor, containerName);
+                        sc = getContainerChild(monitor, objectContainer, containerName, caseSensitive);
                     }
                 }
                 if (!(sc instanceof DBSObjectContainer)) {
@@ -418,7 +433,7 @@ public final class DBUtils {
                 // Probably on this step we found a catalog, but not a schema.
                 Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
-                    DBSObject child = catalog.getChild(monitor, schemaName);
+                    DBSObject child = getContainerChild(monitor, catalog, schemaName, caseSensitive);
                     if (child instanceof DBSSchema) {
                         sc = child;
                     }
@@ -429,7 +444,7 @@ public final class DBUtils {
         if (objectName == null) {
             return rootSC;
         }
-        final DBSObject object = rootSC.getChild(monitor, objectName);
+        final DBSObject object = getContainerChild(monitor, rootSC, objectName, caseSensitive);
         if (object instanceof DBSEntity) {
             return object;
         } else {
@@ -437,12 +452,34 @@ public final class DBUtils {
             // Try to use selected object
             DBSObject selectedObject = DBUtils.getSelectedObject(executionContext);
             if (selectedObject instanceof DBSObjectContainer oc) {
-                return oc.getChild(monitor, objectName);
+                return getContainerChild(monitor, oc, objectName, caseSensitive);
             }
 
             // Table container not found
             return object;
         }
+    }
+
+    @Nullable
+    private static DBSObject getContainerChild(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull String childName,
+        boolean caseSensitive
+    ) throws DBException {
+        DBSObject child = container.getChild(monitor, childName);
+        if (child != null || caseSensitive) {
+            return child;
+        }
+        Collection<? extends DBSObject> children = container.getChildren(monitor);
+        if (children != null) {
+            for (DBSObject candidate : children) {
+                if (childName.equalsIgnoreCase(candidate.getName())) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
