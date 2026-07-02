@@ -20,26 +20,18 @@ package org.jkiss.dbeaver.model.qm;
 import org.jkiss.code.NotNull;
 
 /**
- * Indicates that existing QM data is incompatible with this client version.
+ * Indicates that QM database schema is newer than supported by this client.
  */
-public class QMIncompatibleDatabaseException extends QMUnavailableException {
+public class QMNewerSchemaException extends QMIncompatibleDatabaseException {
 
     public static final String DEFAULT_MESSAGE =
-        "QMDB data was created by a newer DBeaver version and is not supported by this client";
+        "QMDB schema was created by a newer DBeaver version";
 
-    public QMIncompatibleDatabaseException() {
+    public QMNewerSchemaException() {
         super(DEFAULT_MESSAGE);
     }
 
-    protected QMIncompatibleDatabaseException(@NotNull String message) {
+    public QMNewerSchemaException(@NotNull String message) {
         super(message);
-    }
-
-    public QMIncompatibleDatabaseException(@NotNull Throwable cause) {
-        super(DEFAULT_MESSAGE, cause);
-    }
-
-    public QMIncompatibleDatabaseException(@NotNull String message, @NotNull Throwable cause) {
-        super(message, cause);
     }
 }
