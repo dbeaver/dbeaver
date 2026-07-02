@@ -25,6 +25,7 @@ import org.jkiss.utils.HttpConstants;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ class DDTrackingClient {
 
     private static final String START_PATH = "/metering/track/start";
     private static final String STOP_PATH = "/metering/track/stop";
+    private static final String API_KEY_HEADER = "DD-API-Key";
     private static final int START_TIMEOUT_MS = 10000;
     private static final int STOP_TIMEOUT_MS = 3000;
 
@@ -63,11 +65,19 @@ class DDTrackingClient {
         try {
             Map<String, String> headers = new HashMap<>();
             headers.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
-            headers.put(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + key);
+            headers.put(API_KEY_HEADER, key);
 
             URLConnection connection = WebUtils.openURLConnection(url + path, null, null, "POST", 0, timeoutMs, headers);
             try (OutputStream out = connection.getOutputStream()) {
                 out.write(body.getBytes(StandardCharsets.UTF_8));
+            }
+            if (connection instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() >= 300) {
+                String error;
+                try (InputStream err = httpConnection.getErrorStream()) {
+                    error = err == null ? "" : new String(err.readAllBytes(), StandardCharsets.UTF_8);
+                }
+                log.debug("DataDam tracking request failed: HTTP " + httpConnection.getResponseCode() + " " + error);
+                return null;
             }
             try (InputStream in = connection.getInputStream()) {
                 return gson.fromJson(new String(in.readAllBytes(), StandardCharsets.UTF_8), DDTracking.class);
