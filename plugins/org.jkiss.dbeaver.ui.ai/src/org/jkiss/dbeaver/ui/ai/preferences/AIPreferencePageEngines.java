@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -192,6 +193,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             GridData.FILL_HORIZONTAL
         );
 
+        Runnable refresher = () -> {
+            engineGroup.getShell().layout(true, true);
+            UIUtils.resizeShell(parent.getShell());
+        };
         profilesViewer.addSelectionChangedListener(event -> {
             Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
             if (selItem instanceof AIConfigurationProfile profile) {
@@ -200,8 +205,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                     activeEngineConfiguratorPage.disposeControl();
                 }
                 showProfileSettings();
-                engineGroup.getShell().layout(true, true);
-                UIUtils.resizeShell(parent.getShell());
+                refresher.run();
             }
             deleteProfileBtn.setEnabled(selItem instanceof AIConfigurationProfile);
         });
@@ -214,6 +218,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         performDefaults();
 
         createTestConnectionButton(composite);
+
+        refresher.run();
+        UIUtils.packColumns(profilesViewer.getTable(), true);
+
         return composite;
     }
 
@@ -256,30 +264,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     }
 
     private void createProfilesColumns() {
-        TableViewerColumn idColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
-        idColumn.getColumn().setText("ID");
-        idColumn.getColumn().setWidth(100);
-        idColumn.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                if (!(element instanceof AIConfigurationProfile profile)) {
-                    return null;
-                }
-                return profile.getProfileId();
-            }
-
-            @Override
-            public Font getFont(Object element) {
-                if (!(element instanceof AIConfigurationProfile profile)) {
-                    return null;
-                }
-                if (profile == settings.getDefaultConfigurationOrNull()) {
-                    return BaseThemeSettings.instance.baseFontBold;
-                }
-                return super.getFont(element);
-            }
-        });
-
         TableViewerColumn nameColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
         nameColumn.getColumn().setText("Name");
         nameColumn.getColumn().setWidth(200);
@@ -304,8 +288,8 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             }
         });
 
-        TableViewerColumn engineColumn = new TableViewerColumn(profilesViewer, SWT.RIGHT);
-        engineColumn.getColumn().setText("Engine");
+        TableViewerColumn engineColumn = new TableViewerColumn(profilesViewer, SWT.LEFT);
+        engineColumn.getColumn().setText("Model");
         engineColumn.getColumn().setWidth(200);
         engineColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
@@ -314,7 +298,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                     return null;
                 }
                 try {
-                    return profile.getEngineDescriptor().getLabel();
+                    String engineName = profile.getEngineDescriptor().getLabel();
+                    String model = profile.getConfiguration().getModel();
+                    return CommonUtils.isEmpty(model) ? engineName :
+                        engineName + " (" + model + ")";
                 } catch (DBException e) {
                     return e.getMessage();
                 }
