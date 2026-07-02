@@ -35,6 +35,7 @@ public final class QMAIConversationHistory {
     @NotNull
     private QMAIContext context;
     private String profileId;
+    private String engineId;
     private final int nextMessageId;
     private final boolean deleted;
 
@@ -46,6 +47,7 @@ public final class QMAIConversationHistory {
         @NotNull List<QMAIChatMessage> messages,
         @NotNull QMAIContext context,
         @Nullable String profileId,
+        @Nullable String engineId,
         int nextMessageId,
         boolean deleted
     ) {
@@ -56,6 +58,7 @@ public final class QMAIConversationHistory {
         this.messages = messages;
         this.context = context;
         this.profileId = profileId;
+        this.engineId = engineId;
         this.nextMessageId = nextMessageId;
         this.deleted = deleted;
     }
@@ -113,6 +116,15 @@ public final class QMAIConversationHistory {
 
     public void setProfileId(@Nullable String profileId) {
         this.profileId = profileId;
+    }
+
+    @Nullable
+    public String getEngineId() {
+        return engineId;
+    }
+
+    public void setEngineId(@Nullable String engineId) {
+        this.engineId = engineId;
     }
 
     public int getNextMessageId() {

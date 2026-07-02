@@ -61,8 +61,9 @@ public interface AIChatStorage {
 
     void changeConversationProfile(
         @NotNull String conversationId,
-        @Nullable String profileID
-    ) throws DBException;;
+        @Nullable String profileId,
+        @Nullable String engineId
+    ) throws DBException;
 
     void renameConversation(
         @NotNull String conversationId,

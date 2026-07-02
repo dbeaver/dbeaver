@@ -739,7 +739,9 @@ public class AIChatSession {
             try {
                 storage.changeConversationProfile(
                     conversation.getId().toString(),
-                    conversation.getProfile() == null ? null : conversation.getProfile().getProfileId());
+                    conversation.getProfile() == null ? null : conversation.getProfile().getProfileId(),
+                    conversation.getProfile() == null ? null : conversation.getProfile().getEngineId()
+                );
             } catch (DBException e) {
                 log.error("Error renaming conversation", e);
             }

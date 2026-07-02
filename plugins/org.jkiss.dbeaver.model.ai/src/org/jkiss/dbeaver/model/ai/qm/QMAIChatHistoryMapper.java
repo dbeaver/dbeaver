@@ -71,6 +71,7 @@ public class QMAIChatHistoryMapper {
             chatMessages,
             qmaiContext,
             conversation.getProfile() == null ? null : conversation.getProfile().getProfileId(),
+            conversation.getProfile() == null ? null : conversation.getProfile().getEngineId(),
             conversation.getNextMessageId(),
             false
         );

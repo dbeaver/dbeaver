@@ -112,11 +112,12 @@ public class QMAIChatStorageInMemory implements AIChatStorage {
     }
 
     @Override
-    public void changeConversationProfile(@NotNull String conversationId, @Nullable String profileID) throws DBException {
+    public void changeConversationProfile(@NotNull String conversationId, @Nullable String profileID, String engineId) throws DBException {
         for (Map<String, QMAIConversationHistory> sessionConversations : conversations.values()) {
             QMAIConversationHistory chat = sessionConversations.get(conversationId);
             if (chat != null) {
                 chat.setProfileId(profileID);
+                chat.setEngineId(profileID);
                 return;
             }
         }

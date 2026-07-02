@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
+import org.jkiss.utils.UUIDv7;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public class AIChatConversation {
         @Nullable DBPDataSourceContainer container
     ) {
         this(
-            UUID.randomUUID(),
+            UUIDv7.randomUUID(),
             caption,
             promptGenerator,
             messages,
