@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import java.util.Map;
 public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTableBase> implements DBEObjectRenamer<PostgreIndex> {
 
     @Override
-    public boolean canRenameObject(PostgreIndex object) {
+    public boolean canRenameObject(@NotNull PostgreIndex object) {
         return object.getDataSource().getServerType().supportsKeyAndIndexRename();
     }
 
@@ -67,9 +67,12 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
 
     @Override
     protected PostgreIndex createDatabaseObject(
-        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
-        Object from, @NotNull Map<String, Object> options)
-    {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull Object container,
+        @Nullable Object from,
+        @NotNull Map<String, Object> options
+    ) {
         PostgreTableBase tableBase = (PostgreTableBase) container;
         return new PostgreIndex(
             tableBase,

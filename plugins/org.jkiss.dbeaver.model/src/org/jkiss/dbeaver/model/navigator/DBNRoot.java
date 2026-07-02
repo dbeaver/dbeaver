@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -167,6 +166,19 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Nullable
+    public <T> T getExtraNode(@NotNull Class<T> nodeType) {
+        for (DBNNode node : extraNodes) {
+            if (nodeType.isAssignableFrom(node.getClass())) {
+                return nodeType.cast(node);
+            } else if (node instanceof DBNNodeExtension nodeExtension && nodeExtension.matchesType(nodeType)) {
+                return nodeType.cast(nodeExtension.resolveRealNode());
+            }
+        }
+        log.error("Cannot determine root model extender for type '" + nodeType + "'");
+        return null;
+    }
+
+    @Nullable
     @Override
     public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (this.getParentNode() != null) {
@@ -177,13 +189,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             }
             return this;
         }
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return "";
     }
 
     @Nullable
@@ -226,9 +231,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
     }
 
     @Override
-    public void addExtraNode(@NotNull DBNNode node, boolean reflect) {
+    public void addExtraNode(@NotNull DBNNodeExtension node, boolean reflect) {
         extraNodes.add(node);
-        extraNodes.sort(Comparator.comparing(DBNNode::getNodeDisplayName));
+        // For root item we resolve target nodes immediately
+        // This is a silly workaround for CloudBeaver because web just lists root nodes
+        // and then finds what it needs by ID
+        // FIXME: make it smarter
+        node.resolveRealNode();
         model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
     }
 
@@ -237,6 +246,17 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         if (extraNodes.remove(node)) {
             model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, node));
         }
+    }
+
+    @NotNull
+    @Override
+    public DBNNode resolveTargetNode(@NotNull DBNNodeExtension sourceNode, @NotNull DBNNode targetNode) {
+        int index = extraNodes.indexOf(sourceNode);
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Source extension node '" + sourceNode + "' not found in '" + this + "'");
+        }
+        extraNodes.set(index, targetNode);
+        return targetNode;
     }
 
     @Override

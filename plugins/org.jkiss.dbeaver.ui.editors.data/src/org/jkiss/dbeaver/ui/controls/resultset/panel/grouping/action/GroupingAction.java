@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,27 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 
-abstract class GroupingAction extends Action {
-    final GroupingResultsContainer groupingResultsContainer;
+public abstract class GroupingAction extends Action {
+    protected final GroupingResultsContainer groupingResultsContainer;
 
-    GroupingAction(@NotNull GroupingResultsContainer groupingResultsContainer, @NotNull String text, @NotNull ImageDescriptor image) {
+    public GroupingAction(
+        @NotNull GroupingResultsContainer groupingResultsContainer,
+        @Nullable String text,
+        @NotNull ImageDescriptor image
+    ) {
         super(text, image);
+        this.groupingResultsContainer = groupingResultsContainer;
+    }
+
+    public GroupingAction(
+        @NotNull GroupingResultsContainer groupingResultsContainer,
+        @Nullable String text,
+        int style
+    ) {
+        super(text, style);
         this.groupingResultsContainer = groupingResultsContainer;
     }
 }

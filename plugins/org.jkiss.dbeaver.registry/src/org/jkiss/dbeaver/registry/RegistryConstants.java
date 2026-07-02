@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ public class RegistryConstants {
     public static final String ATTR_ENABLED = "enabled"; //$NON-NLS-1$
     public static final String ATTR_DRIVER = "driver"; //$NON-NLS-1$
     public static final String ATTR_BUNDLE = "bundle"; //$NON-NLS-1$
+    public static final String ATTR_PREFERENCE_KEY = "preferenceKey"; //$NON-NLS-1$
 
     public static final String ATTR_CODE = "code"; //$NON-NLS-1$
     public static final String ATTR_LABEL = "label"; //$NON-NLS-1$
@@ -104,6 +105,7 @@ public class RegistryConstants {
     public static final String ATTR_ICON_BIG = "iconBig"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
+    public static final String ATTR_COLOR_DARK = "colorDark"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$
     public static final String ATTR_CLOSE_IDLE_ENABLED = "closeIdleConnection";
     public static final String ATTR_CLOSE_IDLE = "closeIdle";

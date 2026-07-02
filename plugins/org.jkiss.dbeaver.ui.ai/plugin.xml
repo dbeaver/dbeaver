@@ -15,6 +15,12 @@
         <definition id="org.jkiss.dbeaver.ai.preferences">
             <instanceof value="org.jkiss.dbeaver.model.ai.AISettings"/>
         </definition>
+        <!-- Enabled by the user -->
+        <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.user">
+            <not>
+                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
+            </not>
+        </definition>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
@@ -58,8 +64,12 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.ai.configuration" name="%command.org.jkiss.dbeaver.ui.ai.configuration.name" description="%command.org.jkiss.dbeaver.ui.ai.configuration.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <category id="com.dbeaver.ai" name="AI commands" description="AI commands"/>
+        <command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="com.dbeaver.ai"/>
+        <command id="org.jkiss.dbeaver.ui.ai.configuration" name="%command.org.jkiss.dbeaver.ui.ai.configuration.name" description="%command.org.jkiss.dbeaver.ui.ai.configuration.description" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.sendPrompt" name="Send" description="Send prompt to AI engine" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.attach" name="Attach" description="Attach file" categoryId="com.dbeaver.ai"/>
+        <command id="com.dbeaver.ai.chat.toggle" name="AI Chat" description="Toggle AI Chat visibility" categoryId="com.dbeaver.ai"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -79,15 +89,24 @@
                 </visibleWhen>
             </command>
         </menuContribution>
-    </extension>
+        <menuContribution allPopups="false" locationURI="menu:window?before=primary.views">
+            <command commandId="com.dbeaver.ai.chat.toggle" style="toggle">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-general?after=sql_tools">
+            <command commandId="com.dbeaver.ai.chat.toggle" id="ai.dropdown.menu" style="pulldown">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <separator name="ai" visible="true"/>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="menu:ai.dropdown.menu">
+            <command commandId="org.jkiss.dbeaver.ui.ai.showCompletion"/>
+            <separator name="configuration" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.ai.configuration"/>
+            <!--            <dynamic id="org.jkiss.dbeaver.core.menu.newConnection.select" class="org.jkiss.dbeaver.ui.actions.datasource.NewConnectionDriverSelectorContributor"/>-->
+        </menuContribution>
 
-    <extension point="org.eclipse.core.expressions.definitions">
-        <!-- Enabled by the user -->
-        <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.user">
-            <not>
-                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
-            </not>
-        </definition>
     </extension>
 
     <extension point="org.eclipse.ui.activities">
@@ -107,18 +126,34 @@
 
         <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.ui.ai.*"/>
         <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.preferences.ai"/>
+        <activityPatternBinding activityId="dbeaver.ai.activity" pattern="org.jkiss.dbeaver.ui.ai/org.jkiss.dbeaver.ai.*"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ui.ai.showCompletion" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"/>
+        <image commandId="com.dbeaver.ai.chat.sendPrompt" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai-chat-send.svg"/>
+        <image commandId="com.dbeaver.ai.chat.attach" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/attach.svg"/>
+        <image commandId="com.dbeaver.ai.chat.toggle" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"/>
     </extension>
+
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.ui.ai.showCompletion" class="org.jkiss.dbeaver.ui.ai.internal.AITranslateHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.ai.configuration" class="org.jkiss.dbeaver.ui.ai.internal.AIConfigurationHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.sendPrompt" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatSendPromptHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.attach" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatAttachHandler"/>
+        <handler commandId="com.dbeaver.ai.chat.toggle" class="org.jkiss.dbeaver.ui.ai.chat.commands.AIChatToggleHandler">
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.user"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+                </and>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.ui.ai.showCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+I"/>
+        <key commandId="com.dbeaver.ai.chat.sendPrompt" contextId="com.dbeaver.ai.chat" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+Enter"/>
     </extension>
 
 
@@ -136,4 +171,55 @@
     <extension point="org.jkiss.dbeaver.workbenchHandler">
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.ai.AIWorkbenchInitializer" order="2"/>
     </extension>
+
+
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.sqlPresentation.aiChat.label"
+                              id="org.jkiss.dbeaver.ui.sqlPresentation.aiChat">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.sqlPresentation.aiChat.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.sqlPresentation.aiChat.color.prompt.background.label"
+            categoryId="org.jkiss.dbeaver.ui.sqlPresentation.aiChat"
+            id="org.jkiss.dbeaver.ui.sqlPresentation.aiChat.color.prompt.background"
+            value="224,235,242">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.sqlPresentation.aiChat.color.prompt.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.sqlPresentation.aiChat.color.prompt.border.label"
+            categoryId="org.jkiss.dbeaver.ui.sqlPresentation.aiChat"
+            id="org.jkiss.dbeaver.ui.sqlPresentation.aiChat.color.prompt.border"
+            value="189,220,240">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.sqlPresentation.aiChat.color.prompt.border.description</description>
+        </colorDefinition>
+    </extension>
+
+    <extension point="org.eclipse.e4.ui.css.swt.theme">
+        <stylesheet uri="css/e4-dark_ai_prefstyle.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
+        </stylesheet>
+    </extension>
+
+    <extension point="org.eclipse.ui.contexts">
+        <context id="com.dbeaver.ai.chat" parentId="org.eclipse.ui.contexts.window" name="AI chat" description="AI chat window"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.views">
+        <view id="com.dbeaver.ai.chat"
+              category="org.jkiss.dbeaver.core.category"
+              class="org.jkiss.dbeaver.ui.ai.chat.AIChatView"
+              icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"
+              name="Chat">
+            <description>AI Chat</description>
+        </view>
+    </extension>
+
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <view id="com.dbeaver.ai.chat" relative="org.eclipse.ui.views.ContentOutline" relationship="stack" visible="false" minimized="true"/>
+            <viewShortcut id="com.dbeaver.ai.chat"/>
+        </perspectiveExtension>
+    </extension>
+
 </plugin>

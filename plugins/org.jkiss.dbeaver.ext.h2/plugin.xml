@@ -38,16 +38,18 @@
                         description="H2 Server"
                         categories="sql"
                         dialect="h2">
+
                     <replace provider="generic" driver="h2_server"/>
 
-                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.1.210]" bundle="!drivers.h2_v2"/>
-                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v3"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v3"/>
 
-                    <file type="jar" path="drivers/h2_v2" bundle="drivers.h2_v2"/>
-                    <file type="license" path="drivers/h2_v2/LICENSE.txt" bundle="drivers.h2_v2"/>
+                    <file type="jar" path="drivers/h2_v3" bundle="drivers.h2_v3"/>
+                    <file type="license" path="drivers/h2_v3/LICENSE.txt" bundle="drivers.h2_v3"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
@@ -73,12 +75,13 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                     <parameter name="query-shutdown" value="shutdown"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                         id="h2_embedded_v2"
-                        label="H2 Embedded V.2"
+                        label="H2 Embedded V.2.1"
                         icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
                         iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
                         category="H2"
@@ -86,9 +89,11 @@
                         sampleURL="jdbc:h2:{file}"
                         webURL="https://www.h2database.com/"
                         embedded="true"
-                        description="H2 Embedded V.2"
+                        description="H2 Embedded V.2.1"
                         categories="sql,embedded"
                         dialect="h2">
+
+                    <replace provider="generic" driver="h2_embedded_v2"/>
 
                     <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.1.210]" bundle="!drivers.h2_v2"/>
                     <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v2"/>
@@ -98,6 +103,33 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                    <parameter name="query-shutdown" value="shutdown"/>
+                    <parameter name="omit-catalog" value="true"/>
+                </driver>
+                <driver
+                    id="h2_embedded_v3"
+                    label="H2 Embedded V.2.4+"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:{file}"
+                    webURL="https://www.h2database.com/"
+                    embedded="true"
+                    description="H2 Embedded V.2.4+ (binary format v3)"
+                    categories="sql,embedded"
+                    dialect="h2">
+
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE[2.4.240]" bundle="!drivers.h2_v3"/>
+                    <file type="license" path="https://raw.githubusercontent.com/h2database/h2database/master/LICENSE.txt" bundle="!drivers.h2_v3"/>
+
+                    <file type="jar" path="drivers/h2_v3" bundle="drivers.h2_v3"/>
+                    <file type="license" path="drivers/h2_v3/LICENSE.txt" bundle="drivers.h2_v3"/>
+
+                    <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                     <parameter name="query-shutdown" value="shutdown"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
@@ -128,11 +160,12 @@
                         description="H2GIS Embedded"
                         categories="spatial,sql,embedded">
 
-                    <file type="jar" path="maven:/org.orbisgis:h2gis:[2.2.1]"/>
+                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
                     <file type="license" path="licenses/external/lgpl-3.0.txt"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                     <parameter name="query-shutdown" value="shutdown"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
@@ -155,6 +188,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
                     <parameter name="query-shutdown" value="shutdown"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>

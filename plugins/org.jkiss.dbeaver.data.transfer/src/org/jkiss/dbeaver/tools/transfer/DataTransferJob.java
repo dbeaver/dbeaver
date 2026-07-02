@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,18 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -42,6 +46,7 @@ public class DataTransferJob extends AbstractJob {
     private final DBRProgressMonitor parentMonitor;
     private long elapsedTime;
     private boolean hasErrors;
+    private volatile boolean transferCanceled;
 
     private final Log log;
     private final PrintStream logStream;
@@ -82,7 +87,13 @@ public class DataTransferJob extends AbstractJob {
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor jobMonitor) {
         final int pipeCount = settings.getDataPipes().size();
-        final DBRProgressMonitor monitor = parentMonitor != null ? parentMonitor : jobMonitor;
+        final DBRProgressMonitor baseMonitor = parentMonitor != null ? parentMonitor : jobMonitor;
+        final DBRProgressMonitor monitor = new ProxyProgressMonitor(baseMonitor) {
+            @Override
+            public boolean isCanceled() {
+                return transferCanceled || super.isCanceled();
+            }
+        };
         monitor.beginTask("Perform data transfer", pipeCount);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
@@ -106,20 +117,38 @@ public class DataTransferJob extends AbstractJob {
                     parentMonitor.worked(1);
                 }
                 jobMonitor.worked(1);
+            } catch (DBInterruptedException e) {
+                return Status.CANCEL_STATUS;
             } catch (Exception e) {
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
                 IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
+            } finally {
+                monitor.done();
+                elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
-        monitor.done();
-        elapsedTime = System.currentTimeMillis() - startTime;
         return Status.OK_STATUS;
     }
 
-    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception {
+    @Override
+    protected void canceling() {
+        transferCanceled = true;
+        super.canceling();
+    }
+
+    private boolean transferData(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataTransferPipe transferPipe
+    ) throws DBException, IOException {
         IDataTransferProducer producer = transferPipe.getProducer();
-        IDataTransferConsumer consumer = transferPipe.getConsumer();
+        if (producer == null) {
+            throw new DBException("Null producer");
+        }
+        IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
+        if (consumer == null) {
+            throw new DBException("Null consumer");
+        }
 
         String inputName = producer.getObjectFullName(monitor);
         String outputName = consumer.getObjectFullName(monitor);
@@ -128,12 +157,16 @@ public class DataTransferJob extends AbstractJob {
                 CommonUtils.truncateString(inputName, 200),
                 CommonUtils.truncateString(outputName, 200)), 1);
 
-        IDataTransferSettings nodeSettings = settings.getNodeSettings(settings.getProducer());
+        IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
         try {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
             IDataTransferProcessor processor = settings.getProcessor() == null ? null : settings.getProcessor().getInstance();
             producer.transferData(monitor, consumer, processor, nodeSettings, task);
+
+            if (isTransferCanceled(monitor)) {
+                throw new DBInterruptedException("Data transfer was canceled");
+            }
 
             totalStatistics.accumulate(producer.getStatistics());
             totalStatistics.accumulate(consumer.getStatistics());
@@ -147,7 +180,10 @@ public class DataTransferJob extends AbstractJob {
         } finally {
             monitor.done();
         }
+    }
 
+    private boolean isTransferCanceled(@NotNull DBRProgressMonitor monitor) {
+        return monitor.isCanceled() || isCanceled() || (parentMonitor != null && parentMonitor.isCanceled());
     }
 
 }

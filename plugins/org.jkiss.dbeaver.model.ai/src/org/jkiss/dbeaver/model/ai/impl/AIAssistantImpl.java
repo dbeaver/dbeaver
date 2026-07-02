@@ -21,41 +21,51 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
+import org.jkiss.dbeaver.model.ai.qm.QMAIChatStorageInMemory;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.registry.AIToolboxRegistry;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
 
+    private static final boolean PRINT_SCOPE_INFO = false;
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
-    protected static final int MAX_FUNCTION_CALLS = 5;
+    protected static final int MAX_FUNCTION_CALLS = 10;
 
     protected final DBPWorkspace workspace;
+    private final String chatSessionId;
 
     private AIEngineRequestFactory requestFactory;
     private AIToolboxManager toolboxManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
+        this.chatSessionId = UUID.randomUUID().toString();
     }
 
     @NotNull
@@ -73,18 +83,14 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
-        return new AIEngineRequestFactory(
-            new AIDatabaseSnapshotService(),
-            new DummyTokenCounter()
-        );
+        return new AIEngineRequestFactory(new DummyTokenCounter());
     }
 
     @NotNull
     @Override
     public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         checkAiEnablement();
@@ -93,13 +99,11 @@ public class AIAssistantImpl implements AIAssistant {
         try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
-                context,
-                systemGenerator,
+                functionContext,
                 messages,
                 engine,
                 engineDescriptor
             );
-            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
 
@@ -123,7 +127,6 @@ public class AIAssistantImpl implements AIAssistant {
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
                     AIFunctionCall functionCall = completionResponse.getFunctionCall();
                     if (functionCall != null) {
-                        functionContext.addFunctionCall(functionCall);
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         String stringValue = CommonUtils.toString(result.getValue());
                         if (result.getType() == AIFunctionType.ACTION) {
@@ -134,7 +137,8 @@ public class AIAssistantImpl implements AIAssistant {
                             );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
-                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue, null));
+                            AIMessage fcMessage = AIMessage.functionCall(functionCall, result);
+                            newMessages.add(fcMessage);
                             AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
@@ -164,6 +168,222 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     @Override
+    public CompletableFuture<AIChatConversation> generateTextStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatSession chatSession,
+        @NotNull AIChatConversation conversation,
+        @NotNull AIChatRequest request,
+        @NotNull AIChatResponseConsumer chatListener
+    ) throws DBException {
+        checkAiEnablement();
+        CompletableFuture<AIChatConversation> future = conversation.startConversation();
+
+        try {
+            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            AIEngine<?> engine = engineDescriptor.createEngineInstance();
+            AIFunctionContext functionContext = new AIFunctionContext(
+                monitor,
+                request.context(),
+                conversation.getPromptGenerator()
+            );
+            List<AIMessage> curMessages = new ArrayList<>(request.messages());
+
+            AIEngineResponseConsumerImpl engineResponseConsumer = new AIEngineResponseConsumerImpl(
+                chatListener,
+                monitor,
+                engine,
+                conversation,
+                engineDescriptor,
+                new AIFunctionCallConsumer(chatSession, chatListener, conversation, monitor)
+            );
+            engineResponseConsumer.setLogResponses(isLoggingEnabled());
+
+            if (request.confirmation() != null) {
+                if (request.confirmation() instanceof AIFunctionCallConfirmation fcc) {
+                    processFunctionCalls(
+                        chatSession,
+                        conversation,
+                        chatListener,
+                        functionContext,
+                        request,
+                        fcc.getFunctionCalls()
+                    );
+                } else {
+                    conversation.promptProcessed(true);
+                    throw new DBCFeatureNotSupportedException();
+                }
+            } else {
+                // Stream request runs in async mode
+                // When request finishes we process all function calls in response consumer
+                executeEngineStreamRequest(
+                    monitor,
+                    functionContext,
+                    curMessages,
+                    engineResponseConsumer,
+                    engine,
+                    engineDescriptor
+                );
+            }
+
+            return future;
+        } catch (Exception e) {
+            if (e instanceof DBException dbe) {
+                throw dbe;
+            } else {
+                throw new DBException("Error requesting completion stream", e);
+            }
+        }
+    }
+
+    private void executeEngineStreamRequest(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIFunctionContext functionContext,
+        @NotNull List<AIMessage> messages,
+        @NotNull AIEngineResponseConsumer listener,
+        @NotNull AIEngine<?> engine,
+        @NotNull AIEngineDescriptor engineDescriptor
+    ) throws DBException {
+        AIEngineRequest request = getRequestFactory().build(
+            monitor,
+            this,
+            engine,
+            engineDescriptor,
+            functionContext,
+            messages
+        );
+
+        if (isLoggingEnabled()) {
+            log.debug("AI chat request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
+            log.debug("AI chat request functions: " + request.getFunctions().stream().map(AIFunctionDescriptor::getId).toList());
+
+            AIDatabaseContext context = functionContext.getContext();
+            if (context != null && PRINT_SCOPE_INFO) {
+                if (context.getScope() == AIDatabaseScope.CUSTOM && !CommonUtils.isEmpty(context.getCustomEntities())) {
+                    List<String> selectedObjects = context.getCustomEntities().stream().filter(Objects::nonNull)
+                        .map(it -> DBUtils.getObjectTypeName(it) + ": " + it.getName()).toList();
+                    log.debug("AI chat request custom scope selected objects (" + selectedObjects.size() + "): " + selectedObjects);
+                } else {
+                    log.debug("AI chat request scope: " + context.getScope());
+                }
+            }
+        }
+
+        AtomicBoolean isTruncated = new AtomicBoolean();
+        isTruncated.set(request.wasPromptTruncated());
+        callWithRetry(listener, () -> {
+            if (isTruncated.get()) {
+                isTruncated.set(false);
+                listener.warning(
+                    "Context description was truncated");
+            }
+            int systemPromptLength = AIPromptUtils.calcSystemPromptLength(request.getMessages());
+            listener.systemPromptLength(systemPromptLength);
+            if (AIUtils.useStreamMode()) {
+                engine.requestCompletionStream(monitor, request, listener);
+            } else {
+                AIEngineResponse response = engine.requestCompletion(monitor, request);
+
+                if (response.getFunctionCall() != null) {
+                    listener.nextChunk(new AIEngineResponseChunk(response.getFunctionCall()));
+                    listener.usage(response.getUsage());
+                    listener.completeBlock();
+                } else if (response.getVariants() != null) {
+                    listener.nextChunk(new AIEngineResponseChunk(response.getVariants()));
+                    listener.usage(response.getUsage());
+                    listener.completeBlock();
+                } else {
+                    listener.error(new DBException("Empty response"));
+                }
+            }
+
+            return null;
+        });
+    }
+
+    private void processFunctionCalls(
+        @NotNull AIChatSession chatSession,
+        @NotNull AIChatConversation conversation,
+        @NotNull AIChatResponseConsumer chatListener,
+        @NotNull AIFunctionContext functionContext,
+        @NotNull AIChatRequest request,
+        @NotNull List<AIFunctionCall> functionCalls
+    ) {
+        if (chatSession.isClosed()) {
+            return;
+        }
+        List<AIMessage> messages = request.messages();
+        AIDatabaseContext context = request.context();
+        List<AIMessage> newMessages = new ArrayList<>(messages);
+        RuntimeUtils.scheduleJob("Process AI function calls", monitor -> {
+            // Post-process function calls
+            for (AIFunctionCall fc : functionCalls) {
+                AIFunctionDescriptor function = fc.getOrResolveFunction(getToolboxManager());
+                if (function == null) {
+                    log.warn("Invalid function call without function reference");
+                    continue;
+                }
+                if (functionContext.getFunctionCalls().size() >= AIAssistantImpl.MAX_FUNCTION_CALLS) {
+                    chatListener.error(
+                        new DBException(
+                            "Too many AI function calls (" + AIAssistantImpl.MAX_FUNCTION_CALLS + ")"));
+                    chatListener.complete(List.of(), true);
+                    return;
+                }
+                fc.transformArguments(context, functionContext);
+                functionContext.addFunctionCall(fc);
+
+                try {
+                    // Call
+                    AIFunctionResult result;
+                    if (function.getType() == AIFunctionType.ACTION && DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                        result = new AIFunctionResult(AIFunctionType.ACTION, fc.getArguments());
+                    } else {
+                        result = this.callFunction(functionContext, fc);
+                    }
+                    // Create meta info
+                    AIMessage fcMessage = AIMessage.functionCall(fc, result);
+                    // Visualize result in chat
+                    chatListener.processFunctionCall(fcMessage);
+                    if (function.getType() == AIFunctionType.INFORMATION || result.getException() != null) {
+                        newMessages.add(fcMessage);
+                    }
+                } catch (Exception e) {
+                    chatListener.error(e);
+                    conversation.promptProcessed(true);
+                    return;
+                }
+            }
+            if (!newMessages.equals(messages)) {
+                try {
+                    generateTextStream(monitor, chatSession, conversation, new AIChatRequest(context, newMessages, null), chatListener);
+                } catch (Exception e) {
+                    chatListener.error(e);
+                }
+            } else {
+                // No more messages for AI
+                conversation.promptProcessed(true);
+            }
+        });
+    }
+
+    @Override
+    public boolean isFunctionSupported() {
+        AIToolboxManager toolboxManager = this.getToolboxManager();
+        AIFunctionSettings functionSettings = toolboxManager.getFunctionSettings();
+        if (!functionSettings.isFunctionsEnabled()) {
+            return false;
+        }
+        try {
+            AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+            return engineDescriptor.isSupportsFunctions();
+        } catch (DBException e) {
+            log.debug(e);
+            return false;
+        }
+    }
+
+    @NotNull
+    @Override
     public AIToolboxManager getToolboxManager() {
         if (toolboxManager == null) {
             toolboxManager = createToolboxManager();
@@ -172,10 +392,21 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
+    @Override
+    public AIChatSession.SessionIdProvider getChatSessionProvider() {
+        return monitor -> chatSessionId;
+    }
+
+    @NotNull
+    @Override
+    public AIChatStorage createChatStorage() {
+        return new QMAIChatStorageInMemory();
+    }
+
+    @NotNull
     public AIEngineRequest buildAiEngineRequest(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable AIDatabaseContext context,
-        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
@@ -185,8 +416,7 @@ public class AIAssistantImpl implements AIAssistant {
             this,
             engine,
             engineDescriptor,
-            systemGenerator,
-            context,
+            functionContext,
             messages
         );
     }
@@ -201,8 +431,7 @@ public class AIAssistantImpl implements AIAssistant {
         return new AIFunctionContext(
             monitor,
             context,
-            systemGenerator,
-            messages
+            systemGenerator
         );
     }
 
@@ -215,16 +444,22 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = getToolboxManager().getFunctionById(functionName);
+        AIFunctionDescriptor function = functionCall.getFunction();
+        if (function == null) {
+            function = getToolboxManager().getFunctionByFullId(functionName);
+            if (function != null) {
+                functionCall.setFunction(function);
+            }
+        }
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
-        functionCall.setFunction(function);
-        log.debug("Call AI function '" + function.getId() + "'");
         Map<String, Object> arguments = functionCall.getArguments();
-        if (arguments == null) {
-            arguments = Map.of();
-        }
+        log.debug("Call AI function " + function.getId() + "(" +
+            arguments.entrySet().stream()
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .collect(Collectors.joining(",")) +
+            ")");
         DBPDataSourceContainer container = context.getContext() != null
             ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
         AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(
@@ -234,7 +469,19 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return function.getToolbox().callFunction(context, function, arguments);
+        AIFunctionResult result;
+        try {
+            result = function.getToolbox().callFunction(context, function, arguments);
+        } catch (DBException e) {
+            result = new AIFunctionResult(
+                function.getType(),
+                "Error calling function '" + function.getId() + "': " + e.getMessage(),
+                null,
+                e
+            );
+        }
+
+        return result;
     }
 
     protected void checkAiEnablement() throws DBException {

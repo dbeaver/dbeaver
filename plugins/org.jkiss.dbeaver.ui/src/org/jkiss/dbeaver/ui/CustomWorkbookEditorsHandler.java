@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
@@ -28,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
+
     private String pattern;
 
     @Override
@@ -35,9 +33,9 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                return element instanceof EditorReference
+                return element instanceof EditorReference ref
                     && pattern != null
-                    && SearchCellLabelProvider.matches(pattern, ((EditorReference) element).getTitle());
+                    && SearchCellLabelProvider.matches(pattern, getFilterText(ref));
             }
         };
     }
@@ -67,6 +65,16 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
             public String getPattern() {
                 return pattern;
             }
+
+            @Override
+            public void update(@NotNull ViewerCell cell) {
+                super.update(cell);
+
+                if (!(cell.getElement() instanceof EditorReference ref)) {
+                    return;
+                }
+                ConnectionLabelUtils.applyConnectionInfo(cell, ConnectionLabelUtils.getDataSourceContainer(ref));
+            }
         });
 
         ColumnViewerToolTipSupport.enableFor(column.getViewer());
@@ -75,6 +83,11 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     @Override
     protected void setMatcherString(String pattern) {
         this.pattern = pattern;
+    }
 
+    @NotNull
+    private String getFilterText(@NotNull EditorReference ref) {
+        String label = getWorkbenchPartReferenceText(ref);
+        return ConnectionLabelUtils.appendConnectionSuffix(label, ConnectionLabelUtils.getDataSourceContainer(ref));
     }
 }

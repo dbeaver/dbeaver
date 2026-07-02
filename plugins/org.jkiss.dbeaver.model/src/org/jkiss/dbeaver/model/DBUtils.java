@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.runtime.DBServiceConnections;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -68,6 +69,45 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
+
+    private static final ResultSetValuePath.PathItemVisitor<Object, Object> RSV_PATH_ITEM_VALUE_RESOLVER
+        = new ResultSetValuePath.PathItemVisitor<>() {
+
+        @Nullable
+        @Override
+        public Object visitIndexItem(@NotNull ResultSetValuePath.PathIndexItem indexItem, @NotNull Object arg) {
+            if (arg instanceof Collection<?> c) {
+                if (indexItem.index() < c.size()) {
+                    if (arg instanceof List<?> l) {
+                        return l.get(indexItem.index());
+                    } else {
+                        Object[] items = c.toArray();
+                        return items[indexItem.index()];
+                    }
+                } else {
+                    log.debug("Path index item " + indexItem.index() + " is out of range for " + arg);
+                }
+            } else {
+                log.debug("Cannot apply path index item to " + arg);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitAttributeItem(@NotNull ResultSetValuePath.PathAttributeItem attrItem, @NotNull Object arg) {
+            if (arg instanceof DBDComposite c) {
+                try {
+                    return c.getAttributeValue(attrItem.attribute());
+                } catch (DBCException e) {
+                    log.debug("Failed to apply path attribute item to " + arg, e);
+                }
+            } else {
+                log.debug("Cannot apply path attribute item to " + arg);
+            }
+            return null;
+        }
+    };
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
@@ -124,6 +164,16 @@ public final class DBUtils {
     }
 
     @NotNull
+    public static String getUnQuotedNormalizedIdentifier(@NotNull SQLDialect dialect, @NotNull String str) {
+        if (dialect.isQuotedIdentifier(str)) {
+            str = dialect.getUnquotedIdentifier(str);
+        } else {
+            str = dialect.storesUnquotedCase().transform(str);
+        }
+        return str;
+    }
+
+    @NotNull
     public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str) {
         return dataSource.getSQLDialect().getUnquotedIdentifier(str);
     }
@@ -173,6 +223,9 @@ public final class DBUtils {
         if (dataSource == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
+                if (namePart == null) {
+                    continue;
+                }
                 if (isVirtualObject(namePart)) {
                     continue;
                 }
@@ -283,8 +336,36 @@ public final class DBUtils {
         @NotNull DBSObjectContainer rootSC,
         @Nullable String catalogName,
         @Nullable String schemaName,
-        @Nullable String objectName)
-        throws DBException {
+        @Nullable String objectName
+    ) throws DBException {
+        return getObjectByPath(monitor, executionContext, rootSC, catalogName, schemaName, objectName, false);
+    }
+
+    @Nullable
+    public static DBSObject getObjectByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName,
+        boolean forceConnection
+    ) throws DBException {
+        return getObjectByPath(
+            monitor, executionContext, rootSC, catalogName, schemaName, objectName, forceConnection, true);
+    }
+
+    @Nullable
+    public static DBSObject getObjectByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName,
+        boolean forceConnection,
+        boolean caseSensitive
+    ) throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -294,21 +375,34 @@ public final class DBUtils {
         }
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
             // We have both both - just search both
-            DBSObject catalog = rootSC.getChild(monitor, catalogName);
+            DBSObject catalog = getContainerChild(monitor, rootSC, catalogName, caseSensitive);
             if (!(catalog instanceof DBSObjectContainer catalogOC)) {
                 return null;
             }
             rootSC = catalogOC;
-            DBSObject schema = rootSC.getChild(monitor, schemaName);
+            DBSObject schema = getContainerChild(monitor, rootSC, schemaName, caseSensitive);
             if (!(schema instanceof DBSObjectContainer schemaOC)) {
                 return null;
             }
             rootSC = schemaOC;
         } else if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
             // One container name
-            String containerName = !CommonUtils.isEmpty(catalogName) ? catalogName : schemaName;
-            DBSObject sc = rootSC.getChild(monitor, containerName);
-            if (!DBStructUtils.isConnectedContainer(sc)) {
+            String containerName = CommonUtils.nvl(catalogName, schemaName);
+
+            // Check for side case: when there is catalog and schema with the same name
+            // and only schema name was specified. Then we have to use default catalog.
+            Class<? extends DBSObject> rootChildType = rootSC.getPrimaryChildType(monitor);
+            DBSObjectContainer tryContainer = rootSC;
+            if (DBSCatalog.class.isAssignableFrom(rootChildType) && !CommonUtils.isEmpty(schemaName)) {
+                // Schema name specified but root children are catalogs
+                // We should get default database and look for schema inside
+                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                if (contextDefaults != null && contextDefaults.getDefaultCatalog() != null) {
+                    tryContainer = contextDefaults.getDefaultCatalog();
+                }
+            }
+            DBSObject sc = getContainerChild(monitor, tryContainer, containerName, caseSensitive);
+            if (!forceConnection && !DBStructUtils.isConnectedContainer(sc)) {
                 sc = null;
             }
             if (!(sc instanceof DBSObjectContainer)) {
@@ -328,7 +422,7 @@ public final class DBUtils {
                         sc = selectedObject;
                     } else if (selectedObject instanceof DBSObjectContainer objectContainer) {
                         // Get schema in catalog
-                        sc = objectContainer.getChild(monitor, containerName);
+                        sc = getContainerChild(monitor, objectContainer, containerName, caseSensitive);
                     }
                 }
                 if (!(sc instanceof DBSObjectContainer)) {
@@ -339,7 +433,7 @@ public final class DBUtils {
                 // Probably on this step we found a catalog, but not a schema.
                 Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
-                    DBSObject child = catalog.getChild(monitor, schemaName);
+                    DBSObject child = getContainerChild(monitor, catalog, schemaName, caseSensitive);
                     if (child instanceof DBSSchema) {
                         sc = child;
                     }
@@ -350,7 +444,7 @@ public final class DBUtils {
         if (objectName == null) {
             return rootSC;
         }
-        final DBSObject object = rootSC.getChild(monitor, objectName);
+        final DBSObject object = getContainerChild(monitor, rootSC, objectName, caseSensitive);
         if (object instanceof DBSEntity) {
             return object;
         } else {
@@ -358,12 +452,34 @@ public final class DBUtils {
             // Try to use selected object
             DBSObject selectedObject = DBUtils.getSelectedObject(executionContext);
             if (selectedObject instanceof DBSObjectContainer oc) {
-                return oc.getChild(monitor, objectName);
+                return getContainerChild(monitor, oc, objectName, caseSensitive);
             }
 
             // Table container not found
             return object;
         }
+    }
+
+    @Nullable
+    private static DBSObject getContainerChild(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull String childName,
+        boolean caseSensitive
+    ) throws DBException {
+        DBSObject child = container.getChild(monitor, childName);
+        if (child != null || caseSensitive) {
+            return child;
+        }
+        Collection<? extends DBSObject> children = container.getChildren(monitor);
+        if (children != null) {
+            for (DBSObject candidate : children) {
+                if (childName.equalsIgnoreCase(candidate.getName())) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
@@ -555,6 +671,24 @@ public final class DBUtils {
         @NotNull DBPProject project,
         @NotNull String objectId
     ) throws DBException {
+        return findObjectById(monitor, project, objectId, false);
+    }
+
+    /**
+     * Find object by unique ID.
+     * Note: this function searches only inside DBSObjectContainer objects.
+     * Usually it works only for entities and entity containers (schemas, catalogs).
+     *
+     * @param tryRefreshContainers if {@code true}, then if object is not found in container,
+     *                             it will try to refresh container and search again.
+     */
+    @Nullable
+    public static DBSObject findObjectById(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPProject project,
+        @NotNull String objectId,
+        boolean tryRefreshContainers
+    ) throws DBException {
         String[] names = objectId.split("/");
         DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
         if (dataSourceContainer == null) {
@@ -582,6 +716,11 @@ public final class DBUtils {
             for (int i = 1; i < names.length - 1; i++) {
                 String name = names[i];
                 DBSObject child = sc.getChild(monitor, name);
+                if (child == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
+                    // Try refreshing, maybe object was not cached
+                    ro.refreshObject(monitor);
+                    child = sc.getChild(monitor, name);
+                }
                 if (child == null) {
                     log.debug("Can't find child container " + name + " in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                     return null;
@@ -601,6 +740,11 @@ public final class DBUtils {
         String objectName = names[names.length - 1];
         if (sc != null) {
             DBSObject object = sc.getChild(monitor, objectName);
+            if (object == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
+                // Try refreshing, maybe object was not cached
+                ro.refreshObject(monitor);
+                object = sc.getChild(monitor, objectName);
+            }
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                 throw new DBException("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
@@ -707,7 +851,8 @@ public final class DBUtils {
                         dataContainer,
                         dataSource,
                         customAttributes.get(i),
-                        bindings.length + i);
+                        bindings.length + i
+                    );
                 }
                 DBDAttributeBinding[] combinedAttrs = new DBDAttributeBinding[bindings.length + customBindings.length];
                 System.arraycopy(bindings, 0, combinedAttrs, 0, bindings.length);
@@ -723,6 +868,38 @@ public final class DBUtils {
         }
     }
 
+    /**
+     * Obtain row item value by following the given valuePath
+     * @param row element of data
+     * @param valuePath through the tree of row subvalues
+     */
+    @Nullable
+    public static Object getRowValueByPath(@NotNull DBDValueRow row, @NotNull ResultSetValuePath valuePath) {
+        if (!(valuePath.pathItems().getFirst() instanceof ResultSetValuePath.PathAttributeItem rootAttr
+            && rootAttr.attribute() instanceof DBDAttributeBinding rootBinding)
+        ) {
+            log.debug("Root valuePath item expected to be an attribute binding.");
+            return null;
+        }
+
+        Object[] values = row.getValues();
+        int attrIndex = rootBinding.getOrdinalPosition();
+        if (attrIndex >= values.length) {
+            // Shouldn't be here
+            return null;
+        }
+        Object value = values[attrIndex];
+        int i = 1;
+        while (value != null && i < valuePath.pathItems().size()) {
+            value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
+            i++;
+        }
+        if (i < valuePath.pathItems().size()) {
+            log.debug("ResultSet value valuePath was not completely applied.");
+        }
+        return value;
+    }
+
     @Nullable
     public static Object getAttributeValue(
         @NotNull DBDAttributeBinding attribute,
@@ -730,6 +907,72 @@ public final class DBUtils {
         @NotNull Object[] row
     ) {
         return getAttributeValue(attribute, allAttributes, row, null, false);
+    }
+
+    @Nullable
+    private static Object getAttributeValueByBindings(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @NotNull int[] nestedIndexes
+    ) {
+        ListNode<DBDAttributeBinding> path = null;
+        for (DBDAttributeBinding attr = attribute; attr != null; attr = attr.getParentObject()) {
+            path = ListNode.push(path, attr);
+        }
+
+        int rootIndex = -1;
+        for (DBDAttributeBinding allAttribute : allAttributes) {
+            if (allAttribute == path.data) {
+                rootIndex = allAttribute.getOrdinalPosition();
+                break;
+            }
+        }
+
+        if (rootIndex < 0) {
+            log.debug("Failed to resolve root attribute index by its binding.");
+            return null;
+        }
+
+        Object value = row[rootIndex];
+        int currentIndex = 0;
+        for (ListNode<DBDAttributeBinding> node = path.next; node != null;) {
+            if (value instanceof Collection<?> c) { // if we have a collection
+                int index;
+                if (currentIndex < nestedIndexes.length) { // and nestedIndex is available
+                    index = nestedIndexes[currentIndex++]; // then we get it
+                } else {
+                    log.debug("Not enough nested indexes given to apply attribute bindings to the given values hierarchy.");
+                    return null;
+                }
+                if (index < c.size()) { // and apply presented nestedIndex
+                    if (value instanceof List<?> l) {
+                        value = l.get(index);
+                    } else {
+                        Object[] items = c.toArray();
+                        value = items[index];
+                    }
+                } else {
+                    log.debug("Nested index is out of collection range at a certain level of the given values hierarchy.");
+                    return null;
+                }
+            } else if (value instanceof DBDComposite c) {
+                try {
+                    value = c.getAttributeValue(node.data);
+                } catch (DBCException e) {
+                    log.debug("Failed to apply attribute binding to the given composite.", e);
+                    return null;
+                }
+                node = node.next;
+            } else {
+                log.debug("Failed to apply attribute binding to the value of an unknown kind.");
+                return null;
+            }
+        }
+        if (currentIndex < nestedIndexes.length) {
+            log.debug("Not all of nested indexes were used, we might have missed the desired value.");
+        }
+        return value;
     }
 
     @Nullable
@@ -773,7 +1016,17 @@ public final class DBUtils {
 
             if (!(curValue instanceof DBDCollection)) {
                 if (remainingAttributes == 0) {
-                    return DBDVoid.INSTANCE;
+                    if (remainingIndices == 0) {
+                        return DBDVoid.INSTANCE;
+                    } else {
+                        // Indexes were not applied correctly due to incompleteness of value referencing approach,
+                        // so try to use bindings hierarchy as a traversing path through the row subvalues tree.
+                        // Assuming given nestedIndexes is enough, which might not be true, as it is a plain array and
+                        // doesn't carry information on which index should be applied to which collection.
+                        // NOTE: doesn't fix all the other cases when the value location is not covered by bindings.
+                        Object value = getAttributeValueByBindings(attribute, allAttributes, row, nestedIndexes);
+                        return value == null ? DBDVoid.INSTANCE : value;
+                    }
                 }
                 remainingAttributes -= 1;
                 DBDAttributeBinding parent = Objects.requireNonNull(attribute.getParent(remainingAttributes));
@@ -1173,7 +1426,11 @@ public final class DBUtils {
         return null;
     }
 
-    public static boolean referrerMatches(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer referrer, @NotNull Collection<? extends DBSEntityAttribute> attributes) throws DBException {
+    public static boolean referrerMatches(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer referrer,
+        @NotNull Collection<? extends DBSEntityAttribute> attributes
+    ) throws DBException {
         final List<? extends DBSEntityAttributeRef> refs = referrer.getAttributeReferences(monitor);
         if (refs != null && !refs.isEmpty() && attributes.size() == refs.size()) {
             Iterator<? extends DBSEntityAttribute> attrIterator = attributes.iterator();
@@ -1226,7 +1483,11 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull DBSEntityAttribute tableColumn) throws DBException {
+    public static DBSEntityAttributeRef getConstraintAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint,
+        @NotNull DBSEntityAttribute tableColumn
+    ) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -1239,7 +1500,11 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull String columnName) throws DBException {
+    public static DBSEntityAttributeRef getConstraintAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint,
+        @NotNull String columnName
+    ) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -1799,7 +2064,7 @@ public final class DBUtils {
     public static DBSObject getDefaultOrActiveObject(@NotNull DBSInstance object) {
         DBCExecutionContext defaultContext = getDefaultContext(object, true);
         DBSObject activeObject = defaultContext == null ? null : getActiveInstanceObject(defaultContext);
-        return activeObject == null ? object.getDataSource() : activeObject;
+        return CommonUtils.notNull(activeObject, object.getDataSource());
     }
 
     @Nullable
@@ -2222,7 +2487,8 @@ public final class DBUtils {
         @NotNull DBCEntityMetaData entityMeta,
         boolean transformName
     ) throws DBException {
-        final DBPDataSource dataSource = objectContainer.getDataSource();
+        DBPDataSource dataSource = objectContainer.getDataSource();
+        assert dataSource != null;
         String catalogName = entityMeta.getCatalogName();
         String schemaName = entityMeta.getSchemaName();
         String entityName = entityMeta.getEntityName();
@@ -2384,14 +2650,17 @@ public final class DBUtils {
         int suffix = 1;
 
         while (true) {
-            final String name = Objects.requireNonNull(DBObjectNameCaseTransformer.transformName(parent.getDataSource(), NLS.bind(template, suffix)));
+            final String name = Objects.requireNonNull(
+                DBObjectNameCaseTransformer.transformName(parent.getDataSource(), NLS.bind(template, suffix)));
 
             try {
                 boolean exists = extractor.extract(parent, monitor, name) != null;
 
                 if (!exists) {
                     for (DBPObject object : context.getEditedObjects()) {
-                        if (type.isInstance(object) && ((DBSObject) object).getParentObject() == parent && name.equalsIgnoreCase(((DBSObject) object).getName())) {
+                        if (object instanceof DBSObject dbsObject && type.isInstance(object) &&
+                            dbsObject.getParentObject() == parent && name.equalsIgnoreCase(dbsObject.getName())
+                        ) {
                             exists = true;
                             break;
                         }
@@ -2581,6 +2850,15 @@ public final class DBUtils {
             items.add(token);
         }
         return items;
+    }
+
+    @Nullable
+    public static DBPDataSource getObjectDataSource(@NotNull Object object) {
+        return switch (object) {
+            case DBSObject o -> o.getDataSource();
+            case DBPContextProvider c -> c.getExecutionContext() == null ? null : c.getExecutionContext().getDataSource();
+            default -> null;
+        };
     }
 
     public interface ChildExtractor<PARENT, CHILD> {

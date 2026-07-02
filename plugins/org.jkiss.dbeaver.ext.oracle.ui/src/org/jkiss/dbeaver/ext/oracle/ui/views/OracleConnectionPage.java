@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthModelDatabaseNative;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
@@ -184,8 +185,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 
     }
 
-    private void createTNSConnectionControls(CTabFolder protocolFolder)
-    {
+    private void createTNSConnectionControls(@NotNull CTabFolder protocolFolder) {
         CTabItem protocolTabTNS = new CTabItem(protocolFolder, SWT.NONE);
         protocolTabTNS.setText(OracleUIMessages.dialog_connection_tns_tab);
         protocolTabTNS.setData(OracleConstants.ConnectionType.TNS);
@@ -210,8 +210,8 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         });
     }
 
-    private Collection<String> getAvailableServiceNames()
-    {
+    @NotNull
+    private Collection<String> getAvailableServiceNames() {
         String tnsPath = tnsPathText.getText();
         if (!CommonUtils.isEmpty(tnsPath)) {
             File tnsFile = new File(tnsPath);
@@ -263,8 +263,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         }
     }
 
-    private void createCustomConnectionControls(CTabFolder protocolFolder)
-    {
+    private void createCustomConnectionControls(@NotNull CTabFolder protocolFolder) {
         CTabItem protocolTabCustom = new CTabItem(protocolFolder, SWT.NONE);
         protocolTabCustom.setText(OracleUIMessages.dialog_connection_custom_tab);
         protocolTabCustom.setData(OracleConstants.ConnectionType.CUSTOM);
@@ -285,8 +284,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         connectionUrlText.addModifyListener(controlModifyListener);
     }
 
-    private void createClientHomeGroup(Composite bottomControls)
-    {
+    private void createClientHomeGroup(@NotNull Composite bottomControls) {
         oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
             @Override
             protected void handleHomeChange()
@@ -397,8 +395,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (oraHomeSelector != null) {
             connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
@@ -430,8 +427,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         super.saveSettings(dataSource);
     }
 
-    private void updateUI()
-    {
+    private void updateUI() {
         if (activated) {
             site.updateButtons();
         }
@@ -439,22 +435,22 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
 
     private class ControlsListener implements ModifyListener, SelectionListener {
         @Override
-        public void modifyText(ModifyEvent e) {
+        public void modifyText(@NotNull ModifyEvent e) {
             updateUI();
         }
         @Override
-        public void widgetSelected(SelectionEvent e) {
+        public void widgetSelected(@NotNull SelectionEvent e) {
             updateUI();
         }
         @Override
-        public void widgetDefaultSelected(SelectionEvent e) {
+        public void widgetDefaultSelected(@NotNull SelectionEvent e) {
             updateUI();
         }
     }
 
+    @Nullable
     @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
-    {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {
             new OracleConnectionExtraPage(),
             new DriverPropertiesDialogPage(this),

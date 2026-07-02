@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class CubridUserManager
     protected CubridPrivilage createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @NotNull final Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -144,7 +144,7 @@ public class CubridUserManager
         }
 
         @Override
-        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+        public void afterExecute(@NotNull DBCSession session, @Nullable Throwable error) throws DBCException {
             super.afterExecute(session, error);
             if (error == null) {
                 GenericSchema user = this.database.getParentObject().getSchema(database.getName());
@@ -175,12 +175,12 @@ public class CubridUserManager
     }
 
     @Override
-    public boolean canEditObject(CubridPrivilage object) {
+    public boolean canEditObject(@NotNull CubridPrivilage object) {
         return !object.getDataSource().isShard();
     }
 
     @Override
-    public boolean canDeleteObject(CubridPrivilage object) {
+    public boolean canDeleteObject(@NotNull CubridPrivilage object) {
         return !object.getDataSource().isShard();
     }
 }

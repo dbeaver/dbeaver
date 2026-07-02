@@ -1,0 +1,113 @@
+.attachment-files {
+    margin-bottom: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.attachment-item:hover {
+    background-color: rgba(76, 175, 80, 0.15);
+}
+
+.attachment-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.attachment-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9em;
+}
+
+.attachment-card {
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    border-radius: 8px;
+    background: rgba(76, 175, 80, 0.1);
+    overflow: hidden;
+    padding: 8px;
+    position: relative;
+}
+
+.attachment-close-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+    z-index: 10;
+}
+
+.attachment-close-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.attachment-close-icon:active {
+    transform: scale(0.95);
+}
+
+.attachment-files {
+    margin-bottom: 8px;
+}
+
+.attachment-actions-response {
+    display: flex;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.attachment-actions-response.hidden {
+    display: none;
+}
+
+.attachment-btn {
+    padding: 6px 12px;
+    border: 1px solid rgba(76, 175, 80, 0.5);
+    border-radius: 4px;
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--text-color);
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    transition: background-color 0.2s;
+}
+
+.attachment-btn:hover {
+    background: rgba(76, 175, 80, 0.25);
+}
+
+/* ========================================
+   ACTION STATUS MESSAGE
+   ======================================== */
+.attachment-status {
+    padding: 8px 12px;
+    margin-top: 8px;
+    border-top: 1px solid rgba(76, 175, 80, 0.2);
+    color: var(--text-color);
+    font-size: 0.9em;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.attachment-status.hidden {
+    display: none;
+}

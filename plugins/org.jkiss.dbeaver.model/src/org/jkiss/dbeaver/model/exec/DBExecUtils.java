@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DefaultInvalidationFeedbackHandler;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
@@ -65,6 +66,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.*;
 
 /**
@@ -162,6 +164,24 @@ public class DBExecUtils {
         }
 
         return DBPErrorAssistant.ErrorType.NORMAL;
+    }
+
+    public static boolean isExecutionCanceled(@Nullable DBPDataSource dataSource, @NotNull Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof InterruptedException ||
+                t instanceof DBInterruptedException ||
+                t instanceof ClosedByInterruptException) {
+                return true;
+            }
+            if (dataSource != null &&
+                discoverErrorType(dataSource, t) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     /**
@@ -826,13 +846,16 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        if (sqlQuery == null) {
+                        boolean isAllColumns = sqlQuery != null && sqlQuery.getSelectItemAsteriskIndex() != -1;
+                        boolean isPlainOrAsterisk = selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*"));
+                        if (sqlQuery == null || isAllColumns || isPlainOrAsterisk) {
+                            // Ensure all attributes are cached.
+                            // Some implementations of DBSEntity use struct caches that provide granular
+                            // caching for children (attributes), which is good in some cases, but awful
+                            // here, since we might end up querying one attribute at a time
+                            attrEntity.getAttributes(monitor);
+
                             tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
-                        } else {
-                            boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
-                            if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
-                                tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
-                            }
                         }
                     }
 

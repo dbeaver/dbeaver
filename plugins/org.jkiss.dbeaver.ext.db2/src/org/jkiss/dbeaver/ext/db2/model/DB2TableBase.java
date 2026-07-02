@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDescriptionEditable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +51,7 @@ import java.util.Collections;
  * @author Denis Forveille
  */
 public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
-    implements DBPRefreshableObject, DB2StatefulObject, DBPObjectStatistics {
+    implements DBPRefreshableObject, DB2StatefulObject, DBPObjectStatistics, DBSDescriptionEditable {
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
 
@@ -139,9 +140,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     // -----------------
     @Override
     @Association
-    public Collection<DB2Index> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        return monitor == null ? tableIndexCache.getCachedObjects() : tableIndexCache.getAllObjects(monitor, this);
+    public Collection<DB2Index> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return tableIndexCache.getAllObjects(monitor, this);
     }
 
     // -----------------
@@ -224,8 +224,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         return remarks;
     }
 
-    public void setDescription(String description)
-    {
+    @Override
+    public void setDescription(@Nullable String description) {
         this.remarks = description;
     }
 

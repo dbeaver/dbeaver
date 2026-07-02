@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
 
     private final ObjectType implType;
     private final int order;
+    private final boolean alwaysEnabled;
     private final Expression enablementExpression;
     private INavigatorNodeActionHandler instance;
 
@@ -41,6 +42,7 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
 
         this.implType = new ObjectType(config.getAttribute("class"));
         this.order = CommonUtils.toInt(config.getAttribute("order"));
+        this.alwaysEnabled = CommonUtils.toBoolean(config.getAttribute("alwaysEnabled"));
         this.enablementExpression = getEnablementExpression(config);
     }
 
@@ -58,6 +60,10 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
 
     public int getOrder() {
         return order;
+    }
+
+    public boolean isAlwaysEnabled() {
+        return alwaysEnabled;
     }
 
     public boolean appliesTo(@NotNull DBPObject object) {

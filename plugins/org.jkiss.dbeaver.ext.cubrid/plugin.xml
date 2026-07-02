@@ -39,13 +39,13 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
+                                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
                                     <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -80,13 +80,13 @@
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip">
                                         <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                             <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
+                                    <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="%tree.foreign_keys.node.tip">
                                         <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                             <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                             </items>
@@ -141,8 +141,12 @@
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.table_triggers.node.name" icon="#folder_trigger" description="%tree.table_triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.user_triggers.node.name" icon="#folder_trigger" description="%tree.user_triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="userTriggers" icon="#trigger">
                             </items>
                         </folder>
                         <folder id="procedures-or-functions" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">
@@ -237,6 +241,8 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSynonymManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridUserManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridUniqueKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridForeignKeyManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableForeignKey"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

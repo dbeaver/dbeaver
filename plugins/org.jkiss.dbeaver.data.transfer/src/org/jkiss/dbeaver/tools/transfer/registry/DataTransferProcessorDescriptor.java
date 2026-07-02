@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import java.util.List;
 public class DataTransferProcessorDescriptor extends AbstractDescriptor implements DBPRegistryDescriptor<IDataTransferProcessor> {
     private final DataTransferNodeDescriptor node;
     private final String id;
+    private final String shortId;
     private final ObjectType processorType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final String name;
@@ -61,6 +62,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         super(config);
         this.node = node;
         this.id = config.getAttribute("id");
+        this.shortId = config.getAttribute("shortId");
         this.processorType = new ObjectType(config.getAttribute("class"));
         this.name = config.getAttribute("label");
         this.description = config.getAttribute("description");
@@ -82,6 +84,11 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     @NotNull
     public String getId() {
         return id;
+    }
+
+    @Nullable
+    public String getShortId() {
+        return shortId;
     }
 
     @NotNull

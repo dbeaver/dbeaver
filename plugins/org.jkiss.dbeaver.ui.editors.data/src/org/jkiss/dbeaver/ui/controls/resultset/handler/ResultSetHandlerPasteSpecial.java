@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,13 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
         private static final String PROP_IGNORE_QUOTES = "ignoreQuotes";
         private static final String PROP_INSERT_NULLS = "insertNulls";
         private static final String PROP_NULL_VALUE_MARK = "nullValueMark";
+        private static final String PROP_INSERT_NEW_ROWS = "insertNewRows";
 
         private final IDialogSettings dialogSettings;
         private final ResultSetPasteSettings pasteSettings;
 
         private Button insertMultipleRowsCheck;
+        private Button insertNewRowsCheck;
         private Button ignoreQuotesCheck;
         private Button insertNullsCheck;
         private Combo nullValueMarkCombo;
@@ -88,10 +90,14 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
             if (dialogSettings.get(PROP_NULL_VALUE_MARK) != null) {
                 pasteSettings.setNullValueMark(dialogSettings.get(PROP_NULL_VALUE_MARK));
             }
+            if (dialogSettings.get(PROP_INSERT_NEW_ROWS) != null) {
+                pasteSettings.setInsertNewRows(dialogSettings.getBoolean(PROP_INSERT_NEW_ROWS));
+            }
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
             insertMultipleRowsCheck = UIUtils.createCheckbox(
@@ -99,6 +105,13 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
                 ResultSetMessages.dialog_paste_as_insert_multiple_rows_text,
                 ResultSetMessages.dialog_paste_as_insert_multiple_rows_tip,
                 pasteSettings.isInsertMultipleRows(),
+                1
+            );
+            insertNewRowsCheck = UIUtils.createCheckbox(
+                composite,
+                ResultSetMessages.dialog_paste_as_insert_new_rows_text,
+                ResultSetMessages.dialog_paste_as_insert_new_rows_tip,
+                pasteSettings.isInsertNewRows(),
                 1
             );
 
@@ -141,11 +154,13 @@ public class ResultSetHandlerPasteSpecial extends ResultSetHandlerMain {
         @Override
         protected void okPressed() {
             pasteSettings.setInsertMultipleRows(insertMultipleRowsCheck.getSelection());
+            pasteSettings.setInsertNewRows(insertNewRowsCheck.getSelection());
             pasteSettings.setIgnoreQuotes(ignoreQuotesCheck.getSelection());
             pasteSettings.setInsertNulls(insertNullsCheck.getSelection());
             pasteSettings.setNullValueMark(nullValueMarkCombo.getText());
 
             dialogSettings.put(PROP_INSERT_MULTIPLE_ROWS, pasteSettings.isInsertMultipleRows());
+            dialogSettings.put(PROP_INSERT_NEW_ROWS, pasteSettings.isInsertNewRows());
             dialogSettings.put(PROP_IGNORE_QUOTES, pasteSettings.isIgnoreQuotes());
             dialogSettings.put(PROP_INSERT_NULLS, pasteSettings.isInsertNulls());
             dialogSettings.put(PROP_NULL_VALUE_MARK, pasteSettings.getNullValueMark());

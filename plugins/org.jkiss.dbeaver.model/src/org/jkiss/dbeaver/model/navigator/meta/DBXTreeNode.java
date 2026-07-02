@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,11 +144,13 @@ public abstract class DBXTreeNode {
     /**
      * Human readable node type
      */
+    @NotNull
     public abstract String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     /**
      * Human-readable child nodes type
      */
+    @NotNull
     public abstract String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     public boolean isNavigable()
@@ -175,23 +177,24 @@ public abstract class DBXTreeNode {
         return standaloneNode;
     }
 
+    @Nullable
     public DBXTreeNode getParent()
     {
         return parent;
     }
 
+    @NotNull
     public String getId()
     {
         return id;
     }
 
-    public boolean hasChildren(DBNNode context)
+    public boolean hasChildren(@Nullable DBNNode context)
     {
         return hasChildren(context, false);
     }
 
-    public boolean hasChildren(DBNNode context, boolean navigable)
-    {
+    public boolean hasChildren(@Nullable DBNNode context, boolean navigable) {
         if (context instanceof DBNDataSource) {
             return true;
         }

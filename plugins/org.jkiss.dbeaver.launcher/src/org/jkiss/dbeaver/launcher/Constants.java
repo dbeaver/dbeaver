@@ -31,8 +31,7 @@ public class Constants {
     public static final String INTERNAL_OS_OS390 = "OS/390"; //$NON-NLS-1$
     public static final String INTERNAL_OS_ZOS = "z/OS"; //$NON-NLS-1$
 
-    public static final String ARCH_X86 = "x86";//$NON-NLS-1$
-    public static final String ARCH_X86_64 = "x86_64";//$NON-NLS-1$
+    public static final String ARCH_X86_64 = "x86_64"; //$NON-NLS-1$
 
     /**
      * Constant string (value "win32") indicating the platform is running on a
@@ -156,10 +155,17 @@ public class Constants {
 
     public static final String ARG_FORCE_CLI_MODE = "-cli-mode";
 
+    public static final String PRODUCT_DBEAVER_COMMUNITY_PREFIX = "org.jkiss.dbeaver";
+    public static final String PRODUCT_PROPRIETARY_DBEAVER_DESKTOP_PREFIX = "com.dbeaver";
+    public static final String PRODUCT_DBVR_PREFIX = "org.dbvr";
     public static final String PRODUCT_TEAM = "com.dbeaver.app.team";
     public static final String PRODUCT_CLOUDBEAVER   = "io.cloudbeaver";
 
     public static final String DISABLE_REMOTE_CLI = "dbeaver.disable.remote.cli.execution";
     public static final String PROPERTY_ECLIPSE_PRODUCT_ID = "id";
+
+    public static final String ENV_WORKSPACE_PATH = "DBEAVER_WORKSPACE";
+    public static final String ENV_DATA_PATH = "DBEAVER_DATA";
+
 
 }
