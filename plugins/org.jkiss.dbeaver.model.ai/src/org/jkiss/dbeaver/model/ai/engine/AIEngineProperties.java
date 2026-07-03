@@ -29,7 +29,7 @@ public interface AIEngineProperties {
     double getTemperature();
 
     // Checks that properties have all required values
-    boolean isValidConfiguration() throws DBException;
+    boolean isValidConfiguration();
 
     boolean isLoggingEnabled();
 

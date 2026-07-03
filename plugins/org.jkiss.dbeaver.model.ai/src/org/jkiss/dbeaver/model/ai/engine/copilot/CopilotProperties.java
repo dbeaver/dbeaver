@@ -142,7 +142,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Override
-    public boolean isValidConfiguration() throws DBException {
+    public boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(getToken());
     }
 }

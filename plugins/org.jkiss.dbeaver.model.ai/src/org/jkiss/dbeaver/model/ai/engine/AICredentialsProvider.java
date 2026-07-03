@@ -53,7 +53,7 @@ public interface AICredentialsProvider<CREDENTIALS> {
      * which may contain unresolved secrets or placeholders.
      * @return the currently stored credentials without resolving secrets
      */
-    @Nullable
+    @NotNull
     CREDENTIALS getCredentials();
 
     /**
@@ -61,5 +61,5 @@ public interface AICredentialsProvider<CREDENTIALS> {
      *
      * @return true if the credentials are valid, false otherwise
      */
-    boolean isValid() throws DBException;
+    boolean isValid();
 }

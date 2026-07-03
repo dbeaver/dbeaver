@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.utils.CommonUtils;
 
@@ -27,7 +26,7 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     String getBaseUrl();
 
     @Nullable
-    String getToken() throws DBException;
+    String getToken();
 
 
     default boolean isStreamingEnabled() {
@@ -35,7 +34,7 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     }
 
     @Override
-    default boolean isValidConfiguration() throws DBException {
+    default boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(getToken());
     }
 
