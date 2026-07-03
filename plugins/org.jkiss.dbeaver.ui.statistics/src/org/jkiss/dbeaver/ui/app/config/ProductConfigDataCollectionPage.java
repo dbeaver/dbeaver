@@ -63,11 +63,9 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
                 .align(UIAlignX.FILL, UIAlignY.FILL)
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .row(rb1 -> rb1
-                    .weblink(
-                        ProductConfigMessages.data_collection_agreement_text, lb -> lb
-                            .align(UIAlignX.FILL, UIAlignY.FILL)
-                            .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
-                    )));
+                    .weblink(ProductConfigMessages.data_collection_agreement_text, lb -> lb
+                        .align(UIAlignX.FILL, UIAlignY.FILL)
+                        .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS))));
     }
 
     @NotNull

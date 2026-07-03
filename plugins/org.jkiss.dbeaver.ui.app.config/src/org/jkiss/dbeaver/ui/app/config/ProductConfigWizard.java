@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.internal.Workbench;
@@ -73,7 +74,7 @@ public final class ProductConfigWizard extends Wizard {
     @Override
     public boolean performCancel() {
         // Can't cancel - force the user to go through, or apply defaults by pressing "Finish"
-        return false;
+        return Platform.inDevelopmentMode();
     }
 
     /**

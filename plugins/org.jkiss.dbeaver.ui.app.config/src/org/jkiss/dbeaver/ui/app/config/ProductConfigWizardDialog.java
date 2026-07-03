@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.config;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -34,14 +35,10 @@ import org.jkiss.dbeaver.model.app.DBPPlatformLanguageManager;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
-import org.jkiss.dbeaver.ui.forms.util.UIReloadableNLS;
 
-import java.util.Locale;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
@@ -55,11 +52,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         // We're reusing the help system for language selection
         setHelpAvailable(true);
 
-        language.addChangeListener((ignored, language) -> {
-            setLanguage(language);
-            UIReloadableNLS.reloadMessages();
-            getShell().layout(true, true);
-        });
+        language.addChangeListener((ignored, language) -> setLanguage(language));
 
         addPageChangedListener(event -> {
             boolean firstPageSelected = event.getSelectedPage() == getWizard().getStartingPage();
@@ -105,22 +98,8 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         super.createButtonsForButtonBar(parent);
 
         var cancelButton = getButton(IDialogConstants.CANCEL_ID);
-        if (cancelButton != null) {
+        if (cancelButton != null && !Platform.inDevelopmentMode()) {
             UIUtils.setControlVisible(cancelButton, false);
-        }
-
-        bindButtonText(IDialogConstants.BACK_ID, ProductConfigMessages.wizard_buttons_back);
-        bindButtonText(IDialogConstants.NEXT_ID, ProductConfigMessages.wizard_buttons_next);
-        bindButtonText(IDialogConstants.FINISH_ID, ProductConfigMessages.wizard_buttons_finish);
-    }
-
-    private void bindButtonText(int id, @NotNull UIObservable<String> text) {
-        var button = getButton(id);
-        if (button != null) {
-            BiConsumer<String, String> listener = (s, s2) -> button.setText(s2);
-            button.setText(text.get());
-            button.addDisposeListener(e -> text.removeChangeListener(listener));
-            text.addChangeListener(listener);
         }
     }
 
@@ -137,6 +116,6 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
             languageManager.setPlatformLanguage(language);
         }
-        Locale.setDefault(Locale.of(language.getCode()));
+        DBWorkbench.getPlatformUI().showMessageBox("Language change", "Change will take effect after restart", false);
     }
 }
