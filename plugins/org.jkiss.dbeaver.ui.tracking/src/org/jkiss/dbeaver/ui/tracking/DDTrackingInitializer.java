@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.tracking;
+package org.jkiss.dbeaver.ui.tracking;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,14 +27,21 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.tracking.DDClientInfo;
+import org.jkiss.dbeaver.model.tracking.DDTrackStop;
+import org.jkiss.dbeaver.model.tracking.DDTracking;
+import org.jkiss.dbeaver.model.tracking.DDTrackingClient;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
+import java.io.IOException;
+import java.util.HexFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
@@ -42,10 +49,8 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
     private static final String ENV_KEY = "DATADAM_KEY";
     private static final String ENV_URL = "DATADAM_URL";
-    private static final String DEFAULT_URL = "http://localhost:8080";
 
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
-    private static volatile String trackingId;
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
@@ -57,9 +62,13 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             log.debug("DataDam tracking disabled (no " + ENV_KEY + ")");
             return;
         }
-        String envUrl = System.getenv(ENV_URL);
-        String url = CommonUtils.isEmpty(envUrl) ? DEFAULT_URL : envUrl;
-        DDTrackingClient client = new DDTrackingClient(url, key);
+        String url = System.getenv(ENV_URL);
+        if (CommonUtils.isEmpty(url)) {
+            log.debug("DataDam tracking disabled (no " + ENV_URL + ")");
+            return;
+        }
+        DDTrackingClient client = new DDTrackingClient(url);
+        AtomicReference<String> trackingId = new AtomicReference<>();
 
         AbstractJob startJob = new AbstractJob("DataDam tracking start") {
             @NotNull
@@ -70,11 +79,15 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
                     GeneralUtils.getProductName(),
                     GeneralUtils.getProductVersion().toString(),
-                    System.getProperty("os.name"),
+                    System.getProperty(StandardConstants.ENV_OS_NAME),
+                    RuntimeUtils.getOSVersion().toString(),
                     localMacAddress(),
                     localIpAddress()
                 );
-                trackingId = client.start(info);
+                DDTracking tracking = client.start(key, info);
+                if (tracking != null) {
+                    trackingId.set(tracking.trackingId());
+                }
                 return Status.OK_STATUS;
             }
         };
@@ -84,48 +97,34 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
             @Override
             public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
-                String id = trackingId;
+                String id = trackingId.get();
                 if (id != null) {
-                    client.stop(id);
+                    client.stop(key, new DDTrackStop(id));
                 }
                 return true;
             }
 
             @Override
             public void postShutdown(@NotNull IWorkbench workbench) {
+                //empty
             }
         });
     }
 
-    @Nullable
+    @NotNull
     private static String localIpAddress() {
-        try {
-            return InetAddress.getLocalHost().getHostAddress();
-        } catch (Exception e) {
-            return null;
-        }
+        return RuntimeUtils.getLocalHostOrLoopback().getHostAddress();
     }
 
     @Nullable
     private static String localMacAddress() {
         try {
-            NetworkInterface ni = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
-            if (ni == null) {
-                return null;
-            }
-            byte[] mac = ni.getHardwareAddress();
-            if (mac == null) {
-                return null;
-            }
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < mac.length; i++) {
-                if (i > 0) {
-                    sb.append('-');
-                }
-                sb.append(String.format("%02X", mac[i]));
-            }
-            return sb.toString();
-        } catch (Exception e) {
+
+            return HexFormat.ofDelimiter("-")
+                .withUpperCase()
+                .formatHex(RuntimeUtils.getLocalMacAddress());
+
+        } catch (IOException e) {
             return null;
         }
     }

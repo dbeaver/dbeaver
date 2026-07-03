@@ -3,7 +3,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.model.tracking.DDTrackingInitializer" order="100"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.tracking.DDTrackingInitializer" order="100"/>
     </extension>
 
 </plugin>

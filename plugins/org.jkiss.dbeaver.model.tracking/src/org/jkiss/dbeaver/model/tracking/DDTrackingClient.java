@@ -31,46 +31,48 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-class DDTrackingClient {
+public class DDTrackingClient implements DDTrackingService {
 
     private static final Log log = Log.getLog(DDTrackingClient.class);
 
-    private static final String START_PATH = "/metering/track/start";
-    private static final String STOP_PATH = "/metering/track/stop";
-    private static final String API_KEY_HEADER = "DD-API-Key";
     private static final int START_TIMEOUT_MS = 10000;
     private static final int STOP_TIMEOUT_MS = 3000;
 
     private final Gson gson = new Gson();
     private final String url;
-    private final String key;
 
-    DDTrackingClient(@NotNull String url, @NotNull String key) {
+    public DDTrackingClient(@NotNull String url) {
         this.url = url;
-        this.key = key;
     }
 
     @Nullable
-    String start(@NotNull DDClientInfo clientInfo) {
-        DDTracking tracking = execute(START_PATH, gson.toJson(clientInfo), START_TIMEOUT_MS);
-        return tracking == null ? null : tracking.trackingId();
-    }
-
-    void stop(@NotNull String trackingId) {
-        execute(STOP_PATH, gson.toJson(new DDTrackStop(trackingId)), STOP_TIMEOUT_MS);
+    @Override
+    public DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client) {
+        return execute(TRACK_START_ENDPOINT, apiKey, gson.toJson(client), START_TIMEOUT_MS);
     }
 
     @Nullable
-    private DDTracking execute(@NotNull String path, @NotNull String body, int timeoutMs) {
+    @Override
+    public DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request) {
+        return execute(TRACK_STOP_ENDPOINT, apiKey, gson.toJson(request), STOP_TIMEOUT_MS);
+    }
+
+    @Nullable
+    private DDTracking execute(@NotNull String path, @Nullable String apiKey, @NotNull String body, int timeoutMs) {
         try {
             Map<String, String> headers = new HashMap<>();
             headers.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
-            headers.put(API_KEY_HEADER, key);
+            if (apiKey != null) {
+                headers.put(API_KEY_HEADER, apiKey);
+            }
 
-            URLConnection connection = WebUtils.openURLConnection(url + path, null, null, "POST", 0, timeoutMs, headers);
+            URLConnection connection = WebUtils
+                .openURLConnection(url + METERING_ENDPOINT + path, null, null, "POST", 0, timeoutMs, headers);
+
             try (OutputStream out = connection.getOutputStream()) {
                 out.write(body.getBytes(StandardCharsets.UTF_8));
             }
+
             if (connection instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() >= 300) {
                 String error;
                 try (InputStream err = httpConnection.getErrorStream()) {
@@ -79,6 +81,7 @@ class DDTrackingClient {
                 log.debug("DataDam tracking request failed: HTTP " + httpConnection.getResponseCode() + " " + error);
                 return null;
             }
+
             try (InputStream in = connection.getInputStream()) {
                 return gson.fromJson(new String(in.readAllBytes(), StandardCharsets.UTF_8), DDTracking.class);
             }

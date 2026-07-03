@@ -19,14 +19,16 @@ package org.jkiss.dbeaver.model.tracking;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record DDClientInfo(
-    @NotNull String clientId,
-    @NotNull String workspaceId,
-    @NotNull String product,
-    @NotNull String version,
-    @Nullable String os,
-    @Nullable String osVersion,
-    @Nullable String macAddress,
-    @Nullable String ipAddress
-) {
+public interface DDTrackingService {
+
+    String API_KEY_HEADER = "DD-API-Key";
+    String METERING_ENDPOINT = "/metering";
+    String TRACK_START_ENDPOINT = "/track/start";
+    String TRACK_STOP_ENDPOINT = "/track/stop";
+
+    @Nullable
+    DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client);
+
+    @Nullable
+    DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request);
 }

@@ -1,13 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
-Bundle-Name: DBeaver Apps Tracking
+Bundle-Name: DBeaver Apps Tracking Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.tracking;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui,
- org.eclipse.ui
+Require-Bundle: org.jkiss.dbeaver.model
 Export-Package: org.jkiss.dbeaver.model.tracking
 Automatic-Module-Name: org.jkiss.dbeaver.model.tracking
