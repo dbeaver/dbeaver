@@ -70,6 +70,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
+    public static final char NEW_LINE_CHAR = '\n';
     private boolean formatNumbers;
 
     enum HeaderPosition {
@@ -335,17 +336,23 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         try {
             lineBuffer.setLength(0);
             char[] buffer = new char[2000];
+            int lastCharIndex = -1;
             for (int count = reader.read(buffer); count > 0; count = reader.read(buffer)) {
+                lastCharIndex = count - 1;
                 for (int i = 0; i < count; i++) {
-                    lineBuffer.append(buffer[i]);
-                    if (buffer[i] == '\n') {
+                    if (buffer[i] == NEW_LINE_CHAR) {
                         lines.add(lineBuffer.toString());
                         lineBuffer.setLength(0);
+                    } else {
+                        lineBuffer.append(buffer[i]);
                     }
                 }
             }
             if (!lineBuffer.isEmpty()) {
                 lines.add(lineBuffer.toString());
+                // trailing new line case
+            } else if (lastCharIndex > 0 && buffer[lastCharIndex] == NEW_LINE_CHAR) {
+                lines.add("");
             }
         } finally {
             ContentUtils.close(reader);

@@ -258,6 +258,17 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
             }
         );
 
+        // all new line
+        assertRowsEquals(
+            "\"\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\n", "c", "d"}
+            }
+        );
+        assertRowsEquals(
+            "\"\n\n\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\n\n\n", "c", "d"}
+            }
+        );
     }
 
 
