@@ -43,7 +43,6 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * CSV Exporter
@@ -66,7 +65,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
     private static final String PROP_FORMAT_ARRAY = "formatArray";
-    private static final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\n");
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
@@ -351,7 +349,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             if (!lineBuffer.isEmpty()) {
                 lines.add(lineBuffer.toString());
                 // trailing new line case
-            } else if (lastCharIndex > 0 && buffer[lastCharIndex] == NEW_LINE_CHAR) {
+            } else if (lastCharIndex >= 0 && buffer[lastCharIndex] == NEW_LINE_CHAR) {
                 lines.add("");
             }
         } finally {
