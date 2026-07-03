@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
  */
 public abstract class JDBCTableConstraint<TABLE extends JDBCTable, COLUMN extends DBSTableConstraintColumn>
     extends AbstractTableConstraint<TABLE, COLUMN>
-    implements DBPSaveableObject
-{
+    implements DBPSaveableObject {
     private boolean persisted;
 
     protected JDBCTableConstraint(TABLE table, String name, @Nullable String description, DBSEntityConstraintType constraintType, boolean persisted) {
@@ -49,21 +48,17 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable, COLUMN extend
     @NotNull
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     @Override
-    public String getName()
-    {
+    public String getName() {
         return super.getName();
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return persisted;
     }
 
     @Override
-    public void setPersisted(boolean persisted)
-    {
+    public void setPersisted(boolean persisted) {
         this.persisted = persisted;
     }
-
 }
