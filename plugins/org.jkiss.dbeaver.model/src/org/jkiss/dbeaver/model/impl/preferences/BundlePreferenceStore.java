@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import java.io.IOException;
 
 public class BundlePreferenceStore extends AbstractPreferenceStore {
 
-    private final IEclipsePreferences defaultProps;
-    private final IEclipsePreferences props;
+    protected final IEclipsePreferences defaultProps;
+    protected final IEclipsePreferences props;
     private boolean dirty = false;
 
     public BundlePreferenceStore(Bundle bundle) {
