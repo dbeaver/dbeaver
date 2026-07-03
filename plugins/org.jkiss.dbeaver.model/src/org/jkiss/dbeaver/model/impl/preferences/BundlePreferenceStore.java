@@ -271,7 +271,7 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
     }
 
     protected void putString(@NotNull String name, @Nullable String value) {
-        if (Objects.equals(getDefaultString(name), value)) {
+        if (value == null || Objects.equals(getDefaultString(name), value)) {
             props.remove(name);
         } else {
             props.put(name, value);
