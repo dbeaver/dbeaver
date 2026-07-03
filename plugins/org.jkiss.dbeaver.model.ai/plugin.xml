@@ -60,7 +60,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="ai" label="AI integration" enabledByDefault="true"/>
+        <feature
+            id="ai"
+            label="AI integration"
+            enabledByDefault="true"
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">

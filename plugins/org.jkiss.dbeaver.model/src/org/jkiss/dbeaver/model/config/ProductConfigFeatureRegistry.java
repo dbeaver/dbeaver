@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -70,10 +71,28 @@ public final class ProductConfigFeatureRegistry {
         return features;
     }
 
+    public boolean hasNewFeatures() {
+        var state = currentState();
+        for (ProductConfigFeatureDescriptor feature : features) {
+            if (!state.features().containsKey(feature.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isFeatureEnabled(@NotNull ProductConfigFeatureDescriptor descriptor) {
         var state = currentState();
         var feature = state.features().get(descriptor.getId());
-        return feature != null && feature.enabled() || descriptor.isEnabledByDefault();
+        if (feature == null) {
+            var enablement = determineFeatureEnablement(descriptor);
+            return switch (enablement) {
+                case EXPLICITLY_ENABLED -> true;
+                case EXPLICITLY_DISABLED -> false;
+                case UNDEFINED -> descriptor.isEnabledByDefault();
+            };
+        }
+        return feature.enabled();
     }
 
     public void setFeatureEnabled(@NotNull ProductConfigFeatureDescriptor descriptor, boolean enabled) {
@@ -82,6 +101,19 @@ public final class ProductConfigFeatureRegistry {
                 .withFeature(descriptor.getId(), new State.Feature(enabled));
             saveState(state);
         }
+    }
+
+    @NotNull
+    private static ProductConfigFeatureTester.Enablement determineFeatureEnablement(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        try {
+            var tester = descriptor.getEnablementTester();
+            if (tester != null) {
+                return tester.isFeatureEnabled();
+            }
+        } catch (DBException e) {
+            log.error("Error determining feature enablement for " + descriptor.getId(), e);
+        }
+        return ProductConfigFeatureTester.Enablement.UNDEFINED;
     }
 
     @NotNull
