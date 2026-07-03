@@ -1129,7 +1129,7 @@ public class ResultSetViewer extends Viewer
         }
 
         if (this.filtersPanel != null) {
-            this.filtersPanel.resultsetPresentationChanged(activePresentation);
+            //this.filtersPanel.resultsetPresentationChanged(activePresentation);
         }
     }
 

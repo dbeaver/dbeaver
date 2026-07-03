@@ -34,7 +34,10 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -63,10 +66,10 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
-import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -91,7 +94,6 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -231,34 +233,36 @@ public class SpreadsheetPresentation extends AbstractPresentation
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
 
         this.findReplaceTarget = new SpreadsheetFindReplaceTarget(this.spreadsheet);
-        this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
-            this.controller.getSite().getPart(),
-            this.spreadsheet,
-            this.findReplaceTarget,
-            this
-        ) {
-            @NotNull
-            @Override
-            protected Point obtainControlTopLeftPadding(@NotNull Control control) {
-                return new Point(spreadsheet.getRowHeaderWidth(), spreadsheet.getHeaderHeight());
-            }
-
-            @Override
-            protected boolean hasSelectionBoundsConflict(@Nullable ISelection selection, @NotNull Rectangle bounds) {
-                for (GridPos cellPos : spreadsheet.getSelection()) {
-                    if (spreadsheet.getCellBounds(cellPos.col, cellPos.row).intersects(bounds)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        };
-        this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
     }
 
     @NotNull
     @Override
     public FindReplaceOverlay getFindReplaceOverlay() {
+        if (findReplaceOverlay == null) {
+            this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
+                this.controller.getSite().getPart(),
+                this.spreadsheet,
+                this.findReplaceTarget,
+                this
+            ) {
+                @NotNull
+                @Override
+                protected Point obtainControlTopLeftPadding(@NotNull Control control) {
+                    return new Point(spreadsheet.getRowHeaderWidth(), spreadsheet.getHeaderHeight());
+                }
+
+                @Override
+                protected boolean hasSelectionBoundsConflict(@Nullable ISelection selection, @NotNull Rectangle bounds) {
+                    for (GridPos cellPos : spreadsheet.getSelection()) {
+                        if (spreadsheet.getCellBounds(cellPos.col, cellPos.row).intersects(bounds)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+            this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
+        }
         return this.findReplaceOverlay;
     }
 
