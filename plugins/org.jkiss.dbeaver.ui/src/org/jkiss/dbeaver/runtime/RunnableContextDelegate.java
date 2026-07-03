@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -30,12 +31,13 @@ public class RunnableContextDelegate implements DBRRunnableContext {
 
     private final IRunnableContext delegate;
 
-    public RunnableContextDelegate(IRunnableContext delegate) {
+    public RunnableContextDelegate(@NotNull IRunnableContext delegate) {
         this.delegate = delegate;
     }
 
     @Override
-    public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+    public void run(boolean fork, boolean cancelable, @NotNull final DBRRunnableWithProgress runnable)
+    throws InvocationTargetException, InterruptedException {
         delegate.run(fork, cancelable, monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)));
     }
 }

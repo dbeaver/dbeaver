@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

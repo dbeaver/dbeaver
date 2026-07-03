@@ -30,8 +30,11 @@ import java.util.List;
  */
 public interface DBDResultSetModel {
 
+    @Nullable
+    DBDAttributeBinding getDocumentAttribute();
+
     @NotNull
-    DBDAttributeBinding[] getAttributes() throws DBException;
+    DBDAttributeBinding[] getAttributes();
 
     @NotNull
     List<DBDAttributeBinding> getVisibleAttributes() throws DBException;

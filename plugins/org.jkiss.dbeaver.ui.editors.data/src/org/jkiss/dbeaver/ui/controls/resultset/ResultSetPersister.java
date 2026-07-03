@@ -26,11 +26,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.messages.DataMessages;
 import org.jkiss.dbeaver.model.data.resultset.DBDDataStatementInfo;
 import org.jkiss.dbeaver.model.data.resultset.DBDResultSetDataUpdater;
+import org.jkiss.dbeaver.model.data.resultset.DataUpdaterJob;
 import org.jkiss.dbeaver.model.data.resultset.ISmartTransactionManager;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,31 +39,20 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
  * Result set data updater
  */
-class ResultSetPersister {
+class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.DataStatementInfo, ResultSetRow, ResultSetModel> {
 
     private static final Log log = Log.getLog(ResultSetPersister.class);
-
-    /**
-     * Data update listener
-     */
-    interface DataUpdateListener {
-
-        void onUpdate(boolean success);
-
-    }
 
     class ExecutionSource implements DBCExecutionSource {
 
@@ -102,39 +90,12 @@ class ResultSetPersister {
     @NotNull
     private final ResultSetViewer viewer;
     @NotNull
-    private final ResultSetModel model;
-    @NotNull
     private final DBDAttributeBinding[] columns;
 
-    private final List<ResultSetRow> deletedRows = new ArrayList<>();
-    private final List<ResultSetRow> addedRows = new ArrayList<>();
-    private final List<ResultSetRow> changedRows = new ArrayList<>();
-    private final Map<ResultSetRow, Map<DBDRowIdentifier, List<DBDAttributeBinding>>> rowIdentifiers = new LinkedHashMap<>();
-    private final List<DataStatementInfo> insertStatements = new ArrayList<>();
-    private final List<DataStatementInfo> deleteStatements = new ArrayList<>();
-    private final List<DataStatementInfo> updateStatements = new ArrayList<>();
-    private final List<DBDValue> clonedValues = new ArrayList<>();
-
-    private final List<DBEPersistAction> script = new ArrayList<>();
-
     ResultSetPersister(@NotNull ResultSetViewer viewer) {
+        super(viewer.getModel(), viewer.getExecutionContext());
         this.viewer = viewer;
-        this.model = viewer.getModel();
-        this.columns = model.getAttributes();
-
-        collectChanges();
-    }
-
-    public boolean hasInserts() {
-        return !addedRows.isEmpty();
-    }
-
-    public boolean hasDeletes() {
-        return !deletedRows.isEmpty();
-    }
-
-    public boolean hasUpdates() {
-        return !changedRows.isEmpty();
+        this.columns = viewer.getModel().getAttributes();
     }
 
     @NotNull
@@ -163,49 +124,6 @@ class ResultSetPersister {
         report.setHasReferences(dataSource != null && dataSource.getInfo().supportsReferentialIntegrity());
 
         return report;
-    }
-
-    /**
-     * Applies changes.
-     *
-     * @param monitor  progress monitor
-     * @param listener value listener
-     */
-    boolean applyChanges(
-        @Nullable DBRProgressMonitor monitor,
-        boolean generateScript,
-        @NotNull ResultSetSaveSettings settings,
-        @Nullable DataUpdateListener listener
-    ) throws DBException {
-        if (monitor == null) {
-            try {
-                UIUtils.runInProgressService(monitor1 -> {
-                    try {
-                        prepareStatements(monitor1, settings);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                throw new DBException("Error preparing update statements", e.getTargetException());
-            } catch (InterruptedException e) {
-                return false;
-            }
-        } else {
-            prepareStatements(monitor, settings);
-        }
-
-        return execute(monitor, generateScript, settings, listener);
-    }
-
-    private void prepareStatements(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) throws DBException {
-        if (hasDeletes()) {
-            prepareDeleteStatements(monitor, settings.isDeleteCascade(), settings.isDeepCascade());
-        }
-        if (hasInserts()) {
-            prepareInsertStatements(monitor);
-        }
-        prepareUpdateStatements(monitor);
     }
 
     boolean refreshInsertedRows() throws DBCException {
@@ -253,16 +171,8 @@ class ResultSetPersister {
         return true;
     }
 
-    private boolean isVirtualColumn(@Nullable DBDAttributeBinding column) {
-        return column instanceof DBDAttributeBindingCustom;
-    }
-
-    @NotNull
-    public List<DBEPersistAction> getScript() {
-        return script;
-    }
-
-    private void collectChanges() {
+    @Override
+    protected void collectUpdatedRows() {
         deletedRows.clear();
         addedRows.clear();
         changedRows.clear();
@@ -281,61 +191,12 @@ class ResultSetPersister {
                     break;
             }
         }
-
-        // Prepare rows
-        for (ResultSetRow row : changedRows) {
-            Map<DBDAttributeBinding, Object> changes = collectUpdateChanges(row);
-            if (changes == null) {
-                continue;
-            }
-            Map<DBDRowIdentifier, List<DBDAttributeBinding>> identifierGroups = new LinkedHashMap<>();
-            for (DBDAttributeBinding changedAttr : changes.keySet()) {
-                DBDRowIdentifier rowIdentifier = changedAttr.getRowIdentifier();
-                if (rowIdentifier != null) {
-                    identifierGroups.computeIfAbsent(rowIdentifier, k -> new ArrayList<>()).add(changedAttr);
-                }
-            }
-            if (!identifierGroups.isEmpty()) {
-                rowIdentifiers.put(row, identifierGroups);
-            }
-        }
     }
 
-    private void prepareDeleteStatements(@NotNull DBRProgressMonitor monitor, boolean deleteCascade, boolean deepCascade)
-        throws DBException {
-        // Make delete statements
-        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
-        if (rowIdentifier == null) {
-            throw new DBCException("Internal error: can't find entity identifier, delete is not possible");
-        }
-        DBSDataManipulator dataManipulator = getDataManipulator(rowIdentifier.getEntity());
-        boolean supportsRI = dataManipulator.getDataSource().getInfo().supportsReferentialIntegrity();
-
-        for (ResultSetRow row : deletedRows) {
-            DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, rowIdentifier.getEntity());
-            List<DBDAttributeBinding> keyColumns = rowIdentifier.getAttributes();
-            for (DBDAttributeBinding binding : keyColumns) {
-                statement.getKeyAttributes().add(
-                    new DBDAttributeValue(
-                        binding,
-                        model.getCellValue(binding, row)));
-            }
-            deleteStatements.add(statement);
-        }
-
-        if (supportsRI && deleteCascade) {
-            try {
-                List<DataStatementInfo> cascadeStats = prepareDeleteCascade(monitor, rowIdentifier, deleteStatements, deepCascade);
-                deleteStatements.clear();
-                deleteStatements.addAll(cascadeStats);
-            } catch (DBException e) {
-                log.debug(e);
-            }
-        }
-    }
 
     @NotNull
-    private List<DataStatementInfo> prepareDeleteCascade(
+    @Override
+    protected List<DataStatementInfo> prepareDeleteCascade(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBDRowIdentifier rowIdentifier,
         @NotNull List<DataStatementInfo> statements,
@@ -397,70 +258,14 @@ class ResultSetPersister {
         return result;
     }
 
-    private void prepareInsertStatements(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
-        // Make insert statements
-        final DBSEntity table = viewer.getModel().getSingleSource();
-        if (table == null) {
-            throw new DBCException("Internal error: can't get single entity metadata, insert is not possible");
-        }
-        for (ResultSetRow row : addedRows) {
-            DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, row, table);
-            DBDAttributeBinding docAttr = model.getDocumentAttribute();
-            if (docAttr != null) {
-                statement.getKeyAttributes().add(new DBDAttributeValue(docAttr, model.getCellValue(docAttr, row)));
-            } else {
-                for (DBDAttributeBinding column : columns) {
-                    if (!isVirtualColumn(column)) {
-                        statement.getKeyAttributes().add(new DBDAttributeValue(column, model.getCellValue(column, row)));
-                    }
-                }
-            }
-            insertStatements.add(statement);
-        }
-    }
-
-    private void prepareUpdateStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
-        for (var rowEntry : rowIdentifiers.entrySet()) {
-            ResultSetRow row = rowEntry.getKey();
-            Map<DBDAttributeBinding, Object> changes = collectUpdateChanges(row);
-
-            for (var identifierEntry : rowEntry.getValue().entrySet()) {
-                DBDRowIdentifier rowIdentifier = identifierEntry.getKey();
-                List<DBDAttributeBinding> changedAttrsForTable = identifierEntry.getValue();
-
-                DBSEntity table = rowIdentifier.getEntity();
-                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
-
-                for (DBDAttributeBinding changedAttr : changedAttrsForTable) {
-                    if (!isVirtualColumn(changedAttr)) {
-                        statement.getUpdateAttributes().add(new DBDAttributeValue(changedAttr, model.getCellValue(changedAttr, row)));
-                    }
-                }
-
-                List<DBDAttributeBinding> idColumns = rowIdentifier.getAttributes();
-                for (DBDAttributeBinding metaColumn : idColumns) {
-                    Object keyValue = model.getCellValue(metaColumn, row);
-                    if (changes != null && changes.containsKey(metaColumn)) {
-                        keyValue = changes.get(metaColumn);
-                        if (keyValue instanceof DBDContent) {
-                            if (keyValue instanceof DBDValueCloneable vc) {
-                                keyValue = vc.cloneValue(monitor);
-                                if (keyValue instanceof DBDContent copiedContext) {
-                                    clonedValues.add(copiedContext);
-                                    copiedContext.resetContents();
-                                }
-                            } else {
-                                throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI)
-                                    + "' can't be used as a key. Value clone is not supported.");
-                            }
-                        }
-                    }
-                    statement.getKeyAttributes().add(new DBDAttributeValue(metaColumn, keyValue));
-                }
-                updateStatements.add(statement);
-            }
-        }
+    @NotNull
+    @Override
+    protected DataStatementInfo getDataStatementInfo(
+        @NotNull DBSManipulationType type,
+        @NotNull ResultSetRow row,
+        @NotNull DBSEntity entity
+    ) {
+        return new DataStatementInfo(type, row, entity);
     }
 
     /**
@@ -471,7 +276,7 @@ class ResultSetPersister {
      * @return map of changed attributes and their new values null if no changes
      */
     @Nullable
-    private Map<DBDAttributeBinding, Object> collectUpdateChanges(@NotNull ResultSetRow row) {
+    protected Map<DBDAttributeBinding, Object> collectUpdateChanges(@NotNull ResultSetRow row) {
         if (!row.isChanged()) {
             return null;
         }
@@ -517,26 +322,6 @@ class ResultSetPersister {
             }
         }
         return false;
-    }
-
-    private boolean execute(
-        @Nullable DBRProgressMonitor monitor,
-        boolean generateScript,
-        @NotNull ResultSetSaveSettings settings,
-        @Nullable DataUpdateListener listener
-    ) throws DBException {
-        DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
-        if (executionContext == null) {
-            throw new DBCException("No execution context");
-        }
-        DataUpdaterJob job = new DataUpdaterJob(generateScript, settings, listener, executionContext);
-        if (monitor == null) {
-            job.schedule();
-            return true;
-        } else {
-            job.run(monitor);
-            return job.getError() == null;
-        }
     }
 
     public void rejectChanges() {
@@ -638,6 +423,28 @@ class ResultSetPersister {
         }
     }
 
+    @Override
+    protected void notifyContainer(@NotNull DBCStatistics statistics) {
+        if (viewer.getContainer() instanceof IResultSetContainerExt rsc) {
+            rsc.handleExecuteResult(statistics);
+        }
+    }
+
+    @NotNull
+    @Override
+    protected DBCExecutionSource createExecutionSource(@NotNull DBSDataManipulator dataContainer) {
+        return new ExecutionSource(dataContainer);
+    }
+
+    @Nullable
+    @Override
+    protected DBDDataReceiver getKeyReceiver(@NotNull DBDDataStatementInfo statement) {
+        if (statement instanceof DataStatementInfo dataStatement) {
+            return new KeyDataReceiver(dataStatement);
+        }
+        return null;
+    }
+
     void checkEntityIdentifiers() throws DBException {
         DBCExecutionContext executionContext = viewer.getExecutionContext();
         if (executionContext == null) {
@@ -702,95 +509,61 @@ class ResultSetPersister {
         }
     }
 
-    private class DataUpdaterJob extends DataSourceJob {
-        private final boolean generateScript;
-        private final ResultSetSaveSettings settings;
-        private final DataUpdateListener listener;
-        private Throwable error;
-
-        DataUpdaterJob(
-            boolean generateScript,
-            @NotNull ResultSetSaveSettings settings,
-            @Nullable DataUpdateListener listener,
-            @NotNull DBCExecutionContext executionContext
-        ) {
-            super(DataMessages.controls_resultset_viewer_job_update, executionContext);
-            this.generateScript = generateScript;
-            this.settings = settings;
-            this.listener = listener;
-        }
-
-        @Nullable
-        public Throwable getError() {
-            return error;
-        }
-
-        @NotNull
-        @Override
-        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-            model.setUpdateInProgress(this);
-            UIUtils.asyncExec(viewer::fireResultSetChange); // Update "save" and "cancel" buttons
-
-            Map<String, Object> options = new LinkedHashMap<>();
-            options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, settings.isUseFullyQualifiedNames());
-            ResultSetDataUpdater updater = new ResultSetDataUpdater(
-                getExecutionContext(),
-                script,
-                updateStatements,
-                insertStatements,
-                deleteStatements,
-                options,
-                generateScript
-            );
-            try {
-                ISmartTransactionManager stm = viewer.getContainer() instanceof ISmartTransactionManager transactionManager
-                    ? transactionManager : null;
-                error = updater.executeStatements(monitor, stm);
-            } finally {
-                model.setUpdateInProgress(null);
-
-                for (DBDValue value : clonedValues) {
-                    value.release();
-                }
-                clonedValues.clear();
+    @Override
+    public void processReflectChanges(@Nullable Throwable error) {
+        // Reflect changes
+        UIUtils.syncExec(() -> {
+            boolean rowsChanged = false;
+            if (isAutoCommitEnabled() || error == null) {
+                rowsChanged = reflectChanges();
             }
-
-            if (!generateScript) {
-                // Reflect changes
-                UIUtils.syncExec(() -> {
-                    boolean rowsChanged = false;
-                    if (updater.isAutoCommitEnabled() || error == null) {
-                        rowsChanged = reflectChanges();
-                    }
-                    if (!viewer.getControl().isDisposed()) {
-                        //releaseStatements();
-                        viewer.redrawData(false, rowsChanged);
-                        viewer.updateEditControls();
-                        if (error == null) {
-                            viewer.setStatus(
-                                NLS.bind(
-                                    ResultSetMessages.controls_resultset_viewer_status_inserted_,
-                                    ResultSetUtils.formatRowCount(updater.getInsertStats().getRowsUpdated()),
-                                    ResultSetUtils.formatRowCount(updater.getDeleteStats().getRowsUpdated()),
-                                    ResultSetUtils.formatRowCount(updater.getUpdateStats().getRowsUpdated())
-                                ));
-                        } else {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Data error", "Error synchronizing data with database", error);
-                            viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                        }
-                    }
-                    viewer.fireResultSetChange();
-                });
-                if (this.listener != null) {
-                    this.listener.onUpdate(error == null);
+            if (!viewer.getControl().isDisposed()) {
+                //releaseStatements();
+                viewer.redrawData(false, rowsChanged);
+                viewer.updateEditControls();
+                if (error == null) {
+                    viewer.setStatus(
+                        NLS.bind(
+                            ResultSetMessages.controls_resultset_viewer_status_inserted_,
+                            ResultSetUtils.formatRowCount(getInsertStats().getRowsUpdated()),
+                            ResultSetUtils.formatRowCount(getDeleteStats().getRowsUpdated()),
+                            ResultSetUtils.formatRowCount(getUpdateStats().getRowsUpdated())
+                        ));
+                } else {
+                    DBWorkbench.getPlatformUI().showError(
+                        "Data error", "Error synchronizing data with database", error);
+                    viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                 }
-            } else if (error != null) {
-                DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
             }
+            viewer.fireResultSetChange();
+        });
+    }
 
-            return Status.OK_STATUS;
+    @Override
+    public void showError(@NotNull Throwable error) {
+        DBWorkbench.getPlatformUI().showError("Data error", "Error generating script", error);
+    }
+
+    @Override
+    public void before(@NotNull DataUpdaterJob job) {
+        model.setUpdateInProgress(job);
+        UIUtils.asyncExec(viewer::fireResultSetChange); // Update "save" and "cancel" buttons
+    }
+
+    @Override
+    public void after() {
+        model.setUpdateInProgress(null);
+
+        for (DBDValue value : clonedValues) {
+            value.release();
         }
+        clonedValues.clear();
+    }
+
+    @Nullable
+    @Override
+    public ISmartTransactionManager getSmartTransactionManager() {
+        return viewer.getContainer() instanceof ISmartTransactionManager transactionManager ? transactionManager : null;
     }
 
     /**
@@ -995,42 +768,4 @@ class ResultSetPersister {
             return Status.OK_STATUS;
         }
     }
-
-    private class ResultSetDataUpdater extends DBDResultSetDataUpdater {
-
-        public ResultSetDataUpdater(
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> script,
-            @NotNull List<DataStatementInfo> updateStatements,
-            @NotNull List<DataStatementInfo> insertStatements,
-            @NotNull List<DataStatementInfo> deleteStatements,
-            @NotNull Map<String, Object> options,
-            boolean generateScript
-        ) {
-            super(executionContext, script, updateStatements, insertStatements, deleteStatements, options, generateScript);
-        }
-
-        @Override
-        protected void notifyContainer(@NotNull DBCStatistics statistics) {
-            if (viewer.getContainer() instanceof IResultSetContainerExt rsc) {
-                rsc.handleExecuteResult(statistics);
-            }
-        }
-
-        @NotNull
-        @Override
-        protected DBCExecutionSource createExecutionSource(@NotNull DBSDataManipulator dataContainer) {
-            return new ExecutionSource(dataContainer);
-        }
-
-        @Nullable
-        @Override
-        protected DBDDataReceiver getKeyReceiver(@NotNull DBDDataStatementInfo statement) {
-            if (statement instanceof DataStatementInfo dataStatement) {
-                return new KeyDataReceiver(dataStatement);
-            }
-            return null;
-        }
-    }
-
 }

@@ -231,6 +231,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
+    @Override
     public DBDAttributeBinding getDocumentAttribute() {
         return documentAttribute;
     }

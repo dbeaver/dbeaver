@@ -63,6 +63,8 @@ import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.data.order.OrderingUtils;
+import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
+import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -125,10 +127,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
 /**
  * ResultSetViewer
  */
@@ -1767,9 +1770,15 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Nullable
+    @Override
+    public DBDAttributeBinding getDocumentAttribute() {
+        return null;
+    }
+
     @NotNull
     @Override
-    public DBDAttributeBinding[] getAttributes() throws DBException {
+    public DBDAttributeBinding[] getAttributes() {
         return model.getAttributes();
     }
 
@@ -4664,12 +4673,16 @@ public class ResultSetViewer extends Viewer
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    private boolean saveChanges(@Nullable final DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings, @Nullable final ResultSetPersister.DataUpdateListener listener)
+    private boolean saveChanges(
+        @Nullable final DBRProgressMonitor monitor,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable final DBDDataUpdateListener listener
+    )
     {
         UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
             final ResultSetPersister persister = createDataPersister(false);
-            final ResultSetPersister.DataUpdateListener applyListener = success -> {
+            final DBDDataUpdateListener applyListener = success -> {
                 if (listener != null) {
                     listener.onUpdate(success);
                 }
@@ -4686,11 +4699,39 @@ public class ResultSetViewer extends Viewer
                 UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
-            return persister.applyChanges(monitor, false, settings, applyListener);
+
+            return applyChanges(monitor, settings, persister, applyListener, false);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Apply changes error", "Error saving changes in database", e);
             return false;
         }
+    }
+
+    private boolean applyChanges(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull ResultSetSaveSettings settings,
+        @NotNull ResultSetPersister persister,
+        @Nullable DBDDataUpdateListener applyListener,
+        boolean generateScript
+    ) throws DBException {
+        if (monitor == null) {
+            try {
+                UIUtils.runInProgressService(monitor1 -> {
+                    try {
+                        persister.prepareStatements(monitor1, settings);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                throw new DBException("Error preparing update statements", e.getTargetException());
+            } catch (InterruptedException e) {
+                return false;
+            }
+        } else {
+            persister.prepareStatements(monitor, settings);
+        }
+        return persister.execute(monitor, generateScript, settings, applyListener);
     }
 
     @Override
@@ -4729,8 +4770,8 @@ public class ResultSetViewer extends Viewer
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor, @NotNull ResultSetSaveSettings settings) {
         try {
             ResultSetPersister persister = createDataPersister(false);
-            persister.applyChanges(monitor, true, settings, null);
-            return persister.getScript();
+            applyChanges(monitor, settings, persister, null, true);
+            return persister.getActions();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("SQL script generate error", "Error saving changes in database", e);
             return Collections.emptyList();
