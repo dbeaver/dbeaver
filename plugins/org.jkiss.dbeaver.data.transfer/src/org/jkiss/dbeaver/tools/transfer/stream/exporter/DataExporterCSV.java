@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -49,8 +48,6 @@ import java.util.*;
  */
 public class DataExporterCSV extends StreamExporterAbstract implements IAppendableDataExporter {
 
-    private static final Log log = Log.getLog(DataExporterCSV.class);
-
     public static final String PROCESSOR_ID = "stream.csv";
 
     public static final String PROP_DELIMITER = "delimiter";
@@ -65,6 +62,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
     private static final String PROP_FORMAT_ARRAY = "formatArray";
+    private static final String LINE_BREAK_REGEX = "\\r\\n|\\n";
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
@@ -326,7 +324,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private void writeCellValue(@NotNull String value, boolean quote)
     {
-        writeLines(Arrays.stream(value.split("\n", -1)).iterator(), quote);
+        writeLines(Arrays.stream(value.split(LINE_BREAK_REGEX, -1)).iterator(), quote);
     }
 
     private void writeCellValue(@NotNull Reader reader) throws IOException {
