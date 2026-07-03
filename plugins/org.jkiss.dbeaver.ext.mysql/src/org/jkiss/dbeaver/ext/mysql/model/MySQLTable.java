@@ -315,7 +315,8 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<MySQLTableConstraint> constraintObjects = new ArrayList<>(getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this));
+        List<MySQLTableConstraint> constraintObjects = new ArrayList<>(
+                getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this));
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
             if (!CommonUtils.isEmpty(checkConstraintObjects)) {
