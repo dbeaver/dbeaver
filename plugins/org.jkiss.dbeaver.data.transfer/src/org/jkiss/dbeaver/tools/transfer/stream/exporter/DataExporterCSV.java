@@ -337,12 +337,10 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             char[] buffer = new char[2000];
             for (int count = reader.read(buffer); count > 0; count = reader.read(buffer)) {
                 for (int i = 0; i < count; i++) {
+                    lineBuffer.append(buffer[i]);
                     if (buffer[i] == '\n') {
-                        lineBuffer.append("\n")
                         lines.add(lineBuffer.toString());
                         lineBuffer.setLength(0);
-                    } else {
-                        lineBuffer.append(buffer[i]);
                     }
                 }
             }

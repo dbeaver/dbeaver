@@ -228,13 +228,13 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         @NotNull RowContentCreator rowContentCreator
     ) throws DBException, IOException {
         // middle new line
-/*        assertRowsEquals(
+        assertRowsEquals(
             """
                 "a
                 b",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
                 {"a\nb", "c", "d"}
             }
-        );*/
+        );
         // trailing new line
         assertRowsEquals(
             "\"\nab\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
