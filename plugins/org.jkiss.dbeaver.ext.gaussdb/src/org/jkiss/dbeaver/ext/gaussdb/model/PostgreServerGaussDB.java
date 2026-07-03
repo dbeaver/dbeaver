@@ -60,6 +60,11 @@ public class PostgreServerGaussDB extends PostgreServerExtensionBase {
         return true;
     }
 
+    @Override
+    public boolean supportsMaterializedViews() {
+        return true;
+    }
+
     @NotNull
     @Override
     public PostgreDatabase.SchemaCache createSchemaCache(@NotNull PostgreDatabase database) {
