@@ -26,6 +26,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.service.prefs.BackingStoreException;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class BundlePreferenceStore extends AbstractPreferenceStore {
 
@@ -188,13 +189,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
         if (oldValue == value) {
             return;
         }
+        putDouble(name, value);
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue, value);
+    }
+
+    protected void putDouble(@NotNull String name, double value) {
         if (getDefaultDouble(name) == value) {
             props.remove(name);
         } else {
             props.putDouble(name, value);
         }
-        dirty = true;
-        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -203,13 +208,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
         if (oldValue == value) {
             return;
         }
+        putFloat(name, value);
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue, value);
+    }
+
+    protected void putFloat(@NotNull String name, float value) {
         if (getDefaultFloat(name) == value) {
             props.remove(name);
         } else {
             props.putFloat(name, value);
         }
-        dirty = true;
-        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -218,13 +227,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
         if (oldValue == value) {
             return;
         }
+        putInt(name, value);
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue, value);
+    }
+
+    protected void putInt(@NotNull String name, int value) {
         if (getDefaultInt(name) == value) {
             props.remove(name);
         } else {
             props.putInt(name, value);
         }
-        dirty = true;
-        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -233,13 +246,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
         if (oldValue == value) {
             return;
         }
+        putLong(name, value);
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue, value);
+    }
+
+    protected void putLong(@NotNull String name, long value) {
         if (getDefaultLong(name) == value) {
             props.remove(name);
         } else {
             props.putLong(name, value);
         }
-        dirty = true;
-        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -248,13 +265,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
         if (CommonUtils.equalObjects(oldValue, value)) {
             return;
         }
-        if (getDefaultString(name).equals(value)) {
+        putString(name, value);
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue, value);
+    }
+
+    protected void putString(@NotNull String name, @Nullable String value) {
+        if (Objects.equals(getDefaultString(name), value)) {
             props.remove(name);
         } else {
             props.put(name, value);
         }
-        dirty = true;
-        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override
@@ -263,13 +284,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
         if (oldValue == value) {
             return;
         }
+        putBoolean(name, value);
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
+    }
+
+    protected void putBoolean(@NotNull String name, boolean value) {
         if (getDefaultBoolean(name) == value) {
             props.remove(name);
         } else {
             props.putBoolean(name, value);
         }
-        dirty = true;
-        firePropertyChangeEvent(name, oldValue ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
 
     @Override
