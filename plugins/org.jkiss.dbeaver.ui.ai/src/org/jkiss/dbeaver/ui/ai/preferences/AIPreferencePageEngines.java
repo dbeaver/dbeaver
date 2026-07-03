@@ -75,12 +75,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     public AIPreferencePageEngines() {
         this.settings = AISettingsManager.getInstance().getSettings();
         this.settings.resolveSecrets();
-
-        try {
-            selectedProfile = settings.getDefaultConfiguration();
-        } catch (DBException e) {
-            log.error(e);
-        }
+        this.selectedProfile = settings.getDefaultConfigurationOrNull();
     }
 
     @Override
@@ -95,6 +90,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     @Nullable
     private AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> createEngineConfigurator() {
+        if (selectedProfile == null) {
+            return null;
+        }
         try {
             UIPropertyConfiguratorDescriptor engineDescriptor =
                 UIPropertyConfiguratorRegistry.getInstance().getDescriptor(
