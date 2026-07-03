@@ -156,12 +156,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     }
 
     @Override
-    public void dispose()
-    {
-        super.dispose();
-    }
-
-    @Override
     protected DBDDisplayFormat getValueExportFormat(DBDAttributeBinding column) {
         if ((column.getDataKind() == DBPDataKind.NUMERIC && !formatNumbers) || column.getDataKind() == DBPDataKind.ARRAY) {
             return DBDDisplayFormat.NATIVE;

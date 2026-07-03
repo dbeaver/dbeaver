@@ -428,6 +428,7 @@ public class DatabaseTransferUtils {
 
             Map<String, Object> options = new HashMap<>();
             options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
+            options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true);
 
             DBECommandContext commandContext = new TargetCommandContext(executionContext);
 
@@ -439,6 +440,7 @@ public class DatabaseTransferUtils {
                 containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() == null)) {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
+                transferComment(monitor, commandContext, table, getSourceDescription(containerMapping.getSource()));
                 tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, true);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
@@ -455,6 +457,7 @@ public class DatabaseTransferUtils {
                         null,
                         options);
                     applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
+                    transferComment(monitor, commandContext, table, getSourceDescription(containerMapping.getSource()));
                     tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, false);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
@@ -496,6 +499,12 @@ public class DatabaseTransferUtils {
                         }
                     }
 
+                    transferComment(monitor, commandContext, newAttribute, getSourceDescription(attributeMapping.getSource()));
+                    var attrCache = attributeManager.getObjectsCache(newAttribute);
+                    if (attrCache != null) {
+                        attrCache.cacheObject(newAttribute);
+                    }
+
                     SQLObjectEditor.ObjectCreateCommand attrCreateCommand = attributeManager.makeCreateCommand(newAttribute, options);
                     if (createCommand instanceof DBECommandAggregator<?> aggregator) {
                         aggregator.aggregateCommand(attrCreateCommand);
@@ -515,6 +524,32 @@ public class DatabaseTransferUtils {
             return table;
         } catch (DBException e) {
             throw new DBException("Can't create or modify target table", e);
+        }
+    }
+
+    @Nullable
+    private static String getSourceDescription(@Nullable Object source) {
+        return source instanceof DBPObjectWithDescription described ? described.getDescription() : null;
+    }
+
+    private static void transferComment(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext commandContext,
+        @NotNull DBSObject target,
+        @Nullable String description
+    ) {
+        if (CommonUtils.isEmpty(description) || !(target instanceof DBSDescriptionEditable descEditable)) {
+            return;
+        }
+        PropertySourceEditable propertySource = new PropertySourceEditable(commandContext, target, target);
+        propertySource.collectProperties();
+        DBPPropertyDescriptor descProperty = propertySource.getProperty(DBConstants.PROP_ID_DESCRIPTION);
+        if (descProperty instanceof ObjectPropertyDescriptor objectProperty) {
+            if (objectProperty.isEditPossible(target)) {
+                propertySource.setPropertyValue(monitor, target, objectProperty, description);
+            }
+        } else {
+            descEditable.setDescription(description);
         }
     }
 
