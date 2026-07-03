@@ -122,4 +122,5 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
 
         mergeCache(tmpObjectList);
     }
+
 }
