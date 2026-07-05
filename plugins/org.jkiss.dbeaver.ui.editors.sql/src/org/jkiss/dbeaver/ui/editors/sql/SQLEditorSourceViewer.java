@@ -20,11 +20,15 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLProjectionAnnotationModel;
+
+import java.lang.reflect.Field;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
@@ -110,6 +114,26 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         
         //textWidget.setAlwaysShowScrollBars(false);
         return textWidget;
+    }
+
+    @Override
+    protected IAnnotationModel createVisualAnnotationModel(IAnnotationModel annotationModel) {
+        IAnnotationModel visualModel = super.createVisualAnnotationModel(annotationModel);
+        try {
+            Field field = ProjectionViewer.class.getDeclaredField("fProjectionAnnotationModel");
+            field.setAccessible(true);
+            ProjectionAnnotationModel wiredModel = (ProjectionAnnotationModel) field.get(this);
+            if (wiredModel != null && !(wiredModel instanceof SQLProjectionAnnotationModel)) {
+                SQLProjectionAnnotationModel sqlModel = new SQLProjectionAnnotationModel();
+                field.set(this, sqlModel);
+                if (visualModel == wiredModel) {
+                    return sqlModel;
+                }
+            }
+        } catch (ReflectiveOperationException e) {
+            log.warn("Failed to install SQL projection annotation model", e);
+        }
+        return visualModel;
     }
     
     private boolean expandAnnotationsContaining(@NotNull ProjectionAnnotationModel projectionAnnotationModel, int offset) {

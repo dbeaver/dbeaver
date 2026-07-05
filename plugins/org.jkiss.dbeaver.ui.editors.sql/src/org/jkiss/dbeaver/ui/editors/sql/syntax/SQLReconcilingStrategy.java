@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
@@ -53,6 +55,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private static final QualifiedName COLLAPSED_ANNOTATIONS =
         new QualifiedName(SQLEditorActivator.PLUGIN_ID, SQLReconcilingStrategy.class.getName() + ".collapsedFoldingAnnotations");
+
+    private static final Pattern REGION_START_PATTERN = Pattern.compile("^\\s*--\\s*region\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern REGION_END_PATTERN = Pattern.compile("^\\s*--\\s*endregion\\b", Pattern.CASE_INSENSITIVE);
 
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
@@ -161,6 +166,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 stringJoiner.add(Integer.toString(position.getOffset()));
             }
         }
+        if (annotationModel instanceof SQLProjectionAnnotationModel sqlProjectionModel) {
+            for (int offset : sqlProjectionModel.getDeferredCollapsedOffsets()) {
+                stringJoiner.add(Integer.toString(offset));
+            }
+        }
         String value;
         if (stringJoiner.length() == 0) {
             value = null;
@@ -243,10 +253,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             cachedQueries = Collections.unmodifiableNavigableSet(cache.subSet(leftBound, false, rightBound, true));
         }
 
-        Collection<SQLScriptElementImpl> parsedElements = parsedQueries.stream()
+        List<SQLScriptElementImpl> regionElements = extractRegionFoldingPositions();
+
+        Set<SQLScriptElementImpl> parsedElements = new HashSet<>(parsedQueries.stream()
             .filter(this::deservesFolding)
             .map(this::getExpandedScriptElement)
-            .collect(Collectors.toSet());
+            .filter(element -> !isStrictlyEnclosedInAnyRegion(element, regionElements))
+            .collect(Collectors.toSet()));
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
         Set<Integer> savedCollapsedAnnotationsOffsets = restoreCollapsedAnnotations ? getSavedCollapsedAnnotationsOffsets() : Collections.emptySet();
         for (SQLScriptElementImpl element : parsedElements) {
@@ -254,18 +267,43 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 ProjectionAnnotation annotation = new ProjectionAnnotation();
                 element.setAnnotation(annotation);
                 additions.put(annotation, element);
-                if (savedCollapsedAnnotationsOffsets.contains(element.getOffset())) {
-                    annotation.markCollapsed();
-                }
+            }
+        }
+        // Add region-based folding annotations for --region/--endregion markers
+        for (SQLScriptElementImpl regionElement : regionElements) {
+            if (getNumberOfLines(regionElement) <= 1) {
+                continue;
+            }
+            parsedElements.add(regionElement);
+            if (!cachedQueries.contains(regionElement)) {
+                ProjectionAnnotation annotation = new ProjectionAnnotation();
+                regionElement.setAnnotation(annotation);
+                additions.put(annotation, regionElement);
             }
         }
         Collection<SQLScriptElementImpl> deletedPositions = cachedQueries.stream()
             .filter(element -> !parsedElements.contains(element))
             .toList();
+        Set<Integer> collapsedOffsetsToRestore = new HashSet<>(savedCollapsedAnnotationsOffsets);
+        for (SQLScriptElementImpl deleted : deletedPositions) {
+            ProjectionAnnotation annotation = deleted.getAnnotation();
+            if (annotation != null && annotation.isCollapsed()) {
+                collapsedOffsetsToRestore.add(deleted.getOffset());
+            }
+        }
         Annotation[] deletions = deletedPositions.stream()
             .map(SQLScriptElementImpl::getAnnotation)
             .toArray(Annotation[]::new);
         model.modifyAnnotations(deletions, additions, null);
+        for (SQLScriptElementImpl element : additions.values()) {
+            if (collapsedOffsetsToRestore.contains(element.getOffset())) {
+                ProjectionAnnotation annotation = element.getAnnotation();
+                if (annotation != null) {
+                    model.collapse(annotation);
+                }
+            }
+        }
+        syncCollapsedProjectionAnnotations(model);
         cache.removeAll(deletedPositions);
         cache.addAll(additions.values());
 
@@ -285,6 +323,86 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         return editor.extractScriptQueries(offset, length, false, true, false);
     }
 
+    @NotNull
+    private List<SQLScriptElementImpl> extractRegionFoldingPositions() {
+        List<SQLScriptElementImpl> regions = new ArrayList<>();
+        if (document == null || document.getLength() == 0) {
+            return regions;
+        }
+        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ext
+            ? ext.getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
+            : null;
+        Deque<Integer> regionStarts = new ArrayDeque<>();
+        int lineCount = document.getNumberOfLines();
+        for (int line = 0; line < lineCount; line++) {
+            try {
+                IRegion lineInfo = document.getLineInformation(line);
+                int lineOffset = lineInfo.getOffset();
+                int lineLength = lineInfo.getLength();
+                if (lineLength == 0) {
+                    continue;
+                }
+                String lineText = document.get(lineOffset, lineLength);
+                if (partitioner != null) {
+                    int commentPos = lineText.indexOf("--");
+                    if (commentPos < 0) {
+                        continue;
+                    }
+                    String contentType = partitioner.getContentType(lineOffset + commentPos);
+                    if (!SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType)) {
+                        continue;
+                    }
+                }
+                if (REGION_START_PATTERN.matcher(lineText).find()) {
+                    regionStarts.push(lineOffset);
+                } else if (REGION_END_PATTERN.matcher(lineText).find()) {
+                    if (!regionStarts.isEmpty()) {
+                        int startOffset = regionStarts.pop();
+                        int endOffset = line + 1 < lineCount
+                            ? document.getLineOffset(line + 1)
+                            : document.getLength();
+                        int length = endOffset - startOffset;
+                        if (length > 0) {
+                            regions.add(new SQLScriptElementImpl(startOffset, length));
+                        }
+                    }
+                }
+            } catch (BadLocationException e) {
+                log.warn("Error scanning for region folding markers", e);
+            }
+        }
+        return regions;
+    }
+
+    private boolean isStrictlyEnclosedInAnyRegion(
+        @NotNull SQLScriptElementImpl element,
+        @NotNull List<SQLScriptElementImpl> regions
+    ) {
+        int start = element.getOffset();
+        int end = start + element.getLength();
+        for (SQLScriptElementImpl region : regions) {
+            if (isStrictlyEnclosed(start, end, region.getOffset(), region.getOffset() + region.getLength())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isStrictlyEnclosed(int innerStart, int innerEnd, int outerStart, int outerEnd) {
+        return innerStart >= outerStart && innerEnd <= outerEnd
+            && (innerStart > outerStart || innerEnd < outerEnd);
+    }
+
+    private void syncCollapsedProjectionAnnotations(@NotNull ProjectionAnnotationModel model) {
+        Iterator<Annotation> it = model.getAnnotationIterator();
+        while (it.hasNext()) {
+            Annotation annotation = it.next();
+            if (annotation instanceof ProjectionAnnotation projectionAnnotation && projectionAnnotation.isCollapsed()) {
+                model.collapse(annotation);
+            }
+        }
+    }
+
     private boolean deservesFolding(SQLScriptElement element) {
         int numberOfLines = getNumberOfLines(element);
         if (numberOfLines == 1) {
@@ -298,7 +416,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private int getNumberOfLines(SQLScriptElement element) {
         try {
-            return document.getLineOfOffset(element.getOffset() + element.getLength()) - document.getLineOfOffset(element.getOffset()) + 1;
+            int start = element.getOffset();
+            int exclusiveEnd = start + element.getLength();
+            if (exclusiveEnd <= start) {
+                return 1;
+            }
+            int lastIncludedOffset = exclusiveEnd - 1;
+            return document.getLineOfOffset(lastIncludedOffset) - document.getLineOfOffset(start) + 1;
         } catch (BadLocationException e) {
             throw new SQLReconcilingStrategyException(e);
         }
