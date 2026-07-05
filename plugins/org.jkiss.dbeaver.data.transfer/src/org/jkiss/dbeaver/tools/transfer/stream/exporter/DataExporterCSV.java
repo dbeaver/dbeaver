@@ -66,6 +66,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
+    public static final int READ_BUFFER_SIZE = 10;
     private boolean formatNumbers;
 
     enum HeaderPosition {
@@ -337,10 +338,11 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private void writeCellValue(@NotNull Reader reader) throws IOException {
         try {
             csvLineEscaper.clearState();
-            char[] chars = new char[2000];
+            char[] chars = new char[READ_BUFFER_SIZE];
             for (int count = reader.read(chars); count > 0; count = reader.read(chars)) {
                 csvLineEscaper.writeToLineBuffer(chars, count);
             }
+            csvLineEscaper.writePending();
         } finally {
             ContentUtils.close(reader);
         }
@@ -411,6 +413,11 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         // tricky case when delimiter starts from quote and is longer then quote
         private boolean isDelimiterContainsQuotes;
 
+        // case of buffer overwhelm with special char stats in the buffer end
+        private int longestSpecialChar = 1;
+
+        private char[] pending = new char[0];
+
         private boolean lineNeedsQuotation;
 
         public CsvLineEscaper() {
@@ -425,17 +432,39 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             orderedSpecialChars.sort(Comparator.comparingInt((Pair<CharStrategy, char[]> p) -> p.getSecond().length)
                 .reversed()
                 .thenComparing(Pair::getFirst));
+            if (!orderedSpecialChars.isEmpty()) {
+                longestSpecialChar = Math.max(orderedSpecialChars.getFirst().getSecond().length, delimiter.length());
+            }
         }
 
         public void writeToLineBuffer(@NotNull char[] chars, int readCount) {
+            writeToLineBuffer(chars, readCount, longestSpecialChar);
+        }
+
+        public void writePending() {
+            if (pending.length > 0) {
+                writeToLineBuffer(new char[0], 0, 1);
+            }
+        }
+
+        private void writeToLineBuffer(@NotNull char[] chars, int readCount, int pendingLength) {
+            int totalWithPending = readCount + pending.length;
             int index = 0;
-            while (index < readCount) {
+            while ((totalWithPending - index) >= pendingLength) {
                 CharStrategy strategy = defineStrategy(chars, index);
                 index += switch (strategy) {
                     case NORMAL_CHAR -> processNormalChar(chars[index]);
                     case QUOTES -> processQuotes();
                     case LF, CRLF -> processLinebreak(strategy);
                 };
+            }
+
+            int length = totalWithPending - index;
+            if (length > 0) {
+                pending = new char[length];
+                System.arraycopy(chars, index - length, pending, 0, pending.length);
+            } else {
+                pending = new char[0];
             }
         }
 
@@ -482,18 +511,35 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             };
         }
 
-        private boolean containsSpecialChar(@NotNull char[] chars, int toffset, @NotNull char[] specialChar) {
-            int endIndex = Math.min(toffset + specialChar.length, chars.length);
-            return Arrays.equals(chars, toffset, endIndex, specialChar, 0, specialChar.length);
-        }
-
         private boolean containsQuotes(@NotNull char[] chars, int toffset, char[] quotes) {
             return isDelimiterContainsQuotes
                 ? !containsSpecialChar(chars, toffset, delimiter.toCharArray()) && containsSpecialChar(chars, toffset, quotes)
                 : containsSpecialChar(chars, toffset, quotes);
         }
 
+        // pending = [a,b], chars = [c,d], specialChar = [a,b,c] -> true
+        private boolean containsSpecialChar(@NotNull char[] chars, int toffset, @NotNull char[] specialChar) {
+            if (toffset < pending.length) {
+                int charsInPending = pending.length - toffset;
+                // all in pending
+                if (charsInPending >= specialChar.length) {
+                    return Arrays.equals(pending, toffset, toffset + specialChar.length, specialChar, 0, specialChar.length);
+                }
+                // pending and chars
+                return Arrays.equals(pending, toffset, pending.length, specialChar, 0, charsInPending)
+                    && Arrays.equals(chars, 0, specialChar.length - charsInPending, specialChar, charsInPending, specialChar.length);
+
+            }
+
+            // look only in chars
+            int charsOffset = toffset - pending.length;
+            int charsEndIndex = charsOffset + specialChar.length;
+            return charsEndIndex <= chars.length
+                && Arrays.equals(chars, charsOffset, charsEndIndex, specialChar, 0, specialChar.length);
+        }
+
         public void clearState() {
+            pending = new char[0];
             lineBuffer.setLength(0);
             lineNeedsQuotation = false;
         }

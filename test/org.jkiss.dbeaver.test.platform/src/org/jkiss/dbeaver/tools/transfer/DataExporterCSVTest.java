@@ -464,6 +464,34 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         assertRowsEquals("Привет,こんにちは,😀", valueSeparator, quoteSeparator, rowContentCreator, rows);
     }
 
+    @Test
+    // checks tricky case of multi char Quote beginning in the end of buffer
+    public void bufferOverwhelmTest() throws DBException, IOException {
+        // given
+        String quote = "quote";
+        String fullBufferRow = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE);
+        String rowWithPending = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE - 1) + "\"";
+        // then
+        // buffer exactly matches input
+        assertRowsEquals(fullBufferRow, ",", quote, RowContentCreator.TEXT_CONTENT, new String[][]{{fullBufferRow}});
+        // one row with pending
+        assertRowsEquals(
+            "\"" + rowWithPending + "\"".repeat(2) + "\"",
+            ",",
+            quote,
+            RowContentCreator.TEXT_CONTENT,
+            new String[][]{{rowWithPending}}
+        );
+        // two rows with peding
+        assertRowsEquals(
+            "\"" + rowWithPending + "\"".repeat(2) + fullBufferRow + "\"",
+            ",",
+            quote,
+            RowContentCreator.TEXT_CONTENT,
+            new String[][]{{rowWithPending + fullBufferRow}}
+        );
+    }
+
     private void assertRowsEquals(
         @NotNull String expectedRowsTemplate,
         @NotNull String customSeparator,
