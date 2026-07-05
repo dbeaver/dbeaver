@@ -695,12 +695,10 @@ public class TiberoSchema extends OracleSchema {
      * expects columns and joins that Tibero does not expose in the same form.
      */
     private synchronized void cacheSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (super.getSynonyms(monitor) != null && super.getSynonyms(monitor).size() > 0) {
+        if (synonymCache.isFullyCached()) {
             return;
         }
-        // Fall through and load the Tibero-safe synonym list when the Oracle cache is empty.
-        super.getSchema(); // no-op to keep the method shape stable for the existing callers
-        getSynonymsCache().setCache(loadSynonyms(monitor));
+        synonymCache.setCache(loadSynonyms(monitor));
     }
 
     private List<OracleSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
