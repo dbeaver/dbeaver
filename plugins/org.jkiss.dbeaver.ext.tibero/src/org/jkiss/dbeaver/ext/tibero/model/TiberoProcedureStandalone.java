@@ -81,10 +81,6 @@ public class TiberoProcedureStandalone extends OracleProcedureStandalone {
         }
     }
 
-    private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session) throws SQLException {
-        return prepareParametersStatement(session, true);
-    }
-
     private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session, boolean strict) throws SQLException {
         String whereClause = strict
             ? "OWNER=? AND OBJECT_NAME=? AND (PACKAGE_NAME IS NULL OR PACKAGE_NAME='') "

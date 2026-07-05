@@ -39,14 +39,30 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class TiberoView extends OracleView {
+
+    private static final VarHandle ORACLE_VIEW_ADDITIONAL_INFO_HANDLE;
+    private static final VarHandle TABLE_ADDITIONAL_INFO_LOADED_HANDLE;
+
+    static {
+        try {
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+            ORACLE_VIEW_ADDITIONAL_INFO_HANDLE = MethodHandles.privateLookupIn(OracleView.class, lookup)
+                .findVarHandle(OracleView.class, "additionalInfo", OracleView.AdditionalInfo.class);
+            TABLE_ADDITIONAL_INFO_LOADED_HANDLE = MethodHandles.privateLookupIn(OracleTableBase.TableAdditionalInfo.class, lookup)
+                .findVarHandle(OracleTableBase.TableAdditionalInfo.class, "loaded", boolean.class);
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     private volatile List<OracleTableColumn> columnsCache;
     private volatile String sourceText;
@@ -153,16 +169,11 @@ public class TiberoView extends OracleView {
     }
 
     private void markAdditionalInfoLoaded() {
-        try {
-            Field field = OracleView.class.getDeclaredField("additionalInfo");
-            field.setAccessible(true);
-            Object info = field.get(this);
-            Field loadedField = info.getClass().getSuperclass().getDeclaredField("loaded");
-            loadedField.setAccessible(true);
-            loadedField.setBoolean(info, true);
-        } catch (ReflectiveOperationException e) {
-            // Best effort only. If reflection fails, the UI may fall back to the Oracle path.
+        OracleView.AdditionalInfo info = (OracleView.AdditionalInfo) ORACLE_VIEW_ADDITIONAL_INFO_HANDLE.get(this);
+        if (info == null) {
+            return;
         }
+        TABLE_ADDITIONAL_INFO_LOADED_HANDLE.set(info, true);
     }
 
     private List<OracleTableColumn> loadAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {

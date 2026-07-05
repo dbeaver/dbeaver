@@ -58,6 +58,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -66,6 +68,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * TiberoSchema
@@ -164,7 +167,18 @@ public class TiberoSchema extends OracleSchema {
             return;
         }
         cacheTables(monitor);
+        List<OracleTableIndex> indexes = loadIndexes(monitor);
+        for (OracleTableIndex index : indexes) {
+            cache.cacheObject(index);
+        }
+        cache.setCache(indexes);
+    }
+
+    private List<OracleTableIndex> loadIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleTableIndex> indexes = new ArrayList<>();
+        AtomicReference<OracleTableIndex> curIndex = new AtomicReference<>();
+        AtomicReference<OracleTableBase> curTable = new AtomicReference<>();
+        AtomicReference<String> curKey = new AtomicReference<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero indexes")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,\n" +
@@ -182,55 +196,63 @@ public class TiberoSchema extends OracleSchema {
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    OracleTableIndex curIndex = null;
-                    OracleTableBase curTable = null;
-                    String curKey = null;
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
-                        String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDEX_NAME");
-                        if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(indexName)) {
-                            continue;
-                        }
-                        String key = tableName + "." + indexName;
-                        if (!key.equals(curKey)) {
-                            curKey = key;
-                            curIndex = null;
-                            curTable = tableCache.getObject(monitor, this, tableName);
-                            if (curTable == null) {
-                                log.debug("Table '" + tableName + "' not found for index '" + indexName + "'");
-                                continue;
-                            }
-                            curIndex = new TiberoTableIndex(this, curTable, indexName, dbResult);
-                            indexes.add(curIndex);
-                        }
-                        if (curIndex == null) {
-                            continue;
-                        }
-                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
-                        OracleTableColumn tableColumn = columnName == null ? null : curTable.getAttribute(monitor, columnName);
-                        if (tableColumn == null) {
-                            log.debug("Column '" + columnName + "' not found in table '" + tableName + "' for index '" + indexName + "'");
-                            continue;
-                        }
-                        curIndex.addColumn(new OracleTableIndexColumn(
-                            curIndex,
-                            tableColumn,
-                            JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION"),
-                            "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND")),
-                            JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_EXPRESSION")));
+                        processIndexRow(monitor, dbResult, indexes, curIndex, curTable, curKey);
                     }
                 }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, getDataSource());
         }
-        for (OracleTableIndex index : indexes) {
-            cache.cacheObject(index);
+        return indexes;
+    }
+
+    private void processIndexRow(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCResultSet dbResult,
+        @NotNull List<OracleTableIndex> indexes,
+        @NotNull AtomicReference<OracleTableIndex> curIndex,
+        @NotNull AtomicReference<OracleTableBase> curTable,
+        @NotNull AtomicReference<String> curKey
+    ) throws DBException {
+        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
+        String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDEX_NAME");
+        if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(indexName)) {
+            return;
         }
-        cache.setCache(indexes);
+        String key = tableName + "." + indexName;
+        if (!key.equals(curKey.get())) {
+            curKey.set(key);
+            curIndex.set(null);
+            curTable.set(tableCache.getObject(monitor, this, tableName));
+            if (curTable.get() == null) {
+                log.debug("Table '" + tableName + "' not found for index '" + indexName + "'");
+                return;
+            }
+            OracleTableIndex index = new TiberoTableIndex(this, curTable.get(), indexName, dbResult);
+            curIndex.set(index);
+            indexes.add(index);
+        }
+        OracleTableIndex index = curIndex.get();
+        OracleTableBase table = curTable.get();
+        if (index == null || table == null) {
+            return;
+        }
+        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+        OracleTableColumn tableColumn = columnName == null ? null : table.getAttribute(monitor, columnName);
+        if (tableColumn == null) {
+            log.debug("Column '" + columnName + "' not found in table '" + tableName + "' for index '" + indexName + "'");
+            return;
+        }
+        index.addColumn(new OracleTableIndexColumn(
+            index,
+            tableColumn,
+            JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION"),
+            "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND")),
+            JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_EXPRESSION")));
     }
 
     @NotNull
@@ -296,7 +318,16 @@ public class TiberoSchema extends OracleSchema {
 
     private List<OracleTableTrigger> loadTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         cacheTables(monitor);
+        List<OracleTableTrigger> triggers = loadTableTriggerRows(monitor);
+        return triggers;
+    }
+
+    private List<OracleTableTrigger> loadTableTriggerRows(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<OracleTableTrigger> triggers = new ArrayList<>();
+        AtomicReference<OracleTableTrigger> curTrigger = new AtomicReference<>();
+        AtomicReference<OracleTableBase> curTable = new AtomicReference<>();
+        AtomicReference<List<OracleTriggerColumn>> curColumns = new AtomicReference<>(new ArrayList<>());
+        AtomicReference<String> curKey = new AtomicReference<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.OWNER,t.TRIGGER_NAME,t.TRIGGER_TYPE,t.TRIGGERING_EVENT,t.TABLE_OWNER,t.TABLE_NAME," +
@@ -313,54 +344,67 @@ public class TiberoSchema extends OracleSchema {
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    OracleTableTrigger curTrigger = null;
-                    OracleTableBase curTable = null;
-                    List<OracleTriggerColumn> curColumns = new ArrayList<>();
-                    String curKey = null;
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
-                        String triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_NAME");
-                        if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(triggerName)) {
-                            continue;
-                        }
-                        String key = tableName + "." + triggerName;
-                        if (!key.equals(curKey)) {
-                            curKey = key;
-                            if (curTrigger != null) {
-                                curTrigger.setColumns(curColumns);
-                            }
-                            curTrigger = null;
-                            curColumns = new ArrayList<>();
-                            curTable = tableCache.getObject(monitor, this, tableName);
-                            if (curTable == null) {
-                                log.debug("Table '" + tableName + "' not found for trigger '" + triggerName + "'");
-                                continue;
-                            }
-                            curTrigger = createTableTrigger(curTable, dbResult);
-                            triggers.add(curTrigger);
-                        }
-                        if (curTrigger == null) {
-                            continue;
-                        }
-                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_COLUMN_NAME");
-                        OracleTableColumn tableColumn = columnName == null ? null : curTable.getAttribute(monitor, columnName);
-                        if (tableColumn == null) {
-                            continue;
-                        }
-                        curColumns.add(createTriggerColumn(monitor, curTrigger, tableColumn, dbResult));
-                    }
-                    if (curTrigger != null) {
-                        curTrigger.setColumns(curColumns);
+                        processTableTriggerRow(monitor, dbResult, triggers, curTrigger, curTable, curColumns, curKey);
                     }
                 }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException(e, getDataSource());
         }
+        finalizeCurrentTrigger(curTrigger.get(), curColumns.get());
         return triggers;
+    }
+
+    private void processTableTriggerRow(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCResultSet dbResult,
+        @NotNull List<OracleTableTrigger> triggers,
+        @NotNull AtomicReference<OracleTableTrigger> curTrigger,
+        @NotNull AtomicReference<OracleTableBase> curTable,
+        @NotNull AtomicReference<List<OracleTriggerColumn>> curColumns,
+        @NotNull AtomicReference<String> curKey
+    ) throws DBException {
+        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
+        String triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_NAME");
+        if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(triggerName)) {
+            return;
+        }
+        String key = tableName + "." + triggerName;
+        if (!key.equals(curKey.get())) {
+            curKey.set(key);
+            finalizeCurrentTrigger(curTrigger.get(), curColumns.get());
+            curTrigger.set(null);
+            curColumns.set(new ArrayList<>());
+            curTable.set(tableCache.getObject(monitor, this, tableName));
+            if (curTable.get() == null) {
+                log.debug("Table '" + tableName + "' not found for trigger '" + triggerName + "'");
+                return;
+            }
+            OracleTableTrigger trigger = createTableTrigger(curTable.get(), dbResult);
+            curTrigger.set(trigger);
+            triggers.add(trigger);
+        }
+        OracleTableTrigger trigger = curTrigger.get();
+        OracleTableBase table = curTable.get();
+        if (trigger == null || table == null) {
+            return;
+        }
+        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_COLUMN_NAME");
+        OracleTableColumn tableColumn = columnName == null ? null : table.getAttribute(monitor, columnName);
+        if (tableColumn == null) {
+            return;
+        }
+        curColumns.get().add(createTriggerColumn(monitor, trigger, tableColumn, dbResult));
+    }
+
+    private void finalizeCurrentTrigger(@Nullable OracleTableTrigger trigger, @NotNull List<OracleTriggerColumn> columns) {
+        if (trigger != null) {
+            trigger.setColumns(columns);
+        }
     }
 
     private OracleSchemaTrigger createSchemaTrigger(@NotNull JDBCResultSet dbResult) {
@@ -539,63 +583,6 @@ public class TiberoSchema extends OracleSchema {
     }
 
     /**
-     * Same takeover for synonyms. Oracle's synonym query references TABLE_OWNER, TABLE_NAME and
-     * DB_LINK, but Tibero's ALL_SYNONYMS exposes only OWNER, SYNONYM_NAME, ORG_OBJECT_OWNER and
-     * ORG_OBJECT_NAME (no DB_LINK). We alias ORG_OBJECT_* to the names Oracle's OracleSynonym reads
-     * and drop DB_LINK entirely (OracleSynonym reads it with a null-tolerant safeGetString).
-     */
-    private synchronized void cacheSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (super.getSynonyms(monitor) != null) {
-            return;
-        }
-    }
-
-    private List<OracleSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
-        final String ownerName = getName();
-        final boolean readAllSynonyms = getDataSource().getContainer().getPreferenceStore()
-            .getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS);
-        final String synonymTypeFilter = readAllSynonyms ? "" : "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n";
-        final String synonymsView = OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "SYNONYMS");
-        final String objectsView = OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS");
-        List<OracleSynonym> synonyms = new ArrayList<>();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero synonyms")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) AS TABLE_OWNER, MAX(TABLE_NAME) AS TABLE_NAME," +
-                    " MAX(OBJECT_TYPE) AS OBJECT_TYPE FROM (\n" +
-                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
-                    " S.ORG_OBJECT_NAME AS TABLE_NAME, NULL AS OBJECT_TYPE\n" +
-                    "FROM " + synonymsView + " S WHERE S.OWNER = ?\n" +
-                    "UNION ALL\n" +
-                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
-                    " S.ORG_OBJECT_NAME AS TABLE_NAME, O.OBJECT_TYPE\n" +
-                    "FROM " + synonymsView + " S, " + objectsView + " O\n" +
-                    "WHERE S.OWNER = ?\n" +
-                    synonymTypeFilter +
-                    "AND O.OWNER = S.ORG_OBJECT_OWNER AND O.OBJECT_NAME = S.ORG_OBJECT_NAME AND O.SUBOBJECT_NAME IS NULL\n" +
-                    ")\n" +
-                    "GROUP BY OWNER, SYNONYM_NAME\n" +
-                    "ORDER BY SYNONYM_NAME"
-            )) {
-                dbStat.setString(1, ownerName);
-                dbStat.setString(2, ownerName);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        if (!CommonUtils.isEmpty(JDBCUtils.safeGetStringTrimmed(dbResult, "SYNONYM_NAME"))) {
-                            synonyms.add(createSynonym(dbResult));
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, getDataSource());
-        }
-        return synonyms;
-    }
-
-    /**
      * Takeover for procedures/functions. The list query itself (ALL_OBJECTS based) is Tibero-safe,
      * but Oracle's ProceduresCache instantiates OracleProcedureStandalone whose parameter loading
      * queries ALL_ARGUMENTS ordered by the missing SEQUENCE column. We re-own the load so the cache
@@ -701,6 +688,64 @@ public class TiberoSchema extends OracleSchema {
 
     private OracleSynonym createSynonym(@NotNull JDBCResultSet dbResult) {
         return new OracleSynonym(this, dbResult);
+    }
+
+    /**
+     * Synonyms are still loaded through a Tibero-specific query because Oracle's synonym cache
+     * expects columns and joins that Tibero does not expose in the same form.
+     */
+    private synchronized void cacheSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (super.getSynonyms(monitor) != null && super.getSynonyms(monitor).size() > 0) {
+            return;
+        }
+        // Fall through and load the Tibero-safe synonym list when the Oracle cache is empty.
+        super.getSchema(); // no-op to keep the method shape stable for the existing callers
+        getSynonymsCache().setCache(loadSynonyms(monitor));
+    }
+
+    private List<OracleSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
+        final String ownerName = getName();
+        final boolean readAllSynonyms = getDataSource().getContainer().getPreferenceStore()
+            .getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS);
+        final String synonymTypeFilter = readAllSynonyms ? "" : "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n";
+        final String synonymsView = OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "SYNONYMS");
+        final String objectsView = OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS");
+        List<OracleSynonym> synonyms = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero synonyms")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) AS TABLE_OWNER, MAX(TABLE_NAME) AS TABLE_NAME," +
+                    " MAX(OBJECT_TYPE) AS OBJECT_TYPE FROM (\n" +
+                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
+                    " S.ORG_OBJECT_NAME AS TABLE_NAME, NULL AS OBJECT_TYPE\n" +
+                    "FROM " + synonymsView + " S WHERE S.OWNER = ?\n" +
+                    "UNION ALL\n" +
+                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
+                    " S.ORG_OBJECT_NAME AS TABLE_NAME, O.OBJECT_TYPE\n" +
+                    "FROM " + synonymsView + " S, " + objectsView + " O\n" +
+                    "WHERE S.OWNER = ?\n" +
+                    synonymTypeFilter +
+                    "AND O.OWNER = S.ORG_OBJECT_OWNER AND O.OBJECT_NAME = S.ORG_OBJECT_NAME AND O.SUBOBJECT_NAME IS NULL\n" +
+                    ")\n" +
+                    "GROUP BY OWNER, SYNONYM_NAME\n" +
+                    "ORDER BY SYNONYM_NAME"
+            )) {
+                dbStat.setString(1, ownerName);
+                dbStat.setString(2, ownerName);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        if (!CommonUtils.isEmpty(JDBCUtils.safeGetStringTrimmed(dbResult, "SYNONYM_NAME"))) {
+                            synonyms.add(createSynonym(dbResult));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return synonyms;
     }
 
     private TiberoProcedureStandalone createProcedure(@NotNull JDBCResultSet dbResult) {
@@ -883,9 +928,9 @@ public class TiberoSchema extends OracleSchema {
 
     private boolean readBooleanField(String fieldName) {
         try {
-            java.lang.reflect.Field field = OracleSchema.class.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return field.getBoolean(this);
+            VarHandle handle = MethodHandles.privateLookupIn(OracleSchema.class, MethodHandles.lookup())
+                .findVarHandle(OracleSchema.class, fieldName, boolean.class);
+            return (boolean) handle.get(this);
         } catch (ReflectiveOperationException e) {
             return false;
         }
