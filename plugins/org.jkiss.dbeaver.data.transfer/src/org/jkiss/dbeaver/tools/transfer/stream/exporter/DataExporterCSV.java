@@ -535,7 +535,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     && Arrays.equals(chars, 0, charsInChars, specialChar, charsInPending, specialChar.length);
 
             }
-
             // look only in chars
             int charsOffset = toffset - pending.length;
             int charsEndIndex = charsOffset + specialChar.length;
