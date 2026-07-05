@@ -43,10 +43,7 @@ import org.junit.jupiter.params.support.ParameterDeclarations;
 import org.mockito.Mock;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -470,25 +467,25 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         // given
         String quote = "quote";
         String fullBufferRow = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE);
-        String rowWithPending = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE - 1) + "\"";
+        String rowWithPendingQuote = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE - 1) + "\"";
         // then
         // buffer exactly matches input
         assertRowsEquals(fullBufferRow, ",", quote, RowContentCreator.TEXT_CONTENT, new String[][]{{fullBufferRow}});
         // one row with pending
         assertRowsEquals(
-            "\"" + rowWithPending + "\"".repeat(2) + "\"",
+            "\"" + rowWithPendingQuote + "\"".repeat(2),
             ",",
             quote,
             RowContentCreator.TEXT_CONTENT,
-            new String[][]{{rowWithPending}}
+            new String[][]{{rowWithPendingQuote}}
         );
         // two rows with peding
         assertRowsEquals(
-            "\"" + rowWithPending + "\"".repeat(2) + fullBufferRow + "\"",
+            "\"" + rowWithPendingQuote + "\"" + fullBufferRow + "\"",
             ",",
             quote,
             RowContentCreator.TEXT_CONTENT,
-            new String[][]{{rowWithPending + fullBufferRow}}
+            new String[][]{{rowWithPendingQuote + fullBufferRow}}
         );
     }
 
@@ -518,18 +515,30 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         // when
         initExporter();
         dataExporterCSV.exportHeader(dbcSession);
+        List<String> preparedRows = new ArrayList<>();
         for (String[] rowsTemplate : rowsTemplates) {
+            Object[] row = new Object[rowsTemplate.length];
+            for (int i = 0; i < rowsTemplate.length; i++) {
+                String preparedRow = replaceTemplateQuotesAndSeparator(rowsTemplate[i], customSeparator, customQuote);
+                preparedRows.add(preparedRow);
+                if (rowContentCreator == RowContentCreator.TEXT_CONTENT) {
+                    row[i] = createTextContent(preparedRow);
+                } else {
+                    row[i] = preparedRow;
+                }
+            }
+
             dataExporterCSV.exportRow(
                 dbcSession,
                 resultSetMock,
-                createRow(rowsTemplate, customSeparator, customQuote, rowContentCreator)
+                row
             );
         }
         // then
         // strip header and following empty line
         String resultOnlyRows = stringWriter.toString().replaceFirst(".*" + rowsSeparator, "");
         resultOnlyRows = getResultOnlyRows(resultOnlyRows);
-        assertEquals(expectedResult, resultOnlyRows);
+        assertEquals(expectedResult, resultOnlyRows, "Prepared rows input: " + preparedRows);
     }
 
     @NotNull
