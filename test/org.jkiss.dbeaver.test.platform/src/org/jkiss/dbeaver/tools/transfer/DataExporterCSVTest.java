@@ -467,10 +467,12 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         // given
         String quote = "quote";
         String fullBufferRow = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE);
-        String rowWithPendingQuote = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE - 1) + "\"";
+        String rowWithPendingQuote = "c".repeat(DataExporterCSV.READ_BUFFER_SIZE - quote.length() + 1) + "\"";
         // then
         // buffer exactly matches input
         assertRowsEquals(fullBufferRow, ",", quote, RowContentCreator.TEXT_CONTENT, new String[][]{{fullBufferRow}});
+        // two full buffer rows
+        assertRowsEquals(fullBufferRow.repeat(2), ",", quote, RowContentCreator.TEXT_CONTENT, new String[][]{{fullBufferRow.repeat(2)}});
         // one row with pending
         assertRowsEquals(
             "\"" + rowWithPendingQuote + "\"".repeat(2),
@@ -486,6 +488,15 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
             quote,
             RowContentCreator.TEXT_CONTENT,
             new String[][]{{rowWithPendingQuote + fullBufferRow}}
+        );
+
+        // full buffer + not full buffer
+        assertRowsEquals(
+            fullBufferRow + fullBufferRow.substring(10),
+            ",",
+            "\"",
+            RowContentCreator.TEXT_CONTENT,
+            new String[][]{{fullBufferRow + fullBufferRow.substring(10)}}
         );
     }
 

@@ -37,7 +37,7 @@ public class ParametrizedTestsUtil {
             for (Arguments args2 : second) {
                 List<Object> combinedParameters = new ArrayList<>(args1.toList());
                 combinedParameters.addAll(args2.toList());
-                combined.add(Arguments.argumentsFrom(combinedParameters));
+                combined.add(Arguments.of(combinedParameters.toArray()));
             }
         }
         return combined.stream();

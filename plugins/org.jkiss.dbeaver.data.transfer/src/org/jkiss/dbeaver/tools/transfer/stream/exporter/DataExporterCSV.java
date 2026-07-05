@@ -438,33 +438,36 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         }
 
         public void writeToLineBuffer(@NotNull char[] chars, int readCount) {
-            writeToLineBuffer(chars, readCount, longestSpecialChar);
-        }
-
-        public void writePending() {
-            if (pending.length > 0) {
-                writeToLineBuffer(new char[0], 0, 1);
+            int limit = readCount + pending.length;
+            // buffer overwhelming
+            boolean needPending = readCount == chars.length && readCount > 0;
+            if (needPending) {
+                limit -= longestSpecialChar;
             }
-        }
-
-        private void writeToLineBuffer(@NotNull char[] chars, int readCount, int pendingLength) {
-            int totalWithPending = readCount + pending.length;
-            int index = 0;
-            while ((totalWithPending - index) >= pendingLength) {
-                CharStrategy strategy = defineStrategy(chars, index);
-                index += switch (strategy) {
-                    case NORMAL_CHAR -> processNormalChar(index < pending.length ? pending[index] : chars[index]);
+            int combinedIndex = 0;
+            while (combinedIndex < limit) {
+                CharStrategy strategy = defineStrategy(chars, combinedIndex);
+                combinedIndex += switch (strategy) {
+                    case NORMAL_CHAR -> processNormalChar(combinedIndex < pending.length
+                        ? pending[combinedIndex]
+                        : chars[combinedIndex - pending.length]);
                     case QUOTES -> processQuotes();
                     case LF, CRLF -> processLinebreak(strategy);
                 };
             }
 
-            int length = totalWithPending - index;
-            if (length > 0) {
-                pending = new char[length];
-                System.arraycopy(chars, readCount - length, pending, 0, length);
+
+            if (needPending) {
+                pending = new char[longestSpecialChar];
+                System.arraycopy(chars, chars.length - longestSpecialChar, pending, 0, pending.length);
             } else {
                 pending = new char[0];
+            }
+        }
+
+        public void writePending() {
+            if (pending.length > 0) {
+                writeToLineBuffer(new char[0], 0);
             }
         }
 
