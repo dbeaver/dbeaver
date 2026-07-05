@@ -462,7 +462,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             int length = totalWithPending - index;
             if (length > 0) {
                 pending = new char[length];
-                System.arraycopy(chars, chars.length - length, pending, 0, length);
+                System.arraycopy(chars, readCount - length, pending, 0, length);
             } else {
                 pending = new char[0];
             }
@@ -526,8 +526,10 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     return Arrays.equals(pending, toffset, toffset + specialChar.length, specialChar, 0, specialChar.length);
                 }
                 // pending and chars
-                return Arrays.equals(pending, toffset, pending.length, specialChar, 0, charsInPending)
-                    && Arrays.equals(chars, 0, specialChar.length - charsInPending, specialChar, charsInPending, specialChar.length);
+                int charsInChars = specialChar.length - charsInPending;
+                return charsInChars <= chars.length
+                    && Arrays.equals(pending, toffset, pending.length, specialChar, 0, charsInPending)
+                    && Arrays.equals(chars, 0, charsInChars, specialChar, charsInPending, specialChar.length);
 
             }
 
