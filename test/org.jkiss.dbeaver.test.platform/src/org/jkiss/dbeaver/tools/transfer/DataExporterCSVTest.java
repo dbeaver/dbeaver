@@ -549,25 +549,6 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     }
 
     @NotNull
-    private Object[] createRow(
-        @NotNull String[] csvTemplates,
-        @NotNull String customSeparator,
-        @NotNull String customQuote,
-        @NotNull RowContentCreator rowContentCreator
-    ) throws DBCException, IOException {
-        Object[] row = new Object[csvTemplates.length];
-        for (int i = 0; i < csvTemplates.length; i++) {
-            String preparedRow = replaceTemplateQuotesAndSeparator(csvTemplates[i], customSeparator, customQuote);
-            if (rowContentCreator == RowContentCreator.TEXT_CONTENT) {
-                row[i] = createTextContent(preparedRow);
-            } else {
-                row[i] = preparedRow;
-            }
-        }
-        return row;
-    }
-
-    @NotNull
     private DBDContent createTextContent(@NotNull String row) throws IOException, DBCException {
         Reader stringReader = new StringReader(row);
         DBDContentStorage cs = mock(DBDContentStorage.class);
