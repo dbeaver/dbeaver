@@ -86,7 +86,7 @@ public class TiberoProcedureStandalone extends OracleProcedureStandalone {
             ? "OWNER=? AND OBJECT_NAME=? AND (PACKAGE_NAME IS NULL OR PACKAGE_NAME='') "
             : "OWNER=? AND OBJECT_NAME=? AND DATA_LEVEL=0 ";
         JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT *, POSITION AS SEQUENCE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS " +
+            "SELECT A.*, A.POSITION AS SEQUENCE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS A " +
                 "WHERE " + whereClause +
                 "\nORDER BY POSITION, DATA_LEVEL");
         int paramNum = 1;
