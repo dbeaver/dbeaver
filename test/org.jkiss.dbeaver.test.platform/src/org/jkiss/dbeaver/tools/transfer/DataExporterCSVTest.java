@@ -271,6 +271,29 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         );
     }
 
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testQuotedNewLineNotEmptyLineFeedSeparator(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String lineFeedSeparator = "\t";
+        properties.put(DataExporterCSV.PROP_LINE_FEED_ESCAPE_STRING, lineFeedSeparator);
+        // middle new line
+        assertRowsEquals(
+            """
+                "a\tb",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"a\nb", "c", "d"}
+            }
+        );
+        // trailing new line
+        assertRowsEquals(
+            "\"\tab\t\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                {"\nab\n", "c", "d"}
+            }
+        );
+    }
+
 
     @ParameterizedTest
     @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)

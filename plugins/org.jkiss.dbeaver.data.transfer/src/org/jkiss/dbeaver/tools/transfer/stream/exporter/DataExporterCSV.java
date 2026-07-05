@@ -61,7 +61,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     public static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
-    private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
+    public static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
     private static final String PROP_FORMAT_ARRAY = "formatArray";
 
     private static final String DEF_QUOTE_CHAR = "\"";
