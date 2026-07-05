@@ -6,12 +6,11 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20260622
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.jkiss.dbeaver.model.sql
+ org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.ext.oracle;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ext.tibero
 Export-Package: org.jkiss.dbeaver.ext.tibero,
- org.jkiss.dbeaver.ext.tibero.edit,
- org.jkiss.dbeaver.ext.tibero.model,
- org.jkiss.dbeaver.ext.tibero.model.source
+ org.jkiss.dbeaver.ext.tibero.model

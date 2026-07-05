@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2026 DBeaver Corp and others
  *
@@ -22,20 +22,8 @@ public class TiberoConstants {
     public static final int DEFAULT_PORT = 8629;
     public static final String DEFAULT_DATABASE = "tibero";
     public static final String DEFAULT_USER = "sys";
-
-    public static final String PROP_SHOW_ONLY_ONE_SCHEMA = "tibero.show-only-one-schema";
-    public static final String PROP_HIDE_EMPTY_SCHEMAS = "tibero.hide-empty-schemas";
-    public static final String PROP_READ_COLUMN_COMMENTS = "tibero.read-column-comments";
-    public static final String PROP_SHOW_SCHEMA_TABLE_DESCRIPTION = "tibero.show-schema-table-description";
-    public static final String PROP_SHOW_SCHEMA_INDEX_TABLE_DESCRIPTION = "tibero.show-schema-index-table-description";
-    public static final String PROP_SHOW_SCHEMA_TRIGGER_TABLE_DESCRIPTION = "tibero.show-schema-trigger-table-description";
-    public static final String PROP_COMPILE_AFTER_SAVE = "tibero.compile-after-save";
-    public static final String PROP_RECOMPILE_BODY_ON_SPEC_SAVE = "tibero.recompile-body-on-spec-save";
-
-    public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
-    public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
-
-    public static final String CMD_COMPILE = "org.jkiss.dbeaver.ext.tibero.code.compile";
+    
+    public static final String[] SYSTEM_SCHEMAS = { "SYS", "SYSTEM", "SYSCAT", "SYSGIS", "SYSLNK", "SYSSSO", "TIBERO" };
 
     private TiberoConstants() {
     }

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2026 DBeaver Corp and others
  *
@@ -18,23 +18,18 @@ package org.jkiss.dbeaver.ext.tibero;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.tibero.model.TiberoDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-public class TiberoDataSourceProvider extends JDBCDataSourceProvider<TiberoDataSource> {
+public class TiberoDataSourceProvider extends OracleDataSourceProvider {
 
     public TiberoDataSourceProvider() {
         super(TiberoDataSource.class);
-    }
-
-    @Override
-    public long getFeatures() {
-        return FEATURE_SCHEMAS;
     }
 
     @NotNull

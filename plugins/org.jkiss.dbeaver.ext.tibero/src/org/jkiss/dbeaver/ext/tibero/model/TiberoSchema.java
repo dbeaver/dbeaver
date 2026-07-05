@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2026 DBeaver Corp and others
  *
@@ -14,225 +14,917 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.ext.tibero.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
+import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSynonym;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraintColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchemaTrigger;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndexColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTriggerColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
+import org.jkiss.dbeaver.ext.oracle.model.OracleView;
+import org.jkiss.dbeaver.ext.tibero.TiberoConstants;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
-public class TiberoSchema implements DBSSchema, DBSObjectContainer, DBPSystemObject, DBPRefreshableObject {
+/**
+ * TiberoSchema
+ */
+public class TiberoSchema extends OracleSchema {
 
-    private static final Set<String> SYSTEM_SCHEMAS = Set.of(
-        "SYS",
-        "SYSTEM",
-        "SYSCAT",
-        "SYSGIS",
-        "SYSLNK",
-        "SYSSSO",
-        "TIBERO"
-    );
+    private static final Log log = Log.getLog(TiberoSchema.class);
+    private final JDBCObjectCache<OracleSchema, OracleSequence> sequenceCache = new SequenceCache();
+    private final JDBCObjectCache<OracleSchema, OraclePackage> packageCache = new PackageCache();
 
-    private final TiberoDataSource dataSource;
-    private final String name;
-
-    public final TiberoDataSource.TableCache tableCache = new TiberoDataSource.TableCache();
-    public final TiberoDataSource.IndexCache indexCache = new TiberoDataSource.IndexCache(tableCache);
-    public final TiberoDataSource.ConstraintCache constraintCache = new TiberoDataSource.ConstraintCache(tableCache);
-    public final TiberoDataSource.ForeignKeyCache foreignKeyCache = new TiberoDataSource.ForeignKeyCache(tableCache);
-    public final TiberoDataSource.SequenceCache sequenceCache = new TiberoDataSource.SequenceCache();
-    public final TiberoDataSource.ProceduresCache proceduresCache = new TiberoDataSource.ProceduresCache();
-    public final TiberoDataSource.PackageCache packageCache = new TiberoDataSource.PackageCache();
-    public final TiberoDataSource.SchemaTriggerCache schemaTriggerCache = new TiberoDataSource.SchemaTriggerCache();
-    public final TiberoDataSource.TableTriggerCache tableTriggerCache = new TiberoDataSource.TableTriggerCache(tableCache);
-
-    public TiberoSchema(@NotNull TiberoDataSource dataSource, @NotNull String name) {
-        this.dataSource = dataSource;
-        this.name = name;
+    public TiberoSchema(@NotNull TiberoDataSource dataSource, long id, @NotNull String name) {
+        super(dataSource, id, name);
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
+    public TiberoSchema(@NotNull TiberoDataSource dataSource, @NotNull ResultSet dbResult) {
+        super(dataSource, dbResult);
     }
 
     @NotNull
     @Override
     public TiberoDataSource getDataSource() {
-        return dataSource;
+        return (TiberoDataSource) super.getDataSource();
     }
 
     @Override
-    public boolean isPersisted() {
-        return true;
+    public TiberoTable createTableImpl(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleSchema owner,
+        @NotNull JDBCResultSet dbResult
+    ) {
+        return new TiberoTable(monitor, owner, dbResult);
     }
 
     @Override
     public boolean isSystem() {
-        return SYSTEM_SCHEMAS.contains(name.toUpperCase(Locale.ENGLISH));
+        return ArrayUtils.contains(TiberoConstants.SYSTEM_SCHEMAS, getName());
+    }
+
+    /**
+     * Loads the table list with a Tibero-compatible query and injects the result into the
+     * inherited table cache. The Oracle table list query references ALL_[ALL_]TABLES columns
+     * that are missing from Tibero's data dictionary (IOT_NAME, SECONDARY, NESTED), so Tibero
+     * takes over the loading while the storage stays in the shared Oracle cache — all Oracle
+     * model machinery (column loading, composite caches, lookups) keeps working on the same
+     * objects. Every table-list entry point below triggers this before delegating to Oracle.
+     */
+    private synchronized void cacheTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (tableCache.isFullyCached()) {
+            return;
+        }
+
+        final String tablesView = "TABLES";
+
+        final List<OracleTableBase> tables = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero tables")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT O.*,\n" +
+                    "NULL AS TABLE_TYPE_OWNER, NULL AS TABLE_TYPE," +
+                    "t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,NULL AS IOT_NAME,t.TEMPORARY,NULL AS SECONDARY,NULL AS NESTED,t.NUM_ROWS\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") + " O\n" +
+                    ", " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), tablesView) +
+                    " t WHERE t.OWNER(+) = O.OWNER AND t.TABLE_NAME(+) = O.OBJECT_NAME\n" +
+                    "AND O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        final String objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+                        if ("TABLE".equals(objectType)) {
+                            tables.add(createTableImpl(monitor, this, dbResult));
+                        } else if ("MATERIALIZED VIEW".equals(objectType)) {
+                            tables.add(new OracleMaterializedView(this, dbResult));
+                        } else {
+                            tables.add(new TiberoView(this, dbResult));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        tables.sort(DBUtils.nameComparator());
+        tableCache.setCache(tables);
+    }
+
+    /**
+     * Index loading is delegated to a dedicated Tibero loader so the schema keeps only the
+     * lifecycle hook and the shared Oracle index cache remains the storage layer.
+     */
+    private synchronized void cacheIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableIndex, OracleTableIndexColumn> cache = indexCache;
+        if (cache.isFullyCached()) {
+            return;
+        }
+        cacheTables(monitor);
+        List<OracleTableIndex> indexes = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero indexes")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,\n" +
+                    "i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,NULL AS SAMPLE_SIZE,\n" +
+                    "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "INDEXES") + " i, " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "IND_COLUMNS") + " ic, " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "IND_EXPRESSIONS") + " iex\n" +
+                    "WHERE ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME\n" +
+                    "AND iex.INDEX_OWNER(+) = ic.INDEX_OWNER\n" +
+                    "AND iex.INDEX_NAME(+) = ic.INDEX_NAME\n" +
+                    "AND iex.COLUMN_POSITION(+) = ic.COLUMN_POSITION\n" +
+                    "AND i.OWNER=?\n" +
+                    "ORDER BY i.TABLE_NAME,i.INDEX_NAME,ic.COLUMN_POSITION"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    OracleTableIndex curIndex = null;
+                    OracleTableBase curTable = null;
+                    String curKey = null;
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
+                        String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDEX_NAME");
+                        if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(indexName)) {
+                            continue;
+                        }
+                        String key = tableName + "." + indexName;
+                        if (!key.equals(curKey)) {
+                            curKey = key;
+                            curIndex = null;
+                            curTable = tableCache.getObject(monitor, this, tableName);
+                            if (curTable == null) {
+                                log.debug("Table '" + tableName + "' not found for index '" + indexName + "'");
+                                continue;
+                            }
+                            curIndex = new TiberoTableIndex(this, curTable, indexName, dbResult);
+                            indexes.add(curIndex);
+                        }
+                        if (curIndex == null) {
+                            continue;
+                        }
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+                        OracleTableColumn tableColumn = columnName == null ? null : curTable.getAttribute(monitor, columnName);
+                        if (tableColumn == null) {
+                            log.debug("Column '" + columnName + "' not found in table '" + tableName + "' for index '" + indexName + "'");
+                            continue;
+                        }
+                        curIndex.addColumn(new OracleTableIndexColumn(
+                            curIndex,
+                            tableColumn,
+                            JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION"),
+                            "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND")),
+                            JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_EXPRESSION")));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        for (OracleTableIndex index : indexes) {
+            cache.cacheObject(index);
+        }
+        cache.setCache(indexes);
     }
 
     @NotNull
-    @Association
-    public Collection<TiberoTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<TiberoTable> tables = new ArrayList<>();
-        for (TiberoTableBase obj : tableCache.getAllObjects(monitor, this)) {
-            if (obj instanceof TiberoTable table) {
-                tables.add(table);
+    List<OracleTableIndex> getTableIndexes(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        cacheIndexes(monitor);
+        List<OracleTableIndex> result = new ArrayList<>();
+        for (OracleTableIndex index : super.getIndexes(monitor)) {
+            if (index.getTable() == table) {
+                result.add(index);
             }
         }
-        return tables;
+        return result;
+    }
+
+    /**
+     * Same takeover for triggers: Tibero's ALL_TRIGGERS has no BASE_OBJECT_TYPE column —
+     * schema-level triggers are the rows without a base table instead.
+     */
+    private synchronized void cacheSchemaTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCObjectCache<OracleSchema, OracleSchemaTrigger> cache = triggerCache;
+        if (cache.isFullyCached()) {
+            return;
+        }
+        cache.setCache(loadSchemaTriggers(monitor));
+    }
+
+    private List<OracleSchemaTrigger> loadSchemaTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<OracleSchemaTrigger> triggers = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero schema triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.OWNER,t.TRIGGER_NAME,t.TRIGGER_TYPE,t.TRIGGERING_EVENT,t.TABLE_OWNER,t.TABLE_NAME," +
+                    "t.REFERENCING_NAMES,t.WHEN_CLAUSE,t.STATUS," +
+                    "'SCHEMA' AS BASE_OBJECT_TYPE,NULL AS COLUMN_NAME,NULL AS DESCRIPTION,NULL AS ACTION_TYPE\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGERS") + " t\n" +
+                    "WHERE t.OWNER=? AND t.TABLE_NAME IS NULL\n" +
+                    "ORDER BY t.TRIGGER_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        if (!CommonUtils.isEmpty(JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_NAME"))) {
+                            triggers.add(createSchemaTrigger(dbResult));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return triggers;
+    }
+
+    private synchronized void cacheTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableTrigger, OracleTriggerColumn> cache = tableTriggerCache;
+        if (cache.isFullyCached()) {
+            return;
+        }
+        cache.setCache(loadTableTriggers(monitor));
+    }
+
+    private List<OracleTableTrigger> loadTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        cacheTables(monitor);
+        List<OracleTableTrigger> triggers = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.OWNER,t.TRIGGER_NAME,t.TRIGGER_TYPE,t.TRIGGERING_EVENT,t.TABLE_OWNER,t.TABLE_NAME," +
+                    "t.REFERENCING_NAMES,t.WHEN_CLAUSE,t.STATUS," +
+                    "'TABLE' AS BASE_OBJECT_TYPE," +
+                    "NULL AS COLUMN_NAME,NULL AS DESCRIPTION,NULL AS ACTION_TYPE," +
+                    "c.COLUMN_NAME AS TRIGGER_COLUMN_NAME,c.COLUMN_LIST\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGERS") + " t, " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGER_COLS") + " c\n" +
+                    "WHERE t.TABLE_OWNER=? AND t.TABLE_NAME IS NOT NULL\n" +
+                    "AND t.TABLE_OWNER=c.TABLE_OWNER(+) AND t.TABLE_NAME=c.TABLE_NAME(+)\n" +
+                    "AND t.OWNER=c.TRIGGER_OWNER(+) AND t.TRIGGER_NAME=c.TRIGGER_NAME(+)\n" +
+                    "ORDER BY t.TABLE_NAME,t.TRIGGER_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    OracleTableTrigger curTrigger = null;
+                    OracleTableBase curTable = null;
+                    List<OracleTriggerColumn> curColumns = new ArrayList<>();
+                    String curKey = null;
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABLE_NAME");
+                        String triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_NAME");
+                        if (CommonUtils.isEmpty(tableName) || CommonUtils.isEmpty(triggerName)) {
+                            continue;
+                        }
+                        String key = tableName + "." + triggerName;
+                        if (!key.equals(curKey)) {
+                            curKey = key;
+                            if (curTrigger != null) {
+                                curTrigger.setColumns(curColumns);
+                            }
+                            curTrigger = null;
+                            curColumns = new ArrayList<>();
+                            curTable = tableCache.getObject(monitor, this, tableName);
+                            if (curTable == null) {
+                                log.debug("Table '" + tableName + "' not found for trigger '" + triggerName + "'");
+                                continue;
+                            }
+                            curTrigger = createTableTrigger(curTable, dbResult);
+                            triggers.add(curTrigger);
+                        }
+                        if (curTrigger == null) {
+                            continue;
+                        }
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGGER_COLUMN_NAME");
+                        OracleTableColumn tableColumn = columnName == null ? null : curTable.getAttribute(monitor, columnName);
+                        if (tableColumn == null) {
+                            continue;
+                        }
+                        curColumns.add(createTriggerColumn(monitor, curTrigger, tableColumn, dbResult));
+                    }
+                    if (curTrigger != null) {
+                        curTrigger.setColumns(curColumns);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return triggers;
+    }
+
+    private OracleSchemaTrigger createSchemaTrigger(@NotNull JDBCResultSet dbResult) {
+        return new OracleSchemaTrigger(this, dbResult);
+    }
+
+    private OracleTableTrigger createTableTrigger(@NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult) {
+        return new OracleTableTrigger(table, dbResult);
+    }
+
+    private OracleTriggerColumn createTriggerColumn(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OracleTableTrigger trigger,
+        @NotNull OracleTableColumn tableColumn,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
+        return new OracleTriggerColumn(monitor, trigger, tableColumn, dbResult);
     }
 
     @NotNull
-    @Association
-    public Collection<TiberoView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<TiberoView> views = new ArrayList<>();
-        for (TiberoTableBase obj : tableCache.getAllObjects(monitor, this)) {
-            if (obj instanceof TiberoView view) {
-                views.add(view);
+    List<OracleTableTrigger> getTableTriggers(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        cacheTableTriggers(monitor);
+        List<OracleTableTrigger> result = new ArrayList<>();
+        for (OracleTableTrigger trigger : super.getTableTriggers(monitor)) {
+            if (trigger.getParentObject() == table) {
+                result.add(trigger);
             }
         }
-        return views;
+        return result;
     }
 
-    @Nullable
-    public TiberoTable getTable(@NotNull DBRProgressMonitor monitor, @NotNull String tableName) throws DBException {
-        TiberoTableBase obj = tableCache.getObject(monitor, this, tableName);
-        return obj instanceof TiberoTable table ? table : null;
+    @NotNull
+    List<OracleTableConstraint> getTableConstraints(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        List<OracleTableConstraint> constraints = loadTableConstraints(monitor, table);
+        return constraints;
     }
 
-    @Nullable
-    public TiberoView getView(@NotNull DBRProgressMonitor monitor, @NotNull String viewName) throws DBException {
-        TiberoTableBase obj = tableCache.getObject(monitor, this, viewName);
-        return obj instanceof TiberoView view ? view : null;
+    @NotNull
+    List<OracleTableForeignKey> getTableForeignKeys(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        return loadTableForeignKeys(monitor, table);
+    }
+
+    @NotNull
+    List<OracleTableForeignKey> getTableForeignKeyReferences(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        List<OracleTableForeignKey> refs = new ArrayList<>();
+        for (OracleTable oracleTable : getTables(monitor)) {
+            if (oracleTable == table) {
+                continue;
+            }
+            for (OracleTableForeignKey fk : getTableForeignKeys(monitor, oracleTable)) {
+                if (fk.getReferencedTable() == table) {
+                    refs.add(fk);
+                }
+            }
+        }
+        return refs;
+    }
+
+    private List<OracleTableConstraint> loadTableConstraints(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        Map<String, OracleTableConstraint> constraints = new LinkedHashMap<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table constraints")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.TABLE_NAME,c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
+                    "WHERE c.OWNER=? AND c.TABLE_NAME=? AND c.CONSTRAINT_TYPE <> 'R'\n" +
+                    "ORDER BY c.CONSTRAINT_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        OracleTableConstraint constraint = new OracleTableConstraint(table, dbResult);
+                        constraints.put(constraint.getName(), constraint);
+                    }
+                }
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT CONSTRAINT_NAME,COLUMN_NAME,POSITION\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + "\n" +
+                    "WHERE OWNER=? AND TABLE_NAME=?\n" +
+                    "ORDER BY CONSTRAINT_NAME, POSITION"
+            )) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        OracleTableConstraint constraint = constraints.get(JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTRAINT_NAME"));
+                        if (constraint == null) {
+                            continue;
+                        }
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+                        OracleTableColumn tableColumn = columnName == null ? null : table.getAttribute(monitor, columnName);
+                        if (tableColumn == null) {
+                            continue;
+                        }
+                        List<OracleTableConstraintColumn> refs = constraint.getAttributeReferences(null);
+                        if (refs == null) {
+                            refs = new ArrayList<>();
+                            constraint.setAttributeReferences(refs);
+                        }
+                        refs.add(new OracleTableConstraintColumn(constraint, tableColumn, JDBCUtils.safeGetInt(dbResult, "POSITION")));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return new ArrayList<>(constraints.values());
+    }
+
+    private List<OracleTableForeignKey> loadTableForeignKeys(@NotNull DBRProgressMonitor monitor, @NotNull OracleTableBase table) throws DBException {
+        Map<String, OracleTableForeignKey> foreignKeys = new LinkedHashMap<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table foreign keys")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.TABLE_NAME,c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME," +
+                    "rc.TABLE_NAME AS R_TABLE_NAME,c.DELETE_RULE\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
+                    "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " rc\n" +
+                    "ON rc.OWNER = c.R_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME AND rc.CONSTRAINT_TYPE = 'P'\n" +
+                    "WHERE c.OWNER=? AND c.TABLE_NAME=? AND c.CONSTRAINT_TYPE = 'R'\n" +
+                    "ORDER BY c.CONSTRAINT_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        OracleTableForeignKey fk = new OracleTableForeignKey(monitor, (OracleTable) table, dbResult);
+                        foreignKeys.put(fk.getName(), fk);
+                    }
+                }
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT CONSTRAINT_NAME,COLUMN_NAME,POSITION\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + "\n" +
+                    "WHERE OWNER=? AND TABLE_NAME=?\n" +
+                    "ORDER BY CONSTRAINT_NAME, POSITION"
+            )) {
+                dbStat.setString(1, getName());
+                dbStat.setString(2, table.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        OracleTableForeignKey fk = foreignKeys.get(JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTRAINT_NAME"));
+                        if (fk == null) {
+                            continue;
+                        }
+                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
+                        OracleTableColumn tableColumn = columnName == null ? null : table.getAttribute(monitor, columnName);
+                        if (tableColumn == null) {
+                            continue;
+                        }
+                        List<OracleTableConstraintColumn> refs = fk.getAttributeReferences(null);
+                        if (refs == null) {
+                            refs = new ArrayList<>();
+                            fk.setAttributeReferences(refs);
+                        }
+                        refs.add(new OracleTableForeignKeyColumn(fk, tableColumn, JDBCUtils.safeGetInt(dbResult, "POSITION")));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return new ArrayList<>(foreignKeys.values());
+    }
+
+    /**
+     * Same takeover for synonyms. Oracle's synonym query references TABLE_OWNER, TABLE_NAME and
+     * DB_LINK, but Tibero's ALL_SYNONYMS exposes only OWNER, SYNONYM_NAME, ORG_OBJECT_OWNER and
+     * ORG_OBJECT_NAME (no DB_LINK). We alias ORG_OBJECT_* to the names Oracle's OracleSynonym reads
+     * and drop DB_LINK entirely (OracleSynonym reads it with a null-tolerant safeGetString).
+     */
+    private synchronized void cacheSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (super.getSynonyms(monitor) != null) {
+            return;
+        }
+    }
+
+    private List<OracleSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
+        final String ownerName = getName();
+        final boolean readAllSynonyms = getDataSource().getContainer().getPreferenceStore()
+            .getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS);
+        final String synonymTypeFilter = readAllSynonyms ? "" : "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n";
+        final String synonymsView = OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "SYNONYMS");
+        final String objectsView = OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS");
+        List<OracleSynonym> synonyms = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero synonyms")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) AS TABLE_OWNER, MAX(TABLE_NAME) AS TABLE_NAME," +
+                    " MAX(OBJECT_TYPE) AS OBJECT_TYPE FROM (\n" +
+                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
+                    " S.ORG_OBJECT_NAME AS TABLE_NAME, NULL AS OBJECT_TYPE\n" +
+                    "FROM " + synonymsView + " S WHERE S.OWNER = ?\n" +
+                    "UNION ALL\n" +
+                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
+                    " S.ORG_OBJECT_NAME AS TABLE_NAME, O.OBJECT_TYPE\n" +
+                    "FROM " + synonymsView + " S, " + objectsView + " O\n" +
+                    "WHERE S.OWNER = ?\n" +
+                    synonymTypeFilter +
+                    "AND O.OWNER = S.ORG_OBJECT_OWNER AND O.OBJECT_NAME = S.ORG_OBJECT_NAME AND O.SUBOBJECT_NAME IS NULL\n" +
+                    ")\n" +
+                    "GROUP BY OWNER, SYNONYM_NAME\n" +
+                    "ORDER BY SYNONYM_NAME"
+            )) {
+                dbStat.setString(1, ownerName);
+                dbStat.setString(2, ownerName);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        if (!CommonUtils.isEmpty(JDBCUtils.safeGetStringTrimmed(dbResult, "SYNONYM_NAME"))) {
+                            synonyms.add(createSynonym(dbResult));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return synonyms;
+    }
+
+    /**
+     * Takeover for procedures/functions. The list query itself (ALL_OBJECTS based) is Tibero-safe,
+     * but Oracle's ProceduresCache instantiates OracleProcedureStandalone whose parameter loading
+     * queries ALL_ARGUMENTS ordered by the missing SEQUENCE column. We re-own the load so the cache
+     * holds TiberoProcedureStandalone instances, which override getParameters() with a
+     * Tibero-compatible arguments query. Every procedure entry point below triggers this first
+     * (getProceduresOnly/getFunctionsOnly funnel through getProcedures).
+     */
+    private synchronized void cacheProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCObjectCache<OracleSchema, OracleProcedureStandalone> cache = proceduresCache;
+        if (cache.isFullyCached()) {
+            return;
+        }
+        cache.setCache(loadProcedures(monitor));
+    }
+
+    private synchronized void cacheSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCObjectCache<OracleSchema, OracleSequence> cache = sequenceCache;
+        if (cache.isFullyCached()) {
+            return;
+        }
+        cache.setCache(loadSequences(monitor));
+    }
+
+    private synchronized void cachePackages(@NotNull DBRProgressMonitor monitor) throws DBException {
+        JDBCObjectCache<OracleSchema, OraclePackage> cache = packageCache;
+        if (cache.isFullyCached()) {
+            return;
+        }
+        cache.setCache(loadPackages(monitor));
+    }
+
+    private List<OracleProcedureStandalone> loadProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<OracleProcedureStandalone> procedures = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero procedures")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " * FROM " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
+                    " WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') AND OWNER=? ORDER BY OBJECT_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        procedures.add(createProcedure(dbResult));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return procedures;
+    }
+
+    private List<OracleSequence> loadSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<OracleSequence> sequences = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero sequences")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " * FROM " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "SEQUENCES") +
+                    " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        sequences.add(new TiberoSequence(this, dbResult));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return sequences;
+    }
+
+    private List<OraclePackage> loadPackages(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<OraclePackage> packages = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero packages")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
+                    " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? ORDER BY OBJECT_NAME"
+            )) {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        packages.add(new TiberoPackage(this, dbResult));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        return packages;
+    }
+
+    private OracleSynonym createSynonym(@NotNull JDBCResultSet dbResult) {
+        return new OracleSynonym(this, dbResult);
+    }
+
+    private TiberoProcedureStandalone createProcedure(@NotNull JDBCResultSet dbResult) {
+        return new TiberoProcedureStandalone(this, dbResult);
     }
 
     @NotNull
     @Association
-    public Collection<TiberoTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return indexCache.getObjects(monitor, this, null);
+    @Override
+    public Collection<? extends OracleTable> getTables(DBRProgressMonitor monitor) throws DBException {
+        cacheTables(monitor);
+        return super.getTables(monitor);
+    }
+
+    @Override
+    public OracleTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
+        cacheTables(monitor);
+        return super.getTable(monitor, name);
     }
 
     @NotNull
     @Association
-    public Collection<TiberoSequence> getSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    @Override
+    public Collection<OracleView> getViews(DBRProgressMonitor monitor) throws DBException {
+        cacheTables(monitor);
+        return super.getViews(monitor);
+    }
+
+    @NotNull
+    @Association
+    @Override
+    public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+        cacheSequences(monitor);
         return sequenceCache.getAllObjects(monitor, this);
     }
 
     @NotNull
     @Association
-    public Collection<TiberoPackage> getPackages(@NotNull DBRProgressMonitor monitor) throws DBException {
+    @Override
+    public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor) throws DBException {
+        cachePackages(monitor);
         return packageCache.getAllObjects(monitor, this);
     }
 
     @NotNull
     @Association
-    public Collection<TiberoProcedure> getProcedures(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<TiberoProcedure> procs = new ArrayList<>();
-        for (TiberoProcedure p : proceduresCache.getAllObjects(monitor, this)) {
-            if (p.getProcedureType() == org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType.PROCEDURE) {
-                procs.add(p);
-            }
-        }
-        return procs;
-    }
-
-    @NotNull
-    @Association
-    public Collection<TiberoProcedure> getFunctions(@NotNull DBRProgressMonitor monitor) throws DBException {
-        List<TiberoProcedure> funcs = new ArrayList<>();
-        for (TiberoProcedure p : proceduresCache.getAllObjects(monitor, this)) {
-            if (p.getProcedureType() == org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType.FUNCTION) {
-                funcs.add(p);
-            }
-        }
-        return funcs;
-    }
-
-    @NotNull
-    @Association
-    public Collection<TiberoSchemaTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return schemaTriggerCache.getAllObjects(monitor, this);
-    }
-
-    @NotNull
-    @Association
-    public Collection<TiberoTableTrigger> getTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return tableTriggerCache.getObjects(monitor, this, null);
-    }
-
-    @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return tableCache.getAllObjects(monitor, this);
+    public Collection<OracleMaterializedView> getMaterializedViews(DBRProgressMonitor monitor) throws DBException {
+        cacheTables(monitor);
+        return super.getMaterializedViews(monitor);
+    }
+
+    @NotNull
+    @Association
+    @Override
+    public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        cacheIndexes(monitor);
+        return super.getIndexes(monitor);
+    }
+
+    @NotNull
+    @Association
+    @Override
+    public Collection<OracleSchemaTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        cacheSchemaTriggers(monitor);
+        return super.getTriggers(monitor);
+    }
+
+    @NotNull
+    @Association
+    @Override
+    public Collection<OracleTableTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
+        cacheTableTriggers(monitor);
+        return super.getTableTriggers(monitor);
+    }
+
+    @Association
+    @Override
+    public Collection<OracleSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+        cacheSynonyms(monitor);
+        return super.getSynonyms(monitor);
+    }
+
+    @Association
+    @Override
+    public OracleSynonym getSynonym(DBRProgressMonitor monitor, String name) throws DBException {
+        cacheSynonyms(monitor);
+        return super.getSynonym(monitor, name);
+    }
+
+    @Association
+    @Override
+    public Collection<OracleProcedureStandalone> getProcedures(DBRProgressMonitor monitor) throws DBException {
+        cacheProcedures(monitor);
+        return super.getProcedures(monitor);
+    }
+
+    @Override
+    public OracleProcedureStandalone getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+        cacheProcedures(monitor);
+        return super.getProcedure(monitor, uniqueName);
+    }
+
+    @Override
+    public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        cacheTables(monitor);
+        cachePackages(monitor);
+        if (isSequencesAsChildrenEnabled()) {
+            cacheSequences(monitor);
+        }
+        List<DBSObject> children = new ArrayList<>(tableCache.getAllObjects(monitor, this));
+        if (isSynonymsAsChildrenEnabled()) {
+            children.addAll(super.getSynonyms(monitor));
+        }
+        if (isSequencesAsChildrenEnabled()) {
+            children.addAll(sequenceCache.getAllObjects(monitor, this));
+        }
+        children.addAll(packageCache.getAllObjects(monitor, this));
+        return children;
+    }
+
+    @NotNull
+    @Override
+    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) {
+        // Temporary workaround:
+        // SQL semantic resolution can fall back to the Oracle public schema and
+        // trigger Oracle-only metadata SQL. Keep Tibero lookups inside the active
+        // Tibero schema until an Oracle hook allows a proper public schema override.
+        return Collections.emptyList();
     }
 
     @Nullable
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return tableCache.getObject(monitor, this, childName);
-    }
-
-    @NotNull
-    @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
-        return TiberoTable.class;
-    }
-
-    @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
-        tableCache.getAllObjects(monitor, this);
-        if ((scope & STRUCT_ATTRIBUTES) != 0) {
-            tableCache.loadChildren(monitor, this, null);
+        cacheTables(monitor);
+        DBSObject child = tableCache.getObject(monitor, this, childName);
+        if (child != null) {
+            return child;
         }
+        if (isSynonymsAsChildrenEnabled()) {
+            child = super.getSynonym(monitor, childName);
+            if (child != null) {
+                return child;
+            }
+        }
+        if (isSequencesAsChildrenEnabled()) {
+            child = sequenceCache.getObject(monitor, this, childName);
+            if (child != null) {
+                return child;
+            }
+        }
+        return packageCache.getObject(monitor, this, childName);
+    }
+
+    @Override
+    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+        cacheTables(monitor);
+        cacheSequences(monitor);
+        cachePackages(monitor);
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
-            indexCache.getObjects(monitor, this, null);
-            constraintCache.getObjects(monitor, this, null);
-            foreignKeyCache.getObjects(monitor, this, null);
-            packageCache.getAllObjects(monitor, this);
-            schemaTriggerCache.getAllObjects(monitor, this);
-            tableTriggerCache.getObjects(monitor, this, null);
+            cacheIndexes(monitor);
+            cacheTableTriggers(monitor);
         }
     }
 
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        tableCache.clearCache();
-        indexCache.clearCache();
-        constraintCache.clearCache();
-        foreignKeyCache.clearCache();
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         sequenceCache.clearCache();
-        proceduresCache.clearCache();
         packageCache.clearCache();
-        schemaTriggerCache.clearCache();
-        tableTriggerCache.clearCache();
-        return this;
+        return super.refreshObject(monitor);
+    }
+
+    private boolean isSynonymsAsChildrenEnabled() {
+        return readBooleanField("synonymsAsChildren");
+    }
+
+    private boolean isSequencesAsChildrenEnabled() {
+        return readBooleanField("sequencesAsChildren");
+    }
+
+    private boolean readBooleanField(String fieldName) {
+        try {
+            java.lang.reflect.Field field = OracleSchema.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field.getBoolean(this);
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
+    }
+
+    private class SequenceCache extends JDBCObjectCache<OracleSchema, OracleSequence> {
+        @NotNull
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
+                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SEQUENCES") +
+                    " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new TiberoSequence(owner, resultSet);
+        }
+    }
+
+    private class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
+        @NotNull
+        @Override
+        protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
+                    " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
+                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
+                    " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? ORDER BY OBJECT_NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+            return new TiberoPackage(owner, dbResult);
+        }
     }
 }

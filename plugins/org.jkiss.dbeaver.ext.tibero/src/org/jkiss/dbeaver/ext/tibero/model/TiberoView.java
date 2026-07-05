@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2026 DBeaver Corp and others
  *
@@ -14,71 +14,197 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.tibero.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.DBDatabaseException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
+import org.jkiss.dbeaver.ext.oracle.model.OracleView;
+import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
-import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class TiberoView extends TiberoTableBase implements DBSView, DBPScriptObject, DBPRefreshableObject {
+public class TiberoView extends OracleView {
 
-    private String viewText;
+    private volatile List<OracleTableColumn> columnsCache;
+    private volatile String sourceText;
 
-    public TiberoView(
-        @NotNull TiberoSchema schema,
-        @NotNull String name,
-        @NotNull String tableType,
-        @Nullable String description
-    ) {
-        super(schema, name, tableType, description);
+    public TiberoView(OracleSchema schema, String name) {
+        super(schema, name);
     }
 
+    public TiberoView(OracleSchema schema, ResultSet dbResult) {
+        super(schema, dbResult);
+    }
+
+    /**
+     * Routed through the schema so the Tibero-compatible trigger loading kicks in
+     * instead of the per-table Oracle trigger query (Tibero has no ALL_TRIGGERS.BASE_OBJECT_TYPE).
+     */
+    @Nullable
+    @Association
     @Override
-    public boolean isView() {
-        return true;
+    public List<OracleTableTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return ((TiberoSchema) getContainer()).getTableTriggers(monitor, this);
+    }
+
+    @NotNull
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    @Override
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull java.util.Map<String, Object> options) throws DBException {
+        String definitionText = sourceText;
+        if (definitionText != null) {
+            return definitionText;
+        }
+
+        String viewText = loadViewText(monitor);
+        if (viewText == null) {
+            return "-- Tibero view definition is not available";
+        }
+
+        StringBuilder definition = new StringBuilder();
+        definition.append("CREATE OR REPLACE VIEW ")
+            .append(getFullyQualifiedName(org.jkiss.dbeaver.model.DBPEvaluationContext.DDL));
+
+        List<OracleTableColumn> attributes = getAttributes(monitor);
+        if (attributes != null && !attributes.isEmpty()) {
+            definition.append("\n(");
+            boolean first = true;
+            for (OracleTableColumn column : attributes) {
+                if (!first) {
+                    definition.append(",");
+                }
+                definition.append(DBUtils.getQuotedIdentifier(column));
+                first = false;
+            }
+            definition.append(")");
+        }
+
+        definition.append("\nAS\n").append(viewText);
+        definition.append(";");
+        definitionText = definition.toString();
+        sourceText = definitionText;
+        setObjectDefinitionText(definitionText);
+        return definitionText;
+    }
+
+    @PropertyGroup
+    @LazyProperty(cacheValidator = OracleTableBase.AdditionalInfoValidator.class)
+    @Override
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException {
+        markAdditionalInfoLoaded();
+        return super.getAdditionalInfo();
     }
 
     @NotNull
     @Override
-    public String getObjectDefinitionText(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable Map<String, Object> options
-    ) throws DBException {
-        if (viewText == null || (options != null && Boolean.TRUE.equals(options.get(OPTION_REFRESH)))) {
-            String body = loadViewText(monitor);
-            if (CommonUtils.isEmpty(body)) {
-                viewText = TiberoUtils.loadObjectDDL(monitor, this, "VIEW", getContainer().getName());
-            } else {
-                viewText = "CREATE OR REPLACE VIEW " +
-                    DBUtils.getQuotedIdentifier(getDataSource(), getContainer().getName()) + "." +
-                    DBUtils.getQuotedIdentifier(this) + " AS\n" +
-                    body.trim();
-            }
+    public List<OracleTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<OracleTableColumn> columns = columnsCache;
+        if (columns != null) {
+            return columns;
         }
-        return viewText;
+        synchronized (this) {
+            if (columnsCache == null) {
+                columnsCache = loadAttributes(monitor);
+            }
+            return columnsCache;
+        }
     }
 
     @Nullable
+    @Override
+    public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        for (OracleTableColumn column : getAttributes(monitor)) {
+            if (attributeName.equals(column.getName())) {
+                return column;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public org.jkiss.dbeaver.model.struct.DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        columnsCache = null;
+        sourceText = null;
+        return super.refreshObject(monitor);
+    }
+
+    private void markAdditionalInfoLoaded() {
+        try {
+            Field field = OracleView.class.getDeclaredField("additionalInfo");
+            field.setAccessible(true);
+            Object info = field.get(this);
+            Field loadedField = info.getClass().getSuperclass().getDeclaredField("loaded");
+            loadedField.setAccessible(true);
+            loadedField.setBoolean(info, true);
+        } catch (ReflectiveOperationException e) {
+            // Best effort only. If reflection fails, the UI may fall back to the Oracle path.
+        }
+    }
+
+    private List<OracleTableColumn> loadAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<OracleTableColumn> columns = new ArrayList<>();
+        final String colsView = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "ALL_TAB_COLS")
+            ? "ALL_TAB_COLS"
+            : "TAB_COLS";
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero view columns")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.*, c.TABLE_NAME AS OBJECT_NAME, " +
+                    "NULL AS COMMENTS, 0 AS COMMENTS_LOADED, " +
+                    "NULL AS DATA_TYPE_MOD, NULL AS HIDDEN_COLUMN\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), colsView) + " c\n" +
+                    "WHERE c.OWNER=? AND c.TABLE_NAME=?\n" +
+                    "ORDER BY c.COLUMN_ID"
+            )) {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        columns.add(new OracleTableColumn(monitor, this, dbResult));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, getDataSource());
+        }
+        columns.sort(DBUtils.orderComparator());
+        return Collections.unmodifiableList(columns);
+    }
+
     private String loadViewText(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero view definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TEXT FROM ALL_VIEWS WHERE OWNER = ? AND VIEW_NAME = ?"
+                "SELECT TEXT\n" +
+                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "VIEWS") + "\n" +
+                    "WHERE OWNER=? AND VIEW_NAME=?"
             )) {
-                dbStat.setString(1, getContainer().getName());
+                dbStat.setString(1, getSchema().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
@@ -87,15 +213,8 @@ public class TiberoView extends TiberoTableBase implements DBSView, DBPScriptObj
                 }
             }
         } catch (SQLException e) {
-            return null;
+            throw new DBDatabaseException(e, getDataSource());
         }
         return null;
-    }
-
-    @Nullable
-    @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        viewText = null;
-        return refreshTableObject(monitor);
     }
 }

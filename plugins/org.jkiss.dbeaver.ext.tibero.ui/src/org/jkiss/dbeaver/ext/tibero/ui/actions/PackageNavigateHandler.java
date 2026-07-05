@@ -31,9 +31,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.tibero.model.TiberoPackage;
-import org.jkiss.dbeaver.ext.tibero.model.TiberoProcedurePackaged;
-import org.jkiss.dbeaver.ext.tibero.model.TiberoProcedureParameter;
+import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -56,9 +56,9 @@ public class PackageNavigateHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final TiberoProcedurePackaged procedure = getSelectedProcedure(event);
+        final OracleProcedurePackaged procedure = getSelectedProcedure(event);
         if (procedure != null) {
-            TiberoPackage procedurePackage = procedure.getContainer();
+            OraclePackage procedurePackage = procedure.getParentObject();
             IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(procedurePackage);
             if (entityEditor instanceof EntityEditor) {
                 ((EntityEditor) entityEditor).switchFolder("source.definition");
@@ -73,10 +73,10 @@ public class PackageNavigateHandler extends AbstractHandler {
 
     static class NavigateJob extends AbstractJob {
 
-        private final TiberoProcedurePackaged procedure;
+        private final OracleProcedurePackaged procedure;
         private final SQLEditorBase sqlEditor;
 
-        NavigateJob(TiberoProcedurePackaged procedure, SQLEditorBase sqlEditor) {
+        NavigateJob(OracleProcedurePackaged procedure, SQLEditorBase sqlEditor) {
             super("Navigate procedure '" + procedure.getFullyQualifiedName(DBPEvaluationContext.UI));
             this.procedure = procedure;
             this.sqlEditor = sqlEditor;
@@ -107,10 +107,10 @@ public class PackageNavigateHandler extends AbstractHandler {
             if (document != null) {
                 String commentSkip = "^(?!\\s*--)\\s*";
                 String procRegex = commentSkip + procedure.getProcedureType().name() + "\\s+" + procedure.getName();
-                final Collection<TiberoProcedureParameter> parameters = procedure.getParameters(monitor);
+                final Collection<OracleProcedureArgument> parameters = procedure.getParameters(monitor);
                 if (parameters != null) {
-                    List<TiberoProcedureParameter> inParams = new ArrayList<>();
-                    for (TiberoProcedureParameter arg : parameters) {
+                    List<OracleProcedureArgument> inParams = new ArrayList<>();
+                    for (OracleProcedureArgument arg : parameters) {
                         if (arg.getParameterKind() != DBSProcedureParameterKind.OUT && !arg.getName().equalsIgnoreCase("RESULT")) {
                             inParams.add(arg);
                         }
@@ -132,11 +132,11 @@ public class PackageNavigateHandler extends AbstractHandler {
         }
     }
 
-    private TiberoProcedurePackaged getSelectedProcedure(ExecutionEvent event) {
+    private OracleProcedurePackaged getSelectedProcedure(ExecutionEvent event) {
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection structuredSelection && !currentSelection.isEmpty()) {
             Object firstElement = structuredSelection.getFirstElement();
-            return RuntimeUtils.getObjectAdapter(firstElement, TiberoProcedurePackaged.class);
+            return RuntimeUtils.getObjectAdapter(firstElement, OracleProcedurePackaged.class);
         }
         return null;
     }

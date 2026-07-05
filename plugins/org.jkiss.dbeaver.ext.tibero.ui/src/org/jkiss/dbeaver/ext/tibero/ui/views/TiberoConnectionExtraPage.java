@@ -1,4 +1,4 @@
-﻿/*
+/*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2026 DBeaver Corp and others
  *
@@ -23,7 +23,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.tibero.TiberoConstants;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,11 +37,6 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
     private Button showOnlyOneSchema;
     private Button hideEmptySchemas;
     private Button readColumnComments;
-    private Button showSchemaTableDescription;
-    private Button showSchemaIndexTableDescription;
-    private Button showSchemaTriggerTableDescription;
-    private Button compilePackageAfterSave;
-    private Button recompileBodyOnSpecSave;
 
     public TiberoConnectionExtraPage() {
         setTitle("Tibero Properties");
@@ -89,43 +84,6 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
             "Hide schemas that own no objects in Database Navigator.",
             false,
             1);
-        showSchemaTableDescription = UIUtils.createCheckbox(
-            navigatorGroup,
-            "Show table descriptions",
-            "Show table/view comments as navigator object descriptions in schema-level folders.",
-            true,
-            1);
-        showSchemaIndexTableDescription = UIUtils.createCheckbox(
-            navigatorGroup,
-            "Show table name for schema indexes",
-            "Show the owning table name as navigator object description for indexes in the schema-level Indexes folder.",
-            true,
-            1);
-        showSchemaTriggerTableDescription = UIUtils.createCheckbox(
-            navigatorGroup,
-            "Show table name for schema triggers",
-            "Show the owning table name as navigator object description for triggers in the schema-level Table Triggers folder.",
-            true,
-            1);
-
-        Composite sourceEditorGroup = UIUtils.createTitledComposite(
-            cfgGroup,
-            "Source editor",
-            1,
-            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
-        );
-        compilePackageAfterSave = UIUtils.createCheckbox(
-            sourceEditorGroup,
-            "Compile package after save",
-            "Compile Tibero package specification/body after saving source in package editor.",
-            true,
-            1);
-        recompileBodyOnSpecSave = UIUtils.createCheckbox(
-            sourceEditorGroup,
-            "Recompile package body when spec saved",
-            "When the package specification is saved, also issue ALTER PACKAGE ... COMPILE BODY so the body returns to VALID state (PL/SQL auto-invalidates the body on spec change).",
-            true,
-            1);
 
         setControl(cfgGroup);
         loadSettings();
@@ -141,33 +99,18 @@ public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
-        showOnlyOneSchema.setSelection(CommonUtils.toBoolean(providerProperties.get(TiberoConstants.PROP_SHOW_ONLY_ONE_SCHEMA)));
-        hideEmptySchemas.setSelection(CommonUtils.toBoolean(providerProperties.get(TiberoConstants.PROP_HIDE_EMPTY_SCHEMAS)));
-        readColumnComments.setSelection(CommonUtils.toBoolean(providerProperties.get(TiberoConstants.PROP_READ_COLUMN_COMMENTS)));
-        String showTableDescription = providerProperties.get(TiberoConstants.PROP_SHOW_SCHEMA_TABLE_DESCRIPTION);
-        showSchemaTableDescription.setSelection(showTableDescription == null || CommonUtils.toBoolean(showTableDescription));
-        String showIndexDescription = providerProperties.get(TiberoConstants.PROP_SHOW_SCHEMA_INDEX_TABLE_DESCRIPTION);
-        showSchemaIndexTableDescription.setSelection(showIndexDescription == null || CommonUtils.toBoolean(showIndexDescription));
-        String showTriggerDescription = providerProperties.get(TiberoConstants.PROP_SHOW_SCHEMA_TRIGGER_TABLE_DESCRIPTION);
-        showSchemaTriggerTableDescription.setSelection(showTriggerDescription == null || CommonUtils.toBoolean(showTriggerDescription));
-        String compileAfterSave = providerProperties.get(TiberoConstants.PROP_COMPILE_AFTER_SAVE);
-        compilePackageAfterSave.setSelection(compileAfterSave == null || CommonUtils.toBoolean(compileAfterSave));
-        String recompileBody = providerProperties.get(TiberoConstants.PROP_RECOMPILE_BODY_ON_SPEC_SAVE);
-        recompileBodyOnSpecSave.setSelection(recompileBody == null || CommonUtils.toBoolean(recompileBody));
+        showOnlyOneSchema.setSelection(CommonUtils.toBoolean(providerProperties.get(OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA)));
+        hideEmptySchemas.setSelection(CommonUtils.toBoolean(providerProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT)));
+        readColumnComments.setSelection(CommonUtils.toBoolean(providerProperties.get(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS)));
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
-        providerProperties.put(TiberoConstants.PROP_SHOW_ONLY_ONE_SCHEMA, String.valueOf(showOnlyOneSchema.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_HIDE_EMPTY_SCHEMAS, String.valueOf(hideEmptySchemas.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_READ_COLUMN_COMMENTS, String.valueOf(readColumnComments.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_SHOW_SCHEMA_TABLE_DESCRIPTION, String.valueOf(showSchemaTableDescription.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_SHOW_SCHEMA_INDEX_TABLE_DESCRIPTION, String.valueOf(showSchemaIndexTableDescription.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_SHOW_SCHEMA_TRIGGER_TABLE_DESCRIPTION, String.valueOf(showSchemaTriggerTableDescription.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_COMPILE_AFTER_SAVE, String.valueOf(compilePackageAfterSave.getSelection()));
-        providerProperties.put(TiberoConstants.PROP_RECOMPILE_BODY_ON_SPEC_SAVE, String.valueOf(recompileBodyOnSpecSave.getSelection()));
+        providerProperties.put(OracleConstants.PROP_SHOW_ONLY_ONE_SCHEMA, String.valueOf(showOnlyOneSchema.getSelection()));
+        providerProperties.put(OracleConstants.PROP_CHECK_SCHEMA_CONTENT, String.valueOf(hideEmptySchemas.getSelection()));
+        providerProperties.put(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS, String.valueOf(readColumnComments.getSelection()));
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }
 }

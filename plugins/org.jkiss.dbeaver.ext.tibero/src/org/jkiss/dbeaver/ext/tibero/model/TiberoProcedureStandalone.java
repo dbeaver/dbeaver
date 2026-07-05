@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ext.tibero.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
-import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,10 +35,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class TiberoProcedurePackaged extends OracleProcedurePackaged {
+/**
+ * TiberoProcedure
+ */
+public class TiberoProcedureStandalone extends OracleProcedureStandalone {
 
-    public TiberoProcedurePackaged(OraclePackage ownerPackage, ResultSet dbResult) {
-        super(ownerPackage, dbResult);
+    public TiberoProcedureStandalone(OracleSchema schema, ResultSet dbResult) {
+        super(schema, dbResult);
     }
 
     @Override
@@ -50,33 +52,50 @@ public class TiberoProcedurePackaged extends OracleProcedurePackaged {
 
     private Collection<OracleProcedureArgument> loadParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
         final List<OracleProcedureArgument> parameters = new ArrayList<>();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getSchema(), "Load Tibero packaged procedure parameters")) {
-            try (JDBCPreparedStatement dbStat = prepareParametersStatement(session)) {
-                try (JDBCResultSet resultSet = dbStat.executeQuery()) {
-                    while (resultSet.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        parameters.add(new OracleProcedureArgument(monitor, this, resultSet));
-                    }
-                }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getSchema(), "Load Tibero procedure parameters")) {
+            loadParameters(session, monitor, parameters, true);
+            if (parameters.isEmpty()) {
+                loadParameters(session, monitor, parameters, false);
             }
         } catch (SQLException e) {
-            throw new DBException("Error reading Tibero packaged procedure parameters", e);
+            throw new DBException("Error reading Tibero procedure parameters", e);
         }
         return parameters;
     }
 
+    private void loadParameters(
+        @NotNull JDBCSession session,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<OracleProcedureArgument> parameters,
+        boolean strict
+    ) throws SQLException {
+        try (JDBCPreparedStatement dbStat = prepareParametersStatement(session, strict)) {
+            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                while (resultSet.next()) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    parameters.add(new OracleProcedureArgument(monitor, this, resultSet));
+                }
+            }
+        }
+    }
+
     private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session) throws SQLException {
+        return prepareParametersStatement(session, true);
+    }
+
+    private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session, boolean strict) throws SQLException {
+        String whereClause = strict
+            ? "OWNER=? AND OBJECT_NAME=? AND (PACKAGE_NAME IS NULL OR PACKAGE_NAME='') "
+            : "OWNER=? AND OBJECT_NAME=? AND DATA_LEVEL=0 ";
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS " +
-                "WHERE " +
-                "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " +
+                "WHERE " + whereClause +
                 "\nORDER BY POSITION, DATA_LEVEL");
         int paramNum = 1;
         dbStat.setString(paramNum++, getSchema().getName());
         dbStat.setString(paramNum++, getName());
-        dbStat.setString(paramNum++, getParentObject().getName());
         return dbStat;
     }
 }
