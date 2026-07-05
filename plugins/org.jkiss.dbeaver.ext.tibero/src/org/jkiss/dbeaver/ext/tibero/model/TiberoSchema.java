@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -695,10 +696,11 @@ public class TiberoSchema extends OracleSchema {
      * expects columns and joins that Tibero does not expose in the same form.
      */
     private synchronized void cacheSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (synonymCache.isFullyCached()) {
+        JDBCObjectLookupCache<OracleSchema, OracleSynonym> cache = synonymCache;
+        if (cache.isFullyCached()) {
             return;
         }
-        synonymCache.setCache(loadSynonyms(monitor));
+        cache.setCache(loadSynonyms(monitor));
     }
 
     private List<OracleSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
