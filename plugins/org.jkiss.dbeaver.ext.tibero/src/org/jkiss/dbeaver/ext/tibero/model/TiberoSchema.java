@@ -16,25 +16,36 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchemaTrigger;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSynonym;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraintColumn;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchemaTrigger;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
@@ -58,18 +69,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * TiberoSchema
@@ -95,10 +94,9 @@ public class TiberoSchema extends OracleSchema {
     }
 
     @Override
-    public TiberoTable createTableImpl(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull OracleSchema owner,
-        @NotNull JDBCResultSet dbResult
+    public TiberoTable createTableImpl(@NotNull DBRProgressMonitor monitor
+                                     , @NotNull OracleSchema owner
+                                     , @NotNull JDBCResultSet dbResult
     ) {
         return new TiberoTable(monitor, owner, dbResult);
     }
@@ -126,13 +124,23 @@ public class TiberoSchema extends OracleSchema {
         final List<OracleTableBase> tables = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero tables")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT O.*,\n" +
-                    "NULL AS TABLE_TYPE_OWNER, NULL AS TABLE_TYPE," +
-                    "t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,NULL AS IOT_NAME,t.TEMPORARY,NULL AS SECONDARY,NULL AS NESTED,t.NUM_ROWS\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") + " O\n" +
-                    ", " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), tablesView) +
-                    " t WHERE t.OWNER(+) = O.OWNER AND t.TABLE_NAME(+) = O.OBJECT_NAME\n" +
-                    "AND O.OWNER=? AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')"
+                "SELECT O.*\n" +
+                "     , NULL AS TABLE_TYPE_OWNER\n" +
+                "     , NULL AS TABLE_TYPE\n" +
+                "     , t.TABLESPACE_NAME\n" +
+                "     , t.PARTITIONED\n" +
+                "     , t.IOT_TYPE\n" +
+                "     , NULL AS IOT_NAME\n" +
+                "     , t.TEMPORARY\n" +
+                "     , NULL AS SECONDARY\n" +
+                "     , NULL AS NESTED\n" +
+                "     , t.NUM_ROWS\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") + " O\n" +
+                "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), tablesView) + " t\n" +
+                "  ON t.OWNER = O.OWNER\n" +
+                " AND t.TABLE_NAME = O.OBJECT_NAME\n" +
+                "WHERE O.OWNER = ?\n" +
+                "  AND O.OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -182,18 +190,31 @@ public class TiberoSchema extends OracleSchema {
         AtomicReference<String> curKey = new AtomicReference<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero indexes")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,\n" +
-                    "i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,NULL AS SAMPLE_SIZE,\n" +
-                    "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND,iex.COLUMN_EXPRESSION\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "INDEXES") + " i, " +
-                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "IND_COLUMNS") + " ic, " +
-                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "IND_EXPRESSIONS") + " iex\n" +
-                    "WHERE ic.INDEX_OWNER = i.OWNER AND ic.INDEX_NAME = i.INDEX_NAME\n" +
-                    "AND iex.INDEX_OWNER(+) = ic.INDEX_OWNER\n" +
-                    "AND iex.INDEX_NAME(+) = ic.INDEX_NAME\n" +
-                    "AND iex.COLUMN_POSITION(+) = ic.COLUMN_POSITION\n" +
-                    "AND i.OWNER=?\n" +
-                    "ORDER BY i.TABLE_NAME,i.INDEX_NAME,ic.COLUMN_POSITION"
+                "SELECT i.OWNER\n" +
+                "     , i.INDEX_NAME\n" +
+                "     , i.INDEX_TYPE\n" +
+                "     , i.TABLE_OWNER\n" +
+                "     , i.TABLE_NAME\n" +
+                "     , i.UNIQUENESS\n" +
+                "     , i.TABLESPACE_NAME\n" +
+                "     , i.STATUS\n" +
+                "     , i.NUM_ROWS\n" +
+                "     , NULL AS SAMPLE_SIZE\n" +
+                "     , ic.COLUMN_NAME\n" +
+                "     , ic.COLUMN_POSITION\n" +
+                "     , ic.COLUMN_LENGTH\n" +
+                "     , ic.DESCEND\n" +
+                "     , iex.COLUMN_EXPRESSION\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "INDEXES") + " i\n" +
+                "JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "IND_COLUMNS") + " ic\n" +
+                "  ON ic.INDEX_OWNER = i.OWNER\n" +
+                " AND ic.INDEX_NAME = i.INDEX_NAME\n" +
+                "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "IND_EXPRESSIONS") + " iex\n" +
+                "  ON iex.INDEX_OWNER = ic.INDEX_OWNER\n" +
+                " AND iex.INDEX_NAME = ic.INDEX_NAME\n" +
+                " AND iex.COLUMN_POSITION = ic.COLUMN_POSITION\n" +
+                "WHERE i.OWNER = ?\n" +
+                "ORDER BY i.TABLE_NAME, i.INDEX_NAME, ic.COLUMN_POSITION"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -285,11 +306,11 @@ public class TiberoSchema extends OracleSchema {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero schema triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.OWNER,t.TRIGGER_NAME,t.TRIGGER_TYPE,t.TRIGGERING_EVENT,t.TABLE_OWNER,t.TABLE_NAME," +
-                    "t.REFERENCING_NAMES,t.WHEN_CLAUSE,t.STATUS," +
-                    "'SCHEMA' AS BASE_OBJECT_TYPE,NULL AS COLUMN_NAME,NULL AS DESCRIPTION,NULL AS ACTION_TYPE\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGERS") + " t\n" +
-                    "WHERE t.OWNER=? AND t.TABLE_NAME IS NULL\n" +
-                    "ORDER BY t.TRIGGER_NAME"
+                "t.REFERENCING_NAMES,t.WHEN_CLAUSE,t.STATUS," +
+                "'SCHEMA' AS BASE_OBJECT_TYPE,NULL AS COLUMN_NAME,NULL AS DESCRIPTION,NULL AS ACTION_TYPE\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGERS") + " t\n" +
+                "WHERE t.OWNER=? AND t.TABLE_NAME IS NULL\n" +
+                "ORDER BY t.TRIGGER_NAME"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -331,17 +352,30 @@ public class TiberoSchema extends OracleSchema {
         AtomicReference<String> curKey = new AtomicReference<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT t.OWNER,t.TRIGGER_NAME,t.TRIGGER_TYPE,t.TRIGGERING_EVENT,t.TABLE_OWNER,t.TABLE_NAME," +
-                    "t.REFERENCING_NAMES,t.WHEN_CLAUSE,t.STATUS," +
-                    "'TABLE' AS BASE_OBJECT_TYPE," +
-                    "NULL AS COLUMN_NAME,NULL AS DESCRIPTION,NULL AS ACTION_TYPE," +
-                    "c.COLUMN_NAME AS TRIGGER_COLUMN_NAME,c.COLUMN_LIST\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGERS") + " t, " +
-                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGER_COLS") + " c\n" +
-                    "WHERE t.TABLE_OWNER=? AND t.TABLE_NAME IS NOT NULL\n" +
-                    "AND t.TABLE_OWNER=c.TABLE_OWNER(+) AND t.TABLE_NAME=c.TABLE_NAME(+)\n" +
-                    "AND t.OWNER=c.TRIGGER_OWNER(+) AND t.TRIGGER_NAME=c.TRIGGER_NAME(+)\n" +
-                    "ORDER BY t.TABLE_NAME,t.TRIGGER_NAME"
+                "SELECT t.OWNER\n" +
+                "     , t.TRIGGER_NAME\n" +
+                "     , t.TRIGGER_TYPE\n" +
+                "     , t.TRIGGERING_EVENT\n" +
+                "     , t.TABLE_OWNER\n" +
+                "     , t.TABLE_NAME\n" +
+                "     , t.REFERENCING_NAMES\n" +
+                "     , t.WHEN_CLAUSE\n" +
+                "     , t.STATUS\n" +
+                "     , 'TABLE' AS BASE_OBJECT_TYPE\n" +
+                "     , NULL AS COLUMN_NAME\n" +
+                "     , NULL AS DESCRIPTION\n" +
+                "     , NULL AS ACTION_TYPE\n" +
+                "     , c.COLUMN_NAME AS TRIGGER_COLUMN_NAME\n" +
+                "     , c.COLUMN_LIST\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGERS") + " t\n" +
+                "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "TRIGGER_COLS") + " c\n" +
+                "  ON t.TABLE_OWNER = c.TABLE_OWNER\n" +
+                " AND t.TABLE_NAME = c.TABLE_NAME\n" +
+                " AND t.OWNER = c.TRIGGER_OWNER\n" +
+                " AND t.TRIGGER_NAME = c.TRIGGER_NAME\n" +
+                "WHERE t.TABLE_OWNER = ?\n" +
+                "  AND t.TABLE_NAME IS NOT NULL\n" +
+                "ORDER BY t.TABLE_NAME, t.TRIGGER_NAME"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -468,10 +502,16 @@ public class TiberoSchema extends OracleSchema {
         Map<String, OracleTableConstraint> constraints = new LinkedHashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table constraints")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.TABLE_NAME,c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
-                    "WHERE c.OWNER=? AND c.TABLE_NAME=? AND c.CONSTRAINT_TYPE <> 'R'\n" +
-                    "ORDER BY c.CONSTRAINT_NAME"
+                "SELECT c.TABLE_NAME\n" +
+                "     , c.CONSTRAINT_NAME\n" +
+                "     , c.CONSTRAINT_TYPE\n" +
+                "     , c.STATUS\n" +
+                "     , c.SEARCH_CONDITION\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
+                "WHERE c.OWNER = ?\n" +
+                "  AND c.TABLE_NAME = ?\n" +
+                "  AND c.CONSTRAINT_TYPE <> 'R'\n" +
+                "ORDER BY c.CONSTRAINT_NAME"
             )) {
                 dbStat.setString(1, getName());
                 dbStat.setString(2, table.getName());
@@ -486,10 +526,13 @@ public class TiberoSchema extends OracleSchema {
                 }
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT CONSTRAINT_NAME,COLUMN_NAME,POSITION\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + "\n" +
-                    "WHERE OWNER=? AND TABLE_NAME=?\n" +
-                    "ORDER BY CONSTRAINT_NAME, POSITION"
+                "SELECT CONSTRAINT_NAME\n" +
+                "     , COLUMN_NAME\n" +
+                "     , POSITION\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + "\n" +
+                "WHERE OWNER = ?\n" +
+                "  AND TABLE_NAME = ?\n" +
+                "ORDER BY CONSTRAINT_NAME, POSITION"
             )) {
                 dbStat.setString(1, getName());
                 dbStat.setString(2, table.getName());
@@ -526,13 +569,23 @@ public class TiberoSchema extends OracleSchema {
         Map<String, OracleTableForeignKey> foreignKeys = new LinkedHashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table foreign keys")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.TABLE_NAME,c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME," +
-                    "rc.TABLE_NAME AS R_TABLE_NAME,c.DELETE_RULE\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
-                    "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " rc\n" +
-                    "ON rc.OWNER = c.R_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME AND rc.CONSTRAINT_TYPE = 'P'\n" +
-                    "WHERE c.OWNER=? AND c.TABLE_NAME=? AND c.CONSTRAINT_TYPE = 'R'\n" +
-                    "ORDER BY c.CONSTRAINT_NAME"
+                "SELECT c.TABLE_NAME\n" +
+                "     , c.CONSTRAINT_NAME\n" +
+                "     , c.CONSTRAINT_TYPE\n" +
+                "     , c.STATUS\n" +
+                "     , c.R_OWNER\n" +
+                "     , c.R_CONSTRAINT_NAME\n" +
+                "     , rc.TABLE_NAME AS R_TABLE_NAME\n" +
+                "     , c.DELETE_RULE\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " c\n" +
+                "LEFT JOIN " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONSTRAINTS") + " rc\n" +
+                "  ON rc.OWNER = c.R_OWNER\n" +
+                " AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME\n" +
+                " AND rc.CONSTRAINT_TYPE = 'P'\n" +
+                "WHERE c.OWNER = ?\n" +
+                "  AND c.TABLE_NAME = ?\n" +
+                "  AND c.CONSTRAINT_TYPE = 'R'\n" +
+                "ORDER BY c.CONSTRAINT_NAME"
             )) {
                 dbStat.setString(1, getName());
                 dbStat.setString(2, table.getName());
@@ -547,10 +600,13 @@ public class TiberoSchema extends OracleSchema {
                 }
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT CONSTRAINT_NAME,COLUMN_NAME,POSITION\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + "\n" +
-                    "WHERE OWNER=? AND TABLE_NAME=?\n" +
-                    "ORDER BY CONSTRAINT_NAME, POSITION"
+                "SELECT CONSTRAINT_NAME\n" +
+                "     , COLUMN_NAME\n" +
+                "     , POSITION\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "CONS_COLUMNS") + "\n" +
+                "WHERE OWNER = ?\n" +
+                "  AND TABLE_NAME = ?\n" +
+                "ORDER BY CONSTRAINT_NAME, POSITION"
             )) {
                 dbStat.setString(1, getName());
                 dbStat.setString(2, table.getName());
@@ -619,9 +675,11 @@ public class TiberoSchema extends OracleSchema {
         List<OracleProcedureStandalone> procedures = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero procedures")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " * FROM " +
-                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
-                    " WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') AND OWNER=? ORDER BY OBJECT_NAME"
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " *\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") + "\n" +
+                "WHERE OBJECT_TYPE IN ('PROCEDURE', 'FUNCTION')\n" +
+                "  AND OWNER = ?\n" +
+                "ORDER BY OBJECT_NAME"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -643,9 +701,10 @@ public class TiberoSchema extends OracleSchema {
         List<OracleSequence> sequences = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " * FROM " +
-                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "SEQUENCES") +
-                    " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME"
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " *\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "SEQUENCES") + "\n" +
+                "WHERE SEQUENCE_OWNER = ?\n" +
+                "ORDER BY SEQUENCE_NAME"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -667,9 +726,15 @@ public class TiberoSchema extends OracleSchema {
         List<OraclePackage> packages = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero packages")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
-                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
-                    " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? ORDER BY OBJECT_NAME"
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " OBJECT_NAME\n" +
+                "     , STATUS\n" +
+                "     , CREATED\n" +
+                "     , LAST_DDL_TIME\n" +
+                "     , TEMPORARY\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") + "\n" +
+                "WHERE OBJECT_TYPE = 'PACKAGE'\n" +
+                "  AND OWNER = ?\n" +
+                "ORDER BY OBJECT_NAME"
             )) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -713,21 +778,35 @@ public class TiberoSchema extends OracleSchema {
         List<OracleSynonym> synonyms = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero synonyms")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) AS TABLE_OWNER, MAX(TABLE_NAME) AS TABLE_NAME," +
-                    " MAX(OBJECT_TYPE) AS OBJECT_TYPE FROM (\n" +
-                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
-                    " S.ORG_OBJECT_NAME AS TABLE_NAME, NULL AS OBJECT_TYPE\n" +
-                    "FROM " + synonymsView + " S WHERE S.OWNER = ?\n" +
-                    "UNION ALL\n" +
-                    "SELECT S.OWNER, S.SYNONYM_NAME, S.ORG_OBJECT_OWNER AS TABLE_OWNER," +
-                    " S.ORG_OBJECT_NAME AS TABLE_NAME, O.OBJECT_TYPE\n" +
-                    "FROM " + synonymsView + " S, " + objectsView + " O\n" +
-                    "WHERE S.OWNER = ?\n" +
-                    synonymTypeFilter +
-                    "AND O.OWNER = S.ORG_OBJECT_OWNER AND O.OBJECT_NAME = S.ORG_OBJECT_NAME AND O.SUBOBJECT_NAME IS NULL\n" +
-                    ")\n" +
-                    "GROUP BY OWNER, SYNONYM_NAME\n" +
-                    "ORDER BY SYNONYM_NAME"
+                "SELECT OWNER\n" +
+                "     , SYNONYM_NAME\n" +
+                "     , MAX(TABLE_OWNER) AS TABLE_OWNER\n" +
+                "     , MAX(TABLE_NAME) AS TABLE_NAME\n" +
+                "     , MAX(OBJECT_TYPE) AS OBJECT_TYPE\n" +
+                "FROM (\n" +
+                "    SELECT S.OWNER\n" +
+                "         , S.SYNONYM_NAME\n" +
+                "         , S.ORG_OBJECT_OWNER AS TABLE_OWNER\n" +
+                "         , S.ORG_OBJECT_NAME AS TABLE_NAME\n" +
+                "         , NULL AS OBJECT_TYPE\n" +
+                "    FROM " + synonymsView + " S\n" +
+                "    WHERE S.OWNER = ?\n" +
+                "    UNION ALL\n" +
+                "    SELECT S.OWNER\n" +
+                "         , S.SYNONYM_NAME\n" +
+                "         , S.ORG_OBJECT_OWNER AS TABLE_OWNER\n" +
+                "         , S.ORG_OBJECT_NAME AS TABLE_NAME\n" +
+                "         , O.OBJECT_TYPE\n" +
+                "    FROM " + synonymsView + " S\n" +
+                "    JOIN " + objectsView + " O\n" +
+                "      ON O.OWNER = S.ORG_OBJECT_OWNER\n" +
+                "     AND O.OBJECT_NAME = S.ORG_OBJECT_NAME\n" +
+                "     AND O.SUBOBJECT_NAME IS NULL\n" +
+                "    WHERE S.OWNER = ?\n" +
+                synonymTypeFilter +
+                ")\n" +
+                "GROUP BY OWNER, SYNONYM_NAME\n" +
+                "ORDER BY SYNONYM_NAME"
             )) {
                 dbStat.setString(1, ownerName);
                 dbStat.setString(2, ownerName);
@@ -942,8 +1021,8 @@ public class TiberoSchema extends OracleSchema {
         protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
-                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SEQUENCES") +
-                    " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SEQUENCES") +
+                " WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -960,9 +1039,9 @@ public class TiberoSchema extends OracleSchema {
         protected JDBCPreparedStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
-                    " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
-                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
-                    " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? ORDER BY OBJECT_NAME");
+                " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
+                " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? ORDER BY OBJECT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }

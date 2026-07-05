@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.tibero.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
+import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
-import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -29,12 +34,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class TiberoProcedurePackaged extends OracleProcedurePackaged {
 
@@ -49,7 +48,7 @@ public class TiberoProcedurePackaged extends OracleProcedurePackaged {
     }
 
     private Collection<OracleProcedureArgument> loadParameters(@NotNull DBRProgressMonitor monitor) throws DBException {
-        final List<OracleProcedureArgument> parameters = new ArrayList<>();
+        List<OracleProcedureArgument> parameters = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getSchema(), "Load Tibero packaged procedure parameters")) {
             try (JDBCPreparedStatement dbStat = prepareParametersStatement(session)) {
                 try (JDBCResultSet resultSet = dbStat.executeQuery()) {
@@ -69,10 +68,11 @@ public class TiberoProcedurePackaged extends OracleProcedurePackaged {
 
     private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT A.*, A.POSITION AS SEQUENCE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS A " +
-                "WHERE " +
-                "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " +
-                "\nORDER BY POSITION, DATA_LEVEL");
+            "SELECT A.*\n" +
+                 ", A.POSITION AS SEQUENCE \n" +
+            "FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS A \n" +
+            "WHERE OWNER = ? AND OBJECT_NAME = ? AND PACKAGE_NAME = ? \n" +
+            "ORDER BY POSITION, DATA_LEVEL");
         int paramNum = 1;
         dbStat.setString(paramNum++, getSchema().getName());
         dbStat.setString(paramNum++, getName());

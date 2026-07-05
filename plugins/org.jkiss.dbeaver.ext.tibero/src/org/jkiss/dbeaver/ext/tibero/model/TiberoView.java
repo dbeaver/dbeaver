@@ -17,17 +17,25 @@
 
 package org.jkiss.dbeaver.ext.tibero.model;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBDatabaseException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
-import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
+import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,14 +46,6 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class TiberoView extends OracleView {
 
@@ -183,12 +183,13 @@ public class TiberoView extends OracleView {
             : "TAB_COLS";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero view columns")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.*, c.TABLE_NAME AS OBJECT_NAME, " +
-                    "NULL AS COMMENTS, 0 AS COMMENTS_LOADED, " +
-                    "NULL AS DATA_TYPE_MOD, NULL AS HIDDEN_COLUMN\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), colsView) + " c\n" +
-                    "WHERE c.OWNER=? AND c.TABLE_NAME=?\n" +
-                    "ORDER BY c.COLUMN_ID"
+                "SELECT c.*\n" +
+                     ", c.TABLE_NAME AS OBJECT_NAME\n" +
+                     ", NULL AS COMMENTS, 0 AS COMMENTS_LOADED\n" +
+                     ", NULL AS DATA_TYPE_MOD, NULL AS HIDDEN_COLUMN\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), colsView) + " c\n" +
+                "WHERE c.OWNER = ? AND c.TABLE_NAME = ?\n" +
+                "ORDER BY c.COLUMN_ID"
             )) {
                 dbStat.setString(1, getSchema().getName());
                 dbStat.setString(2, getName());
@@ -212,8 +213,8 @@ public class TiberoView extends OracleView {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero view definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "VIEWS") + "\n" +
-                    "WHERE OWNER=? AND VIEW_NAME=?"
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "VIEWS") + "\n" +
+                "WHERE OWNER = ? AND VIEW_NAME = ?"
             )) {
                 dbStat.setString(1, getSchema().getName());
                 dbStat.setString(2, getName());

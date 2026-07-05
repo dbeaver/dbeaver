@@ -8,8 +8,10 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ui.editors.entity,
  org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui.editors.sql,
+ org.jkiss.dbeaver.ext.oracle.ui,
  org.jkiss.dbeaver.ext.tibero
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21

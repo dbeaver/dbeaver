@@ -50,8 +50,7 @@ public class TiberoDataSourceProvider extends OracleDataSourceProvider {
     @Override
     public TiberoDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container
-    ) throws DBException {
+        @NotNull DBPDataSourceContainer container) throws DBException {
         return new TiberoDataSource(monitor, container);
     }
 }

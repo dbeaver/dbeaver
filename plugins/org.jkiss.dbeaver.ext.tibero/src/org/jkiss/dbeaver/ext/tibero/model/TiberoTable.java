@@ -17,23 +17,30 @@
 
 package org.jkiss.dbeaver.ext.tibero.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBDatabaseException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDDLFormat;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
-import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -42,13 +49,6 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 public class TiberoTable extends OracleTable {
 
@@ -88,7 +88,9 @@ public class TiberoTable extends OracleTable {
 
     @NotNull
     @Override
-    public String getDDL(@NotNull DBRProgressMonitor monitor, @NotNull OracleDDLFormat ddlFormat, @NotNull java.util.Map<String, Object> options) throws DBException {
+    public String getDDL(@NotNull DBRProgressMonitor monitor
+                       , @NotNull OracleDDLFormat ddlFormat
+                       , @NotNull java.util.Map<String, Object> options) throws DBException {
         java.util.Map<String, Object> ddlOptions = new java.util.HashMap<>(options);
         ddlOptions.put(DBPScriptObject.OPTION_SKIP_INDEXES, true);
         ddlOptions.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
@@ -98,7 +100,8 @@ public class TiberoTable extends OracleTable {
 
     @NotNull
     @Override
-    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull java.util.Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor
+                                        , @NotNull java.util.Map<String, Object> options) throws DBException {
         return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
     }
 
@@ -119,7 +122,8 @@ public class TiberoTable extends OracleTable {
 
     @Nullable
     @Override
-    public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+    public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor
+                                        , @NotNull String attributeName) throws DBException {
         for (OracleTableColumn column : getAttributes(monitor)) {
             if (attributeName.equals(column.getName())) {
                 return column;
@@ -166,12 +170,13 @@ public class TiberoTable extends OracleTable {
             : "TAB_COLS";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Tibero table columns")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.*, c.TABLE_NAME AS OBJECT_NAME, " +
-                    "NULL AS COMMENTS, 0 AS COMMENTS_LOADED, " +
-                    "NULL AS DATA_TYPE_MOD, NULL AS HIDDEN_COLUMN\n" +
-                    "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), colsView) + " c\n" +
-                    "WHERE c.OWNER=? AND c.TABLE_NAME=?\n" +
-                    "ORDER BY c.COLUMN_ID"
+                "SELECT c.*\n" +
+                     ", c.TABLE_NAME AS OBJECT_NAME\n" +
+                     ", NULL AS COMMENTS, 0 AS COMMENTS_LOADED\n" +
+                     ", NULL AS DATA_TYPE_MOD, NULL AS HIDDEN_COLUMN\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), colsView) + " c\n" +
+                "WHERE c.OWNER=? AND c.TABLE_NAME=?\n" +
+                "ORDER BY c.COLUMN_ID"
             )) {
                 dbStat.setString(1, getSchema().getName());
                 dbStat.setString(2, getName());

@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ext.tibero.model;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect;
 
 /**
- * Tibero is Oracle-compatible: keywords, functions, data types, PL/SQL block
- * structure and script delimiters all follow the Oracle dialect.
+ * TiberoSQLDialect
  */
 public class TiberoSQLDialect extends OracleSQLDialect {
 }

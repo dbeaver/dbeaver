@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.tibero.ui.views;
 
+import java.util.Locale;
+
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -38,8 +40,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Locale;
 
 public class TiberoConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 

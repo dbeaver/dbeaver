@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ext.tibero.ui.views;
 
+import java.util.Map;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,8 +31,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Map;
 
 public class TiberoConnectionExtraPage extends ConnectionPageAbstract {
 
