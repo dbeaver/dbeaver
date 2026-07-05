@@ -66,7 +66,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
-    public static final int READ_BUFFER_SIZE = 10;
+    public static final int READ_BUFFER_SIZE = 2000;
     private boolean formatNumbers;
 
     enum HeaderPosition {
@@ -453,7 +453,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             while ((totalWithPending - index) >= pendingLength) {
                 CharStrategy strategy = defineStrategy(chars, index);
                 index += switch (strategy) {
-                    case NORMAL_CHAR -> processNormalChar(chars[index]);
+                    case NORMAL_CHAR -> processNormalChar(index < pending.length ? pending[index] : chars[index]);
                     case QUOTES -> processQuotes();
                     case LF, CRLF -> processLinebreak(strategy);
                 };
@@ -462,7 +462,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             int length = totalWithPending - index;
             if (length > 0) {
                 pending = new char[length];
-                System.arraycopy(chars, index - length, pending, 0, pending.length);
+                System.arraycopy(chars, chars.length - length, pending, 0, length);
             } else {
                 pending = new char[0];
             }
