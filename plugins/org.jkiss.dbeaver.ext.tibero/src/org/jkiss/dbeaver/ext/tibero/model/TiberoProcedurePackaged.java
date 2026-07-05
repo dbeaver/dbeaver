@@ -69,7 +69,7 @@ public class TiberoProcedurePackaged extends OracleProcedurePackaged {
 
     private JDBCPreparedStatement prepareParametersStatement(@NotNull JDBCSession session) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS " +
+            "SELECT *, POSITION AS SEQUENCE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_ARGUMENTS " +
                 "WHERE " +
                 "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " +
                 "\nORDER BY POSITION, DATA_LEVEL");
