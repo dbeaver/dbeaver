@@ -83,7 +83,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         return dataContainer.getParentObject();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         return dataContainer.getDataSource();
