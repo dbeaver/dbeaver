@@ -196,7 +196,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             SWT.BORDER | SWT.PASSWORD
         );
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = 150;
+        gd.horizontalSpan = 2;
         tokenText.setLayoutData(gd);
         tokenText.addModifyListener((e -> token = tokenText.getText()));
         tokenText.setMessage(AIUIMessages.openai_configurator_token_placeholder);
@@ -211,7 +211,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         );
         baseUrlText.addModifyListener((e -> baseUrl = baseUrlText.getText()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = 150;
+        gd.horizontalSpan = 2;
         baseUrlText.setLayoutData(gd);
     }
 
