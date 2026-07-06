@@ -27,19 +27,18 @@ import java.util.*;
 /**
  * Expands enclosed collapsed folds before collapsing a parent region.
  * Remembers enclosed collapse state and restores it when the parent is expanded.
+ * <p>
+ * Nested collapse/expand behavior is covered by manual UI tests only (requires SWT projection viewer).
+ * Manual test plan:
+ * <ul>
+ *   <li>Collapse OUTER with expanded INNER → expand OUTER → INNER collapse state restored</li>
+ *   <li>Toggle expansion is symmetric for parent and enclosed regions</li>
+ *   <li>Manually expand INNER then expand OUTER → INNER stays expanded ({@code forgetDeferredCollapse})</li>
+ * </ul>
  */
 public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
 
     private final Map<Integer, Set<Integer>> deferredCollapsedEnclosedOffsets = new HashMap<>();
-
-    @NotNull
-    public Set<Integer> getDeferredCollapsedOffsets() {
-        Set<Integer> all = new HashSet<>();
-        for (Set<Integer> offsets : deferredCollapsedEnclosedOffsets.values()) {
-            all.addAll(offsets);
-        }
-        return all;
-    }
 
     @Override
     public void collapse(Annotation annotation) {
@@ -50,6 +49,7 @@ public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
     @Override
     public void expand(Annotation annotation) {
         super.expand(annotation);
+        forgetDeferredCollapse(annotation);
         restoreDeferredCollapsedEnclosed(annotation);
     }
 
@@ -61,8 +61,21 @@ public class SQLProjectionAnnotationModel extends ProjectionAnnotationModel {
         }
         super.toggleExpansionState(annotation);
         if (wasCollapsed) {
+            forgetDeferredCollapse(annotation);
             restoreDeferredCollapsedEnclosed(annotation);
         }
+    }
+
+    private void forgetDeferredCollapse(@NotNull Annotation annotation) {
+        Position position = getPosition(annotation);
+        if (position == null) {
+            return;
+        }
+        int offset = position.getOffset();
+        for (Set<Integer> offsets : deferredCollapsedEnclosedOffsets.values()) {
+            offsets.remove(offset);
+        }
+        deferredCollapsedEnclosedOffsets.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 
     private void saveAndExpandEnclosedCollapsed(@NotNull Annotation outerAnnotation) {
