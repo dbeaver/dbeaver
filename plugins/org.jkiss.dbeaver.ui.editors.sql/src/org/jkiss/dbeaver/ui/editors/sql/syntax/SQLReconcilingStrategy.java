@@ -260,9 +260,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
 
         List<SQLScriptElementImpl> regionElements = extractRegionFoldingPositions();
-        List<SQLRegionMarkerFolding.RegionFold> regionFolds = regionElements.stream()
-            .map(r -> new SQLRegionMarkerFolding.RegionFold(r.getRegionKey(), r.getOffset(), r.getLength()))
-            .toList();
+        List<SQLRegionMarkerFolding.RegionFold> regionFolds = toRegionFolds(regionElements);
 
         Set<SQLScriptElementImpl> parsedElements = new HashSet<>(parsedQueries.stream()
             .filter(this::deservesFolding)
@@ -321,14 +319,49 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         @NotNull Set<Integer> savedCollapsedAnnotationsOffsets,
         int editOffset
     ) {
-        List<SQLScriptElementImpl> scannedRegions = extractFoldableRegionFoldingPositions();
+        Map<String, SQLScriptElementImpl> scannedByKey = buildScannedRegionsByKey();
+        Map<String, Boolean> collapsedByKey = buildCollapsedRegionKeys(scannedByKey, savedCollapsedAnnotationsOffsets);
+
+        List<Annotation> deletions = collectObsoleteRegionAnnotations(scannedByKey);
+        Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+        Map<String, SQLScriptElementImpl> nextRegionCache = new LinkedHashMap<>();
+        reconcileRegionAnnotationChanges(scannedByKey, collapsedByKey, model, deletions, additions, nextRegionCache);
+
+        if (!deletions.isEmpty() || !additions.isEmpty()) {
+            model.modifyAnnotations(deletions.toArray(Annotation[]::new), additions, null);
+        }
+
+        boolean collapseApplied = applySavedCollapsedStates(model, nextRegionCache, collapsedByKey);
+        boolean regionSetChanged = !regionCache.keySet().equals(scannedByKey.keySet());
+        updateRegionCache(nextRegionCache);
+
+        if (SQLRegionMarkerFolding.needsFoldingGutterRefresh(
+            !deletions.isEmpty() || !additions.isEmpty(),
+            collapseApplied,
+            regionSetChanged,
+            editOffset,
+            toRegionFolds(scannedByKey.values())
+        )) {
+            scheduleProjectionPresentationRefresh();
+        }
+    }
+
+    @NotNull
+    private Map<String, SQLScriptElementImpl> buildScannedRegionsByKey() {
         Map<String, SQLScriptElementImpl> scannedByKey = new LinkedHashMap<>();
-        for (SQLScriptElementImpl region : scannedRegions) {
+        for (SQLScriptElementImpl region : extractFoldableRegionFoldingPositions()) {
             if (region.getRegionKey() != null) {
                 scannedByKey.put(region.getRegionKey(), region);
             }
         }
+        return scannedByKey;
+    }
 
+    @NotNull
+    private Map<String, Boolean> buildCollapsedRegionKeys(
+        @NotNull Map<String, SQLScriptElementImpl> scannedByKey,
+        @NotNull Set<Integer> savedCollapsedAnnotationsOffsets
+    ) {
         Map<String, Boolean> collapsedByKey = new HashMap<>();
         for (SQLScriptElementImpl cachedRegion : regionCache.values()) {
             ProjectionAnnotation annotation = cachedRegion.getAnnotation();
@@ -341,11 +374,12 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 collapsedByKey.put(scannedEntry.getKey(), true);
             }
         }
+        return collapsedByKey;
+    }
 
-        Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+    @NotNull
+    private List<Annotation> collectObsoleteRegionAnnotations(@NotNull Map<String, SQLScriptElementImpl> scannedByKey) {
         List<Annotation> deletions = new ArrayList<>();
-        Map<String, SQLScriptElementImpl> nextRegionCache = new LinkedHashMap<>();
-
         for (Map.Entry<String, SQLScriptElementImpl> cachedEntry : regionCache.entrySet()) {
             if (!scannedByKey.containsKey(cachedEntry.getKey())) {
                 ProjectionAnnotation annotation = cachedEntry.getValue().getAnnotation();
@@ -354,7 +388,17 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 }
             }
         }
+        return deletions;
+    }
 
+    private void reconcileRegionAnnotationChanges(
+        @NotNull Map<String, SQLScriptElementImpl> scannedByKey,
+        @NotNull Map<String, Boolean> collapsedByKey,
+        @NotNull ProjectionAnnotationModel model,
+        @NotNull List<Annotation> deletions,
+        @NotNull Map<Annotation, SQLScriptElementImpl> additions,
+        @NotNull Map<String, SQLScriptElementImpl> nextRegionCache
+    ) {
         for (Map.Entry<String, SQLScriptElementImpl> scannedEntry : scannedByKey.entrySet()) {
             String regionKey = scannedEntry.getKey();
             SQLScriptElementImpl scannedRegion = scannedEntry.getValue();
@@ -380,11 +424,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             additions.put(annotation, scannedRegion);
             nextRegionCache.put(regionKey, scannedRegion);
         }
+    }
 
-        if (!deletions.isEmpty() || !additions.isEmpty()) {
-            model.modifyAnnotations(deletions.toArray(Annotation[]::new), additions, null);
-        }
-
+    private boolean applySavedCollapsedStates(
+        @NotNull ProjectionAnnotationModel model,
+        @NotNull Map<String, SQLScriptElementImpl> nextRegionCache,
+        @NotNull Map<String, Boolean> collapsedByKey
+    ) {
         boolean collapseApplied = false;
         for (Map.Entry<String, SQLScriptElementImpl> entry : nextRegionCache.entrySet()) {
             SQLScriptElementImpl region = entry.getValue();
@@ -400,23 +446,19 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 collapseApplied = true;
             }
         }
+        return collapseApplied;
+    }
 
-        boolean regionSetChanged = !regionCache.keySet().equals(scannedByKey.keySet());
-
+    private void updateRegionCache(@NotNull Map<String, SQLScriptElementImpl> nextRegionCache) {
         regionCache.clear();
         regionCache.putAll(nextRegionCache);
+    }
 
-        if (SQLRegionMarkerFolding.needsFoldingGutterRefresh(
-            !deletions.isEmpty() || !additions.isEmpty(),
-            collapseApplied,
-            regionSetChanged,
-            editOffset,
-            scannedByKey.values().stream()
-                .map(r -> new SQLRegionMarkerFolding.RegionFold(r.getRegionKey(), r.getOffset(), r.getLength()))
-                .toList()
-        )) {
-            scheduleProjectionPresentationRefresh();
-        }
+    @NotNull
+    private List<SQLRegionMarkerFolding.RegionFold> toRegionFolds(@NotNull Collection<SQLScriptElementImpl> regions) {
+        return regions.stream()
+            .map(r -> new SQLRegionMarkerFolding.RegionFold(r.getRegionKey(), r.getOffset(), r.getLength()))
+            .toList();
     }
 
     /**
