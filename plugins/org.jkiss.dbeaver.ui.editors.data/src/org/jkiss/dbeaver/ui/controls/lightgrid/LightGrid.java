@@ -1011,7 +1011,7 @@ public abstract class LightGrid extends Canvas {
         return headerHeight;
     }
 
-    private int getRowHeaderWidth() {
+    public int getRowHeaderWidth() {
         return rowHeaderWidth;
     }
 
@@ -3215,10 +3215,10 @@ public abstract class LightGrid extends Canvas {
             cellColumnSelectedOnLastMouseDown = true;
         }
 
-        if (selectionEvent != null && col != null && row >= 0) {
+        if (selectionEvent != null) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = new GridCell(col, gridRows[row]);
+            selectionEvent.data = col == null || row < 0 ? null : new GridCell(col, gridRows[row]);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);

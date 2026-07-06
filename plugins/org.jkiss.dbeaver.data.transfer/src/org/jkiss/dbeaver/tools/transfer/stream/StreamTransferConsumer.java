@@ -381,7 +381,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 openOutputStreams(session.getProgressMonitor());
             }
         } catch (IOException e) {
-            closeExporter();
+            try {
+                closeExporter();
+            } catch (IOException ex) {
+                e.addSuppressed(ex);
+            }
             throw new DBCException("Data transfer IO error", e);
         }
 
@@ -393,13 +397,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    private void closeExporter() {
+    private void closeExporter() throws IOException {
         if (exportSite != null) {
-            try {
-                exportSite.flush();
-            } catch (IOException e) {
-                log.debug(e);
-            }
+            exportSite.flush();
         }
 
         if (processor != null) {
@@ -542,7 +542,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    private void closeOutputStreams() {
+    private void closeOutputStreams() throws IOException {
         log.debug("\tClose output stream");
         if (this.writer != null) {
             this.writer.flush();
@@ -569,7 +569,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             } catch (IOException e) {
                 log.debug(e);
             }
-            ContentUtils.close(outputStream);
+            outputStream.close();
             outputStream = null;
         }
     }
@@ -623,17 +623,24 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
-        finishTransfer(monitor, null, last);
-    }
+    public void finishTransfer(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable Throwable error,
+        @Nullable DBTTask task,
+        boolean last
+    ) throws DBException {
+        List<Exception> errors = new ArrayList<>(0);
 
-    @Override
-    public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
         if (!last && error == null) {
             exportFooterInFile(monitor);
 
-            closeExporter();
-            return;
+            try {
+                closeExporter();
+                return;
+            } catch (IOException e) {
+                error = e; // so event processors will be notified about this error
+                errors.add(e);
+            }
         }
 
         if (!parameters.isBinary && settings.isOutputClipboard() && error == null) {
@@ -662,7 +669,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
                 log.error("Error executing event processor '" + entry.getKey() + "'", e);
+                errors.add(e);
             }
+        }
+
+        if (!errors.isEmpty()) {
+            DBException root = new DBException("Failed to finish transfer");
+            errors.forEach(root::addSuppressed);
+            throw root;
         }
     }
 

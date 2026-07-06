@@ -4,6 +4,7 @@
 
     <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
     <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.app.config" name="%extension-point.org.jkiss.dbeaver.app.config.name" schema="schema/org.jkiss.dbeaver.app.config.exsd"/>
     <extension-point id="org.jkiss.dbeaver.expressions" name="%extension-point.org.jkiss.dbeaver.expressions.name" schema="schema/org.jkiss.dbeaver.expressions.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataHintProvider" name="Data editor hint provider" schema="schema/org.jkiss.dbeaver.dataHintProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
@@ -220,6 +221,12 @@
             id="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
             namespace="org.jkiss.dbeaver.core.global"
             properties="standalone,distributed,bundleInstalled,hasPreference,hasEnvVariable"
+            type="java.lang.Object"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.model.impl.config.ProductConfigPropertyTester"
+            id="org.jkiss.dbeaver.app.config"
+            namespace="org.jkiss.dbeaver.app.config"
+            properties="isFeatureEnabled"
             type="java.lang.Object"/>
     </extension>
 
