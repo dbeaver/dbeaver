@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.FrameworkUtil;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -760,7 +759,7 @@ public class FindReplaceOverlay {
         this.searchBar = new HistoryTextWrapper(this.searchHistory, this.searchBarContainer, SWT.SINGLE);
         this.searchBarDecoration = new ControlDecoration(this.searchBar, SWT.BOTTOM | SWT.LEFT);
         GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).applyTo(this.searchBar);
-        this.searchBar.forceFocus();
+        //this.searchBar.forceFocus();
         this.searchBar.selectAll();
         this.searchBar.addModifyListener(this::onSearchFieldModified);
         this.searchBar.addFocusListener(new FocusListener() {

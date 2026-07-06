@@ -45,8 +45,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, GenericUniqueKey> getObjectsCache(GenericUniqueKey object)
-    {
+    public DBSObjectCache<? extends DBSObject, GenericUniqueKey> getObjectsCache(GenericUniqueKey object) {
         return object.getParentObject().getContainer().getConstraintKeysCache();
     }
 
@@ -75,7 +74,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericUnique
         @Nullable Object from,
         @NotNull Map<String, Object> options
     ) {
-        GenericTableBase tableBase = (GenericTableBase)container;
+        GenericTableBase tableBase = (GenericTableBase) container;
         return tableBase.getDataSource().getMetaModel().createConstraintImpl(
             tableBase,
             GenericConstants.BASE_CONSTRAINT_NAME,

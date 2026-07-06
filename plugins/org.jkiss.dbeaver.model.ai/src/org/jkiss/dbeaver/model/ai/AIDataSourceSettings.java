@@ -30,7 +30,7 @@ import java.util.Map;
  * AI completion settings.
  * Datasource-specific settings. Used in prompt generators to generate context info message.
  */
-public class AICompletionSettings extends AIContextSettings {
+public class AIDataSourceSettings extends AIContextSettings {
 
     // Meta parameters
     public static final String AI_DS_EXTENSION = "ai.assistant";
@@ -38,16 +38,16 @@ public class AICompletionSettings extends AIContextSettings {
     public static final String AI_META_SCOPE = "ai.meta.scope";
     public static final String AI_META_CUSTOM = "ai.meta.customObjects";
 
-    private static final Log log = Log.getLog(AICompletionSettings.class);
+    private static final Log log = Log.getLog(AIDataSourceSettings.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
     protected final DBPPreferenceStore preferenceStore;
 
-    public AICompletionSettings(@NotNull DBPDataSourceContainer dataSourceContainer) {
+    public AIDataSourceSettings(@NotNull DBPDataSourceContainer dataSourceContainer) {
         this(getPreferenceStore(), dataSourceContainer);
     }
 
-    private AICompletionSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
+    private AIDataSourceSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
         this.preferenceStore = preferenceStore;
         loadSettings();

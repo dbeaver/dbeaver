@@ -23,11 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -57,32 +54,57 @@ public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
 
-    @Nullable
-    public static AIEngineDescriptor getActiveEngineDescriptor() {
-        return AIEngineRegistry.getInstance().getEngineDescriptor(
-            AISettingsManager.getInstance().getSettings().activeEngine()
-        );
-    }
-
     public static boolean hasValidConfiguration() throws DBException {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
-        return configuration.isValidConfiguration();
+        aiSettings.resolveSecrets();
+        AIConfigurationProfile profile = aiSettings.getDefaultConfigurationOrNull();
+        return profile != null && profile.getConfiguration().isValidConfiguration();
     }
+
     /**
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.
      */
     public static String getSecretValueOrDefault(
+        @NotNull AIConfigurationProfile profile,
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
-        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        String suffix = getSecretSuffix(profile);
+        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(
+            secretId + suffix);
         if (CommonUtils.isEmpty(secretValue)) {
             return defaultValue;
         }
 
         return secretValue;
+    }
+
+    public static void setSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret,
+        @Nullable String value
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile), value);
+    }
+
+    public static void deleteSecretValue(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secret
+    ) throws DBException {
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            secret + getSecretSuffix(profile),
+            null);
+    }
+
+    @NotNull
+    private static String getSecretSuffix(@NotNull AIConfigurationProfile profile) {
+        if (!profile.isMigrated()) {
+            return  "_" + profile.getProfileId();
+        }
+        // Legacy configurations didn't have a prefix
+        return "";
     }
 
     /**
@@ -109,6 +131,7 @@ public final class AIUtils {
      * @param object  the DBSObject from which to retrieve the DDL
      * @param monitor the progress monitor
      */
+    @Nullable
     public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
         if (object instanceof DBSProcedure
             || object instanceof DBSTrigger
@@ -300,7 +323,7 @@ public final class AIUtils {
     ) {
         switch (context.getScope()) {
             case CURRENT_DATABASE, CURRENT_SCHEMA -> {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
                 }
@@ -338,7 +361,7 @@ public final class AIUtils {
                 return true;
             }
             case CURRENT_SCHEMA -> {
-                DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults == null) {
                     return false;
                 }
@@ -600,11 +623,17 @@ public final class AIUtils {
             }
         }
 
-        return DBUtils.getObjectByPath(
+        DBSObject object = DBUtils.getObjectByPath(
             monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true);
+        if (object == null) {
+            object = DBUtils.getObjectByPath(
+                monitor, executionContext, rootContainer, catalogName, schemaName, objectName, true, false);
+        }
+        return object;
     }
 
     public static boolean useStreamMode() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_USE_STREAM_MODE);
     }
+
 }

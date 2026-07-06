@@ -21,9 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -84,25 +82,6 @@ public class AIEngineRegistry {
             list.add(entry.getValue());
         }
         return list;
-    }
-
-    @Nullable
-    public AIEngineDescriptor getDefaultCompletionEngineDescriptor() {
-        return getCompletionEngines().stream().filter(AIEngineDescriptor::isDefault).findFirst().orElse(null);
-    }
-
-    @NotNull
-    public AIEngine createEngine(@NotNull String id) throws DBException {
-        AIEngineDescriptor descriptor = getEngineDescriptor(id);
-        if (descriptor == null) {
-            log.trace("Active engine is not present in the configuration, switching to default active engine");
-            AIEngineDescriptor defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
-            if (defaultCompletionEngineDescriptor == null) {
-                throw new DBException("AI engine '" + id + "' not found");
-            }
-            descriptor = defaultCompletionEngineDescriptor;
-        }
-        return descriptor.createEngineInstance();
     }
 
     public boolean isEngineSupports(@NotNull String id, @NotNull Class<?> api) {
