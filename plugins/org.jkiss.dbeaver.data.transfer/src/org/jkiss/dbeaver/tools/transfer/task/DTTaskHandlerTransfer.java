@@ -326,11 +326,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     }
                     final IStatus result = job.getResult();
                     if (result.getException() != null) {
-                        if (error == null) {
-                            error = result.getException();
-                        } else {
-                            error.addSuppressed(result.getException());
-                        }
+                        recordException(result.getException());
                     }
                     totalStatistics.accumulate(job.getTotalStatistics());
                 }
@@ -346,9 +342,19 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                 monitor.beginTask("Finalizing data transfer", 1);
 
                 // End of transfer - signal last pipe about it
-                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, error, task, true);
+                dataPipes.getLast().getConsumer().finishTransfer(monitor, error, task, true);
+            } catch (DBException e) {
+                recordException(e);
             } finally {
                 monitor.done();
+            }
+        }
+
+        private void recordException(@NotNull Throwable e) {
+            if (error == null) {
+                error = e;
+            } else {
+                error.addSuppressed(e);
             }
         }
     }
