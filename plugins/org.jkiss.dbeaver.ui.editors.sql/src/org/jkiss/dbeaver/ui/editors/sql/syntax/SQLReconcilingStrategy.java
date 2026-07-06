@@ -509,16 +509,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             || modelPosition.getLength() != scannedLength;
     }
 
-    private int getRegionNumberOfLines(@NotNull SQLScriptElementImpl region) {
-        if (document == null || region.getRegionKey() == null) {
-            return 1;
-        }
-        return SQLRegionMarkerFolding.getRegionNumberOfLines(
-            document,
-            new SQLRegionMarkerFolding.RegionFold(region.getRegionKey(), region.getOffset(), region.getLength())
-        );
-    }
-
     @Nullable
     private List<SQLScriptElement> extractQueries(int offset, int length) {
         return editor.extractScriptQueries(offset, length, false, true, false);
