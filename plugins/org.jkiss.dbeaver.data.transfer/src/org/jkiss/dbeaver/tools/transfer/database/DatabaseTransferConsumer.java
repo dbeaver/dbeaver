@@ -738,11 +738,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer(@NotNull DBRProgressMonitor monitor, boolean last) {
-        finishTransfer(monitor, null, last);
-    }
-
-    @Override
     public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
         boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         if (last && error == null) {

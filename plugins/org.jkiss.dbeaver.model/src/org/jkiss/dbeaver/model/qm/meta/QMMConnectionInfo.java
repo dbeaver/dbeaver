@@ -34,6 +34,8 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     @Include
     private final String containerId;
 
+    private final boolean isLoggingEnabled;
+
     private String containerName;
     private final String driverId;
     private String connectionUserName;
@@ -56,6 +58,8 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
 
         this.projectInfo = new QMMProjectInfo(context.getDataSource().getContainer().getProject());
         initFromContext(context, transactional);
+
+        this.isLoggingEnabled = context.isQMLoggingEnabled();
     }
 
     private QMMConnectionInfo(Builder builder) {
@@ -72,6 +76,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         statementStack = builder.statementStack;
         executionStack = builder.executionStack;
         transaction = builder.transaction;
+        this.isLoggingEnabled = true;
     }
 
     private void initFromContext(DBCExecutionContext context, boolean transactional) {
@@ -109,6 +114,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         this.instanceId = instanceID;
         this.contextName = contextName;
         this.transactional = transactional;
+        this.isLoggingEnabled = true;
     }
 
     @Override
@@ -405,6 +411,10 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     @Override
     public String getConnectionUrl() {
         return connectionUrl;
+    }
+
+    public boolean isLoggingEnabled() {
+        return this.isLoggingEnabled;
     }
 
     @Override
