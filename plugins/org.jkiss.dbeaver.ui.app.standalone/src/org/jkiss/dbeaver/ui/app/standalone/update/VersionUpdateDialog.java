@@ -23,7 +23,6 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
@@ -70,8 +70,7 @@ public class VersionUpdateDialog extends Dialog {
     private final Version currentVersion;
     private final VersionDescriptor newVersion;
 
-    private Font boldFont;
-    private boolean showConfig;
+    private final boolean showConfig;
     private Button dontShowAgainCheck;
     private final String earlyAccessURL;
 
@@ -92,10 +91,6 @@ public class VersionUpdateDialog extends Dialog {
 
     public boolean isShowConfig() {
         return showConfig;
-    }
-
-    public Font getBoldFont() {
-        return boldFont;
     }
 
     @Override
@@ -124,15 +119,13 @@ public class VersionUpdateDialog extends Dialog {
 
         createTopArea(composite);
 
-        boldFont = UIUtils.makeBoldFont(composite.getFont());
-
         final Label titleLabel = new Label(propGroup, SWT.NONE);
         titleLabel.setText(
             NLS.bind(!isNewVersionAvailable() ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         titleLabel.setLayoutData(gd);
-        titleLabel.setFont(boldFont);
+        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
@@ -169,7 +162,7 @@ public class VersionUpdateDialog extends Dialog {
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);
-            hintLabel.setFont(boldFont);
+            hintLabel.setFont(BaseThemeSettings.instance.baseFontBold);
         }
 
         createBottomArea(composite);
@@ -193,7 +186,7 @@ public class VersionUpdateDialog extends Dialog {
         StringBuilder result = new StringBuilder();
         for (String rnLine : rnLines) {
             if (rnLine.length() > leadSpacesNum) {
-                if (result.length() > 0) result.append("\n");
+                if (!result.isEmpty()) result.append("\n");
                 result.append(rnLine.substring(leadSpacesNum));
             }
         }
@@ -210,15 +203,7 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     @Override
-    public boolean close()
-    {
-        boldFont.dispose();
-        return super.close();
-    }
-
-    @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
             dontShowAgainCheck = UIUtils.createCheckbox(parent, NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getPlainVersion()), false);

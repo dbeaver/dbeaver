@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
@@ -53,6 +54,8 @@ import java.util.Optional;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+
+    private static final Log log = Log.getLog(OpenAiConfigurator.class);
 
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
@@ -176,7 +179,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @NotNull
     private List<AIModel> fetchOpenAiModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (token == null || token.isEmpty()) {
-            throw new DBException(AIUIMessages.openai_configurator_token_required);
+            //throw new DBException(AIUIMessages.openai_configurator_token_required);
+            return List.of();
         }
 
         OpenAIProperties properties = new OpenAIProperties();

@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -113,9 +112,15 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    protected void bindParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
-        if (value instanceof DBDCollection && !((DBDValue) value).isNull()) {
-            statement.setObject(paramIndex, getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE), Types.OTHER);
+    protected void bindParameter(
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
+        int paramIndex,
+        @Nullable Object value
+    ) throws DBCException, SQLException {
+        if (value instanceof DBDCollection collection && !collection.isNull()) {
+            statement.setObject(paramIndex, convertArrayToString(paramType, collection, DBDDisplayFormat.NATIVE, true), Types.OTHER);
         } else {
             super.bindParameter(session, statement, paramType, paramIndex, value);
         }
@@ -135,28 +140,38 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (!DBUtils.isNullValue(value) && value instanceof DBDCollection collection) {
-            final StringJoiner output = new StringJoiner(
-                PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
-
-            for (int i = 0; i < collection.getItemCount(); i++) {
-                final Object item = collection.getItem(i);
-                final String member;
-
-                if (item instanceof DBDCollection) {
-                    member = getArrayMemberDisplayString(column, this, item, format);
-                } else {
-                    final PostgreDataType componentType = (PostgreDataType) collection.getComponentType();
-                    final DBDValueHandler componentHandler = collection.getComponentValueHandler();
-                    member = getArrayMemberDisplayString(componentType, componentHandler, item, format);
-                }
-
-                output.add(member);
-            }
-
-            return output.toString();
+            return convertArrayToString(column, collection, format, format != DBDDisplayFormat.NATIVE);
         }
 
         return super.getValueDisplayString(column, value, format);
+    }
+
+    @NotNull
+    private String convertArrayToString(
+        @NotNull DBSTypedObject column,
+        @NotNull DBDCollection collection,
+        @NotNull DBDDisplayFormat format,
+        boolean quoteMembers
+    ) {
+        final StringJoiner output = new StringJoiner(
+            PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
+
+        for (int i = 0; i < collection.getItemCount(); i++) {
+            final Object item = collection.getItem(i);
+            final String member;
+
+            if (item instanceof DBDCollection nested) {
+                member = convertArrayToString(column, nested, format, quoteMembers);
+            } else {
+                final PostgreDataType componentType = (PostgreDataType) collection.getComponentType();
+                final DBDValueHandler componentHandler = collection.getComponentValueHandler();
+                member = getArrayMemberDisplayString(componentType, componentHandler, item, format, quoteMembers);
+            }
+
+            output.add(member);
+        }
+
+        return output.toString();
     }
 
     @NotNull
@@ -164,7 +179,8 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         @NotNull DBSTypedObject type,
         @NotNull DBDValueHandler handler,
         @Nullable Object value,
-        @NotNull DBDDisplayFormat format
+        @NotNull DBDDisplayFormat format,
+        boolean quoteMembers
     ) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
@@ -172,7 +188,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
 
         final String string = handler.getValueDisplayString(type, value, format);
 
-        if (format != DBDDisplayFormat.NATIVE && isQuotingRequired(type, string)) {
+        if (quoteMembers && isQuotingRequired(type, string)) {
             return '"' + string.replaceAll("[\\\\\"]", "\\\\$0") + '"';
         }
 

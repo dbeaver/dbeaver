@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -137,16 +138,10 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     void removeSavedFilter(@NotNull String filterName);
 
     // Network profiles
-
-    @Nullable
-    DBWNetworkProfile getNetworkProfile(@Nullable String source, @NotNull String name);
     @NotNull
-    List<DBWNetworkProfile> getNetworkProfiles();
-    void updateNetworkProfile(@NotNull DBWNetworkProfile profile);
-    void removeNetworkProfile(@NotNull DBWNetworkProfile profile);
+    DBWNetworkProfileManager getNetworkProfiles();
 
     // Auth profiles
-
     @Nullable
     DBAAuthProfile getAuthProfile(@NotNull String id);
     @NotNull
