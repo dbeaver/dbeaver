@@ -413,7 +413,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             manager.add(new Separator());
-            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)
+                || (getProject().isPrivateProject() && DBWorkbench.getPlatform().getWorkspace()
+                .hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
+            ) {
                 manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
                     @Override
                     public void run() {
