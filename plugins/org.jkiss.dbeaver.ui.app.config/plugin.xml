@@ -11,8 +11,4 @@
        <page id="finalSteps" order="5000" class="org.jkiss.dbeaver.ui.app.config.pages.ProductConfigFinalStepsPage"/>
    </extension>
 
-   <extension point="org.jkiss.dbeaver.workbenchHandler">
-      <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.config.handler.ProductConfigWorkbenchInitializer" order="0"/>
-   </extension>
-
 </plugin>

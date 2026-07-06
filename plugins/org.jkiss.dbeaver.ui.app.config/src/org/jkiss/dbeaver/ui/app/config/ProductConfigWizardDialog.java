@@ -18,14 +18,18 @@ package org.jkiss.dbeaver.ui.app.config;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.util.Geometry;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Monitor;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -69,6 +73,44 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
     @Override
     public int getShellStyle() {
         return SWT.TITLE | SWT.BORDER | SWT.RESIZE;
+    }
+
+    @Override
+    protected int getDialogBoundsStrategy() {
+        return 0;
+    }
+
+    @NotNull
+    @Override
+    protected Point getInitialLocation(@NotNull Point initialSize) {
+        // NOTE: This method is almost identical to its base implementation,
+        // but it also checks whether [parent] is visible. This dialog
+        // might appear before the main window is even visible, and centering
+        // it around the main window would make it appear in the wrong place.
+
+        Shell shell = getShell();
+        Composite parent = shell.getParent();
+
+        Monitor monitor = shell.getDisplay().getPrimaryMonitor();
+        if (parent != null && parent.isVisible()) {
+            monitor = parent.getMonitor();
+        }
+
+        Rectangle monitorBounds = monitor.getClientArea();
+        Point centerPoint;
+        if (parent != null && parent.isVisible()) {
+            centerPoint = Geometry.centerPoint(parent.getBounds());
+        } else {
+            centerPoint = Geometry.centerPoint(monitorBounds);
+        }
+
+        return new Point(
+            centerPoint.x - (initialSize.x / 2),
+            Math.clamp(
+                centerPoint.y - (initialSize.y * 2L / 3),
+                monitorBounds.y, monitorBounds.y + monitorBounds.height - initialSize.y
+            )
+        );
     }
 
     @Override
