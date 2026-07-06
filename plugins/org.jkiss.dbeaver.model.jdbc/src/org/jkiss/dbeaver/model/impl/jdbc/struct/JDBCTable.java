@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
 import org.jkiss.dbeaver.model.impl.data.ExecuteBatchWithMultipleInsert;
 import org.jkiss.dbeaver.model.impl.data.ExecuteInsertBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
@@ -68,21 +69,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     private boolean persisted;
 
-    protected JDBCTable(CONTAINER container, boolean persisted)
-    {
+    protected JDBCTable(@NotNull CONTAINER container, boolean persisted) {
         super(container);
         this.persisted = persisted;
     }
 
     // Copy constructor
-    protected JDBCTable(CONTAINER container, DBSEntity source, boolean persisted)
-    {
+    protected JDBCTable(@NotNull CONTAINER container, @NotNull DBSEntity source, boolean persisted) {
         super(container, source);
         this.persisted = persisted;
     }
 
-    protected JDBCTable(CONTAINER container, @Nullable String tableName, boolean persisted)
-    {
+    protected JDBCTable(@NotNull CONTAINER container, @Nullable String tableName, boolean persisted) {
         super(container, tableName);
         this.persisted = persisted;
     }
@@ -111,8 +109,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public String[] getSupportedFeatures()
-    {
+    public String[] getSupportedFeatures() {
         if (isTruncateSupported()) {
             return new String[] {FEATURE_DATA_COUNT, FEATURE_DATA_FILTER, FEATURE_DATA_SEARCH, FEATURE_DATA_INSERT, FEATURE_DATA_UPDATE, FEATURE_DATA_DELETE, FEATURE_DATA_TRUNCATE};
         } else {
@@ -693,7 +690,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
                 dbStat.setLimit(0, keyValues.size());
                 if (dbStat.executeStatement()) {
-                    try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                    try (DBCResultSet dbResult = JDBCUtils.requireResultSet(dbStat.openResultSet())) {
                         return DBVUtils.readDictionaryRows(session, keyColumns, keyValueHandler, dbResult, true, false);
                     }
                 } else {
@@ -742,10 +739,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         keyValue = allowNegative || intValue > gapSize ? intValue - gapSize : 0;
                     } else if (keyValue instanceof Short sValue) {
                         int shortValue = sValue;
-                        keyValue = allowNegative || shortValue > gapSize ? shortValue - gapSize : (short)0;
+                        keyValue = allowNegative || shortValue > gapSize ? shortValue - gapSize : 0;
                     } else if (keyValue instanceof Long lValue) {
                         long longValue = lValue;
-                        keyValue = allowNegative || longValue > gapSize ? longValue - gapSize : (long)0;
+                        keyValue = allowNegative || longValue > gapSize ? longValue - gapSize : 0L;
                     } else if (keyValue instanceof Float fValue) {
                         float floatValue = fValue;
                         keyValue = allowNegative || floatValue > gapSize ? floatValue - gapSize : 0.0f;
@@ -806,11 +803,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.append(" WHERE ");
         }
         boolean hasCond = false;
-        // Preceeding keys
+        // Preceding keys
         if (precedingKeys != null && !precedingKeys.isEmpty()) {
-            for (int i = 0; i < precedingKeys.size(); i++) {
+            for (DBDAttributeValue precedingKey : precedingKeys) {
                 if (hasCond) query.append(" AND ");
-                query.append(DBUtils.getQuotedIdentifier(getDataSource(), precedingKeys.get(i).getAttribute().getName())).append(" = ?");
+                query.append(DBUtils.getQuotedIdentifier(getDataSource(), precedingKey.getAttribute().getName())).append(" = ?");
                 hasCond = true;
             }
         }
@@ -913,7 +910,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                             session,
                             Collections.singletonList(keyColumn),
                             Collections.singletonList(keyValueHandler),
-                            dbResult,
+                            JDBCUtils.requireResultSet(dbResult),
                             true,
                             false);
                     }
@@ -1255,7 +1252,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         session,
                         Collections.singletonList(keyColumn),
                         Collections.singletonList(keyValueHandler),
-                        dbResult,
+                        JDBCUtils.requireResultSet(dbResult),
                         true,
                         false);
                 }
