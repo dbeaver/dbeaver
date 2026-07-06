@@ -643,7 +643,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             Label controlLabel = UIUtils.createControlLabel(
                 tableGroup, ObjectEditorMessages.edit_foreign_key_page_create_schema_container);
             final CSmartCombo<DBNDatabaseNode> schemaCombo = new CSmartCombo<>(tableGroup, SWT.BORDER, labelProvider);
-            schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            schemaCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             DBNDatabaseNode selectedNode = null;
             for (DBNNode node : ArrayUtils.safeArray(schemaContainerNode.getChildren(new VoidProgressMonitor()))) {
