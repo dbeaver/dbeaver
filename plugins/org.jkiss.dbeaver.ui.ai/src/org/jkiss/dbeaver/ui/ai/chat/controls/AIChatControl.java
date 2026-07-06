@@ -74,6 +74,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     private AIContextSettings activeCompletionSettings;
     private AIChatConversation activeConversation;
+    private WebViewMessageList messageList;
 
     public AIChatControl(@NotNull Composite parent, @NotNull AIChatController controller) {
         super(parent, SWT.NONE);
@@ -243,6 +244,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             activeConversation.cancelConversation();
             activeConversation.addMessage(AIMessage.warningMessage(AIChatMessages.ai_chat_conversation_cancelled));
             chatSession.notifyMessageAdd(activeConversation, activeConversation.getMessages().getLast());
+            chatSession.notifyListeners(AIChatListener::conversationCanceled, activeConversation);
         }
     }
 
@@ -313,6 +315,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     @NotNull
     public AIAssistant getAssistant() {
         return chatSession.getAssistant();
+    }
+
+    @Nullable
+    public WebViewMessageList getMessageList() {
+        return messageList;
     }
 
     public void setFocusOnPrompt() {
@@ -452,9 +459,13 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     @NotNull
     private Control createMessageListControl(@NotNull Composite parent) {
         try {
-            return new WebViewMessageList(this, parent);
-        } catch (IOException e) {
-            log.error("Error creating WebViewMessageList", e);
+            AIChatMessageListDescriptor descriptor = AIChatMessageListRegistry.getInstance().getMessageListDescriptor();
+            messageList = descriptor != null
+                ? descriptor.createMessageList(this, parent)
+                : new WebViewMessageList(this, parent);
+            return messageList;
+        } catch (DBException | IOException e) {
+            log.error("Error creating AI chat message list", e);
         }
 
         return UIUtils.createLabel(parent, "Internal error creating web chat. See logs.");

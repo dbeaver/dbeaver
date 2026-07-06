@@ -353,6 +353,9 @@ public class AIAssistantImpl implements AIAssistant {
                     return;
                 }
             }
+            if (!conversation.isActive()) {
+                return;
+            }
             if (!newMessages.equals(messages)) {
                 try {
                     generateTextStream(monitor, chatSession, conversation, new AIChatRequest(context, newMessages, null), chatListener);

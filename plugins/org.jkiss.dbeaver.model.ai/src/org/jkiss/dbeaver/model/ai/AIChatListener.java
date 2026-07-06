@@ -41,6 +41,10 @@ public interface AIChatListener {
         // do nothing by default
     }
 
+    default void conversationCanceled(@NotNull AIChatConversation conversation) {
+        // do nothing by default
+    }
+
     /**
      * Called when AI request processing starts/ends
      */
