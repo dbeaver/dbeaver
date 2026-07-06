@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +24,8 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPOverloadedObject;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -42,7 +43,7 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx {
+public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx, DBPUniqueObject, DBPOverloadedObject {
     private static final String UNNAMED_PARAM_PREFIX = "parameter#";
 
     private final DB2Routine  procedure;
@@ -179,6 +180,28 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
     public String getName()
     {
         return name;
+    }
+
+    @NotNull
+    @Override
+    public String getUniqueName()
+    {
+        // Signature parameters (IN/OUT/INOUT) have unique names, so no rowType qualification needed.
+        // Result columns (R/C) and state (S) may clash with a parameter name - disambiguate them.
+        if (rowType == null
+            || rowType == DB2RoutineRowType.P
+            || rowType == DB2RoutineRowType.O
+            || rowType == DB2RoutineRowType.B) {
+            return name;
+        }
+        return name + " (" + rowType.getName() + ")";
+    }
+
+    @NotNull
+    @Override
+    public String getOverloadedName()
+    {
+        return getUniqueName();
     }
 
     @Property(viewable = true, order = 2)
