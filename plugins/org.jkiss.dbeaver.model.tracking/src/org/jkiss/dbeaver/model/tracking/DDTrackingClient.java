@@ -16,19 +16,18 @@
  */
 package org.jkiss.dbeaver.model.tracking;
 
-import com.google.gson.Gson;
+import com.dbeaver.rest.client.AbstractRestClient;
+import com.dbeaver.rest.client.MediaType;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.util.List;
 import java.util.Map;
 
 public class DDTrackingClient implements DDTrackingService {
@@ -38,56 +37,60 @@ public class DDTrackingClient implements DDTrackingService {
     private static final int START_TIMEOUT_MS = 10000;
     private static final int STOP_TIMEOUT_MS = 3000;
 
-    private final Gson gson = new Gson();
-    private final String url;
+    private final Transport startTransport;
+    private final Transport stopTransport;
 
     public DDTrackingClient(@NotNull String url) {
-        this.url = url;
+        this.startTransport = new Transport(url, START_TIMEOUT_MS);
+        this.stopTransport = new Transport(url, STOP_TIMEOUT_MS);
     }
 
     @Nullable
     @Override
     public DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client) {
-        return execute(TRACK_START_ENDPOINT, apiKey, gson.toJson(client), START_TIMEOUT_MS);
+        return startTransport.post(TRACK_START_ENDPOINT, apiKey, client);
     }
 
     @Nullable
     @Override
     public DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request) {
-        return execute(TRACK_STOP_ENDPOINT, apiKey, gson.toJson(request), STOP_TIMEOUT_MS);
+        return stopTransport.post(TRACK_STOP_ENDPOINT, apiKey, request);
     }
 
-    @Nullable
-    private DDTracking execute(@NotNull String path, @Nullable String apiKey, @NotNull String body, int timeoutMs) {
-        try {
-            Map<String, String> headers = new HashMap<>();
-            headers.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON);
-            if (apiKey != null) {
-                headers.put(API_KEY_HEADER, apiKey);
-            }
+    private static final class Transport extends AbstractRestClient {
 
-            URLConnection connection = WebUtils
-                .openURLConnection(url + METERING_ENDPOINT + path, null, null, "POST", 0, timeoutMs, headers);
+        Transport(@NotNull String url, int readTimeoutMs) {
+            super(url, DEFAULT_CONNECT_TIMEOUT, readTimeoutMs, List.of());
+        }
 
-            try (OutputStream out = connection.getOutputStream()) {
-                out.write(body.getBytes(StandardCharsets.UTF_8));
-            }
+        @Nullable
+        DDTracking post(@NotNull String path, @Nullable String apiKey, @NotNull Object body) {
+            try {
+                String endpoint = CommonUtils.removeLeadingSlash(METERING_ENDPOINT + path);
+                URI uri = buildUri(endpoint, Map.of());
 
-            if (connection instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() >= 300) {
-                String error;
-                try (InputStream err = httpConnection.getErrorStream()) {
-                    error = err == null ? "" : new String(err.readAllBytes(), StandardCharsets.UTF_8);
+                HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+                    .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
+                    .POST(createBodyPublisher(body, MediaType.JSON));
+                if (apiKey != null) {
+                    builder.header(API_KEY_HEADER, apiKey);
                 }
-                log.debug("DataDam tracking request failed: HTTP " + httpConnection.getResponseCode() + " " + error);
+
+                return execute(builder, DDTracking.class);
+            } catch (DBException e) {
+                log.debug("DataDam tracking request failed", e);
                 return null;
             }
+        }
 
-            try (InputStream in = connection.getInputStream()) {
-                return gson.fromJson(new String(in.readAllBytes(), StandardCharsets.UTF_8), DDTracking.class);
-            }
-        } catch (Exception e) {
-            log.debug("DataDam tracking request failed", e);
-            return null;
+        @Override
+        protected void logDebug(@NotNull String message) {
+            log.debug(message);
+        }
+
+        @Override
+        protected void logError(@NotNull String message) {
+            log.debug(message);
         }
     }
 }
