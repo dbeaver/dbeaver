@@ -31,6 +31,7 @@ public final class ProductConfigMessages extends NLS {
     public static String features_title;
     public static String features_description;
     public static String features_list_header;
+    public static String features_hint;
 
     public static String final_steps_title;
     public static String final_steps_description;

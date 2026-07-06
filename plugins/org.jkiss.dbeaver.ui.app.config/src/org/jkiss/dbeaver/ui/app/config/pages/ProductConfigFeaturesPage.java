@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.app.config.pages;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureRegistry;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
@@ -82,7 +83,16 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                     for (ProductConfigFeatureDescriptor descriptor : ProductConfigFeatureRegistry.getInstance().getFeatures()) {
                         pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
                     }
-                })
-            ));
+                })))
+            .row(rb -> rb
+                // TODO introduce a dedicated icon+label control
+                .label(lb -> lb
+                    .image(DBIcon.SMALL_INFO)
+                    .align(UIAlignY.TOP))
+                .label(lb -> lb
+                    .text(ProductConfigMessages.features_hint)
+                    .wrap()
+                    .align(UIAlignX.FILL)
+                    .grow(UIGrowX.ALWAYS)));
     }
 }
