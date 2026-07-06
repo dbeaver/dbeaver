@@ -361,6 +361,8 @@ public class AISettingsManager {
                         AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(result.getEngineId());
                         if (engineDescriptor == null) {
                             log.error("AI engine '" + result.getEngineId() + "' not found. Ignore config");
+                            // Skip nested element completely
+                            READ_PROPS_GSON.fromJson(in, Map.class);
                             continue;
                         }
                         result.setConfiguration(READ_PROPS_GSON.fromJson(
