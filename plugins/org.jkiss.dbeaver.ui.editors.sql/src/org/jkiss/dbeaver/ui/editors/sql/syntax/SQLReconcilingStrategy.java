@@ -39,15 +39,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
+import org.jkiss.dbeaver.model.sql.parser.SQLRegionMarkerFolding;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilingStrategyExtension {
@@ -56,10 +56,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private static final QualifiedName COLLAPSED_ANNOTATIONS =
         new QualifiedName(SQLEditorActivator.PLUGIN_ID, SQLReconcilingStrategy.class.getName() + ".collapsedFoldingAnnotations");
 
-    private static final Pattern REGION_START_PATTERN = Pattern.compile("^\\s*--\\s*region\\b", Pattern.CASE_INSENSITIVE);
-    private static final Pattern REGION_END_PATTERN = Pattern.compile("^\\s*--\\s*endregion\\b", Pattern.CASE_INSENSITIVE);
-
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
+    private final Map<String, SQLScriptElementImpl> regionCache = new LinkedHashMap<>();
+
+    private volatile boolean projectionRefreshScheduled;
+    private volatile boolean projectionRefreshPending;
 
     private final SQLEditorBase editor;
 
@@ -87,6 +88,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     public void setDocument(IDocument document) {
         this.document = document;
         this.cache.clear();
+        this.regionCache.clear();
 
         spellingService = EditorsUI.getSpellingService();
         if (spellingService.getActiveSpellingEngineDescriptor(editor.getViewerConfiguration().getPreferenceStore()) != null) {
@@ -166,9 +168,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 stringJoiner.add(Integer.toString(position.getOffset()));
             }
         }
-        if (annotationModel instanceof SQLProjectionAnnotationModel sqlProjectionModel) {
-            for (int offset : sqlProjectionModel.getDeferredCollapsedOffsets()) {
-                stringJoiner.add(Integer.toString(offset));
+        for (SQLScriptElementImpl position : regionCache.values()) {
+            ProjectionAnnotation annotation = position.getAnnotation();
+            if (annotation != null && annotation.isCollapsed()) {
+                stringJoiner.add(Integer.toString(position.getOffset()));
             }
         }
         String value;
@@ -203,12 +206,15 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
         if (!editor.isFoldingEnabled()) {
             cache.clear(); // underlying annotation model being cleared, so reset the cache too
+            regionCache.clear();
             return;
         }
         ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
         if (model == null) {
             return;
         }
+
+        final int editOffset = damagedRegionOffset; // original dirty region; damagedRegionOffset is widened below for parser cache
 
         SQLScriptElementImpl leftBound = cache.lower(new SQLScriptElementImpl(damagedRegionOffset, damagedRegionLength));
         if (leftBound != null) {
@@ -254,11 +260,14 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
 
         List<SQLScriptElementImpl> regionElements = extractRegionFoldingPositions();
+        List<SQLRegionMarkerFolding.RegionFold> regionFolds = regionElements.stream()
+            .map(r -> new SQLRegionMarkerFolding.RegionFold(r.getRegionKey(), r.getOffset(), r.getLength()))
+            .toList();
 
         Set<SQLScriptElementImpl> parsedElements = new HashSet<>(parsedQueries.stream()
             .filter(this::deservesFolding)
             .map(this::getExpandedScriptElement)
-            .filter(element -> !isStrictlyEnclosedInAnyRegion(element, regionElements))
+            .filter(element -> !isStrictlyEnclosedInAnyRegion(element, regionFolds))
             .collect(Collectors.toSet()));
         Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
         Set<Integer> savedCollapsedAnnotationsOffsets = restoreCollapsedAnnotations ? getSavedCollapsedAnnotationsOffsets() : Collections.emptySet();
@@ -267,18 +276,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 ProjectionAnnotation annotation = new ProjectionAnnotation();
                 element.setAnnotation(annotation);
                 additions.put(annotation, element);
-            }
-        }
-        // Add region-based folding annotations for --region/--endregion markers
-        for (SQLScriptElementImpl regionElement : regionElements) {
-            if (getNumberOfLines(regionElement) <= 1) {
-                continue;
-            }
-            parsedElements.add(regionElement);
-            if (!cachedQueries.contains(regionElement)) {
-                ProjectionAnnotation annotation = new ProjectionAnnotation();
-                regionElement.setAnnotation(annotation);
-                additions.put(annotation, regionElement);
             }
         }
         Collection<SQLScriptElementImpl> deletedPositions = cachedQueries.stream()
@@ -303,9 +300,10 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 }
             }
         }
-        syncCollapsedProjectionAnnotations(model);
         cache.removeAll(deletedPositions);
         cache.addAll(additions.values());
+
+        syncRegionFolds(model, savedCollapsedAnnotationsOffsets, editOffset);
 
         if (isSpellingEnabled() && spellingContext != null) {
             IRegion[] regions = new IRegion[]{
@@ -318,6 +316,167 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
     }
 
+    private void syncRegionFolds(
+        @NotNull ProjectionAnnotationModel model,
+        @NotNull Set<Integer> savedCollapsedAnnotationsOffsets,
+        int editOffset
+    ) {
+        List<SQLScriptElementImpl> scannedRegions = extractFoldableRegionFoldingPositions();
+        Map<String, SQLScriptElementImpl> scannedByKey = new LinkedHashMap<>();
+        for (SQLScriptElementImpl region : scannedRegions) {
+            if (region.getRegionKey() != null) {
+                scannedByKey.put(region.getRegionKey(), region);
+            }
+        }
+
+        Map<String, Boolean> collapsedByKey = new HashMap<>();
+        for (SQLScriptElementImpl cachedRegion : regionCache.values()) {
+            ProjectionAnnotation annotation = cachedRegion.getAnnotation();
+            if (annotation != null && annotation.isCollapsed() && cachedRegion.getRegionKey() != null) {
+                collapsedByKey.put(cachedRegion.getRegionKey(), true);
+            }
+        }
+        for (Map.Entry<String, SQLScriptElementImpl> scannedEntry : scannedByKey.entrySet()) {
+            if (savedCollapsedAnnotationsOffsets.contains(scannedEntry.getValue().getOffset())) {
+                collapsedByKey.put(scannedEntry.getKey(), true);
+            }
+        }
+
+        Map<Annotation, SQLScriptElementImpl> additions = new HashMap<>();
+        List<Annotation> deletions = new ArrayList<>();
+        Map<String, SQLScriptElementImpl> nextRegionCache = new LinkedHashMap<>();
+
+        for (Map.Entry<String, SQLScriptElementImpl> cachedEntry : regionCache.entrySet()) {
+            if (!scannedByKey.containsKey(cachedEntry.getKey())) {
+                ProjectionAnnotation annotation = cachedEntry.getValue().getAnnotation();
+                if (annotation != null) {
+                    deletions.add(annotation);
+                }
+            }
+        }
+
+        for (Map.Entry<String, SQLScriptElementImpl> scannedEntry : scannedByKey.entrySet()) {
+            String regionKey = scannedEntry.getKey();
+            SQLScriptElementImpl scannedRegion = scannedEntry.getValue();
+            SQLScriptElementImpl cachedRegion = regionCache.get(regionKey);
+
+            if (!needsRegionAnnotationRecreate(cachedRegion, scannedRegion, model)) {
+                nextRegionCache.put(regionKey, cachedRegion);
+                continue;
+            }
+
+            if (cachedRegion != null) {
+                ProjectionAnnotation oldAnnotation = cachedRegion.getAnnotation();
+                if (oldAnnotation != null) {
+                    if (oldAnnotation.isCollapsed()) {
+                        collapsedByKey.put(regionKey, true);
+                    }
+                    deletions.add(oldAnnotation);
+                }
+            }
+
+            ProjectionAnnotation annotation = new ProjectionAnnotation();
+            scannedRegion.setAnnotation(annotation);
+            additions.put(annotation, scannedRegion);
+            nextRegionCache.put(regionKey, scannedRegion);
+        }
+
+        if (!deletions.isEmpty() || !additions.isEmpty()) {
+            model.modifyAnnotations(deletions.toArray(Annotation[]::new), additions, null);
+        }
+
+        boolean collapseApplied = false;
+        for (Map.Entry<String, SQLScriptElementImpl> entry : nextRegionCache.entrySet()) {
+            SQLScriptElementImpl region = entry.getValue();
+            ProjectionAnnotation annotation = region.getAnnotation();
+            if (annotation == null
+                || document == null
+                || !SQLRegionMarkerFolding.isValidDocumentRange(document, region.getOffset(), region.getLength())
+            ) {
+                continue;
+            }
+            if (collapsedByKey.getOrDefault(entry.getKey(), false) && !annotation.isCollapsed()) {
+                model.collapse(annotation);
+                collapseApplied = true;
+            }
+        }
+
+        boolean regionSetChanged = !regionCache.keySet().equals(scannedByKey.keySet());
+
+        regionCache.clear();
+        regionCache.putAll(nextRegionCache);
+
+        if (SQLRegionMarkerFolding.needsFoldingGutterRefresh(
+            !deletions.isEmpty() || !additions.isEmpty(),
+            collapseApplied,
+            regionSetChanged,
+            editOffset,
+            scannedByKey.values().stream()
+                .map(r -> new SQLRegionMarkerFolding.RegionFold(r.getRegionKey(), r.getOffset(), r.getLength()))
+                .toList()
+        )) {
+            scheduleProjectionPresentationRefresh();
+        }
+    }
+
+    /**
+     * Reconcile updates annotations off the UI thread; projection gutter icons may stay stale until
+     * the viewer repaints (scrolling happens to trigger that). Force the same refresh explicitly.
+     */
+    private void scheduleProjectionPresentationRefresh() {
+        if (projectionRefreshScheduled) {
+            projectionRefreshPending = true;
+            return;
+        }
+        projectionRefreshScheduled = true;
+        UIUtils.asyncExec(this::runProjectionPresentationRefresh);
+    }
+
+    private void runProjectionPresentationRefresh() {
+        try {
+            if (document != null && editor.isFoldingEnabled()) {
+                editor.refreshProjectionFoldingPresentation();
+            }
+        } catch (RuntimeException e) {
+            log.warn("Failed to refresh projection folding presentation", e);
+        }
+        if (projectionRefreshPending) {
+            projectionRefreshPending = false;
+            UIUtils.asyncExec(this::runProjectionPresentationRefresh);
+        } else {
+            projectionRefreshScheduled = false;
+        }
+    }
+
+    private boolean needsRegionAnnotationRecreate(
+        @Nullable SQLScriptElementImpl cachedRegion,
+        @NotNull SQLScriptElementImpl scannedRegion,
+        @NotNull ProjectionAnnotationModel model
+    ) {
+        if (cachedRegion == null || cachedRegion.getAnnotation() == null) {
+            return true;
+        }
+        int scannedOffset = scannedRegion.getOffset();
+        int scannedLength = scannedRegion.getLength();
+        if (cachedRegion.getOffset() != scannedOffset || cachedRegion.getLength() != scannedLength) {
+            return true;
+        }
+        Position modelPosition = model.getPosition(cachedRegion.getAnnotation());
+        return modelPosition == null
+            || modelPosition.getOffset() != scannedOffset
+            || modelPosition.getLength() != scannedLength;
+    }
+
+    private int getRegionNumberOfLines(@NotNull SQLScriptElementImpl region) {
+        if (document == null || region.getRegionKey() == null) {
+            return 1;
+        }
+        return SQLRegionMarkerFolding.getRegionNumberOfLines(
+            document,
+            new SQLRegionMarkerFolding.RegionFold(region.getRegionKey(), region.getOffset(), region.getLength())
+        );
+    }
+
     @Nullable
     private List<SQLScriptElement> extractQueries(int offset, int length) {
         return editor.extractScriptQueries(offset, length, false, true, false);
@@ -325,82 +484,31 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @NotNull
     private List<SQLScriptElementImpl> extractRegionFoldingPositions() {
-        List<SQLScriptElementImpl> regions = new ArrayList<>();
-        if (document == null || document.getLength() == 0) {
-            return regions;
+        if (document == null) {
+            return List.of();
         }
-        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ext
-            ? ext.getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
-            : null;
-        Deque<Integer> regionStarts = new ArrayDeque<>();
-        int lineCount = document.getNumberOfLines();
-        for (int line = 0; line < lineCount; line++) {
-            try {
-                IRegion lineInfo = document.getLineInformation(line);
-                int lineOffset = lineInfo.getOffset();
-                int lineLength = lineInfo.getLength();
-                if (lineLength == 0) {
-                    continue;
-                }
-                String lineText = document.get(lineOffset, lineLength);
-                if (partitioner != null) {
-                    int commentPos = lineText.indexOf("--");
-                    if (commentPos < 0) {
-                        continue;
-                    }
-                    String contentType = partitioner.getContentType(lineOffset + commentPos);
-                    if (!SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType)) {
-                        continue;
-                    }
-                }
-                if (REGION_START_PATTERN.matcher(lineText).find()) {
-                    regionStarts.push(lineOffset);
-                } else if (REGION_END_PATTERN.matcher(lineText).find()) {
-                    if (!regionStarts.isEmpty()) {
-                        int startOffset = regionStarts.pop();
-                        int endOffset = line + 1 < lineCount
-                            ? document.getLineOffset(line + 1)
-                            : document.getLength();
-                        int length = endOffset - startOffset;
-                        if (length > 0) {
-                            regions.add(new SQLScriptElementImpl(startOffset, length));
-                        }
-                    }
-                }
-            } catch (BadLocationException e) {
-                log.warn("Error scanning for region folding markers", e);
-            }
+        return SQLRegionMarkerFolding.scanRegions(document).stream()
+            .map(f -> new SQLScriptElementImpl(f.offset(), f.length(), f.regionKey()))
+            .toList();
+    }
+
+    @NotNull
+    private List<SQLScriptElementImpl> extractFoldableRegionFoldingPositions() {
+        if (document == null) {
+            return List.of();
         }
-        return regions;
+        return SQLRegionMarkerFolding.scanFoldableRegions(document).stream()
+            .map(f -> new SQLScriptElementImpl(f.offset(), f.length(), f.regionKey()))
+            .toList();
     }
 
     private boolean isStrictlyEnclosedInAnyRegion(
         @NotNull SQLScriptElementImpl element,
-        @NotNull List<SQLScriptElementImpl> regions
+        @NotNull List<SQLRegionMarkerFolding.RegionFold> regions
     ) {
         int start = element.getOffset();
         int end = start + element.getLength();
-        for (SQLScriptElementImpl region : regions) {
-            if (isStrictlyEnclosed(start, end, region.getOffset(), region.getOffset() + region.getLength())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isStrictlyEnclosed(int innerStart, int innerEnd, int outerStart, int outerEnd) {
-        return innerStart >= outerStart && innerEnd <= outerEnd
-            && (innerStart > outerStart || innerEnd < outerEnd);
-    }
-
-    private void syncCollapsedProjectionAnnotations(@NotNull ProjectionAnnotationModel model) {
-        Iterator<Annotation> it = model.getAnnotationIterator();
-        while (it.hasNext()) {
-            Annotation annotation = it.next();
-            if (annotation instanceof ProjectionAnnotation projectionAnnotation && projectionAnnotation.isCollapsed()) {
-                model.collapse(annotation);
-            }
-        }
+        return SQLRegionMarkerFolding.isStrictlyEnclosedInAnyRegion(start, end, regions);
     }
 
     private boolean deservesFolding(SQLScriptElement element) {
@@ -470,9 +578,21 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private static class SQLScriptElementImpl extends Position implements SQLScriptElement, Comparable<SQLScriptElementImpl> {
         @Nullable
         private ProjectionAnnotation annotation;
+        @Nullable
+        private final String regionKey;
 
         SQLScriptElementImpl(int offset, int length) {
+            this(offset, length, null);
+        }
+
+        SQLScriptElementImpl(int offset, int length, @Nullable String regionKey) {
             super(offset, length);
+            this.regionKey = regionKey;
+        }
+
+        @Nullable
+        public String getRegionKey() {
+            return regionKey;
         }
 
         @Nullable
