@@ -171,8 +171,8 @@ public class DBNModel {
 
     @Nullable
     public DBNDatabaseNode findNode(@NotNull DBSObject object) {
-        if (object instanceof DBNDatabaseNode) {
-            return (DBNDatabaseNode)object;
+        if (object instanceof DBNDatabaseNode dbNode) {
+            return dbNode;
         } else {
             return this.getNodeByObject(object);
         }
@@ -180,8 +180,8 @@ public class DBNModel {
 
     @Nullable
     public DBNDatabaseNode getNodeByObject(@NotNull DBSObject object) {
-        if (object instanceof DBNDatabaseNode) {
-            return (DBNDatabaseNode)object;
+        if (object instanceof DBNDatabaseNode dbNode) {
+            return dbNode;
         }
         object = DBUtils.getPublicObjectContainer(object);
 
@@ -397,8 +397,8 @@ public class DBNModel {
         boolean cached = false;
         if (!ArrayUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
-                if (child instanceof DBNDatabaseFolder) {
-                    Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
+                if (child instanceof DBNDatabaseFolder folder) {
+                    Class<?> itemsClass = folder.getChildrenClass();
                     if (itemsClass != null && itemsClass.isAssignableFrom(objectToCache.getClass())) {
                         cached = cacheNodeChildren(monitor, child, objectToCache, addFiltered);
                         if (cached) {
@@ -424,8 +424,8 @@ public class DBNModel {
     public DBNDatabaseNode getParentNode(@NotNull DBSObject object) {
         DBNDatabaseNode node = getNodeByObject(object);
         if (node != null) {
-            if (node.getParentNode() instanceof DBNDatabaseNode) {
-                return (DBNDatabaseNode) node.getParentNode();
+            if (node.getParentNode() instanceof DBNDatabaseNode dbNode) {
+                return dbNode;
             } else {
                 log.error("Object's " + object.getName() + "' parent node is not a database node: " + node.getParentNode());
                 return null;
@@ -455,8 +455,8 @@ public class DBNModel {
             if (item == DBUtils.getPublicObjectContainer(parentObject)) {
                 // Try to find parent node withing children
                 for (DBNDatabaseNode child : children) {
-                    if (child instanceof DBNDatabaseFolder) {
-                        Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
+                    if (child instanceof DBNDatabaseFolder folder) {
+                        Class<?> itemsClass = folder.getChildrenClass();
                         if (itemsClass != null && itemsClass.isAssignableFrom(object.getClass())) {
                             return child;
                         }
@@ -511,7 +511,7 @@ public class DBNModel {
                 if (nodeMap.remove(node.getObject()) != node) {
                     badNode = true;
                 }
-            } else if (obj instanceof List) {
+            } else if (obj instanceof List<?>) {
                 // Multiple nodes
                 @SuppressWarnings("unchecked")
                 List<DBNNode> nodeList = (List<DBNNode>) obj;
