@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,6 +160,8 @@ public class PostgreConstants {
     public static final String DEFAULT_ARRAY_DELIMITER = " ";
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
     public static final Map<String, String> REPLACING_TIMEZONE = Map.of(
+        "Asia/Saigon", "Asia/Ho_Chi_Minh",
+        "Asia/Ho_Chi_Minh", "Asia/Saigon",
         "Europe/Kyiv", "Europe/Kiev",
         "Europe/Kiev", "Europe/Kyiv",
         "Asia/Calcutta", "Asia/Kolkata",

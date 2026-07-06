@@ -25,6 +25,7 @@ import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
+import org.eclipse.gef.commands.CommandStackEvent;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.PaletteRoot;
@@ -32,7 +33,6 @@ import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
-import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -58,7 +58,6 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
-import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -138,11 +137,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private EditModeComposite editModeComposite;
 
     /**
-     * the undoable <code>IPropertySheetPage</code>
-     */
-    private PropertySheetPage undoablePropertySheetPage;
-
-    /**
      * the graphical viewer
      */
     private ScalableFreeformRootEditPart rootPart;
@@ -218,8 +212,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public DBNNode getRootNode() {
         IEditorInput editorInput = this.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            return ((IDatabaseEditorInput) editorInput).getNavigatorNode();
+        if (editorInput instanceof IDatabaseEditorInput dei) {
+            return dei.getNavigatorNode();
         }
         return null;
     }
@@ -298,8 +292,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Nullable
     public DBECommandContext getCommandContext() {
         IEditorInput editorInput = this.getEditorInput();
-        if (editorInput instanceof IDatabaseEditorInput) {
-            return ((IDatabaseEditorInput) editorInput).getCommandContext();
+        if (editorInput instanceof IDatabaseEditorInput dei) {
+            return dei.getCommandContext();
         }
         return null;
     }
@@ -311,12 +305,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    /**
-     * The <code>CommandStackListener</code> that listens for
-     * <code>CommandStack </code> changes.
-     */
     @Override
-    public void commandStackChanged(EventObject event) {
+    public void stackChanged(CommandStackEvent event) {
         // Reevaluate properties
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_UNDO);
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
@@ -324,7 +314,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // Update actions
         setDirty(getCommandStack().isDirty());
 
-        super.commandStackChanged(event);
+        super.stackChanged(event);
     }
 
     @Override
@@ -491,8 +481,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // Set context menu
         IWorkbenchPartSite site = getSite();
-        if (site instanceof IEditorSite) {
-            ((IEditorSite) site).registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
+        if (site instanceof IEditorSite editorSite) {
+            editorSite.registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer, false);
         } else {
             site.registerContextMenu(ERDEditorPart.class.getName() + ".EditorContext", provider, viewer);
         }
@@ -528,6 +518,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void registerDropTargetListeners(@NotNull GraphicalViewer viewer) {
         viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
         viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
+        //viewer.addDragSourceListener();
     }
 
     @Override
@@ -631,8 +622,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void updateActions(List actionIds) {
         for (Object actionId : actionIds) {
             IAction action = getActionRegistry().getAction(actionId);
-            if (null != action && action instanceof UpdateAction) {
-                ((UpdateAction) action).update();
+            if (action instanceof UpdateAction ua) {
+                ua.update();
             }
 
         }
@@ -647,27 +638,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (null == outlinePage || outlinePage.getControl().isDisposed()) {
             getGraphicalViewer();
             RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
-            if (rootEditPart instanceof ScalableFreeformRootEditPart) {
-                outlinePage = new ERDOutlinePage((ScalableFreeformRootEditPart) rootEditPart);
+            if (rootEditPart instanceof ScalableFreeformRootEditPart ffp) {
+                outlinePage = new ERDOutlinePage(ffp);
             }
         }
 
         return outlinePage;
     }
 
-    /**
-     * Returns the undoable <code>PropertySheetPage</code> for this editor.
-     *
-     * @return the undoable <code>PropertySheetPage</code>
-     */
-    protected PropertySheetPage getPropertySheetPage() {
-        if (null == undoablePropertySheetPage) {
-            undoablePropertySheetPage = new PropertySheetPage();
-            undoablePropertySheetPage.setRootEntry(new UndoablePropertySheetEntry(getCommandStack()));
-        }
-
-        return undoablePropertySheetPage;
-    }
 
     /**
      * @return the preferences for the Palette Flyout
@@ -867,9 +845,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             avMenu.add(new ChangeAttributeVisibilityAction(true, ERDAttributeVisibility.NONE));
 
             ISelection selection = getGraphicalViewer().getSelection();
-            if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            if (selection instanceof IStructuredSelection ss && !selection.isEmpty()) {
                 int totalEntities = 0;
-                for (Object item : ((IStructuredSelection) selection).toArray()) {
+                for (Object item : ss.toArray()) {
                     if (item instanceof EntityPart) {
                         totalEntities++;
                     }
@@ -878,8 +856,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 if (totalEntities > 0) {
                     avMenu.add(new Separator());
                     String avaTitle = ERDUIMessages.menu_attribute_visibility_entity;
-                    if (((IStructuredSelection) selection).size() == 1) {
-                        avaTitle += " (" + ((IStructuredSelection) selection).getFirstElement() + ")";
+                    if (ss.size() == 1) {
+                        avaTitle += " (" + ss.getFirstElement() + ")";
                     } else {
                         avaTitle += " (" + totalEntities + ")";
                     }
@@ -924,8 +902,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (selection.isEmpty()) {
             return;
         }
-        if (selection.getFirstElement() instanceof IMenuListener) {
-            ((IMenuListener) selection.getFirstElement()).menuAboutToShow(menu);
+        if (selection.getFirstElement() instanceof IMenuListener menuListener) {
+            menuListener.menuAboutToShow(menu);
         }
         menu.add(new ChangeZOrderAction(this, selection, true));
         menu.add(new ChangeZOrderAction(this, selection, false));
@@ -1117,7 +1095,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     @Override
     public boolean containsModelObject(DBSObject object) {
-        return object instanceof DBSEntity && getDiagram().getEntity((DBSEntity) object) != null;
+        return object instanceof DBSEntity entity && getDiagram().getEntity(entity) != null;
     }
 
     private class ChangeAttributePresentationAction extends Action {
@@ -1195,7 +1173,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         private final ERDAttributeVisibility visibility;
 
         private ChangeAttributeVisibilityAction(boolean defStyle, ERDAttributeVisibility visibility) {
-            super(visibility.getTitle() + "", IAction.AS_CHECK_BOX);
+            super(visibility.getTitle(), IAction.AS_CHECK_BOX);
             this.defStyle = defStyle;
             this.visibility = visibility;
         }
@@ -1206,8 +1184,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return visibility == getDiagram().getAttributeVisibility();
             } else {
                 for (Object object : ((IStructuredSelection) getGraphicalViewer().getSelection()).toArray()) {
-                    if (object instanceof EntityPart) {
-                        ERDAttributeVisibility entityAV = ((EntityPart) object).getEntity().getAttributeVisibility();
+                    if (object instanceof EntityPart entityPart) {
+                        ERDAttributeVisibility entityAV = entityPart.getEntity().getAttributeVisibility();
                         if (entityAV == null) {
                             return visibility == getDiagram().getAttributeVisibility();
                         } else if (entityAV == visibility) {
@@ -1235,11 +1213,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 refreshEntityAndAttributes();
             } else {
                 for (Object object : ((IStructuredSelection) getGraphicalViewer().getSelection()).toArray()) {
-                    if (object instanceof EntityPart) {
-                        ((EntityPart) object).getEntity().setAttributeVisibility(visibility);
+                    if (object instanceof EntityPart entityPart) {
+                        entityPart.getEntity().setAttributeVisibility(visibility);
                         UIUtils.asyncExec(() -> {
-                            ((EntityPart) object).getEntity().reloadAttributes(diagram);
-                            ((EntityPart) object).refresh();
+                            entityPart.getEntity().reloadAttributes(diagram);
+                            entityPart.refresh();
                         });
 
                     }
@@ -1449,7 +1427,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
             EditPart oldContents = getGraphicalViewer().getContents();
             if ((oldContents instanceof DiagramPart diagramPart) &&
-                restoreVisualSettings(diagramPart, entityDiagram)) {
+                restoreVisualSettings(diagramPart, entityDiagram)
+            ) {
                 entityDiagram.setLayoutManualAllowed(true);
                 entityDiagram.setLayoutManualDesired(true);
             }
@@ -1476,8 +1455,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // Collect visual settings from old diagram and apply them to the new one
         for (ERDEntity newEntity : newDiagram.getEntities()) {
             NodePart oldEntity = oldDiagram.getChildByObject(newEntity.getObject());
-            if (oldEntity instanceof EntityPart) {
-                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo((EntityPart) oldEntity);
+            if (oldEntity instanceof EntityPart entityPart) {
+                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo(entityPart);
                 newDiagram.addVisualInfo(newEntity.getObject(), vi);
                 hasChanges = true;
             }
@@ -1485,8 +1464,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         for (ERDNote newNote : newDiagram.getNotes()) {
             NodePart oldNotePart = oldDiagram.getChildByObject(newNote.getObject());
-            if (oldNotePart instanceof NotePart) {
-                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo((NotePart) oldNotePart);
+            if (oldNotePart instanceof NotePart notePart) {
+                EntityDiagram.NodeVisualInfo vi = new EntityDiagram.NodeVisualInfo(notePart);
                 vi.initBounds = oldNotePart.getBounds();
                 newDiagram.addVisualInfo(newNote, vi);
                 hasChanges = true;
@@ -1517,7 +1496,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Nullable
         private Object currentItem = null;
         @Nullable
-        private List<ERDHighlightingHandle> highlightings = new LinkedList<>();
+        private final List<ERDHighlightingHandle> highlightings = new LinkedList<>();
 
         @Override
         public boolean performSearch(@NotNull String searchString, int options) {
@@ -1548,15 +1527,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 graphicalViewer.deselectAll();
                 Set<DBPNamedObject> nodes = new HashSet<>();
                 for (Object node : getDiagramPart().getChildren()) {
-                    if (node instanceof DBPNamedObject && node instanceof EditPart) {
-                        nodes.add((DBPNamedObject) node);
+                    if (node instanceof DBPNamedObject namedObject && node instanceof EditPart) {
+                        nodes.add(namedObject);
                     }
-                    if (node instanceof EntityPart) {
-                        List<?> children = ((EntityPart) node).getChildren();
+                    if (node instanceof EntityPart entityPart) {
+                        List<?> children = entityPart.getChildren();
                         if (!CommonUtils.isEmpty(children)) {
                             for (Object child : children) {
-                                if (child instanceof DBPNamedObject && child instanceof EditPart) {
-                                    nodes.add((DBPNamedObject) child);
+                                if (child instanceof DBPNamedObject namedObject && child instanceof EditPart) {
+                                    nodes.add(namedObject);
                                 }
                             }
                         }
@@ -1572,8 +1551,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                             }
                             resultsFound = true;
                             results.add(erdNode);
-                            if (erdNode instanceof GraphicalEditPart) {
-                                highlightings.add(highlightingManager.highlight(((GraphicalEditPart) erdNode).getFigure(), color));
+                            if (erdNode instanceof GraphicalEditPart gep) {
+                                highlightings.add(highlightingManager.highlight(gep.getFigure(), color));
                             }
                         }
                     }
@@ -1587,7 +1566,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         private void jumpToNext(boolean isFindNext) {
-            if (resultsIterator == null || isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious()) {
+            if (resultsIterator == null || (isFindNext ? !resultsIterator.hasNext() : !resultsIterator.hasPrevious())) {
                 resultsIterator = results.listIterator(isFindNext ? 0 : results.size());
             }
             currentItem = isFindNext ? resultsIterator.next() : resultsIterator.previous();
@@ -1595,7 +1574,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private boolean findNextResult(boolean isFindNext) {
             if (resultsFound && results != null) {
-                if (isPrevStepWasFwd != null && isPrevStepWasFwd.booleanValue() != isFindNext) {
+                if (isPrevStepWasFwd != null && isPrevStepWasFwd != isFindNext) {
                     // direction change gets current item again as if it's a new loop initialization 
                     jumpToNext(isFindNext);
                 }

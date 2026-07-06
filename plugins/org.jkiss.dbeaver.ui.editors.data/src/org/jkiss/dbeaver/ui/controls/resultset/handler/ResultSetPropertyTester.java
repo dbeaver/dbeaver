@@ -43,6 +43,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_HAS_MORE_DATA = "hasMoreData";
     public static final String PROP_HAS_FILTERS = "hasfilters";
     public static final String PROP_CAN_SAVE_FILTERS = "canSaveFilters";
+    public static final String PROP_HAS_SAVED_FILTER = "hasSavedFilter";
     public static final String PROP_CAN_COPY = "canCopy";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_CUT = "canCut";
@@ -87,6 +88,8 @@ public class ResultSetPropertyTester extends PropertyTester
                 return rsv.getModel().getDataFilter().hasFilters();
             case PROP_CAN_SAVE_FILTERS:
                 return rsv.getDataContainer() instanceof DBSEntity;
+            case PROP_HAS_SAVED_FILTER:
+                return rsv.hasSavedDataFilter();
             case PROP_CAN_COPY:
                 return !actionsDisabled && rsv.getModel().hasData();
             case PROP_CAN_PASTE:

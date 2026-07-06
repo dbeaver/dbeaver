@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.feature"
       label="DBeaver Databases"
-      version="1.0.172.qualifier"
+      version="1.0.174.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
@@ -41,6 +41,7 @@
    <plugin id="org.jkiss.dbeaver.ext.spanner" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.sqlite" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.teradata" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.timeplus" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.trino" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.vertica" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.ocient" version="0.0.0" />
@@ -49,6 +50,7 @@
    <plugin id="org.jkiss.dbeaver.ext.altibase" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.gaussdb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.kingbase" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.doris" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.starrocks" version="0.0.0" />
 
    <plugin id="com.dbeaver.jdbc.api" version="0.0.0"/>

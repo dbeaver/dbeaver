@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 import java.util.LinkedHashMap;
@@ -43,15 +42,18 @@ public interface AIBaseFeatures {
 
 
     DBRFeature AI_CHAT_FUNCTION_CALL = DBRFeature.createFeature(CATEGORY_AI_CALLS, "AI Chat function call");
+    DBRFeature CATEGORY_AI_CHAT = DBRFeature.createCategory("AI Chat", "AI Chat features");
 
     @NotNull
     static Map<String, Object> buildFeatureParameters(
         @Nullable DBPDataSourceContainer container,
         @NotNull Map<String, Object> additionalInfo
     ) {
-        AIEngineDescriptor activeEngineDescriptor = AIUtils.getActiveEngineDescriptor();
+        AIConfigurationProfile profile = AISettingsManager.getInstance().getSettings().getDefaultConfigurationOrNull();
+        String engineId = profile == null ? "" : profile.getEngineId();
+
         Map<String, Object> featureInfoMap = new LinkedHashMap<>(Map.of(
-            PARAM_ENGINE, activeEngineDescriptor == null ? "" : activeEngineDescriptor.getId()
+            PARAM_ENGINE, engineId
         ));
         if (container != null) {
             featureInfoMap.put(PARAM_DRIVER, container.getDriver().getPreconfiguredId());
