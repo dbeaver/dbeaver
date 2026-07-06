@@ -291,7 +291,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                         chatSession.setBusy(false);
                     });
                     return Status.OK_STATUS;
-                } catch (DBException e) {
+                } catch (Exception e) {
                     return GeneralUtils.makeExceptionStatus(e);
                 }
             }
@@ -317,6 +317,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
     public void setFocusOnPrompt() {
         promptComposite.setFocusOnPrompt();
+    }
+
+    public void setConversationProfile(@NotNull AIChatConversation conversation, @Nullable AIConfigurationProfile profile) {
+        conversation.setProfile(profile);
+        chatSession.notifyConversationProfileChanged(conversation);
     }
 
     public void renameConversation(@NotNull AIChatConversation conversation, @NotNull String newName) {

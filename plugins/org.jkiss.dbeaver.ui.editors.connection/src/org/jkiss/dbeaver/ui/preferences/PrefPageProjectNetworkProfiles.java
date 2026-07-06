@@ -70,7 +70,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         super.saveSettings(profile);
 
         try {
-            if (projectMeta != null && projectMeta.isUseSecretStorage()) {
+            if (!DBWorkbench.isDistributed() && projectMeta != null && projectMeta.isUseSecretStorage()) {
                 DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
                 profile.persistSecrets(secretController);
             }
@@ -85,7 +85,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         DBSSecretController secretController = null;
         if (projectMeta == null) {
             return DBSSecretController.getGlobalSecretController();
-        } else if (projectMeta.isUseSecretStorage()) {
+        } else if (!DBWorkbench.isDistributed() && projectMeta.isUseSecretStorage()) {
             secretController = DBSSecretController.getProjectSecretController(projectMeta);
         }
         return secretController;

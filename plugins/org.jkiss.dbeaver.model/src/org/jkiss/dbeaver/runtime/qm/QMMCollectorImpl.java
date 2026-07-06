@@ -222,10 +222,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             final long contextId = context.getContextId();
             QMMConnectionInfo connection = connectionMap.get(contextId);
             if (connection == null) {
-                connection = new QMMConnectionInfo(
-                    context,
-                    transactional
-                );
+                connection = new QMMConnectionInfo(context, transactional);
                 connectionMap.put(contextId, connection);
             } else {
                 // This session may already be in cache in case of reconnect/invalidate
@@ -236,7 +233,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             // Remove from closed sessions (in case of re-opened connection)
             closedConnections.remove(contextId);
             // Notify
-            tryFireMetaEvent(connection, QMEventAction.BEGIN, connection.getOpenTime(), context);
+            if (connection.isLoggingEnabled()) {
+                tryFireMetaEvent(connection, QMEventAction.BEGIN, connection.getOpenTime(), context);
+            }
         }
     }
 
@@ -245,7 +244,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo connectionInfo = getConnectionInfo(context);
         if (connectionInfo != null) {
             connectionInfo.setTransactional(transactional);
-            tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
+            if (connectionInfo.isLoggingEnabled()) {
+                tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
+            }
         }
     }
 
@@ -254,7 +255,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(context);
         if (session != null) {
             session.close();
-            tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+            if (session.isLoggingEnabled()) {
+                tryFireMetaEvent(session, QMEventAction.END, session.getCloseTime(), context);
+            }
         }
         closedConnections.add(context.getContextId());
     }
@@ -264,10 +267,12 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
-            if (oldTxn != null) {
-                tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
+            if (sessionInfo.isLoggingEnabled()) {
+                if (oldTxn != null) {
+                    tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
+                }
+                tryFireMetaEvent(sessionInfo, QMEventAction.UPDATE, System.currentTimeMillis(), context);
             }
-            tryFireMetaEvent(sessionInfo, QMEventAction.UPDATE, System.currentTimeMillis(), context);
         }
     }
 
@@ -276,7 +281,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
-            if (oldTxn != null) {
+            if (sessionInfo.isLoggingEnabled() && oldTxn != null) {
                 tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
             }
         }
@@ -287,7 +292,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo sessionInfo = getConnectionInfo(context);
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
-            if (oldTxn != null) {
+            if (sessionInfo.isLoggingEnabled() && oldTxn != null) {
                 tryFireMetaEvent(oldTxn, QMEventAction.END, sessionInfo.getCloseTime(), context);
             }
         }
@@ -299,7 +304,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(executionContext);
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
-            tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), executionContext);
+            if (session.isLoggingEnabled()) {
+                tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), executionContext);
+            }
         } else {
             log.warn("QM session for '" + executionContext + "' is missing in cache. "
                 + "Cannot handle statement '" + statement + "' open.");
@@ -313,7 +320,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             QMMStatementInfo stat = session.closeStatement(statement, rows);
             if (stat == null) {
                 log.warn("Can't properly handle statement close");
-            } else {
+            } else if (session.isLoggingEnabled()) {
                 tryFireMetaEvent(stat, QMEventAction.END, stat.getCloseTime(), statement.getSession().getExecutionContext());
             }
         }
@@ -324,7 +331,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
-            if (exec != null) {
+            if (session.isLoggingEnabled() && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.BEGIN, exec.getOpenTime(), statement.getSession().getExecutionContext());
             }
         }
@@ -335,7 +342,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
-            if (exec != null) {
+            if (session.isLoggingEnabled() && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.END, exec.getCloseTime(), statement.getSession().getExecutionContext());
             }
         }
@@ -346,7 +353,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
-            if (exec != null) {
+            if (session.isLoggingEnabled() && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }
@@ -357,7 +364,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo session = getConnectionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
-            if (exec != null) {
+            if (session.isLoggingEnabled() && exec != null) {
                 tryFireMetaEvent(exec, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }
@@ -373,7 +380,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
         if (executionContext != null) {
             QMMStatementExecuteInfo execution = executionContext.execution(resultSet.getSourceStatement(), error);
-            if (execution != null) {
+            if (executionContext.isLoggingEnabled() && execution != null) {
                 tryFireMetaEvent(execution, QMEventAction.UPDATE, System.currentTimeMillis(), resultSet.getSession().getExecutionContext());
             }
         }

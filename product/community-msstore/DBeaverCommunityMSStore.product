@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver CE MS Store" uid="org.jkiss.dbeaver.core.msstore" id="org.jkiss.dbeaver.ui.app.standalone.msstore"
-         application="org.jkiss.dbeaver.ui.app.standalone.msstore" version="26.1.2.qualifier" useFeatures="true"
+         application="org.jkiss.dbeaver.ui.app.standalone.msstore" version="26.1.3.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">

@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 
 public interface AIEngineProperties {
 
@@ -31,8 +33,10 @@ public interface AIEngineProperties {
 
     boolean isLoggingEnabled();
 
-    void resolveSecrets() throws DBException;
+    void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 
-    void saveSecrets() throws DBException;
+    void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
+
+    void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException;
 
 }
