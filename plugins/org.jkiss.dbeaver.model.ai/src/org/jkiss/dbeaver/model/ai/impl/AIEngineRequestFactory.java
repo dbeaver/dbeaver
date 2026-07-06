@@ -77,7 +77,8 @@ public class AIEngineRequestFactory {
         RequestFunctions requestFunctions = determineRequestTools(
             assistant,
             engineDescriptor,
-            functionContext
+            functionContext,
+            messages.stream().filter(aiMessage -> aiMessage.getRole() == AIMessageType.USER).count()
         );
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
@@ -164,7 +165,8 @@ public class AIEngineRequestFactory {
     protected RequestFunctions determineRequestTools(
         @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
-        @NotNull AIFunctionContext functionContext
+        @NotNull AIFunctionContext functionContext,
+        long userMessageCount
     ) {
         if (!isFunctionsEnabled(assistant, engineDescriptor)) {
             return new RequestFunctions();
@@ -218,11 +220,11 @@ public class AIEngineRequestFactory {
             }
         }
 
-        if (!prompt.isSupportsActions()) {
+        if (!prompt.isSupportsActions(userMessageCount)) {
             // Filter out actions
             selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
         }
-        if (!prompt.isSupportsUi()) {
+        if (!prompt.isSupportsUi(userMessageCount)) {
             // Filter out ui functions
             selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
         }
@@ -235,7 +237,8 @@ public class AIEngineRequestFactory {
         try {
             return engine.getContextWindowSize(monitor);
         } catch (DBException e) {
-            log.debug("Cannot determine engine " + engine + " context window size. Set to default " +
+            log.debug("Cannot determine engine " + engine.getClass().getSimpleName() +
+                " context window size. Set to default " +
                 AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, e);
             return AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE;
         }

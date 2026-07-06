@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -37,6 +38,7 @@ import java.util.*;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
+    public static final String NODE_TYPE_DATASOURCES = "datasources";
     private DBPDataSourceRegistry dataSourceRegistry;
     private final List<DBNDataSource> dataSources = new ArrayList<>();
     private volatile DBNNode[] children;
@@ -79,13 +81,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @NotNull
     @Override
     public String getNodeType() {
-        return "datasources";
+        return NODE_TYPE_DATASOURCES;
     }
 
     @NotNull
     @Override
     public String getNodeId() {
-        return "datasources";
+        return NODE_TYPE_DATASOURCES;
     }
 
     public DBPDataSourceRegistry getDataSourceRegistry()
@@ -130,9 +132,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Nullable
     @Override
-    public String getNodeDescription()
-    {
-        return getParentNode().getProject().getName() + ModelMessages.model_navigator__connections;
+    public String getNodeDescription() {
+        DBNProject dbnProject = getParentNode();
+        return dbnProject == null ? null : dbnProject.getProject().getName() + ModelMessages.model_navigator__connections;
     }
 
     @NotNull
@@ -204,10 +206,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         Set<DBPDataSourceRegistry> registryToRefresh = new LinkedHashSet<>();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource dataSource) {
-                dataSource.moveToFolder(dataSource.getOwnerProject(), toFolder);
+                DBPProject nodeProject = dataSource.getOwnerProjectOrNull();
+                if(nodeProject != null){
+                    dataSource.moveToFolder(nodeProject, toFolder);
+                }
                 DBPDataSourceContainer oldContainer = dataSource.getDataSourceContainer();
                 registryToRefresh.add(oldContainer.getRegistry());
-                if (oldContainer.getRegistry() == dataSourceRegistry) {
+                if (oldContainer.getRegistry() == dataSourceRegistry && nodeProject != null) {
                     // the same registry
                     continue;
                 }
@@ -244,13 +249,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public boolean allowsOpen() {
         return true;
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getNodeDisplayName();
     }
 
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)

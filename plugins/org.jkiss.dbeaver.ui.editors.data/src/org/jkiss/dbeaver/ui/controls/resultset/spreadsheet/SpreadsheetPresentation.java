@@ -34,10 +34,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -69,6 +66,7 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -93,6 +91,7 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -108,6 +107,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private Spreadsheet spreadsheet;
+
+    private SpreadsheetFindReplaceTarget findReplaceTarget;
+    private ResultsetFindReplaceOverlay findReplaceOverlay;
 
     @Nullable
     private DBDAttributeBinding curAttribute;
@@ -197,7 +199,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.spreadsheet.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN) {
+                if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
                     updateGridCursor((GridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
@@ -227,6 +229,37 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         trackPresentationControl();
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
+
+        this.findReplaceTarget = new SpreadsheetFindReplaceTarget(this.spreadsheet);
+        this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
+            this.controller.getSite().getPart(),
+            this.spreadsheet,
+            this.findReplaceTarget,
+            this
+        ) {
+            @NotNull
+            @Override
+            protected Point obtainControlTopLeftPadding(@NotNull Control control) {
+                return new Point(spreadsheet.getRowHeaderWidth(), spreadsheet.getHeaderHeight());
+            }
+
+            @Override
+            protected boolean hasSelectionBoundsConflict(@Nullable ISelection selection, @NotNull Rectangle bounds) {
+                for (GridPos cellPos : spreadsheet.getSelection()) {
+                    if (spreadsheet.getCellBounds(cellPos.col, cellPos.row).intersects(bounds)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
+    }
+
+    @NotNull
+    @Override
+    public FindReplaceOverlay getFindReplaceOverlay() {
+        return this.findReplaceOverlay;
     }
 
     @Override
@@ -572,6 +605,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             DBDAttributeBinding column = getAttributeFromGrid(cell.col, cell.row);
+            if (column == null) {
+                log.debug("Null attribute for cell " + cell);
+                continue;
+            }
             Object value = spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false);
             //Object value = controller.getModel().getCellValue(column, row);
             if (binaryData == null && (column.getDataKind() == DBPDataKind.BINARY || column.getDataKind() == DBPDataKind.CONTENT)) {
@@ -648,6 +685,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (CommonUtils.isEmpty(strValue)) {
                     return;
                 }
+                boolean insertNewRows = settings.isInsertNewRows();
                 final Pair<GridPos, GridPos> targetRange;
                 if (spreadsheet.getItemCount() == 0) {
                     // A special case when the grid is empty
@@ -672,16 +710,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
                     String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows(), settings.isIgnoreQuotes());
 
-                    // FIXME: do not create rows twice! Probably need to delete comment after testing. #9095
-                    /*if (overNewRow) {
-                        for (int i = 0 ; i < newLines.length - 1; i++) {
-                            controller.addNewRow(false, true, false);
+                    if (insertNewRows) {
+                        for (int i = 0; i < newLines.length; i++) {
+                            controller.addNewRow(RowPlacement.BEFORE_SELECTION, false, false);
                         }
                         spreadsheet.refreshRowsData();
-                    } else {*/
-                    while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
-                        controller.addNewRow(RowPlacement.AT_END, false, false);
-                        spreadsheet.refreshRowsData();
+                        //rowNum++;
+                    } else {
+                        while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
+                            controller.addNewRow(RowPlacement.AT_END, false, false);
+                            spreadsheet.refreshRowsData();
+                        }
                     }
                     //}
                     if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
@@ -1423,6 +1462,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         true);
                     dialog.open();
                 }
+            } else if (!isComplexValuesExpansionEnabled() && (value instanceof DBDComposite || value instanceof Collection<?>)) {
+                this.controller.activatePanel(ValueViewerPanel.PANEL_ID, true, true);
             } else {
                 spreadsheet.getCellRenderer().executeHintAction(cell.row, cell.col, cellInfo, x, y, state);
             }
@@ -1574,7 +1615,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             });
             return adapter.cast(page);
         } else if (adapter == IFindReplaceTarget.class) {
-            return adapter.cast(SpreadsheetFindReplaceTarget.getInstance().owned(this));
+            return adapter.cast(this.findReplaceTarget);
         }
         return null;
     }
@@ -1685,7 +1726,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         boolean pin = pinnedAttrsCount > 0;
         int order = delta > 0 ? -1 : 1;
         // right to left while shifting right, left to right while shifting left
-        constraintsToMove.sort((a, b) -> Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
+        constraintsToMove.sort((a, b) ->
+            Integer.compare(getConstraintPosition(a, pin), getConstraintPosition(b, pin)) * order);
         List<DBDAttributeConstraint> allConstraints = getOrderedConstraints(dataFilter, pin);
         int leftmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).min().getAsInt();
         int rightmostIndex = constraintsToMove.stream().mapToInt(c -> getConstraintPosition(c, pin)).max().getAsInt();
@@ -1722,7 +1764,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             int targetPosition = getConstraintPosition(dropC, pin);
             switch (location) {
                 case DROP_AFTER:
-                    if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraints().size() - 1) {
+                    if (sourcePosition > targetPosition && targetPosition < dataFilter.getConstraintsCount() - 1) {
                         targetPosition++;
                     }
                     break;
@@ -1777,14 +1819,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @NotNull
     private static List<DBDAttributeConstraint> getOrderedConstraints(@NotNull DBDDataFilter filter, boolean pin) {
-        final List<DBDAttributeConstraint> constraints = filter.getConstraints();
+        DBDAttributeConstraint[] constraints = filter.getConstraints();
         if (pin) {
-            return constraints.stream()
+            return Arrays.stream(constraints)
                 .filter(x -> x.hasOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED))
                 .sorted(Comparator.comparing(x -> x.getOption(DBDAttributeConstraintBase.ATTR_OPTION_PINNED)))
                 .collect(Collectors.toList());
         } else {
-            return constraints.stream()
+            return Arrays.stream(constraints)
                 .sorted(Comparator.comparing(DBDAttributeConstraintBase::getVisualPosition))
                 .collect(Collectors.toList());
         }
@@ -1842,9 +1884,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
     }
 
-        private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
+    private boolean isAttributeExpandable(@Nullable IGridRow row, @NotNull DBSAttributeBase attr) {
         if ((attr.getDataKind() == DBPDataKind.STRUCT || attr.getDataKind() == DBPDataKind.ARRAY) && controller.isRecordMode()) {
-            return true;
+            return this.isComplexValuesExpansionEnabled();
         }
 
         if (attr instanceof DBDAttributeBinding binding) {
@@ -2016,9 +2058,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 } else {
                     int[] selectedRecords = controller.getSelectedRecords();
                     List<Object> rows = new ArrayList<>(selectedRecords.length);
-                    for (int i = 0; i < selectedRecords.length; i++) {
-                        if (selectedRecords[i] < controller.getModel().getRowCount()) {
-                            rows.add(controller.getModel().getRow(selectedRecords[i]));
+                    for (int selectedRecord : selectedRecords) {
+                        if (selectedRecord < controller.getModel().getRowCount()) {
+                            rows.add(controller.getModel().getRow(selectedRecord));
                         }
                     }
                     return rows.toArray();
@@ -2026,7 +2068,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             } else {
                 // rows
                 if (!recordMode) {
-                    return model.getAllRows().toArray();
+                    List<ResultSetRow> rows = model.getAllRows();
+                    return rows.toArray();
                 } else {
                     DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
                     if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
@@ -2046,7 +2089,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 };
             } else if (controller.isRecordMode()) {
                 if (item.getElement() instanceof DBDComplexValue) {
-                    return true;
+                    return isComplexValuesExpansionEnabled();
                 }
             }
             return false;
@@ -2352,7 +2395,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             for (int i = 0; i < spreadsheet.getColumnCount(); i++) {
                 Object cellValue = getCellValue(spreadsheet.getColumn(i), row, false);
                 if (cellValue instanceof DBDComplexValue) {
-                    return true;
+                    return isComplexValuesExpansionEnabled();
                 }
             }
             return false;
@@ -2377,7 +2420,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 !controller.isRefreshInProgress() &&
                 !(controller.getContainer().getDataContainer() != null && controller.getContainer().getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_MODIFIED_ON_REFRESH)) &&
                 !(getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS) < getSpreadsheet().getMaxVisibleRows()) &&
-                (controller.isRecordMode() || spreadsheet.isRowVisible(rowNum))) {
+                (controller.isRecordMode() || spreadsheet.isRowVisible(rowNum))
+            ) {
                 controller.readNextSegment();
             }
         }
@@ -2405,7 +2449,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         info.state |= booleanStyles.getMode() == BooleanMode.TEXT ? STATE_TOGGLE : STATE_LINK;
                     } else if (
                         (cellValue instanceof DBDCollection col && !col.isEmpty()) ||
-                        (cellValue instanceof DBDComposite && controller.isRecordMode())
+                        (cellValue instanceof DBDComposite)
                     ) {
                         if (!DBUtils.isNullValue(cellValue)) {
                             info.state |= STATE_LINK;
@@ -2452,7 +2496,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
                 // Collections
                 if (info.image == null && cellValue instanceof DBDComplexValue cv && !cv.isNull() &&
-                    (!(cellValue instanceof Collection<?> col && col.isEmpty()))
+                    (!(cellValue instanceof Collection<?> col && col.isEmpty())) &&
+                    isComplexValuesExpansionEnabled()
                 ) {
                     final GridCell cell = new GridCell(colElement, rowElement);
                     boolean cellExpanded = spreadsheet.isCellExpanded(cell);
@@ -2616,7 +2661,16 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Nullable
-        private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
+        private Color getCellForeground(
+            @Nullable DBDAttributeBinding attribute,
+            @Nullable ResultSetRow row,
+            @Nullable Object cellValue,
+            @Nullable Color background,
+            boolean selected
+        ) {
+            if (attribute == null || row == null) {
+                return ResultSetThemeSettings.instance.foregroundNull;
+            }
             if (selected) {
                 Color fg = ResultSetThemeSettings.instance.foregroundSelected;
                 if (colorizeDataTypes && !DBUtils.isNullValue(cellValue)) {
@@ -2717,10 +2771,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
-
-            final SpreadsheetFindReplaceTarget findReplaceTarget = SpreadsheetFindReplaceTarget
-                .getInstance()
-                .owned(SpreadsheetPresentation.this);
 
             if (findReplaceTarget.isSessionActive()) {
                 boolean hasScope = highlightScopeFirstLine >= 0 && highlightScopeLastLine >= 0;
@@ -2891,7 +2941,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
-
+            if (controller.isRecordMode()) {
+                hintOptions |= DBDValueHintProvider.OPTION_RECORD_MODE;
+            }
             List<IGridHint> gridHints = null;
             for (DBDCellHintProvider hintProvider : controller.getModel().getHintContext().getCellHintProviders(attr)) {
                 DBDValueHint[] valueHints = hintProvider.getCellHints(
@@ -3118,6 +3170,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return value instanceof DBDCollection collection
             && !collection.isNull()
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
+    }
+
+    private boolean isComplexValuesExpansionEnabled() {
+        return this.controller.getPreferenceStore().getBoolean(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES);
     }
 
     private class GridLabelProvider implements IGridLabelProvider {

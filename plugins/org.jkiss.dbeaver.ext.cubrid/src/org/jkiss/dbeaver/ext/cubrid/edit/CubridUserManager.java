@@ -175,7 +175,7 @@ public class CubridUserManager
     }
 
     @Override
-    public boolean canEditObject(CubridPrivilage object) {
+    public boolean canEditObject(@NotNull CubridPrivilage object) {
         return !object.getDataSource().isShard();
     }
 

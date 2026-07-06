@@ -189,6 +189,12 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostsViewer.getTable().setHeaderVisible(true);
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
+            hostsViewer.addDoubleClickListener(e -> {
+                final ConfigurationWrapper selected = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+                if (selected != null) {
+                    credentialsPanel.focusHostField();
+                }
+            });
             hostsViewer.addSelectionChangedListener(e -> {
                 if (switchingConfiguration) {
                     return;
@@ -252,6 +258,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             }, null);
             controller.createColumns(true);
 
+            UIUtils.createInfoLabel(client, SSHUIMessages.model_ssh_configurator_label_jump_server_edit_hint);
         }
 
         {
@@ -274,7 +281,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 client,
                 SSHUIMessages.model_ssh_configurator_group_general_text,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             tunnelImplCombo = UIUtils.createLabelCombo(
@@ -316,7 +323,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 client,
                 SSHUIMessages.model_ssh_configurator_group_timeouts_text,
                 2,
-                GridData.VERTICAL_ALIGN_FILL
+                GridData.VERTICAL_ALIGN_BEGINNING
             );
             keepAliveText = UIUtils.createLabelText(
                 timeoutsGroup,
@@ -345,10 +352,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_label_local_host,
                 null,
                 SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL)
+                GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(200, SWT.DEFAULT).create()
             );
             localHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_local_host_description);
-            localHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             localPortSpinner = UIUtils.createLabelText(
                 portForwardingGroup,
                 SSHUIMessages.model_ssh_configurator_label_local_port,
@@ -362,10 +368,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_label_remote_host,
                 null,
                 SWT.BORDER,
-                new GridData(GridData.FILL_HORIZONTAL)
+                GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(200, SWT.DEFAULT).create()
             );
             remoteHostText.setToolTipText(SSHUIMessages.model_ssh_configurator_label_remote_host_description);
-            remoteHostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             remotePortSpinner = UIUtils.createLabelText(
                 portForwardingGroup,
@@ -409,6 +414,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
                 wrapper.configuration = credentialsPanel.saveSettings();
                 hostsViewer.refresh(wrapper);
+                hostsViewer.getTable().redraw();
             }
         }
     }
@@ -868,6 +874,13 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
             updateAuthMethodVisibility();
             lastConfiguration = wrapper;
+        }
+
+        public void focusHostField() {
+            if (hostNameText != null && !hostNameText.isDisposed()) {
+                hostNameText.setFocus();
+                hostNameText.selectAll();
+            }
         }
 
         @NotNull

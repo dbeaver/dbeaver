@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.generic;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -65,9 +66,13 @@ public abstract class GenericDataSourceProvider<DATASOURCE extends GenericDataSo
 
     @NotNull
     @Override
-    public DBPPropertyDescriptor[] getConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver, @NotNull
-    DBPConnectionConfiguration connectionInfo) throws DBException {
-        DBPPropertyDescriptor[] connectionProperties = super.getConnectionProperties(monitor, driver, connectionInfo);
+    public DBPPropertyDescriptor[] getConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException {
+        DBPPropertyDescriptor[] connectionProperties = super.getConnectionProperties(monitor, driver, dataSourceContainer, connectionInfo);
         if (connectionProperties == null || connectionProperties.length == 0) {
             // Try to get list of supported properties from custom driver config
             String driverParametersString = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_DRIVER_PROPERTIES));

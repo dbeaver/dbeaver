@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -209,7 +210,7 @@ public final class AIPreferencePagePrompts extends AbstractPrefPage implements I
             var descriptor = (AIPromptGeneratorDescriptor) element;
             String description = descriptor.getDescription();
             if (description != null) {
-                description = StringUtils.wrap(description, 60);
+                description = StringUtils.wrap(description, UITextUtils.TOOLTIP_WRAP_LENGTH);
             }
             return description;
         }

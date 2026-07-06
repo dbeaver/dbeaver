@@ -223,6 +223,9 @@ public final class DBUtils {
         if (dataSource == null) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {
+                if (namePart == null) {
+                    continue;
+                }
                 if (isVirtualObject(namePart)) {
                     continue;
                 }
@@ -348,6 +351,21 @@ public final class DBUtils {
         @Nullable String objectName,
         boolean forceConnection
     ) throws DBException {
+        return getObjectByPath(
+            monitor, executionContext, rootSC, catalogName, schemaName, objectName, forceConnection, true);
+    }
+
+    @Nullable
+    public static DBSObject getObjectByPath(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName,
+        boolean forceConnection,
+        boolean caseSensitive
+    ) throws DBException {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getPrimaryChildType(monitor);
             if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
@@ -357,12 +375,12 @@ public final class DBUtils {
         }
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
             // We have both both - just search both
-            DBSObject catalog = rootSC.getChild(monitor, catalogName);
+            DBSObject catalog = getContainerChild(monitor, rootSC, catalogName, caseSensitive);
             if (!(catalog instanceof DBSObjectContainer catalogOC)) {
                 return null;
             }
             rootSC = catalogOC;
-            DBSObject schema = rootSC.getChild(monitor, schemaName);
+            DBSObject schema = getContainerChild(monitor, rootSC, schemaName, caseSensitive);
             if (!(schema instanceof DBSObjectContainer schemaOC)) {
                 return null;
             }
@@ -383,7 +401,7 @@ public final class DBUtils {
                     tryContainer = contextDefaults.getDefaultCatalog();
                 }
             }
-            DBSObject sc = tryContainer.getChild(monitor, containerName);
+            DBSObject sc = getContainerChild(monitor, tryContainer, containerName, caseSensitive);
             if (!forceConnection && !DBStructUtils.isConnectedContainer(sc)) {
                 sc = null;
             }
@@ -404,7 +422,7 @@ public final class DBUtils {
                         sc = selectedObject;
                     } else if (selectedObject instanceof DBSObjectContainer objectContainer) {
                         // Get schema in catalog
-                        sc = objectContainer.getChild(monitor, containerName);
+                        sc = getContainerChild(monitor, objectContainer, containerName, caseSensitive);
                     }
                 }
                 if (!(sc instanceof DBSObjectContainer)) {
@@ -415,7 +433,7 @@ public final class DBUtils {
                 // Probably on this step we found a catalog, but not a schema.
                 Class<? extends DBSObject> childType = catalog.getPrimaryChildType(monitor);
                 if (DBSSchema.class.isAssignableFrom(childType)) {
-                    DBSObject child = catalog.getChild(monitor, schemaName);
+                    DBSObject child = getContainerChild(monitor, catalog, schemaName, caseSensitive);
                     if (child instanceof DBSSchema) {
                         sc = child;
                     }
@@ -426,7 +444,7 @@ public final class DBUtils {
         if (objectName == null) {
             return rootSC;
         }
-        final DBSObject object = rootSC.getChild(monitor, objectName);
+        final DBSObject object = getContainerChild(monitor, rootSC, objectName, caseSensitive);
         if (object instanceof DBSEntity) {
             return object;
         } else {
@@ -434,12 +452,34 @@ public final class DBUtils {
             // Try to use selected object
             DBSObject selectedObject = DBUtils.getSelectedObject(executionContext);
             if (selectedObject instanceof DBSObjectContainer oc) {
-                return oc.getChild(monitor, objectName);
+                return getContainerChild(monitor, oc, objectName, caseSensitive);
             }
 
             // Table container not found
             return object;
         }
+    }
+
+    @Nullable
+    private static DBSObject getContainerChild(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull String childName,
+        boolean caseSensitive
+    ) throws DBException {
+        DBSObject child = container.getChild(monitor, childName);
+        if (child != null || caseSensitive) {
+            return child;
+        }
+        Collection<? extends DBSObject> children = container.getChildren(monitor);
+        if (children != null) {
+            for (DBSObject candidate : children) {
+                if (childName.equalsIgnoreCase(candidate.getName())) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
@@ -631,6 +671,24 @@ public final class DBUtils {
         @NotNull DBPProject project,
         @NotNull String objectId
     ) throws DBException {
+        return findObjectById(monitor, project, objectId, false);
+    }
+
+    /**
+     * Find object by unique ID.
+     * Note: this function searches only inside DBSObjectContainer objects.
+     * Usually it works only for entities and entity containers (schemas, catalogs).
+     *
+     * @param tryRefreshContainers if {@code true}, then if object is not found in container,
+     *                             it will try to refresh container and search again.
+     */
+    @Nullable
+    public static DBSObject findObjectById(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPProject project,
+        @NotNull String objectId,
+        boolean tryRefreshContainers
+    ) throws DBException {
         String[] names = objectId.split("/");
         DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(names[0]);
         if (dataSourceContainer == null) {
@@ -658,6 +716,11 @@ public final class DBUtils {
             for (int i = 1; i < names.length - 1; i++) {
                 String name = names[i];
                 DBSObject child = sc.getChild(monitor, name);
+                if (child == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
+                    // Try refreshing, maybe object was not cached
+                    ro.refreshObject(monitor);
+                    child = sc.getChild(monitor, name);
+                }
                 if (child == null) {
                     log.debug("Can't find child container " + name + " in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                     return null;
@@ -677,6 +740,11 @@ public final class DBUtils {
         String objectName = names[names.length - 1];
         if (sc != null) {
             DBSObject object = sc.getChild(monitor, objectName);
+            if (object == null && tryRefreshContainers && sc instanceof DBPRefreshableObject ro) {
+                // Try refreshing, maybe object was not cached
+                ro.refreshObject(monitor);
+                object = sc.getChild(monitor, objectName);
+            }
             if (object == null) {
                 log.debug("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
                 throw new DBException("Child object '" + objectName + "' not found in container " + DBUtils.getObjectFullName(sc, DBPEvaluationContext.UI));
@@ -814,7 +882,13 @@ public final class DBUtils {
             return null;
         }
 
-        Object value = row.getValues()[rootBinding.getOrdinalPosition()];
+        Object[] values = row.getValues();
+        int attrIndex = rootBinding.getOrdinalPosition();
+        if (attrIndex >= values.length) {
+            // Shouldn't be here
+            return null;
+        }
+        Object value = values[attrIndex];
         int i = 1;
         while (value != null && i < valuePath.pathItems().size()) {
             value = valuePath.pathItems().get(i).apply(RSV_PATH_ITEM_VALUE_RESOLVER, value);
@@ -1352,7 +1426,11 @@ public final class DBUtils {
         return null;
     }
 
-    public static boolean referrerMatches(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer referrer, @NotNull Collection<? extends DBSEntityAttribute> attributes) throws DBException {
+    public static boolean referrerMatches(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer referrer,
+        @NotNull Collection<? extends DBSEntityAttribute> attributes
+    ) throws DBException {
         final List<? extends DBSEntityAttributeRef> refs = referrer.getAttributeReferences(monitor);
         if (refs != null && !refs.isEmpty() && attributes.size() == refs.size()) {
             Iterator<? extends DBSEntityAttribute> attrIterator = attributes.iterator();
@@ -1405,7 +1483,11 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull DBSEntityAttribute tableColumn) throws DBException {
+    public static DBSEntityAttributeRef getConstraintAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint,
+        @NotNull DBSEntityAttribute tableColumn
+    ) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -1418,7 +1500,11 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull String columnName) throws DBException {
+    public static DBSEntityAttributeRef getConstraintAttribute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer constraint,
+        @NotNull String columnName
+    ) throws DBException {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
@@ -2764,6 +2850,15 @@ public final class DBUtils {
             items.add(token);
         }
         return items;
+    }
+
+    @Nullable
+    public static DBPDataSource getObjectDataSource(@NotNull Object object) {
+        return switch (object) {
+            case DBSObject o -> o.getDataSource();
+            case DBPContextProvider c -> c.getExecutionContext() == null ? null : c.getExecutionContext().getDataSource();
+            default -> null;
+        };
     }
 
     public interface ChildExtractor<PARENT, CHILD> {
