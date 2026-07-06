@@ -220,7 +220,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
-            if (node.getOwnerProject() == this.getOwnerProject()) {
+            if (node.getOwnerProjectOrNull() == this.getOwnerProject()) {
                 if (node instanceof DBNDataSource) {
                     ((DBNDataSource) node).moveToFolder(getOwnerProject(), folder);
                 } else if (node instanceof DBNLocalFolder) {

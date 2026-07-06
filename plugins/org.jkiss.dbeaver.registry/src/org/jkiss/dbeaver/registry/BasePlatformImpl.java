@@ -76,8 +76,6 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
-
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
@@ -414,7 +412,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @Override
-    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) {
         if (CommonUtils.equalObjects(language, this.platformLanguage)) {
             return;
         }

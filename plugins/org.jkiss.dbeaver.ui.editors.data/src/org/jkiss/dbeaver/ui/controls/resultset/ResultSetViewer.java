@@ -1127,6 +1127,10 @@ public class ResultSetViewer extends Viewer
                 }
             });
         }
+
+        if (this.filtersPanel != null) {
+            this.filtersPanel.resultsetPresentationChanged(activePresentation);
+        }
     }
 
     private void trackPresentationStatistics() {
@@ -3816,6 +3820,7 @@ public class ResultSetViewer extends Viewer
         @Nullable DBDAttributeBinding attribute,
         @Nullable ResultSetRow row
     ) {
+        filtersMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE));
         if (attribute != null && supportsDataFilter()) {
             {
                 filtersMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_FILTER_MENU_DISTINCT));
@@ -4324,6 +4329,9 @@ public class ResultSetViewer extends Viewer
 
 
     public void readNextSegment() {
+        if (this.model.getQuickFilter() != null) {
+            return;
+        }
         if (!verifyQuerySafety()) {
             return;
         }
