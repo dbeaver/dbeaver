@@ -71,8 +71,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * EditForeignKeyPage
@@ -597,8 +597,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             return;
         }
         DBVEntity vRefEntity = DBVUtils.getVirtualEntity(curRefTable, true);
-        assert vRefEntity != null;
-        DBVEntityConstraint constraint = vRefEntity.getBestIdentifier();
+        DBVEntityConstraint constraint = vRefEntity == null ? null : vRefEntity.getBestIdentifier();
+        if (constraint == null) {
+            log.error("No best table identifier found");
+            return;
+        }
 
         EditConstraintPage page = new EditConstraintPage(
             ObjectEditorMessages.dialog_struct_edit_fk_page_title,
@@ -673,9 +676,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     // We need to find table container node
                     // This node is a child of schema node and has the same meta as our original table parent node
                     DBNDatabaseNode schemaNode = schemaCombo.getSelectedItem();
-                    DBNDatabaseNode newContainerNode = getTablesNode(schemaNode);
-                    if (newContainerNode != null) {
-                        loadTableList(newContainerNode);
+                    if (schemaNode != null) {
+                        DBNDatabaseNode newContainerNode = getTablesNode(schemaNode);
+                        if (newContainerNode != null) {
+                            loadTableList(newContainerNode);
+                        }
                     }
                 }
             });
