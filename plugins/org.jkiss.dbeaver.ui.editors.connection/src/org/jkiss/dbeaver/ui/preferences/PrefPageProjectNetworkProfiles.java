@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -31,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -251,5 +254,9 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
-
+    @NotNull
+    @Override
+    protected Image getProfileImage(@NotNull DBWNetworkProfile profile) {
+        return DBeaverIcons.getImage(profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.LOCAL_PROFILE);
+    }
 }
