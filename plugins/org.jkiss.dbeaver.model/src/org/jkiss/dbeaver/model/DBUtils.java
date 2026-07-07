@@ -1153,10 +1153,13 @@ public final class DBUtils {
             }
         }
         // Get handler provider from registry
-        handlerProvider = DBWorkbench.getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
-            dataSource, column);
-        if (handlerProvider != null) {
-            valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
+        if (dataSource != null) {
+            // FIXME: Datasource might be null in test env
+            handlerProvider = DBWorkbench.getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
+                dataSource, column);
+            if (handlerProvider != null) {
+                valueHandler = handlerProvider.getValueHandler(dataSource, preferences, column);
+            }
         }
 
         // Use default handler
