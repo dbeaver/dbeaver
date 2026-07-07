@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.preferences.PrefPageGlobalProjectNetworkProfiles;
+import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 
 public class UIEditorsWorkbenchInitializer implements IWorkbenchWindowInitializer {
@@ -31,6 +33,9 @@ public class UIEditorsWorkbenchInitializer implements IWorkbenchWindowInitialize
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(DBAPermissionRealm.PERMISSION_ADMIN)) {
             WorkbenchUtils.removePreferencePages(MAIN_PAGE + "/" + PrefPageGlobalProjectNetworkProfiles.PAGE_ID);
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
+                WorkbenchUtils.removePropertyPages(PrefPageProjectNetworkProfiles.PAGE_ID);
+            }
         }
     }
 }
