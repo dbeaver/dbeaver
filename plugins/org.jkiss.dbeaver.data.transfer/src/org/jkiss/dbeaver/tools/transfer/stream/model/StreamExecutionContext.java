@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -31,6 +32,11 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
 
     StreamExecutionContext(@NotNull StreamDataSource dataSource, String purpose) {
         super(dataSource, purpose);
+    }
+
+    @Override
+    public boolean isQMLoggingEnabled() {
+        return false;
     }
 
     @Override
