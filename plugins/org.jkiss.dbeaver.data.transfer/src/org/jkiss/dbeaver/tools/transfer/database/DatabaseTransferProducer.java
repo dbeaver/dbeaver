@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTaskUtils;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNodePrimary;
@@ -182,7 +183,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         @Nullable IDataTransferProcessor processor,
         @NotNull DatabaseProducerSettings settings,
         @Nullable DBTTask task)
-        throws DBException {
+            throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;
 
         DBSDataContainer databaseObject = getDatabaseObject();
@@ -193,6 +194,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         assert (dataSource != null);
 
         DBExecUtils.tryExecuteRecover(monitor1, dataSource, monitor -> {
+            checkCanceled(monitor);
+
             long readFlags = DBSDataContainer.FLAG_NONE;
 
             var useFetchedRows = settings.getFetchedRowsPolicy();
@@ -206,13 +209,15 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
             }
 
-            boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver().isEmbedded();
-            boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
+            boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver()
+                .isEmbedded();
+            boolean forceDataReadTransactions
+                = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
             boolean selectiveExportFromUI = useFetchedRows != null;
 
             DBCExecutionContext context;
-            if (dataContainer instanceof DBPContextProvider) {
-                context = ((DBPContextProvider) dataContainer).getExecutionContext();
+            if (dataContainer instanceof DBPContextProvider contextProvider) {
+                context = contextProvider.getExecutionContext();
             } else {
                 context = DBUtils.getDefaultContext(dataContainer, false);
             }
@@ -220,7 +225,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 throw new DBCException("Can't retrieve execution context from data container " + dataContainer);
             }
             if (!selectiveExportFromUI && newConnection) {
-                context = DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer", context);
+                context = DBUtils.getObjectOwnerInstance(getDatabaseObject())
+                    .openIsolatedContext(monitor, "Data transfer producer", context);
                 DBExecUtils.setExecutionContextDefaults(monitor, dataSource, context, defaultCatalog, null, defaultSchema);
             }
             if (task != null) {
@@ -252,9 +258,11 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     }
                     long totalRows = 0;
                     if (settings.isQueryRowCount() && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_COUNT)) {
+                        checkCanceled(monitor);
                         monitor.beginTask(DTMessages.data_transfer_wizard_job_task_retrieve, 1);
                         try {
                             totalRows = dataContainer.countData(transferSource, session, dataFilter, readFlags);
+                            checkCanceled(monitor);
                         } catch (Throwable e) {
                             log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
                             try {
@@ -277,16 +285,20 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
                         // Perform export
                         if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
+                            checkCanceled(monitor);
                             // Just do it in single query
                             producerStatistics.accumulate(dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, readFlags, settings.getFetchSize()));
+                            checkCanceled(monitor);
                         } else {
                             // Read all data by segments
                             long offset = 0;
                             int segmentSize = settings.getSegmentSize();
                             for (; ; ) {
+                                checkCanceled(monitor);
                                 DBCStatistics statistics = dataContainer.readData(
                                     transferSource, session, consumer, dataFilter, offset, segmentSize, readFlags, settings.getFetchSize());
-                                if (statistics == null || statistics.getRowsFetched() < segmentSize) {
+                                checkCanceled(monitor);
+                                if (statistics.getRowsFetched() < segmentSize) {
                                     // Done
                                     break;
                                 }
@@ -319,6 +331,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
             }
         });
+    }
+
+    private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws DBInterruptedException {
+        if (monitor.isCanceled()) {
+            throw new DBInterruptedException("Data transfer was canceled");
+        }
     }
 
     @Override

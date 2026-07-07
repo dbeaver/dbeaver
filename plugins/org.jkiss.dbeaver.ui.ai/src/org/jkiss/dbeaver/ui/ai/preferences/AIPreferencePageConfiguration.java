@@ -93,7 +93,7 @@ public class AIPreferencePageConfiguration extends AbstractPrefPage implements I
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         formatterConfigurator.saveSettings(this.settings);
-        AISettingsManager.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().saveSettings();
         try {
             store.save();
         } catch (IOException e) {
