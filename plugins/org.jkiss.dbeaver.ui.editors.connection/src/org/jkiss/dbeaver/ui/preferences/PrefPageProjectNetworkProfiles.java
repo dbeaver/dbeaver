@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -121,9 +122,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
     @Override
     protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
-        if (projectMeta != null) {
-            List<? extends DBPDataSourceContainer> usedBy = projectMeta
-                .getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
+        List<? extends DBPDataSourceContainer> usedBy = connectionsUsingProfile(selectedProfile);
             if (!usedBy.isEmpty()) {
                 UIUtils.showMessageBox(
                     getShell(),
@@ -142,7 +141,6 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
                 );
                 return false;
             }
-        }
         if (UIUtils.confirmAction(
             getShell(),
             UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
@@ -157,6 +155,13 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
             return true;
         }
         return false;
+    }
+
+    @NotNull
+    protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
+        return projectMeta != null
+            ? projectMeta.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile)
+            : new ArrayList<>();
     }
 
     @Nullable
