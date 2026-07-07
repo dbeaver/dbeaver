@@ -141,8 +141,12 @@
                             <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.triggers.node.name" icon="#folder_trigger" description="%tree.triggers.node.tip" visibleIf="object.supportsTrigger()">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.table_triggers.node.name" icon="#folder_trigger" description="%tree.table_triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger" label="%tree.user_triggers.node.name" icon="#folder_trigger" description="%tree.user_triggers.node.tip" visibleIf="object.supportsTrigger()">
+                            <items label="%tree.trigger.node.name" path="trigger" property="userTriggers" icon="#trigger">
                             </items>
                         </folder>
                         <folder id="procedures-or-functions" label="%tree.procedures_functions.node.name" icon="#folder_procedure" description="%tree.procedures_functions.node.tip">

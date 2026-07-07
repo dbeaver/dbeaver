@@ -834,6 +834,18 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                 addDataSourceFolder((DataSourceFolder) folder);
             }
 
+            // Remove untouched profiles
+            // purgeUntouched removes only data sources and folders
+            // Profiles are always removed if they are not in the config
+            for (DBWNetworkProfile profile : networkProfileManager.getProfiles()) {
+                if (!parseResults.updatedProfiles.contains(profile)) {
+                    parseResults.removedProfiles.add(profile);
+                }
+            }
+            for (DBWNetworkProfile profile : parseResults.removedProfiles) {
+                networkProfileManager.removeProfile(profile);
+            }
+
             if (purgeUntouched) {
                 for (DataSourceDescriptor ds : dataSources.values()) {
                     if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
@@ -1132,6 +1144,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
 
         @Override
+        public void reloadProfiles() {
+            project.getDataSourceRegistry().refreshConfig();
+        }
+
+        @Override
         public void saveSettings() {
             project.getDataSourceRegistry().flushConfig();
         }
@@ -1151,7 +1168,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         @Override
         public void removeProfile(@NotNull DBWNetworkProfile profile) {
             super.removeProfile(profile);
-            if (project.isUseSecretStorage()) {
+            if (!DBWorkbench.isDistributed() && project.isUseSecretStorage()) {
                 try {
                     DBSSecretController secretController = getSecretController();
                     secretController.setPrivateSecretValue(

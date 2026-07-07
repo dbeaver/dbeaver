@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -80,6 +81,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     private StyleRange curLineRange;
     private int totalRows = 0;
     private String curSelection;
+
+    @NotNull
+    private FindReplaceOverlay findReplaceOverlay;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -127,6 +131,27 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         registerContextMenu();
         activateTextKeyBindings(controller, text);
         trackPresentationControl();
+
+        this.findReplaceOverlay = new ResultsetFindReplaceOverlay(
+            this.controller.getSite().getPart(),
+            this.text,
+            this.findReplaceTarget,
+            this
+        ) {
+            @Override
+            protected boolean hasSelectionBoundsConflict(@Nullable ISelection selection, @NotNull Rectangle bounds) {
+                return text.getBlockSelectionBounds().intersects(bounds) || (
+                    curLineRange != null && text.getTextBounds(curLineRange.start, curLineRange.start + curLineRange.length).intersects(bounds)
+                );
+            }
+        };
+        this.findReplaceOverlay.setFilterState(this.controller.getModel().getQuickFilter());
+    }
+
+    @NotNull
+    @Override
+    public FindReplaceOverlay getFindReplaceOverlay() {
+        return this.findReplaceOverlay;
     }
 
     @Override

@@ -1621,7 +1621,14 @@ public class SQLEditor extends SQLEditorBase implements
                         final boolean isPinned = container.isPinned();
 
                         manager.add(new Separator());
-                        manager.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_EDITOR_TOGGLE_TAB_PINNED));
+                        manager.add(new Action(isPinned
+                            ? SQLEditorMessages.action_result_tabs_unpin_tab
+                            : SQLEditorMessages.action_result_tabs_pin_tab) {
+                            @Override
+                            public void run() {
+                                toggleTabPinned(activeTab);
+                            }
+                        });
 
                         if (isPinned && pinnedTabsCount > 1) {
                             manager.add(new Action(SQLEditorMessages.action_result_tabs_unpin_all_tabs) {
@@ -1938,7 +1945,15 @@ public class SQLEditor extends SQLEditorBase implements
      */
     public void toggleActiveTabPinned() {
         CTabItem activeTab = getActiveResultsTab();
-        QueryResultsContainer container = (QueryResultsContainer) activeTab.getData();
+        if (activeTab != null) {
+            toggleTabPinned(activeTab);
+        }
+    }
+
+    private void toggleTabPinned(@NotNull CTabItem tabItem) {
+        if (!(tabItem.getData() instanceof QueryResultsContainer container)) {
+            return;
+        }
 
         if (!container.hasData()) {
             return;
@@ -1948,11 +1963,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         container.setPinned(!isPinned);
 
-        CTabItem currTabItem = activeTab;
+        CTabItem currTabItem = tabItem;
         CTabItem nextTabItem;
 
         if (isPinned) {
-            for (int i = resultTabs.indexOf(activeTab) + 1; i < resultTabs.getItemCount(); i++) {
+            for (int i = resultTabs.indexOf(tabItem) + 1; i < resultTabs.getItemCount(); i++) {
                 nextTabItem = resultTabs.getItem(i);
                 if (nextTabItem.getShowClose()) {
                     break;
@@ -1961,7 +1976,7 @@ public class SQLEditor extends SQLEditorBase implements
                 currTabItem = nextTabItem;
             }
         } else {
-            for (int i = resultTabs.indexOf(activeTab) - 1; i >= 0; i--) {
+            for (int i = resultTabs.indexOf(tabItem) - 1; i >= 0; i--) {
                 nextTabItem = resultTabs.getItem(i);
                 if (!nextTabItem.getShowClose()) {
                     break;
@@ -1970,7 +1985,6 @@ public class SQLEditor extends SQLEditorBase implements
                 currTabItem = nextTabItem;
             }
         }
-
     }
 
     /**
