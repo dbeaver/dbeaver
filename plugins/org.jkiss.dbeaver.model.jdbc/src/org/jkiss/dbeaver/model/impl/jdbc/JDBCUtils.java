@@ -965,6 +965,7 @@ public class JDBCUtils {
             case Types.ARRAY -> DBPDataKind.ARRAY;
             case Types.ROWID -> DBPDataKind.ROWID;
             case Types.REF -> DBPDataKind.REFERENCE;
+            case Types.JAVA_OBJECT -> DBPDataKind.OBJECT;
             case Types.OTHER ->
                 // TODO: really?
                 DBPDataKind.OBJECT;
