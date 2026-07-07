@@ -101,11 +101,7 @@ public final class ShellUtils {
             final String cmd = formShowInSystemExplorerCommand(file);
             final Process process;
 
-            if (Util.isLinux() || Util.isMac()) {
-                process = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", cmd}); //$NON-NLS-1$
-            } else {
-                process = Runtime.getRuntime().exec(splitCommand(cmd));
-            }
+            process = Runtime.getRuntime().exec(splitCommand(cmd));
 
             int code = process.waitFor();
 
