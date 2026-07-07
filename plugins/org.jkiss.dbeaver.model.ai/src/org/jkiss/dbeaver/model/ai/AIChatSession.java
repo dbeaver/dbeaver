@@ -405,7 +405,7 @@ public class AIChatSession {
         String sessionId = sessionIdProvider.getSessionId(monitor);
         AIConfigurationProfile configurationProfile = conversation.getProfile();
         if (configurationProfile == null) {
-            throw new DBException("No configuration attached to a conversation");
+            configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
         String engineId = configurationProfile.getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
