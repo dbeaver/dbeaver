@@ -49,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -63,6 +64,11 @@ public class ClickhouseDataSource extends GenericDataSource {
     private final TableEnginesCache engineCache = new TableEnginesCache();
     // output_format_binary_write_json_as_string was introduced in ClickHouse 24.10.
     private static final Version JSON_AS_STRING_MIN_VERSION = new Version(24, 10, 0);
+    // Driver methods used to enable JSON-as-string serialization. Resolved once (the driver class does not
+    // change during a data source's lifetime) and reused, so we don't re-resolve on every connection.
+    private Method getDefaultQuerySettingsMethod;
+    private Method serverSettingMethod;
+    private Method setDefaultQuerySettingsMethod;
 
     static {
         dataTypeMap.put(String.class.getName(), "String");
@@ -396,18 +402,19 @@ public class ClickhouseDataSource extends GenericDataSource {
             return;
         }
         try {
-            Object querySettings = BeanUtils.invokeObjectMethod(
-                connection, ClickhouseConstants.DRIVER_GET_DEFAULT_QUERY_SETTINGS_METHOD);
-            BeanUtils.invokeObjectMethod(
-                querySettings,
-                ClickhouseConstants.DRIVER_SERVER_SETTING_METHOD,
-                new Class[]{String.class, String.class},
-                new Object[]{ClickhouseConstants.SETTING_JSON_AS_STRING, "1"});
-            BeanUtils.invokeObjectMethod(
-                connection,
-                ClickhouseConstants.DRIVER_SET_DEFAULT_QUERY_SETTINGS_METHOD,
-                new Class[]{querySettings.getClass()},
-                new Object[]{querySettings});
+            if (getDefaultQuerySettingsMethod == null) {
+                getDefaultQuerySettingsMethod = connection.getClass()
+                    .getMethod(ClickhouseConstants.DRIVER_GET_DEFAULT_QUERY_SETTINGS_METHOD);
+            }
+            Object querySettings = getDefaultQuerySettingsMethod.invoke(connection);
+            if (serverSettingMethod == null) {
+                serverSettingMethod = querySettings.getClass()
+                    .getMethod(ClickhouseConstants.DRIVER_SERVER_SETTING_METHOD, String.class, String.class);
+                setDefaultQuerySettingsMethod = connection.getClass()
+                    .getMethod(ClickhouseConstants.DRIVER_SET_DEFAULT_QUERY_SETTINGS_METHOD, querySettings.getClass());
+            }
+            serverSettingMethod.invoke(querySettings, ClickhouseConstants.SETTING_JSON_AS_STRING, "1");
+            setDefaultQuerySettingsMethod.invoke(connection, querySettings);
         } catch (Throwable e) {
             log.debug("Can't enable JSON string serialization for ClickHouse JSON columns", e);
         }

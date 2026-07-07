@@ -45,4 +45,21 @@ public class ClickhouseJSONContentTest extends DBeaverUnitTest {
         final ClickhouseContentJSON content = new ClickhouseContentJSON(null, null);
         Assertions.assertTrue(content.isNull());
     }
+
+    @Test
+    public void jsonContentPreservesMalformedText() {
+        // The handler does not validate JSON; ClickHouse rejects malformed input on save (Code 117).
+        // Whatever text the driver returned must be shown unchanged so the user can fix it.
+        final String malformed = "{not valid json";
+        final ClickhouseContentJSON content = new ClickhouseContentJSON(null, malformed);
+        Assertions.assertEquals(malformed, content.getDisplayString(DBDDisplayFormat.EDIT));
+    }
+
+    @Test
+    public void jsonContentHandlesEmptyString() {
+        // An empty string is a value, not SQL NULL.
+        final ClickhouseContentJSON content = new ClickhouseContentJSON(null, "");
+        Assertions.assertFalse(content.isNull());
+        Assertions.assertEquals("", content.getDisplayString(DBDDisplayFormat.EDIT));
+    }
 }
