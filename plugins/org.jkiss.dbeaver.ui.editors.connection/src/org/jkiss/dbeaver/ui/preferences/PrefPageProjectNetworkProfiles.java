@@ -257,6 +257,6 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     @NotNull
     @Override
     protected Image getProfileImage(@NotNull DBWNetworkProfile profile) {
-        return DBeaverIcons.getImage(profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.LOCAL_PROFILE);
+        return DBeaverIcons.getImage(profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.CONNECTION_PROFILE);
     }
 }

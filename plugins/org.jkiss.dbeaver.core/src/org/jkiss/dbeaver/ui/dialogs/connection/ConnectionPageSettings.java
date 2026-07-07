@@ -295,7 +295,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 UIStyles.fixToolBarForeground(toolBar);
 
                 updateHandlerItem(allPages);
-                updateProfileItem();
+                updateProfileItem(getActiveProfile());
 
                 tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
                     @Override
@@ -469,15 +469,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
     }
 
-    private void updateProfileItem() {
-        String profileName = getActiveDataSource().getConnectionConfiguration().getConfigProfileName();
-        if (CommonUtils.isNotEmpty(profileName)) {
+    private void updateProfileItem(@Nullable DBWNetworkProfile profile) {
+        DBIcon icon = DBIcon.TYPE_DOCUMENT;
+        if (profile != null) {
+            String profileName = profile.getProfileName();
             profileItem.setText(NLS.bind("Profile ''{0}''", profileName));
             profileItem.setToolTipText(NLS.bind("Active profile is ''{0}''", profileName));
+            icon = profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.CONNECTION_PROFILE;
         } else {
             profileItem.setText("No profile");
             profileItem.setToolTipText("No active profile is set");
         }
+        profileItem.setImage(DBeaverIcons.getImage(icon));
         updateFolderToolbar();
     }
 
@@ -533,7 +536,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         refreshHandlers(null);
-        updateProfileItem();
+        updateProfileItem(null);
 
         return true;
     }
@@ -581,7 +584,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         refreshHandlers(profile);
-        updateProfileItem();
+        updateProfileItem(profile);
 
         return true;
     }
@@ -678,7 +681,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             var descriptor = page.getHandlerDescriptor();
             if (unselectProfile(descriptor)) {
                 removeHandler(descriptor);
-                updateProfileItem();
+                updateProfileItem(null);
                 return true;
             }
         }
@@ -1082,7 +1085,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             if (unselectProfile(descriptor)) {
                 addHandler(descriptor, null);
                 refreshHandler(descriptor, null);
-                updateProfileItem();
+                updateProfileItem(null);
             }
         }
     }
