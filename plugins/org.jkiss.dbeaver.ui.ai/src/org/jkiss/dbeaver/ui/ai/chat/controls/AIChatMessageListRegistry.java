@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class AIChatMessageListRegistry {
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.ai.messageList";
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.ai.chatView";
 
     private static AIChatMessageListRegistry instance;
 
