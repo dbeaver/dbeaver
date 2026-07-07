@@ -240,18 +240,34 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
      * @return {@code true} if the dialog was closed with OK, {@code false} otherwise or if an error occurred.
      */
     public static boolean open(@NotNull Shell shell, @NotNull RCPProject project, @Nullable DBWNetworkProfile profile) {
-        PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
-            shell,
-            project.getEclipseProject(),
-            PAGE_ID,
-            null,
-            profile != null ? profile.getProfileName() : null
-        );
+        PreferenceDialog dialog = getPropertyDialogOn(shell, project, profile);
         if (dialog == null) {
             log.error("Can't open network profiles preferences");
             return false;
         }
         return dialog.open() == IDialogConstants.OK_ID;
+    }
+
+    @Nullable
+    private static PreferenceDialog getPropertyDialogOn(
+        @NotNull Shell shell,
+        @NotNull RCPProject project,
+        @Nullable DBWNetworkProfile profile
+    ) {
+        return profile != null && profile.isGlobal()
+            ? PreferencesUtil.createPreferenceDialogOn(
+            shell,
+            PrefPageGlobalProjectNetworkProfiles.PAGE_ID,
+            null,
+            profile.getProfileName()
+        )
+            : PreferencesUtil.createPropertyDialogOn(
+                shell,
+                project.getEclipseProject(),
+                PAGE_ID,
+                null,
+                profile != null ? profile.getProfileName() : null
+            );
     }
 
     @NotNull
