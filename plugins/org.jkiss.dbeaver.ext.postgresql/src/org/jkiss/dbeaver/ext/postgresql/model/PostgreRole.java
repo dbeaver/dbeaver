@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -487,10 +487,37 @@ public class PostgreRole implements
     public List<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBCException {
         List<PostgrePrivilege> permissions = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?")) {
+            String tablePrivilegeSql = """
+                SELECT * FROM information_schema.table_privileges
+                WHERE table_catalog=? AND grantee=?""";
+            boolean supportsMaintainPrivilege = getDataSource().isServerVersionAtLeast(16, 0);
+            if (supportsMaintainPrivilege) {
+                tablePrivilegeSql += """
+                    \nUNION ALL
+                    SELECT
+                        pg_catalog.pg_get_userbyid(acl.grantor) AS grantor,
+                        pg_catalog.pg_get_userbyid(acl.grantee) AS grantee,
+                        current_database() AS table_catalog,
+                        n.nspname AS table_schema,
+                        c.relname AS table_name,
+                        acl.privilege_type,
+                        CASE WHEN acl.is_grantable THEN 'YES' ELSE 'NO' END AS is_grantable,
+                    	'NO' AS with_hierarchy
+                    FROM pg_catalog.pg_class c
+                    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+                    CROSS JOIN LATERAL pg_catalog.aclexplode(c.relacl) AS acl
+                    WHERE c.relacl IS NOT NULL
+                      AND c.relkind IN ('r', 'v', 'f', 'p')
+                      AND acl.privilege_type in ('MAINTAIN')
+                      AND acl.grantee = ?;
+                    """;
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(tablePrivilegeSql)) {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
+                if (supportsMaintainPrivilege) {
+                    dbStat.setLong(3, getObjectId());
+                }
                 permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
             } catch (Throwable e) {
                 log.error("Error reading table privileges", e);
