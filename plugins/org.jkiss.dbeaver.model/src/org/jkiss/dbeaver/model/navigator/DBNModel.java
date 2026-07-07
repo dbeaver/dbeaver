@@ -63,13 +63,8 @@ public class DBNModel {
     public static final String FAKE_RESOURCE_ROOT_NODE = "resources";
     private static final Log log = Log.getLog(DBNModel.class);
 
-    private static class NodePath {
-        final List<String> pathItems;
-
-        NodePath(@NotNull List<String> pathItems) {
-            this.pathItems = pathItems;
-        }
-
+    private record NodePath(@NotNull List<String> pathItems) {
+        @NotNull
         @Override
         public String toString() {
             return DBNNode.NODE_URI_PREFIX + pathItems;
@@ -160,8 +155,7 @@ public class DBNModel {
     }
 
     @NotNull
-    public DBNRoot getRoot()
-    {
+    public DBNRoot getRoot() {
         return root;
     }
 
@@ -359,10 +353,12 @@ public class DBNModel {
         DBNNode[] children = currentNode.getChildren(monitor);
 
         DBNNode detectedNode = null;
-        for (DBNNode child : children) {
-            if (child.getNodeId().equals(expectedNodePathName)) {
-                detectedNode = child;
-                break;
+        if (children != null) {
+            for (DBNNode child : children) {
+                if (child.getNodeId().equals(expectedNodePathName)) {
+                    detectedNode = child;
+                    break;
+                }
             }
         }
 
@@ -468,11 +464,6 @@ public class DBNModel {
         }
         // Not found
         return null;
-    }
-
-    void addNode(@NotNull DBNDatabaseNode node)
-    {
-        addNode(node, false);
     }
 
     void addNode(@NotNull DBNDatabaseNode node, boolean reflect) {
@@ -645,9 +636,9 @@ public class DBNModel {
 
                 try {
                     DBWorkbench.getPlatformUI().executeInMainThread(() -> {
-                        for (int i = 0; i < realEvents.length; i++) {
+                        for (DBNEvent realEvent : realEvents) {
                             for (INavigatorListener listener : listenersCopy) {
-                                listener.nodeChanged(realEvents[i]);
+                                listener.nodeChanged(realEvent);
                             }
                         }
                     });
