@@ -529,9 +529,7 @@ public class DesktopUI extends ConsoleUserInterface {
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer) {
         UIUtils.syncExec(() ->
-            NavigatorHandlerObjectOpen.openConnectionEditor(
-                UIUtils.getActiveWorkbenchWindow(),
-                dataSourceContainer));
+            NavigatorHandlerObjectOpen.openConnectionEditor(dataSourceContainer));
     }
 
     @Override
