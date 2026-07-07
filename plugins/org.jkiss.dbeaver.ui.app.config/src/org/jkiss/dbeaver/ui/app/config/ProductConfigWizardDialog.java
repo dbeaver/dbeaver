@@ -64,6 +64,10 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         });
     }
 
+    public boolean isRestartRequired() {
+        return ((ProductConfigWizard) getWizard()).isRestartRequired();
+    }
+
     @NotNull
     @Override
     protected Point getInitialSize() {

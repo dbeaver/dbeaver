@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
-import org.jkiss.dbeaver.model.config.ProductConfigFeatureRegistry;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 
 public final class ProductConfigPropertyTester extends PropertyTester {
     private static final Log log = Log.getLog(ProductConfigPropertyTester.class);
@@ -42,7 +42,7 @@ public final class ProductConfigPropertyTester extends PropertyTester {
         if (!(expectedValue instanceof String value)) {
             return false;
         }
-        var registry = ProductConfigFeatureRegistry.getInstance();
+        var registry = ProductConfigRegistry.getInstance();
         for (ProductConfigFeatureDescriptor feature : registry.getFeatures()) {
             if (feature.getId().equals(value)) {
                 return registry.isFeatureEnabled(feature);

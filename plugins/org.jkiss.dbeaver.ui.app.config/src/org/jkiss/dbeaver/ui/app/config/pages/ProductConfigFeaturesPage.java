@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
-import org.jkiss.dbeaver.model.config.ProductConfigFeatureRegistry;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 
@@ -42,7 +42,7 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
 
     @Override
     public void loadSettings() {
-        var registry = ProductConfigFeatureRegistry.getInstance();
+        var registry = ProductConfigRegistry.getInstance();
         for (ProductConfigFeatureDescriptor descriptor : registry.getFeatures()) {
             features.put(descriptor, UIObservable.of(registry.isFeatureEnabled(descriptor)));
         }
@@ -50,7 +50,7 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
 
     @Override
     public void applySettings() {
-        var registry = ProductConfigFeatureRegistry.getInstance();
+        var registry = ProductConfigRegistry.getInstance();
         for (Map.Entry<ProductConfigFeatureDescriptor, UIObservable<Boolean>> entry : features.entrySet()) {
             boolean enabled = entry.getValue().get();
             if (registry.isFeatureEnabled(entry.getKey()) != enabled) {
@@ -80,7 +80,7 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .align(UIAlignX.FILL, UIAlignY.FILL)
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .indent(pb2 -> {
-                    for (ProductConfigFeatureDescriptor descriptor : ProductConfigFeatureRegistry.getInstance().getFeatures()) {
+                    for (ProductConfigFeatureDescriptor descriptor : ProductConfigRegistry.getInstance().getFeatures()) {
                         pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
                     }
                 })))
