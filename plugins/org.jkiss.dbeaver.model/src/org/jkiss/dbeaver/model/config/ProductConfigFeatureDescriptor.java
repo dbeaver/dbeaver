@@ -27,6 +27,7 @@ import java.util.Optional;
 public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
+    private final String description;
     private final boolean enabledByDefault;
     private final ObjectType enablementTesterType;
     private ProductConfigFeatureTester enablementTester;
@@ -36,6 +37,7 @@ public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
 
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
+        this.description = config.getAttribute("description");
         this.enabledByDefault = Boolean.parseBoolean(config.getAttribute("enabledByDefault"));
         this.enablementTesterType = Optional.ofNullable(config.getAttribute("enablementTester"))
             .map(ObjectType::new)
@@ -50,6 +52,11 @@ public final class ProductConfigFeatureDescriptor extends AbstractDescriptor {
     @NotNull
     public String getLabel() {
         return label;
+    }
+
+    @NotNull
+    public String getDescription() {
+        return description;
     }
 
     public boolean isEnabledByDefault() {

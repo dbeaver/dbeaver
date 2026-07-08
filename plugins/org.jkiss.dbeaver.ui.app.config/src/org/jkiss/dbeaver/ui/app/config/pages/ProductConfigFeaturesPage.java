@@ -21,8 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
+import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
+import org.jkiss.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +83,10 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .indent(pb2 -> {
                     for (ProductConfigFeatureDescriptor descriptor : ProductConfigRegistry.getInstance().getFeatures()) {
-                        pb2.row(rb1 -> rb1.checkBox(descriptor.getLabel(), features.get(descriptor)));
+                        pb2.row(rb1 -> rb1
+                            .checkBox(descriptor.getLabel(), bb -> bb
+                                .tooltip(StringUtils.wrap(descriptor.getDescription(), UITextUtils.TOOLTIP_WRAP_LENGTH))
+                                .selected(features.get(descriptor))));
                     }
                 })))
             .row(rb -> rb

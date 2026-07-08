@@ -63,6 +63,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="description" type="string" use="required">
+            <annotation>
+               <documentation>
+
+               </documentation>
+            </annotation>
+         </attribute>
          <attribute name="enabledByDefault" type="string" use="required">
             <annotation>
                <documentation>
