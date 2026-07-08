@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -165,18 +166,51 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
     @NotNull
     private PrefPageProjectNetworkProfiles createPrefPageNetworkProfiles() {
-        return new PrefPageProjectNetworkProfiles() {
-            @NotNull
-            @Override
-            protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
-                return DBWorkbench
-                    .getPlatform()
-                    .getWorkspace()
-                    .getProjects()
-                    .stream()
-                    .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
-                    .toList();
-            }
-        };
+        return new PrefPageGlobalNetworkProfiles();
+    }
+
+    private class PrefPageGlobalNetworkProfiles extends PrefPageProjectNetworkProfiles {
+
+
+        @NotNull
+        @Override
+        protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
+            return getProjects()
+                .stream()
+                .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
+                .toList();
+        }
+
+        @Override
+        protected boolean checkName(@NotNull DBWNetworkProfileManager profilesRegistry, @NotNull String profileName) {
+            return super.checkName(profilesRegistry, profileName) && checkNameInLocalProfiles(profileName);
+        }
+
+        private boolean checkNameInLocalProfiles(@NotNull String profileName) {
+            List<String> projectsWithSameProfileName = getProjects()
+                .stream()
+                .filter(proj -> proj.getDataSourceRegistry().getNetworkProfiles().getProfile(null, profileName) != null)
+                .map(DBPProject::getName)
+                .map(n -> " - " + n)
+                .toList();
+            return projectsWithSameProfileName.isEmpty() || askNameConfirmation(projectsWithSameProfileName, profileName);
+        }
+
+        private boolean askNameConfirmation(@NotNull List<String> projectsWithSameProfile, @NotNull String profileName) {
+            String projectsList = "\n" + String.join("\n", projectsWithSameProfile);
+            return UIUtils.confirmAction(
+                getShell(),
+                "Same name",
+                "Profile name '%s' is present as local profile in projects: %s".formatted(profileName, projectsList)
+            );
+        }
+
+        @NotNull
+        private List<? extends DBPProject> getProjects() {
+            return DBWorkbench
+                .getPlatform()
+                .getWorkspace()
+                .getProjects();
+        }
     }
 }

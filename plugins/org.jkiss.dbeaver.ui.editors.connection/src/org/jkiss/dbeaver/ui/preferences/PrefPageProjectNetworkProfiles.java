@@ -183,16 +183,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
             profileName = profileName.trim();
 
-            if (profilesRegistry.getProfile(null, profileName) != null) {
-                UIUtils.showMessageBox(
-                    getShell(),
-                    UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
-                    projectMeta == null ?
-                        NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_global_info, profileName) :
-                        NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info, profileName, projectMeta.getName()),
-                    SWT.ICON_ERROR
-                );
-
+            if (!checkName(profilesRegistry, profileName)) {
                 continue;
             }
 
@@ -206,6 +197,25 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         profilesRegistry.saveSettings();
 
         return newProfile;
+    }
+
+    protected boolean checkName(@NotNull DBWNetworkProfileManager profilesRegistry, @NotNull String profileName) {
+        if (profilesRegistry.getProfile(null, profileName) != null) {
+            UIUtils.showMessageBox(
+                getShell(),
+                UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
+                projectMeta == null ?
+                    NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_global_info, profileName) :
+                    NLS.bind(
+                        UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info,
+                        profileName,
+                        projectMeta.getName()
+                    ),
+                SWT.ICON_ERROR
+            );
+            return false;
+        }
+        return true;
     }
 
     @Override
