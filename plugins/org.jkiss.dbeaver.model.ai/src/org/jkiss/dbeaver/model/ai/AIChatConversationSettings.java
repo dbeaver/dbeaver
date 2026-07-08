@@ -48,7 +48,7 @@ public class AIChatConversationSettings extends AIContextSettings {
     public void saveSettings() throws DBException {
         DBPDataSourceContainer dataSource = this.conversation.getDataSource();
         if (dataSource != null) {
-            AICompletionSettings dsSettings = new AICompletionSettings(dataSource);
+            AIDataSourceSettings dsSettings = new AIDataSourceSettings(dataSource);
             if (dsSettings.isMetaTransferConfirmed() != this.isMetaTransferConfirmed()) {
                 // Update DS settings
                 dsSettings.setMetaTransferConfirmed(this.isMetaTransferConfirmed());
@@ -62,7 +62,7 @@ public class AIChatConversationSettings extends AIContextSettings {
     public void loadDataSourceDefaults() {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            AICompletionSettings dsSettings = new AICompletionSettings(dataSourceContainer);
+            AIDataSourceSettings dsSettings = new AIDataSourceSettings(dataSourceContainer);
             setMetaTransferConfirmed(dsSettings.isMetaTransferConfirmed());
         }
     }
