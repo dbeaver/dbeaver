@@ -209,9 +209,10 @@ public class GroupingConfigDialog extends BaseDialog {
                 rootManager.add(new Action(columnName) {
                                     @Override
                                     public void run() {
-                                        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                                        newItem.setText(columnName);
-                                        addTableItem(newItem);
+                                        addTableItem(SQLGroupingAttribute.makeCustom(
+                                            resultsContainer.getDataContainer().getDataSource(),
+                                            columnName
+                                        ));
                                     }
                                 }
                 );
@@ -302,9 +303,7 @@ public class GroupingConfigDialog extends BaseDialog {
                 @Override
                 public void run() {
                     String functionCall = functionName + "(" + columnName + ")";
-                    TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                    newItem.setText(functionCall);
-                    addTableItem(newItem);
+                    addTableItem(functionCall);
                 }
             };
         }
