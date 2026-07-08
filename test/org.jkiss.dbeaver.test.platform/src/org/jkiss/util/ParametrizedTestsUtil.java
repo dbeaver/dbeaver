@@ -27,17 +27,31 @@ public class ParametrizedTestsUtil {
     private ParametrizedTestsUtil() {
     }
 
+    // combining logic: [a, b], [c, d, e] -> [ac, ad, ae, bc, bd, be]
+    // [[1,2], [3,4]], [[a, b], [c, d]] -> [[1, a, b], [1, c, d], [2, a, b] ,... ,[4, c, d]]
     @NotNull
     public static Stream<? extends Arguments> combineArguments(
         @NotNull Iterable<? extends Arguments> first,
         @NotNull Iterable<? extends Arguments> second
     ) {
         List<Arguments> combined = new ArrayList<>();
+        int totalArgsLength = -1;
         for (Arguments args1 : first) {
             for (Arguments args2 : second) {
-                List<Object> combinedParameters = new ArrayList<>(args1.toList());
-                combinedParameters.addAll(args2.toList());
+                List<Object> args1List = args1.toList();
+
+                List<Object> combinedParameters = new ArrayList<>(args1List);
+                List<Object> args2List = args2.toList();
+                combinedParameters.addAll(args2List);
                 combined.add(Arguments.of(combinedParameters.toArray()));
+                int currentArgsLength = args1List.size() + args2List.size();
+                if (totalArgsLength == -1) {
+                    totalArgsLength = currentArgsLength;
+                } else if (totalArgsLength != currentArgsLength) {
+                    throw new IllegalArgumentException(
+                        "Combined arguments length must be equal. First processed length %d, found argument length %d args1: %s, args2: %s"
+                            .formatted(totalArgsLength, currentArgsLength, args1List, args2List));
+                }
             }
         }
         return combined.stream();
