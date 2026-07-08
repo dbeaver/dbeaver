@@ -129,7 +129,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_VALUE_SEPARATOR);
         // then
         dataExporterCSV = new DataExporterCSV();
-        assertThrows(IllegalArgumentException.class, () -> dataExporterCSV.init(site));
+        assertThrows(DBException.class, () -> dataExporterCSV.init(site));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_QUOTE.repeat(2));
         // then
         dataExporterCSV = new DataExporterCSV();
-        assertThrows(IllegalArgumentException.class, () -> dataExporterCSV.init(site));
+        assertThrows(DBException.class, () -> dataExporterCSV.init(site));
     }
 
 
