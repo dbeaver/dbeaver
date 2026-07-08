@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     public static final String BASE_SERVER_NAME = "new_server";
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -61,7 +61,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     protected CubridServer createDatabaseObject(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBECommandContext context,
-        @Nullable Object container,
+        @NotNull Object container,
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
@@ -203,17 +203,17 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     }
 
     @Override
-    public boolean canEditObject(CubridServer object) {
+    public boolean canEditObject(@NotNull CubridServer object) {
         return !object.getDataSource().isShard();
     }
 
     @Override
-    public boolean canDeleteObject(CubridServer object) {
+    public boolean canDeleteObject(@NotNull CubridServer object) {
         return !object.getDataSource().isShard();
     }
 
     @Override
-    public boolean canRenameObject(CubridServer object) {
+    public boolean canRenameObject(@NotNull CubridServer object) {
         return !object.getDataSource().isShard();
     }
 }

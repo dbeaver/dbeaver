@@ -1025,22 +1025,6 @@
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.colors.connectionTypes.label" id="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.colors.connectionTypes.description</description>
         </themeElementCategory>
-
-        <colorDefinition
-            label="Test"
-            categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
-            id="org.jkiss.dbeaver.color.connectionType.qa.background"
-            value="214,250,207">
-            <description>QA/Test/Stage server</description>
-        </colorDefinition>
-        <colorDefinition
-            label="Production"
-            categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
-            id="org.jkiss.dbeaver.color.connectionType.prod.background"
-            value="250,207,207">
-            <description>Production server</description>
-        </colorDefinition>
-
     </extension>
 
     <extension point="org.eclipse.ui.exportWizards">

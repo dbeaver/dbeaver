@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -31,7 +30,6 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.resource.FontRegistry;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -50,10 +48,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -75,10 +70,11 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
-import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
@@ -88,8 +84,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -122,10 +118,10 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
         }
 
-        if (activePart instanceof IResultSetProvider) {
-            return ((IResultSetProvider) activePart).getResultSetController();
-        } else if (activePart instanceof MultiPageAbstractEditor) {
-            return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
+        if (activePart instanceof IResultSetProvider rsp) {
+            return rsp.getResultSetController();
+        } else if (activePart instanceof MultiPageAbstractEditor mpae) {
+            return getActiveResultSet(mpae.getActiveEditor());
         } else if (activePart != null) {
             return activePart.getAdapter(IResultSetController.class);
         } else {
@@ -222,6 +218,19 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 rsv.getActivePresentation().getControl().setFocus();
                 break;
             }
+            case IResultSetCommands.CMD_ROW_ADD_BEFORE:
+            case IResultSetCommands.CMD_ROW_COPY_BEFORE: {
+                boolean copy = actionId.equals(IResultSetCommands.CMD_ROW_COPY_BEFORE);
+                final RowPlacement placement;
+                if (rsv.getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER)) {
+                    placement = RowPlacement.BEFORE_SELECTION;
+                } else {
+                    placement = RowPlacement.AFTER_SELECTION;
+                }
+                rsv.addNewRow(placement, copy, true);
+                rsv.getActivePresentation().getControl().setFocus();
+                break;
+            }
             case IResultSetCommands.CMD_ROW_COPY_FROM_ABOVE:
             case IResultSetCommands.CMD_ROW_COPY_FROM_BELOW: {
                 rsv.copyRowValues(actionId.equals(IResultSetCommands.CMD_ROW_COPY_FROM_ABOVE), true);
@@ -244,7 +253,12 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     if (row != null && attr != null && !DBExecUtils.isAttributeReadOnly(attr)) {
                         ResultSetValueController valueController = new ResultSetValueController(
                             rsv,
-                            new ResultSetCellLocation(attr, row, selection.getElementRowIndexes(cell)),
+                            new ResultSetCellLocation(
+                                attr,
+                                row,
+                                selection.getElementRowIndexes(cell),
+                                selection.getElementValuePath(cell)
+                            ),
                             IValueController.EditType.NONE,
                             null);
                         if (actionId.equals(IResultSetCommands.CMD_CELL_SET_NULL)) {
@@ -400,12 +414,18 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     rse.openValueEditor(false);
                 }
                 break;
-            case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
-                IAction action = StyledTextUtils.createFindReplaceAction(
-                    activeShell,
-                    rsv.getAdapter(IFindReplaceTarget.class));
-                action.run();
+            case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE: {
+                FindReplaceOverlay findReplaceOverlay;
+                if (event.getTrigger() instanceof Event ev && ev.widget instanceof Spreadsheet s) {
+                    findReplaceOverlay = s.getPresentation().getFindReplaceOverlay();
+                } else {
+                    findReplaceOverlay = rsv.getActivePresentation().getFindReplaceOverlay();
+                }
+                if (findReplaceOverlay != null) {
+                    findReplaceOverlay.open();
+                }
                 break;
+            }
             case IResultSetCommands.CMD_NAVIGATE_LINK: {
                 // FIXME: Should probably rely on hints; see org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
@@ -500,6 +520,10 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 rsv.saveDataFilter();
                 break;
             }
+            case IResultSetCommands.CMD_FILTER_RESET_SETTING: {
+                rsv.resetSavedDataFilter();
+                break;
+            }
             case IResultSetCommands.CMD_FILTER_CLEAR_SETTING: {
                 rsv.clearDataFilter(true);
                 break;
@@ -575,14 +599,17 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                                 final DBVEntity vEntity = getColorsVirtualEntity(resultSetViewer);
                                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                                 ResultSetCellLocation cellLocation = ssp.getCurrentCellLocation();
-                                Object cellValue = resultSetViewer.getContainer().getResultSetController().getModel()
-                                    .getCellValue(cellLocation);
-                                vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
-                                updateColors(resultSetViewer, vEntity, true);
+                                IResultSetController controller = resultSetViewer.getContainer().getResultSetController();
+                                if (cellLocation != null && controller != null && attr != null) {
+                                    Object cellValue = controller.getModel().getCellValue(cellLocation);
+                                    vEntity.setColorOverride(attr, cellValue, null, StringConverter.asString(color));
+                                    updateColors(resultSetViewer, vEntity, true);
+                                }
                             }
                         });
                     }
                 }
+                break;
             }
         }
         return null;

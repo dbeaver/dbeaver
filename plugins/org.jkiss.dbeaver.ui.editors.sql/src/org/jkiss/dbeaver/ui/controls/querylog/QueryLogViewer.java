@@ -86,8 +86,8 @@ import org.jkiss.utils.LongKeyMap;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * QueryLogViewer
@@ -99,9 +99,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
     private static final String CMD_FILTER_ID = "org.jkiss.dbeaver.core.qm.filter";
-    private static final String QMDB_UNAVAILABLE_TITLE = "Query Manager is unavailable";
-    private static final String QMDB_UNAVAILABLE_MESSAGE =
-        "Query Manager was disabled for this session because the managed QMDB service could not be started.";
+    private static final String QM_UNAVAILABLE_TITLE = "Query Manager is unavailable";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
     private final IWorkbenchPartSite site;
@@ -115,7 +113,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private QMEventCriteria criteria;
     private boolean useDefaultFilter = true;
     private final boolean currentSessionOnly;
-    private boolean qmdbUnavailableDialogShown;
+    private boolean qmUnavailableDialogShown;
 
     private DragSource dndSource;
 
@@ -1251,8 +1249,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return error;
         }
 
-        private boolean isQmdbUnavailable() {
-            return error != null && CommonUtils.getCauseOfType(error, QMDBUnavailableException.class) != null;
+        @Nullable
+        private QMUnavailableException getQmUnavailable() {
+            return error == null ? null : CommonUtils.getCauseOfType(error, QMUnavailableException.class);
         }
     }
 
@@ -1333,10 +1332,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     return;
                 }
                 if (result != null && result.getError() != null) {
-                    if (result.isQmdbUnavailable()) {
-                        if (!qmdbUnavailableDialogShown) {
-                            qmdbUnavailableDialogShown = true;
-                            DBWorkbench.getPlatformUI().showError(QMDB_UNAVAILABLE_TITLE, QMDB_UNAVAILABLE_MESSAGE, result.getError());
+                    QMUnavailableException qmUnavailable = result.getQmUnavailable();
+                    if (qmUnavailable != null) {
+                        if (!qmUnavailableDialogShown) {
+                            qmUnavailableDialogShown = true;
+                            DBWorkbench.getPlatformUI().showError(QM_UNAVAILABLE_TITLE, qmUnavailable.getMessage(), result.getError());
                         }
                     } else {
                         DBWorkbench.getPlatformUI().showError(getLoadService().getServiceName(), null, result.getError());

@@ -25,7 +25,7 @@ You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Earl
 
 ## Running
 
-Just run an installer (or unzip an archive) and run `dbeaver`.  
+Just run an installer and then click on app icon. Or unzip an archive and run `dbeaver` from command line.  
 
 Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 21</a> is included in all DBeaver distributions.
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
@@ -75,7 +75,7 @@ You can find the list of all databases supported in commercial versions <a href=
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 40k+ stars on GitHub and continue to grow!  
+Hooray, we have reached 50k+ stars on GitHub and continue to grow!  
 That's really cool, and we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team, just be brave and take a ticket. <a href="https://dbeaver.com/help-dbeaver/">We are happy to reward</a> our most active contributors every major sprint.

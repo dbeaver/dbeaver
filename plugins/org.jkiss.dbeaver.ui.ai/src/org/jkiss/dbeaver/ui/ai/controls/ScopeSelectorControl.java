@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.controls;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,7 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AIDataSourceSettings;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -43,12 +44,13 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ScopeSelectorControl extends Composite {
@@ -69,7 +71,7 @@ public class ScopeSelectorControl extends Composite {
         @NotNull Composite parent,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull AICompletionSettings settings
+        @NotNull AIDataSourceSettings settings
     ) {
         super(parent, SWT.NONE);
 
@@ -109,7 +111,7 @@ public class ScopeSelectorControl extends Composite {
 
         scopeConfigItem = UIUtils.createToolItem(
             toolBar,
-            "Customize",
+            AIUIMessages.scope_selector_customize,
             UIIcon.RS_DETAILS,
             SelectionListener.widgetSelectedAdapter(e -> changeScope(AIDatabaseScope.CUSTOM))
         );
@@ -182,11 +184,11 @@ public class ScopeSelectorControl extends Composite {
                 }
             }
             case CURRENT_DATASOURCE -> dataSource.getDataSourceContainer().getName();
-            default -> checkedObjectIds.size() + " object(s)";
+            default -> NLS.bind(AIUIMessages.scope_selector_custom_objects, checkedObjectIds.size());
         };
 
         scopeConfigItem.setEnabled(scope == AIDatabaseScope.CUSTOM);
-        scopeText.setText(CommonUtils.toString(text, "N/A"));
+        scopeText.setText(CommonUtils.toString(text, AIUIMessages.scope_selector_not_available));
 
         requestLayout();
         layout(true, true);

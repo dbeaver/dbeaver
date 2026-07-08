@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Widget;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class CSSUtils {
@@ -80,5 +82,13 @@ public class CSSUtils {
             colorByConnectionType = COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(tb));
         }
         return colorByConnectionType;
+    }
+
+    public static void setWidgetDefaultBackGround(@NotNull Control widget) {
+        Color bg = CSSUtils.getCurrentEditorConnectionColor(widget);
+        if (bg == null && !(widget instanceof Composite)) {
+            bg = UIStyles.getDefaultWidgetBackground();//widget.getParent().getBackground();
+        }
+        widget.setBackground(bg);
     }
 }

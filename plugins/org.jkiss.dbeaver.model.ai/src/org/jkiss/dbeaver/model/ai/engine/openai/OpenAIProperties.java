@@ -20,13 +20,13 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.Map;
@@ -38,7 +38,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
-    private static final String GPT_LEGACY_API = "gpt.api.legacy";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -63,9 +62,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName(GPT_LOG_QUERY)
     private Boolean loggingEnabled;
 
-    @SerializedName(GPT_LEGACY_API)
-    private boolean useLegacyApi;
-
     public OpenAIProperties() {
     }
 
@@ -74,7 +70,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 2, required = true)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
-            return OpenAIClient.OPENAI_ENDPOINT;
+            return OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         return baseUrl;
     }
@@ -88,16 +84,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
-    }
-
-    @Override
-    @Property(order = 7)
-    public boolean isLegacyApi() {
-        return useLegacyApi;
-    }
-
-    public void setLegacyApi(boolean useLegacyApi) {
-        this.useLegacyApi = useLegacyApi;
     }
 
     public void setToken(@Nullable String token) {
@@ -125,7 +111,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (temperature != null) {
+        if (temperature != null && Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
 
@@ -135,7 +121,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     public void setTemperature(double temperature) {
-        this.temperature = temperature;
+        this.temperature = AIUtils.normalizeTemperature(temperature);
     }
 
     @Override
@@ -172,15 +158,20 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(OpenAIConstants.GPT_API_TOKEN, token);
+    public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (token == null) {
+            token = AIUtils.getSecretValueOrDefault(profile, OpenAIConstants.GPT_API_TOKEN, token);
+        }
     }
 
     @Override
-    public void saveSecrets() throws DBException {
-        if (token != null) {
-            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
-        }
+    public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.setSecretValue(profile, OpenAIConstants.GPT_API_TOKEN, token);
+    }
+
+    @Override
+    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.deleteSecretValue(profile, OpenAIConstants.GPT_API_TOKEN);
     }
 
     public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {

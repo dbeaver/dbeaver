@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,9 @@ public interface RMController extends DBPObjectController, DBPPingController {
      * Save datasources. Note: it only updates existing datasources.
      *
      * @param configuration configuration in modern format.
+     * @param dataSourceIds list of datasource IDs to update.
+     *   If empty list is passed then updates only non-datasource information (e.g. profiles).
+     *   If null is passed then updates ALL datasources, i.e. fully saves passed configuration.
      */
     boolean updateProjectDataSources(
         @NotNull String projectId,

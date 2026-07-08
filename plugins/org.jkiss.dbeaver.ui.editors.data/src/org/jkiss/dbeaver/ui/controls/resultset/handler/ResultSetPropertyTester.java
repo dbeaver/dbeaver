@@ -21,6 +21,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
@@ -42,6 +43,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_HAS_MORE_DATA = "hasMoreData";
     public static final String PROP_HAS_FILTERS = "hasfilters";
     public static final String PROP_CAN_SAVE_FILTERS = "canSaveFilters";
+    public static final String PROP_HAS_SAVED_FILTER = "hasSavedFilter";
     public static final String PROP_CAN_COPY = "canCopy";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_CUT = "canCut";
@@ -86,6 +88,8 @@ public class ResultSetPropertyTester extends PropertyTester
                 return rsv.getModel().getDataFilter().hasFilters();
             case PROP_CAN_SAVE_FILTERS:
                 return rsv.getDataContainer() instanceof DBSEntity;
+            case PROP_HAS_SAVED_FILTER:
+                return rsv.hasSavedDataFilter();
             case PROP_CAN_COPY:
                 return !actionsDisabled && rsv.getModel().hasData();
             case PROP_CAN_PASTE:
@@ -170,8 +174,17 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 }
                 return false;
-            case PROP_CAN_PERSIST_DATA:
-                return !rsv.getModel().isUpdateInProgress();
+            case PROP_CAN_PERSIST_DATA: {
+                if (rsv.getModel().isUpdateInProgress()) {
+                    return false;
+                }
+                DBCExecutionContext executionContext = rsv.getExecutionContext();
+                if (executionContext == null) {
+                    return false;
+                }
+                return rsv.getModel().getReadOnlyStatus(
+                    executionContext.getDataSource().getContainer()) == null;
+            }
         }
         return false;
     }

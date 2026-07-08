@@ -38,14 +38,13 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -74,7 +73,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private final Map<String, T> dataSources = new LinkedHashMap<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
-    private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
+    private final DBWNetworkProfileManager networkProfileManager;
     private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
 
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
@@ -87,23 +86,20 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private DBACredentialsProvider authCredentialsProvider;
     protected Throwable lastError;
 
-    public DataSourceRegistry(DBPProject project) {
+    public DataSourceRegistry(@NotNull DBPProject project) {
         this(project, new DataSourceConfigurationManagerNIO(project), DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     public DataSourceRegistry(
         @NotNull DBPProject project,
-        DataSourceConfigurationManager configurationManager,
+        @NotNull DataSourceConfigurationManager configurationManager,
         @NotNull DBPPreferenceStore preferenceStore
     ) {
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true) != null;
-        if (!isMultiUser() && isLoaded) {
-            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
-            addDataSourceListener(modelChangeListener);
-        }
+
+        this.networkProfileManager = new ProjectNetworkProfileManager(project);
     }
 
     // Multi-user registry:
@@ -265,12 +261,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
+    public DataSourceDescriptor createDataSource(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connConfig) {
         return new DataSourceDescriptor(this, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(
+    public DataSourceDescriptor createDataSource(
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connConfig
@@ -278,8 +275,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return new DataSourceDescriptor(this, id, driver, connConfig);
     }
 
+    @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(
+    public DataSourceDescriptor createDataSource(
         @NotNull DBPDataSourceConfigurationStorage dataSourceStorage,
         @NotNull DBPDataSourceOrigin origin,
         @NotNull String id,
@@ -291,10 +289,23 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     @NotNull
     @Override
-    public DBPDataSourceContainer createDataSource(@NotNull DBPDataSourceContainer source) {
+    public DataSourceDescriptor createDataSource(@NotNull DBPDataSourceContainer source) {
         DataSourceDescriptor newDS = new DataSourceDescriptor((DataSourceDescriptor) source, this);
         newDS.setId(DataSourceDescriptor.generateNewId(source.getDriver()));
         return newDS;
+    }
+
+    @NotNull
+    public DataSourceDescriptor createDataSource(
+        @NotNull DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
+        @NotNull DBPDataSourceOrigin origin,
+        @NotNull String id,
+        @NotNull DBPDriver originalDriver,
+        @NotNull DBPDriver substitutedDriver,
+        @NotNull DBPConnectionConfiguration dbpConnectionConfiguration
+    ) {
+        return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
+            substitutedDriver, dbpConnectionConfiguration);
     }
 
     @NotNull
@@ -461,54 +472,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     ////////////////////////////////////////////////////
     // Config profiles
 
-    @Nullable
-    @Override
-    public DBWNetworkProfile getNetworkProfile(@Nullable String source, @NotNull String name) {
-        if (!CommonUtils.isEmpty(source)) {
-            // Search in external sources
-            DBWNetworkProfileProvider profileProvider = RuntimeUtils.getObjectAdapter(this.getProject(), DBWNetworkProfileProvider.class);
-            if (profileProvider != null) {
-                return profileProvider.getNetworkProfile(source, name);
-            }
-            return null;
-        }
-        // Search in project profiles
-        synchronized (networkProfiles) {
-            return networkProfiles.stream()
-                .filter(profile -> CommonUtils.equalObjects(profile.getProfileName(), name))
-                .findFirst().orElse(null);
-        }
-    }
-
     @NotNull
     @Override
-    public List<DBWNetworkProfile> getNetworkProfiles() {
-        return networkProfiles;
-    }
-
-    @Override
-    public void updateNetworkProfile(@NotNull DBWNetworkProfile profile) {
-        for (int i = 0; i < networkProfiles.size(); i++) {
-            if (CommonUtils.equalObjects(networkProfiles.get(i).getProfileName(), profile.getProfileName())) {
-                networkProfiles.set(i, profile);
-                return;
-            }
-        }
-        networkProfiles.add(profile);
-    }
-
-    @Override
-    public void removeNetworkProfile(@NotNull DBWNetworkProfile profile) {
-        try {
-            DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProject());
-            secretController.setPrivateSecretValue(
-                profile.getSecretKeyId(),
-                null);
-            secretController.flushChanges();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
-        }
-        networkProfiles.remove(profile);
+    public DBWNetworkProfileManager getNetworkProfiles() {
+        return networkProfileManager;
     }
 
     ////////////////////////////////////////////////////
@@ -632,7 +599,13 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    @Override
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        updateDataSource(dataSource, true);
+    }
+
+    @Override
+    public void updateDataSource(@NotNull DBPDataSourceContainer dataSource, boolean forcePersistSecrets) throws DBException {
         if (!(dataSource instanceof DataSourceDescriptor descriptor)) {
             return;
         }
@@ -642,7 +615,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             if (!descriptor.isDetached()) {
                 persistDataSourceUpdate(dataSource);
             }
-            descriptor.persistSecretIfNeeded(true, false);
+            descriptor.persistSecretIfNeeded(forcePersistSecrets, false);
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
         }
     }
@@ -666,6 +639,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     @Override
     public void flushConfig() {
         if (project.isInMemory()) {
+            // Do not save in-memory projects.
             return;
         }
         // Use async config saver to avoid too frequent configuration re-save during some massive configuration update
@@ -802,6 +776,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
+    @Override
+    public void initializeDataSources() {
+        boolean isLoaded = loadDataSources(true) != null;
+        if (!isMultiUser() && isLoaded) {
+            DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
+            addDataSourceListener(modelChangeListener);
+        }
+    }
+
     private DataSourceParseResults loadDataSources(boolean refresh) {
        return loadDataSources(
             configurationManager.getConfigurationStorages(),
@@ -811,6 +794,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             true);
     }
 
+    @Nullable
     @Override
     public DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
@@ -848,6 +832,18 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
             for (DBPDataSourceFolder folder : parseResults.addedFolders) {
                 addDataSourceFolder((DataSourceFolder) folder);
+            }
+
+            // Remove untouched profiles
+            // purgeUntouched removes only data sources and folders
+            // Profiles are always removed if they are not in the config
+            for (DBWNetworkProfile profile : networkProfileManager.getProfiles()) {
+                if (!parseResults.updatedProfiles.contains(profile)) {
+                    parseResults.removedProfiles.add(profile);
+                }
+            }
+            for (DBWNetworkProfile profile : parseResults.removedProfiles) {
+                networkProfileManager.removeProfile(profile);
             }
 
             if (purgeUntouched) {
@@ -919,7 +915,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         saveDataSources(new VoidProgressMonitor());
     }
 
-    protected void saveDataSources(DBRProgressMonitor monitor) {
+    protected void saveDataSources(@NotNull DBRProgressMonitor monitor) {
         if (project.isInMemory()) {
             return;
         }
@@ -928,9 +924,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         saveInProgress = true;
         try {
             for (DBPDataSourceConfigurationStorage storage : storages) {
-                if (storage instanceof DataSourceFileStorage && ((DataSourceFileStorage) storage).isLegacy()) {
+                if (storage instanceof DataSourceFileStorage fs && fs.isLegacy()) {
                     // Legacy storage. We must save it in the modern format
-                    ((DataSourceFileStorage) storage).convertToModern(project);
+                    fs.convertToModern(project);
                 }
 
                 List<T> localDataSources = getDataSources(storage);
@@ -963,7 +959,8 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
-    private List<T> getDataSources(DBPDataSourceConfigurationStorage storage) {
+    @NotNull
+    private List<T> getDataSources(@NotNull DBPDataSourceConfigurationStorage storage) {
         List<T> result = new ArrayList<>();
         synchronized (dataSources) {
             for (T ds : dataSources.values()) {
@@ -988,6 +985,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return project;
     }
 
+    @NotNull
     public DataSourceConfigurationManager getConfigurationManager() {
         return configurationManager;
     }
@@ -1044,11 +1042,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void persistSecrets(DBSSecretController secretController) throws DBException {
+    public void persistSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.persistSecrets(secretController);
         }
-        for (DBWNetworkProfile np : getNetworkProfiles()) {
+        for (DBWNetworkProfile np : getNetworkProfiles().getProfiles()) {
             np.persistSecrets(secretController);
         }
         for (DBAAuthProfile ap : getAllAuthProfiles()) {
@@ -1057,28 +1055,16 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void resolveSecrets(DBSSecretController secretController) throws DBException {
+    public void resolveSecrets(@NotNull DBSSecretController secretController) throws DBException {
         for (DBPDataSourceContainer ds : getDataSources()) {
             ds.resolveSecrets(secretController);
         }
-        for (DBWNetworkProfile np : getNetworkProfiles()) {
+        for (DBWNetworkProfile np : getNetworkProfiles().getProfiles()) {
             np.resolveSecrets(secretController);
         }
         for (DBAAuthProfile ap : getAllAuthProfiles()) {
             ap.resolveSecrets(secretController);
         }
-    }
-
-    public DBPDataSourceContainer createDataSource(
-        DBPDataSourceConfigurationStorage dbpDataSourceConfigurationStorage,
-        DBPDataSourceOrigin origin,
-        String id,
-        DriverDescriptor originalDriver,
-        DriverDescriptor substitutedDriver,
-        DBPConnectionConfiguration dbpConnectionConfiguration
-    ) {
-        return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
-            substitutedDriver, dbpConnectionConfiguration);
     }
 
     private class EventProcessJob extends Job {
@@ -1149,4 +1135,51 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    private static class ProjectNetworkProfileManager extends DBWNetworkProfileManager {
+        @NotNull
+        private final DBPProject project;
+
+        public ProjectNetworkProfileManager(@NotNull DBPProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public void reloadProfiles() {
+            project.getDataSourceRegistry().refreshConfig();
+        }
+
+        @Override
+        public void saveSettings() {
+            project.getDataSourceRegistry().flushConfig();
+        }
+
+        @NotNull
+        @Override
+        protected DBSSecretController getSecretController() throws DBException {
+            return DBSSecretController.getProjectSecretController(project);
+        }
+
+        @NotNull
+        @Override
+        protected DBWNetworkProfileManager getParentManager() {
+            return project.getWorkspace().getPlatform().getNetworkProfiles();
+        }
+
+        @Override
+        public void removeProfile(@NotNull DBWNetworkProfile profile) {
+            super.removeProfile(profile);
+            if (!DBWorkbench.isDistributed() && project.isUseSecretStorage()) {
+                try {
+                    DBSSecretController secretController = getSecretController();
+                    secretController.setPrivateSecretValue(
+                        profile.getSecretKeyId(),
+                        null
+                    );
+                    secretController.flushChanges();
+                } catch (DBException e) {
+                    log.error("Error removing network profile secrets", e);
+                }
+            }
+        }
+    }
 }

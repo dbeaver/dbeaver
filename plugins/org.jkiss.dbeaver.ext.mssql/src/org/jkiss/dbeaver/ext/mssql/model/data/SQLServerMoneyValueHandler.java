@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,17 +32,17 @@ public class SQLServerMoneyValueHandler extends JDBCStringValueHandler {
 
     @Override
     protected Object fetchColumnValue(
-            DBCSession session,
-            JDBCResultSet resultSet,
-            DBSTypedObject type,
-            int index)
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index)
             throws SQLException
     {
         return resultSet.getString(index);
     }
 
     @Override
-    public void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
+    public void bindParameter(@NotNull JDBCSession session, @NotNull JDBCPreparedStatement statement, @NotNull DBSTypedObject paramType, int paramIndex, Object value) throws SQLException {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {

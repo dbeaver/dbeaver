@@ -135,10 +135,7 @@ public class StringEditorTableFactory<T> {
         if (!CommonUtils.isEmpty(values)) {
             for (T value : values) {
                 TableItem tableItem = new TableItem(valueTable, SWT.LEFT);
-                tableItem.setText(valuesManager.getString(value));
-                tableItem.setData(CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
-                DBPImage icon = valuesManager.getIcon(value);
-                tableItem.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+                setTableItemValue(tableItem, value);
             }
         }
     }
@@ -180,10 +177,7 @@ public class StringEditorTableFactory<T> {
                 String text = ((Text) control).getText().trim();
                 T value = valuesManager.prepareNewValue(getCustomValue(item), text);
                 if (value != null) {
-                    setCustomValue(item, value);
-                    item.setText(valuesManager.getString(value));
-                    DBPImage icon = valuesManager.getIcon(value);
-                    item.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+                    setTableItemValue(item, value);
                 }
             }
         };
@@ -194,9 +188,7 @@ public class StringEditorTableFactory<T> {
         Composite rightArea = UIUtils.createPlaceholder(valueTable.getParent(), 1, 5);
         rightArea.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        Composite buttonsGroup = UIUtils.createPlaceholder(rightArea, 1, 5);
-        buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-
+        Composite buttonsGroup = createButtonsGroup(rightArea);
         addButton = addButton(buttonsGroup);
         removeButton = removeButton(buttonsGroup);
         clearButton = clearButton(buttonsGroup);
@@ -206,6 +198,13 @@ public class StringEditorTableFactory<T> {
         upButton = upButton(bottomButtonsGroup);
         downButton = downButton(bottomButtonsGroup);
         return rightArea;
+    }
+
+    @NotNull
+    protected Composite createButtonsGroup(@NotNull Composite parent) {
+        Composite buttonsGroup = UIUtils.createPlaceholder(parent, 1, 5);
+        buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        return buttonsGroup;
     }
 
     @NotNull
@@ -223,13 +222,30 @@ public class StringEditorTableFactory<T> {
         return addButton;
     }
 
+    protected void addTableItem(@NotNull T value) {
+        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
+        setTableItemValue(newItem, value);
+        selectTableItem(newItem);
+    }
+
     protected void addTableItem(@NotNull TableItem newItem) {
         DBPImage icon = valuesManager.getIcon(null);
         newItem.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
-        valueTable.setSelection(newItem);
-        tableEditor.closeEditor();
+        selectTableItem(newItem);
         tableEditor.showEditor(newItem);
+    }
+
+    protected void selectTableItem(@NotNull TableItem item) {
+        valueTable.setSelection(item);
+        tableEditor.closeEditor();
         buttonsRefresher.run();
+    }
+
+    protected void setTableItemValue(@NotNull TableItem item, @Nullable T value) {
+        item.setText(valuesManager.getString(value));
+        item.setData(CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
+        DBPImage icon = valuesManager.getIcon(value);
+        item.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
     }
 
     @NotNull
@@ -281,10 +297,7 @@ public class StringEditorTableFactory<T> {
                     T value = getCustomValue(valueTable.getItem(selectionIndex));
                     valueTable.remove(selectionIndex);
                     TableItem tableItem = new TableItem(valueTable, SWT.LEFT, selectionIndex - 1);
-                    tableItem.setText(valuesManager.getString(value));
-                    setCustomValue(tableItem, value);
-                    DBPImage icon = valuesManager.getIcon(value);
-                    tableItem.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+                    setTableItemValue(tableItem, value);
                     valueTable.setSelection(selectionIndex - 1);
                     buttonsRefresher.run();
                 }
@@ -307,10 +320,7 @@ public class StringEditorTableFactory<T> {
                     T value = getCustomValue(valueTable.getItem(selectionIndex));
                     valueTable.remove(selectionIndex);
                     TableItem tableItem = new TableItem(valueTable, SWT.LEFT, selectionIndex + 1);
-                    tableItem.setText(valuesManager.getString(value));
-                    setCustomValue(tableItem, value);
-                    DBPImage icon = valuesManager.getIcon(value);
-                    tableItem.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+                    setTableItemValue(tableItem, value);
                     valueTable.setSelection(selectionIndex + 1);
                     buttonsRefresher.run();
                 }
@@ -323,10 +333,6 @@ public class StringEditorTableFactory<T> {
     @Nullable
     private <T> T getCustomValue(TableItem tableItem) {
         return (T) tableItem.getData(CUSTOM_EDITABLE_LIST_VALUE_KEY);
-    }
-
-    private <T> void setCustomValue(TableItem tableItem, T value) {
-        tableItem.setData(CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
     }
 
     public record StringValuesManager(@Nullable DBPImage icon) implements StringEditorTableUtils.TableValuesManager<String> {

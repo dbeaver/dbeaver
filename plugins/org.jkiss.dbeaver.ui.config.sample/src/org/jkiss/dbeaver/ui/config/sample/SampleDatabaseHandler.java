@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,12 +35,12 @@ public class SampleDatabaseHandler extends AbstractHandler {
         }
         DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
         Shell shell = UIUtils.getActiveWorkbenchShell();
-        if (WorkbenchInitializerCreateSampleDatabase.isSampleDatabaseExists(registry)) {
+        if (SampleDatabaseUtil.isSampleDatabaseExists(registry)) {
             UIUtils.showMessageBox(shell, SampleDatabaseMessages.dialog_already_created_title, SampleDatabaseMessages.dialog_already_created_description, SWT.ICON_WARNING);
             return null;
         }
         if (WorkbenchInitializerCreateSampleDatabase.showCreateSampleDatabasePrompt(shell)) {
-            WorkbenchInitializerCreateSampleDatabase.createSampleDatabase(registry);
+            SampleDatabaseUtil.createSampleDatabase(registry);
         }
         return null;
     }

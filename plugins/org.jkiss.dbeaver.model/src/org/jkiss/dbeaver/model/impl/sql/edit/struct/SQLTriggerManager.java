@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,9 +47,11 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
     }
 
     @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException
-    {
+    protected void validateObjectProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Trigger name cannot be empty");
         }

@@ -85,7 +85,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
 
     @CommandLine.Option(names = {"-bringToFront"}, description = "Bring DBeaver window on top of other applications")
     private boolean bringToFront;
-    @CommandLine.Option(names = {"-q"}, description = "Run quietly (do not print logs)")
+    @CommandLine.Option(names = {"-q", "-quiet"}, description = "Run quietly (do not print logs)")
     private boolean quiet;
 
     @Nullable

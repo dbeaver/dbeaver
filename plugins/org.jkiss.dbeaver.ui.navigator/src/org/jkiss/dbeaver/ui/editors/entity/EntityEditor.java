@@ -580,7 +580,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Command listener
         commandListener = new DBECommandAdapter() {
             @Override
-            public void onCommandChange(DBECommand<?> command)
+            public void onCommandChange(@NotNull DBECommand<?> command)
             {
                 UIUtils.syncExec(() -> firePropertyChange(IEditorPart.PROP_DIRTY));
             }

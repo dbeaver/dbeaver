@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,22 +112,31 @@ public class GeometryDataUtils {
                 info.put(binding.getName(), binding.getValueHandler().getValueDisplayString(binding, description, DBDDisplayFormat.NATIVE));
             }
         }
+
+        RGB color = deriveGeometryColor(info);
+        if (color == null) {
+            color = makeGeometryColor(index);
+        }
+
         final Map<String, Object> properties = new LinkedHashMap<>();
         properties.put("id", DBUtils.getObjectFullName(geomAttrs.geomAttr, DBPEvaluationContext.UI));
-        properties.put("color", info.getOrDefault("color", rgbToHex(makeGeometryColor(index))));
+        properties.put("color", rgbToHex(color));
         properties.put("info", info);
         geometry.setProperties(properties);
 
-        final DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
-        final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), true) : null;
+        DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
+        DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), true) : null;
 
         if (entity != null) {
-            final Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
+            Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
 
             if (!attributes.isEmpty()) {
-                final String divider = entity.getDataSource().getContainer()
+                String divider = entity.getDataSource().getContainer()
                     .getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER);
-                final String name = attributes.stream()
+                if (CommonUtils.isEmpty(divider)) {
+                    divider = " ";
+                }
+                String name = attributes.stream()
                     .map(DBDAttributeBinding::getName)
                     .map(info::get)
                     .filter(Objects::nonNull)
@@ -136,6 +147,42 @@ public class GeometryDataUtils {
                 }
             }
         }
+    }
+
+    @Nullable
+    private static RGB deriveGeometryColor(@NotNull Map<String, String> attributes) {
+        String value = attributes.get("color");
+        if (value == null) {
+            return null;
+        }
+        RGB color = hexStringToRgb(value);
+        if (color == null) {
+            color = stringToRandomRgb(value);
+        }
+        return color;
+    }
+
+    @Nullable
+    private static RGB hexStringToRgb(@NotNull String value) {
+        if (!value.startsWith("#") || value.length() != 7) {
+            return null;
+        }
+        try {
+            int num = Integer.parseInt(value, 1, 7, 16);
+            return new RGB(num >> 16 & 0xFF, num >> 8 & 0xFF, num & 0xFF);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    @NotNull
+    private static RGB stringToRandomRgb(@NotNull String value) {
+        var random = new Random(value.hashCode());
+        return new RGB(
+            100 + random.nextInt(156),
+            100 + random.nextInt(156),
+            100 + random.nextInt(156)
+        );
     }
 
     @NotNull

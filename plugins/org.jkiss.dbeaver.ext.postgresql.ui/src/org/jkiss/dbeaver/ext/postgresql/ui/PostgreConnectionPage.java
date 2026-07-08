@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -247,7 +249,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (typeURLRadio != null) {
             connectionInfo.setConfigurationType(
@@ -273,6 +275,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         super.saveSettings(dataSource);
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {
@@ -280,14 +283,21 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             new DriverPropertiesDialogPage(this)
         };
     }
-    
+
+    @Override
+    protected void authModelPropertiesChanged() {
+        super.authModelPropertiesChanged();
+        // Auth models MAY change the URL. Let's reflect it
+        updateUrl();
+    }
+
     private void updateUrl() {
-        DBPDataSourceContainer dataSourceContainer = site.getActiveDataSource();
-        saveSettings(dataSourceContainer);
+        var container = site.getActiveDataSource().createCopy(site.getDataSourceRegistry());
+        saveSettings(container);
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
-            urlText.setText(dataSourceContainer.getConnectionConfiguration().getUrl());
+            urlText.setText(container.getConnectionConfiguration().getUrl());
         } else {
-            urlText.setText(dataSourceContainer.getDriver().getConnectionURL(site.getActiveDataSource().getConnectionConfiguration()));
+            urlText.setText(container.getDriver().getConnectionURL(container.getConnectionConfiguration()));
         }
     }
 }
