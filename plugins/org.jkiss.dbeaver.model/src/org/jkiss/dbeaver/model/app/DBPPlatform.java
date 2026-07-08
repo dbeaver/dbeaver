@@ -109,7 +109,7 @@ public interface DBPPlatform {
     DBConfigurationController getPluginConfigurationController(@Nullable String pluginId);
 
     /**
-     * Local config files are used to store some configuration specific to local machine only.
+     * Local config files are used to store some configuration specific to local machine and active workspace.
      */
     @NotNull
     Path getLocalConfigurationFile(String fileName);

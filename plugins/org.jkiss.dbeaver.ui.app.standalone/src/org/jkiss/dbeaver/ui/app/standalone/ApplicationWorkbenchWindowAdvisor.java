@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
@@ -139,9 +140,8 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     public void preWindowOpen() {
         log.debug("Configure workbench window");
 
-        if (DesktopPlatform.isStandalone() && DBWorkbench.isDistributed() && ProductConfigUtils.isShowOnStartup()) {
-            showProductConfigDialog();
-        }
+        // Show Product Config, if applicable
+        showProductConfigDialog();
 
         DesktopPlatform platform = DBWorkbench.getPlatform(DesktopPlatform.class);
         platform.postInitialize();
@@ -177,6 +177,14 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     private void showProductConfigDialog() {
+        if (!DesktopPlatform.isStandalone() || DBWorkbench.isDistributed()) {
+            // Only applicable to desktop, single-user apps
+            return;
+        }
+        if (!ProductConfigUtils.isShowOnStartup() || !ProductConfigRegistry.getInstance().hasNewFeatures()) {
+            // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
+            return;
+        }
         var display = Display.getCurrent();
         var splash = WorkbenchPlugin.getSplashShell(display);
         try {
