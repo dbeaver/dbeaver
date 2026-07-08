@@ -46,6 +46,8 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import java.util.function.Consumer;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
+    private boolean seenLanguageChangeWarning = false;
+
     public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window) {
         super(window, new ProductConfigWizard());
     }
@@ -118,11 +120,6 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
 
     @Override
     public boolean isHelpAvailable() {
-        if (true) {
-            // TODO figure how to forcefully restart without catching a dozen of exceptions.
-            return false;
-        }
-        // We're reusing the help system for language selection.
         // Language change only supported when the wizard appears before the application is fully initialized.
         return DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager;
     }
@@ -140,12 +137,15 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
             if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager manager) {
                 manager.setPlatformLanguage(newLanguage);
             }
-            UIUtils.showMessageBox(
-                getShell(),
-                "Language change",
-                "Language change will be applied after restart.",
-                SWT.ICON_INFORMATION
-            );
+            if (!seenLanguageChangeWarning) {
+                seenLanguageChangeWarning = true;
+                UIUtils.showMessageBox(
+                    getShell(),
+                    "Language change",
+                    "Language change will be applied after restart.",
+                    SWT.ICON_INFORMATION
+                );
+            }
         });
 
         var control = UIPanelBuilder.build(parent, buildLanguagePanel(language));
@@ -175,6 +175,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
             .row(rb -> rb.comboBox(
                 PlatformLanguageRegistry.getInstance().getLanguages(),
                 language,
-                DBPPlatformLanguage::getLabel));
+                DBPPlatformLanguage::getLabel
+            ));
     }
 }
