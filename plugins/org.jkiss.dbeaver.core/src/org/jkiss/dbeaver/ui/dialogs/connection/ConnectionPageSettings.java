@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -412,16 +413,21 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             manager.add(new Separator());
-            manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
-                @Override
-                public void run() {
-                    DBWNetworkProfile profile = getActiveProfile();
-                    PrefPageProjectNetworkProfiles.open(getShell(), getProject(), profile);
-                    if (profile != null) {
-                        selectProfile(profile);
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)
+                || (getProject().isPrivateProject() && DBWorkbench.getPlatform().getWorkspace()
+                .hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
+            ) {
+                manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
+                    @Override
+                    public void run() {
+                        DBWNetworkProfile profile = getActiveProfile();
+                        PrefPageProjectNetworkProfiles.open(getShell(), getProject(), profile);
+                        if (profile != null) {
+                            selectProfile(profile);
+                        }
                     }
-                }
-            });
+                });
+            }
         });
 
         var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
