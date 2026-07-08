@@ -139,7 +139,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     public void preWindowOpen() {
         log.debug("Configure workbench window");
 
-        if (DesktopPlatform.isStandalone() && ProductConfigUtils.isShowOnStartup()) {
+        if (DesktopPlatform.isStandalone() && DBWorkbench.isDistributed() && ProductConfigUtils.isShowOnStartup()) {
             showProductConfigDialog();
         }
 
