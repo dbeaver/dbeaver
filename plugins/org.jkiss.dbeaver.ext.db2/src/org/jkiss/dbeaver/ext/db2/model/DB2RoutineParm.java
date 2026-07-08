@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import java.sql.ResultSet;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,8 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
-
-import java.sql.ResultSet;
 
 /**
  * DB2 Routine Parameter
