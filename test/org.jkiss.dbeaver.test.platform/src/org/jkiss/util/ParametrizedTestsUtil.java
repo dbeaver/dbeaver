@@ -39,9 +39,9 @@ public class ParametrizedTestsUtil {
         for (Arguments args1 : first) {
             for (Arguments args2 : second) {
                 List<Object> args1List = args1.toList();
+                List<Object> args2List = args2.toList();
 
                 List<Object> combinedParameters = new ArrayList<>(args1List);
-                List<Object> args2List = args2.toList();
                 combinedParameters.addAll(args2List);
                 combined.add(Arguments.of(combinedParameters.toArray()));
                 int currentArgsLength = args1List.size() + args2List.size();

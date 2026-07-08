@@ -35,14 +35,16 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+import java.util.StringJoiner;
 
 /**
  * CSV Exporter
@@ -101,7 +103,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private DataExporterArrayFormat dataExporterArrayFormat;
 
     private final StringBuilder lineBuffer = new StringBuilder();
-    private CsvLineEscaper csvLineEscaper;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
@@ -131,7 +132,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         useQuotes = CommonUtils.isNotEmpty(quoteChar);
 
         if (useQuotes && quoteChar.equals(delimiter)) {
-            throw new IllegalArgumentException("Quotes and separator can't be the same string: " + quoteChar);
+            throw new DBException("Quotes and separator can't be the same string: " + quoteChar);
         }
 
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
@@ -154,7 +155,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             arrFormatProp = DEFAULT_ARRAY_BRACKETS;
         }
         dataExporterArrayFormat = DataExporterArrayFormat.getArrayFormat(arrFormatProp);
-        csvLineEscaper = new CsvLineEscaper();
     }
 
     @Override
@@ -337,16 +337,15 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private void writeCellValue(@NotNull Reader reader) throws IOException {
         try {
-            csvLineEscaper.clearState();
+            lineBuffer.setLength(0);
             char[] chars = new char[READ_BUFFER_SIZE];
             for (int count = reader.read(chars); count > 0; count = reader.read(chars)) {
-                csvLineEscaper.writeToLineBuffer(chars, count);
+                lineBuffer.append(Arrays.copyOf(chars, count));
             }
-            csvLineEscaper.writePending();
         } finally {
             ContentUtils.close(reader);
         }
-        writePreparedCellValue(lineBuffer.toString(), csvLineEscaper.isLineNeedsQuotation());
+        writeCellValue(lineBuffer.toString(), false);
     }
 
     private void writeLines(@NotNull String[] multiRow, boolean quote, @NotNull String customLineBreak) {
@@ -403,162 +402,6 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private boolean isQuoteChar(@NotNull String value, int toffset) {
         // if separator is longer it might contain quote char in it.
         return (delimiter.length() <= quoteChar.length() || !value.startsWith(delimiter, toffset)) && value.startsWith(quoteChar, toffset);
-    }
-
-    private class CsvLineEscaper {
-
-        // special chars must be parsed from the longest one
-        private final List<Pair<CharStrategy, char[]>> orderedSpecialChars = new ArrayList<>();
-
-        // tricky case when delimiter starts from quote and is longer then quote
-        private boolean isDelimiterContainsQuotes;
-
-        // case of buffer overwhelm with special char stats in the buffer end
-        private int longestSpecialChar = 1;
-
-        private char[] pending = new char[0];
-
-        private boolean lineNeedsQuotation;
-
-        public CsvLineEscaper() {
-            if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-                orderedSpecialChars.add(Pair.of(CharStrategy.CRLF, CRLF.toCharArray()));
-                orderedSpecialChars.add(Pair.of(CharStrategy.LF, LF.toCharArray()));
-            }
-            if (useQuotes && CommonUtils.isNotEmpty(quoteChar)) {
-                orderedSpecialChars.add(Pair.of(CharStrategy.QUOTES, quoteChar.toCharArray()));
-                isDelimiterContainsQuotes = delimiter.startsWith(quoteChar);
-            }
-            orderedSpecialChars.sort(Comparator.comparingInt((Pair<CharStrategy, char[]> p) -> p.getSecond().length)
-                .reversed()
-                .thenComparing(Pair::getFirst));
-            if (!orderedSpecialChars.isEmpty()) {
-                longestSpecialChar = Math.max(orderedSpecialChars.getFirst().getSecond().length, delimiter.length());
-            }
-        }
-
-        public void writeToLineBuffer(@NotNull char[] chars, int readCount) {
-            int limit = readCount + pending.length;
-            // buffer overwhelming
-            boolean needPending = readCount == chars.length && readCount > 0;
-            if (needPending) {
-                limit -= longestSpecialChar;
-            }
-            int combinedIndex = 0;
-            while (combinedIndex < limit) {
-                CharStrategy strategy = defineStrategy(chars, combinedIndex);
-                combinedIndex += switch (strategy) {
-                    case NORMAL_CHAR -> processNormalChar(combinedIndex < pending.length
-                        ? pending[combinedIndex]
-                        : chars[combinedIndex - pending.length]);
-                    case QUOTES -> processQuotes();
-                    case LF, CRLF -> processLinebreak(strategy);
-                };
-            }
-
-
-            if (needPending) {
-                pending = new char[longestSpecialChar];
-                System.arraycopy(chars, chars.length - longestSpecialChar, pending, 0, pending.length);
-            } else {
-                pending = new char[0];
-            }
-        }
-
-        public void writePending() {
-            if (pending.length > 0) {
-                writeToLineBuffer(new char[0], 0);
-            }
-        }
-
-        private int processNormalChar(char character) {
-            lineBuffer.append(character);
-            return 1;
-        }
-
-        private int processQuotes() {
-            if (!isLineNeedsQuotation()) {
-                lineNeedsQuotation = true;
-            }
-            lineBuffer.append(quoteChar.repeat(2));
-            return quoteChar.length();
-        }
-
-        private int processLinebreak(@NotNull CharStrategy lineBreakStrategy) {
-            if (!isLineNeedsQuotation()) {
-                lineNeedsQuotation = true;
-            }
-            lineBuffer.append(lineFeedEscapeString);
-            return switch (lineBreakStrategy) {
-                case LF -> LF.length();
-                case CRLF -> CRLF.length();
-                default -> throw new IllegalArgumentException("Only CRLF or LF is allowed here. This line must be unreachable");
-            };
-        }
-
-        @NotNull
-        private CharStrategy defineStrategy(@NotNull char[] chars, int toffset) {
-            for (Pair<CharStrategy, char[]> strategyPair : orderedSpecialChars) {
-                if (checkMatch(chars, toffset, strategyPair)) {
-                    return strategyPair.getFirst();
-                }
-            }
-            return CharStrategy.NORMAL_CHAR;
-        }
-
-        private boolean checkMatch(@NotNull char[] chars, int toffset, @NotNull Pair<CharStrategy, char[]> strategy) {
-            return switch (strategy.getFirst()) {
-                case CRLF, LF -> containsSpecialChar(chars, toffset, strategy.getSecond());
-                case QUOTES -> containsQuotes(chars, toffset, strategy.getSecond());
-                default -> false;
-            };
-        }
-
-        private boolean containsQuotes(@NotNull char[] chars, int toffset, char[] quotes) {
-            return isDelimiterContainsQuotes
-                ? !containsSpecialChar(chars, toffset, delimiter.toCharArray()) && containsSpecialChar(chars, toffset, quotes)
-                : containsSpecialChar(chars, toffset, quotes);
-        }
-
-        // pending = [a,b], chars = [c,d], specialChar = [a,b,c] -> true
-        private boolean containsSpecialChar(@NotNull char[] chars, int toffset, @NotNull char[] specialChar) {
-            if (toffset < pending.length) {
-                int charsInPending = pending.length - toffset;
-                // all in pending
-                if (charsInPending >= specialChar.length) {
-                    return Arrays.equals(pending, toffset, toffset + specialChar.length, specialChar, 0, specialChar.length);
-                }
-                // pending and chars
-                int charsInChars = specialChar.length - charsInPending;
-                return charsInChars <= chars.length
-                    && Arrays.equals(pending, toffset, pending.length, specialChar, 0, charsInPending)
-                    && Arrays.equals(chars, 0, charsInChars, specialChar, charsInPending, specialChar.length);
-
-            }
-            // look only in chars
-            int charsOffset = toffset - pending.length;
-            int charsEndIndex = charsOffset + specialChar.length;
-            return charsEndIndex <= chars.length
-                && Arrays.equals(chars, charsOffset, charsEndIndex, specialChar, 0, specialChar.length);
-        }
-
-        public void clearState() {
-            pending = new char[0];
-            lineBuffer.setLength(0);
-            lineNeedsQuotation = false;
-        }
-
-        public boolean isLineNeedsQuotation() {
-            return lineNeedsQuotation;
-        }
-
-        private enum CharStrategy {
-            QUOTES,
-            LF,
-            CRLF,
-            NORMAL_CHAR
-        }
-
     }
 
     private void writeDelimiter()
