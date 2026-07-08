@@ -30,7 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AIDataSourceSettings;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -71,7 +71,7 @@ public class ScopeSelectorControl extends Composite {
         @NotNull Composite parent,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull AIDataSourceSettings settings
+        @NotNull AIContextSettingsDataSource settings
     ) {
         super(parent, SWT.NONE);
 
