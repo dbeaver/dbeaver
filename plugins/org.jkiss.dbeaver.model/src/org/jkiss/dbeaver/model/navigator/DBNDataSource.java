@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -259,6 +260,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
             return false;
         }
         dataSource.setFolder(folder);
+        if (DBWorkbench.isDistributed()) {
+            return dataSource.persistConfiguration(false);
+        }
         return true;
     }
 

@@ -204,17 +204,17 @@ public class PostgreValueParserTest extends DBeaverUnitTest {
             );
 
         tester.accept("NULL", make2d.apply(null));
-        tester.accept("{NULL,NULL}", make2d.apply(new String[] {null, "NULL"}));
+        tester.accept("{NULL,\"NULL\"}", make2d.apply(new String[] {null, "NULL"}));
 
         tester.accept("{}", make2d.apply(new String[] {}));
-        tester.accept("{one,two, four with spaces ,f{i,v}e}",
+        tester.accept("{one,two,\" four with spaces \",\"f{i,v}e\"}",
             make2d.apply(new String[] {"one", "two", " four with spaces ", "f{i,v}e"})
         );
 
-        tester.accept("{\"quote\"}", make2d.apply(new String[] {"\"quote\""}));
+        tester.accept("{\"\\\"quote\\\"\"}", make2d.apply(new String[] {"\"quote\""}));
 
         tester.accept("{{a,b,c},{d,e,f}}", make3d.apply(new String[][] {{"a", "b", "c"}, {"d", "e", "f"}}));
-        tester.accept("{{},{{}},{\"}}", make3d.apply(new String[][] {{""}, {"{}"}, {"\""}}));
+        tester.accept("{{\"\"},{\"{}\"},{\"\\\"\"}}", make3d.apply(new String[][] {{""}, {"{}"}, {"\""}}));
     }
 
     @Test

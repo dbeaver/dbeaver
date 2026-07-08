@@ -686,7 +686,11 @@ public class ContextComposite extends Composite {
         ) {
             super(genProfileName(profile), AS_RADIO_BUTTON);
             this.profile = profile;
-            setChecked(chat.getActiveConversation().getProfile() == profile);
+            AIConfigurationProfile chatProfile = chat.getActiveConversation().getProfile();
+            if (chatProfile == null) {
+                chatProfile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+            }
+            setChecked(chatProfile == profile);
         }
 
         @NotNull
