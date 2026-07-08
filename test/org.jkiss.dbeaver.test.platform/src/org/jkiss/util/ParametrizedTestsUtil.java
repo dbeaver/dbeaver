@@ -30,7 +30,7 @@ public class ParametrizedTestsUtil {
     // combining logic: [a, b], [c, d, e] -> [ac, ad, ae, bc, bd, be]
     // [[1,2], [3,4]], [[a, b], [c, d]] -> [[1, a, b], [1, c, d], [2, a, b] ,... ,[4, c, d]]
     @NotNull
-    public static Stream<? extends Arguments> combineArguments(
+    public static Stream<? extends Arguments> cartesianArguments(
         @NotNull Iterable<? extends Arguments> first,
         @NotNull Iterable<? extends Arguments> second
     ) {

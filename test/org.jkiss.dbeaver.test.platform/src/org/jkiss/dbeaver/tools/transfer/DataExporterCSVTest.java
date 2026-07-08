@@ -631,7 +631,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         @Override
         public Stream<? extends Arguments> provideArguments(@Nullable ParameterDeclarations parameters, @Nullable ExtensionContext context)
         throws Exception {
-            return ParametrizedTestsUtil.combineArguments(separators, rowContentCreators);
+            return ParametrizedTestsUtil.cartesianArguments(separators, rowContentCreators);
         }
     }
 
