@@ -125,7 +125,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     @Override
     protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
         List<? extends DBPDataSourceContainer> usedBy = connectionsUsingProfile(selectedProfile);
-            if (!usedBy.isEmpty()) {
+        if (!usedBy.isEmpty()) {
                 UIUtils.showMessageBox(
                     getShell(),
                     UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
