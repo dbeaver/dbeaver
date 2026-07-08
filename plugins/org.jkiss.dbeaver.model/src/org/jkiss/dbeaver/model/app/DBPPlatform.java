@@ -112,7 +112,17 @@ public interface DBPPlatform {
      * Local config files are used to store some configuration specific to local machine and active workspace.
      */
     @NotNull
-    Path getLocalConfigurationFile(String fileName);
+    Path getLocalConfigurationFile(@NotNull String fileName);
+
+    /**
+     * Global config files are used to store some configuration which can
+     * be shared between different workspaces, but still specific to local machine.
+     *
+     * @param fileName name of the file
+     * @return path to the file in global configuration folder
+     */
+    @NotNull
+    Path getGlobalConfigurationFile(@NotNull String fileName);
 
     /**
      * File controller allows to read/write binary files (e.g. custom driver libraries)

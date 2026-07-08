@@ -23,8 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,9 +32,6 @@ import java.util.*;
 public final class ProductConfigRegistry {
     private static final Log log = Log.getLog(ProductConfigRegistry.class);
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.app.config";
-
-    // org.jkiss.dbeaver.registry.settings.GlobalSettings.DBEAVER_CONFIG_FOLDER
-    private static final String CONFIG_DIR = "settings";
     private static final String CONFIG_FILE = "product-config.json";
 
     private static ProductConfigRegistry instance;
@@ -157,8 +153,7 @@ public final class ProductConfigRegistry {
 
     @NotNull
     private static Path getConfigFilePath() {
-        var root = RuntimeUtils.getWorkingDirectory(BaseApplicationImpl.DBEAVER_DATA_DIR);
-        return Path.of(root, CONFIG_DIR, CONFIG_FILE);
+        return DBWorkbench.getPlatform().getGlobalConfigurationFile(CONFIG_FILE);
     }
 
     private record State(@NotNull Map<String, Feature> features) {
