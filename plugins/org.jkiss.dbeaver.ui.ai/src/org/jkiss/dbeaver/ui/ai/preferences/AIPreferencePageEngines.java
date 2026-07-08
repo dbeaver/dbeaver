@@ -34,7 +34,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
-import org.jkiss.dbeaver.model.ai.AIIcons;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -162,12 +161,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             GridData gridData = new GridData(GridData.FILL_BOTH);
             gridData.heightHint = UIUtils.getFontHeight(table) * 6;
             table.setLayoutData(gridData);
+/*
             table.addListener(SWT.MeasureItem, new Listener() {
                 public void handleEvent(Event event) {
                     // Set the height for all rows in pixels
                     event.height = DBeaverIcons.getImage(AIIcons.AI).getBounds().height + 5;
                 }
             });
+*/
             createProfilesColumns();
             reloadEngines();
 
