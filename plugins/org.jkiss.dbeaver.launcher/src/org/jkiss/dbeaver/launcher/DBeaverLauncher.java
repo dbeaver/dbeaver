@@ -35,8 +35,8 @@ import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.security.Security;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -808,6 +808,11 @@ public class DBeaverLauncher {
         }
 
         return true;
+    }
+
+    private static boolean isMacOSSequoia() {
+        return System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("mac")
+            && System.getProperty("os.version", "").startsWith("15.");
     }
 
     private CommandLineExecuteResult processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
@@ -2800,9 +2805,9 @@ public class DBeaverLauncher {
      * @param defaultPath search path for the boot plugin
      */
     private void handleSplash(URL[] defaultPath) {
-        // run without splash if we are initializing or nosplash
-        // was specified (splashdown = true)
-        if (initialize || splashDown || bridge == null) {
+        // run without splash if we are initializing, nosplash was specified
+        // (splashdown = true), or the native splash deadlocks startup (macOS Sequoia) https://github.com/dbeaver/dbeaver/issues/41436
+        if (initialize || splashDown || bridge == null || isMacOSSequoia()) {
             showSplash = false;
             endSplash = null;
             return;
