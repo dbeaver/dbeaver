@@ -341,7 +341,7 @@ public class ContextComposite extends Composite {
         ) {
             LocalDateTime msgTime = conversion.getTime();
             manager.add(new Action(
-                conversion.getCaption() + " - " + msgTime.format(
+                conversion.getCaption() + " / " + msgTime.format(
                         msgTime.toLocalDate().equals(today) ? CONV_TIME_FORMAT : CONV_DATE_TIME_FORMAT),
                 DBeaverIcons.getImageDescriptor(getConversationIcon(conversion))
             ) {
@@ -409,6 +409,12 @@ public class ContextComposite extends Composite {
                 continue;
             }
             manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
+        }
+
+        manager.add(new Separator());
+        manager.add(new EmptyAction("Active configuration"));
+        for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
+            manager.add(new ChangeProfileAction(profile));
         }
     }
 
@@ -551,7 +557,7 @@ public class ContextComposite extends Composite {
             super(dataSourceContext ? "This connection" : "This conversation", Action.AS_RADIO_BUTTON);
             this.dataSourceContext = dataSourceContext;
 
-            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AICompletionSettings;
+            boolean isDataSourceSettings = chat.getCompletionSettings() instanceof AIDataSourceSettings;
             setChecked(dataSourceContext == isDataSourceSettings);
         }
 
@@ -579,7 +585,7 @@ public class ContextComposite extends Composite {
             AIContextSettings newSettings;
             // change scope
             if (dataSourceContext) {
-                newSettings = new AICompletionSettings(dataSourceContainer);
+                newSettings = new AIDataSourceSettings(dataSourceContainer);
             } else {
                 newSettings = new AIChatConversationSettings(chat.getChatSession(), chat.getActiveConversation());
             }
@@ -654,13 +660,56 @@ public class ContextComposite extends Composite {
 
         private void chooseCustomScope() {
             DBPDataSourceContainer container = settings.getDataSourceContainer();
+            if (container == null) {
+                return;
+            }
+            DBCExecutionContext executionContext = chat.getExecutionContext(container);
+            if (executionContext == null) {
+                return;
+            }
             AIChatUtils.chooseCustomScope(
                 getShell(),
                 settings,
                 container,
-                chat::getExecutionContext,
+                ds -> executionContext,
                 chat.getActiveConversation()
             );
+        }
+    }
+
+    private class ChangeProfileAction extends Action {
+
+        private final AIConfigurationProfile profile;
+
+        public ChangeProfileAction(
+            @NotNull AIConfigurationProfile profile
+        ) {
+            super(genProfileName(profile), AS_RADIO_BUTTON);
+            this.profile = profile;
+            AIConfigurationProfile chatProfile = chat.getActiveConversation().getProfile();
+            if (chatProfile == null) {
+                chatProfile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+            }
+            setChecked(chatProfile == profile);
+        }
+
+        @NotNull
+        private static String genProfileName(@NotNull AIConfigurationProfile profile) {
+            String model = null;
+            try {
+                model = profile.getConfiguration().getModel();
+            } catch (DBException e) {
+                log.debug(e);
+            }
+            return profile.getProfileName() + (model == null ? "" : " / " + model);
+        }
+
+        @Override
+        public void run() {
+            if (!isChecked()) {
+                return;
+            }
+            chat.getActiveConversation().setProfile(profile);
         }
     }
 

@@ -861,9 +861,9 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean persistConfiguration() {
+    public boolean persistConfiguration(boolean forcePersistSecrets) {
         try {
-            registry.updateDataSource(this);
+            registry.updateDataSource(this, forcePersistSecrets);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Datasource update error", "Error updating datasource", e);
             return false;
