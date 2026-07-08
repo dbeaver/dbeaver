@@ -197,11 +197,15 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         }
 
         private boolean askNameConfirmation(@NotNull List<String> projectsWithSameProfile, @NotNull String profileName) {
-            String projectsList = "\n" + String.join("\n", projectsWithSameProfile);
+            String projectsList = String.join("\n", projectsWithSameProfile);
             return UIUtils.confirmAction(
                 getShell(),
-                "Same name",
-                "Profile name '%s' is present as local profile in projects: %s".formatted(profileName, projectsList)
+                UIConnectionMessages.pref_page_network_profiles_global_project_name_used_label,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_global_project_name_used_question,
+                    profileName,
+                    projectsList
+                )
             );
         }
 
