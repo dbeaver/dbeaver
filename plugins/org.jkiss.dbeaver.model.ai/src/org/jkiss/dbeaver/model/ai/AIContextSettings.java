@@ -33,7 +33,9 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * AI context settings
+ * AI context settings.
+ * Subset of AI configuration specific for a datasource or conversation.
+ * Keep information about database scope and AI/MCP enablement flags.
  */
 public abstract class AIContextSettings {
 
