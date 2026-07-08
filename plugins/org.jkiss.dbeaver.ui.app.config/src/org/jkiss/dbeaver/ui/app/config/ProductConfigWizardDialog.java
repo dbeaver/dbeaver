@@ -46,22 +46,8 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import java.util.function.Consumer;
 
 public final class ProductConfigWizardDialog extends ActiveWizardDialog {
-    private final UIObservable<DBPPlatformLanguage> language =
-        UIObservable.of(DBPPlatformDesktop.getInstance().getPlatformLanguage(), DBPPlatformLanguage.class);
-    private Control languagePicker;
-
     public ProductConfigWizardDialog(@NotNull IWorkbenchWindow window) {
         super(window, new ProductConfigWizard());
-
-        // We're reusing the help system for language selection
-        setHelpAvailable(true);
-
-        language.addChangeListener((ignored, language) -> setLanguage(language));
-
-        addPageChangedListener(event -> {
-            boolean firstPageSelected = event.getSelectedPage() == getWizard().getStartingPage();
-            UIUtils.setControlVisible(languagePicker, firstPageSelected);
-        });
     }
 
     public boolean isRestartRequired() {
@@ -130,13 +116,47 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         }
     }
 
+    @Override
+    public boolean isHelpAvailable() {
+        if (true) {
+            // TODO figure how to forcefully restart without catching a dozen of exceptions.
+            return false;
+        }
+        // We're reusing the help system for language selection.
+        // Language change only supported when the wizard appears before the application is fully initialized.
+        return DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager;
+    }
+
     @NotNull
     @Override
     protected Control createHelpControl(@NotNull Composite parent) {
         ((GridLayout) parent.getLayout()).numColumns++;
-        languagePicker = UIPanelBuilder.build(parent, buildLanguagePanel(language));
-        languagePicker.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        return languagePicker;
+
+        var language = UIObservable.of(
+            DBPPlatformDesktop.getInstance().getPlatformLanguage(),
+            DBPPlatformLanguage.class
+        );
+        language.addChangeListener((o, newLanguage) -> {
+            if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager manager) {
+                manager.setPlatformLanguage(newLanguage);
+            }
+            UIUtils.showMessageBox(
+                getShell(),
+                "Language change",
+                "Language change will be applied after restart.",
+                SWT.ICON_INFORMATION
+            );
+        });
+
+        var control = UIPanelBuilder.build(parent, buildLanguagePanel(language));
+        control.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+
+        addPageChangedListener(event -> {
+            boolean firstPageSelected = event.getSelectedPage() == getWizard().getStartingPage();
+            UIUtils.setControlVisible(control, firstPageSelected);
+        });
+
+        return control;
     }
 
     @Override
@@ -151,17 +171,10 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildLanguagePanel(@NotNull UIObservable<DBPPlatformLanguage> language) {
-        return pb -> pb.row(rb -> rb.comboBox(
-            PlatformLanguageRegistry.getInstance().getLanguages(),
-            language,
-            DBPPlatformLanguage::getLabel
-        ));
-    }
-
-    private static void setLanguage(@NotNull DBPPlatformLanguage language) {
-        if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
-            languageManager.setPlatformLanguage(language);
-        }
-        DBWorkbench.getPlatformUI().showMessageBox("Language change", "Change will take effect after restart", false);
+        return pb -> pb
+            .row(rb -> rb.comboBox(
+                PlatformLanguageRegistry.getInstance().getLanguages(),
+                language,
+                DBPPlatformLanguage::getLabel));
     }
 }
