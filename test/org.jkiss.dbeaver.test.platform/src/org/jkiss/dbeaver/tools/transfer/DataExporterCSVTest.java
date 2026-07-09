@@ -561,14 +561,6 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         dataExporterCSV.init(site);
     }
 
-    private String createNumbersRow(int numbers) {
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < numbers; i++) {
-            buffer.append(i % 10);
-        }
-        return buffer.toString();
-    }
-
     public static class SeparatorsAndContentCreatorProvider implements ArgumentsProvider {
 
         private final List<? extends Arguments> separators = List.of(
