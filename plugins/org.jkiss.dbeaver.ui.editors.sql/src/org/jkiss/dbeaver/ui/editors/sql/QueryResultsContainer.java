@@ -312,7 +312,7 @@ abstract class QueryResultsContainer implements
         if (!(query instanceof SQLQuery sqlQuery)) {
             throw new DBCException("Can't count rows for control command");
         }
-        if (sqlQuery.getStatement() instanceof PlainSelect) {
+        if (!(sqlQuery.getStatement() instanceof PlainSelect)) {
             throw new DBCException("Can't count rows for non-SELECT queries");
         }
         try {
