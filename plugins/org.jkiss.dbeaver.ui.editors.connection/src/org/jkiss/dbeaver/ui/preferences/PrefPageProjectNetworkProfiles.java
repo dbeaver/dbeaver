@@ -33,12 +33,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -70,7 +72,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         super.saveSettings(profile);
 
         try {
-            if (projectMeta != null && projectMeta.isUseSecretStorage()) {
+            if (!DBWorkbench.isDistributed() && projectMeta != null && projectMeta.isUseSecretStorage()) {
                 DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
                 profile.persistSecrets(secretController);
             }
@@ -85,7 +87,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         DBSSecretController secretController = null;
         if (projectMeta == null) {
             return DBSSecretController.getGlobalSecretController();
-        } else if (projectMeta.isUseSecretStorage()) {
+        } else if (!DBWorkbench.isDistributed() && projectMeta.isUseSecretStorage()) {
             secretController = DBSSecretController.getProjectSecretController(projectMeta);
         }
         return secretController;
@@ -251,5 +253,10 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
-
+    @Override
+    protected boolean hasAccessToPage() {
+        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(DBAPermissionRealm.PERMISSION_ADMIN) ||
+            (projectMeta != null && projectMeta.isPrivateProject() && DBWorkbench.getPlatform().getWorkspace()
+                .hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER));
+    }
 }

@@ -199,4 +199,18 @@
 
     </extension>
 
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature id="debug" label="Procedure debugger" enabledByDefault="false"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.activity.debug" name="Dashboards Activity">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="debug"/>
+            </enabledWhen>
+        </activity>
+
+        <activityPatternBinding activityId="dbeaver.activity.debug" pattern="org.jkiss.dbeaver.debug.*"/>
+    </extension>
+
 </plugin>

@@ -401,6 +401,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
+    public String getDeploymentId() {
+        return DeploymentId.get();
+    }
+
+    @NotNull
+    @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
     }
@@ -412,7 +418,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     }
 
     @Override
-    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) {
         if (CommonUtils.equalObjects(language, this.platformLanguage)) {
             return;
         }

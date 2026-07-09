@@ -14,14 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.app.devtools.handlers;
 
-package org.jkiss.dbeaver.model.qm;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 
-/**
- * Stores session-scoped Query Manager runtime state.
- */
-public interface QMRuntimeState {
-    boolean isQueryManagerUnavailable();
-
-    void setQueryManagerUnavailable();
+public class ShowEasyConfigHandler extends AbstractHandler {
+    @Nullable
+    @Override
+    public Object execute(@NotNull ExecutionEvent event) {
+        new ProductConfigWizardDialog(HandlerUtil.getActiveWorkbenchWindow(event)).open();
+        return null;
+    }
 }

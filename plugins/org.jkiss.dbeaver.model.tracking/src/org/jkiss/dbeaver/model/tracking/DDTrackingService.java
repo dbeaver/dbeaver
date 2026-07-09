@@ -14,28 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.qm;
+package org.jkiss.dbeaver.model.tracking;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-/**
- * Indicates that existing QM data is incompatible with this client version.
- */
-public class QMIncompatibleDatabaseException extends QMUnavailableException {
+public interface DDTrackingService {
 
-    public static final String DEFAULT_MESSAGE =
-        "QMDB data was created by a newer DBeaver version and is not supported by this client";
+    String API_KEY_HEADER = "DD-API-Key";
+    String METERING_ENDPOINT = "/metering";
+    String TRACK_START_ENDPOINT = "/track/start";
+    String TRACK_STOP_ENDPOINT = "/track/stop";
 
-    public QMIncompatibleDatabaseException() {
-        super(DEFAULT_MESSAGE);
-    }
+    @Nullable
+    DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client);
 
-    public QMIncompatibleDatabaseException(@NotNull Throwable cause) {
-        super(DEFAULT_MESSAGE, cause);
-    }
-
-    public QMIncompatibleDatabaseException(@NotNull String message, @NotNull Throwable cause) {
-        super(message, cause);
-    }
+    @Nullable
+    DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request);
 }

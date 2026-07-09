@@ -19,4 +19,8 @@
               name="%page.org.jkiss.dbeaver.preferences.main.usageStatistics"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.app.config">
+        <page id="dataCollection" order="4000" class="org.jkiss.dbeaver.ui.app.config.ProductConfigDataCollectionPage"/>
+    </extension>
+
 </plugin>
