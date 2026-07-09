@@ -17,7 +17,7 @@
                 id="tidblake"
                 parent="generic"
                 label="TiDBLake"
-                icon="icons/tidblake_icon.png"
+                icon="icons/tidblake_icon.svg"
                 dialect="tidblake">
             <drivers managable="true">
                 <driver
@@ -27,8 +27,8 @@
                     sampleURL="jdbc:lake://{host}:{port}[/{database}]"
                     defaultPort="443"
                     defaultDatabase="default"
-                    icon="icons/tidblake_icon.png"
-                    iconBig="icons/tidblake_icon_big.png"
+                    icon="icons/tidblake_icon.svg"
+                    iconBig="icons/tidblake_icon_big.svg"
                     description="TiDB Cloud Lake driver"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/tidbcloud/lake-jdbc"
@@ -53,7 +53,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="tidblake" parent="generic" class="org.jkiss.dbeaver.ext.tidblake.model.TiDBLakeSQLDialect" label="TiDBLake" description="TiDBLake SQL dialect." icon="icons/tidblake_icon.png">
+        <dialect id="tidblake" parent="generic" class="org.jkiss.dbeaver.ext.tidblake.model.TiDBLakeSQLDialect" label="TiDBLake" description="TiDBLake SQL dialect." icon="icons/tidblake_icon.svg">
         </dialect>
     </extension>
 
