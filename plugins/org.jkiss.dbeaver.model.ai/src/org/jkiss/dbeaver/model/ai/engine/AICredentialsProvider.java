@@ -53,7 +53,7 @@ public interface AICredentialsProvider<CREDENTIALS> {
      * which may contain unresolved secrets or placeholders.
      * @return the currently stored credentials without resolving secrets
      */
-    @NotNull
+    @Nullable
     CREDENTIALS getCredentials();
 
     /**
