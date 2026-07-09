@@ -407,8 +407,19 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             manager.add(new Separator());
-
+            List<DBWNetworkProfile> distinctProfiles = new ArrayList<>();
+            List<String> profileNames = new ArrayList<>();
             for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles().getAllProfiles()) {
+                int i = profileNames.indexOf(profile.getProfileName());
+                if (i > -1) {
+                    profileNames.remove(i);
+                    distinctProfiles.remove(i);
+                }
+                profileNames.add(profile.getProfileName());
+                distinctProfiles.add(profile);
+            }
+
+            for (DBWNetworkProfile profile : distinctProfiles) {
                 manager.add(new ChooseNetworkProfileAction(dataSource, profile, null, index++));
             }
 
