@@ -129,12 +129,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
-        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> {
-            return modelsCache.get(monitor, forceRefresh).stream()
-                .filter(it -> it.features().contains(AIModelFeature.CHAT))
-                .map(AIModel::name)
-                .toList();
-        };
+        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+            .filter(it -> it.features().contains(AIModelFeature.CHAT))
+            .map(AIModel::name)
+            .toList();
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
