@@ -39,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public class OpenAIClientChat extends OpenAiClientBase {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -66,10 +67,19 @@ public class OpenAIClientChat extends OpenAiClientBase {
         @NotNull OAIResponsesRequest completionRequest
     ) throws DBException {
         Instant now = Instant.now();
-        ChatCompletionRequest chatRequest = buildChatRequest(completionRequest);
+        ChatCompletionRequest chatRequest = new ChatCompletionRequest();
+        chatRequest.setMessages(completionRequest.input.stream().map(om -> new ChatMessage(
+            om.role,
+            om.content.getFirst().text,
+            om.name
+        )).toList());
+        chatRequest.setModel(completionRequest.model);
+        if (completionRequest.temperature != null) {
+            chatRequest.setTemperature(completionRequest.temperature);
+        }
 
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_CHAT))
+            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(chatRequest)))
             .timeout(TIMEOUT)
             .build();
@@ -110,35 +120,16 @@ public class OpenAIClientChat extends OpenAiClientBase {
         @NotNull OAIResponsesRequest completionRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        ChatCompletionRequest chatRequest = buildChatRequest(completionRequest);
-        chatRequest.setStream(true);
+        HttpRequest request = createCompletionRequest(completionRequest);
 
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_CHAT))
-            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(chatRequest)))
-            .timeout(TIMEOUT)
-            .build();
+        HttpRequest modifiedRequest = applyFilters(request);
 
+        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
         client.sendAsync(
-            applyFilters(request),
-            new OpenAIChatStreamConsumer(listener),
+            modifiedRequest,
+            stringConsumer,
             listener::error,
             listener::completeBlock
         );
-    }
-
-    @NotNull
-    private static ChatCompletionRequest buildChatRequest(@NotNull OAIResponsesRequest completionRequest) {
-        ChatCompletionRequest chatRequest = new ChatCompletionRequest();
-        chatRequest.setMessages(completionRequest.input.stream().map(om -> new ChatMessage(
-            om.role,
-            om.content.getFirst().text,
-            om.name
-        )).toList());
-        chatRequest.setModel(completionRequest.model);
-        if (completionRequest.temperature != null) {
-            chatRequest.setTemperature(completionRequest.temperature);
-        }
-        return chatRequest;
     }
 }
