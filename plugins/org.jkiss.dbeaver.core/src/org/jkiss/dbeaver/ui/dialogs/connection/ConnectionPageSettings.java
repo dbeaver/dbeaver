@@ -1126,6 +1126,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             setText(ActionUtils.getLabelWithIndexMnemonic(getProfileName(profile, origin), index));
             setChecked(isProfileSelected(profile, container));
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(profile.isGlobal() ? DBIcon.GLOBAL_PROFILE : DBIcon.CONNECTION_PROFILE));
         }
 
         @Override
