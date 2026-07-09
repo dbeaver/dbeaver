@@ -140,7 +140,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         if (!DBUtils.isNullValue(value) && value instanceof DBDCollection collection) {
-            return convertArrayToString(column, collection, format, format != DBDDisplayFormat.NATIVE);
+            return convertArrayToString(column, collection, format, true);
         }
 
         return super.getValueDisplayString(column, value, format);
@@ -216,6 +216,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 case '{':
                 case '}':
                 case '"':
+                case ',':
                 case ' ':
                 case '\\':
                     return true;

@@ -67,6 +67,7 @@ public class ActionUtils {
     private static final Log log = Log.getLog(ActionUtils.class);
 
     private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
+    public static final String DEFAULT_ECLIPSE_THEME = "org.eclipse.ui.defaultAcceleratorConfiguration";
 
     public static void addPropertyEvaluationRequestListener(@NotNull IPropertyChangeListener listener) {
         propertyEvaluationRequestListeners.add(listener);
@@ -307,7 +308,7 @@ public class ActionUtils {
             String activeSchemeId = activeScheme == null ? null : activeScheme.getId();
             if (bindings != null) {
                 for (Binding b : bindings) {
-                    if (activeSchemeId == null || activeSchemeId.equals(b.getSchemeId())) {
+                    if (activeSchemeId == null || activeSchemeId.equals(b.getSchemeId()) || b.getSchemeId().equals(DEFAULT_ECLIPSE_THEME)) {
                         ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
                         if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
                             if (paramName != null) {
