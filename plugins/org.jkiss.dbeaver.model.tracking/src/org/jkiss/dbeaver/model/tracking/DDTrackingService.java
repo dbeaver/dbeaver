@@ -14,14 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.tracking;
 
-package org.jkiss.dbeaver.model.qm;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-/**
- * Stores session-scoped Query Manager runtime state.
- */
-public interface QMRuntimeState {
-    boolean isQueryManagerUnavailable();
+public interface DDTrackingService {
 
-    void setQueryManagerUnavailable();
+    String API_KEY_HEADER = "DD-API-Key";
+    String METERING_ENDPOINT = "/metering";
+    String TRACK_START_ENDPOINT = "/track/start";
+    String TRACK_STOP_ENDPOINT = "/track/stop";
+
+    @Nullable
+    DDTracking start(@Nullable String apiKey, @NotNull DDClientInfo client);
+
+    @Nullable
+    DDTracking stop(@Nullable String apiKey, @NotNull DDTrackStop request);
 }

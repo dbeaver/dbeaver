@@ -178,7 +178,7 @@ public class AIAssistantImpl implements AIAssistant {
         checkAiEnablement();
         AIConfigurationProfile configurationProfile = conversation.getProfile();
         if (configurationProfile == null) {
-            throw new DBException("Conversation has no configuration attached");
+            configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
         CompletableFuture<AIChatConversation> future = conversation.startConversation();
 
