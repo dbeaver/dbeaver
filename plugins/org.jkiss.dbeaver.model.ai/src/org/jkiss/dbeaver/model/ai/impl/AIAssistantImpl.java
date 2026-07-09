@@ -426,7 +426,7 @@ public class AIAssistantImpl implements AIAssistant {
             functionContext,
             messages
         );
-   }
+    }
 
     @NotNull
     protected AIFunctionResult callFunction(
