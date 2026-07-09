@@ -801,7 +801,9 @@ public class SQLScriptParser {
             SQLScriptElement parsedElement = SQLScriptParser.parseQuery(
                 context,
                 region.getOffset(), region.getOffset() + region.getLength(), region.getOffset(), false, false);
-            if (parsedElement instanceof SQLControlCommand) {
+            if (parsedElement == null) {
+                element = null;
+            } else if (parsedElement instanceof SQLControlCommand) {
                 // This is a command
                 element = parsedElement;
             } else {
