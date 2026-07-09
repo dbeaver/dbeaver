@@ -49,7 +49,7 @@ import java.util.*;
  * OracleTable base
  */
 public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema>
-    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject, DBPObjectWithLazyDescription, DBSEntityConstrainable
+    implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject, DBPObjectWithLazyDescription, DBSEntityConstrainable, DBSDescriptionEditable
 {
     private static final Log log = Log.getLog(OracleTableBase.class);
 
@@ -241,6 +241,11 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getComment()
     {
         return comment;
+    }
+
+    @Override
+    public void setDescription(@Nullable String description) {
+        setComment(description);
     }
 
     public void setComment(String comment)

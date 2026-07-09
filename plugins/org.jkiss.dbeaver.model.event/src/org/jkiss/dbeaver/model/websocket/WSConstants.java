@@ -41,6 +41,7 @@ public interface WSConstants {
     String TOPIC_USER_SECRET = "cb_user_secret";
     String TOPIC_SCRIPTS = "cb_scripts";
     String TOPIC_PROJECTS = "cb_projects";
+    String TOPIC_PROFILES = "cb_profiles";
     String TOPIC_OBJECT_PERMISSIONS = "cb_object_permissions";
     String TOPIC_SUBJECT_PERMISSIONS = "cb_subject_permissions";
     String TOPIC_TRANSACTION_COUNT = "cb_transaction";

@@ -378,21 +378,25 @@ public class DBExecUtils {
             return;
         }
         String script = action.getScript();
-        if (script == null) {
-            action.afterExecute(session, null);
-        } else {
-            try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
-                action.beforeExecute(session);
-                dbStat.executeStatement();
-                if (action instanceof SQLDatabasePersistAction) {
-                    ((SQLDatabasePersistAction) action).afterExecute(session, dbStat, null);
-                } else {
-                    action.afterExecute(session, null);
-                }
-            } catch (DBCException e) {
-                action.afterExecute(session, e);
-                throw e;
+        boolean statementProcessed = false;
+        try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
+            action.beforeExecute(session);
+            dbStat.executeStatement();
+            statementProcessed = true;
+            if (action instanceof SQLDatabasePersistAction persistAction) {
+                persistAction.afterExecute(session, dbStat, null);
+            } else {
+                action.afterExecute(session, null);
             }
+        } catch (Throwable e) {
+            if (!statementProcessed) {
+                try {
+                    action.afterExecute(session, e);
+                } catch (Throwable ex) {
+                    log.debug("Error during error handle", ex);
+                }
+            }
+            throw e;
         }
     }
 
@@ -456,8 +460,8 @@ public class DBExecUtils {
 
         if (newCatalogName != null) {
             DBSObject newInstance = rootContainer.getChild(monitor, newCatalogName);
-            if (newInstance instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newInstance;
+            if (newInstance instanceof DBSCatalog catalog) {
+                newCatalog = catalog;
             }
         }
         DBSObject newObject;
@@ -467,10 +471,10 @@ public class DBExecUtils {
             } else {
                 newObject = newCatalog.getChild(monitor, newObjectName);
             }
-            if (newObject instanceof DBSSchema) {
-                newSchema = (DBSSchema) newObject;
-            } else if (newObject instanceof DBSCatalog) {
-                newCatalog = (DBSCatalog) newObject;
+            if (newObject instanceof DBSSchema schema) {
+                newSchema = schema;
+            } else if (newObject instanceof DBSCatalog catalog) {
+                newCatalog = catalog;
             }
         }
 
@@ -527,6 +531,7 @@ public class DBExecUtils {
         }
     }
 
+    @Nullable
     public static DBSEntityConstraint getBestIdentifier(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity table,
@@ -626,11 +631,14 @@ public class DBExecUtils {
         // No physical identifiers or row ids
         // Make new or use existing virtual identifier
         DBVEntity virtualEntity = DBVUtils.getVirtualEntity(table, true);
-        return virtualEntity.getBestIdentifier();
+        return virtualEntity == null ? null : virtualEntity.getBestIdentifier();
     }
 
-    private static boolean isGoodReferrer(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings, DBSEntityReferrer referrer) throws DBException
-    {
+    private static boolean isGoodReferrer(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDAttributeBinding[] bindings,
+        @NotNull DBSEntityReferrer referrer
+    ) throws DBException {
         if (referrer instanceof DBDPseudoReferrer) {
             return true;
         }
@@ -653,19 +661,20 @@ public class DBExecUtils {
         return true;
     }
 
-    public static DBSEntityAssociation getAssociationByAttribute(DBDAttributeBinding attr) throws DBException {
+    @NotNull
+    public static DBSEntityAssociation getAssociationByAttribute(@NotNull DBDAttributeBinding attr) throws DBException {
         List<DBSEntityReferrer> referrers = attr.getReferrers();
         if (referrers != null) {
             for (final DBSEntityReferrer referrer : referrers) {
-                if (referrer instanceof DBSEntityAssociation) {
-                    return (DBSEntityAssociation) referrer;
+                if (referrer instanceof DBSEntityAssociation association) {
+                    return association;
                 }
             }
         }
         throw new DBException("Association not found in attribute [" + attr.getName() + "]");
     }
 
-    public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
+    public static boolean equalAttributes(@Nullable DBCAttributeMetaData attr1, @Nullable DBCAttributeMetaData attr2) {
         return
             attr1 != null && attr2 != null &&
             SQLUtils.compareAliases(attr1.getLabel(), attr2.getLabel()) &&
@@ -846,13 +855,16 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
-                        if (sqlQuery == null) {
+                        boolean isAllColumns = sqlQuery != null && sqlQuery.getSelectItemAsteriskIndex() != -1;
+                        boolean isPlainOrAsterisk = selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*"));
+                        if (sqlQuery == null || isAllColumns || isPlainOrAsterisk) {
+                            // Ensure all attributes are cached.
+                            // Some implementations of DBSEntity use struct caches that provide granular
+                            // caching for children (attributes), which is good in some cases, but awful
+                            // here, since we might end up querying one attribute at a time
+                            attrEntity.getAttributes(monitor);
+
                             tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
-                        } else {
-                            boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
-                            if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
-                                tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
-                            }
                         }
                     }
 
@@ -927,7 +939,6 @@ public class DBExecUtils {
         @NotNull DBDAttributeBinding[] bindings,
         @NotNull DBRProgressMonitor mdMonitor
     ) throws DBException {
-
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
 
         for (DBDAttributeBinding binding : bindings) {
@@ -941,21 +952,15 @@ public class DBExecUtils {
                 continue;
             }
             DBSEntity attrEntity = attr.getParentObject();
-            if (attrEntity != null) {
-                DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
-                if (rowIdentifier == null) {
-                    DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
-                    if (entityIdentifier != null) {
-                        rowIdentifier = new DBDRowIdentifier(
-                            attrEntity,
-                            entityIdentifier);
-                        locatorMap.put(attrEntity, rowIdentifier);
-                    } else {
-                        bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
-                    }
+            DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
+            if (rowIdentifier == null) {
+                DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
+                if (entityIdentifier != null) {
+                    rowIdentifier = new DBDRowIdentifier(attrEntity, entityIdentifier);
+                    locatorMap.put(attrEntity, rowIdentifier);
                 }
-                bindingMeta.setRowIdentifier(rowIdentifier);
             }
+            bindingMeta.setRowIdentifier(rowIdentifier);
         }
 
         return locatorMap;

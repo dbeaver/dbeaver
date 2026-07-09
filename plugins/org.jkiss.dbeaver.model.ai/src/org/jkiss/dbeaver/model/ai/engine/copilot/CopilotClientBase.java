@@ -112,7 +112,7 @@ public abstract class CopilotClientBase<REQUEST extends Object, RESPONSE extends
 
         var response = client.send(monitor, request);
         var models = CopilotUtils.GSON.fromJson(response, CopilotModelList.class);
-        return models.data().stream().filter(CopilotModel::isEnabled).toList();
+        return models.data().stream().filter(CopilotModel::isChatModel).toList();
     }
 
     /**

@@ -20,6 +20,7 @@ import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -89,10 +90,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.controls.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.QueryResultsDecorator;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -122,10 +120,7 @@ import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.*;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StringUtils;
+import org.jkiss.utils.*;
 
 import java.io.*;
 import java.net.URI;
@@ -987,6 +982,15 @@ public class SQLEditor extends SQLEditorBase implements
         return null;
     }
 
+    @NotNull
+    public List<IResultSetContainer> getResultSetContainers() {
+        List<IResultSetContainer> result = new ArrayList<>();
+        for (QueryProcessor processor : queryProcessors) {
+            result.addAll(processor.getResultContainers());
+        }
+        return List.copyOf(result);
+    }
+
     @Nullable
     @Override
     public <T> T getAdapter(Class<T> required) {
@@ -1262,7 +1266,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         ToolBar topBar = new ToolBar(leftToolPanel, SWT.VERTICAL | SWT.FLAT);
         topBar.setData(VIEW_PART_PROP_NAME, this);
-        topBarMan = new ToolBarManager(topBar);
+        topBarMan = new ToolBarManager(topBar) {
+            @Override
+            public void update(boolean force) {
+                super.update(force);
+                updateMultipleResultsPerTabToolItem();
+            }
+        };
 
         final IMenuService menuService = getSite().getService(IMenuService.class);
         if (menuService != null) {
@@ -1287,8 +1297,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         bottomBar.pack();
         bottomBarMan.update(true);
-
-        updateMultipleResultsPerTabToolItem();
     }
 
     private void createPresentationSwitchBar(Composite sqlEditorPanel) {
@@ -3946,7 +3954,6 @@ public class SQLEditor extends SQLEditorBase implements
             if (topBarMan != null) {
                 topBarMan.update(true);
             }
-            this.updateMultipleResultsPerTabToolItem();
         });
         this.setCompletionContext(new SQLEditorCompletionContext(this));
 
@@ -4925,4 +4932,42 @@ public class SQLEditor extends SQLEditorBase implements
             return Status.OK_STATUS;
         }
     }
+
+    public static void updateLocalCommandsState() {
+        // small delay is ok because command's updateElement(..) notification come in series for all the contribution instances
+        //     through the UI thread anyway, so they'll be effectively aggregated, and the UIJob will then update all of them contextfully
+        if (updateLocalCommandsStateJob.getState() != Job.RUNNING) {
+            updateLocalCommandsStateJob.cancel();
+        }
+        updateLocalCommandsStateJob.schedule(100);
+    }
+
+    @NotNull
+    private static final AbstractUIJob updateLocalCommandsStateJob = new AbstractUIJob("SQL Editor local commands state update") {
+        {
+            setSystem(true);
+        }
+
+        @NotNull
+        @Override
+        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+            for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+                for (IWorkbenchPage page : window.getPages()) {
+                    for (IEditorReference editorRef : page.getEditorReferences()) {
+                        IEditorPart editor = editorRef.getEditor(false);
+                        if (editor instanceof SQLEditor sqlEditor) {
+                            sqlEditor.updateMultipleResultsPerTabToolItem();
+                        }
+                    }
+                }
+
+                IWorkbenchPage activePage = window.getActivePage();
+                if (activePage != null && activePage.getActiveEditor() instanceof SQLEditor activeEditor) {
+                    MultipleResultsPerTabMenuContribution.syncWithEditor(activeEditor);
+                }
+            }
+
+            return Status.OK_STATUS;
+        }
+    };
 }

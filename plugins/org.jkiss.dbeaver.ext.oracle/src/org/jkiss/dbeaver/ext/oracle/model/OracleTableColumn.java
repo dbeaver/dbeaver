@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -42,7 +39,7 @@ import java.util.List;
  * OracleTableColumn
  */
 public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements
-    DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2, DBSTypedObjectExt4<OracleDataType>, DBPObjectWithLazyDescription
+    DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2, DBSTypedObjectExt4<OracleDataType>, DBPObjectWithLazyDescription, DBSDescriptionEditable
 {
 
     private OracleDataType type;
@@ -212,6 +209,11 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             getTable().loadColumnComments(monitor);
         }
         return comment;
+    }
+
+    @Override
+    public void setDescription(@Nullable String description) {
+        setComment(description);
     }
 
     public void setComment(String comment)
