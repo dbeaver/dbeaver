@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -686,6 +687,12 @@ public class ContextComposite extends Composite {
         ) {
             super(genProfileName(profile), AS_RADIO_BUTTON);
             this.profile = profile;
+            try {
+                AIEngineDescriptor engine = profile.getEngineDescriptor();
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(engine.getIcon()));
+            } catch (DBException e) {
+                log.debug(e);
+            }
             AIConfigurationProfile chatProfile = chat.getActiveConversation().getProfile();
             if (chatProfile == null) {
                 chatProfile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
