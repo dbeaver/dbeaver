@@ -35,13 +35,13 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -68,7 +68,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
-    public static final int READ_BUFFER_SIZE = 2000;
+
     private boolean formatNumbers;
 
     enum HeaderPosition {
@@ -336,16 +336,11 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     }
 
     private void writeCellValue(@NotNull Reader reader) throws IOException {
-        try {
-            lineBuffer.setLength(0);
-            char[] chars = new char[READ_BUFFER_SIZE];
-            for (int count = reader.read(chars); count > 0; count = reader.read(chars)) {
-                lineBuffer.append(Arrays.copyOf(chars, count));
-            }
-        } finally {
-            ContentUtils.close(reader);
+        String cellContent;
+        try (reader) {
+            cellContent = IOUtils.readToString(reader);
         }
-        writeCellValue(lineBuffer.toString(), false);
+        writeCellValue(cellContent, false);
     }
 
     private void writeLines(@NotNull String[] multiRow, boolean quote, @NotNull String customLineBreak) {

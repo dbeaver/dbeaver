@@ -461,45 +461,6 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         assertRowsEquals("Привет,こんにちは,😀", valueSeparator, quoteSeparator, rowContentCreator, rows);
     }
 
-    @Test
-    // checks tricky case of multi char Quote beginning in the end of buffer
-    public void bufferOverwhelmTest() throws DBException, IOException {
-        // given
-        String quote = "quote";
-        String fullBufferRow = createNumbersRow(DataExporterCSV.READ_BUFFER_SIZE);
-        String rowWithPendingQuote = createNumbersRow(DataExporterCSV.READ_BUFFER_SIZE - quote.length() + 1) + "\"";
-        // then
-        // buffer exactly matches input
-        assertRowsEquals(fullBufferRow, ",", quote, RowContentCreator.TEXT_CONTENT, new String[][]{{fullBufferRow}});
-        // two full buffer rows
-        assertRowsEquals(fullBufferRow.repeat(2), ",", quote, RowContentCreator.TEXT_CONTENT, new String[][]{{fullBufferRow.repeat(2)}});
-        // full buffer + not full buffer
-        assertRowsEquals(
-            fullBufferRow + fullBufferRow.substring(DataExporterCSV.READ_BUFFER_SIZE / 2),
-            ",",
-            "\"",
-            RowContentCreator.TEXT_CONTENT,
-            new String[][]{{fullBufferRow + fullBufferRow.substring(DataExporterCSV.READ_BUFFER_SIZE / 2)}}
-        );
-        // one row with pending
-        assertRowsEquals(
-            "\"" + rowWithPendingQuote + "\"".repeat(2),
-            ",",
-            quote,
-            RowContentCreator.TEXT_CONTENT,
-            new String[][]{{rowWithPendingQuote}}
-        );
-        // two rows with peding
-        assertRowsEquals(
-            "\"" + rowWithPendingQuote + "\"" + fullBufferRow + "\"",
-            ",",
-            quote,
-            RowContentCreator.TEXT_CONTENT,
-            new String[][]{{rowWithPendingQuote + fullBufferRow}}
-        );
-
-    }
-
     private void assertRowsEquals(
         @NotNull String expectedRowsTemplate,
         @NotNull String customSeparator,
