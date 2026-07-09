@@ -1511,8 +1511,8 @@ public class SQLEditor extends SQLEditorBase implements
             menuMgr.addMenuListener(manager -> {
                 CTabItem target = clickedTab[0];
                 final CTabItem activeTab = (target != null && !target.isDisposed())
-                        ? target
-                        : getActiveResultsTab();
+                    ? target
+                    : getActiveResultsTab();
                 boolean activeTabHasSingleResult = activeTab != null && activeTab.getData() instanceof QueryResultsContainer;
                 boolean activeTabHasMultipleResults = activeTab != null && activeTab.getData() instanceof SingleTabQueryProcessor;
                 if (activeTabHasSingleResult || activeTabHasMultipleResults) {
