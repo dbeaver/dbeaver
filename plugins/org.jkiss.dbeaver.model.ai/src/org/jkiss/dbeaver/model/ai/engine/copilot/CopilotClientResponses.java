@@ -101,7 +101,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
             String responseJson = client.send(monitor, request);
             return CopilotUtils.GSON.fromJson(responseJson, OAIResponsesResponse.class);
         } catch (DBException e) {
-            if (e.getMessage() != null && e.getMessage().contains("is not supported via Responses API")) {
+            if (OpenAiUtils.shouldFallbackToLegacyChat(e.getMessage())) {
                 return backupClient.chat(monitor, token, chatRequest.getSecond());
             } else {
                 log.error("Error in chat request, falling back to legacy client", e);
@@ -157,7 +157,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         if (statusCode == 400) {
-            if (body.contains("is not supported via Responses API")) {
+            if (OpenAiUtils.shouldFallbackToLegacyChat(body)) {
                 // just return DBException, we will fall back to legacy client in case of this error, no need to log it as error
                 return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
             }
