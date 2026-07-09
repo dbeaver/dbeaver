@@ -1504,7 +1504,7 @@ public class SQLEditor extends SQLEditorBase implements
         {
             final CTabItem[] clickedTab = new CTabItem[1];
             resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e ->
-                    clickedTab[0] = resultTabs.getItem(new Point(e.x, e.y))));
+                clickedTab[0] = resultTabs.getItem(new Point(e.x, e.y))));
 
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
