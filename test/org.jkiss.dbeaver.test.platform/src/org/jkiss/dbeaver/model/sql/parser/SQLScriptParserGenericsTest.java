@@ -86,6 +86,30 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parseStarRocksDivisionOperator() throws DBException {
+        assertParse("starrocks",
+            "select 8 / 2;\nselect 1;",
+            new String[]{"select 8 / 2", "select 1"}
+        );
+    }
+
+    @Test
+    public void parseStarRocksScriptWithCommentedRefresh() throws DBException {
+        assertParse("starrocks",
+            "set pipeline_dop = 8;\n" +
+                "-- refresh marker\n" +
+                "---- refresh external table cdh5_biods.possc_ods.possc_payi;\n" +
+                "drop table if exists bitemp.tmp_xiongyi_card_consume0;",
+            new String[]{
+                "set pipeline_dop = 8",
+                "-- refresh marker\n" +
+                    "---- refresh external table cdh5_biods.possc_ods.possc_payi;\n" +
+                    "drop table if exists bitemp.tmp_xiongyi_card_consume0"
+            }
+        );
+    }
+
+    @Test
     public void parseFromCursorPositionBeginTransaction() throws DBException {
         String query = """
             begi<-|n transaction;<-|
