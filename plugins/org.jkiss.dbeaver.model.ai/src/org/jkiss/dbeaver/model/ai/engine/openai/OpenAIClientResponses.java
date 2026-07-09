@@ -134,6 +134,11 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     }
 
     @NotNull
+    protected OpenAIClientChat getBackupClient() {
+        return backupClient;
+    }
+
+    @NotNull
     @Override
     protected DBException mapHttpError(int statusCode, @NotNull String body) {
         if (statusCode == 400) {

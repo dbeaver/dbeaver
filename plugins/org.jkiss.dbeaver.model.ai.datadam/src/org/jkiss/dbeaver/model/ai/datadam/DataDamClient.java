@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.ai.datadam;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientChat;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
@@ -27,14 +26,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
-// gateway speaks only /v1/chat/completions, so route responses-api calls to the chat client
 public class DataDamClient extends OpenAIClientResponses {
-
-    private final OpenAIClientChat chatClient;
 
     public DataDamClient(@NotNull String baseUrl, @NotNull List<HttpRequestFilter> requestFilters) {
         super(baseUrl, requestFilters);
-        this.chatClient = new OpenAIClientChat(baseUrl, requestFilters);
     }
 
     @NotNull
@@ -43,7 +38,7 @@ public class DataDamClient extends OpenAIClientResponses {
         @NotNull DBRProgressMonitor monitor,
         @NotNull OAIResponsesRequest completionRequest
     ) throws DBException {
-        return chatClient.createChatCompletion(monitor, completionRequest);
+        return getBackupClient().createChatCompletion(monitor, completionRequest);
     }
 
     @Override
@@ -52,12 +47,6 @@ public class DataDamClient extends OpenAIClientResponses {
         @NotNull OAIResponsesRequest completionRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        chatClient.createChatCompletionStream(monitor, completionRequest, listener);
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        chatClient.close();
+        getBackupClient().createChatCompletionStream(monitor, completionRequest, listener);
     }
 }

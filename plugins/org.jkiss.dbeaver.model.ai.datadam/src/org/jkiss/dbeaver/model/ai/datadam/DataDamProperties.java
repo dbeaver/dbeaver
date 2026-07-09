@@ -21,12 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 
 public class DataDamProperties extends OpenAIProperties {
 
-    public static final String DEFAULT_ENDPOINT = "http://localhost:8087/v1/";
+    public static final String DEFAULT_ENDPOINT = "https://datadam-ai.dbeaver.team/v1/";
+    public static final String DEFAULT_MODEL = "datadam-fast";
 
     private static final String DATADAM_API_TOKEN = "datadam.token";
     private static final int DEFAULT_CONTEXT_WINDOW_SIZE = 128_000;
@@ -39,6 +41,16 @@ public class DataDamProperties extends OpenAIProperties {
             return DEFAULT_ENDPOINT;
         }
         return baseUrl;
+    }
+
+    @Nullable
+    @Override
+    public String getModel() {
+        String model = super.getModel();
+        if (OpenAIModels.DEFAULT_MODEL.equals(model)) {
+            return DEFAULT_MODEL;
+        }
+        return model;
     }
 
     @Nullable

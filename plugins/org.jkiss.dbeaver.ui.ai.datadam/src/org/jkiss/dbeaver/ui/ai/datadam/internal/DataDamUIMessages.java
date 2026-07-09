@@ -29,7 +29,6 @@ public class DataDamUIMessages extends NLS {
     public static String datadam_configurator_label_api_key;
     public static String datadam_configurator_label_endpoint;
     public static String datadam_configurator_label_temperature;
-    public static String datadam_configurator_error_api_key_not_set;
 
     private DataDamUIMessages() {
     }

@@ -43,8 +43,6 @@ import java.util.Optional;
 
 public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, DataDamProperties> {
 
-    private static final String DEFAULT_MODEL = "datadam-fast";
-
     private String baseUrl = DataDamProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
     private String temperature = "0.0";
@@ -104,7 +102,7 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);
         temperatureText.setText(temperature);
-        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DEFAULT_MODEL));
+        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DataDamProperties.DEFAULT_MODEL));
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
         modelSelectorField.refreshModelListSilently(false);
@@ -146,7 +144,8 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
     @NotNull
     private List<AIModel> fetchModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (CommonUtils.isEmpty(token)) {
-            throw new DBException(DataDamUIMessages.datadam_configurator_error_api_key_not_set);
+            // no key yet (e.g. right after selecting the engine) - list nothing instead of surfacing an error
+            return List.of();
         }
 
         DataDamProperties properties = new DataDamProperties();
