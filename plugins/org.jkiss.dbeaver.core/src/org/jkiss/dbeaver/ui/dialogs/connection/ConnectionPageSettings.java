@@ -1121,7 +1121,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             @Nullable DBPDataSourceOrigin origin,
             int index
         ) {
-            super(null, AS_RADIO_BUTTON);
+            super(null, AS_CHECK_BOX);
             this.profile = profile;
 
             setText(ActionUtils.getLabelWithIndexMnemonic(getProfileName(profile, origin), index));

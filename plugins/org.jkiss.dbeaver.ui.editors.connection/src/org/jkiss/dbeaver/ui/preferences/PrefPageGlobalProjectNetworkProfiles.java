@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * A preference page that shows network profiles for all projects.
@@ -171,14 +172,21 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
     private class PrefPageGlobalNetworkProfiles extends PrefPageProjectNetworkProfiles {
 
-
         @NotNull
         @Override
         protected List<? extends DBPDataSourceContainer> connectionsUsingProfile(@NotNull DBWNetworkProfile selectedProfile) {
-            return getProjects()
+            Predicate<DBPProject> projectUsingProfileAsGlobal = proj -> {
+                DBWNetworkProfile profile = proj.getDataSourceRegistry().getNetworkProfiles()
+                    .getProfile(null, selectedProfile.getProfileName());
+                return profile != null && profile.isGlobal();
+            };
+            return selectedProfile.isGlobal()
+                ? getProjects()
                 .stream()
+                .filter(projectUsingProfileAsGlobal)
                 .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
-                .toList();
+                .toList()
+                : super.connectionsUsingProfile(selectedProfile);
         }
 
         @Override
