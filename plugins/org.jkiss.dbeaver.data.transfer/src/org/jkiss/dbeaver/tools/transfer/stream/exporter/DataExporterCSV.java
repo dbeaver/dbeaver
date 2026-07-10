@@ -128,8 +128,8 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = CommonUtils.isNotEmpty(quoteChar);
 
-        if (useQuotes && quoteChar.equals(delimiter)) {
-            throw new DBException("Quotes and separator can't be the same string: " + quoteChar);
+        if (useQuotes && (quoteChar.equals(delimiter) || delimiter.startsWith(quoteChar))) {
+            throw new DBException("Separator cant start with Quote. Separator: [%s] Quote [%s]".formatted(delimiter, quoteChar));
         }
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
 
@@ -357,7 +357,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         if (isNeedQuote) {
             out.write(quoteChar);
         }
-        out.write(value);
+        out.write(preparedValue);
         if (isNeedQuote) {
             out.write(quoteChar);
         }

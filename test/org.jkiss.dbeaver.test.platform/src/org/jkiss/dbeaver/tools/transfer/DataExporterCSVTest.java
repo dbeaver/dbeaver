@@ -133,10 +133,10 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testThrowsIfQuoteAndSeparatorAreSameString() {
+    public void testThrowsIfQuoteAndSeparatorStartsWithQuote() {
         // given
         properties.put(DataExporterCSV.PROP_DELIMITER, ALTERNATIVE_QUOTE.repeat(2));
-        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_QUOTE.repeat(2));
+        properties.put(DataExporterCSV.PROP_QUOTE_CHAR, ALTERNATIVE_QUOTE);
         // then
         dataExporterCSV = new DataExporterCSV();
         assertThrows(DBException.class, () -> dataExporterCSV.init(site));
@@ -537,10 +537,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         @NotNull String customSeparator,
         @NotNull String customQuote
     ) {
-        // sorted replace to replace correctly
-        return customSeparator.length() > customQuote.length()
-            ? template.replace(DEFAULT_VALUE_SEPARATOR, customSeparator).replace(DEFAULT_QUOTE, customQuote)
-            : template.replace(DEFAULT_QUOTE, customQuote).replace(DEFAULT_VALUE_SEPARATOR, customSeparator);
+        return template.replace(DEFAULT_VALUE_SEPARATOR, customSeparator).replace(DEFAULT_QUOTE, customQuote);
     }
 
     @NotNull
@@ -566,13 +563,8 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         private final List<? extends Arguments> separators = List.of(
                 Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE),
                 Arguments.of(ALTERNATIVE_VALUE_SEPARATOR, ALTERNATIVE_QUOTE),
-                // multichars separators
-                Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE),
-                Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE),
-                Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE + ALTERNATIVE_QUOTE),
-                // starts same char
-                Arguments.of(DEFAULT_VALUE_SEPARATOR, DEFAULT_VALUE_SEPARATOR + DEFAULT_QUOTE),
-                Arguments.of(DEFAULT_QUOTE + DEFAULT_VALUE_SEPARATOR, DEFAULT_QUOTE)
+            // multichars separator. Multichar quotes are processed differently
+            Arguments.of(DEFAULT_VALUE_SEPARATOR + ALTERNATIVE_VALUE_SEPARATOR, DEFAULT_QUOTE)
             );
 
         private final List<? extends Arguments> rowContentCreators = Arrays
