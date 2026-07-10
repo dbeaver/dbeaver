@@ -463,6 +463,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 });
                 // initial highlight
                 getDisplay().asyncExec(() -> highlightSelectedItem.accept(manager));
+            }
         });
 
         var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
