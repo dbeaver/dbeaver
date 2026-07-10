@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 
-public class DDProperties extends OpenAIProperties {
+public class DDAIEngineProperties extends OpenAIProperties {
 
     public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/v1/";
     public static final String DEFAULT_MODEL = "datadam-fast";
@@ -76,4 +76,9 @@ public class DDProperties extends OpenAIProperties {
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.deleteSecretValue(profile, DATADAM_API_TOKEN);
     }
+
+//    @Override
+//    public boolean isLoggingEnabled() {
+//        return true;
+//    }
 }

@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.datadam.DDCompletionEngine;
-import org.jkiss.dbeaver.model.datadam.DDProperties;
+import org.jkiss.dbeaver.model.datadam.DDAIEngine;
+import org.jkiss.dbeaver.model.datadam.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
@@ -41,9 +41,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, DDProperties> {
+public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
 
-    private String baseUrl = DDProperties.DEFAULT_ENDPOINT;
+    private String baseUrl = DDAIEngineProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
     private String temperature = "0.0";
 
@@ -94,22 +94,22 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     }
 
     @Override
-    public void loadSettings(@NotNull DDProperties configuration) {
-        baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDProperties.DEFAULT_ENDPOINT);
+    public void loadSettings(@NotNull DDAIEngineProperties configuration) {
+        baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDAIEngineProperties.DEFAULT_ENDPOINT);
         token = CommonUtils.toString(configuration.getToken());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);
         temperatureText.setText(temperature);
-        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DDProperties.DEFAULT_MODEL));
+        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DDAIEngineProperties.DEFAULT_MODEL));
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
         modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
-    public void saveSettings(@NotNull DDProperties configuration) {
+    public void saveSettings(@NotNull DDAIEngineProperties configuration) {
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
         configuration.setModel(modelSelectorField.getSelectedModel());
@@ -118,7 +118,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     }
 
     @Override
-    public void resetSettings(@NotNull DDProperties configuration) {
+    public void resetSettings(@NotNull DDAIEngineProperties configuration) {
 
     }
 
@@ -132,7 +132,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     @NotNull
     @Override
     public Optional<AIEngineProperties> getCurrentProperties() {
-        DDProperties propertiesCopy = new DDProperties();
+        DDAIEngineProperties propertiesCopy = new DDAIEngineProperties();
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
@@ -148,11 +148,11 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
             return List.of();
         }
 
-        DDProperties properties = new DDProperties();
+        DDAIEngineProperties properties = new DDAIEngineProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
 
-        try (DDCompletionEngine engine = new DDCompletionEngine(properties)) {
+        try (DDAIEngine engine = new DDAIEngine(properties)) {
             return engine.getModels(monitor);
         }
     }

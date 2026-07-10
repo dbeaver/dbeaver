@@ -29,9 +29,9 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Set;
 
-public class DDCompletionEngine extends OpenAIEngine<DDProperties> {
+public class DDAIEngine extends OpenAIEngine<DDAIEngineProperties> {
 
-    public DDCompletionEngine(@NotNull DDProperties properties) {
+    public DDAIEngine(@NotNull DDAIEngineProperties properties) {
         super(properties);
     }
 
@@ -50,7 +50,7 @@ public class DDCompletionEngine extends OpenAIEngine<DDProperties> {
         if (CommonUtils.isEmpty(token)) {
             throw new DBException("DataDam API key is not set");
         }
-        return new DDClient(
+        return new DDAIClient(
             properties.getBaseUrl(),
             List.of(new OpenAIRequestFilter(token))
         );

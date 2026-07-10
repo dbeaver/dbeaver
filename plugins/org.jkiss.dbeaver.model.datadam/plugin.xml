@@ -3,8 +3,10 @@
 
 <plugin>
     <extension point="com.dbeaver.ai.engine">
-        <completionEngine id="datadam" label="DataDam AI"
-                          class="org.jkiss.dbeaver.model.datadam.DDCompletionEngine"
-                          properties="org.jkiss.dbeaver.model.datadam.DDProperties"/>
+        <completionEngine
+            id="datadam" label="DataDam AI"
+            class="org.jkiss.dbeaver.model.datadam.DDAIEngine"
+            supportsFunctions="true"
+            properties="org.jkiss.dbeaver.model.datadam.DDAIEngineProperties"/>
     </extension>
 </plugin>

@@ -38,14 +38,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class DDClient extends OpenAIClientResponses {
+public class DDAIClient extends OpenAIClientResponses {
 
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_MARKER = "[DONE]";
 
     private final OpenAIClientChat chatClient;
 
-    public DDClient(@NotNull String baseUrl, @NotNull List<HttpRequestFilter> requestFilters) {
+    public DDAIClient(@NotNull String baseUrl, @NotNull List<HttpRequestFilter> requestFilters) {
         super(baseUrl, requestFilters);
         this.chatClient = new OpenAIClientChat(baseUrl, requestFilters);
     }
