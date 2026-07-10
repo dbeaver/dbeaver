@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -325,7 +326,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             GridDataFactory.fillDefaults().span(4, 1).applyTo(info);
             GridLayoutFactory.fillDefaults().margins(0, 0).spacing(2, 2).numColumns(2).applyTo(info);
 
-            UIUtils.createInfoLabel(info, "");
+            UIUtils.createInfoLabel(info, ""); // info icon near the link
             UIUtils.createPreferenceLink(
                 info,
                 CoreMessages.pref_page_ui_general_link_more_color_and_font_settings,
@@ -506,6 +507,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 this.example = new Text(container, SWT.BORDER | SWT.READ_ONLY);
                 this.example.setToolTipText(fontDef.getDescription());
                 this.example.setEditable(false);
+                GridDataFactory.fillDefaults().applyTo(this.example);
 
                 UIUtils.createPushButton(
                     container, null, CoreMessages.pref_page_user_interface_fonts_modify_tooltip, UIIcon.EDIT,
@@ -521,9 +523,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 );
 
                 UIUtils.createPushButton(
-                    container,
-                    null,
-                    DBeaverIcons.getImage(UIIcon.REVERT),
+                    container, null, UIMessages.button_reset_to_defaults, UIIcon.REVERT,
                     SelectionListener.widgetSelectedAdapter(e -> {
                         this.resetToDefault();
                     })
