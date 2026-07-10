@@ -38,7 +38,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.internal.themes.*;
+import org.eclipse.ui.internal.themes.ColorsAndFontsPreferencePage;
+import org.eclipse.ui.internal.themes.FontDefinition;
+import org.eclipse.ui.internal.themes.ThemeElementCategory;
+import org.eclipse.ui.internal.themes.WorkbenchThemeManager;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -76,8 +79,8 @@ import org.jkiss.utils.StringUtils;
 import org.osgi.service.event.EventHandler;
 
 import java.time.ZoneId;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * PrefPageDatabaseUserInterface
@@ -284,19 +287,21 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             2
         );
 
-        Composite displayGroup = UIUtils.createTitledComposite(
-            composite,
-            CoreMessages.pref_page_ui_general_group_display,
-            2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
-        );
-        zoomRestartPromptCheck = UIUtils.createCheckbox(
-            displayGroup,
-            CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_label,
-            CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_tip,
-            true,
-            2
-        );
+        if (RuntimeUtils.isLinux()) {
+            Composite displayGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_display,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
+            zoomRestartPromptCheck = UIUtils.createCheckbox(
+                displayGroup,
+                CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_label,
+                CoreMessages.pref_page_ui_general_check_zoom_restart_prompt_tip,
+                true,
+                2
+            );
+        }
 
         setSettings();
         return composite;
@@ -384,7 +389,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         statusBarBreadcrumbPositionCombo.select(breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS ? 1 : 0);
         statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
         statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
-        zoomRestartPromptCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
+        if (RuntimeUtils.isLinux()) {
+            zoomRestartPromptCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
+        }
     }
 
     @Override
@@ -408,7 +415,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
         statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
-        zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
+        if (RuntimeUtils.isLinux()) {
+            zoomRestartPromptCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT));
+        }
 
         if (this.fontsController != null) {
             this.fontsController.resetToDefaults();
@@ -463,7 +472,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
             store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
             store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
-            store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
+            if (RuntimeUtils.isLinux()) {
+                store.setValue(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT, zoomRestartPromptCheck.getSelection());
+            }
 
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
