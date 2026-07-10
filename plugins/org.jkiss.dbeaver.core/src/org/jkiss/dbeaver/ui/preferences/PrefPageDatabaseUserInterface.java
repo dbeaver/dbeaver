@@ -60,10 +60,7 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIFontPreferenceManager;
-import org.jkiss.dbeaver.ui.UIFonts;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
@@ -311,7 +308,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                     catContainer = UIUtils.createTitledComposite(parent, catName, SWT.NONE);
                     catContainer.getParent().setToolTipText(catDescription);
                     catContainer.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-                    GridLayoutFactory.swtDefaults().margins(0, 3).numColumns(3).applyTo(catContainer);
+                    GridLayoutFactory.swtDefaults().margins(0, 3).numColumns(4).applyTo(catContainer);
                     groups.put(fontDef.getCategoryId(), catContainer);
                 }
 
@@ -325,7 +322,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
         if (this.getContainer() instanceof IWorkbenchPreferenceContainer wpc && catContainer != null) {
             Composite info = new Composite(catContainer, SWT.NONE);
-            GridDataFactory.fillDefaults().span(3, 1).applyTo(info);
+            GridDataFactory.fillDefaults().span(4, 1).applyTo(info);
             GridLayoutFactory.fillDefaults().margins(0, 0).spacing(2, 2).numColumns(2).applyTo(info);
 
             UIUtils.createInfoLabel(info, "");
@@ -519,6 +516,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                         if (data != null) {
                             this.setFont(fontDialog.getFontList());
                         }
+                    })
+                );
+
+                UIUtils.createPushButton(
+                    container, "Reset", null,
+                    SelectionListener.widgetSelectedAdapter(e -> {
+                        resetToDefault();
                     })
                 );
             }
