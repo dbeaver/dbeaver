@@ -521,7 +521,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 );
 
                 UIUtils.createPushButton(
-                    container, "Reset", null,
+                    container,
+                    null,
+                    DBeaverIcons.getImage(UIIcon.REVERT),
                     SelectionListener.widgetSelectedAdapter(e -> {
                         this.resetToDefault();
                     })
