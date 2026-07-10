@@ -17,10 +17,12 @@
 package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.NotNullWhen;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
 
+import java.io.Serial;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -144,7 +146,9 @@ public class StringTemplate {
         int start,
         int end,
         @Nullable String payload,
-        @Nullable List<TemplateSyntaxNode> children
+        @NotNullWhen(
+            "kind == TemplateSyntaxNodeKind.OPTIONAL || kind == TemplateSyntaxNodeKind.REPEAT || kind == TemplateSyntaxNodeKind.ALTERNATIVE"
+        ) List<TemplateSyntaxNode> children
     ) {
     }
 
@@ -156,6 +160,7 @@ public class StringTemplate {
 
     @NotNull
     private static List<TemplateSyntaxNode> parseTemplate(@NotNull Lexer l, @NotNull TemplateFragmentKind fragmentKind) {
+        int fragmentStart = l.lastTerm == null ? 0 : l.lastTerm.start();
         List<TemplateSyntaxNode> nodes = new ArrayList<>();
         Term t = l.nextTerm();
         while (t != null) {
@@ -201,10 +206,12 @@ public class StringTemplate {
                             return nodes;
                         }
                     } else {
-                        throw new UnsupportedOperationException();
+                        throw new StringTemplateFormatException(l.text, t.start(), "Unexpected parameter end mark '}' at " + t.start());
                     }
                 }
                 case PARAM_B_START -> nodes.add(parseParamNode(l, t, TermKind.PARAM_B_END));
+                case PARAM_B_END ->
+                    throw new StringTemplateFormatException(l.text, t.start(), "Unexpected parameter end mark '>' at " + t.start());
                 case ALTERNATIVE -> {
                     int contentsStart;
                     if (nodes.getFirst().kind != TemplateSyntaxNodeKind.ALTERNATIVE) {
@@ -242,18 +249,21 @@ public class StringTemplate {
                 }
                 case REPEAT_MARK -> {
                     t = l.nextTerm();
-                    if (t != null && t.kind == TermKind.OPTIONAL_END) {
-                        return List.of(
-                            new TemplateSyntaxNode(
-                                TemplateSyntaxNodeKind.REPEAT,
-                                nodes.getFirst().start(),
-                                l.lastTerm.end(),
-                                null,
-                                nodes
-                            )
-                        );
-                    } else {
-                        throw new IllegalStateException();
+                    if (t != null) {
+                        if (t.kind == TermKind.OPTIONAL_END && fragmentKind == TemplateFragmentKind.OPTIONAL) {
+                            return List.of(
+                                new TemplateSyntaxNode(
+                                    TemplateSyntaxNodeKind.REPEAT,
+                                    nodes.getFirst().start(),
+                                    l.lastTerm.end(),
+                                    null,
+                                    nodes
+                                )
+                            );
+                        } else {
+                            // consider allowing it in subsequence
+                            throw new StringTemplateFormatException(l.text, t.start(), "Unexpected repeat mark '...' at " + t.start());
+                        }
                     }
                 }
                 case OPTIONAL_START -> {
@@ -280,16 +290,20 @@ public class StringTemplate {
                             return nodes;
                         }
                     } else {
-                        throw new IllegalStateException();
+                        throw new StringTemplateFormatException(l.text, t.start(), "Unexpected optional end mark ']' at " + t.start());
                     }
                 }
                 default -> {
-                    throw new IllegalStateException();
+                    throw new StringTemplateFormatException(l.text, t.start(), "Unexpected '" + t.text() + "' syntax at " + t.start());
                 }
             }
             t = l.nextTerm();
         }
-        return nodes;
+        if (fragmentKind == TemplateFragmentKind.DEFAULT) {
+            return nodes;
+        } else {
+            throw new StringTemplateFormatException(l.text, fragmentStart, "Unclosed " + fragmentKind + " pattern at " + fragmentStart);
+        }
     }
 
     @NotNull
@@ -303,7 +317,7 @@ public class StringTemplate {
             String name = l.text.substring(t.start() + 1, t2.end() - 1);
             return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), t2.end(), name, null);
         } else {
-            return new TemplateSyntaxNode(TemplateSyntaxNodeKind.ERROR, t.start(), l.text.length(), null, null);
+            throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
         }
     }
 
@@ -311,21 +325,31 @@ public class StringTemplate {
     private static TemplateSyntaxNode parseParamOrSubseq(@NotNull Lexer l, @NotNull Term t, @NotNull TermKind endTermKind) {
         Term nameTerm = l.nextTerm();
         String groupName = null;
-        if (nameTerm != null && nameTerm.kind == TermKind.TEXT) {
-            Term paramEndTerm = l.nextTerm();
-            if (paramEndTerm != null) {
-                String name = l.text.substring(t.start() + 1, paramEndTerm.end() - 1);
-                if (paramEndTerm.kind == TermKind.PARAM_A_END) {
-                    return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), paramEndTerm.end(), name, null);
-                } else if (paramEndTerm.kind == TermKind.GROUP_NAME_SEPARATOR) {
-                    groupName = name;
+        if (nameTerm != null) {
+            if (nameTerm.kind == TermKind.TEXT) {
+                Term paramEndTerm = l.nextTerm();
+                if (paramEndTerm != null) {
+                    String name = l.text.substring(t.start() + 1, paramEndTerm.end() - 1);
+                    if (paramEndTerm.kind == endTermKind) {
+                        return new TemplateSyntaxNode(TemplateSyntaxNodeKind.PARAM, t.start(), paramEndTerm.end(), name, null);
+                    } else if (paramEndTerm.kind == TermKind.GROUP_NAME_SEPARATOR) {
+                        groupName = name;
+                    } else {
+                        // fallthrough
+                    }
+                } else {
+                    throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
                 }
+                if (groupName == null) {
+                    l.pushBack(paramEndTerm);
+                }
+            } else {
+                // fallthrough
             }
-            if (groupName == null && paramEndTerm != null) {
-                l.pushBack(paramEndTerm);
-            }
+        } else {
+            throw new StringTemplateFormatException(l.text, t.start(), "Unfinished parameter pattern at " + t.start());
         }
-        if (groupName == null && nameTerm != null) {
+        if (groupName == null) {
             l.pushBack(nameTerm);
         }
 
@@ -422,9 +446,9 @@ public class StringTemplate {
             return sb.toString();
         }
 
-        @Nullable
+        @NotNull
         private String toTemplateString() {
-            return this.visit(new TemplateNodeVisitor<TemplateNode, String>() {
+            String result = this.visit(new TemplateNodeVisitor<TemplateNode, String>() {
 
                 @NotNull
                 @Override
@@ -470,13 +494,20 @@ public class StringTemplate {
                     return repeat.child.visit(this, repeat) + " ...";
                 }
             }, null);
+
+            if (result == null) {
+                // never happens, because this visitor never returns null
+                throw new IllegalStateException("Failed to prepare template string");
+            }
+
+            return result;
         }
 
         @NotNull
         @Override
         public String toString() {
             String str = this.toTemplateString();
-            return super.toString() + "[\"" + (str != null ? str.replace("\"", "\\\"") : "")  + "\"]";
+            return super.toString() + "[\"" + str.replace("\"", "\\\"") + "\"]";
         }
 
         public static class Sequence extends TemplateNode {
@@ -741,13 +772,23 @@ public class StringTemplate {
         groups.push(new GroupEvalInfo());
 
         TemplateEvalInfo result = root.visit(new TemplateNodeVisitor<Object, TemplateEvalInfo>() {
-            @Nullable
+
+            @NotNull
+            TemplateEvalInfo visit(@NotNull  TemplateNode node, @NotNull Object arg) {
+                TemplateEvalInfo info = node.visit(this, arg);
+                if (info == null) {
+                    throw new IllegalStateException(); // never happens because this visitor doesn't return null
+                }
+                return info;
+            }
+
+            @NotNull
             @Override
             public TemplateEvalInfo visitSequence(@NotNull TemplateNode.Sequence sequence, @NotNull Object arg) {
                 if (sequence.name != null) {
                     groups.push(groups.peek().getOrRegisterGroup(sequence.name));
                 }
-                TemplateEvalInfo result = TemplateEvalInfo.and(sequence.children.stream().map(n -> n.visit(this, arg)).toList());
+                TemplateEvalInfo result = TemplateEvalInfo.and(sequence.children.stream().map(n -> this.visit(n, arg)).toList());
                 if (sequence.name != null) {
                     groups.pop();
                 }
@@ -760,11 +801,11 @@ public class StringTemplate {
                 return TemplateEvalInfo.EMPTY;
             }
 
-            @Nullable
+            @NotNull
             @Override
             public TemplateEvalInfo visitOptional(@NotNull TemplateNode.Optional optional, @NotNull Object arg) {
-                TemplateEvalInfo evalInfo = optional.child.visit(this, arg);
-                return evalInfo != null ? TemplateEvalInfo.ofOptional(evalInfo) : null;
+                TemplateEvalInfo evalInfo = this.visit(optional.child, arg);
+                return TemplateEvalInfo.ofOptional(evalInfo);
             }
 
             @NotNull
@@ -777,14 +818,14 @@ public class StringTemplate {
             @NotNull
             @Override
             public TemplateEvalInfo visitAlternatives(@NotNull TemplateNode.Alternatives alternatives, @NotNull Object arg) {
-                return TemplateEvalInfo.or(alternatives.branches.stream().map(n -> n.visit(this, arg)).toList());
+                return TemplateEvalInfo.or(alternatives.branches.stream().map(n -> this.visit(n, arg)).toList());
             }
 
-            @Nullable
+            @NotNull
             @Override
             public TemplateEvalInfo visitRepeat(@NotNull TemplateNode.Repeat repeat, @NotNull Object arg) {
-                TemplateEvalInfo evalInfo = repeat.child.visit(this, arg);
-                return evalInfo != null ? TemplateEvalInfo.ofRepeatable(evalInfo) : null;
+                TemplateEvalInfo evalInfo = this.visit(repeat.child, arg);
+                return TemplateEvalInfo.ofRepeatable(evalInfo);
             }
         }, "");
 
@@ -805,12 +846,21 @@ public class StringTemplate {
             }
 
             @NotNull
+            Fragment visit(@NotNull  TemplateNode node, @NotNull Object arg) {
+                Fragment info = node.visit(this, arg);
+                if (info == null) {
+                    throw new IllegalStateException(); // never happens because this visitor doesn't return null
+                }
+                return info;
+            }
+
+            @NotNull
             @Override
             public Fragment visitSequence(@NotNull TemplateNode.Sequence sequence, @NotNull Object arg) {
                 LinkedList<Fragment> pieces = new LinkedList<>();
                 pieces.addLast(Fragment.ofText("("));
                 for (TemplateNode node : sequence.children) {
-                    pieces.addLast(node.visit(this, arg));
+                    pieces.addLast(this.visit(node, arg));
                 }
                 pieces.addLast(Fragment.ofText(")"));
                 return Fragment.ofSequence(pieces);
@@ -831,7 +881,7 @@ public class StringTemplate {
             public Fragment visitOptional(@NotNull TemplateNode.Optional optional, @NotNull Object arg) {
                 return Fragment.ofSequence(List.of(
                     Fragment.ofText("("),
-                    Objects.requireNonNull(optional.child.visit(this, arg)),
+                    this.visit(optional.child, arg),
                     Fragment.ofText(")?")
                 ));
             }
@@ -867,7 +917,7 @@ public class StringTemplate {
                     if (i > 0) {
                         pieces.addLast(Fragment.ofText("|"));
                     }
-                    pieces.addLast(node.visit(this, arg));
+                    pieces.addLast(this.visit(node, arg));
                 }
                 pieces.addLast(Fragment.ofText(")"));
                 return Fragment.ofSequence(pieces);
@@ -878,14 +928,15 @@ public class StringTemplate {
             public Fragment visitRepeat(@NotNull TemplateNode.Repeat repeat, @NotNull Object arg) {
                 return Fragment.ofSequence(List.of(
                     Fragment.ofText("("),
-                    Objects.requireNonNull(repeat.child.visit(this, arg)),
+                    Objects.requireNonNull(this.visit(repeat.child, arg)),
                     Fragment.ofText(")+")
                 ));
             }
         }, "");
 
         if (regex == null) {
-            throw new IllegalArgumentException("Can't prepare pattern");
+            // never happens, because this visitor never returns null
+            throw new IllegalStateException("Can't prepare pattern");
         }
         String regexString = regex.collectString();
         return Pattern.compile("^" + regexString);
@@ -1004,7 +1055,7 @@ public class StringTemplate {
         ArrayList<Map.Entry<String, String>> result = new ArrayList<>();
         CapturesEnumerator it = this.extractAllParametersImpl(string);
         while (it.nextCapture()) {
-            if (it.getCaptureKind() == CaptureKind.PARAMETER_VALUE && it.getParamName() != null && it.getPayload() != null) {
+            if (it.getCaptureKind() == CaptureKind.PARAMETER_VALUE) {
                 result.add(Map.entry(it.getParamName(), it.getPayload()));
             }
         }
@@ -1107,17 +1158,17 @@ public class StringTemplate {
         protected String currParamName = null;
         protected String currPayload = null;
 
-        @Nullable
+        @NotNullWhen("nextCapture()")
         public CaptureKind getCaptureKind() {
             return this.captureKind;
         }
 
-        @Nullable
+        @NotNullWhen("getCaptureKind() == CaptureKind.PARAMETER_VALUE")
         public String getParamName() {
             return this.currParamName;
         }
 
-        @Nullable
+        @NotNullWhen("nextCapture()")
         public String getPayload() {
             return this.currPayload;
         }
@@ -1231,14 +1282,11 @@ public class StringTemplate {
         ParameterSource result = new ParameterSource();
 
         for (Map.Entry<String, ?> kv : parameters.entrySet()) {
-            ClonableEnumerator<String> paramSource = null;
-            ClonableEnumerator<ParameterSource> groupSource = null;
-
             switch (kv.getValue()) {
                 case String s -> result.addParameter(kv.getKey(), ClonableEnumerator.ofValue(s));
                 case List<?> l when l.isEmpty() || l.getFirst() instanceof String ->
                     result.addParameter(kv.getKey(), ClonableEnumerator.ofList((List<String>) l));
-                case List<?> l when !l.isEmpty() || l.getFirst() instanceof Map ->
+                case List<?> l when !l.isEmpty() && l.getFirst() instanceof Map ->
                     result.addGroup(kv.getKey(), ClonableEnumerator.ofList(
                         l.stream().map(m -> this.prepareParameterSource((Map<String, ?>) m)).collect(Collectors.toList())
                     ));
@@ -1438,7 +1486,11 @@ public class StringTemplate {
             }
         }, paramSource);
 
-        return result.collectString();
+        if (result == null) {
+            throw new IllegalStateException("Not enough parameters to fulfill template and prepare string");
+        } else {
+            return result.collectString();
+        }
     }
 
     private interface ClonableEnumerator<T> {
@@ -1463,6 +1515,7 @@ public class StringTemplate {
     }
 
     private static class ClonableValueEnumerator<T> implements ClonableEnumerator<T> {
+        @NotNull
         private final T value;
         private boolean isValueAvailable;
 
@@ -1575,14 +1628,14 @@ public class StringTemplate {
             }
             case PARAM -> new TemplateNode.Parameter(Objects.requireNonNull(syntaxNode.payload()));
             case OPTIONAL -> new TemplateNode.Optional(
-                collectHasParameters(Objects.requireNonNull(syntaxNode.children())),
+                collectHasParameters(syntaxNode.children()),
                 prepareTemplateNode(null, syntaxNode.children())
             );
             case REPEAT -> new TemplateNode.Repeat(
-                prepareTemplateNode(null, Objects.requireNonNull(syntaxNode.children()))
+                prepareTemplateNode(null, syntaxNode.children())
             );
             case ALTERNATIVE -> new TemplateNode.Alternatives(
-                Objects.requireNonNull(syntaxNode.children()).stream().map(StringTemplate::prepareTemplateNode).toList()
+                syntaxNode.children().stream().map(StringTemplate::prepareTemplateNode).toList()
             );
         };
     }
@@ -1614,8 +1667,8 @@ public class StringTemplate {
     }
 
     private record Fragment(
-        String text,
-        List<Fragment> fragments
+        @Nullable String text,
+        @Nullable List<Fragment> fragments
     ) {
         private static final Fragment EMPTY = new Fragment("", null);
 
@@ -1650,6 +1703,32 @@ public class StringTemplate {
             StringBuilder string = new StringBuilder();
             this.collectTo(string);
             return string.toString();
+        }
+    }
+
+    public static class StringTemplateFormatException extends RuntimeException {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        @NotNull
+        private final String templateString;
+
+        private final int position;
+
+        public StringTemplateFormatException(@NotNull String templateString, int position, @NotNull String message) {
+            super(message);
+            this.templateString = templateString;
+            this.position = position;
+        }
+
+        @NotNull
+        public String getTemplateString() {
+            return this.templateString;
+        }
+
+        public int getPosition() {
+            return this.position;
         }
     }
 }
