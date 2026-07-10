@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -52,17 +53,17 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     public static final String PROCESSOR_ID = "stream.csv";
 
-    private static final String PROP_DELIMITER = "delimiter";
-    private static final String PROP_ROW_DELIMITER = "rowDelimiter";
+    public static final String PROP_DELIMITER = "delimiter";
+    public static final String PROP_ROW_DELIMITER = "rowDelimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_HEADER_FORMAT = "headerFormat";
     private static final String PROP_HEADER_CASE = "headerCase";
-    private static final String PROP_QUOTE_CHAR = "quoteChar";
+    public static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
-    private static final String PROP_QUOTE_NEVER = "quoteNever";
+    public static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
-    private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
+    public static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
     private static final String PROP_FORMAT_ARRAY = "formatArray";
     private static final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\n");
 
@@ -86,7 +87,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String ROW_DELIMITER_DEFAULT = "default";
 
     private String delimiter;
-    private char quoteChar = '"';
+    private String quoteChar = "\"";
     private boolean useQuotes = true;
     private QuoteStrategy quoteStrategy = QuoteStrategy.DISABLED;
     private String rowDelimiter;
@@ -117,15 +118,19 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
-            quoteChar = quoteStr.charAt(0);
+            quoteChar = quoteStr;
         }
         if (CommonUtils.toBoolean(properties.get(PROP_QUOTE_NEVER))) {
-            quoteChar = ' ';
+            quoteChar = "";
         }
 
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-        useQuotes = quoteChar != ' ';
+        useQuotes = CommonUtils.isNotEmpty(quoteChar);
+
+        if (useQuotes && quoteChar.equals(delimiter)) {
+            throw new DBException("Quotes and separator can't be the same string: " + quoteChar);
+        }
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
 
         if (headerPosition == null) {
@@ -208,16 +213,17 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     {
         for (int i = 0; i < row.length && i < columns.length; i++) {
             DBDAttributeBinding column = columns[i];
-            if (row[i] instanceof DBDContent) {
-                // Content
-                // Inline textual content and handle binaries in some special way
-                DBDContent content = (DBDContent) row[i];
+            // Content
+            // Inline textual content and handle binaries in some special way
+            if (row[i] instanceof DBDContent content) {
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs == null) {
                         writeCellValue(DBConstants.NULL_VALUE_LABEL, false);
                     } else if (ContentUtils.isTextContent(content)) {
-                        writeCellValue(cs.getContentReader());
+                        try (Reader reader = cs.getContentReader()) {
+                            writeCellValue(IOUtils.readToString(reader), false);
+                        }
                     } else {
                         //                        out.write(quoteChar);
                         getSite().writeBinaryData(cs);
@@ -320,82 +326,54 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         return false;
     }
 
-    private void writeCellValue(String value, boolean quote) {
-        if (!useQuotes) {
-            quote = false;
-        }
-        // check for needed quote
-        final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
-
+    private void writeCellValue(@NotNull String value, boolean isQuote) {
+        boolean isNeedQuote = isQuote;
+        String preparedValue = value;
         if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            if (value.indexOf('\n') != -1) {
-                value = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
+            if (LINE_BREAK_REGEX.matcher(value).find()) {
+                preparedValue = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
+                isNeedQuote = true;
             }
         }
 
-        if (quoteStrategy == QuoteStrategy.ALL ||
-            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
-            (useQuotes && value.isEmpty())
-        ) {
-            quote = true;
-        } else if (!quote) {
-            if (hasQuotes ||
-                value.contains(delimiter) ||
-                value.indexOf('\r') != -1 ||
-                value.indexOf('\n') != -1 ||
-                value.contains(rowDelimiter)
-            ) {
-                quote = true;
-            }
-        }
-
-        if (quote && hasQuotes) {
+        // we decided to escape only one char quotes. Multichar quotes will NOT be escaped
+        if (useQuotes && quoteChar.length() == 1 && preparedValue.indexOf(quoteChar.charAt(0)) != -1) {
             // escape quotes with double quotes
+            char singleQuoteChar = quoteChar.charAt(0);
+            isNeedQuote = true;
             buffer.setLength(0);
             for (int i = 0; i < value.length(); i++) {
                 char c = value.charAt(i);
-                if (c == quoteChar) {
-                    buffer.append(quoteChar);
+                if (c == singleQuoteChar) {
+                    buffer.append(singleQuoteChar);
                 }
                 buffer.append(c);
             }
-            value = buffer.toString();
+            preparedValue = buffer.toString();
         }
+        isNeedQuote = useQuotes && (isNeedQuote || cellValueNeedsQuotation(preparedValue));
+
         PrintWriter out = getWriter();
-        if (quote && useQuotes) {
+        if (isNeedQuote) {
             out.write(quoteChar);
         }
         out.write(value);
-        if (quote && useQuotes) {
+        if (isNeedQuote) {
             out.write(quoteChar);
         }
     }
 
-    private void writeCellValue(Reader reader) throws IOException {
-        try {
-            PrintWriter out = getWriter();
-            if (useQuotes) {
-                out.write(quoteChar);
-            }
-            // Copy reader
-            char[] buffer = new char[2000];
-            for (; ; ) {
-                int count = reader.read(buffer);
-                if (count <= 0) {
-                    break;
-                }
-                for (int i = 0; i < count; i++) {
-                    if (useQuotes && buffer[i] == quoteChar) {
-                        out.write(quoteChar);
-                    }
-                    out.write(buffer[i]);
-                }
-            }
-            if (useQuotes) {
-                out.write(quoteChar);
-            }
-        } finally {
-            ContentUtils.close(reader);
+    private boolean cellValueNeedsQuotation(@NotNull String line) {
+        if (quoteStrategy == QuoteStrategy.ALL ||
+            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
+            line.isEmpty()
+        ) {
+            return true;
+        } else {
+            return line.contains(delimiter)
+                // only single char quotes are properly escaped written in quotes
+                || (quoteChar.length() == 1 && line.contains(quoteChar))
+                || line.indexOf('\n') != -1 || line.indexOf('\r') != -1;
         }
     }
 
