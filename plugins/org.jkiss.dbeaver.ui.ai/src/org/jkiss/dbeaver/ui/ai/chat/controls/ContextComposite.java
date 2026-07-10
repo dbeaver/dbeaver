@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.time.LocalDate;
@@ -416,6 +417,24 @@ public class ContextComposite extends Composite {
         manager.add(new EmptyAction("Active configuration"));
         for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
             manager.add(new ChangeProfileAction(profile));
+        }
+
+        if (RuntimeUtils.isWindows()) {
+            // Highlight selected item
+            manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
+                Menu swtMenu = ((MenuManager) mm).getMenu();
+                if (swtMenu != null && !swtMenu.isDisposed()) {
+                    for (MenuItem item : swtMenu.getItems()) {
+                        if (item.getData() instanceof ActionContributionItem aci &&
+                            aci.getAction() instanceof ChangeProfileAction cpa &&
+                            cpa.isChecked()
+                        ) {
+                            swtMenu.setDefaultItem(item);
+                            break;
+                        }
+                    }
+                }
+            }));
         }
     }
 
