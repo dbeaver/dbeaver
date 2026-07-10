@@ -49,7 +49,7 @@ import java.util.*;
  * MySQLTable
  */
 public class MySQLTable extends MySQLTableBase
-    implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer, DBSEntityConstrainable
+    implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer, DBSEntityConstrainable, DBSDescriptionEditable
 {
     private static final Log log = Log.getLog(MySQLTable.class);
 
@@ -315,7 +315,8 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<MySQLTableConstraint> constraintObjects = getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this);
+        List<MySQLTableConstraint> constraintObjects = new ArrayList<>(
+                getContainer().uniqueKeyCache.getObjects(monitor, getContainer(), this));
         if (getDataSource().supportsCheckConstraints()) {
             List<MySQLTableConstraint> checkConstraintObjects = getContainer().checkConstraintCache.getObjects(monitor, getContainer(), this);
             if (!CommonUtils.isEmpty(checkConstraintObjects)) {
@@ -786,6 +787,11 @@ public class MySQLTable extends MySQLTableBase
     public String getDescription()
     {
         return additionalInfo.description;
+    }
+
+    @Override
+    public void setDescription(@Nullable String description) {
+        additionalInfo.description = description;
     }
 
     @Override

@@ -100,10 +100,6 @@ public class CSSUtils {
         }
     }
 
-    public static void refreshConnectionTypeToolbars(@NotNull Control root) {
-        refreshConnectionTypeControls(root);
-    }
-
     public static void refreshConnectionTypeControls(@NotNull Control root) {
         if (root.isDisposed()) {
             return;
@@ -135,26 +131,8 @@ public class CSSUtils {
         }
         markConnectionTypeColor(toolBar);
         Color effectiveBg = bgColor != null ? bgColor : UIStyles.getDefaultWidgetBackground();
-        toolBar.setForeground(UIStyles.getDefaultTextForeground());
-        // Reset first so native toolbar rendering drops cached item backgrounds (light theme)
-        toolBar.setBackground(null);
         toolBar.setBackground(effectiveBg);
-        Control parent = toolBar.getParent();
-        if (parent != null && !parent.isDisposed()) {
-            parent.setBackground(effectiveBg);
-        }
-        refreshNativeToolBarBackground(toolBar);
         toolBar.redraw();
-        toolBar.update();
-    }
-
-    private static void refreshNativeToolBarBackground(@NotNull ToolBar toolBar) {
-        try {
-            Class<?> cls = Class.forName("org.jkiss.dbeaver.ui.swt.windows.ToolBarRenderFix");
-            cls.getMethod("refreshDynamicBackground", ToolBar.class).invoke(null, toolBar);
-        } catch (Throwable ignored) {
-            // Windows-specific bundle not available
-        }
     }
 
     public static void setWidgetDefaultBackGround(@NotNull Control widget) {

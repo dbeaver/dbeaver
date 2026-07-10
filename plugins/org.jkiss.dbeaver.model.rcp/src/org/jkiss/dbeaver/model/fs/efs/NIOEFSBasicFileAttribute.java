@@ -14,28 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.fs.efs;
 
-package org.jkiss.dbeaver.model.qm;
-
+import org.eclipse.core.filesystem.IFileInfo;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.nio.NIOFileBasicAttribute;
 
-/**
- * Indicates that existing QM data is incompatible with this client version.
- */
-public class QMIncompatibleDatabaseException extends QMUnavailableException {
+import java.nio.file.attribute.FileTime;
 
-    public static final String DEFAULT_MESSAGE =
-        "QMDB data was created by a newer DBeaver version and is not supported by this client";
+public class NIOEFSBasicFileAttribute extends NIOFileBasicAttribute {
 
-    public QMIncompatibleDatabaseException() {
-        super(DEFAULT_MESSAGE);
+    private final IFileInfo fileInfo;
+
+    public NIOEFSBasicFileAttribute(@NotNull IFileInfo fileInfo) {
+        this.fileInfo = fileInfo;
     }
 
-    public QMIncompatibleDatabaseException(@NotNull Throwable cause) {
-        super(DEFAULT_MESSAGE, cause);
+    @Override
+    @NotNull
+    public FileTime lastModifiedTime() {
+        return FileTime.fromMillis(fileInfo.getLastModified());
     }
 
-    public QMIncompatibleDatabaseException(@NotNull String message, @NotNull Throwable cause) {
-        super(message, cause);
+    @Override
+    public boolean isDirectory() {
+        return fileInfo.isDirectory();
+    }
+
+    @Override
+    public long size() {
+        return fileInfo.getLength();
     }
 }

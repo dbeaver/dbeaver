@@ -54,12 +54,6 @@ public class DataExporterXML extends StreamExporterAbstract {
     }
 
     @Override
-    public void dispose()
-    {
-        super.dispose();
-    }
-
-    @Override
     public void exportHeader(DBCSession session) throws DBException, IOException
     {
         columns = getSite().getAttributes();

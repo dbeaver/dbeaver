@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.ai.qm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.time.Instant;
@@ -58,6 +59,12 @@ public interface AIChatStorage {
         @NotNull String conversationId
     ) throws DBException;
 
+    void changeConversationProfile(
+        @NotNull String conversationId,
+        @Nullable String profileId,
+        @Nullable String engineId
+    ) throws DBException;
+
     void renameConversation(
         @NotNull String conversationId,
         @NotNull String newName
@@ -79,4 +86,5 @@ public interface AIChatStorage {
     default boolean canPersist() {
         return true;
     }
+
 }

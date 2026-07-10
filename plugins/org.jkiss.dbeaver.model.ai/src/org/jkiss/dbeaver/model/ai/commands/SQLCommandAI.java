@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -77,7 +78,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             command.getDataSourceContainer(), "AI logical wrapper", null);
 
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
-        AICompletionSettings completionSettings = new AICompletionSettings(dataSourceContainer);
+        AIDataSourceSettings completionSettings = new AIDataSourceSettings(dataSourceContainer);
         if (!completionSettings.isMetaTransferConfirmed()) {
             if (DBWorkbench.getPlatformUI().confirmAction(
                 AIMessages.ai_command_confirm_usage_title,
@@ -121,6 +122,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         AIAssistantResponse result = assistant.generateText(
             monitor,
+            AISettingsManager.getStaticSettings().getDefaultConfiguration(),
             fc,
             List.of(AIMessage.userMessage(prompt))
         );

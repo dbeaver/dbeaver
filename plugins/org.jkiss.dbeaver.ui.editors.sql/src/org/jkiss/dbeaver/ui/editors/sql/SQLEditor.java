@@ -3346,7 +3346,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Re-apply CSS so connection-type colored widgets (side toolbars, sash, etc.)
         // refresh immediately instead of waiting for the next CSS engine pass
         CSSUtils.applyStyles(resultsSash);
-        CSSUtils.refreshConnectionTypeToolbars(resultsSash);
+        CSSUtils.refreshConnectionTypeControls(resultsSash);
 
         // Repaint the workbench editor tab folder so the custom tab renderer
         // picks up the new connection color immediately after a connection change
@@ -3370,7 +3370,10 @@ public class SQLEditor extends SQLEditorBase implements
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
 
         if (getSite() != null) {
-            DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+            IWorkbenchPage page = getSite().getWorkbenchWindow().getActivePage();
+            if (page != null && page.getActiveEditor() == this) {
+                DataSourceToolbarUtils.refreshSelectorToolbar(getSite().getWorkbenchWindow());
+            }
         }
 
         if (syntaxLoaded && lastExecutionContext == executionContext) {
