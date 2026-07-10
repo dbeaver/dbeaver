@@ -21,6 +21,9 @@ import org.eclipse.e4.ui.model.application.MApplicationElement;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
@@ -99,6 +102,36 @@ public final class WorkbenchPatcher {
             .collect(Collectors.toSet());
 
         return !placeholders.containsAll(views);
+    }
+
+    /**
+     * Removes the SWT.ZoomChanged listener that Eclipse's {@code WorkbenchWindow}
+     * registers to prompt the user for a restart whenever the primary monitor's
+     * zoom factor changes.
+     * <p>
+     * On Linux (X11 and Wayland) and macOS, SWT cannot rescale at runtime, so the
+     * prompt is never useful — restarting does not change how the UI is rendered.
+     * Worse, moving the window between monitors with different scaling factors
+     * triggers spurious {@code SWT.ZoomChanged} events, making the dialog appear
+     * repeatedly. See dbeaver/dbeaver#22951.
+     * <p>
+     * The listener is a lambda declared in {@code org.eclipse.ui.internal.WorkbenchWindow};
+     * lambdas carry their declaring class name, which is what we match on.
+     *
+     * @param shell the window shell whose listener should be removed
+     */
+    public static void removeZoomRestartPrompt(@NotNull Shell shell) {
+        Listener[] listeners = shell.getListeners(SWT.ZoomChanged);
+        int removed = 0;
+        for (Listener listener : listeners) {
+            if (listener.getClass().getName().startsWith("org.eclipse.ui.internal.WorkbenchWindow")) {
+                shell.removeListener(SWT.ZoomChanged, listener);
+                removed++;
+            }
+        }
+        if (removed == 0) {
+            log.debug("No Eclipse zoom-restart listener found on shell; API may have changed");
+        }
     }
 
     /**
