@@ -490,7 +490,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             @NotNull
             private final FontDefinition definition;
             @NotNull
-            private final Label example;
+            private final Text example;
 
             @Nullable
             private Font currentFont = null;
@@ -503,8 +503,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 Label title  = UIUtils.createLabel(container, fontDef.getName() + ": ");
                 title.setToolTipText(fontDef.getDescription());
 
-                this.example = UIUtils.createLabel(container, "<font example placeholder>");
+                this.example = new Text(container, SWT.BORDER | SWT.READ_ONLY);
                 this.example.setToolTipText(fontDef.getDescription());
+                this.example.setEditable(false);
 
                 UIUtils.createPushButton(
                     container, null, CoreMessages.pref_page_user_interface_fonts_modify_tooltip, UIIcon.EDIT,
@@ -522,7 +523,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 UIUtils.createPushButton(
                     container, "Reset", null,
                     SelectionListener.widgetSelectedAdapter(e -> {
-                        resetToDefault();
+                        this.resetToDefault();
                     })
                 );
             }
