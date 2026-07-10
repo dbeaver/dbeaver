@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -46,10 +48,12 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     private String baseUrl = DDAIEngineProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
     private String temperature = "0.0";
+    private boolean logQuery = false;
 
     private Text tokenText;
     private Text baseUrlText;
     private Text temperatureText;
+    private Button logQueryCheck;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
 
@@ -91,6 +95,17 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener(e -> temperature = temperatureText.getText());
+
+        logQueryCheck = UIUtils.createCheckbox(
+            composite,
+            DDUIMessages.datadam_configurator_log_query_label,
+            DDUIMessages.datadam_configurator_log_query_tip,
+            false,
+            2
+        );
+        logQueryCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            logQuery = logQueryCheck.getSelection()
+        ));
     }
 
     @Override
@@ -98,10 +113,12 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDAIEngineProperties.DEFAULT_ENDPOINT);
         token = CommonUtils.toString(configuration.getToken());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        logQuery = configuration.isLoggingEnabled();
 
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);
         temperatureText.setText(temperature);
+        logQueryCheck.setSelection(logQuery);
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DDAIEngineProperties.DEFAULT_MODEL));
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
@@ -115,6 +132,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         configuration.setModel(modelSelectorField.getSelectedModel());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
+        configuration.setLoggingEnabled(logQuery);
     }
 
     @Override
@@ -138,6 +156,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        propertiesCopy.setLoggingEnabled(logQuery);
         return Optional.of(propertiesCopy);
     }
 

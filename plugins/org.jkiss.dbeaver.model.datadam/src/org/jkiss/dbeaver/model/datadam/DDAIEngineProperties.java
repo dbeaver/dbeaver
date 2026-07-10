@@ -76,9 +76,4 @@ public class DDAIEngineProperties extends OpenAIProperties {
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.deleteSecretValue(profile, DATADAM_API_TOKEN);
     }
-
-//    @Override
-//    public boolean isLoggingEnabled() {
-//        return true;
-//    }
 }

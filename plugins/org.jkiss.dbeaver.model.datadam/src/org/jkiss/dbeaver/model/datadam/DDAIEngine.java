@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIRequestFilter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,9 +49,6 @@ public class DDAIEngine extends OpenAIEngine<DDAIEngineProperties> {
         if (CommonUtils.isEmpty(token)) {
             throw new DBException("DataDam API key is not set");
         }
-        return new DDAIClient(
-            properties.getBaseUrl(),
-            List.of(new OpenAIRequestFilter(token))
-        );
+        return OpenAIClientResponses.createClient(properties.getBaseUrl(), token);
     }
 }
