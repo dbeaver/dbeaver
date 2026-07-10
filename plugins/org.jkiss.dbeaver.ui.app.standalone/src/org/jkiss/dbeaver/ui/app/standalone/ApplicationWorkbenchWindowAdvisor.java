@@ -28,6 +28,7 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -42,6 +43,7 @@ import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -52,6 +54,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -324,6 +327,14 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         } catch (Throwable e) {
             log.warn(e);
         }
+
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.UI_SHOW_ZOOM_RESTART_PROMPT)) {
+            Shell shell = getWindowConfigurer().getWindow().getShell();
+            if (shell != null) {
+                WorkbenchPatcher.removeZoomRestartPrompt(shell);
+            }
+        }
+
         initWorkbenchWindows();
     }
 
