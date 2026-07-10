@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.Dialog;
@@ -33,10 +34,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -71,12 +69,16 @@ import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.jkiss.dbeaver.ui.UIUtils.getDisplay;
 
 /**
  * Settings connection page. Hosts particular drivers' connection pages
@@ -438,6 +440,24 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         }
                     }
                 });
+            }
+
+            if (RuntimeUtils.isWindows()) {
+                // Highlight selected item
+                manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
+                    Menu swtMenu = ((MenuManager) mm).getMenu();
+                    if (swtMenu != null && !swtMenu.isDisposed()) {
+                        for (MenuItem item : swtMenu.getItems()) {
+                            if (item.getData() instanceof ActionContributionItem aci &&
+                                aci.getAction() instanceof ChooseNetworkProfileAction cpa &&
+                                cpa.isChecked()
+                            ) {
+                                swtMenu.setDefaultItem(item);
+                                break;
+                            }
+                        }
+                    }
+                }));
             }
         });
 
@@ -1121,7 +1141,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             @Nullable DBPDataSourceOrigin origin,
             int index
         ) {
-            super(null, AS_CHECK_BOX);
+            super(null, AS_RADIO_BUTTON);
             this.profile = profile;
 
             setText(ActionUtils.getLabelWithIndexMnemonic(getProfileName(profile, origin), index));
