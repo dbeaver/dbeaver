@@ -87,8 +87,8 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     private Table profilesTable;
     private CTabFolder handlersFolder;
 
-    private ToolItem deleteProfileItem;
-    private ToolItem copyProfileItem;
+    private Button deleteProfileItem;
+    private Button copyProfileItem;
 
     private final List<NetworkHandlerDescriptor> allHandlers = new ArrayList<>();
     private DBWNetworkProfile selectedProfile;
@@ -183,19 +183,26 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     }
 
     private void createProfilesToolBar(Composite profilesGroup) {
-        ToolBar toolbar = new ToolBar(profilesGroup, SWT.HORIZONTAL | SWT.RIGHT);
+        Composite toolbar = UIUtils.createComposite(profilesGroup, 3);
 
-        UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_network_profiles_tool_create_title,
-                UIConnectionMessages.pref_page_network_profiles_tool_create_text, UIIcon.ROW_ADD,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        createAndShowProfile(null);
-                    }
-                });
+        UIUtils.createPushButton(
+            toolbar,
+            UIConnectionMessages.pref_page_network_profiles_tool_create_title,
+            UIConnectionMessages.pref_page_network_profiles_tool_create_text,
+            UIIcon.ROW_ADD,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    createAndShowProfile(null);
+                }
+            }
+        );
 
-        deleteProfileItem = UIUtils.createToolItem(toolbar, UIConnectionMessages.pref_page_network_profiles_tool_delete_title,
-            UIConnectionMessages.pref_page_network_profiles_tool_delete_text, UIIcon.ROW_DELETE,
+        deleteProfileItem = UIUtils.createPushButton(
+            toolbar,
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_title,
+            UIConnectionMessages.pref_page_network_profiles_tool_delete_text,
+            UIIcon.ROW_DELETE,
             new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -208,9 +215,10 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                         updateControlsState();
                     }
                 }
-            });
+            }
+        );
 
-        copyProfileItem = UIUtils.createToolItem(
+        copyProfileItem = UIUtils.createPushButton(
             toolbar,
             UIConnectionMessages.pref_page_network_profiles_tool_copy_title,
             UIConnectionMessages.pref_page_network_profiles_tool_copy_text,

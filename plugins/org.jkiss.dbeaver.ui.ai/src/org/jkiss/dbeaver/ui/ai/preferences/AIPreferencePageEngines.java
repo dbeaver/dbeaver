@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -44,9 +45,11 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -127,7 +130,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 );
             }
         }
-        profilesViewer.setInput(settings.getConfigurations());
+        reloadEngines();
         AISettingsManager.getInstance().saveSettings();
         try {
             store.save();
@@ -142,82 +145,105 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
-
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite profilesComposite = UIUtils.createComposite(composite, 2);
-        profilesComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        CustomSashForm partDivider = UIUtils.createPartDivider(null, composite, SWT.VERTICAL);
+        partDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        profilesViewer = new TableViewer(profilesComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE | SWT.V_SCROLL);
-        profilesViewer.setContentProvider(ArrayContentProvider.getInstance());
-        Table table = profilesViewer.getTable();
-        GridData gridData = new GridData(GridData.FILL_BOTH);
-        gridData.heightHint = UIUtils.getFontHeight(table) * 6;
-        table.setLayoutData(gridData);
-        createProfilesColumns();
-        profilesViewer.setInput(AISettingsManager.getInstance().getSettings().getConfigurations());
+        Button deleteProfileBtn;
+        {
+            Composite profilesComposite = UIUtils.createComposite(partDivider, 2);
+            profilesComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite buttonsPanel = UIUtils.createComposite(profilesComposite, 1);
-        buttonsPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        UIUtils.createPushButton(
-            buttonsPanel,
-            null,
-            "Create new profile",
-            UIIcon.ADD,
-            SelectionListener.widgetSelectedAdapter(e -> addNewProfile())
-        );
-        Button deleteProfileBtn = UIUtils.createPushButton(
-            buttonsPanel,
-            null,
-            "Delete profile",
-            UIIcon.DELETE,
-            SelectionListener.widgetSelectedAdapter(e -> deleteProfile())
-        );
+            profilesViewer = new TableViewer(profilesComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE | SWT.V_SCROLL);
+            profilesViewer.setContentProvider(ArrayContentProvider.getInstance());
+            Table table = profilesViewer.getTable();
+            GridData gridData = new GridData(GridData.FILL_BOTH);
+            gridData.heightHint = UIUtils.getFontHeight(table) * 6;
+            table.setLayoutData(gridData);
+/*
+            table.addListener(SWT.MeasureItem, new Listener() {
+                public void handleEvent(Event event) {
+                    // Set the height for all rows in pixels
+                    event.height = DBeaverIcons.getImage(AIIcons.AI).getBounds().height + 5;
+                }
+            });
+*/
+            createProfilesColumns();
+            reloadEngines();
 
-        Composite profileGroup = UIUtils.createTitledComposite(
-            composite,
-            "Profile",
-            4,
-            GridData.FILL_HORIZONTAL
-        );
-
-        profileIdText = UIUtils.createLabelText(profileGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
-        profileNameText = UIUtils.createLabelText(profileGroup, "Name", "", SWT.BORDER);
-
-        engineGroup = UIUtils.createTitledComposite(
-            composite,
-            "Settings",
-            2,
-            GridData.FILL_HORIZONTAL
-        );
+            Composite buttonsPanel = UIUtils.createComposite(profilesComposite, 1);
+            buttonsPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            UIUtils.createPushButton(
+                buttonsPanel,
+                null,
+                "Create new profile",
+                UIIcon.ADD,
+                SelectionListener.widgetSelectedAdapter(e -> addNewProfile())
+            );
+            deleteProfileBtn = UIUtils.createPushButton(
+                buttonsPanel,
+                null,
+                "Delete profile",
+                UIIcon.DELETE,
+                SelectionListener.widgetSelectedAdapter(e -> deleteProfile())
+            );
+        }
 
         Runnable refresher = () -> {
             engineGroup.getShell().layout(true, true);
             UIUtils.resizeShell(parent.getShell());
         };
-        profilesViewer.addSelectionChangedListener(event -> {
-            Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
-            if (selItem instanceof AIConfigurationProfile profile) {
-                selectedProfile = profile;
-                showProfileSettings();
-                refresher.run();
-            }
-            deleteProfileBtn.setEnabled(selItem instanceof AIConfigurationProfile);
-        });
 
-        if (selectedProfile != null) {
-            profilesViewer.setSelection(new StructuredSelection(selectedProfile));
-            profilesViewer.reveal(selectedProfile);
+        {
+            Composite settingsPanel = UIUtils.createComposite(partDivider, 1);
+            settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            Composite profileGroup = UIUtils.createTitledComposite(
+                settingsPanel,
+                "Profile",
+                4,
+                GridData.FILL_HORIZONTAL
+            );
+
+            profileIdText = UIUtils.createLabelText(profileGroup, "ID", "", SWT.BORDER | SWT.READ_ONLY);
+            profileNameText = UIUtils.createLabelText(profileGroup, "Name", "", SWT.BORDER);
+
+            engineGroup = UIUtils.createTitledComposite(
+                settingsPanel,
+                "Settings",
+                2,
+                GridData.FILL_HORIZONTAL
+            );
+
+            profilesViewer.addSelectionChangedListener(event -> {
+                Object selItem = profilesViewer.getStructuredSelection().getFirstElement();
+                if (selItem instanceof AIConfigurationProfile profile) {
+                    selectedProfile = profile;
+                    showProfileSettings();
+                    refresher.run();
+                }
+                deleteProfileBtn.setEnabled(selItem instanceof AIConfigurationProfile);
+            });
+
+            if (selectedProfile != null) {
+                profilesViewer.setSelection(new StructuredSelection(selectedProfile));
+                profilesViewer.reveal(selectedProfile);
+            }
+
+            performDefaults();
+
+            createTestConnectionButton(settingsPanel);
         }
 
-        performDefaults();
-
-        createTestConnectionButton(composite);
-
+        partDivider.setWeights(200, 800);
         refresher.run();
         UIUtils.packColumns(profilesViewer.getTable(), true);
 
         return composite;
+    }
+
+    private void reloadEngines() {
+        profilesViewer.setInput(settings.getConfigurations());
     }
 
     private void addNewProfile() {
@@ -232,7 +258,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 dialog.getSelectedEngine()
             );
             newProfile.setProfileName(Objects.requireNonNull(dialog.getProfileName()));
-            profilesViewer.setInput(settings.getConfigurations());
+            reloadEngines();
             profilesViewer.setSelection(new StructuredSelection(newProfile));
 
             AISettingsManager.getInstance().saveSettings();
@@ -254,7 +280,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         selectedProfile = null;
         showProfileSettings();
 
-        profilesViewer.setInput(settings.getConfigurations());
+        reloadEngines();
         if (selectionIndex >= profilesViewer.getTable().getItemCount()) {
             selectionIndex--;
         }
@@ -273,6 +299,19 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         nameColumn.getColumn().setText("Name");
         nameColumn.getColumn().setWidth(200);
         nameColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public Image getImage(Object element) {
+                if (!(element instanceof AIConfigurationProfile profile)) {
+                    return null;
+                }
+                try {
+                    return DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon());
+                } catch (DBException e) {
+                    log.debug("Error reading engine icon", e);
+                    return null;
+                }
+            }
+
             @Override
             public String getText(Object element) {
                 if (!(element instanceof AIConfigurationProfile profile)) {
