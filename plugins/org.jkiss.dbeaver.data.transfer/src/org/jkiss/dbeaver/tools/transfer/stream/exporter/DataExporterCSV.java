@@ -225,9 +225,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                             writeCellValue(IOUtils.readToString(reader), false);
                         }
                     } else {
-                        //                        out.write(quoteChar);
                         getSite().writeBinaryData(cs);
-                        //                        out.write(quoteChar);
                     }
                 }
                 finally {
@@ -329,11 +327,9 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private void writeCellValue(@NotNull String value, boolean isQuote) {
         boolean isNeedQuote = isQuote;
         String preparedValue = value;
-        if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            if (LINE_BREAK_REGEX.matcher(value).find()) {
+        if (CommonUtils.isNotEmpty(lineFeedEscapeString) && LINE_BREAK_REGEX.matcher(value).find()) {
                 preparedValue = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
                 isNeedQuote = true;
-            }
         }
 
         // we decided to escape only one char quotes. Multichar quotes will NOT be escaped
