@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -76,6 +73,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.jkiss.dbeaver.ui.UIUtils.getDisplay;
@@ -444,20 +442,27 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             if (RuntimeUtils.isWindows()) {
                 // Highlight selected item
-                manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
-                    Menu swtMenu = ((MenuManager) mm).getMenu();
-                    if (swtMenu != null && !swtMenu.isDisposed()) {
-                        for (MenuItem item : swtMenu.getItems()) {
-                            if (item.getData() instanceof ActionContributionItem aci &&
-                                aci.getAction() instanceof ChooseNetworkProfileAction cpa &&
-                                cpa.isChecked()
-                            ) {
-                                swtMenu.setDefaultItem(item);
-                                break;
+                Consumer<IMenuManager> hightlightSelectedItem = (imm) -> {
+                    if (imm instanceof MenuManager mm) {
+                        Menu swtMenu = mm.getMenu();
+                        if (swtMenu != null && !swtMenu.isDisposed()) {
+                            for (MenuItem item : swtMenu.getItems()) {
+                                if (item.getData() instanceof ActionContributionItem aci &&
+                                    aci.getAction() instanceof ChooseNetworkProfileAction cpa &&
+                                    cpa.isChecked()
+                                ) {
+                                    swtMenu.setDefaultItem(item);
+                                    break;
+                                }
                             }
                         }
                     }
-                }));
+                };
+                manager.addMenuListener(mm -> {
+                    getDisplay().asyncExec(() -> hightlightSelectedItem.accept(mm));
+                });
+                // initial hightlight
+                getDisplay().asyncExec(() -> hightlightSelectedItem.accept(manager));
             }
         });
 
