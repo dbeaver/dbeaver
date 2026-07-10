@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
-import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -187,42 +186,6 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 .flatMap(p -> p.getDataSourceRegistry().getDataSourcesByProfile(selectedProfile).stream())
                 .toList()
                 : super.connectionsUsingProfile(selectedProfile);
-        }
-
-        @Override
-        protected boolean checkName(@NotNull DBWNetworkProfileManager profilesRegistry, @NotNull String profileName) {
-            return super.checkName(profilesRegistry, profileName) && checkNameInLocalProfiles(profileName);
-        }
-
-        private boolean checkNameInLocalProfiles(@NotNull String profileName) {
-            List<String> projectsWithSameProfileName = getProjects()
-                .stream()
-                .filter(proj -> proj.getDataSourceRegistry().getNetworkProfiles().getProfile(null, profileName) != null)
-                .map(DBPProject::getName)
-                .map(n -> " - " + n)
-                .toList();
-            return projectsWithSameProfileName.isEmpty() || askNameConfirmation(projectsWithSameProfileName, profileName);
-        }
-
-        private boolean askNameConfirmation(@NotNull List<String> projectsWithSameProfile, @NotNull String profileName) {
-            String projectsList = String.join("\n", projectsWithSameProfile);
-            return UIUtils.confirmAction(
-                getShell(),
-                UIConnectionMessages.pref_page_network_profiles_global_project_name_used_label,
-                NLS.bind(
-                    UIConnectionMessages.pref_page_network_profiles_global_project_name_used_question,
-                    profileName,
-                    projectsList
-                )
-            );
-        }
-
-        @NotNull
-        private List<? extends DBPProject> getProjects() {
-            return DBWorkbench
-                .getPlatform()
-                .getWorkspace()
-                .getProjects();
         }
     }
 }

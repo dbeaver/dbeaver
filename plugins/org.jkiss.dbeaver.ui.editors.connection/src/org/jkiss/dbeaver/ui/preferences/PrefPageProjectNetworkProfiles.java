@@ -172,6 +172,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         String profileName = sourceProfile == null ? "" : sourceProfile.getProfileName();
 
         DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
+        boolean isCreatingGlobal = projectMeta == null;
         while (true) {
             profileName = EnterNameDialog.chooseName(
                 getShell(),
@@ -185,14 +186,14 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
 
             profileName = profileName.trim();
 
-            if (!checkName(profilesRegistry, profileName)) {
+            if (!checkName(profilesRegistry, profileName, isCreatingGlobal)) {
                 continue;
             }
 
             break;
         }
 
-        DBWNetworkProfile newProfile = projectMeta == null ? new DBWNetworkProfile() : new DBWNetworkProfile(projectMeta);
+        DBWNetworkProfile newProfile = isCreatingGlobal ? new DBWNetworkProfile() : new DBWNetworkProfile(projectMeta);
         newProfile.setProfileName(profileName);
 
         profilesRegistry.addOrUpdateProfile(newProfile);
@@ -201,23 +202,73 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return newProfile;
     }
 
-    protected boolean checkName(@NotNull DBWNetworkProfileManager profilesRegistry, @NotNull String profileName) {
-        if (profilesRegistry.getProfile(null, profileName) != null) {
-            UIUtils.showMessageBox(
-                getShell(),
-                UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
-                projectMeta == null ?
-                    NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_global_info, profileName) :
-                    NLS.bind(
-                        UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info,
-                        profileName,
-                        projectMeta.getName()
-                    ),
-                SWT.ICON_ERROR
-            );
-            return false;
+    protected boolean checkName(@NotNull DBWNetworkProfileManager profilesRegistry, @NotNull String profileName, boolean isCreatingGlobal) {
+        DBWNetworkProfile foundProfile = profilesRegistry.getProfile(null, profileName);
+        if (foundProfile != null) {
+            if (isCreatingGlobal == foundProfile.isGlobal()) {
+                UIUtils.showMessageBox(
+                    getShell(),
+                    UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
+                    projectMeta == null ?
+                        NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_global_info, profileName) :
+                        NLS.bind(
+                            UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info,
+                            profileName,
+                            projectMeta.getName()
+                        ),
+                    SWT.ICON_ERROR
+                );
+                return false;
+            } else if (!isCreatingGlobal) {
+                return confirmLocalCreation(profileName);
+            }
+        } else if (isCreatingGlobal) {
+            return confirmGlobalCreation(profileName);
         }
         return true;
+    }
+
+    private boolean confirmGlobalCreation(@NotNull String profileName) {
+        List<String> projectsWithSameProfileName = getProjects()
+            .stream()
+            .filter(proj -> proj.getDataSourceRegistry().getNetworkProfiles().getProfile(null, profileName) != null)
+            .map(DBPProject::getName)
+            .map(n -> " - " + n)
+            .toList();
+        return projectsWithSameProfileName.isEmpty() || askGlobalNameConfirmation(projectsWithSameProfileName, profileName);
+    }
+
+    private boolean confirmLocalCreation(@NotNull String profileName) {
+        return UIUtils.confirmAction(
+            getShell(),
+            UIConnectionMessages.pref_page_network_profiles_local_name_used_in_global_label,
+            NLS.bind(
+                UIConnectionMessages.pref_page_network_profiles_local_name_used_in_global_question,
+                profileName,
+                projectMeta != null ? projectMeta.getName() : ""
+            )
+        );
+    }
+
+    private boolean askGlobalNameConfirmation(@NotNull List<String> projectsWithSameProfile, @NotNull String profileName) {
+        String projectsList = String.join("\n", projectsWithSameProfile);
+        return UIUtils.confirmAction(
+            getShell(),
+            UIConnectionMessages.pref_page_network_profiles_global_project_name_used_in_local_label,
+            NLS.bind(
+                UIConnectionMessages.pref_page_network_profiles_global_project_name_used_in_local_question,
+                profileName,
+                projectsList
+            )
+        );
+    }
+
+    @NotNull
+    protected List<? extends DBPProject> getProjects() {
+        return DBWorkbench
+            .getPlatform()
+            .getWorkspace()
+            .getProjects();
     }
 
     @Override
