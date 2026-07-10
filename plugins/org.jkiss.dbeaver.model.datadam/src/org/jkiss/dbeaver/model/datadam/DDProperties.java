@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 
 public class DDProperties extends OpenAIProperties {
 
-    public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/";
+    public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/v1/";
     public static final String DEFAULT_MODEL = "datadam-fast";
 
     private static final String DATADAM_API_TOKEN = "datadam.token";
