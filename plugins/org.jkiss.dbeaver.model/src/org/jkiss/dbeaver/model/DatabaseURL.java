@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.net.StringTemplate;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -59,50 +60,32 @@ public class DatabaseURL {
             // No parameters, just URL - so URL it is
             return connectionInfo.getUrl();
         }
-        try {
-            if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
-                return connectionInfo.getUrl();
-            }
-            MetaURL metaURL = parseSampleURL(urlTemplate);
-            StringBuilder url = new StringBuilder();
-            for (String component : metaURL.getUrlComponents()) {
-                String newComponent = component;
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_HOST), connectionInfo.getHostName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PORT), connectionInfo.getHostPort());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_SERVER), connectionInfo.getServerName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_DATABASE), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FOLDER), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FILE), connectionInfo.getDatabaseName());
-                }
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
-                // support of {password} pattern was removed for security reasons (see dbeaver/pro#1888)
-                //newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-
-                if (newComponent.startsWith("[")) { //$NON-NLS-1$
-                    if (!newComponent.equals(component)) {
-                        url.append(newComponent.substring(1, newComponent.length() - 1));
-                    }
-                } else {
-                    url.append(newComponent);
-                }
-            }
-            return url.toString();
-        } catch (DBException e) {
-            log.error(e);
-            return null;
+        if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
+            return connectionInfo.getUrl();
         }
-    }
 
-    private static String makePropPattern(String prop)
-    {
-        return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+        Map<String, String> params = new HashMap<>();
+        if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+            params.put(DBConstants.PROP_HOST, connectionInfo.getHostName());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            params.put(DBConstants.PROP_PORT, connectionInfo.getHostPort());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
+            params.put(DBConstants.PROP_SERVER, connectionInfo.getServerName());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            params.put(DBConstants.PROP_DATABASE, connectionInfo.getDatabaseName());
+            params.put(DBConstants.PROP_FOLDER, connectionInfo.getDatabaseName());
+            params.put(DBConstants.PROP_FILE, connectionInfo.getDatabaseName());
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+            params.put(DBConstants.PROP_USER, connectionInfo.getUserName());
+        }
+
+        StringTemplate template = StringTemplate.parseTemplate(urlTemplate);
+        String result = template.prepareString(params);
+        return result;
     }
 
     public static class MetaURL {
