@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.datadam;
+package org.jkiss.dbeaver.model.datadam;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
@@ -38,14 +38,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class DataDamClient extends OpenAIClientResponses {
+public class DDClient extends OpenAIClientResponses {
 
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_MARKER = "[DONE]";
 
     private final OpenAIClientChat chatClient;
 
-    public DataDamClient(@NotNull String baseUrl, @NotNull List<HttpRequestFilter> requestFilters) {
+    public DDClient(@NotNull String baseUrl, @NotNull List<HttpRequestFilter> requestFilters) {
         super(baseUrl, requestFilters);
         this.chatClient = new OpenAIClientChat(baseUrl, requestFilters);
     }

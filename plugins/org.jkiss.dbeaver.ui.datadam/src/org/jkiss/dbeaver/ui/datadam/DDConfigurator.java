@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.datadam;
+package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
@@ -23,27 +23,27 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.datadam.DataDamCompletionEngine;
-import org.jkiss.dbeaver.model.ai.datadam.DataDamProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.datadam.DDCompletionEngine;
+import org.jkiss.dbeaver.model.datadam.DDProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.datadam.internal.DataDamUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.datadam.internal.DDUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, DataDamProperties> {
+public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, DDProperties> {
 
-    private String baseUrl = DataDamProperties.DEFAULT_ENDPOINT;
+    private String baseUrl = DDProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
     private String temperature = "0.0";
 
@@ -64,11 +64,11 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
         Composite composite = UIUtils.createComposite(parent, 3);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        tokenText = UIUtils.createLabelText(composite, DataDamUIMessages.datadam_configurator_label_api_key, "", SWT.BORDER | SWT.PASSWORD);
+        tokenText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_api_key, "", SWT.BORDER | SWT.PASSWORD);
         tokenText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
         tokenText.addModifyListener(e -> token = tokenText.getText());
 
-        baseUrlText = UIUtils.createLabelText(composite, DataDamUIMessages.datadam_configurator_label_endpoint, "");
+        baseUrlText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_endpoint, "");
         baseUrlText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
         baseUrlText.addModifyListener(e -> baseUrl = baseUrlText.getText());
 
@@ -87,29 +87,29 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
             .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
             .build();
 
-        temperatureText = UIUtils.createLabelText(composite, DataDamUIMessages.datadam_configurator_label_temperature, "0.0");
+        temperatureText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_temperature, "0.0");
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener(e -> temperature = temperatureText.getText());
     }
 
     @Override
-    public void loadSettings(@NotNull DataDamProperties configuration) {
-        baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DataDamProperties.DEFAULT_ENDPOINT);
+    public void loadSettings(@NotNull DDProperties configuration) {
+        baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDProperties.DEFAULT_ENDPOINT);
         token = CommonUtils.toString(configuration.getToken());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);
         temperatureText.setText(temperature);
-        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DataDamProperties.DEFAULT_MODEL));
+        modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DDProperties.DEFAULT_MODEL));
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
         modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
-    public void saveSettings(@NotNull DataDamProperties configuration) {
+    public void saveSettings(@NotNull DDProperties configuration) {
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
         configuration.setModel(modelSelectorField.getSelectedModel());
@@ -118,7 +118,7 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
     }
 
     @Override
-    public void resetSettings(@NotNull DataDamProperties configuration) {
+    public void resetSettings(@NotNull DDProperties configuration) {
 
     }
 
@@ -132,7 +132,7 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
     @NotNull
     @Override
     public Optional<AIEngineProperties> getCurrentProperties() {
-        DataDamProperties propertiesCopy = new DataDamProperties();
+        DDProperties propertiesCopy = new DDProperties();
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
@@ -148,11 +148,11 @@ public class DataDamConfigurator implements AIIObjectPropertyConfigurator<AIEngi
             return List.of();
         }
 
-        DataDamProperties properties = new DataDamProperties();
+        DDProperties properties = new DDProperties();
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
 
-        try (DataDamCompletionEngine engine = new DataDamCompletionEngine(properties)) {
+        try (DDCompletionEngine engine = new DDCompletionEngine(properties)) {
             return engine.getModels(monitor);
         }
     }

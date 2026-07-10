@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: DBeaver DataDam AI UI
-Bundle-SymbolicName: org.jkiss.dbeaver.ui.ai.datadam;singleton:=true
+Bundle-Name: DBeaver DataDam UI
+Bundle-SymbolicName: org.jkiss.dbeaver.ui.datadam;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
@@ -10,5 +10,5 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.ai,
- org.jkiss.dbeaver.model.ai.datadam
-Automatic-Module-Name: org.jkiss.dbeaver.ui.ai.datadam
+ org.jkiss.dbeaver.model.datadam
+Automatic-Module-Name: org.jkiss.dbeaver.ui.datadam

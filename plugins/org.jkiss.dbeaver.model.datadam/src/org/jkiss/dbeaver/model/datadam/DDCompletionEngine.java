@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.datadam;
+package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -29,9 +29,9 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Set;
 
-public class DataDamCompletionEngine extends OpenAIEngine<DataDamProperties> {
+public class DDCompletionEngine extends OpenAIEngine<DDProperties> {
 
-    public DataDamCompletionEngine(@NotNull DataDamProperties properties) {
+    public DDCompletionEngine(@NotNull DDProperties properties) {
         super(properties);
     }
 
@@ -50,7 +50,7 @@ public class DataDamCompletionEngine extends OpenAIEngine<DataDamProperties> {
         if (CommonUtils.isEmpty(token)) {
             throw new DBException("DataDam API key is not set");
         }
-        return new DataDamClient(
+        return new DDClient(
             properties.getBaseUrl(),
             List.of(new OpenAIRequestFilter(token))
         );

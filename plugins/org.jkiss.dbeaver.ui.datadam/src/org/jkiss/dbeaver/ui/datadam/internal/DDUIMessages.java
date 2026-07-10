@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.datadam.internal;
+package org.jkiss.dbeaver.ui.datadam.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class DataDamUIMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.datadam.internal.DataDamUIMessages"; //$NON-NLS-1$
+public class DDUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.datadam.internal.DDUIMessages"; //$NON-NLS-1$
 
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, DataDamUIMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, DDUIMessages.class);
     }
 
     public static String datadam_configurator_label_api_key;
     public static String datadam_configurator_label_endpoint;
     public static String datadam_configurator_label_temperature;
 
-    private DataDamUIMessages() {
+    private DDUIMessages() {
     }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.datadam;
+package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 
-public class DataDamProperties extends OpenAIProperties {
+public class DDProperties extends OpenAIProperties {
 
-    public static final String DEFAULT_ENDPOINT = "https://datadam-ai.dbeaver.team/v1/";
+    public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/";
     public static final String DEFAULT_MODEL = "datadam-fast";
 
     private static final String DATADAM_API_TOKEN = "datadam.token";

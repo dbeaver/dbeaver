@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
-Bundle-Name: DBeaver DataDam AI Model
-Bundle-SymbolicName: org.jkiss.dbeaver.model.ai.datadam;singleton:=true
+Bundle-Name: DBeaver DataDam Model
+Bundle-SymbolicName: org.jkiss.dbeaver.model.datadam;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20260720
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.ai.datadam
+Export-Package: org.jkiss.dbeaver.model.datadam
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.ai
-Automatic-Module-Name: org.jkiss.dbeaver.model.ai.datadam
+Automatic-Module-Name: org.jkiss.dbeaver.model.datadam

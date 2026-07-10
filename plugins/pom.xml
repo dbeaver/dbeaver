@@ -16,7 +16,7 @@
         <module>org.jkiss.dbeaver.launcher</module>
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
-        <module>org.jkiss.dbeaver.model.ai.datadam</module>
+        <module>org.jkiss.dbeaver.model.datadam</module>
         <module>org.jkiss.dbeaver.model.cli</module>
         <module>org.jkiss.dbeaver.model.event</module>
         <module>org.jkiss.dbeaver.model.dashboard</module>
@@ -156,7 +156,7 @@
                 <module>org.jkiss.dbeaver.ui.editors.locks</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql</module>
                 <module>org.jkiss.dbeaver.ui.ai</module>
-                <module>org.jkiss.dbeaver.ui.ai.datadam</module>
+                <module>org.jkiss.dbeaver.ui.datadam</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql.terminal</module>
                 <module>org.jkiss.dbeaver.ui.editors.session</module>
                 <module>org.jkiss.dbeaver.ui.editors.xml</module>

@@ -4,7 +4,7 @@
 <plugin>
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="datadam" label="DataDam AI"
-                          class="org.jkiss.dbeaver.model.ai.datadam.DataDamCompletionEngine"
-                          properties="org.jkiss.dbeaver.model.ai.datadam.DataDamProperties"/>
+                          class="org.jkiss.dbeaver.model.datadam.DDCompletionEngine"
+                          properties="org.jkiss.dbeaver.model.datadam.DDProperties"/>
     </extension>
 </plugin>

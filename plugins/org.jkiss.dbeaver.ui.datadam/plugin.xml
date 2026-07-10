@@ -3,6 +3,6 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.model.ai.datadam.DataDamCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.datadam.DataDamConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.DDCompletionEngine" uiClass="org.jkiss.dbeaver.ui.datadam.DDConfigurator"/>
     </extension>
 </plugin>
