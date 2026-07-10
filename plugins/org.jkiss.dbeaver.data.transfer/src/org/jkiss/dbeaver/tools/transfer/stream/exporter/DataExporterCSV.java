@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -44,7 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
-import java.util.StringJoiner;
+import java.util.regex.Pattern;
 
 /**
  * CSV Exporter
@@ -53,22 +52,22 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
 
     public static final String PROCESSOR_ID = "stream.csv";
 
-    public static final String PROP_DELIMITER = "delimiter";
-    public static final String PROP_ROW_DELIMITER = "rowDelimiter";
+    private static final String PROP_DELIMITER = "delimiter";
+    private static final String PROP_ROW_DELIMITER = "rowDelimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_HEADER_FORMAT = "headerFormat";
     private static final String PROP_HEADER_CASE = "headerCase";
-    public static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
-    public static final String PROP_QUOTE_NEVER = "quoteNever";
+    private static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
-    public static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
+    private static final String PROP_LINE_FEED_ESCAPE_STRING = "lineFeedEscapeString";
     private static final String PROP_FORMAT_ARRAY = "formatArray";
+    private static final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\n");
 
     private static final String DEF_QUOTE_CHAR = "\"";
     private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
-
     private boolean formatNumbers;
 
     enum HeaderPosition {
@@ -85,13 +84,9 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     }
 
     private static final String ROW_DELIMITER_DEFAULT = "default";
-    private static final String LF = "\n";
-    private static final String CRLF = "\r\n";
 
     private String delimiter;
-    private String quoteChar = "\"";
-    private String lineFeedEscapeString;
-
+    private char quoteChar = '"';
     private boolean useQuotes = true;
     private QuoteStrategy quoteStrategy = QuoteStrategy.DISABLED;
     private String rowDelimiter;
@@ -99,10 +94,11 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private HeaderPosition headerPosition;
     private HeaderFormat headerFormat;
     private DBPIdentifierCase headerCase;
+    private String lineFeedEscapeString;
     private DBDAttributeBinding[] columns;
     private DataExporterArrayFormat dataExporterArrayFormat;
 
-    private final StringBuilder lineBuffer = new StringBuilder();
+    private final StringBuilder buffer = new StringBuilder();
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
@@ -121,21 +117,17 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
-            quoteChar = quoteStr;
+            quoteChar = quoteStr.charAt(0);
         }
         if (CommonUtils.toBoolean(properties.get(PROP_QUOTE_NEVER))) {
-            quoteChar = "";
+            quoteChar = ' ';
         }
 
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
-        useQuotes = CommonUtils.isNotEmpty(quoteChar);
-
-        if (useQuotes && quoteChar.equals(delimiter)) {
-            throw new DBException("Quotes and separator can't be the same string: " + quoteChar);
-        }
-
+        useQuotes = quoteChar != ' ';
         quoteStrategy = QuoteStrategy.fromValue(CommonUtils.toString(properties.get(PROP_QUOTE_ALWAYS)));
+
         if (headerPosition == null) {
             headerPosition = CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(properties.get(PROP_HEADER)), HeaderPosition.top);
         }
@@ -216,19 +208,20 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     {
         for (int i = 0; i < row.length && i < columns.length; i++) {
             DBDAttributeBinding column = columns[i];
-            if (row[i] instanceof DBDContent content) {
+            if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
+                DBDContent content = (DBDContent) row[i];
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs == null) {
-                        writeCellValue(DBConstants.NULL_VALUE_LABEL, true);
+                        writeCellValue(DBConstants.NULL_VALUE_LABEL, false);
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cs.getContentReader());
                     } else {
-//                        out.write(quoteChar);
+                        //                        out.write(quoteChar);
                         getSite().writeBinaryData(cs);
-//                        out.write(quoteChar);
+                        //                        out.write(quoteChar);
                     }
                 }
                 finally {
@@ -327,76 +320,83 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         return false;
     }
 
-    private void writeCellValue(@NotNull String value, boolean quote) {
+    private void writeCellValue(String value, boolean quote) {
+        if (!useQuotes) {
+            quote = false;
+        }
+        // check for needed quote
+        final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
+
         if (CommonUtils.isNotEmpty(lineFeedEscapeString)) {
-            writeLines(value.split(CRLF + "|" + LF, -1), quote, lineFeedEscapeString);
-        } else {
-            writePreparedCellValue(useQuotes ? escapeQuotes(value) : value, quote);
+            if (value.indexOf('\n') != -1) {
+                value = LINE_BREAK_REGEX.matcher(value).replaceAll(lineFeedEscapeString);
+            }
         }
-    }
 
-    private void writeCellValue(@NotNull Reader reader) throws IOException {
-        String cellContent;
-        try (reader) {
-            cellContent = IOUtils.readToString(reader);
-        }
-        writeCellValue(cellContent, false);
-    }
-
-    private void writeLines(@NotNull String[] multiRow, boolean quote, @NotNull String customLineBreak) {
-        StringJoiner multiLineBuffer = new StringJoiner(customLineBreak);
-        for (String rowPart : multiRow) {
-            multiLineBuffer.add(escapeQuotes(rowPart));
-        }
-        writePreparedCellValue(multiLineBuffer.toString(), quote || multiRow.length > 1);
-    }
-
-    private void writePreparedCellValue(@NotNull String preparedCellValue, boolean quote) {
-        boolean isQuoteLines = useQuotes && (quote || cellValueNeedsQuotation(preparedCellValue));
-        PrintWriter out = getWriter();
-        if (isQuoteLines) {
-            out.write(quoteChar);
-        }
-        out.write(preparedCellValue);
-        if (isQuoteLines) {
-            out.write(quoteChar);
-        }
-    }
-
-    private boolean cellValueNeedsQuotation(@NotNull String line) {
         if (quoteStrategy == QuoteStrategy.ALL ||
             quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
-            line.isEmpty()
+            (useQuotes && value.isEmpty())
         ) {
-            return true;
-        } else {
-            return line.contains(delimiter) || line.contains(quoteChar) || line.indexOf('\n') != -1 || line.indexOf('\r') != -1;
+            quote = true;
+        } else if (!quote) {
+            if (hasQuotes ||
+                value.contains(delimiter) ||
+                value.indexOf('\r') != -1 ||
+                value.indexOf('\n') != -1 ||
+                value.contains(rowDelimiter)
+            ) {
+                quote = true;
+            }
+        }
+
+        if (quote && hasQuotes) {
+            // escape quotes with double quotes
+            buffer.setLength(0);
+            for (int i = 0; i < value.length(); i++) {
+                char c = value.charAt(i);
+                if (c == quoteChar) {
+                    buffer.append(quoteChar);
+                }
+                buffer.append(c);
+            }
+            value = buffer.toString();
+        }
+        PrintWriter out = getWriter();
+        if (quote && useQuotes) {
+            out.write(quoteChar);
+        }
+        out.write(value);
+        if (quote && useQuotes) {
+            out.write(quoteChar);
         }
     }
 
-    @NotNull
-    private String escapeQuotes(@NotNull String line) {
-        lineBuffer.setLength(0);
-        // escape quotes with double quotes
-        if (useQuotes && line.contains(quoteChar)) {
-            int index = 0;
-            while (index < line.length()) {
-                if (isQuoteChar(line, index)) {
-                    lineBuffer.append(quoteChar.repeat(2));
-                    index += quoteChar.length();
-                } else {
-                    lineBuffer.append(line.charAt(index++));
+    private void writeCellValue(Reader reader) throws IOException {
+        try {
+            PrintWriter out = getWriter();
+            if (useQuotes) {
+                out.write(quoteChar);
+            }
+            // Copy reader
+            char[] buffer = new char[2000];
+            for (; ; ) {
+                int count = reader.read(buffer);
+                if (count <= 0) {
+                    break;
+                }
+                for (int i = 0; i < count; i++) {
+                    if (useQuotes && buffer[i] == quoteChar) {
+                        out.write(quoteChar);
+                    }
+                    out.write(buffer[i]);
                 }
             }
-            return lineBuffer.toString();
-        } else {
-            return line;
+            if (useQuotes) {
+                out.write(quoteChar);
+            }
+        } finally {
+            ContentUtils.close(reader);
         }
-    }
-
-    private boolean isQuoteChar(@NotNull String value, int toffset) {
-        // if separator is longer it might contain quote char in it.
-        return (delimiter.length() <= quoteChar.length() || !value.startsWith(delimiter, toffset)) && value.startsWith(quoteChar, toffset);
     }
 
     private void writeDelimiter()
