@@ -239,12 +239,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         refresher.run();
         UIUtils.packColumns(profilesViewer.getTable(), true);
 
-        UIUtils.asyncExec(() -> {
-            // Fixes phantom table header on Linux
-            table.setHeaderVisible(true);
-            table.setHeaderVisible(false);
-        });
-
         return composite;
     }
 
