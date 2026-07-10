@@ -268,7 +268,7 @@ public class DriverEditDialog extends BaseDialog {
                     }
                 });
             gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = UIUtils.getFontHeight(propsGroup) * 20;
+            gd.widthHint = UIUtils.getFontHeight(propsGroup) * 20;
             providerCombo.setLayoutData(gd);
             if (newDriver) {
                 for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
