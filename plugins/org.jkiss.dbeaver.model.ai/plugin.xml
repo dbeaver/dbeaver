@@ -62,7 +62,12 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="ai" label="AI integration" enabledByDefault="true"/>
+        <feature
+            id="ai"
+            label="AI integration"
+            description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
+            enabledByDefault="true"
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">

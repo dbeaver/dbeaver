@@ -33,6 +33,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
@@ -48,12 +49,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
+import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -139,6 +143,9 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     public void preWindowOpen() {
         log.debug("Configure workbench window");
 
+        // Show Product Config, if applicable
+        showProductConfigDialog();
+
         DesktopPlatform platform = DBWorkbench.getPlatform(DesktopPlatform.class);
         platform.postInitialize();
 
@@ -170,6 +177,22 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
         // Initialize drivers in the very beginning
         DataSourceProviderRegistry.getInstance();
+    }
+
+    private void showProductConfigDialog() {
+        if (!ProductConfigUtils.isAvailable() || !ProductConfigRegistry.getInstance().hasNewFeatures()) {
+            // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
+            return;
+        }
+        var display = Display.getCurrent();
+        var splash = WorkbenchPlugin.getSplashShell(display);
+        try {
+            splash.setVisible(false);
+            var dialog = new ProductConfigWizardDialog(getWindowConfigurer().getWindow());
+            dialog.open();
+        } finally {
+            splash.setVisible(true);
+        }
     }
 
     /**
