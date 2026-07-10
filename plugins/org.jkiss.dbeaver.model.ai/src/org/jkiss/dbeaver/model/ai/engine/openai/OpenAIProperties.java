@@ -38,6 +38,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
+    private static final String GPT_TIMEOUT = "gpt.timeout";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -61,6 +62,10 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @SerializedName(GPT_LOG_QUERY)
     private Boolean loggingEnabled;
+
+    @Nullable
+    @SerializedName(GPT_TIMEOUT)
+    private Integer timeout;
 
     public OpenAIProperties() {
     }
@@ -152,6 +157,18 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             .map(AIModel::contextWindowSize)
             .orElse(null);
     }
+
+    @Override
+    @Property(order = 9)
+    public int getTimeout() {
+        return timeout != null && timeout > 0 ? timeout : DEFAULT_TIMEOUT;
+    }
+
+    @Override
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
+    }
+
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;

@@ -34,6 +34,7 @@ public class CopilotProperties implements AIEngineProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
+    private static final String GPT_TIMEOUT = "gpt.timeout";
 
     @Nullable
     @SecureProperty
@@ -53,6 +54,10 @@ public class CopilotProperties implements AIEngineProperties {
 
     @SerializedName(GPT_LOG_QUERY)
     private boolean loggingEnabled;
+
+    @Nullable
+    @SerializedName(GPT_TIMEOUT)
+    private Integer timeout;
 
     @Nullable
     @Property(order = 1, password = true, required = true)
@@ -118,6 +123,17 @@ public class CopilotProperties implements AIEngineProperties {
 
     public void setLoggingEnabled(boolean loggingEnabled) {
         this.loggingEnabled = loggingEnabled;
+    }
+
+    @Override
+    @Property(order = 6)
+    public int getTimeout() {
+        return timeout != null && timeout > 0 ? timeout : AIEngineProperties.DEFAULT_TIMEOUT;
+    }
+
+    @Override
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 
     /**
