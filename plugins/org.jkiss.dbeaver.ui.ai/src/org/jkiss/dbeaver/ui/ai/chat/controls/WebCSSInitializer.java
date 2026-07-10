@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatThemeSettings;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.osgi.framework.Bundle;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 
 public class WebCSSInitializer {
@@ -52,27 +54,38 @@ public class WebCSSInitializer {
     private static final String WEB_ROOT = "web";
     private static final String WEB_CSS_PATH = WEB_ROOT + "/styles.css";
     private static final String WEB_HTML_PATH = WEB_ROOT + "/index.html";
+    private static final String EXTRA_HEAD_PLACEHOLDER = "<!--{{EXTRA_HEAD}}-->";
 
     private final Path directory;
 
     public WebCSSInitializer() throws IOException {
-        var activator = AIUIActivator.getInstance();
         directory = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dbeaver-ai-chat");
-        Enumeration<URL> resources = activator.getBundle().findEntries(WEB_ROOT, "*", true);
-        if (resources == null) {
-            log.error("Resource folder not found: " + WEB_ROOT);
-            return;
-        }
-        while (resources.hasMoreElements()) {
-            URL resource = resources.nextElement();
-            String resourcePath = getWebResourcePath(resource);
-            if (resourcePath == null || resourcePath.endsWith("/")) {
+        for (Bundle bundle : getResourceBundles()) {
+            Enumeration<URL> resources = bundle.findEntries(WEB_ROOT, "*", true);
+            if (resources == null) {
                 continue;
             }
-            try (InputStream is = resource.openStream()) {
-                copyWebResource(resourcePath, is);
+            while (resources.hasMoreElements()) {
+                URL resource = resources.nextElement();
+                String resourcePath = getWebResourcePath(resource);
+                if (resourcePath == null || resourcePath.endsWith("/")) {
+                    continue;
+                }
+                try (InputStream is = resource.openStream()) {
+                    copyWebResource(resourcePath, is);
+                }
             }
         }
+    }
+
+    @NotNull
+    protected List<Bundle> getResourceBundles() {
+        return List.of(AIUIActivator.getInstance().getBundle());
+    }
+
+    @NotNull
+    protected String getExtraHeadContent() {
+        return "";
     }
 
     @Nullable
@@ -93,6 +106,10 @@ public class WebCSSInitializer {
             String cssContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
             cssContent = updateCss(cssContent);
             Files.writeString(path, cssContent);
+        } else if (resource.equals(WEB_HTML_PATH)) {
+            String htmlContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            htmlContent = htmlContent.replace(EXTRA_HEAD_PLACEHOLDER, getExtraHeadContent());
+            Files.writeString(path, htmlContent);
         } else {
             Files.copy(is, path, StandardCopyOption.REPLACE_EXISTING);
         }

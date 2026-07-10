@@ -118,6 +118,16 @@ public class OpenAiUtils {
         return result;
     }
 
+    public static boolean shouldFallbackToLegacyChat(@Nullable String message) {
+        if (message == null) {
+            return false;
+        }
+        return message.contains("is not supported via Responses API")
+            || message.contains("does not support Responses API")
+            || message.contains("model_not_supported")
+            || message.contains("The requested model is not supported");
+    }
+
     public static boolean processErrors(
         @NotNull MonitoredHttpClient.ErrorMapper mapper,
         @NotNull Consumer<Throwable> errorHandler,
@@ -130,7 +140,7 @@ public class OpenAiUtils {
             String responseBody = response.body().collect(Collectors.joining());
             if (backupOption != null && statusCode == 400) {
                 String reason;
-                if (responseBody.contains("is not supported via Responses API")) {
+                if (shouldFallbackToLegacyChat(responseBody)) {
                     reason = OpenAIConstants.LEGACY_FALLBACK;
                 } else if (responseBody.contains("Unsupported parameter: 'temperature'")) {
                     reason = OpenAIConstants.TEMPERATURE_NOT_SUPPORTED;
