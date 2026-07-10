@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.time.LocalDate;
@@ -416,6 +418,24 @@ public class ContextComposite extends Composite {
         for (AIConfigurationProfile profile : AISettingsManager.getInstance().getSettings().getConfigurations()) {
             manager.add(new ChangeProfileAction(profile));
         }
+
+        if (RuntimeUtils.isWindows()) {
+            // Highlight selected item
+            manager.addMenuListener(mm -> getDisplay().asyncExec(() -> {
+                Menu swtMenu = ((MenuManager) mm).getMenu();
+                if (swtMenu != null && !swtMenu.isDisposed()) {
+                    for (MenuItem item : swtMenu.getItems()) {
+                        if (item.getData() instanceof ActionContributionItem aci &&
+                            aci.getAction() instanceof ChangeProfileAction cpa &&
+                            cpa.isChecked()
+                        ) {
+                            swtMenu.setDefaultItem(item);
+                            break;
+                        }
+                    }
+                }
+            }));
+        }
     }
 
     private void updateActions() {
@@ -686,6 +706,12 @@ public class ContextComposite extends Composite {
         ) {
             super(genProfileName(profile), AS_RADIO_BUTTON);
             this.profile = profile;
+            try {
+                AIEngineDescriptor engine = profile.getEngineDescriptor();
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(engine.getIcon()));
+            } catch (DBException e) {
+                log.debug(e);
+            }
             AIConfigurationProfile chatProfile = chat.getActiveConversation().getProfile();
             if (chatProfile == null) {
                 chatProfile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
