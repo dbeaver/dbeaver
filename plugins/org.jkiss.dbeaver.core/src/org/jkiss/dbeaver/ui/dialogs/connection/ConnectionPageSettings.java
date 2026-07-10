@@ -442,7 +442,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             if (RuntimeUtils.isWindows()) {
                 // Highlight selected item
-                Consumer<IMenuManager> hightlightSelectedItem = (imm) -> {
+                Consumer<IMenuManager> highlightSelectedItem = (imm) -> {
                     if (imm instanceof MenuManager mm) {
                         Menu swtMenu = mm.getMenu();
                         if (swtMenu != null && !swtMenu.isDisposed()) {
@@ -459,11 +459,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     }
                 };
                 manager.addMenuListener(mm -> {
-                    getDisplay().asyncExec(() -> hightlightSelectedItem.accept(mm));
+                    getDisplay().asyncExec(() -> highlightSelectedItem.accept(mm));
                 });
-                // initial hightlight
-                getDisplay().asyncExec(() -> hightlightSelectedItem.accept(manager));
-            }
+                // initial highlight
+                getDisplay().asyncExec(() -> highlightSelectedItem.accept(manager));
         });
 
         var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
