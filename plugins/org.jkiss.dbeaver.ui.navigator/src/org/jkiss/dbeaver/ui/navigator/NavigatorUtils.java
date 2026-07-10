@@ -442,7 +442,8 @@ public class NavigatorUtils {
         }
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
-            boolean isSaveAsCurrentUserFilterOnly = DBWorkbench.isDistributed();
+            UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
+            boolean isSaveAsCurrentUserFilterOnly = uiServiceFilterConfig != null;
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -474,6 +475,7 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
+                    isSaveAsCurrentUserFilterOnly = isSaveAsCurrentUserFilterOnly && uiServiceFilterConfig.isUseUserFilter(node);
                     nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
                 }
             }
@@ -732,7 +734,7 @@ public class NavigatorUtils {
         }
         if (locator != null) {
             IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(locator);
-            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView view) {
+            if (partSite != null && partSite.getPart() instanceof NavigatorViewBase view) {
                 return view.getNavigatorTree();
             }
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 import java.util.Map;
@@ -25,15 +27,21 @@ import java.util.Map;
  */
 public interface IDataTransferSettings {
 
-    void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings);
+    void loadSettings(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DataTransferSettings dataTransferSettings,
+        @NotNull Map<String, Object> settings
+    );
 
-    void saveSettings(Map<String, Object> settings);
+    void saveSettings(@NotNull Map<String, Object> settings);
 
+    @NotNull
     String getSettingsSummary();
 
     /**
      * Returns non-persistent parameters for data transfer execution which is shared between consumers of the task
      */
+    @Nullable
     default Object prepareRuntimeParameters() {
         return null;
     }

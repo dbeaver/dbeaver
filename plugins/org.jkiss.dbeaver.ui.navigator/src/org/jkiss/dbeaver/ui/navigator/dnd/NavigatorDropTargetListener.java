@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,13 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -54,6 +57,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class NavigatorDropTargetListener implements DropTargetListener {
+
+    private static final Log log = Log.getLog(NavigatorDropTargetListener.class);
+
     private final Viewer viewer;
 
     public NavigatorDropTargetListener(Viewer viewer) {
@@ -103,16 +109,12 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
             @SuppressWarnings("unchecked")
             Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
-            if (curObject instanceof DBNNode) {
+            if (curObject instanceof DBNNode currentObjectDbnNode) {
                 if (!CommonUtils.isEmpty(nodesToDrop)) {
-                    for (DBNNode node : nodesToDrop) {
-                        if (!((DBNNode) curObject).supportsDrop(node)) {
-                            return false;
-                        }
-                    }
-                    return true;
+                    return nodesToDrop.stream()
+                        .allMatch(n -> nodeSupportsDrop(currentObjectDbnNode, n));
                 } else {
-                    return ((DBNNode) curObject).supportsDrop(null);
+                    return currentObjectDbnNode.supportsDrop(null);
                 }
             } else if (curObject == null) {
                 // Drop to empty area
@@ -125,8 +127,8 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                     return true;
                 } else {
                     Widget widget = event.widget;
-                    if (widget instanceof DropTarget) {
-                        widget = ((DropTarget) widget).getControl();
+                    if (widget instanceof DropTarget dropTarget) {
+                        widget = dropTarget.getControl();
                     }
                     return widget == viewer.getControl();
                 }
@@ -134,8 +136,8 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         }
         // Drop file - over resources
         if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
-            if (curObject instanceof IAdaptable) {
-                IResource curResource = ((IAdaptable) curObject).getAdapter(IResource.class);
+            if (curObject instanceof IAdaptable adaptable) {
+                IResource curResource = adaptable.getAdapter(IResource.class);
                 return curResource != null;
             }
         }
@@ -143,15 +145,32 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         return false;
     }
 
+    private boolean nodeSupportsDrop(@NotNull DBNNode currentObject, @NotNull DBNNode otherNode) {
+        return currentObject.supportsDrop(otherNode)
+            || (currentObject instanceof DBNPathBase dbnPathBase && supportsDropFromChildNodes(dbnPathBase, otherNode));
+    }
+
+    private boolean supportsDropFromChildNodes(@NotNull DBNPathBase dbnPathBase, @NotNull DBNNode otherNode) {
+        try {
+            return UIUtils.runWithMonitor(monitor -> dbnPathBase.hasDataInTree(monitor, otherNode));
+        } catch (DBException e) {
+            log.warn("Exception occurred while checking drop support for node [%s] on target [%s]".formatted(otherNode, dbnPathBase), e);
+            return false;
+        }
+    }
+
     private void moveNodes(DropTargetEvent event) {
         final Object curObject = getDropTarget(event, viewer);
         if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-            if (curObject instanceof DBNNode) {
+            if (curObject instanceof DBNNode dbNode) {
                 Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
+                if (nodesToDrop == null) {
+                    return;
+                }
                 try {
                     UIUtils.runInProgressService(monitor -> {
                         try {
-                            ((DBNNode) curObject).dropNodes(monitor, nodesToDrop);
+                            dbNode.dropNodes(monitor, nodesToDrop);
                         } catch (Exception e) {
                             throw new InvocationTargetException(e);
                         }
@@ -165,8 +184,8 @@ public class NavigatorDropTargetListener implements DropTargetListener {
                     if (node instanceof DBNDataSource ds) {
                         // Drop datasource on a view
                         // We need target project
-                        if (viewer.getInput() instanceof DatabaseNavigatorContent) {
-                            DBNNode rootNode = ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
+                        if (viewer.getInput() instanceof DatabaseNavigatorContent dnc) {
+                            DBNNode rootNode = dnc.getRootNode();
                             if (rootNode != null && rootNode.getOwnerProject() != null) {
                                 ds.moveToFolder(rootNode.getOwnerProject(), null);
                             }

@@ -297,13 +297,6 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project.getId();
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return NodePathType.resource.getPrefix() + project.getId();
-    }
-
     @Override
     public boolean hasChildren(boolean navigableOnly) {
         return true;

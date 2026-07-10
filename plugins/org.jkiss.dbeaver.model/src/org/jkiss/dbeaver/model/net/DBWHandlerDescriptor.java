@@ -47,6 +47,7 @@ public interface DBWHandlerDescriptor {
     /**
      * Handler type
      */
+    @NotNull
     DBWHandlerType getType();
 
     boolean isSecured();
@@ -60,8 +61,10 @@ public interface DBWHandlerDescriptor {
      * Handler properties.
      * Can be used for DBWHandlerConfiguration.properties setup.
      */
+    @NotNull
     DBPPropertyDescriptor[] getHandlerProperties();
 
-    <T extends DBWNetworkHandler> T createHandler(Class<T> impl) throws DBException;
+    @NotNull
+    <T extends DBWNetworkHandler> T createHandler(@NotNull Class<T> impl) throws DBException;
 
 }

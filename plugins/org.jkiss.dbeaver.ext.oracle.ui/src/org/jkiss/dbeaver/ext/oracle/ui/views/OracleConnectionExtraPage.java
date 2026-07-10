@@ -61,6 +61,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useOptimizerHint;
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
+    private Button readColumnComments;
     private Button searchInSynonyms;
     private Button searchInSequences;
     private Button showDateAsDate;
@@ -151,6 +152,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             useAlternativeTableMetadataQuery = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query, false);
             useAlternativeTableMetadataQuery.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_use_another_table_query_description);
+
+            readColumnComments = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_read_column_comments,
+                false
+            );
+            readColumnComments.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_read_column_comments_description);
 
             searchInSynonyms = UIUtils.createCheckbox(
                 performanceGroup,
@@ -272,6 +280,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY),
             globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
         ));
+        readColumnComments.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS),
+            globalPreferences.getBoolean(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS)
+        ));
         searchInSynonyms.setSelection(CommonUtils.getBoolean(
             providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS),
             globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
@@ -342,6 +354,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS,
+                String.valueOf(readColumnComments.getSelection()));
             providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, String.valueOf(searchInSynonyms.getSelection()));
             providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, String.valueOf(searchInSequences.getSelection()));
 
