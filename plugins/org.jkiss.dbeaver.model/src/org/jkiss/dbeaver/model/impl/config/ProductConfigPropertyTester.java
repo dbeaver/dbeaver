@@ -33,7 +33,7 @@ public final class ProductConfigPropertyTester extends PropertyTester {
         if (!PROP_IS_FEATURE_ENABLED.equals(property)) {
             return false;
         }
-        if (!ProductConfigUtils.isShowOnStartup()) {
+        if (!ProductConfigUtils.isAvailable()) {
             // Some features might be disabled by default by plugin declaration.
             // But since Product Config is an unreleased feature, there's no way to configure what's enabled or not.
             // So assume all features are enabled when the flag is absent.

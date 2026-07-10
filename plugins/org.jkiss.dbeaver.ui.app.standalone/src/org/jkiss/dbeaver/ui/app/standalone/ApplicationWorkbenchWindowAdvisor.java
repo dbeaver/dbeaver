@@ -177,11 +177,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     private void showProductConfigDialog() {
-        if (!DesktopPlatform.isStandalone() || DBWorkbench.isDistributed()) {
-            // Only applicable to desktop, single-user apps
-            return;
-        }
-        if (!ProductConfigUtils.isShowOnStartup() || !ProductConfigRegistry.getInstance().hasNewFeatures()) {
+        if (!ProductConfigUtils.isAvailable() || !ProductConfigRegistry.getInstance().hasNewFeatures()) {
             // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
             return;
         }

@@ -346,7 +346,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public Path getGlobalConfigurationFile(@NotNull String fileName) {
         var root = RuntimeUtils.getWorkingDirectory(BaseApplicationImpl.DBEAVER_DATA_DIR);
-        return Path.of(root).resolve(fileName);
+        return Path.of(root, SETTINGS_FOLDER, fileName);
     }
 
     @NotNull

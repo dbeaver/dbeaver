@@ -40,7 +40,10 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
 
     @Override
     public void loadSettings() {
-        sendUsageStatistics.set(UIStatisticsActivator.isTrackingEnabled());
+        // Skip means that user has already confirmed in the past
+        if (UIStatisticsActivator.isSkipDataShareConfirmation()) {
+            sendUsageStatistics.set(UIStatisticsActivator.isTrackingEnabled());
+        }
     }
 
     @Override
