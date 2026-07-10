@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class AIEngineRequestFactory {
@@ -142,6 +144,11 @@ public class AIEngineRequestFactory {
         allMessages.add(systemMessage);
         allMessages.addAll(messages);
 
+        // Append the current date/time to the latest user message instead of the system prompt.
+        // Keeping this volatile value out of the (otherwise stable) system prefix lets providers
+        // reuse their prefix cache for the system prompt + DB snapshot across turns.
+        appendCurrentDateTime(allMessages);
+
         List<AIMessage> truncated = chatTruncator.tryTruncate(allMessages);
         List<AIMessage> toSend = truncated != null ? truncated : allMessages;
         AIEngineRequest request = new AIEngineRequest(toSend);
@@ -149,6 +156,23 @@ public class AIEngineRequestFactory {
         request.setFunctions(new ArrayList<>(requestFunctions.supportedFunctions()));
 
         return request;
+    }
+
+    /**
+     * Appends the current date and time to the last user message in the list (if any).
+     * This keeps the volatile timestamp out of the system prompt prefix so it does not invalidate
+     * provider prefix caches on every turn.
+     */
+    private static void appendCurrentDateTime(@NotNull List<AIMessage> messages) {
+        String dateTimeLine = "Current date and time: "
+            + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now());
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            AIMessage message = messages.get(i);
+            if (message.getRole() == AIMessageType.USER) {
+                messages.set(i, message.withContent(message.getContent() + "\n" + dateTimeLine));
+                return;
+            }
+        }
     }
 
     private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIConfigurationProfile profile) throws DBException {

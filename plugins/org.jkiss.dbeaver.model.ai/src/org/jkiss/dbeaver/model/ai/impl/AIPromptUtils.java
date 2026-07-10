@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,7 +86,10 @@ public class AIPromptUtils {
                 lines.add("The database connection is read-only. Data modification is restricted. Database structure cannot be changed.");
             }
         }
-        lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
+        // Note: the current date/time is intentionally NOT added here. It is volatile and would
+        // change the system prompt prefix on every turn, defeating provider prefix caching of the
+        // (otherwise stable) system prompt + DB snapshot. It is appended to the latest user message
+        // instead, in AIEngineRequestFactory.build().
 
         return lines.toArray(String[]::new);
     }
