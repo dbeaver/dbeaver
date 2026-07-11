@@ -87,10 +87,14 @@ public class OpenAiUtils {
                     tp.type = param.getType();
                     tp.description = param.getDescription();
                     tp.enumItems = param.getValidValues();
-                    requiredFields.add(param.getName());
+                    if (param.isRequired()) {
+                        requiredFields.add(param.getName());
+                    }
                     tool.parameters.properties.put(param.getName(), tp);
                 }
-                tool.parameters.required = requiredFields.toArray(new String[0]);
+                if (!requiredFields.isEmpty()) {
+                    tool.parameters.required = requiredFields.toArray(new String[0]);
+                }
                 tools.add(tool);
             }
             oaiRequest.tools = tools;

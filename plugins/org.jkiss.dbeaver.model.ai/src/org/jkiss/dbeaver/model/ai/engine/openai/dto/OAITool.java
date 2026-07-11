@@ -34,6 +34,9 @@ public class OAITool {
     @NotNull
     public OAIToolParameters parameters = new OAIToolParameters();
 
+    public OAITool() {
+    }
+
     @NotNull
     public static OAITool fromDescriptor(@NotNull AIFunctionDescriptor fd) {
         OAITool tool = new OAITool();
@@ -47,10 +50,14 @@ public class OAITool {
             tp.type = param.getType();
             tp.description = param.getDescription();
             tp.enumItems = param.getValidValues();
-            requiredFields.add(param.getName());
+            if (param.isRequired()) {
+                requiredFields.add(param.getName());
+            }
             tool.parameters.properties.put(param.getName(), tp);
         }
-        tool.parameters.required = requiredFields.toArray(new String[0]);
+        if (!requiredFields.isEmpty()) {
+            tool.parameters.required = requiredFields.toArray(new String[0]);
+        }
         return tool;
     }
 
