@@ -80,20 +80,23 @@ public class OpenAiUtils {
                 tool.type = OAITool.TYPE_FUNCTION;
                 tool.name = fd.getFullId();
                 tool.description = fd.getAiDescription();
-                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
-                List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionParameter param : fd.getParameters()) {
-                    OAIToolParameter tp = new OAIToolParameter();
-                    tp.type = param.getType();
-                    tp.description = param.getDescription();
-                    tp.enumItems = param.getValidValues();
-                    if (param.isRequired()) {
-                        requiredFields.add(param.getName());
+                if (fd.getParameters().length > 0) {
+                    tool.parameters = new OAIToolParameters();
+                    tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                    List<String> requiredFields = new ArrayList<>();
+                    for (AIFunctionParameter param : fd.getParameters()) {
+                        OAIToolParameter tp = new OAIToolParameter();
+                        tp.type = param.getType();
+                        tp.description = param.getDescription();
+                        tp.enumItems = param.getValidValues();
+                        if (param.isRequired()) {
+                            requiredFields.add(param.getName());
+                        }
+                        tool.parameters.properties.put(param.getName(), tp);
                     }
-                    tool.parameters.properties.put(param.getName(), tp);
-                }
-                if (!requiredFields.isEmpty()) {
-                    tool.parameters.required = requiredFields.toArray(new String[0]);
+                    if (!requiredFields.isEmpty()) {
+                        tool.parameters.required = requiredFields.toArray(new String[0]);
+                    }
                 }
                 tools.add(tool);
             }
