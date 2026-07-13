@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="com.dbeaver.ai.engine">
+        <completionEngine
+            id="datadam" label="DataDam AI"
+            class="org.jkiss.dbeaver.model.datadam.DDAIEngine"
+            supportsFunctions="true"
+            properties="org.jkiss.dbeaver.model.datadam.DDAIEngineProperties"/>
+    </extension>
+</plugin>
