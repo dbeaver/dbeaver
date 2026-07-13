@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
-import org.jkiss.dbeaver.model.config.ProductConfigFeatureRegistry;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 
 public final class ProductConfigPropertyTester extends PropertyTester {
     private static final Log log = Log.getLog(ProductConfigPropertyTester.class);
@@ -33,7 +33,7 @@ public final class ProductConfigPropertyTester extends PropertyTester {
         if (!PROP_IS_FEATURE_ENABLED.equals(property)) {
             return false;
         }
-        if (!ProductConfigUtils.isShowOnStartup()) {
+        if (!ProductConfigUtils.isAvailable()) {
             // Some features might be disabled by default by plugin declaration.
             // But since Product Config is an unreleased feature, there's no way to configure what's enabled or not.
             // So assume all features are enabled when the flag is absent.
@@ -42,7 +42,7 @@ public final class ProductConfigPropertyTester extends PropertyTester {
         if (!(expectedValue instanceof String value)) {
             return false;
         }
-        var registry = ProductConfigFeatureRegistry.getInstance();
+        var registry = ProductConfigRegistry.getInstance();
         for (ProductConfigFeatureDescriptor feature : registry.getFeatures()) {
             if (feature.getId().equals(value)) {
                 return registry.isFeatureEnabled(feature);
