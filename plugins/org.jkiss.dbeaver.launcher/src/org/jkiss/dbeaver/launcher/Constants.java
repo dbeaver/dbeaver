@@ -164,4 +164,8 @@ public class Constants {
     public static final String DISABLE_REMOTE_CLI = "dbeaver.disable.remote.cli.execution";
     public static final String PROPERTY_ECLIPSE_PRODUCT_ID = "id";
 
+    public static final String ENV_WORKSPACE_PATH = "DBEAVER_WORKSPACE";
+    public static final String ENV_DATA_PATH = "DBEAVER_DATA";
+
+
 }

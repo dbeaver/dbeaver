@@ -41,6 +41,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.keys.BindingService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
@@ -117,6 +118,35 @@ public class ActionUtils {
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image) {
         return makeCommandContribution(serviceLocator, commandId, name, image, null, false);
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(@NotNull String text) {
+        return new ActionContributionItem(new EmptyAction(text));
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull Consumer<Event> callback
+    ) {
+        return new ActionContributionItem(new Action(text) {
+            @Override
+            public void runWithEvent(@NotNull Event event) {
+                callback.accept(event);
+            }
+        });
+    }
+
+    @NotNull
+    public static ActionContributionItem makeContribution(
+        @NotNull String text,
+        @NotNull DBPImage image,
+        @NotNull Consumer<Event> callback
+    ) {
+        var item = makeContribution(text, callback);
+        item.getAction().setImageDescriptor(DBeaverIcons.getImageDescriptor(image));
+        return item;
     }
 
     public static ContributionItem makeActionContribution(
@@ -272,7 +302,14 @@ public class ActionUtils {
         IBindingService bindingService = serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = null;
-            Binding[] bindings = bindingService.getBindings();
+            Iterable<Binding> bindings;
+            if (bindingService instanceof BindingService s) {
+                bindings = s.getBindingManager().getActiveBindingsDisregardingContextFlat();
+            } else if (bindingService.getBindings() instanceof Binding[] bb) {
+                bindings = Arrays.asList(bb);
+            } else {
+                bindings = null;
+            }
             if (bindings != null) {
                 for (Binding b : bindings) {
                     ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();

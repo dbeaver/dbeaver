@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.fs.DBFRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -46,6 +47,9 @@ public interface DBPPlatform {
 
     @NotNull
     DBPWorkspace getWorkspace();
+
+    @NotNull
+    String getDeploymentId();
 
     @Deprecated // use navigator model from DBPProject
     @NotNull
@@ -71,6 +75,8 @@ public interface DBPPlatform {
 
     @NotNull
     DBWHandlerRegistry getNetworkHandlerRegistry();
+    @NotNull
+    DBWNetworkProfileManager getNetworkProfiles();
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
@@ -103,10 +109,20 @@ public interface DBPPlatform {
     DBConfigurationController getPluginConfigurationController(@Nullable String pluginId);
 
     /**
-     * Local config files are used to store some configuration specific to local machine only.
+     * Local config files are used to store some configuration specific to local machine and active workspace.
      */
     @NotNull
-    Path getLocalConfigurationFile(String fileName);
+    Path getLocalConfigurationFile(@NotNull String fileName);
+
+    /**
+     * Global config files are used to store some configuration which can
+     * be shared between different workspaces, but still specific to local machine.
+     *
+     * @param fileName name of the file
+     * @return path to the file in global configuration folder
+     */
+    @NotNull
+    Path getGlobalConfigurationFile(@NotNull String fileName);
 
     /**
      * File controller allows to read/write binary files (e.g. custom driver libraries)

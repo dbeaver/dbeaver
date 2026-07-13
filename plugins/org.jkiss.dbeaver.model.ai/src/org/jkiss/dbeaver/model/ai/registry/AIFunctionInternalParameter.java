@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.ai.AIFunctionParameterTransformer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
-public class AIFunctionInternalParameter extends AbstractDescriptor implements AIFunctionParameter{
-    private final static Log log = Log.getLog(AIFunctionInternalParameter.class);
+public class AIFunctionInternalParameter extends AbstractDescriptor implements AIFunctionParameter {
+    private static final Log log = Log.getLog(AIFunctionInternalParameter.class);
 
     private final IConfigurationElement config;
     private String targetSuffix;

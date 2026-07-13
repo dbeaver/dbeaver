@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.NotNullWhen;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.controls.findandreplace.SearchQuickFilterInfo;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -66,6 +68,11 @@ public class ResultSetModel implements DBDResultSetModel {
     // Flag saying that edited values update is in progress
     private volatile DataSourceJob updateInProgress = null;
 
+    @Nullable
+    private SearchQuickFilterInfo quickFilter = null;
+    @Nullable
+    private List<ResultSetRow> filteredRows = null;
+
     private DBCStatistics statistics;
     private DBCTrace trace;
     private transient boolean metadataChanged;
@@ -95,6 +102,43 @@ public class ResultSetModel implements DBDResultSetModel {
         this.colorHelper = new ResultSetRowColorHelper(this, POSITION_SORTER);
         this.hintContext = new ResultSetHintContext(this::getDataContainer, this::getSingleSource);
         this.dataFilter = createDataFilter();
+    }
+
+    public void setQuickFilter(@Nullable SearchQuickFilterInfo filter) {
+        this.quickFilter = filter;
+        this.applyQuickFilter();
+    }
+
+    @Nullable
+    public SearchQuickFilterInfo getQuickFilter() {
+        return this.quickFilter;
+    }
+
+    private static boolean rowMatchesQuickFilter(@NotNull ResultSetRow row, @NotNull SearchQuickFilterInfo quickFilter) {
+        for (Object value : row.getValues()) {
+            if (value != null) {
+                String valueString = value.toString();
+                boolean result = CommonUtils.isNotEmpty(valueString) && quickFilter.stringMatch(valueString);
+                if (result) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void applyQuickFilter() {
+        if (this.quickFilter == null) {
+            this.filteredRows = null;
+        } else {
+            this.filteredRows = new ArrayList<>(this.curRows.size());
+            for (ResultSetRow row : this.curRows) {
+                if (rowMatchesQuickFilter(row, this.quickFilter)) {
+                    this.filteredRows.add(row);
+                }
+            }
+        }
+        this.updateAllVisualNumbers();
     }
 
     @NotNull
@@ -144,7 +188,7 @@ public class ResultSetModel implements DBDResultSetModel {
         return new DBDDataFilter(constraints);
     }
 
-    private void addConstraints(List<DBDAttributeConstraint> constraints, DBDAttributeBinding binding) {
+    private void addConstraints(@NotNull List<DBDAttributeConstraint> constraints, @NotNull DBDAttributeBinding binding) {
         int constraintsSize = constraints.size();
         DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding, constraintsSize, constraintsSize);
         constraint.setVisible(visibleAttributes.contains(binding) || binding.getParentObject() != null);
@@ -186,6 +230,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }
     }
 
+    @Nullable
     public DBDAttributeBinding getDocumentAttribute() {
         return documentAttribute;
     }
@@ -226,7 +271,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
-    public List<DBDAttributeBinding> getVisibleAttributes(DBDAttributeBinding parent) {
+    public List<DBDAttributeBinding> getVisibleAttributes(@NotNull DBDAttributeBinding parent) {
         final List<DBDAttributeBinding> nestedBindings = parent.getNestedBindings();
         if (nestedBindings == null || nestedBindings.isEmpty()) {
             return null;
@@ -324,11 +369,13 @@ public class ResultSetModel implements DBDResultSetModel {
         }
     }
 
+    @NotNullWhen("create")
     public DBVEntity getVirtualEntity(boolean create) {
         DBSEntity entity = isSingleSource() ? getSingleSource() : null;
         return getVirtualEntity(entity, create);
     }
 
+    @Nullable
     public DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
         if (entity != null) {
             return DBVUtils.getVirtualEntity(entity, true);
@@ -356,30 +403,31 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public int getRowCount() {
-        return curRows.size();
+        return this.filteredRows != null ? this.filteredRows.size() : this.curRows.size();
     }
 
     @Override
     @NotNull
     public List<ResultSetRow> getAllRows() {
-        return curRows;
+        return this.filteredRows != null ? this.filteredRows : this.curRows;
     }
 
     @NotNull
     public Object[] getRowData(int index) {
-        return curRows.get(index).values;
+        return (this.filteredRows != null ? this.filteredRows : this.curRows).get(index).values;
     }
 
     @NotNull
     public ResultSetRow getRow(int index) {
-        return curRows.get(index);
+        return (this.filteredRows != null ? this.filteredRows : this.curRows).get(index);
     }
 
+    @Nullable
     public Long getTotalRowCount() {
         return totalRowCount;
     }
 
-    void setTotalRowCount(Long totalRowCount) {
+    void setTotalRowCount(@Nullable Long totalRowCount) {
         this.totalRowCount = totalRowCount;
     }
 
@@ -499,7 +547,8 @@ public class ResultSetModel implements DBDResultSetModel {
             } else {
                 valueToEdit = value;
             }
-        } else if (valueToEdit instanceof DBDValue complexValue) {
+        } else if (valueToEdit instanceof DBDValue complexValue
+            && (attr != topAttribute || (rowIndexes != null && rowIndexes.length > 0))) {
             DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
         } else {
             valueToEdit = value;
@@ -556,7 +605,6 @@ public class ResultSetModel implements DBDResultSetModel {
      * @param newAttributes attributes metadata
      */
     public void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] newAttributes) {
-
         DBCStatement sourceStatement = resultSet.getSourceStatement();
         if (sourceStatement != null) {
             this.executionSource = sourceStatement.getStatementSource();
@@ -649,7 +697,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }
     }
 
-    private boolean isSameSource(DBDAttributeBinding attr1, DBDAttributeBinding attr2) {
+    private boolean isSameSource(@NotNull DBDAttributeBinding attr1, @NotNull DBDAttributeBinding attr2) {
         if (attr1.getMetaAttribute() == null || attr2.getMetaAttribute() == null) {
             return false;
         }
@@ -738,23 +786,37 @@ public class ResultSetModel implements DBDResultSetModel {
 
     void appendData(@NotNull DBRProgressMonitor monitor, @NotNull List<Object[]> rows, boolean resetOldRows) {
         if (resetOldRows) {
-            curRows.clear();
+            this.curRows.clear();
+            if (this.filteredRows != null) {
+                this.filteredRows.clear();
+            }
         }
         int rowCount = rows.size();
-        int firstRowNum = curRows.size();
+        int firstRowNum = this.curRows.size();
         List<ResultSetRow> newRows = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; i++) {
-            newRows.add(
-                new ResultSetRow(firstRowNum + i, rows.get(i)));
+            newRows.add(new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
-        curRows.addAll(newRows);
+        this.curRows.addAll(newRows);
 
-        colorHelper.handleAppendDataColors(resolveVirtualEntity(), resetOldRows, newRows);
+        if (this.filteredRows != null && this.quickFilter != null && !resetOldRows) {
+            // preserve existing filtered state, only filter newRows and update their visual numbers
+            for (ResultSetRow row : newRows) {
+                if (rowMatchesQuickFilter(row, this.quickFilter)) {
+                    row.setVisualNumber(this.filteredRows.size());
+                    this.filteredRows.add(row);
+                }
+            }
+        } else if (this.quickFilter != null) {
+            this.applyQuickFilter();
+        }
+
+        this.colorHelper.handleAppendDataColors(resolveVirtualEntity(), resetOldRows, newRows);
 
         refreshHintsInfo(monitor, newRows, resetOldRows);
     }
 
-    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, List<? extends DBDValueRow> newRows, boolean cleanupOldCache) {
+    void refreshHintsInfo(@NotNull DBRProgressMonitor monitor, @NotNull List<? extends DBDValueRow> newRows, boolean cleanupOldCache) {
         try {
             if (cleanupOldCache) {
                 hintContext.resetCache();
@@ -771,6 +833,10 @@ public class ResultSetModel implements DBDResultSetModel {
         this.curRows = new ArrayList<>();
         this.totalRowCount = null;
         this.singleSourceEntity = null;
+
+        if (this.filteredRows != null) {
+            this.filteredRows = new ArrayList<>();
+        }
 
         this.hasData = false;
     }
@@ -797,12 +863,17 @@ public class ResultSetModel implements DBDResultSetModel {
 
     @NotNull
     ResultSetRow addNewRow(int rowNum, @NotNull Object[] data) {
-        ResultSetRow newRow = new ResultSetRow(curRows.size(), data);
+        ResultSetRow newRow = new ResultSetRow(this.curRows.size(), data);
         newRow.setVisualNumber(rowNum);
         newRow.setState(ResultSetRow.STATE_ADDED);
-        shiftRows(newRow, 1);
-        curRows.add(rowNum, newRow);
-        changesCount++;
+        if (this.filteredRows != null) {
+            newRow.setVisualNumber(this.filteredRows.size());
+            this.filteredRows.add(newRow);
+        }
+
+        this.shiftRows(newRow, 1);
+        this.curRows.add(rowNum, newRow);
+        this.changesCount++;
         return newRow;
     }
 
@@ -829,21 +900,31 @@ public class ResultSetModel implements DBDResultSetModel {
     void cleanupRow(@NotNull ResultSetRow row) {
         row.release();
         int index = row.getVisualNumber();
-        if (this.curRows.size() > index) {
-            this.curRows.remove(index);
-            this.shiftRows(row, -1);
+        if (this.filteredRows != null) {
+            if (this.filteredRows.size() > index) {
+                this.filteredRows.remove(index);
+                this.curRows.remove(row);
+                this.shiftRows(row, -1);
+            } else {
+                log.debug("Error removing row from list: invalid row index: " + index);
+            }
         } else {
-            log.debug("Error removing row from list: invalid row index: " + index);
+            if (this.curRows.size() > index) {
+                this.curRows.remove(index);
+                this.shiftRows(row, -1);
+            } else {
+                log.debug("Error removing row from list: invalid row index: " + index);
+            }
         }
     }
 
-    boolean cleanupRows(Collection<ResultSetRow> rows) {
+    boolean cleanupRows(@Nullable Collection<ResultSetRow> rows) {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
             List<ResultSetRow> rowsToRemove = new ArrayList<>(rows);
             rowsToRemove.sort(Comparator.comparingInt(ResultSetRow::getVisualNumber));
             for (ResultSetRow row : rowsToRemove) {
-                cleanupRow(row);
+                cleanupRow(row); // TODO consider optimize shiftRows(..) usage
             }
             return true;
         } else {
@@ -852,7 +933,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     private void shiftRows(@NotNull ResultSetRow relative, int delta) {
-        for (ResultSetRow row : curRows) {
+        for (ResultSetRow row : (this.filteredRows != null ? this.filteredRows : this.curRows)) {
             if (row.getVisualNumber() >= relative.getVisualNumber()) {
                 row.setVisualNumber(row.getVisualNumber() + delta);
             }
@@ -874,6 +955,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }, "Release values", 5000);
     }
 
+    @NotNull
     public DBDDataFilter getDataFilter() {
         return dataFilter;
     }
@@ -884,7 +966,7 @@ public class ResultSetModel implements DBDResultSetModel {
      * @param dataFilter data filter
      * @return true if visible attributes were changed. Spreadsheet has to be refreshed
      */
-    boolean setDataFilter(DBDDataFilter dataFilter) {
+    boolean setDataFilter(@NotNull DBDDataFilter dataFilter) {
         this.dataFilter = dataFilter;
         // Check if filter misses some attributes
         List<DBDAttributeConstraint> newConstraints = new ArrayList<>();
@@ -914,7 +996,7 @@ public class ResultSetModel implements DBDResultSetModel {
         return false;
     }
 
-    void updateDataFilter(DBDDataFilter filter, boolean forceUpdate) {
+    void updateDataFilter(@NotNull DBDDataFilter filter, boolean forceUpdate) {
         this.visibleAttributes.clear();
         Collections.addAll(this.visibleAttributes, this.attributes);
         List<DBDAttributeConstraint> missingConstraints = new ArrayList<>();
@@ -929,9 +1011,10 @@ public class ResultSetModel implements DBDResultSetModel {
                 continue;
             }
             if ((!forceUpdate &&
-                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION && constraint.getVisualPosition() != filterConstraint.getVisualPosition() &&
-                constraint.getVisualPosition() == constraint.getOriginalVisualPosition()))
-            {
+                constraint.getVisualPosition() != DBDAttributeConstraint.NULL_VISUAL_POSITION
+                && constraint.getVisualPosition() != filterConstraint.getVisualPosition()
+                && constraint.getVisualPosition() == constraint.getOriginalVisualPosition())
+            ) {
                 // If ordinal position doesn't match then probably it is a wrong attribute.
                 // There can be multiple attributes with the same name in rs (in some databases)
 
@@ -956,12 +1039,11 @@ public class ResultSetModel implements DBDResultSetModel {
             }
             filterConstraint.setOptions(constraint.getOptions());
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
-            if (cAttr instanceof DBDAttributeBinding) {
+            if (cAttr instanceof DBDAttributeBinding attribute) {
                 if (!constraint.isVisible()) {
                     visibleAttributes.remove(cAttr);
                 } else {
                     if (!visibleAttributes.contains(cAttr)) {
-                        DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
                         if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                             // Add only root attributes
                             visibleAttributes.add(attribute);
@@ -975,7 +1057,7 @@ public class ResultSetModel implements DBDResultSetModel {
             this.dataFilter.addConstraints(missingConstraints);
         }
 
-        if (filter.getConstraints().size() != attributes.length) {
+        if (filter.getConstraintsCount() != attributes.length) {
             // Update visibility
             for (Iterator<DBDAttributeBinding> iter = visibleAttributes.iterator(); iter.hasNext(); ) {
                 final DBDAttributeBinding attr = iter.next();
@@ -1001,9 +1083,15 @@ public class ResultSetModel implements DBDResultSetModel {
         for (DBDAttributeBinding binding : bindings) {
             resetOrdering(binding);
         }
+        this.updateAllVisualNumbers();
     }
 
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
+        this.resetOrderingImpl(columnElement);
+        this.updateAllVisualNumbers();
+    }
+
+    private void resetOrderingImpl(@NotNull DBDAttributeBinding columnElement) {
         final boolean hasOrdering = dataFilter.hasOrdering();
 
         // First sort in original order to reset multi-column orderings
@@ -1040,10 +1128,14 @@ public class ResultSetModel implements DBDResultSetModel {
                 return result;
             });
         }
-        for (int i = 0; i < curRows.size(); i++) {
-            curRows.get(i).setVisualNumber(i);
-        }
         colorHelper.handlePostOrdering(resolveVirtualEntity());
+    }
+
+    private void updateAllVisualNumbers() {
+        List<ResultSetRow> rows = this.filteredRows != null ? this.filteredRows : this.curRows;
+        for (int i = 0; i < rows.size(); i++) {
+            rows.get(i).setVisualNumber(i);
+        }
     }
 
     private void fillVisibleAttributes() {
@@ -1077,14 +1169,16 @@ public class ResultSetModel implements DBDResultSetModel {
         }
     }
 
+    @Nullable
     public DBCStatistics getStatistics() {
         return statistics;
     }
 
-    public void setStatistics(DBCStatistics statistics) {
+    public void setStatistics(@Nullable DBCStatistics statistics) {
         this.statistics = statistics;
     }
 
+    @Nullable
     public DBCTrace getTrace() {
         return trace;
     }

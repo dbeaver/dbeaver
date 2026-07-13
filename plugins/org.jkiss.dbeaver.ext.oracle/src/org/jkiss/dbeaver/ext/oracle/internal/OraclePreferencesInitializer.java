@@ -43,6 +43,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
         // Metadata optimization
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_USE_META_OPTIMIZER, true);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, true);
+        PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS, false);
     }
 
 } 

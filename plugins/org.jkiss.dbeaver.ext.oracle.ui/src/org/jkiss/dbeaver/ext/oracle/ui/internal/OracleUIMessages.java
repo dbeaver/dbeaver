@@ -111,6 +111,8 @@ public final class OracleUIMessages extends NLS {
     public static String edit_create_checkbox_content_group_use_simple_constraints_description;
     public static String edit_create_checkbox_content_group_use_another_table_query;
     public static String edit_create_checkbox_content_group_use_another_table_query_description;
+    public static String edit_create_checkbox_content_group_read_column_comments;
+    public static String edit_create_checkbox_content_group_read_column_comments_description;
     public static String edit_create_checkbox_content_group_search_metadata_in_synonyms;
     public static String edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip;
     public static String edit_create_checkbox_content_group_search_metadata_in_sequences;

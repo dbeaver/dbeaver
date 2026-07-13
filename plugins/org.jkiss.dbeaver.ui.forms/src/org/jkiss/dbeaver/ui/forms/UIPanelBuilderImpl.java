@@ -181,10 +181,10 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             var builder = (UIControlBuilderImpl<?, Control>) row.controls.get(i);
 
             var data = new GridData();
-            data.horizontalAlignment = builder.alignX;
-            data.verticalAlignment = builder.alignY;
-            data.grabExcessHorizontalSpace = builder.grow;
-            data.grabExcessVerticalSpace = builder.grow;
+            data.horizontalAlignment = builder.alignX.toSWT();
+            data.verticalAlignment = builder.alignY.toSWT();
+            data.grabExcessHorizontalSpace = builder.growX == UIGrowX.ALWAYS;
+            data.grabExcessVerticalSpace = builder.growY == UIGrowY.ALWAYS;
 
             var control = builder.build(context, parent, row);
 

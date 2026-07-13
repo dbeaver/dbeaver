@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,25 +21,22 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
 
-@RunnerProxy(MockitoJUnitRunner.Silent.class)
 public class DataExporterCSVTest extends DBeaverUnitTest {
 
     private DataExporterCSV dataExporterCSV;
     private StringWriter stringWriter;
     private IStreamDataExporterSite site;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -78,10 +75,10 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
             dataExporterCSV.exportHeader(Mockito.mock(DBCSession.class));
 
             String expectedHeader = "\"IDENTIFIER\",\"NAME\",\"AGE\",";
-            Assert.assertEquals(expectedHeader, stringWriter.toString());
+            Assertions.assertEquals(expectedHeader, stringWriter.toString());
         } catch (Exception e) {
             e.printStackTrace();
-            Assert.fail("Exception occurred: " + e.getMessage());
+            Assertions.fail("Exception occurred: " + e.getMessage());
         }
     }
 }
