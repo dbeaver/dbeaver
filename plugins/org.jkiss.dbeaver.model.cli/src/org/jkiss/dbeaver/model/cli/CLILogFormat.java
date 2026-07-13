@@ -14,21 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+public enum CLILogFormat {
+    TEXT("text"),
+    JSON("json");
 
-public class OAIToolParameters {
+    private final String formatName;
 
-    public static final String TYPE_OBJECT = "object";
+    CLILogFormat(@NotNull String formatName) {
+        this.formatName = formatName;
+    }
 
-    public String type;
     @NotNull
-    public Map<String, OAIToolParameter> properties = new LinkedHashMap<>();
-    public String[] required;
-//    public boolean additionalProperties;
+    public String getFormatName() {
+        return formatName;
+    }
 
+    @Nullable
+    public static CLILogFormat byName(@Nullable String name) {
+        for (CLILogFormat format : values()) {
+            if (format.formatName.equalsIgnoreCase(name)) {
+                return format;
+            }
+        }
+        return null;
+    }
 }
