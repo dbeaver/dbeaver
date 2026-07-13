@@ -39,7 +39,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
 
-    private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
+    private static final String CHAT_COMPLETIONS_PATH = "/chat/completions";
 
     public CopilotClientChat(@NotNull String authProviderBaseURL) {
         super(authProviderBaseURL);
@@ -52,13 +52,13 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
     @NotNull
     public CopilotChatResponseLegacy chat(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull String token,
+        @NotNull CopilotSessionToken session,
         @NotNull CopilotChatRequest chatRequest
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
+            .uri(AIHttpUtils.resolve(session.apiBaseUrl() + CHAT_COMPLETIONS_PATH))
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token())
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
@@ -71,14 +71,14 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
     @Override
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull String token,
+        @NotNull CopilotSessionToken session,
         @NotNull CopilotChatRequest chatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
+            .uri(AIHttpUtils.resolve(session.apiBaseUrl() + CHAT_COMPLETIONS_PATH))
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + token)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token())
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
             .timeout(TIMEOUT)
