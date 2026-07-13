@@ -176,6 +176,17 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (commandLine.getExecutionExceptionHandler() instanceof ExceptionHandler exceptionHandler) {
                 Exception executionException = exceptionHandler.getException();
                 if (executionException != null) {
+                    if (context.getLogFormat() == CLILogFormat.JSON) {
+                        log.error("Error evaluating cli:" + executionException.getMessage(), executionException);
+                        short exitCode = executionException instanceof CLIException cliException
+                            ? cliException.getExitCode()
+                            : CLIConstants.EXIT_CODE_ERROR;
+                        return new CLIProcessResult(
+                            CLIProcessResult.PostAction.ERROR,
+                            List.of(CLIUtils.formatErrorStatusJson(exitCode, executionException)),
+                            exitCode
+                        );
+                    }
                     throw executionException;
                 }
             }
