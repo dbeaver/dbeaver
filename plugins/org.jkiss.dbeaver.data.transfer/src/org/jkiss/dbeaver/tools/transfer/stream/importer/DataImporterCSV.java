@@ -226,7 +226,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     try (Reader reader = openStreamReader(inputStream, properties, true)) {
                         try (CSVReader csvReader = openCSVReader(reader, properties)) {
 
-                            int maxRows = site.getSettings().getMaxRows();
+                            long maxRows = site.getSettings().getMaxRows();
                             int targetAttrSize = entityMapping.getStreamColumns().size();
                             boolean headerRead = false;
                             for (long lineNum = 0; ; ) {
